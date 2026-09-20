@@ -20,6 +20,11 @@ export {
   compareCommandOrder,
   slotOf,
 } from "./commands/ordering";
+export type {
+  AtlasFrameDef,
+  AtlasFrameList,
+  AtlasShape,
+} from "./definitions/atlas-frame-def";
 export type { MapDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
 export {

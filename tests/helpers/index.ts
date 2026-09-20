@@ -37,6 +37,7 @@ export {
   makeRegistry,
   type MakeRegistryOptions,
 } from "./content/make-registry";
+export { PainterRecorder } from "./doubles/painter-recorder";
 export {
   defineFactory,
   type Factory,

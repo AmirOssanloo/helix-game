@@ -1,4 +1,5 @@
 import type { WorldView } from "@simulation/public";
+import type { ShapeAtlas } from "./atlas/shape-atlas";
 
 /** What a scene needs of the driver: a frame to hand it, and the fraction to interpolate by. The composition root supplies the real one. */
 export type FrameDriver = Readonly<{
@@ -11,6 +12,7 @@ export type Reporter = (message: string) => void;
 
 /** Everything a scene is given at construction. A scene composes over these and holds nothing else. */
 export type SceneContext = Readonly<{
+  atlas: ShapeAtlas;
   driver: FrameDriver;
   world: WorldView;
   report: Reporter;

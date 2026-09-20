@@ -1,5 +1,10 @@
 import type { WorldView } from "@simulation/public";
 
+export {
+  ATLAS_FONT_KEY,
+  ATLAS_TEXTURE_KEY,
+  ShapeAtlas,
+} from "./atlas/shape-atlas";
 export type { FrameDriver, Reporter, SceneContext } from "./scene-context";
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";

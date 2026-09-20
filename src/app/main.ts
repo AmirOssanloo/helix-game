@@ -1,10 +1,15 @@
 import Phaser from "phaser";
-import { tuningTable } from "@content/public";
+import { atlasFrames, tuningTable } from "@content/public";
 import { exposeDevApi, mountPanel } from "@devtools/public";
 import type { MapDef, Registry } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
-import { BootScene, HudScene, PlayScene } from "@presentation/public";
+import {
+  BootScene,
+  HudScene,
+  PlayScene,
+  ShapeAtlas,
+} from "@presentation/public";
 import { createWorld } from "@simulation/public";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
@@ -27,7 +32,9 @@ export const boot: Boot = (): void => {
   });
   const rings = createRings();
   const driver = new FixedStepDriver({ world, rings, clock: wallClock });
+  const atlas = new ShapeAtlas(atlasFrames);
   const context: SceneContext = {
+    atlas,
     driver,
     world: world.view,
     report: (message: string): void => {
@@ -59,7 +66,10 @@ export const boot: Boot = (): void => {
     }
 
     mountPanel(host);
-    exposeDevApi(window, { rings });
+    exposeDevApi(window, {
+      rings,
+      downloadAtlas: (): string => atlas.download(),
+    });
   }
 };
 

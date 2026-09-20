@@ -2,11 +2,14 @@ import type { InstrumentationRings } from "@instrumentation/public";
 
 /**
  * The one object the developer panel and a person at the console reach the game through, on
- * `window` in a development build. Today it exposes the instrumentation rings and nothing
- * else; submitting commands, driving the driver, and reading the view join it with the panel.
+ * `window` in a development build. Today it exposes the instrumentation rings and the atlas
+ * download; submitting commands, driving the driver, and reading the view join it with the
+ * panel.
  */
 export type DevApi = Readonly<{
   rings: InstrumentationRings;
+  /** The baked shape atlas as a PNG data URL, so a person can save it and look at every frame. */
+  downloadAtlas: () => string;
 }>;
 
 /** The property `exposeDevApi` defines: `window.DevApi`. */

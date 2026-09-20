@@ -78,7 +78,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | Layer | content, presentation, tests |
 | Size | 1 |
 | Depends on | P0-S01-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/content/atlas-frames.ts` as the one frame list: `disc`, `ring_thin`, `ring_thick`, `square`, `square_outline`, `square_outline_thick`, `triangle`, `pixel`, a wedge sheet of 64 frames for cooldown sweeps, a placeholder status icon frame, and the glyphs `0-9`, `-`, `.`, `%`, `/` and the uppercase letters for a `RetroFont`. Cone frames are added by the spells that need them. `src/presentation/atlas/shape-atlas.ts` draws every frame white with alpha onto one canvas at boot, large enough that no view scales up more than two, registers one Phaser texture with named frames, and registers the bitmap font. A `download` hook that returns the canvas as a PNG data URL, exposed on `DevApi` later. `BootScene` bakes before starting the other scenes.
 
@@ -91,6 +91,8 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 - `tests/presentation/shape-atlas.spec.ts` (jsdom, canvas stubbed) — every listed frame gets a region; regions do not overlap.
 
 **Definition of done:** Every change · Anything under `src/presentation`.
+
+*Edited while building: presentation may not import content, so the frame list reaches the bake the way the tuning table reaches the world: the composition root hands `atlasFrames` to a `ShapeAtlas` on the scene context, and the list is typed in `domain/definitions/` as a name, a baked size, and a shape kind the painter resolves, so every frame in the list is drawn by construction. The wedge frames are `wedge_1` to `wedge_64`, since a frame covering 0/64 would be an empty frame and the acceptance says every frame is visible. `downloadAtlas` went onto `DevApi` now rather than in sprint 06, because the PNG acceptance could not be checked without it. The repository-root helper behind the tests barrel resolved a `URL` against `import.meta.url`, which the jsdom tier rewrites onto the page origin; it now resolves a path, which the first presentation spec needed.*
 
 ---
 
@@ -150,7 +152,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | |
 | Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | |
 | Milestone M1 | |
-| Actual days per ticket | T01 0.5 · T02 2 · T03 · T04 · T05 0.5 |
+| Actual days per ticket | T01 0.5 · T02 2 · T03 1 · T04 · T05 0.5 |
 
 ## Risks in this sprint
 

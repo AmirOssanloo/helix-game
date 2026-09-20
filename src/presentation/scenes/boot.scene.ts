@@ -20,9 +20,9 @@ const BANNER_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
 const BANNER_TOP = 24;
 
 /**
- * Checks the renderer and starts the other two scenes. The banner it shows under Canvas is
- * the one static `Text` in the game, so this scene stays alive on top of the others to keep
- * it on screen.
+ * Bakes the atlas, checks the renderer, and starts the other two scenes. The banner it shows
+ * under Canvas is the one static `Text` in the game, so this scene stays alive on top of the
+ * others to keep it on screen.
  */
 export class BootScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -33,6 +33,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.context.atlas.bake(this);
+
     const isWebgl = this.sys.game.renderer.type === Phaser.WEBGL;
 
     this.context.report(isWebgl ? "renderer WebGL" : "renderer Canvas");

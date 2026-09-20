@@ -1,10 +1,16 @@
 import { type Dirent, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** The repository root, absolute, so a rule resolves its paths from one place whatever the working directory is. */
-export const REPOSITORY_ROOT = fileURLToPath(
-  new URL("../../..", import.meta.url),
+/**
+ * The repository root, absolute, so a rule resolves its paths from one place whatever the
+ * working directory is. Resolved as a path, not a URL: under jsdom a relative `URL` against
+ * `import.meta.url` comes back on the page's origin, and this file is behind the barrel every
+ * tier imports.
+ */
+export const REPOSITORY_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../..",
 );
 
 /** The eight layer folders live here. */
