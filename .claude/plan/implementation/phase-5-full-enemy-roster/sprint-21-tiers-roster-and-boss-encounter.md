@@ -87,7 +87,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Depends on | T02, T03 |
 | Status | planned |
 
-**Build:** One boss definition with a bash, a slam, adds, and a charge, spawned from the panel at boss tier among grunts, the boss and its adds counting inside the live cap decided in phase 4 because the cap is the pool's capacity and they are enemies (Q9); a stress test variant with the boss and its adds; readouts recorded in Chrome; a recorded and replayed encounter.
+**Build:** One boss definition with a bash, a slam, adds, and a charge, spawned from the panel at boss tier among grunts, the boss and its adds counting inside `ENEMY_LIVE_CAP`, the constant inside the unit pool's capacity, at the number phase 4 decided, because they are enemies (Q9); a stress test variant with the boss and its adds; readouts recorded in Chrome; a recorded and replayed encounter.
 
 **Acceptance:**
 - Every row of the bar holds during the encounter; the replay matches.

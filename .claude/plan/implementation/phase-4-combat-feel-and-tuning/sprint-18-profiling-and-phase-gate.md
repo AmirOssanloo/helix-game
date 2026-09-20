@@ -64,10 +64,10 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 | Depends on | T02 |
 | Status | planned |
 
-**Build:** Walk every row of the [phase 4 gate](../04-phase-exit-gates.md#phase-4-gate): the designer retune demonstration with three random keys, the bench, the stress test, replay, hot reload, version refusal. Write the headroom table into the phase README. Docs sync: feature pages against what shipped, where-to-look pointers run, the tuning key format written into the developer panel page and the content-and-registries page. Replay tests for gate bugs. Exit record and sized-versus-actual.
+**Build:** Walk every row of the [phase 4 gate](../04-phase-exit-gates.md#phase-4-gate): the designer retune demonstration with three random keys, the bench, the stress test, replay, hot reload, version refusal. Write the headroom table into the phase README, with a second simulation-tick row at 100 enemies so the per-enemy slope is known (Q9). Docs sync: feature pages against what shipped, where-to-look pointers run, the tuning key format written into the developer panel page and the content-and-registries page. Replay tests for gate bugs. Exit record and sized-versus-actual.
 
 **Acceptance:**
-- Every gate row holds with evidence; the headroom table has a margin for every row and none is negative.
+- Every gate row holds with evidence; the headroom table has a margin for every row and none is negative, and its tick row is measured at 200 and at 100 enemies.
 
 **Tests:** any replay test from a gate bug.
 
@@ -84,7 +84,7 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 | Depends on | T03 |
 | Status | planned |
 
-**Build:** Read [Deferred](../backlog/deferred.md) and [Open questions](../backlog/open-questions.md); close what phase 4 answered; draft the disable matrix's row and column headings and the enemy catalogue's phase 5 section headings so sprint 19 starts on content, not on structure. Confirm the phase 5 sprints against the headroom table: if the margin on the tick is under 1 ms, the boss encounter's live cap is planned lower and the ticket says so.
+**Build:** Read [Deferred](../backlog/deferred.md) and [Open questions](../backlog/open-questions.md); close what phase 4 answered; draft the disable matrix's row and column headings and the enemy catalogue's phase 5 section headings so sprint 19 starts on content, not on structure. Confirm the phase 5 sprints against the headroom table: if the margin on the worst browser's max tick is under 1 ms, `ENEMY_LIVE_CAP` is planned at the largest multiple of ten whose projected max tick, from the slope between the 100 and 200 rows, leaves 1 ms, and the ticket says so (Q9).
 
 **Acceptance:**
 - Both backlog pages are current; the phase 5 README has the headroom-adjusted cap written in.
