@@ -25,7 +25,7 @@ touch src/content/enemies/frost-archer.def.ts
 ```typescript
 import type { EnemyDef } from '@domain/public'
 
-export const frostArcher: EnemyDef = {
+export const frostArcherDef = {
   id: 'frost_archer',
   name: 'Frost Archer',
   tier: 'normal',                       // 'normal' | 'elite' | 'boss'
@@ -42,8 +42,8 @@ export const frostArcher: EnemyDef = {
     damageType: 'physical',
     range: 550,
     projectileSpeed: 900,
-    attackPointTicks: 12,
-    baseAttackTicks: 51,
+    attack_point_seconds: 0.4,          // Before the arrow leaves; converted to ticks at load
+    base_attack_seconds: 1.7,           // One attack per this many seconds; converted to ticks at load
   },
   aggroRadius: 800,
   leashRadius: 1400,
@@ -52,7 +52,7 @@ export const frostArcher: EnemyDef = {
   abilities: ['frost_volley'],          // Keys of definitions under src/content/abilities/
   atlasFrame: 'square',
   tint: 0x99ddff,
-}
+} as const satisfies EnemyDef
 ```
 
 Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` selects the outline frame the view adds and nothing else; an elite is stronger because its numbers are, not because it is elite.
@@ -61,7 +61,7 @@ Every field is required. A missing one is a validation failure, not a default, s
 
 ## 3. Add the behaviour, if the existing ones do not fit
 
-Behaviours live under `src/domain/ai/behaviours/`, one per file, and drive the enemy's state machine — Idle, Aggro, Chase, Attack, Return, Dead. `melee-chaser`, `ranged-holder`, and `stationary` exist. A ranged enemy that backs away when the hero closes is new:
+Behaviours live under `src/domain/ai/behaviours/`, one per file, and drive the enemy's state machine — Idle, Aggro, Chase, Attack, Return, Dead. `melee_chaser`, `ranged_holder`, and `stationary` exist. A ranged enemy that backs away when the hero closes is new:
 
 ```bash
 touch src/domain/ai/behaviours/ranged-kiter.behaviour.ts
@@ -80,7 +80,7 @@ Register the key in `src/domain/ai/behaviours/index.ts`. A behaviour reads the s
 
 ## 4. Add its abilities
 
-An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost-volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The behaviour decides when to cast it; the pipeline decides whether it may.
+An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The behaviour decides when to cast it; the pipeline decides whether it may.
 
 ---
 
@@ -88,7 +88,7 @@ An enemy ability is an ability definition, exactly the shape a hero spell has, u
 
 ```typescript
 // src/content/enemies/index.ts
-export const enemies = [meleeGrunt, fastRunner, rangedArcher, tank, trainingDummy, frostArcher]
+export const enemies = [meleeGruntDef, fastRunnerDef, rangedArcherDef, tankDef, trainingDummyDef, frostArcherDef]
 ```
 
 ---
@@ -99,7 +99,7 @@ export const enemies = [meleeGrunt, fastRunner, rangedArcher, tank, trainingDumm
 pnpm test tests/content/
 ```
 
-You should see `frost-archer` validate, `ranged-kiter` resolve, `frost-volley` resolve, and `square` found in the atlas. A wrong key fails here with the key named.
+You should see `frost_archer` validate, `ranged_kiter` resolve, `frost_volley` resolve, and `square` found in the atlas. A wrong key fails here with the key named.
 
 ---
 
@@ -113,7 +113,7 @@ Build a world with the hero at the centre and a pack of three Frost Archers just
 
 - **Aggro on sight.** Move the hero inside the radius. All three leave Idle within one tick; the pack shares aggro, so the two that could not see the hero aggro with the one that did.
 - **Aggro on damage.** Reset. Hit one from outside the radius. The whole pack aggros.
-- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on `baseAttackTicks` cadence; the first projectile leaves after `attackPointTicks`.
+- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on the `base_attack_seconds` cadence; the first projectile leaves after `attack_point_seconds`. Both are ticks by then, converted at load.
 - **Kiting.** Walk the hero into melee. Each backs away along a path and keeps firing.
 - **Leash.** Walk the hero past `leashRadius`. They enter Return, walk to their spawn point, and regenerate.
 - **Death and experience.** Kill one. It enters Dead, its view unbinds, the hero gains `experience`, and its pool slot is released.
@@ -132,7 +132,7 @@ Every enemy gets these six; an ability adds one test per effect, as for a spell.
 pnpm dev
 ```
 
-The **Enemies** dropdown reads the registry, so `frost-archer` is already in it. Set **Group size** to 5, click **Spawn at click**, click the far side of the arena. Five light-blue squares appear. Toggle **Attack and aggro ranges** and **Unit state labels**, then walk in: the labels flip from `idle` to `chase`, they stop at range, arrows leave them, and a slow icon appears above the hero when a volley lands. Toggle **Path lines** to watch them kite. Walk away past the leash and watch them return.
+The **Enemies** dropdown reads the registry, so `frost_archer` is already in it. Set **Group size** to 5, click **Spawn at click**, click the far side of the arena. Five light-blue squares appear. Toggle **Attack and aggro ranges** and **Unit state labels**, then walk in: the labels flip from `idle` to `chase`, they stop at range, arrows leave them, and a slow icon appears above the hero when a volley lands. Toggle **Path lines** to watch them kite. Walk away past the leash and watch them return.
 
 If the tick readout climbs with five on screen, something in the behaviour is re-pathing every tick; the re-path budget lives in `src/domain/pathing/`.
 

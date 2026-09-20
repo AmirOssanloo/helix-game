@@ -157,7 +157,9 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | Layer | tooling, docs |
 | Size | 0.5 |
 | Depends on | T03, T04 |
-| Status | planned |
+| Status | done |
+
+*Done on 2026-09-20. The hook is husky with lint-staged: `pnpm install` runs `prepare`, which points `core.hooksPath` at `.husky/_`, and `.husky/pre-commit` runs `lint-staged` (ESLint, which carries Prettier, on the staged `.js` and `.ts` files) and then `pnpm typecheck` over the whole project, because tsc has no per-file mode worth having. Prettier is not run on Markdown or JSON in the hook: the documentation is hand-formatted and 128 files fail `prettier --check`. Probe: a staged `any` was refused with the rule named and HEAD unchanged. CI is one job on `ubuntu-latest`, pnpm read from the `packageManager` field, Node from `.nvmrc`, `HUSKY=0` so install registers no hook there, actions pinned by major tag, and a newer push cancelling the run it supersedes. Beyond the three pages named, `docs/architecture/content-and-registries.md` carried the same kebab-case ids and the annotated shape in its two examples, so it was reconciled in the same change. The examples keep camelCase for fields the ticket did not name (`atlasFrame`, `onHit`) because the content standard's own example does; Q18 asks which case a definition field takes. CI green on the final commit needs the push, which is left to the maintainer.*
 
 **Build:** A commit hook that runs lint and typecheck on staged files. A CI workflow that runs `pnpm check:ci` on every push and pull request with Node from `.nvmrc`. Then three documentation fixes so the first definition file is written against one shape:
 - `docs/workflows/adding-a-spell.md`: the example definition uses seconds (`cast_point_seconds`, `cooldown_seconds`, `mana_cost`) not tick counts, snake_case ids and keys (`frost_lance`, `frost_lance_hit`), and the `as const satisfies SpellDef` shape from the content standard.
@@ -182,8 +184,8 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | `pnpm check` green on empty layers | Green on 2026-09-20: lint, typecheck, build, then 154 tests over five projects in under a second; `check:ci` green with the coverage report and both floors |
 | Lint rule branch checks recorded, one row per rule | 92 cases, all as expected, in the table below (2026-09-20) |
 | Architecture test catches a barrel re-export | Yes (2026-09-20). `export type { ViewSync } from "@presentation/public"` in `src/domain/public.ts` fails `src/domain/public.ts imports only the layers its row allows` and names the line. The same line under an `eslint-disable-next-line`, and in `src/domain/leak.mts`, passes `pnpm lint` and fails the same test. A dead link and a dead anchor planted in `docs/README.md` fail with file, line, and target named. A spec planted under `src/domain/` fails naming the file. Untested code planted in `src/domain/` fails `check:ci` at the 90% floor; `check` prints no coverage |
-| CI green | |
-| Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 0.5 · T04 0.5 · T05 |
+| CI green | Workflow at `.github/workflows/ci.yml` runs `pnpm check:ci` on every push and pull request; awaiting the first push (2026-09-20) |
+| Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 0.5 · T04 0.5 · T05 0.25 |
 
 ### Lint rule checks
 

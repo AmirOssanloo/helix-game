@@ -21,13 +21,13 @@ A definition is a typed constant, one per file, under `content/<kind>/`. Its typ
 
 ```typescript
 // content/spells/foo-bar.def.ts
-export const fooBarDef: SpellDef = {
-  id: 'foo-bar',
+export const fooBarDef = {
+  id: 'foo_bar',
   targeting: 'point',
-  effects: [{ kind: 'damage-area', /* … */ }, { kind: 'named', key: 'foo-bar-lift' }],
+  effects: [{ kind: 'damage-area', /* … */ }, { kind: 'named', key: 'foo_bar_lift' }],
   atlasFrame: 'disc',
   /* … */
-}
+} as const satisfies SpellDef
 ```
 
 Three things every definition holds:
@@ -86,7 +86,7 @@ The frame list in `content/atlas-frames.ts` is the one list both the boot-time b
 
 ### A definition that calls the domain
 
-`effects: [liftUnits]` instead of `effects: [{ kind: 'named', key: 'lift-units' }]`. The content test now needs the whole domain, validation can no longer check the key, and the layer table is broken by one import.
+`effects: [liftUnits]` instead of `effects: [{ kind: 'named', key: 'lift_units' }]`. The content test now needs the whole domain, validation can no longer check the key, and the layer table is broken by one import.
 
 ### A number in a system
 

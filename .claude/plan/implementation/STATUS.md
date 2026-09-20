@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [0 — Foundation](./phase-0-foundation/README.md) |
 | **Active sprint** | [00 — Repository and toolchain](./phase-0-foundation/sprint-00-repository-and-toolchain.md) |
-| **Next ticket** | P0-S00-T05 — Hooks, CI, and documentation reconciliation |
+| **Next ticket** | P0-S01-T01 — Shared helpers |
 | **In progress** | none |
-| **Last closed ticket** | P0-S00-T04 — Vitest tiers and the architecture test |
+| **Last closed ticket** | P0-S00-T05 — Hooks, CI, and documentation reconciliation |
 | **Last closed sprint** | none |
 | **Last milestone reached** | none. M0 is the toolchain gate at the end of sprint 01 |
 
@@ -20,7 +20,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 ## Blocked or waiting
 
-Nothing. The plan starts from a repository with documentation, agent configuration, and the plan itself discoverable from the root, and no source code.
+Sprint 00's exit waits on one row: CI green on its final commit, which needs that commit pushed. Nothing else blocks; sprint 01 can start.
 
 ---
 

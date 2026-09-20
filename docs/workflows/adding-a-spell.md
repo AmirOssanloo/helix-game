@@ -25,24 +25,24 @@ touch src/content/spells/frost-lance.def.ts
 ```typescript
 import type { SpellDef } from '@domain/public'
 
-export const frostLance: SpellDef = {
+export const frostLanceDef = {
   id: 'frost_lance',
   name: 'Frost Lance',
   recipe: ['quartz', 'quartz', 'whorl'],          // The orb multiset; order is ignored
-  targeting: 'point',                        // 'none' | 'unit' | 'point' | 'direction'
-  castPointTicks: 3,                         // Ticks before the effect fires; the hero must face the target first
-  cooldownTicks: [600, 540, 480, 420, 360, 300, 240],   // Indexed by orb level 1 to 7
-  manaCost:      [100, 110, 120, 130, 140, 150, 160],
+  targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
+  cast_point_seconds: 0.1,                        // Before the effect fires; the hero must face the target first
+  cooldown_seconds: [20, 18, 16, 14, 12, 10, 8],  // Indexed by orb level 1 to 7
+  mana_cost: [100, 110, 120, 130, 140, 150, 160],
   range: 1000,
   effects: [
     { kind: 'projectile', speed: 1200, radius: 40, onHit: 'frost_lance_hit' },
   ],
   atlasFrame: 'disc',
   tint: 0x66ccff,
-}
+} as const satisfies SpellDef
 ```
 
-`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; `onHit` names a domain effect by string key, so this file imports a type and nothing else. A cooldown or mana table shorter than seven entries fails validation.
+`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; `onHit` names a domain effect by string key, so this file imports a type and nothing else. Durations are seconds, converted to ticks once at load; a definition never holds a tick count. The id is snake_case and matches the file name. A cooldown or mana table shorter than seven entries fails validation.
 
 ---
 
@@ -85,7 +85,7 @@ Reload the page and click **Download atlas PNG** in the developer panel to confi
 
 ```typescript
 // src/content/spells/index.ts
-export const spells = [hoarfrost, /* … */, frostLance]
+export const spells = [hoarfrostDef, /* … */, frostLanceDef]
 ```
 
 The registry assembles this list at startup, validates every definition against the schema, and fails loudly on an unresolved key or a missing frame.
@@ -98,7 +98,7 @@ The registry assembles this list at startup, validates every definition against 
 pnpm test tests/content/
 ```
 
-You should see the schema test pass for `frost-lance`, the key test find `frost-lance-hit`, and the frame test find `disc`. A typo in the key fails here with the key named, before the world is ever created.
+You should see the schema test pass for `frost_lance`, the key test find `frost_lance_hit`, and the frame test find `disc`. A typo in the key fails here with the key named, before the world is ever created.
 
 ---
 
@@ -110,10 +110,10 @@ touch tests/simulation/spells/frost-lance.spec.ts
 
 Build a world with the hero, a training dummy at range, and the registry. Then, at orb level 1 and at orb level 7:
 
-- Press Q, Q, W, R. Slot D holds `frost-lance`. Mana dropped by the Invoke cost.
-- Press D and click a point. The hero turns until the bearing is inside the action cone, then a projectile spawns after `castPointTicks`.
+- Press Q, Q, W, R. Slot D holds `frost_lance`. Mana dropped by the Invoke cost.
+- Press D and click a point. The hero turns until the bearing is inside the action cone, then a projectile spawns once `cast_point_seconds` has elapsed, counted in ticks.
 - Tick until the projectile reaches the dummy. The dummy's health dropped by the magical damage after its magic resistance, and it carries the slow status for the stated duration.
-- Cooldown is `cooldownTicks[level - 1]` and counts down one per tick.
+- Cooldown is `cooldown_seconds[level - 1]` converted to ticks, and counts down one per tick.
 
 And the refusals:
 
@@ -133,7 +133,7 @@ pnpm test -t "frost-lance"
 pnpm dev
 ```
 
-In the developer panel: **Infinite mana** on, **No cooldowns** on, choose **training-dummy** in the Enemies dropdown and spawn one. Press Q Q W R, then D, click the dummy. You should see the projectile leave the hero, the dummy flash on hit, a damage number rise, and a slow icon above it. Toggle **Spell areas** to see the projectile's hit radius. Record the session and keep the input log if anything looks off; it becomes the bug report.
+In the developer panel: **Infinite mana** on, **No cooldowns** on, choose **training_dummy** in the Enemies dropdown and spawn one. Press Q Q W R, then D, click the dummy. You should see the projectile leave the hero, the dummy flash on hit, a damage number rise, and a slow icon above it. Toggle **Spell areas** to see the projectile's hit radius. Record the session and keep the input log if anything looks off; it becomes the bug report.
 
 ---
 

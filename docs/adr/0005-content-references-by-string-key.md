@@ -31,11 +31,11 @@ The content registry assembles every definition at startup, validates each again
 ```typescript
 // content names behaviour; the domain resolves it
 export const fooBarDef = {
-  id: 'foo-bar',
+  id: 'foo_bar',
   targeting: 'point',
   effects: [
     { kind: 'damage-area', radius: 300, amount: [100, 150, 200] },
-    { kind: 'named', key: 'foo-lift' },
+    { kind: 'named', key: 'foo_lift' },
   ],
 } as const
 ```
