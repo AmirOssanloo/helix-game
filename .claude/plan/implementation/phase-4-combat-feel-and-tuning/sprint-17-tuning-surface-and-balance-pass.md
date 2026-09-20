@@ -23,11 +23,12 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | Depends on | P2-S07-T02 |
 | Status | planned |
 
-**Build:** A tuning key format for definition fields: `def:<kind>:<id>:<field path>[:<index>]`, numeric fields only. At world creation the registry's converted numbers are copied into run scope's tuning state under those keys, and every system reads a definition number through the tuning state, never the registry, so a `set_tuning` command on a definition key changes the next cast or spawn. The panel generates a slider per key from the registry with the default beside it, grouped by kind and id, searchable. Non-numeric fields are out of scope. The tuning table's existing keys keep their format.
+**Build:** A tuning key format for definition fields: `def:<kind>:<id>:<field path>[:<index>]`, numeric fields only, the field path the property path verbatim with a dot per nesting level, the index the array index verbatim so `:2` is level 3 (Q5). The value in a `set_tuning` command and in the log is in the field's designer units, seconds or degrees as the definition writes them; the registry converts it exactly as it converts at load, once per command when the command is applied, so systems keep reading ticks and radians and the key names the source field. At world creation the registry's converted numbers are copied into run scope's tuning state under those keys, and every system reads a definition number through the tuning state, never the registry, so a `set_tuning` command on a definition key changes the next cast or spawn. The panel generates a slider per key from the registry with the default beside it in designer units, labelled "level n" for a table index, grouped by kind and id, searchable. Non-numeric fields are out of scope. The tuning table's existing keys keep their format.
 
 **Acceptance:**
 - Three keys picked at random (a hero stat, a spell table entry, an archetype stat) change on the next use from the panel and appear in the log.
 - A key that does not exist is a type error at the command, not a runtime miss.
+- A seconds field set to 2 from the panel reads as 60 ticks in the world and as 2 in the log.
 - The world's tuning state allocates once at creation.
 
 **Tests:**

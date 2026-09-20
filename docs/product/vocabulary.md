@@ -41,6 +41,7 @@ When two people call the same thing different names, the names leak into the cod
 | Physical, magical, or pure | **Damage type** | Element, school |
 | A lasting condition on a unit | **Status** | Buff, debuff, modifier, effect (see below) |
 | A status that blocks something: stun, silence, root, disarm | **Disable** | Crowd control, CC |
+| What a status does when its unit takes or deals damage, named by key on the definition | **Damage hook** | Trigger, proc, on-hit |
 | A short-lived visual thing with no rules of its own | **Effect** | Particle, VFX |
 | A spell's presence on the ground with rules: a wall, a meteor, a updraft | **Zone** | Area, field, hazard |
 | A moving thing that hits: an arrow, a bolt | **Projectile** | Missile, bullet |

@@ -23,12 +23,13 @@ Hoarfrost, Quicken, Zenith, Siphon, and Wane cast against the dummy with preview
 | Depends on | P2-S08-T01, P2-S09-T04 |
 | Status | planned |
 
-**Build:** `StatusDef` gains an `onDamage` key or null, resolved against a small registry under `domain/combat/hooks/` at registry build like an effect key. `applyDamage` runs the target's active statuses' hooks after mitigation, with a per-status internal cooldown stored on the table entry so a hook cannot fire every tick. Hoarfrost: unit-targeted, applies the `hoarfrost` status whose hook applies a short stun and bonus magical damage on each hit, with duration, stun length, bonus damage, and internal cooldown tables by Quartz level from the catalogue. Definition file, status file, tests at levels 1 and 7.
+**Build:** `StatusDef` gains `onDamageTaken` and `onDamageDealt` hook keys, each a key or null, resolved against a registry under `domain/combat/hooks/` at registry build like an effect key: one file per hook, the file name is the key, and `docs/architecture/where-to-look.md` gains the row. `applyDamage` runs the target's `onDamageTaken` hooks and the source's `onDamageDealt` hooks after mitigation, once per damage instance; damage caused by a hook runs no hooks, so a hook cannot trigger itself or ping-pong with another. The internal cooldown is a ready-at tick on the status table entry, its length a table on the definition, so a hook cannot fire every tick and the state replays. Only `onDamageTaken` has a consumer this sprint; the dealt side is exercised by the stun bash in phase 5. Hoarfrost: unit-targeted, applies the `hoarfrost` status whose hook applies a short stun and bonus magical damage on each hit, with duration, stun length, bonus damage, and internal cooldown tables by Quartz level from the catalogue. Definition file, status file, tests at levels 1 and 7.
 
 **Acceptance:**
 - A dummy under Hoarfrost hit three times inside the internal cooldown is stunned once and takes one bonus hit; three hits spaced past it stun three times.
 - Hoarfrost on a lifted unit keeps counting (asserted in sprint 11 with Updraft; here with `apply_status('lift')`).
-- The hook fires for the stun bash in phase 5 with no change to `applyDamage` (a design note in the code, tested then).
+- A hook whose damage would trigger another hook does not: Hoarfrost's bonus damage on a unit under Hoarfrost fires no second hook.
+- The dealt side fires for the stun bash in phase 5 with no change to `applyDamage`; here a fixture status with an `onDamageDealt` hook proves the path.
 
 **Tests:**
 - `tests/domain/combat/on-damage-hook.spec.ts`.

@@ -16,7 +16,7 @@ Strict matters more here than in most projects: entity ids are generational numb
 
 ## Engine
 
-**Phaser 4.2.1, built-in WebGL renderer, imported only under `src/presentation/`.**
+**Phaser 4.2.1, built-in WebGL renderer, used under `src/presentation/` and imported under `src/app/` only to construct the game.**
 
 Phaser draws and reads input. It does not simulate anything. The `physics` key is absent from the game config, so no Arcade or Matter world exists; positions, velocities, facings, and radii live in the domain, and a sprite is written every frame and never read back. [ADR 0002](../adr/0002-custom-fixed-step-simulation.md) says why.
 
@@ -75,7 +75,7 @@ Prettier runs on save and in the commit hook. Nobody argues about formatting in 
 
 ## Profiling
 
-**The browser's performance panel is the profiler.** Chrome's is the reference. Record 30 seconds, read frame time, scripting time, and heap. Draw calls come from the readouts in the developer panel, which reads Phaser's renderer counters.
+**The browser's performance panel is the profiler.** Chrome's is the reference. Record 30 seconds, read frame time, scripting time, and heap. Draw calls come from the readouts in the developer panel, which counts calls to the renderer's two public draw methods between its pre-render and post-render events; Phaser keeps no counter of its own.
 
 Nothing else is installed for this. The instrumentation layer keeps preallocated rings of tick and render samples and the panel shows them live, so most questions are answered without opening the profiler at all.
 

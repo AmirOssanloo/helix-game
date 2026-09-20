@@ -23,7 +23,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Depends on | P1-S04-T04 |
 | Status | planned |
 
-**Build:** `DebugCommand` variants and their handling system: `apply_damage` (amount, type; mitigation is a pass-through until sprint 07), `drain_mana`, `heal`, `restore_mana`, `level_up`, `set_orb_levels`, `toggle_infinite_mana`, `toggle_no_cooldowns`, `kill_hero`, `spawn_units` (a generic unit definition, count, position, for the stress test), `clear_units`, `reset_map`, `begin_channel` (puts the hero into `channeling` for N ticks; the only way to channel until an ability does), `set_disable_flag` (sets one flag on the hero for a duration so the validator's disable branches are testable before statuses exist). Pause, single-step, and the catch-up cap are driver operations exposed through `DevApi`, not commands, because the world never knows about them. Hero death: health at zero enters a death state that clears the order, closes nothing (the cursor is presentation), keeps clocks counting, ignores input; after a tunable delay the hero respawns at the spawn point with full resources, every clock cleared including the hidden map, orbs and slots kept. Every variant validated with a reason on refusal.
+**Build:** `DebugCommand` variants and their handling system: `apply_damage` (amount, type; mitigation is a pass-through until sprint 07), `drain_mana`, `heal`, `restore_mana`, `level_up`, `set_orb_levels`, `toggle_infinite_mana`, `toggle_no_cooldowns`, `kill_hero`, `spawn_units` (a generic unit definition, count, position, for the stress test), `clear_units`, `reset_map`, `begin_channel` (enters `channeling` for N ticks through the order state machine, not by writing the state field, so the abort path AT-O4 tests is the real one; the only way to channel until an ability does, and kept afterwards as the cheapest way to reach the state in a test), `set_disable_flag` (sets one flag on the hero for a duration so the validator's disable branches are testable before statuses exist). Pause, single-step, and the catch-up cap are driver operations exposed through `DevApi`, not commands: they never change world state, and a replay runs with no driver (Q12). Hero death: health at zero enters a death state that clears the order, closes nothing (the cursor is presentation), keeps clocks counting, ignores input; after a tunable delay the hero respawns at the spawn point with full resources, every clock cleared including the hidden map, orbs and slots kept. Every variant validated with a reason on refusal.
 
 **Acceptance:**
 - Each variant changes the world as its name says and is in the input log.
@@ -45,22 +45,24 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 
 | Field | Value |
 | --- | --- |
-| Layer | devtools, presentation, tests |
+| Layer | devtools, presentation, instrumentation, tests |
 | Size | 1.5 |
 | Depends on | T01, P1-S05-T02 |
 | Status | planned |
 
-**Build:** `window.DevApi` in development with `submit`, `view`, `rings`, `driver` (pause, step, catch-up cap, seed), `saveInputLog`, `loadInputLog`, `downloadAtlas`. The panel as plain DOM in the `<aside>`, importing nothing from Phaser: the Hero group with every control on the developer panel page that exists in phase 1; the Tuning group with one slider per tunable in the tuning table, its default beside it, each change a `set_tuning` command; the Simulation group (pause, step, catch-up cap, seed, save, load, reset map); a Units group with the generic spawn for now (the archetype dropdown arrives with archetypes); the Overlays group with toggles for collision discs, bound radii, facing and action cone, path lines, walkability grid, spatial hash cells with counts; the Readouts group computing mean and max over the last second from the rings for tick time, render time, frame rate, live counts, pool misses, event overwrites, and draw calls (a spike: read Phaser 4's renderer counters if reachable, else display "unavailable" and note it in the exit); the Atlas group with the download button. Overlays drawn by `PlayScene` from a dedicated quad pool at depth 90 with `BitmapText` labels, binding no quads when off. Panel layout, overlay toggles, and last spawn settings in `localStorage`; nothing about the game.
+**Build:** `window.DevApi` in development with `submit`, `view`, `rings`, `driver` (pause, step, catch-up cap, seed), `saveInputLog`, `loadInputLog`, `downloadAtlas`. The panel as plain DOM in the `<aside>`, importing nothing from Phaser: the Hero group with every control on the developer panel page that exists in phase 1; the Tuning group with one slider per tunable in the tuning table, its default beside it, each change a `set_tuning` command; the Simulation group (pause, step, catch-up cap, seed, save, load, reset map); a Units group with the generic spawn for now (the archetype dropdown arrives with archetypes); the Overlays group with toggles for collision discs, bound radii, facing and action cone, path lines, walkability grid, spatial hash cells with counts; the Readouts group computing mean and max over the last second from the rings for tick time, render time, frame rate, live counts, pool misses, event overwrites, and draw calls; the Atlas group with the download button. The draw-call ring (Q4): a module under `src/presentation/` wraps `drawElements` and `drawInstancedArrays` on the renderer instance at boot, both public Phaser 4 methods that every batch handler, the filter pass, and the GPU tile layer draw through; it resets the count on the renderer's pre-render event, attributes it per scene on the render event, and writes the frame total and the `PlayScene` share to the ring on post-render, so the world figure excludes the HUD. Under the Canvas renderer the readout shows a dash. Overlays drawn by `PlayScene` from a dedicated quad pool at depth 90 with `BitmapText` labels, binding no quads when off. Panel layout, overlay toggles, and last spawn settings in `localStorage`; nothing about the game.
 
 **Acceptance:**
 - Every control submits a command that appears in the log; no control touches world state directly (the import list proves it).
 - The readouts update a few times per second and stop when the panel is closed while the rings keep sampling.
 - Each overlay draws the right thing and binds nothing when off; draw calls do not rise when an overlay is on.
+- The draw-call readout matches the browser's WebGL inspector on one frame of the bench scene, recorded in the exit.
 - A production build contains no panel and no `DevApi`.
 
 **Tests:**
 - `tests/simulation/dev-api.spec.ts` — each panel operation becomes the right command and lands in the log.
 - `tests/presentation/overlays.spec.ts` — a toggled-off overlay binds nothing.
+- `tests/presentation/draw-call-counter.spec.ts` — with the Phaser stub, three draw method calls between pre-render and post-render write 3 to the ring, and a scene's share is attributed by the render event.
 
 **Definition of done:** Every change · A developer-panel control · Anything under `src/presentation`.
 
@@ -116,11 +118,10 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Check | Result |
 | --- | --- |
 | Phase 1 gate rows, each with evidence | |
-| Draw-call readout available or "unavailable" recorded | |
+| Draw-call readout agrees with the WebGL inspector on one bench frame | |
 | Milestone M2 | |
 | Actual days per ticket | T01 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 
 - **R2 lives here.** If the stress test fails with a flat heap, profile before touching the object layout. If it is the layout, stop and schedule the typed-array rewrite before phase 2; do not start the pipeline on a tick that is already over budget.
-- **R10.** The draw-call readout may need renderer internals. Time-box the spike to two hours.

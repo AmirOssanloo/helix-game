@@ -74,6 +74,8 @@ const world = createWorld({ seed, registry, /* … */ })
 
 Every number design may retune is a tunable: the hero's body values, the turn rate, pool activation radii, and every definition number. Tunables live in the tuning table under `content/`, with a default beside each. At world creation the table is copied into run scope, and a system reads tunables through the world, never through the content module. A tuning change is a command, so it lands in the input log and replays. [Commands and events](./commands-and-events.md) has the mechanism.
 
+A tuning command carries its value in the designer's units, the same seconds or degrees the definition file writes, and the registry converts it exactly as it converts at load, once, when the command is applied. The panel shows designer units, the log records designer units, and a system still reads ticks and radians. A definition field's tuning key names the field by its property path verbatim, so a stale key fails to compile; [Coding standards](../standards/coding.md) has the key shape.
+
 ---
 
 ## Atlas frames
@@ -114,6 +116,7 @@ A system writing a stack count back into the status definition. The next unit th
 | The domain and content | The domain never imports content; the world receives the registry at creation |
 | A number in a system | Never a literal; a tunable or a definition field |
 | Tunables | The tuning table under `content/`, copied into run scope, read through the world, changed by command |
+| A tuning value in a command | Designer units, converted once by the registry when the command is applied; systems read ticks and radians |
 | Atlas frames | One list in `content/atlas-frames.ts`, read by the bake and the views |
 | Mutating a definition | Never; state lives on the entity |
 

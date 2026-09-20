@@ -31,7 +31,7 @@ The people who feel this are the engineer who wants to test a rule in a millisec
 | `simulation` | Orchestrates. The world, the tick, the system order | `domain`, `shared` |
 | `content` | Typed data. One file per definition | `domain` types, `shared` |
 | `instrumentation` | Preallocated sample rings | `shared` |
-| `presentation` | Adapts. The only place Phaser is imported | `simulation/public`, `domain/public`, `shared`, Phaser |
+| `presentation` | Adapts. Where Phaser is used | `simulation/public`, `domain/public`, `shared`, Phaser |
 | `devtools` | The developer panel and its API | `simulation/public`, `domain/public`, `instrumentation`, `shared` |
 | `app` | Composition root | everything |
 

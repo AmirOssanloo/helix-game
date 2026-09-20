@@ -15,7 +15,7 @@ Every gate includes the bar. It is repeated once here so no gate can forget a ro
 | Frame rate | 60 fps stable on the reference laptop in Chrome, Firefox, Safari, Edge | Panel readout screenshot per browser, 30 seconds at the phase's live cap |
 | Simulation tick | Under 4 ms worst case at the phase's live cap | Panel tick max readout; stress test green in CI |
 | Presentation sync | Under 1 ms | Panel sync readout |
-| Phaser render | Under 6 ms, under 5 world draw calls | Panel render and draw-call readouts, or WebGL inspector if the readout is unavailable |
+| Phaser render | Under 6 ms, under 5 world draw calls | Panel render and draw-call readouts; the draw-call readout checked against the WebGL inspector on one frame |
 | Allocations | Zero in tick and sync after warm-up; pool misses zero; heap flat | Panel pool-miss and heap readouts; 30-second allocation sampler recording |
 | Determinism | Same seed and input log give the same state | `pnpm test -t "replay"` green; one session recorded during the gate replays identically |
 | Tests in Node | Domain, simulation, content, architecture tiers green with no canvas | `pnpm check:ci` green |

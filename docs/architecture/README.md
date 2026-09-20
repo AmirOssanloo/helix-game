@@ -40,7 +40,7 @@ src/
 ├── simulation/       # Orchestrates. The world, the tick, the system order
 ├── content/          # Typed data: every spell, enemy, status, and map
 ├── instrumentation/  # Preallocated sample rings for timing and counts
-├── presentation/     # Adapts. The only place Phaser is imported
+├── presentation/     # Adapts. Where Phaser is used
 ├── devtools/         # The developer panel and its API
 └── app/              # The composition root and the fixed-step driver
 ```

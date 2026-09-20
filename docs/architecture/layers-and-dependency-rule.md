@@ -16,9 +16,9 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 | `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, and `public.ts` |
 | `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry that assembles and validates them |
 | `instrumentation/` | Measures | Preallocated sample rings: tick time, render time, live counts, pool misses, frame rate |
-| `presentation/` | **Adapts.** The only place Phaser is imported | Scenes, the shape atlas, pooled views, input mapping, camera, HUD, debug overlays |
+| `presentation/` | **Adapts.** Where Phaser is used | Scenes, the shape atlas, pooled views, input mapping, camera, HUD, debug overlays |
 | `devtools/` | The developer panel | The HTML panel and `DevApi` |
-| `app/` | Composition root | The Phaser game config, the fixed-step driver, the wiring |
+| `app/` | Composition root | The Phaser game config, the game construction, the fixed-step driver, the wiring |
 
 The domain never imports content. The simulation receives the content registry when a world is created, so a test can hand it three definitions instead of three hundred. Content imports domain **types** only, never domain functions, and points at named effects and behaviours by string key.
 
@@ -42,7 +42,7 @@ Imports run one way. The lint configuration states this as an allow-list, and a 
 Three things follow from the table:
 
 - **`domain` and `simulation` import no Phaser, no DOM, no `window`, and no clock.** They run in Node. Lint also bans `Math.random`, `Date.now`, and `performance.now` under both, so a tick is a function of its inputs. [Simulation coding standards](../standards/simulation-coding.md#quick-reference) hold the detail.
-- **`presentation` is the only layer that may import Phaser.** A Phaser type appearing anywhere else is a build failure.
+- **`presentation` is where Phaser is used, and `app` may import it only to construct the game.** The composition root builds the game config, creates the game, and hands it the scenes; it never builds a view, reads a game object, or draws. A Phaser type appearing in any other layer is a build failure.
 - **The wall clock lives in `app/`.** The fixed-step driver feeds Phaser's frame delta into an accumulator and calls `tick` with a constant step. Time inside the domain is a tick count.
 
 ---
@@ -117,7 +117,7 @@ A spell definition importing an effect function and calling it. The registry can
 | `presentation` may import | `simulation/public`, `domain/public`, `shared`, Phaser |
 | `devtools` may import | `simulation/public`, `domain/public`, `instrumentation`, `shared` |
 | `app` may import | Everything. It is the one place that knows concrete wiring |
-| Phaser | Imported in `presentation` only |
+| Phaser | Used in `presentation`; imported in `app` only to construct the game; a build failure anywhere else |
 | Clock, DOM, `window` | Never in `domain` or `simulation` |
 | `Math.random`, `Date.now`, `performance.now` | Banned by lint under `domain` and `simulation` |
 | Time in the domain | A tick count |

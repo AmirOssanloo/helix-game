@@ -79,6 +79,12 @@ Each ability id has its own cooldown clock on the caster, in ticks. There is no 
 - **Death** is resolved by its own system at the end of the tick, so two effects that kill the same unit in one tick produce one death event.
 - **A status** is an entry in the target's status table referencing a status definition. The definition's stack rule decides what a second application does: **refresh** resets the end tick, **stack** adds a stack and resets, **ignore** does nothing while one is active.
 - **Disables** are statuses that block: stun blocks every command, silence blocks every ability, root blocks movement, disarm blocks attacks. The status system computes disable flags early in the tick; the validator reads them.
+- **A damage hook** is a status definition's answer to "when this unit takes or deals damage, do X". The definition names a damage-taken hook, a damage-dealt hook, or neither, by string key, resolved from `domain/combat/hooks/` at registry build exactly as an effect key is. The damage function runs the target's taken hooks and the source's dealt hooks once per damage instance, after mitigation. Damage caused by a hook runs no hooks, so a hook can neither trigger itself nor ping-pong with another. Each hook has an internal cooldown: its length on the definition, its ready-at tick on the status table entry, so the state replays and nothing allocates.
+
+```typescript
+// domain/combat/hooks/foo-bar.hook.ts — key 'foo-bar'
+export const fooBarHook = (world: World, entry: StatusEntry, damage: DamageInstance): void => { /* … */ }
+```
 
 ---
 
@@ -94,7 +100,7 @@ Keeping them apart is what lets an enemy, and later an item, cast without owning
 
 ## Summons
 
-A summon is a unit like any other: it lives in the unit pool, moves, collides, takes statuses, and dies through the same systems. What makes it a summon is an owner id and a lifetime in ticks. Its behaviour key drives it; the hero does not order it. When the owner dies, the summon keeps its lifetime.
+A summon is a unit like any other: it lives in the unit pool, moves, collides, takes statuses, and dies through the same systems. What makes it a summon is an owner id and a lifetime in ticks. Its behaviour key drives it; the hero does not order it. When the owner dies, the summon expires on the same tick, in the death system's pass, as an expiry that grants no experience. The rule is the same for a hero's summon and an enemy's adds, so owner and dependants always resolve together.
 
 ---
 
@@ -136,9 +142,10 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Death | Resolved once per tick by its own system |
 | Status stacking | Refresh, stack, or ignore, decided by the status definition |
 | Disables | Stun blocks everything, silence blocks abilities, root blocks movement, disarm blocks attacks; flags computed early in the tick, read by the validator |
+| Damage hooks | A status definition names a damage-taken hook, a damage-dealt hook, or neither, by key from `domain/combat/hooks/`; run by the damage function after mitigation; hook damage runs no hooks; internal cooldown as a ready-at tick on the entry |
 | Invoke | `domain/invoke/`, beside the pipeline; produces the ability the slot key throws |
 | Kits | Invoke is one kit; a form definition names its kit by string key, resolved from a domain registry; a kit turns a slot index into an ability request |
-| A summon | A unit with an owner id and a lifetime, driven by its behaviour key |
+| A summon | A unit with an owner id and a lifetime, driven by its behaviour key; expires on the tick its owner dies, granting no experience |
 
 ---
 

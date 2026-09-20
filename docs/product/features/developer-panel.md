@@ -6,7 +6,7 @@
 
 An HTML panel beside the game canvas, present in development builds only, for anyone testing or tuning: spawn enemies, push the hero's numbers around, change any tunable, toggle overlays, and read the instrumentation. It is a tool, not a surface the player sees.
 
-Every action on the panel is a command that goes through the same door as a key press, so a session with the panel open replays exactly. There is no back door into the world. The rule is [ADR 0004](../../adr/0004-all-mutation-enters-as-commands.md).
+Every action on the panel that changes the world is a command that goes through the same door as a key press, so a session with the panel open replays exactly. There is no back door into the world. The rule is [ADR 0004](../../adr/0004-all-mutation-enters-as-commands.md). Pause, single-step, and the catch-up cap change nothing in the world; they only decide whether the next tick runs, so they are not commands and are not in the log.
 
 ## Controls
 
@@ -32,9 +32,9 @@ Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.m
 
 | Control | Does |
 | --- | --- |
-| Pause | Stops the clock; the picture stays |
-| Single-step | Runs exactly one tick while paused |
-| Catch-up cap | How many ticks one frame may run after a stall; default 3 |
+| Pause | Stops the clock; the picture stays. Not a command: nothing in the world changes and nothing is logged |
+| Single-step | Runs exactly one tick while paused. Not a command, for the same reason |
+| Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
 | Save input log | Downloads the session's seed and commands |
 | Load input log | Replays a saved log from the start |
 | Reset map | Reloads the current map; the hero keeps run scope |
@@ -56,7 +56,7 @@ Updated a few times per second, from preallocated sample rings.
 | Tick time | Mean and worst over the last second, against the 4 ms budget |
 | Render time | Mean and worst, against the 6 ms budget |
 | Frame rate | Current |
-| Draw calls | Per frame, against the budget of 5 for the world |
+| Draw calls | Per frame, the total and the world's share without the HUD, against the budget of 5 for the world. A dash under the Canvas renderer |
 | Live counts | Units, projectiles, zones, effects, views |
 | Pool misses | How many times a pool was asked for more than it holds |
 | Tick number | The simulation's clock |

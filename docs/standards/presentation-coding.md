@@ -9,7 +9,7 @@ How code under `src/presentation/` is written so that the world renders in a han
 
 ## The one layer with Phaser
 
-**`presentation/` is the only layer that imports Phaser.** Everything it draws is a view over the simulation's `Readonly` world view, read by reference during sync. It never writes world state: a click becomes a `Command`, and the simulation decides what it means. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) holds the argument.
+**`presentation/` is the layer that uses Phaser; the composition root imports it only to construct the game.** Everything the presentation draws is a view over the simulation's `Readonly` world view, read by reference during sync. It never writes world state: a click becomes a `Command`, and the simulation decides what it means. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) holds the argument.
 
 **Scene classes hold lifetime and composition, nothing else.** A scene creates pools at `create`, calls sync each frame, and releases at shutdown. A rule in a scene — "skip the facing marker when stunned" — is a rule the tests cannot see. The domain sets a flag; the view reads it.
 
@@ -99,7 +99,7 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 
 | Rule | Do |
 | --- | --- |
-| Phaser | Imported here and nowhere else |
+| Phaser | Used here; the composition root imports it only to construct the game |
 | World state | Read by reference through the `Readonly` view during sync; never written. Input becomes `Command`s |
 | Scenes | Lifetime and composition only. No rules |
 | Camera and input | The input mapper reads input; the camera consumes intents |

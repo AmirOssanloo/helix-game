@@ -24,7 +24,9 @@ The people who feel this are the designer whose tuning session cannot be reprodu
 
 **Nothing outside the simulation mutates world state. Every change enters as a command in one buffer, and the buffer is the input log.**
 
-Player input becomes `Command` variants — move, attack, stop, orb, invoke, throw — with a tick timestamp. Developer-panel operations become `DebugCommand` variants: spawn, kill, damage, drain, heal, level up, set orb level, toggle infinite mana, toggle no cooldowns, pause, single-step. A tuning change becomes a `SetTuning` command carrying the parameter key and the new value; tunables are world state, initialised from content and changed no other way. All of these land in the same buffer, in the same log, and are consumed at the start of the next tick.
+Player input becomes `Command` variants — move, attack, stop, orb, invoke, throw — with a tick timestamp. Developer-panel operations that change the world become `DebugCommand` variants: spawn, kill, damage, drain, heal, level up, set orb level, toggle infinite mana, toggle no cooldowns. A tuning change becomes a `SetTuning` command carrying the parameter key and the new value; tunables are world state, initialised from content and changed no other way. All of these land in the same buffer, in the same log, and are consumed at the start of the next tick.
+
+Pause, single-step, and the catch-up cap are not commands. They decide whether the driver calls `tick`, never what a tick does, so the world has no state for them to change and a replay, which feeds ticks with no driver, would have nothing to do with them in the log. They are operations on the driver, reached through `DevApi`, and the rule above is untouched by them because they cannot mutate anything.
 
 The command buffer is the only door. There is no exception for debugging, for tests, or for the presentation. The developer panel's power comes from the width of the `DebugCommand` union, not from a back door. Only reads are out of band: the presentation and the panel read the `Readonly` world view and the instrumentation rings, and neither can write through them.
 

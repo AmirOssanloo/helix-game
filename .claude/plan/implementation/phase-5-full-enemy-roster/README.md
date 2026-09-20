@@ -18,7 +18,7 @@ Abilities first, because the disable matrix tests the hero suffering every statu
 
 ## Live cap for the boss encounter
 
-Written in at the end of phase 4 from the headroom table: two hundred enemies plus one boss plus its adds, unless the tick margin is under 1 ms, in which case the encounter is planned at the number the margin supports and the ticket says so.
+Written in at the end of phase 4 from the headroom table, read on the measured max tick because the budget is a ceiling: two hundred enemies, the boss and its adds counted inside that number because the cap is the pool's capacity and they are enemies, unless the margin is under 1 ms, in which case the encounter is planned at the number the margin supports and the ticket says so. See [Open questions](../backlog/open-questions.md) Q9.
 
 | Decided cap | Recorded by |
 | --- | --- |

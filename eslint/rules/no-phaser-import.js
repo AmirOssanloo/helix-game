@@ -11,5 +11,5 @@
 export const NO_PHASER_IMPORT = {
   group: ["phaser", "phaser/**", "@phaser/**"],
   message:
-    "Phaser is imported under src/presentation/ and nowhere else. Read the world through @simulation/public and let a view draw it. See docs/architecture/layers-and-dependency-rule.md#the-dependency-rule.",
+    "Phaser is used under src/presentation/, and src/app/ imports it only to construct the game. Read the world through @simulation/public and let a view draw it. See docs/architecture/layers-and-dependency-rule.md#the-dependency-rule.",
 };

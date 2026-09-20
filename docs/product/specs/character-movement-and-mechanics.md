@@ -405,6 +405,8 @@ Recency is determined by Invoke order, not by which slot was last thrown. Throwi
 
 Until the spell catalogue lands, bind each multiset to a stub: `spell-qqq`, `spell-qqw`, `spell-qwe`, `spell-www`, `spell-wwe`, `spell-wee`, `spell-eee`, `spell-eeq`, `spell-eqq`, `spell-qww`. Each stub should log, flash a colour-coded glyph, and apply a harmless placeholder so QA can verify compose, shift, evict, and swap.
 
+> **Amendment 2026-09-20:** the names above are how QA refers to a multiset, not definition ids. An id never renames once shipped, and a rename would invalidate every replay recorded before it, so a stub definition carries the final id of the spell its recipe composes, `hoarfrost` for QQQ and so on, with a placeholder effect list until the catalogue fills it in. The recipe-to-name table is in [Spells and attack](../features/spells-and-attack.md).
+
 ---
 
 ## 12. Cooldown Pipeline

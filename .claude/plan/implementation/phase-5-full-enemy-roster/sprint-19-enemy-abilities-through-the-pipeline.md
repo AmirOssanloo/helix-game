@@ -46,7 +46,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Depends on | T01, P2-S10-T01 |
 | Status | planned |
 
-**Build:** `bash` as a status on the enemy whose on-damage hook (the caster's outgoing hit, so the hook gains an `onDealDamage` counterpart keyed the same way) applies a short stun to the hit unit with an internal cooldown; `frost_attack` likewise applying slow; `silence_curse` as a unit-targeted ability applying silence; `root_net` as a projectile applying root on hit. Each with tables, frames, and an icon.
+**Build:** `bash` as a status on the enemy whose `onDamageDealt` hook, the side sprint 10 built and left without a consumer, applies a short stun to the hit unit with an internal cooldown; `frost_attack` likewise applying slow; `silence_curse` as a unit-targeted ability applying silence; `root_net` as a projectile applying root on hit. Each with tables, frames, and an icon.
 
 **Acceptance:**
 - Each ability applies its status to the hero and the HUD greys what the status page says; the bash's internal cooldown holds.

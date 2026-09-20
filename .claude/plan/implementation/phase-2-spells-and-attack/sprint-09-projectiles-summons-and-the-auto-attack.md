@@ -43,22 +43,22 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 
 | Field | Value |
 | --- | --- |
-| Layer | domain, simulation, docs, tests |
+| Layer | domain, simulation, tests |
 | Size | 1 |
 | Depends on | T01 |
 | Status | planned |
 
-**Build:** The `spawn_unit` primitive acquires a unit from the unit pool with kind `summon`, the definition id of what it is (an enemy-shaped definition under `src/content/summons/`), an owner id, a lifetime in ticks, and a behaviour key. The AI module lands in phase 3; for now `domain/ai/` holds the behaviour registry with `stationary` and a `summon_follow` behaviour that idles beside its owner, moves when the owner is beyond a tunable distance, and auto-attacks the nearest enemy within its attack range using the attack code from T03. A summon expires on its lifetime or on the same tick its owner dies; it is a valid enemy target and cannot be selected or ordered. `docs/architecture/ability-pipeline.md` corrected: the summon section and the quick-reference row now say the summon expires when the owner dies, matching the product pages.
+**Build:** The `spawn_unit` primitive acquires a unit from the unit pool with kind `summon`, the definition id of what it is (an enemy-shaped definition under `src/content/summons/`), an owner id, a lifetime in ticks, and a behaviour key. The AI module lands in phase 3; for now `domain/ai/` holds the behaviour registry with `stationary` and a `summon_follow` behaviour that idles beside its owner, moves when the owner is beyond a tunable distance, and auto-attacks the nearest enemy within its attack range using the attack code from T03. A summon expires on its lifetime or on the same tick its owner dies, in the death system's pass as an expiry that grants no experience, so owner and dependants resolve together and an enemy's adds follow the same rule in phase 5. It is a valid enemy target and cannot be selected or ordered. The ability pipeline page already states the rule (Q1).
 
 **Acceptance:**
 - A summon lives for its lifetime, follows its owner, and attacks a dummy in range.
-- Owner death expires the summon on that tick.
+- Owner death expires the summon on that tick, with no experience granted for the expiry.
 - Hoarfrost on a summon works like on any unit (tested in sprint 10 with the real spell; here with `apply_status`).
 
 **Tests:**
 - `tests/simulation/summons/lifecycle.spec.ts`, `follow.spec.ts`.
 
-**Definition of done:** Every change · `src/domain` · A new command, event, or system · A documentation change.
+**Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
 ---
 

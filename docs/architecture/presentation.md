@@ -3,7 +3,7 @@
 > **Entry point:** [Architecture](./README.md)
 > **See also:** [Commands and events](./commands-and-events.md) · [Developer tools and instrumentation](./devtools-and-instrumentation.md) · [Presentation coding standards](../standards/presentation-coding.md)
 
-The one layer that imports Phaser: what it draws, how it draws it cheaply, and how it stays a view of the simulation rather than a second copy of it. Names containing `foo`, `bar`, or `baz` are placeholders — the [legend](../documentation-standards.md#reading-a-placeholder) decodes each to its real shape and folder.
+The layer that uses Phaser: what it draws, how it draws it cheaply, and how it stays a view of the simulation rather than a second copy of it. The composition root imports Phaser too, only to construct the game; [Layers and the dependency rule](./layers-and-dependency-rule.md#the-dependency-rule) draws that line. Names containing `foo`, `bar`, or `baz` are placeholders — the [legend](../documentation-standards.md#reading-a-placeholder) decodes each to its real shape and folder.
 
 ---
 
@@ -127,7 +127,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 
 | Rule | Do |
 | --- | --- |
-| Phaser | Imported here and nowhere else |
+| Phaser | Used here; the composition root imports it only to construct the game |
 | Scenes | `BootScene` bakes and checks; `PlayScene` syncs, cameras, inputs, and draws debug; `HudScene` runs in parallel with its own camera |
 | A scene | Composes; holds no rules and no entity state |
 | The atlas | One white texture baked at boot by `ShapeAtlas`; frame names from the content frame list |

@@ -52,7 +52,7 @@ Use the table in [docs/README.md](./docs/README.md#for-agents-what-to-load-for-a
 
 Each is owned by the page it links. The link is the rule; this list only says which ones bite most often.
 
-- **Imports run one way, and lint enforces it.** Phaser only under `src/presentation/`. No clock, DOM, or `Math.random` under `src/domain/` or `src/simulation/`. [Layers](./docs/architecture/layers-and-dependency-rule.md#quick-reference)
+- **Imports run one way, and lint enforces it.** Phaser under `src/presentation/`, and under `src/app/` only to construct the game. No clock, DOM, or `Math.random` under `src/domain/` or `src/simulation/`. [Layers](./docs/architecture/layers-and-dependency-rule.md#quick-reference)
 - **Time in the simulation is a tick count.** Seconds live in content and are converted once. [Simulation loop](./docs/architecture/simulation-loop.md#quick-reference)
 - **Every change to world state is a command.** The developer panel included. [ADR 0004](./docs/adr/0004-all-mutation-enters-as-commands.md)
 - **Content references effects and behaviours by string key.** Never by function. [ADR 0005](./docs/adr/0005-content-references-by-string-key.md)
