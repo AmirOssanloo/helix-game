@@ -29,6 +29,7 @@ A command is a plain value: a variant of one union, carrying the tick it applies
 - **Ability keys are edge-triggered.** A key held across several frames produces one command, on key-down. Key repeat never reaches the buffer.
 - **A pointer pick stores the world position at event time.** The mapper converts screen to world through the camera when the event arrives, not when the tick runs, so a camera move in the same frame cannot retarget the click.
 - **Every command carries a tick timestamp.** The mapper stamps it with the tick the command will apply to.
+- **A slot key names a slot, not a mechanic.** Q, W, E, R, D, F become one command variant carrying a slot index from 1 to 6. The active form's kit decides what that index means — an orb, the composer, a prepared spell, or a plain ability — so the mapper and the command union never know which kit the hero is wearing.
 
 **The developer panel** issues commands through `DevApi`. Player-shaped things — spawn, damage, heal — are `DebugCommand` variants. A tuning change is a `SetTuning` command. Both land in the same buffer as a right click and are recorded in the same input log. There is no second path into the world, and there is no method on the world that mutates state from outside a tick. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) says why.
 
@@ -92,6 +93,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Command producers | The input mapper and `DevApi`, into the same buffer |
 | Command shape | A plain value: one union variant, a tick timestamp, its payload |
 | Ability keys | Edge-triggered on key-down; key repeat never reaches the buffer |
+| Slot keys | One command variant carrying a slot index 1 to 6; the active kit resolves it, the mapper and the union never name a mechanic |
 | Pointer picks | World position resolved at event time, stored on the command |
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, then arrival order |
 | Validation | `domain/orders/` decides per tick from disable flags, cooldowns, and cost; refusals are dropped |

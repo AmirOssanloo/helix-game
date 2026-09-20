@@ -19,6 +19,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist | `src/content/maps/` — one file per map |
 | The hero's base values and per-level gains | `src/content/hero.ts` |
+| Which forms the hero has, and each form's body, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |

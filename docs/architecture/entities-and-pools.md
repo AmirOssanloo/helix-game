@@ -73,6 +73,8 @@ The world has two scopes, and every pool belongs to one.
 
 Nothing may assume the hero is recreated per map.
 
+**The hero is one unit with one id; a form is a record it points at.** Run scope holds one form record per form the design gives the hero: its definition, its health and mana, its kit state, and its armory. The unit itself holds what is continuous across a swap — position, facing, order, statuses, level, experience, item slots, and the cooldown clock map — plus the index of the active form. A swap changes that index and nothing else, so every enemy target, homing projectile, summon owner, and camera reference that names the hero's id stays valid. Systems read the hero's body and abilities through the active form each tick and never cache its definition.
+
 ---
 
 ## Dormant packs
@@ -115,6 +117,9 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Map scope | Enemies, summons, projectiles, zones, effects; released by `loadMap` |
 | `loadMap` | Resets map scope, rebuilds the grid and the spatial hash, leaves run scope alone |
 | The hero across maps | Never recreated |
+| The hero's forms | Run-scoped records: definition, resources, kit state, armory; the unit holds the active index |
+| A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |
+| The hero's definition | Read through the active form every tick; never cached across ticks |
 | Packs | Spawn data until the hero is within the activation radius; then units |
 
 ---

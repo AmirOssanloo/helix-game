@@ -32,7 +32,8 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 
 | Kind | Owned by | What it describes | Scope |
 | --- | --- | --- | --- |
-| Hero definition | `content/hero.ts`, typed in `domain/definitions` | The hero's body, base attributes, growth, and the ten spells it can invoke | Content |
+| Hero definition | `content/hero.ts`, typed in `domain/definitions` | The hero's forms, and what is shared across them | Content |
+| Form definition | `content/forms/`, typed in `domain/definitions` | One shape the hero can take: body, base attributes, growth, ability list, kit key, atlas frame | Content |
 | Spell definition | `content/spells/`, typed in `domain/definitions` | One of the ten hero spells: its orb recipe, targeting, timing, cost, and the effects it runs | Content |
 | Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
 | Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, tier, behaviour key, and the abilities it may cast | Content |
@@ -46,12 +47,12 @@ The tuning table is the one definition that becomes state: the world copies it a
 
 ## Relationships that matter
 
-- A unit references exactly one definition: the hero definition, or one enemy definition. A summon references the enemy definition of what it is, and carries the id of its owner.
+- A unit references exactly one definition at a time: the hero's active form definition, or one enemy definition. The hero's reference follows its active form and is read every tick, never cached. A summon references the enemy definition of what it is, and carries the id of its owner.
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it and the unit that cast it. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
 - A map definition holds spawn data, not units. Units exist only after a pack is activated, so a large map costs nothing until the hero approaches.
-- Run scope outlives map scope. Loading a map empties every map-scoped pool and leaves the hero, the tuning state, and the random source untouched.
+- Run scope outlives map scope. Loading a map empties every map-scoped pool and leaves the hero, its form records, the tuning state, and the random source untouched.
 
 ---
 

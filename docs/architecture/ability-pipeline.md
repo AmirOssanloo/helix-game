@@ -88,6 +88,8 @@ The hero's orb buffer, the composer, the two slots, and the hidden cooldown map 
 
 Keeping them apart is what lets an enemy, and later an item, cast without owning orbs.
 
+**Invoke is one kit.** A kit is the thing that turns a slot index into an ability request: the Invoke kit reads slots 1 to 3 as orb selection, 4 as the composer, and 5 and 6 as the prepared spells; a plain hotbar kit reads each slot as one entry of an ability list. A form definition names its kit by string key, resolved from a registry in the domain like an effect or a behaviour, so a form with a different kit is content plus one kit module, and the pipeline never learns which one is active.
+
 ---
 
 ## Summons
@@ -135,6 +137,7 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Status stacking | Refresh, stack, or ignore, decided by the status definition |
 | Disables | Stun blocks everything, silence blocks abilities, root blocks movement, disarm blocks attacks; flags computed early in the tick, read by the validator |
 | Invoke | `domain/invoke/`, beside the pipeline; produces the ability the slot key throws |
+| Kits | Invoke is one kit; a form definition names its kit by string key, resolved from a domain registry; a kit turns a slot index into an ability request |
 | A summon | A unit with an owner id and a lifetime, driven by its behaviour key |
 
 ---

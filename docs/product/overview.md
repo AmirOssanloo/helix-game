@@ -54,7 +54,7 @@ True top-down, orthographic. Through the first five phases the art is flat-colou
 
 - **Multiplayer**, in any form. No replication, no prediction layer, ever.
 - **Isometric projection.** The view is orthographic top-down.
-- **Other heroes.** One hero, one kit.
+- **Hero selection.** One hero, never chosen by the player. The hero may later have forms decided by design, each with its own body, kit, resources, and armory, swapped mid-fight; that is one hero changing shape, not a roster.
 - **Quick-cast and order queues.** Normal cast only, one current order, no shift-queue, no follow, no hold. The [mechanics spec](./specs/character-movement-and-mechanics.md) states each omission so it cannot be re-imported by habit.
 - **Mobile or touch.** Desktop browsers only.
 

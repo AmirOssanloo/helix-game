@@ -79,6 +79,7 @@ When health reaches zero the hero enters a death state: the order is cleared, ta
 
 ## Deferred
 
+- **Forms.** The hero may later swap between forms mid-fight, each with its own body, kit, health, mana, cooldowns, and armory, sharing level, experience, and item slots. The [overview](../overview.md) states the intent; the architecture already treats the hero as one unit pointing at an active form.
 - **Talents, kit upgrades, and kit upgrades.** Out of scope; the kit is the base kit.
 - **Items as modifier sources.** The stat pipeline is built for them, but no item exists.
 - **Real death rules** — experience loss, corpse runs, difficulty penalties. Respawn is free until the dungeon loop exists.

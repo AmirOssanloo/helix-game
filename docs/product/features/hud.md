@@ -81,6 +81,7 @@ There is no sorting by vertical position; the view is top-down and nothing is ta
 
 ## Deferred
 
+- **A second kit's layout.** The six squares are filled from whatever kit the hero's active form uses; today that is only Invoke. A hotbar form fills the same six squares from its ability list and hides the orb display.
 - **Minimap.** The arena fits on screen.
 - **Item slots, inventory, and equipment.** No items exist.
 - **Tooltips** on hover for spells and statuses.

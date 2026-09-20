@@ -84,7 +84,7 @@ The rules behind each row are in [Performance standards](../standards/performanc
 
 Items and inventory, equipment as modifier sources, loot tables and drops on death, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, top-down sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the genre standard.
 
-Not at any point: multiplayer, isometric view, other heroes, quick-cast, order queues, mobile.
+Not at any point: multiplayer, isometric view, hero selection, quick-cast, order queues, mobile.
 
 ---
 

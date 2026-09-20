@@ -75,6 +75,8 @@ Fixed bands, no per-frame sorting:
 
 The HUD is in its own scene and needs no band. Within a band, draw order is pool order.
 
+**The HUD draws the active kit, not a fixed layout.** Its six ability squares are filled from slot descriptors the world view exposes for the hero's active form — which ability sits in each slot, its clock, its cost, and whether it is a composer or a prepared spell — and the orb display appears only when the active kit has orbs. `HudScene` never names a spell or a kit.
+
 ---
 
 ## Colour, flashes, and marks
@@ -133,6 +135,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | `Shape` and `Graphics` objects | Never, including debug |
 | Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame, a wedge frame |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
+| HUD ability squares | Filled from the active kit's slot descriptors in the world view; never a fixed layout |
 | Binding | By the camera rectangle through the spatial hash, each frame |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |
