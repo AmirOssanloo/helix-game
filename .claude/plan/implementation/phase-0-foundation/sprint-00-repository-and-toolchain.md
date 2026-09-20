@@ -47,7 +47,9 @@ Nothing plays. `pnpm check` is green on eight empty layers, and a deliberate vio
 | Layer | tooling |
 | Size | 1 |
 | Depends on | T00 |
-| Status | planned |
+| Status | done |
+
+*Done on 2026-09-20. Vite needs an entry to build, so this ticket also wrote a minimal `index.html` and `src/app/main.ts` that T02 fills in. `check` and `check:ci` run only the steps that exist (typecheck, build); T03 adds lint and T04 adds the test tiers. `lint`, `test`, `dev`, and `bench` print a clear not-yet and exit 1 until their ticket lands. pnpm 12 ships its binaries under a new package name, so a pnpm 10 older than the rename cannot self-switch to the pin; Corepack can, and that is the documented install path.*
 
 **Build:** Shape and settings follow [the toolchain note](../notes/2026-09-20-toolchain-shape.md). Root `package.json` with `packageManager` pinned to a pnpm version and `.nvmrc` pinned to the current Node LTS. Scripts exactly as `docs/workflows/development.md` lists them: `check`, `check:ci`, `test`, `test:watch`, `lint`, `lint:fix`, `typecheck`, `dev`, `build`, `bench`. `tsconfig.json` strict, ES modules, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, with the eight aliases `@shared`, `@domain`, `@simulation`, `@content`, `@instrumentation`, `@presentation`, `@devtools`, `@app` pointing at `src/<layer>`. The build compiles `src/` and excludes `tests/` and `bench/`. Phaser 4.2.1 pinned exactly. The eight layer folders exist, each with a `public.ts` that exports one named type so the folder is not empty.
 
@@ -175,7 +177,7 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | Lint rule branch checks recorded, one row per rule | |
 | Architecture test catches a barrel re-export | |
 | CI green | |
-| Actual days per ticket | T00 1 · T01 · T02 · T03 · T04 · T05 |
+| Actual days per ticket | T00 1 · T01 0.25 · T02 · T03 · T04 · T05 |
 
 ## Risks in this sprint
 

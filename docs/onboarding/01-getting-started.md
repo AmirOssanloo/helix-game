@@ -22,8 +22,8 @@ The dev server serves the game with hot reload. The simulation, the renderer, an
 
 | Tool              | Version                                                        | Needed for |
 | ----------------- | -------------------------------------------------------------- | ---------- |
-| Node              | The LTS pinned in `.nvmrc` and in `packageManager` of `package.json` | Everything |
-| pnpm              | `corepack enable` picks the pinned version                     | Everything |
+| Node              | The LTS pinned in `.nvmrc`                                     | Everything |
+| pnpm              | The version pinned in `packageManager` of `package.json`; `corepack enable` picks it | Everything |
 | A desktop browser | Latest Chrome, Firefox, Safari, or Edge                        | Running the game. Chrome's performance panel is the profiler |
 
 That is the whole list. If `nvm` is on your machine, `nvm use` reads `.nvmrc`.
