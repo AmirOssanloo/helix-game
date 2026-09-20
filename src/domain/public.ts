@@ -13,6 +13,7 @@ export {
   type SlotCommand,
   type StopCommand,
 } from "./commands/command";
+export type { ConsumedCommands } from "./commands/consumed-commands";
 export {
   type CommandOrder,
   compareCommandOrder,
@@ -57,6 +58,7 @@ export {
   type DomainEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
+export { commandSystem } from "./orders/command.system";
 export type { DisableFlags } from "./orders/disable-flags";
 export type { Order, OrderKind, OrderState } from "./orders/order";
 export {

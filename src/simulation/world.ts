@@ -76,6 +76,7 @@ export class Simulation {
   private isDisposed = false;
 
   constructor(options: CreateWorldOptions) {
+    this.buffer = new CommandBuffer();
     this.state = {
       tick: 0,
       run: {
@@ -93,10 +94,10 @@ export class Simulation {
         walkability: null,
         spatialHash: null,
       },
+      commands: this.buffer,
     };
     this.events = new EventRing();
     this.log = new InputLog();
-    this.buffer = new CommandBuffer();
     this.tickCompleted = { kind: "tick_completed", tick: 0 };
 
     this.loadMap(options.map);
@@ -129,7 +130,8 @@ export class Simulation {
   /**
    * One step, with no clock and no argument: the step is a constant and the commands are in
    * the buffer. In order: previous positions are copied, the buffer is sorted and consumed into
-   * the log, the systems run, `tick_completed` is written, and the tick count advances.
+   * the log, the systems run with the consumed commands readable on the world, the buffer is
+   * cleared, `tick_completed` is written, and the tick count advances.
    */
   tick(): void {
     assert(!this.isDisposed, "A disposed world does not tick");
@@ -150,8 +152,6 @@ export class Simulation {
       this.log.record(world.tick, command);
     }
 
-    this.buffer.clear();
-
     for (let index = 0; index < systems.length; index += 1) {
       const system = systems[index];
 
@@ -159,6 +159,8 @@ export class Simulation {
         system(world);
       }
     }
+
+    this.buffer.clear();
 
     this.tickCompleted.tick = world.tick;
     this.events.write(this.tickCompleted);

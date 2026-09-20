@@ -32,6 +32,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
 | Which events the tick can emit | The event union in `src/domain/events/` |
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file and the validator beside it |
+| How a consumed command reaches the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | How a world is created, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
 | How a session is recorded and replayed | `src/simulation/replay/` |
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |

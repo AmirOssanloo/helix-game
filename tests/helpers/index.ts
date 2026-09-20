@@ -43,5 +43,6 @@ export {
   type FactoryDefaults,
 } from "./factories/define-factory";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
+export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { submit } from "./world/submit";
 export { tickUntil } from "./world/tick-until";

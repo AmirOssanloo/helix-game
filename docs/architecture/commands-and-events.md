@@ -46,6 +46,10 @@ The buffer is consumed at the start of the tick, sorted by timestamp. Commands o
 
 A command is a request. The validator in `domain/orders/` decides whether the unit may act on it this tick: is it stunned, silenced, rooted, mid-cast; is the ability off cooldown; is there mana. The validator reads disable flags the status system computed earlier in the tick. A refused command is dropped and, where the player would want to know, an event says why.
 
+### Application
+
+The command system beside the validator runs first in the system order. It walks the commands the tick consumed, validates each against the hero as it is at that moment, and applies the ones that pass: an order command replaces the current order through the state machine, and the last legal order in a tick wins. A world with no hero drops every command. Nothing else reads the consumed commands to change state.
+
 ---
 
 ## Events
@@ -97,6 +101,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Pointer picks | World position resolved at event time, stored on the command |
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, then arrival order |
 | Validation | `domain/orders/` decides per tick from disable flags, cooldowns, and cost; refusals are dropped |
+| Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation to the hero; the last legal order in a tick wins |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
 | Tuning changes | A `SetTuning` command, recorded in the input log |
 | A mutating method on the world | Never |

@@ -45,10 +45,11 @@ const onFrame = (frameDeltaMs: number): void => {
 `tick` on a world takes no argument: the step is a constant and the commands are already in the buffer. It does these things, in this order, every time:
 
 1. Copy each entity's current position into its previous position, so the presentation can interpolate the step about to happen.
-2. Sort the command buffer by the ordering rule and consume it, recording every consumed command with this tick in the input log.
-3. Run the systems, in the order the one list in `simulation/systems.ts` gives them.
-4. Write `tick_completed` to the event ring.
-5. Advance the tick count.
+2. Sort the command buffer by the ordering rule and consume it, recording every consumed command with this tick in the input log. The consumed commands stay readable on the world, in that order, for the rest of the tick.
+3. Run the systems, in the order the one list in `simulation/systems.ts` gives them. The first one hands the consumed commands to the hero; every later system sees the orders they produced.
+4. Forget the consumed commands.
+5. Write `tick_completed` to the event ring.
+6. Advance the tick count.
 
 The system order is a fact the file owns; [Where to look](./where-to-look.md) points at it. The invariant is that the order is one list, in one file, and that a system is a plain function over world state:
 
@@ -56,7 +57,7 @@ The system order is a fact the file owns; [Where to look](./where-to-look.md) po
 export const fooSystem = (world: World): void => { /* … */ }
 ```
 
-A system reads world state, the tick count, and the world's random source. It reads nothing else. It allocates nothing in steady state; [Performance standards](../standards/performance.md#quick-reference) hold the allocation rules.
+A system reads world state, the tick count, the commands the tick consumed, and the world's random source. It reads nothing else. It allocates nothing in steady state; [Performance standards](../standards/performance.md#quick-reference) hold the allocation rules.
 
 ---
 
@@ -113,9 +114,9 @@ A system holding a module-level variable — a cached list, a counter — that i
 | The step | 30 Hz, constant `dt`; never a frame delta |
 | Catch-up | At most 3 ticks per render frame, then drop the remaining time |
 | Hidden tab | No ticks; cooldowns freeze; input received while hidden is discarded |
-| `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order, writes `tick_completed`, advances the tick count; reads no clock |
-| System order | One list, in `simulation/systems.ts` |
-| A system | A plain function over world state; reads the world, the tick count, and the world's random source; allocates nothing in steady state |
+| `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order with the consumed commands readable on the world, forgets them, writes `tick_completed`, advances the tick count; reads no clock |
+| System order | One list, in `simulation/systems.ts`; command application runs first |
+| A system | A plain function over world state; reads the world, the tick count, the consumed commands, and the world's random source; allocates nothing in steady state |
 | Time in the domain | A tick count; seconds in a definition become ticks at load |
 | Random | The world's seeded source only; `Math.random`, `Date.now`, `performance.now` are banned by lint |
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |

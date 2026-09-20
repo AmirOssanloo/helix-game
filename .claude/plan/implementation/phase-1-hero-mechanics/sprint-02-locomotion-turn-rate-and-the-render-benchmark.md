@@ -117,10 +117,10 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 
 | Field | Value |
 | --- | --- |
-| Layer | simulation, tests |
+| Layer | domain, simulation, docs, tests |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** The tick keeps the consumed commands readable for the length of the tick: the buffer stays sorted and intact while the systems run and is cleared after them, and the world exposes the consumed commands to a system in order without copying. `commandSystem` first in `systems.ts`: for each consumed command, resolve the hero through run scope, run the validator, and on `ok` apply the order transition for `move`, `attack_move`, `attack_target`, and `stop`; a refusal drops the command and changes nothing; `slot` and `cast` are validated and then dropped until the kit and the cast skeleton exist in sprint 04; `noop` and `debug_noop` are dropped. A world with no hero drops every player command. A `spawnHero` helper under `tests/helpers/world/` acquires a hero-kind unit at a position and facing and sets `run.heroId`, so a simulation test has a hero before the hero definition exists.
 
@@ -137,6 +137,8 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 
 *Unplanned: added while closing T01. T01 is domain only and T02 says `movementSystem` is registered "after command application", but no ticket named the step that walks the consumed commands and applies them to the hero, and the tick handed commands to no system.*
 
+*Edited while building: the layer row gained `domain` and `docs`, because the architecture pages place a system in the domain module that owns it, so `commandSystem` lives under `src/domain/orders/` and only its registration is under `src/simulation/`, and the tick's steps on the simulation loop page changed.*
+
 ---
 
 ## Sprint exit
@@ -146,7 +148,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | |
 | Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | |
 | Milestone M1 | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 · T05 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 · T05 0.5 |
 
 ## Risks in this sprint
 

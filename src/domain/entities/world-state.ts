@@ -1,4 +1,5 @@
 import type { EntityId } from "@shared/public";
+import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { Tick } from "../tick";
 import type { Effect } from "./effect";
 import type { Pool } from "./pool";
@@ -54,9 +55,13 @@ export type MapScope = {
   spatialHash: SpatialHash | null;
 };
 
-/** The whole of world state: plain data a system reads and writes through the world it is handed. */
+/**
+ * The whole of world state: plain data a system reads and writes through the world it is
+ * handed, and the commands the current tick consumed for the systems to act on.
+ */
 export type World = {
   tick: Tick;
   run: RunScope;
   map: MapScope;
+  commands: ConsumedCommands;
 };
