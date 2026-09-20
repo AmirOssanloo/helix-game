@@ -13,6 +13,7 @@ export {
   unpackGeneration,
   unpackIndex,
 } from "./ids";
+export type { Rect } from "./rect";
 export { RingBuffer } from "./ring-buffer";
 export {
   add,

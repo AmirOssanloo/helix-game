@@ -47,8 +47,9 @@ Targeted casts and attacks use the same turn: the ability pipeline waits for the
 After every unit has moved, the collision system separates overlaps. It is positional: it moves discs apart and changes no speed.
 
 - **Unit against unit:** two discs closer than the sum of their collision radii are pushed apart along the line between their centres, each by half the overlap.
-- **Unit against obstacle:** a disc inside an axis-aligned rectangle is pushed to the nearest edge.
-- **Passes:** the system repeats a capped number of times so a pile-up settles; it does not iterate to convergence.
+- **Unit against obstacle:** a disc overlapping an axis-aligned rectangle is pushed out until it touches: by the nearest edge when its centre is inside, straight away from the nearest point of the rectangle when its centre is outside.
+- **Passes:** the system repeats a capped number of times, the cap a tunable, so a pile-up settles; it does not iterate to convergence. Every pass takes half of what overlap remains, so a pile converges on touching over a few ticks rather than snapping apart in one.
+- **Order:** pairs in pool order, each pair once, the lower id first; a pair on the same point separates along a direction fixed by the pair, so a replay repeats it. Every push moves the unit in the spatial hash at once, so the next query in the same pass sees it.
 
 Enemies do not steer around each other. They push. That is what makes a pack feel like a crowd, and it is what the [mechanics spec](../product/specs/character-movement-and-mechanics.md) asks for.
 
@@ -121,8 +122,9 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Moving | `min(speed × dt, remaining)` along the path; no acceleration, no overshoot |
 | Speed | A stack of base, modifiers, and clamps, recomputed every tick |
 | Targeted casts and attacks | Wait for the bearing to enter the cone before the cast point |
-| Unit blocking | Positional push-out along the centre line, half each, a capped number of passes, no speed change |
-| Obstacle blocking | Push to the nearest edge of the axis-aligned rectangle |
+| Unit blocking | Positional push-out along the centre line, half each, a capped number of passes the tunable sets, no speed change |
+| Obstacle blocking | Push out of the axis-aligned rectangle until touching: by the nearest edge from inside, away from the nearest point from outside |
+| Push order | Pool order, each pair once, lower id first; a coincident pair along a direction fixed by the pair; the hash updated on every push |
 | Enemies and each other | Push, never steer |
 | The walkability grid | Derived once per map from obstacle rectangles, inflated per radius class |
 | "What is near" | Always the spatial hash: insert, remove, move, circle, segment, rectangle; the cell size a tunable |

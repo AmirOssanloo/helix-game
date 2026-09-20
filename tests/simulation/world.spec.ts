@@ -24,7 +24,10 @@ const spawnUnit = (world: Simulation): Unit => {
 
 describe("createWorld", () => {
   it("starts at tick zero on the given map with empty pools", () => {
-    const world = makeWorld({ seed: 1, map: { id: "arena" } });
+    const world = makeWorld({
+      seed: 1,
+      map: makeMapDef.build({ id: "arena" }),
+    });
 
     expect(world.view.tick).toBe(0);
     expect(world.view.map.mapId).toBe("arena");
@@ -134,7 +137,7 @@ describe("loadMap", () => {
     world.state.map.zones.acquire();
     world.state.run.heroId = 42;
 
-    world.loadMap({ id: "next" });
+    world.loadMap(makeMapDef.build({ id: "next" }));
 
     expect(world.view.map.mapId).toBe("next");
     expect(world.view.map.units.count).toBe(0);

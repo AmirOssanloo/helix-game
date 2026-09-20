@@ -87,6 +87,8 @@ export {
   type DomainEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
+export { pushOutOfRect, separateDiscs } from "./movement/collision";
+export { collisionSystem } from "./movement/collision.system";
 export { movementSystem } from "./movement/movement.system";
 export {
   isPathComplete,

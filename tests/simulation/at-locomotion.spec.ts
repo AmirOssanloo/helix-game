@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FixedStepDriver, TICK_RATE } from "@app/public";
+import { acquireUnit } from "@domain/public";
+import type { Unit } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import { shortestArc } from "@shared/public";
 import type { Simulation } from "@simulation/public";
@@ -7,10 +9,11 @@ import { makeWorld, spawnHero, submit } from "../helpers";
 
 const MS_PER_SECOND = 1000;
 
-/** The spec's numbers: 280 units per second, a 11.5° cone, and a 180° turn in about 0.16 s. */
+/** The spec's numbers: 280 units per second, a 11.5° cone, a 180° turn in about 0.16 s, and a 27-unit hull. */
 const SPEED_PER_SECOND = 280;
 const CONE_RADIANS = (11.5 * Math.PI) / 180;
 const TURN_TICKS = 5;
+const HULL = 27;
 
 const moveTo = (world: Simulation, x: number, y: number): void => {
   submit(world, {
@@ -137,4 +140,55 @@ describe("AT-M3", () => {
       );
     },
   );
+});
+
+describe("AT-M5", () => {
+  /** A second hero beside the first: the same hull, acquired through the unit door. */
+  const spawnSecondHero = (world: Simulation, x: number): Unit => {
+    const id = acquireUnit(world.state, "hero", x, 0);
+    const unit = id === null ? null : world.state.map.units.resolve(id);
+
+    if (unit === null) {
+      throw new Error("The unit pool has room for a second hero");
+    }
+
+    return unit;
+  };
+
+  const centreDistance = (a: Readonly<Unit>, b: Readonly<Unit>): number =>
+    Math.hypot(b.curr.x - a.curr.x, b.curr.y - a.curr.y);
+
+  it("cannot rest two heroes with centres 40 apart: a tick pushes them to 54", () => {
+    const world = makeWorld({ seed: 1 });
+    const first = spawnHero(world, { x: 0, y: 0 });
+    const second = spawnSecondHero(world, 40);
+
+    world.tick();
+
+    expect(centreDistance(first, second)).toBeCloseTo(2 * HULL);
+    expect(first.curr).toEqual({ x: -7, y: 0 });
+    expect(second.curr).toEqual({ x: 47, y: 0 });
+  });
+
+  it("lets two heroes rest with centres 54 apart", () => {
+    const world = makeWorld({ seed: 1 });
+    const first = spawnHero(world, { x: 0, y: 0 });
+    const second = spawnSecondHero(world, 54);
+
+    world.tick();
+
+    expect(first.curr).toEqual({ x: 0, y: 0 });
+    expect(second.curr).toEqual({ x: 54, y: 0 });
+  });
+
+  it("lets two heroes rest with centres further than 54 apart", () => {
+    const world = makeWorld({ seed: 1 });
+    const first = spawnHero(world, { x: 0, y: 0 });
+    const second = spawnSecondHero(world, 90);
+
+    world.tick();
+
+    expect(first.curr).toEqual({ x: 0, y: 0 });
+    expect(second.curr).toEqual({ x: 90, y: 0 });
+  });
 });

@@ -47,7 +47,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | Layer | domain, simulation, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/movement/collision.ts` and `collisionSystem` registered after `movementSystem`: for every unit, query the hash for neighbours and separate any pair closer than the sum of their collision radii along the centre line, half each, never changing speed; push a disc inside an axis-aligned obstacle rectangle to its nearest edge; repeat for a capped number of passes (a tunable, default 3). Ties in pair order broken by id. The three radii on the unit (collision, bound, selection) exist as distinct fields from the definition; selection is never read by the simulation.
 
@@ -64,6 +64,8 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
+*Edited while building: the rules are in `collision.ts` and the system in `collision.system.ts`, the suffix the coding standard asks for. `MapDef` gained its obstacle rectangles here, since the system has nothing to push out of without them; T03 adds the bounds, the spawn point, and the spawn data. The three radii are set by `acquireUnit` from the tuning table, the only definition of a body that exists, with a `selection_radius` tunable added beside the two the spec names since the spec gives the selection size no number; a spawn from a definition writes over them. The wall row's "debug displacement" is a test writing the unit's position by hand, not a debug command. A pair on one point separates along a direction fixed by the pair's slots, so a dropped pile fans out and replays; every push moves the unit in the hash at once, since a pile dropped on a cell boundary otherwise stalled for ticks on pairs the stale hash stopped proposing. Half-each passes converge on touching rather than reach it: the largest overlap in a pile of twenty roughly halves a tick, is under a world unit by the sixth tick, and under a thousandth by the eighteenth; the pile-up test asserts those two bars, not zero. The system-level rows, the wall edge, the hash after a push, and the passes tunable, are in `tests/simulation/collision-system.spec.ts`, a fourth spec the ticket did not list.*
+
 ---
 
 ### P1-S03-T03 — Map definition, the arena, and the walkability grid
@@ -75,7 +77,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | Depends on | P0-S01-T03 |
 | Status | planned |
 
-**Build:** `MapDef` in `domain/definitions/` with bounds, obstacle rectangles, a spawn point, and an empty spawn-data list for later. `src/content/maps/arena.def.ts`: 4000 by 4000, walled, eight to twelve rectangles of varied size, one corridor wide enough for one unit, spawn at the centre. Under `src/domain/map/`: derive a walkability grid on 32-unit cells (tunable) from the rectangles at `loadMap`, inflated per radius class (small, hero, large, as a tunable list), stored on map scope as typed arrays sized once. `loadMap` sets the hero's position to the spawn point and pushes out any occupier on the first tick (handled by collision).
+**Build:** `MapDef` in `domain/definitions/` with bounds, obstacle rectangles (already present; added with the collision system), a spawn point, and an empty spawn-data list for later. `src/content/maps/arena.def.ts`: 4000 by 4000, walled, eight to twelve rectangles of varied size, one corridor wide enough for one unit, spawn at the centre. Under `src/domain/map/`: derive a walkability grid on 32-unit cells (tunable) from the rectangles at `loadMap`, inflated per radius class (small, hero, large, as a tunable list), stored on map scope as typed arrays sized once. `loadMap` sets the hero's position to the spawn point and pushes out any occupier on the first tick (handled by collision).
 
 **Acceptance:**
 - Every cell under a rectangle is blocked; every cell a hero-radius disc could not stand in without overlapping a rectangle is blocked in the hero class; the corridor is open in the small and hero classes and closed in the large class.
@@ -123,7 +125,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | --- | --- |
 | AT-M5 green; pathing and hash suites green | |
 | Pile-up test deterministic across runs | |
-| Actual days per ticket | T01 1 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
 
 ## Risks in this sprint
 

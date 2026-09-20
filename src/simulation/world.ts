@@ -97,6 +97,7 @@ export class Simulation {
         effects: createEffectPool(),
         zones: createZonePool(),
         walkability: null,
+        obstacles: options.map.obstacles,
         spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
       },
       commands: this.buffer,
@@ -173,7 +174,7 @@ export class Simulation {
     world.tick += 1;
   }
 
-  /** Releases every map-scoped pool, rebuilds the spatial hash at the tuned cell size, and takes `map` as the loaded one. Run scope is untouched. */
+  /** Releases every map-scoped pool, rebuilds the spatial hash at the tuned cell size, and takes `map` as the loaded one, its obstacles included. Run scope is untouched. */
   loadMap(map: MapDef): void {
     const scope = this.state.map;
 
@@ -186,6 +187,7 @@ export class Simulation {
       readTunable(this.state.run.tuning, "hash_cell_size"),
       scope.units,
     );
+    scope.obstacles = map.obstacles;
     scope.mapId = map.id;
   }
 

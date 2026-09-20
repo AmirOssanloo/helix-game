@@ -22,7 +22,7 @@ const SESSION_SEED = 1;
 
 /** The content layer holds the tuning table and no definition yet; a world needs a registry and a map to exist. */
 const REGISTRY: Registry = { tuning: tuningTable };
-const BLANK_MAP: MapDef = { id: "blank" };
+const BLANK_MAP: MapDef = { id: "blank", obstacles: [] };
 
 export const boot: Boot = (): void => {
   const world = createWorld({

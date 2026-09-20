@@ -9,7 +9,7 @@ import type {
   WalkabilityGrid,
   Zone,
 } from "@domain/public";
-import type { DeepReadonly } from "@shared/public";
+import type { DeepReadonly, Rect } from "@shared/public";
 
 /**
  * A compile-time read-only view over the live world: read by reference during sync, never
@@ -26,6 +26,7 @@ export type WorldView = DeepReadonly<{
     effects: PoolView<Effect>;
     zones: PoolView<Zone>;
     walkability: WalkabilityGrid | null;
+    obstacles: readonly Rect[];
     spatialHash: SpatialHashView;
   };
 }>;

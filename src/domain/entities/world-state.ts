@@ -1,4 +1,4 @@
-import type { EntityId } from "@shared/public";
+import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { Tick } from "../tick";
@@ -48,6 +48,8 @@ export type MapScope = {
   effects: Pool<Effect>;
   zones: Pool<Zone>;
   walkability: WalkabilityGrid | null;
+  /** The loaded map's obstacle rectangles, which the collision system keeps every unit out of. */
+  obstacles: readonly Rect[];
   /** The index of what is near, created with the world and rebuilt by every map load. */
   spatialHash: SpatialHash;
 };

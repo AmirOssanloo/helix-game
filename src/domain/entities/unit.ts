@@ -1,5 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
+import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
 import type { Tick } from "../tick";
@@ -69,6 +70,12 @@ export type Unit = {
   prev: Vec2;
   curr: Vec2;
   facing: number;
+  /** The solid disc: pathing and unit-to-unit blocking. Two units never rest closer than the sum of theirs. */
+  collisionRadius: number;
+  /** The range buffer: attack reach and cast range add the attacker's and the target's. */
+  boundRadius: number;
+  /** The click test's disc. The presentation reads it; no system does. */
+  selectionRadius: number;
   /** Ticks spent in the turn under way, which the turn ramp reads. Zero once facing has reached its target. */
   turnTicks: number;
   order: Order;
@@ -150,6 +157,9 @@ const createUnit = (): Unit => {
     prev: { x: 0, y: 0 },
     curr: { x: 0, y: 0 },
     facing: 0,
+    collisionRadius: 0,
+    boundRadius: 0,
+    selectionRadius: 0,
     turnTicks: 0,
     order: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
     state: "idle",
@@ -181,6 +191,9 @@ const clearUnit = (unit: Unit): void => {
   unit.curr.x = 0;
   unit.curr.y = 0;
   unit.facing = 0;
+  unit.collisionRadius = 0;
+  unit.boundRadius = 0;
+  unit.selectionRadius = 0;
   unit.turnTicks = 0;
   unit.order.kind = "none";
   unit.order.destination.x = 0;
@@ -226,8 +239,10 @@ export const createUnitPool = (): Pool<Unit> =>
 
 /**
  * The one way a unit enters the world: a slot from the pool, standing at the position with its
- * previous position and spawn point there too, indexed in the spatial hash. Returns the id, or
- * `null` when the pool is full; the caller decides what a spawn that does not happen means.
+ * previous position and spawn point there too, wearing the hull the tuning table gives every
+ * hero form, indexed in the spatial hash. A spawn from a definition writes that definition's
+ * radii over the hull. Returns the id, or `null` when the pool is full; the caller decides what
+ * a spawn that does not happen means.
  */
 export const acquireUnit = (
   world: World,
@@ -254,6 +269,9 @@ export const acquireUnit = (
   unit.prev.y = y;
   unit.spawnPoint.x = x;
   unit.spawnPoint.y = y;
+  unit.collisionRadius = readTunable(world.run.tuning, "collision_radius");
+  unit.boundRadius = readTunable(world.run.tuning, "bound_radius");
+  unit.selectionRadius = readTunable(world.run.tuning, "selection_radius");
   world.map.spatialHash.insert(id, x, y);
 
   return id;
