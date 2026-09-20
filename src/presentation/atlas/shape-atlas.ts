@@ -56,23 +56,8 @@ export class ShapeAtlas {
       );
     }
 
-    for (const { frame, x, y } of this.layout.frames) {
-      const added = texture.add(
-        frame.name,
-        CANVAS_SOURCE_INDEX,
-        x,
-        y,
-        frame.width,
-        frame.height,
-      );
-
-      if (added === null) {
-        throw new Error(
-          `The atlas frame "${frame.name}" is already registered`,
-        );
-      }
-    }
-
+    // The font goes on before any frame: the parser measures its glyph grid from the texture's
+    // first frame, which is the base frame at the origin only until a named frame is added.
     if (this.layout.font !== null) {
       const font = this.layout.font;
 
@@ -92,6 +77,23 @@ export class ShapeAtlas {
           lineSpacing: LINE_SPACING,
         }),
       );
+    }
+
+    for (const { frame, x, y } of this.layout.frames) {
+      const added = texture.add(
+        frame.name,
+        CANVAS_SOURCE_INDEX,
+        x,
+        y,
+        frame.width,
+        frame.height,
+      );
+
+      if (added === null) {
+        throw new Error(
+          `The atlas frame "${frame.name}" is already registered`,
+        );
+      }
     }
 
     this.canvas = canvas;

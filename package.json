@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",
-    "bench": "echo 'pnpm bench: not yet. The render benchmark scene does not exist' && exit 1",
+    "bench": "vite --open /bench/",
     "prepare": "husky"
   },
   "dependencies": {

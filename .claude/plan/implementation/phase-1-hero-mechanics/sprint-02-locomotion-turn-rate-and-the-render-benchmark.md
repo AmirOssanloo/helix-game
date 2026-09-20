@@ -103,7 +103,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | Layer | bench |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** `bench/` with one scene exactly as ADR 0001 specifies: 300 tinted unit quads with position and rotation written every frame and a tenth flashing each second; 100 projectile quads spawning and despawning through a pool at 20 per second; 30 ring, disc, cone, and line quads changing scale, rotation, and alpha every frame; 6 wedges changing frame every frame; 50 `BitmapText` numbers changing text and position every frame; 50 static obstacle quads; a following camera at 1920 by 1080 with `Scale.FIT`. The expected numbers in the file header. A `pnpm bench` script that serves it. A draw-call readout in the corner that counts calls to the renderer's public `drawElements` and `drawInstancedArrays` between its pre-render and post-render events (Q4); the counting module is the one sprint 06 moves under `src/presentation/` for the panel.
 
@@ -114,6 +114,8 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 **Tests:** none; this is the benchmark tier, read by a person.
 
 **Definition of done:** Every change · Anything under `src/presentation` (the benchmark rerun row is this ticket).
+
+*Edited while building: the first run showed every glyph sampling the wrong region, because the atlas registered the retro font after the frames and Phaser's parser measures the glyph grid from the texture's first named frame, not the base frame; the atlas now registers the font before any frame. A retro font's size is its glyph width, so the size that draws the glyphs 1:1 is 20, not 32. The triangle frame stands in for a cone until a spell bakes one. The readout is two `BitmapText` columns per row, since the font has no space glyph. `?textures=default` on the address is the second configuration. Phaser pauses on a hidden tab, so the run needs the tab in front.*
 
 ---
 
@@ -149,10 +151,10 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 
 | Check | Result |
 | --- | --- |
-| AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | |
-| Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | |
-| Milestone M1 | |
-| Actual days per ticket | T01 0.5 · T02 2 · T03 1 · T04 · T05 0.5 |
+| AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | Green, 2026-09-20, in `pnpm test` |
+| Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | Chrome on an Apple M1 laptop, 2026-09-20, 30 s each: `maxTextures` 1 — 60 fps (60 to 61), render 0.67 ms mean and 1.7 max, 1 draw call every frame, heap 54 to 61 MB flat; default (16 units) — 60 fps (60 to 61), render 0.9 ms mean and 1.3 max, 1 draw call every frame, heap 68 to 81 MB flat. Safari and the reference laptop not yet run: they need a person at the machine |
+| Milestone M1 | Holds on the machine above; reached once a person repeats the two runs on the reference laptop in Chrome and Safari |
+| Actual days per ticket | T01 0.5 · T02 2 · T03 1 · T04 0.5 · T05 0.5 |
 
 ## Risks in this sprint
 

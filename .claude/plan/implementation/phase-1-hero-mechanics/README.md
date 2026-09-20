@@ -40,7 +40,7 @@ Right-click to walk, watch the hero turn first. Press Q W E and see orbs orbit. 
 | Row | Result | Recorded by |
 | --- | --- | --- |
 | Gate rows | | |
-| Bench numbers (fps, render ms, draw calls, heap) | | |
+| Bench numbers (fps, render ms, draw calls, heap) | Sprint 02, Chrome on an Apple M1 laptop: 60 fps, 0.67 ms render (1.7 max), 1 draw call, heap flat, with `maxTextures` 1; 60 fps, 0.9 ms (1.3 max), 1 draw call, heap flat, with the default. Safari and the reference laptop outstanding | the engineer running the plan |
 | Stress test mean tick | | |
 | Sized versus actual | | |
 | Largest miss | | |

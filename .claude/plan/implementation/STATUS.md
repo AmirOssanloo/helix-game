@@ -9,11 +9,11 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | | |
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
-| **Active sprint** | [02 — Locomotion, turn rate, and the render benchmark](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md) |
-| **Next ticket** | P1-S02-T04 — The render benchmark |
+| **Active sprint** | [03 — Collision, pathing, the spatial hash, and the arena](./phase-1-hero-mechanics/sprint-03-collision-pathing-and-the-arena.md) |
+| **Next ticket** | P1-S03-T01 — The spatial hash |
 | **In progress** | none |
-| **Last closed ticket** | P1-S02-T03 — The shape atlas and the frame list |
-| **Last closed sprint** | [01 — Simulation skeleton and instrumentation](./phase-0-foundation/sprint-01-simulation-skeleton-and-instrumentation.md), 2026-09-20 |
+| **Last closed ticket** | P1-S02-T04 — The render benchmark |
+| **Last closed sprint** | [02 — Locomotion, turn rate, and the render benchmark](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md), 2026-09-20 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
 
@@ -21,7 +21,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 ## Blocked or waiting
 
-Nothing.
+- Milestone M1 waits on a person: `pnpm bench` on the reference laptop in Chrome and Safari, once as configured and once with `?textures=default`, with the numbers written into the sprint 02 exit table and the phase 1 README. It holds in Chrome on an Apple M1 laptop and blocks nothing in sprint 03.
 
 ---
 
