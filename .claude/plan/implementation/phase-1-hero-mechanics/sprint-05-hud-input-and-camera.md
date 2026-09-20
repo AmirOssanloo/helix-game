@@ -1,0 +1,102 @@
+# Sprint 05 — Input mapper, views, camera, and HUD
+
+**Phase:** 1 · **Sized days:** 4 · **Buffer:** 1
+
+## Goal
+
+The hero is on screen, driven by the mouse and keyboard through commands, followed by the camera, with a HUD that reads the world view and draws the active kit.
+
+## Playable outcome
+
+Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and the composer wedge sweep. D on a point stub, see the range ring, click, watch the hero face and cast. The bars move when the panel changes them next sprint.
+
+---
+
+## Tickets
+
+### P1-S05-T01 — The input mapper and the targeting cursor
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, tests |
+| Size | 1 |
+| Depends on | P1-S04-T04 |
+| Status | planned |
+
+**Build:** Under `src/presentation/input/`: keyboard and pointer listeners that produce commands with a tick timestamp from the driver and a millisecond timestamp for ordering. Q W E R D F become `slot` commands 1 to 6 on key-down only; key repeat is ignored. Right click on ground becomes `move` with the world point resolved through the camera at event time and clamped to the map; right click on an enemy becomes `attack_target`; right click on a summon or neutral produces nothing. Left click selects (a no-op until there is something to select) or, with the cursor open, sends `cast` with the resolved point or unit and closes the cursor. `A` then left click becomes `attack_move`. `S` becomes `stop` and closes the cursor. `Esc` closes the cursor and sends nothing. Shift produces nothing extra. The cursor state (which slot is open) is the only presentation state; opening it checks the slot descriptor's clock, cost, and the hero's disable flags on the world view before opening, and flashes instead when refused. Scroll wheel emits a camera zoom intent, not a command.
+
+**Acceptance:**
+- One presentation test per gesture in the controls page's tables, asserting the exact command and that the point was resolved at event time (the test moves the camera between event and tick).
+- Holding Q for ten frames produces one command.
+- Two keys in one frame produce two commands whose millisecond timestamps order them.
+- Opening D's cursor with a move running sends nothing.
+
+**Tests:**
+- `tests/presentation/input-mapper.spec.ts` — one per gesture, edge triggering, ordering, cursor open and cancel.
+
+**Definition of done:** Every change · Anything under `src/presentation`.
+
+---
+
+### P1-S05-T02 — PlayScene: views, sync, interpolation, camera
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, tests |
+| Size | 1.5 |
+| Depends on | P1-S02-T03, P1-S03-T01 |
+| Status | planned |
+
+**Build:** Under `src/presentation/views/`: the depth band constants; `unit.view.ts` as a pooled view kind (a disc quad plus a triangle quad for facing, bound to a unit id, writing `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible` from the entity, interpolating previous to current by the driver's fraction); `obstacle.view.ts` for the arena rectangles (static quads bound at map load); `orb.view.ts` for the three floating orb instances orbiting the hero in age order with the orb's colour. `PlayScene` creates every pool at `create` sized to what fits the screen plus a margin, runs the sync each frame after the driver's ticks: rectangle-query the spatial hash for the camera's world rectangle plus margin, bind free views to entities that entered, release views of entities that left, write the seven fields, then drain the event ring with the scene's own cursor. The world camera follows the hero with a lerp, clamps to the map bounds, and consumes zoom intents.
+
+**Acceptance:**
+- No game object is created or destroyed after `create`; a pool miss during play is reported through the instrumentation ring, never grown.
+- A view bound this frame does not pop: it interpolates from the entity's previous position.
+- Walking the hero to a wall stops the camera at the wall.
+- Draw calls for the world stay under 5 with 300 units on screen (measured next sprint).
+
+**Tests:**
+- `tests/presentation/unit-view.spec.ts` — bind writes frame, depth, tint once; sync writes only the seven fields; leaving the rectangle releases; a miss is reported.
+- `tests/presentation/sync.spec.ts` — binding by rectangle with a fake world view and a fake hash.
+
+**Definition of done:** Every change · Anything under `src/presentation` (rerun the benchmark; views changed).
+
+---
+
+### P1-S05-T03 — HudScene: bars, orbs, six slots, wedges, level, targeting preview
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, content, tests |
+| Size | 1.5 |
+| Depends on | T02, P1-S04-T02 |
+| Status | planned |
+
+**Build:** `HudScene` running in parallel with its own camera, reading the world view once per frame and draining the ring with its own cursor. The bottom bar per the HUD page: health and mana bars with `BitmapText` numbers; three orb squares in age order coloured by orb; six ability squares filled from the active kit's slot descriptors (key label, wedge sweep from the clock, mana cost for composer and prepared kinds, orb level as a small number on orb kinds, empty socket for null, greyed when the descriptor says a disable blocks it); level with an experience bar and an unspent-point marker; clicking Q W E while a point is unspent submits a `spend_skill_point` command. Refusal flashes from `command_refused` events: red for mana, grey for cooldown, striped for a disable. The targeting preview drawn in `PlayScene`'s coordinate space from the atlas: a range ring at the spell's range around the hero and, under the pointer, the spell's shape (circle, line, or cone per its definition), red outside range, closed on commit, Esc, or S.
+
+**Acceptance:**
+- The HUD names no spell and no kit; a second form record with a `hotbar` kit key fills the six squares from its ability list and hides the orb squares (tested with a fake world view).
+- Bars read the view; there is no arithmetic over events anywhere in the HUD.
+- A refused R flashes the R square red for mana, grey for cooldown.
+- The preview turns red at range plus one unit.
+
+**Tests:**
+- `tests/presentation/hud.spec.ts` — descriptors to squares, the hotbar case, the flash reactions.
+- `tests/presentation/targeting-preview.spec.ts` — ring radius, red outside range, shape per targeting kind.
+
+**Definition of done:** Every change · Anything under `src/presentation` · A new command, event, or system (`spend_skill_point`).
+
+---
+
+## Sprint exit
+
+| Check | Result |
+| --- | --- |
+| The section 15 feel walk-through by hand, thirteen bullets, each pass or fail | |
+| Bench rerun after views: fps · render ms · draw calls · heap | |
+| Actual days per ticket | T01 · T02 · T03 |
+
+## Risks in this sprint
+
+- The first view kind sets the pattern for every later one. Review it against the presentation coding standard's quick reference before writing the second.
+- Phaser 4's parallel scene camera for the HUD must not inherit the play camera's zoom. Test zoom in and check the bars stay put.
