@@ -1,2 +1,26 @@
-/** A number packing a pool index and a generation; a released slot bumps the generation. */
-export type EntityId = number;
+export { bearing, shortestArc, wrapAngle } from "./angle";
+export { assert } from "./assert";
+export { clamp } from "./clamp";
+export {
+  type EntityId,
+  GENERATION_BITS,
+  INDEX_BITS,
+  MAX_GENERATION,
+  MAX_INDEX,
+  nextGeneration,
+  packId,
+  unpackGeneration,
+  unpackIndex,
+} from "./ids";
+export { RingBuffer } from "./ring-buffer";
+export {
+  add,
+  distanceSquared,
+  dot,
+  length,
+  normalize,
+  scale,
+  set,
+  sub,
+  type Vec2,
+} from "./vec";

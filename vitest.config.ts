@@ -55,6 +55,11 @@ const project = (
 });
 
 export default defineConfig({
+  // Every test runs as a development build: `assert` throws, so a broken invariant fails the test
+  // that broke it instead of passing in silence.
+  define: {
+    __DEV__: "true",
+  },
   resolve: {
     alias: {
       ...layerAliases(),

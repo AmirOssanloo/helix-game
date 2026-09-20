@@ -21,9 +21,11 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Layer | shared, tests |
 | Size | 0.5 |
 | Depends on | P0-S00-T04 |
-| Status | planned |
+| Status | done |
 
-**Build:** Under `src/shared/`: scratch vector functions that write into a caller-supplied target and never allocate (`add`, `sub`, `scale`, `length`, `normalize`, `dot`, `distanceSquared`); angle helpers (`wrapAngle` to ±π, `shortestArc`, `bearing`); `clamp`; a fixed-capacity ring buffer with a cursor; `assert` that throws in development and is a no-op in production via the Vite define; generational id `pack`, `unpackIndex`, `unpackGeneration`, with the bit split as named constants. Everything exported by name through `shared/public.ts`.
+**Build:** Under `src/shared/`: scratch vector functions that write into a caller-supplied target and never allocate (`add`, `sub`, `scale`, `length`, `normalize`, `dot`, `distanceSquared`); angle helpers (`wrapAngle` to ±π, `shortestArc`, `bearing`); `clamp`; a fixed-capacity ring buffer with a cursor; `assert` that throws in development and is a no-op in production via the Vite define; generational id `packId`, `unpackIndex`, `unpackGeneration`, with the bit split as named constants. Everything exported by name through `shared/public.ts`.
+
+> Edited while building: the packer is `packId`, not `pack`, because the vocabulary reserves "pack" for a group of enemies.
 
 **Acceptance:**
 - No function in `shared/` allocates on the hot path; each takes an output parameter where it returns a vector.
@@ -123,7 +125,7 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Phase 0 gate rows | |
 | `pnpm check` green | |
 | Tick count visible in the console at 30 per second | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.25 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 
