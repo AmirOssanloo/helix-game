@@ -42,8 +42,8 @@ export const frostArcherDef = {
     damageType: 'physical',
     range: 550,
     projectileSpeed: 900,
-    attack_point_seconds: 0.4,          // Before the arrow leaves; converted to ticks at load
-    base_attack_seconds: 1.7,           // One attack per this many seconds; converted to ticks at load
+    attackPointSeconds: 0.4,            // Before the arrow leaves; converted to ticks at load
+    baseAttackSeconds: 1.7,             // One attack per this many seconds; converted to ticks at load
   },
   aggroRadius: 800,
   leashRadius: 1400,
@@ -113,7 +113,7 @@ Build a world with the hero at the centre and a pack of three Frost Archers just
 
 - **Aggro on sight.** Move the hero inside the radius. All three leave Idle within one tick; the pack shares aggro, so the two that could not see the hero aggro with the one that did.
 - **Aggro on damage.** Reset. Hit one from outside the radius. The whole pack aggros.
-- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on the `base_attack_seconds` cadence; the first projectile leaves after `attack_point_seconds`. Both are ticks by then, converted at load.
+- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on the `baseAttackSeconds` cadence; the first projectile leaves after `attackPointSeconds`. Both are ticks by then, converted at load.
 - **Kiting.** Walk the hero into melee. Each backs away along a path and keeps firing.
 - **Leash.** Walk the hero past `leashRadius`. They enter Return, walk to their spawn point, and regenerate.
 - **Death and experience.** Kill one. It enters Dead, its view unbinds, the hero gains `experience`, and its pool slot is released.

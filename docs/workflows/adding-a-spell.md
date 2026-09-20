@@ -30,9 +30,9 @@ export const frostLanceDef = {
   name: 'Frost Lance',
   recipe: ['quartz', 'quartz', 'whorl'],          // The orb multiset; order is ignored
   targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
-  cast_point_seconds: 0.1,                        // Before the effect fires; the hero must face the target first
-  cooldown_seconds: [20, 18, 16, 14, 12, 10, 8],  // Indexed by orb level 1 to 7
-  mana_cost: [100, 110, 120, 130, 140, 150, 160],
+  castPointSeconds: 0.1,                          // Before the effect fires; the hero must face the target first
+  cooldownSeconds: [20, 18, 16, 14, 12, 10, 8],   // Indexed by orb level 1 to 7
+  manaCost: [100, 110, 120, 130, 140, 150, 160],
   range: 1000,
   effects: [
     { kind: 'projectile', speed: 1200, radius: 40, onHit: 'frost_lance_hit' },
@@ -111,9 +111,9 @@ touch tests/simulation/spells/frost-lance.spec.ts
 Build a world with the hero, a training dummy at range, and the registry. Then, at orb level 1 and at orb level 7:
 
 - Press Q, Q, W, R. Slot D holds `frost_lance`. Mana dropped by the Invoke cost.
-- Press D and click a point. The hero turns until the bearing is inside the action cone, then a projectile spawns once `cast_point_seconds` has elapsed, counted in ticks.
+- Press D and click a point. The hero turns until the bearing is inside the action cone, then a projectile spawns once `castPointSeconds` has elapsed, counted in ticks.
 - Tick until the projectile reaches the dummy. The dummy's health dropped by the magical damage after its magic resistance, and it carries the slow status for the stated duration.
-- Cooldown is `cooldown_seconds[level - 1]` converted to ticks, and counts down one per tick.
+- Cooldown is `cooldownSeconds[level - 1]` converted to ticks, and counts down one per tick.
 
 And the refusals:
 

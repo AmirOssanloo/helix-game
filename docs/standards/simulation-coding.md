@@ -25,7 +25,7 @@ Content writes seconds because designers think in seconds. **The domain converts
 
 ```typescript
 // At load, once. Never inside a system.
-const cooldownTicks = toTicks(fooDef.cooldown_seconds)
+const cooldownTicks = toTicks(fooDef.cooldownSeconds)
 ```
 
 ---

@@ -80,7 +80,7 @@ Three deliberate exceptions:
 ```text
 foo, bar, baz            general placeholders
 foo-bar, foo-baz         two-word placeholders, so casing is visible
-FooBarDef, fooBarSystem, foo-bar.def.ts, foo_bar_radius
+FooBarDef, fooBarSystem, foo-bar.def.ts, foo_bar_hit
 ```
 
 **Any identifier containing `foo`, `bar`, or `baz` is a placeholder. Every other identifier in a code example is real** — a platform technology (`Phaser`, `Vite`, `vitest`, `pnpm`, `BitmapText`) or a name the architecture fixes: `World`, `tick`, `Command`, `DebugCommand`, `DomainEvent`, `DevApi`, `ShapeAtlas`, `RetroFont`, `BootScene`, `PlayScene`, `HudScene`, `public.ts`, `systems.ts`, `fixed-step-driver.ts`. If you are not sure a name is fixed, use a placeholder.

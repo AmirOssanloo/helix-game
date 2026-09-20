@@ -25,11 +25,13 @@ How a file under `src/content/` is written so that a designer can retune it, the
 export const fooBarDef = {
   id: 'foo_bar',
   targeting: 'point',
-  cooldown_seconds: [/* one per orb level */],
+  cooldownSeconds: [/* one per orb level */],
   effects: [{ key: 'foo_burst', radius: 0 /* … */ }],
   atlasFrame: 'disc',
 } as const satisfies FooDef
 ```
+
+**Fields are camelCase, as any property is.** The snake_case strings in a definition are its values: the id, and the effect and behaviour keys. [Coding standards](./coding.md#exports-and-names) hold the rule.
 
 **Named effects and behaviours are referenced by string key only.** A definition never imports the function behind a key. The registry checks every key resolves when it builds, so a typo fails at startup and in the content test rather than the first time a player casts. [ADR 0005](../adr/0005-content-references-by-string-key.md) holds the argument.
 
@@ -84,7 +86,7 @@ A definition that fails any of these fails the build. [Testing standards](./test
 
 ### A tick count in content
 
-`cooldown_ticks: 600`. The tick rate is a simulation decision, and the day it changes every content file is wrong by the same factor. Seconds in content, ticks after load.
+`cooldownTicks: 600`. The tick rate is a simulation decision, and the day it changes every content file is wrong by the same factor. Seconds in content, ticks after load.
 
 ---
 
@@ -94,6 +96,7 @@ A definition that fails any of these fails the build. [Testing standards](./test
 | --- | --- |
 | Files | One definition per file, kebab-case, named after the id |
 | Ids | snake_case string keys matching the file name; never renamed once shipped |
+| Fields | camelCase, as any property; only ids and keys are snake_case |
 | Registration | Every definition is in its kind's registry index |
 | Shape | An `as const` plain object satisfying the domain's definition type; no functions, classes, or computed fields |
 | Effects and behaviours | Referenced by string key only; never imported |

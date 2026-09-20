@@ -39,9 +39,10 @@ A file with no suffix is a plain module — a pool, a state machine, a helper. T
 | Functions | camel | `fooSystem`, `applyFoo` |
 | Constant objects, including definitions | camel | `fooBarDef`, `defaultFooTuning` |
 | Primitive constants | Screaming snake | `MAX_FOO_COUNT` |
-| Tuning keys, definition ids, effect and behaviour keys | snake | `foo_bar_radius`, `"foo_bar"` |
+| Properties, including definition fields | camel | `fooBarSeconds`, `atlasFrame` |
+| Ids, effect keys, and behaviour keys: string values | snake | `'foo_bar'`, `'foo_bar_hit'` |
 
-Snake case for keys is deliberate: a key is data, not code, and it reads the same in a definition file, a tuning table, and a developer-panel label.
+Snake case for string values is deliberate: an id or a key is data, not code. It lives in the registry, the input log, and a developer-panel label, and it never changes once shipped. A property on a definition is code: the compiler checks it and a rename is a refactor, so it takes camelCase like every other property. A tuning key is built from both and each segment keeps its own case, `def:foo:foo_bar:bar.bazSeconds`, so the path is the property name verbatim and a rename fails to compile.
 
 **Named exports everywhere.** A default export can be imported under any name, so a rename stops being a compile error.
 
@@ -154,7 +155,7 @@ It skips the only question worth asking — what should happen when this is miss
 | Suffixes | `.def.ts` definition · `.system.ts` system · `.effect.ts` named effect · `.behaviour.ts` AI behaviour · `.view.ts` view · `.scene.ts` scene · `.spec.ts` test |
 | Commands and events | Variants of one union in one file per folder, never a file per variant |
 | Main export | Matches the file name; named, never default |
-| Casing | Types, classes, definition types PascalCase; functions and constant objects camelCase; primitive constants SCREAMING_SNAKE_CASE; keys and ids snake_case |
+| Casing | Types, classes, definition types PascalCase; functions and constant objects camelCase; primitive constants SCREAMING_SNAKE_CASE; properties, including definition fields, camelCase; ids and keys, as string values, snake_case |
 | Identifiers | Role-based and short; product words over engine words; symmetric for pairs; matching the full behaviour |
 | Function style | Arrow by default; classes only for things with identity across ticks or frames; return types always written |
 | Control flow | Braced and multi-line; a blank line before a return, around a branch, between setup and work |
