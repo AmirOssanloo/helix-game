@@ -1,0 +1,106 @@
+# Development workflow
+
+> **Entry point:** [Workflows](./README.md)
+
+**Purpose:** build, test, and lint the repository, and understand what runs when.
+
+---
+
+## What you'll use most
+
+```bash
+pnpm check          # The gate: lint, typecheck, every test tier, build. Never modifies a file
+pnpm check:ci       # What CI runs: the same gate, with coverage floors checked
+pnpm test           # Every test tier in Node — unit, simulation, content, architecture
+pnpm test:watch     # The same, rerunning on save
+pnpm lint           # ESLint; pnpm lint:fix applies the auto-fixes and Prettier
+pnpm typecheck      # tsc --noEmit, strict
+pnpm dev            # The Vite dev server with hot reload
+pnpm build          # The production build, with DevApi stripped
+pnpm bench          # Serves the render benchmark scene under bench/
+```
+
+**`pnpm check` is the gate.** Run it before every push. It runs lint, typecheck, and build first, then the test tiers, and it never modifies a file; when it reports lint findings, `pnpm lint:fix` applies them, then run `check` again.
+
+CI runs **`pnpm check:ci`**, which is the same gate with coverage floors on the domain and simulation layers. Locally `check` stays uninstrumented because coverage makes the tests slower and you do not need the number on every push. A green `check` locally means a green build.
+
+Nothing needs to be up for any of this. No containers, no database. `pnpm test` runs entirely in Node.
+
+---
+
+## The tiers
+
+| Tier         | Lives under                     | Environment | Runs in | Tests |
+| ------------ | ------------------------------- | ----------- | ------- | ----- |
+| Unit         | `tests/domain/`, `tests/shared/` | Node       | `pnpm test` | One rule at a time: an orb eviction, a turn step, a damage formula, an A* result |
+| Simulation   | `tests/simulation/`             | Node        | `pnpm test` | A world ticked with commands: the acceptance tests from the mechanics spec, spell casts, enemy behaviour, the replay determinism test, the stress test |
+| Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
+| Architecture | `tests/architecture.spec.ts`    | Node        | `pnpm test` | The layer import table, asserted a second time. A wrong-direction import fails here and in lint |
+| Presentation | `tests/presentation/`           | jsdom       | `pnpm test` | Input mapping and view binding, with Phaser stubbed. Few, and small |
+| Benchmark    | `bench/`                        | A browser   | `pnpm bench`, by hand | Render time, draw calls, heap over 30 seconds. Never in `check` |
+
+The benchmark is deliberately outside `pnpm check`: it needs a GPU and a human reading a performance panel, and it answers a different question — not "is the code right" but "does it still hold frame time on the reference laptop". Run it after touching the atlas, the views, or upgrading Phaser, and put the numbers in the change description.
+
+---
+
+## Running one thing
+
+Flags after `--` reach Vitest:
+
+```bash
+pnpm test -- -t "AT-M2"                     # One spec by name — here, the 180-degree turn test
+pnpm test -- tests/simulation/spells/        # One folder
+pnpm test -- -t "replay"                     # The determinism test
+pnpm test -- -t "stress"                     # The 300-unit stress test
+pnpm test:watch -- tests/domain/invoke/      # Rerun a folder on save
+```
+
+The acceptance tests from the [mechanics spec](../product/specs/character-movement-and-mechanics.md) are named by their identifiers — `AT-M1` to `AT-I9` — so a failure in review can be pointed at by name.
+
+---
+
+## What the gate enforces
+
+- **Lint** carries the layer import allow-list, the determinism bans (`Math.random`, `Date.now`, `performance.now` under `src/domain/` and `src/simulation/`), and the presentation bans (Phaser Shape and Graphics factories anywhere).
+- **Typecheck** is strict. No optional properties, no non-null assertions; both are lint errors as well.
+- **The architecture spec** reads the import table and walks `src/`. It fails on an import lint missed — a dynamic import, a re-export through a barrel.
+- **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
+- **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
+- **The stress test** asserts the mean tick under 4 ms with 300 units. It fails when a change makes a system too expensive.
+- **The build** fails if `DevApi` or the developer panel leaks into the production bundle.
+
+---
+
+## Where the scripts live
+
+Every command on this page is under `scripts` in the root `package.json`. That file, not this page, is the authority when a command here doesn't exist any more.
+
+---
+
+## While you work
+
+- **Prettier runs on save** if your editor is set up, and in the commit hook regardless.
+- **Content hot-reloads.** Editing a definition under `src/content/` swaps the registry in the running world without a page reload. Editing anything under `src/domain/` or `src/simulation/` reloads the page, because the world cannot be patched mid-tick.
+- **The commit hook** runs `pnpm lint` and `pnpm typecheck` on staged files. It does not run tests; that is what `pnpm check` before a push is for.
+
+---
+
+## When something looks wrong
+
+**A test passes alone and fails in the suite.** Something shares state between worlds — a module-level pool, a cached registry. Each test builds its own world.
+
+**The replay test fails after a change that "didn't touch the simulation".** It did. Look for a system reading iteration order from a `Map` keyed by object, or a sort without a tie-break.
+
+**Lint passes but the architecture spec fails.** A barrel re-export or a dynamic import crossed a layer. The failure names the file.
+
+**`pnpm build` fails on `DevApi`.** Something under `src/presentation/` or `src/app/` imports `src/devtools/` outside the development-only branch.
+
+---
+
+## Related documentation
+
+- [Getting started](../onboarding/01-getting-started.md) — what your machine needs first
+- [Running and debugging](../onboarding/03-running-and-debugging.md) — the panel, replays, and the benchmark
+- [Testing standards](../standards/testing.md) — what to test and at which tier
+- [Definition of done](./definition-of-done.md) — the checklist a change passes before review
+- [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md) — the table lint and the architecture spec enforce

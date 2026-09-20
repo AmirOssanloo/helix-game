@@ -1,0 +1,148 @@
+# Ability pipeline
+
+> **Entry point:** [Architecture](./README.md)
+> **See also:** [Content and registries](./content-and-registries.md) · [Commands and events](./commands-and-events.md) · [Casting a spell](./casting-a-spell-flow.md)
+
+One pipeline casts everything: the hero's ten spells, an enemy's stun, a summon's attack, and later an item's active. The hero's Invoke mechanics sit beside it as their own module and hand it an ability to cast. Names containing `foo`, `bar`, or `baz` are placeholders — the [legend](../documentation-standards.md#reading-a-placeholder) decodes each to its real shape and folder.
+
+---
+
+## The idea in one line
+
+**An ability is a definition, a caster, and a target. The pipeline turns those into effects. Nothing else casts.**
+
+Because enemies and the hero share it, an enemy's silence is tested by the same code path as the hero's, and a new enemy ability is a definition file and maybe a named effect, never a new system.
+
+---
+
+## The stages
+
+Every cast passes these stages, in order, over ticks:
+
+1. **Request.** A command names an ability and, if the targeting kind needs it, a target. For the hero that command comes from a slot key; for an enemy, from its behaviour.
+2. **Validate.** `domain/orders/` checks disable flags, the cooldown clock, and the mana cost, and refuses or accepts. Refusal drops the command.
+3. **Face.** A targeted ability first turns the caster toward the target at the unit's turn rate until the bearing is inside the action cone. [Movement, collision, and pathing](./movement-collision-pathing.md) owns the turn.
+4. **Cast point.** The caster holds for the definition's cast point, in ticks. An interrupt during the cast point cancels the cast, spends nothing, and starts no clock.
+5. **Commit.** Mana is spent, the cooldown clock starts, and the effects run.
+6. **Backswing.** The caster is busy for the backswing, in ticks. A new order cancels the backswing without cancelling the cast.
+
+The cooldown starts at commit, never at request. A slot that receives an ability does not start that ability's clock.
+
+---
+
+## Targeting kinds
+
+| Kind | The command carries | Commit happens |
+| --- | --- | --- |
+| None | Nothing | On the tick that sees the key-down |
+| Point | A world position | On the tick that sees the confirming click |
+| Unit | A unit id | On the tick that sees the confirming click |
+| Direction | A world position the caster faces toward | On the tick that sees the confirming click |
+
+**The targeting cursor is presentation state.** Pressing a slot key for a point, unit, or direction ability opens a cursor on screen and sends nothing to the simulation. The click sends the command with the world position resolved at click time. Escape closes the cursor and sends nothing. A cursor being open does not stop a move in progress, because the simulation does not know it is open.
+
+---
+
+## Effects
+
+An ability definition lists effects. Each is either a **primitive** the pipeline knows, or a **named effect** the domain registry holds.
+
+| Primitive | Does |
+| --- | --- |
+| Damage area | Applies damage of a type to units in a shape around a point |
+| Apply status | Adds a status to a unit or to units in a shape |
+| Spawn projectile | Acquires a projectile that homes on a unit or travels a direction |
+| Spawn zone | Acquires a zone with a shape, a lifetime, and per-tick rules |
+| Spawn unit | Acquires a summon owned by the caster, with a lifetime |
+| Displace | Moves a unit — a push, a pull, or a lift that suspends its order |
+
+A primitive is parameterised by the definition and by orb level where the definition says so. Anything the primitives can't express — a wall laid as segments perpendicular to the caster, a zone that carries units along a path — is a named effect: one function in `domain/abilities/effects/`, referenced by key. There is no scripting layer and no expression language; a bespoke behaviour is TypeScript in the domain, tested like any other rule.
+
+```typescript
+// domain/abilities/effects/foo-bar.effect.ts — key 'foo-bar'
+export const fooBarEffect = (world: World, cast: Cast): void => { /* … */ }
+```
+
+---
+
+## Cooldowns and cost
+
+Each ability id has its own cooldown clock on the caster, in ticks. There is no global cooldown. A percentage reduction is read at commit and baked into the clock; it does not rewrite a clock already running. The hero's evicted spells keep their clocks in a hidden map so a re-invoked spell returns with its remaining cooldown. Mana cost and cooldown may scale with orb level; the definition holds the table and the pipeline reads the caster's current levels at commit.
+
+---
+
+## Damage, mitigation, and statuses
+
+`domain/combat/` owns what happens after an effect lands.
+
+- **Damage** has a type — physical, magical, or pure — and mitigation depends on the type: physical against armour, magical against magic resistance, pure against nothing. The formula is a tunable, not a literal.
+- **Death** is resolved by its own system at the end of the tick, so two effects that kill the same unit in one tick produce one death event.
+- **A status** is an entry in the target's status table referencing a status definition. The definition's stack rule decides what a second application does: **refresh** resets the end tick, **stack** adds a stack and resets, **ignore** does nothing while one is active.
+- **Disables** are statuses that block: stun blocks every command, silence blocks every ability, root blocks movement, disarm blocks attacks. The status system computes disable flags early in the tick; the validator reads them.
+
+---
+
+## Invoke is beside the pipeline, not inside it
+
+The hero's orb buffer, the composer, the two slots, and the hidden cooldown map live in `domain/invoke/`. They know nothing about effects. Their job is to turn key presses into **which ability** the hero throws when D or F is pressed; the pipeline's job is to throw it. The [mechanics spec](../product/specs/character-movement-and-mechanics.md) is the authority on the buffer and the slots; [Casting a spell](./casting-a-spell-flow.md) walks the handover.
+
+Keeping them apart is what lets an enemy, and later an item, cast without owning orbs.
+
+---
+
+## Summons
+
+A summon is a unit like any other: it lives in the unit pool, moves, collides, takes statuses, and dies through the same systems. What makes it a summon is an owner id and a lifetime in ticks. Its behaviour key drives it; the hero does not order it. When the owner dies, the summon keeps its lifetime.
+
+---
+
+## Anti-patterns
+
+### A spell as a system
+
+A `tickFooSpell` system that watches for the spell's key. It bypasses validation, starts its own clock, and can't be cast by an enemy. A spell is a definition; the pipeline casts it.
+
+### Committing on key-down for a targeted ability
+
+Spending mana when the cursor opens, then refunding on Escape. The refund is the bug: a cancel during the refund window and a cast in the same tick double-spend. Nothing is spent until the tick that sees the click.
+
+### A named effect that reads the clock or the cursor
+
+A bespoke effect asking how long the player held the key, or where the mouse is now. Neither exists in the domain. The command carries everything an effect may know about the player's intent.
+
+---
+
+## Quick reference
+
+| Rule | Do |
+| --- | --- |
+| Who casts | The pipeline in `domain/abilities/`, for the hero, enemies, summons, and later items |
+| The stages | Request, validate, face, cast point, commit, backswing |
+| Cooldown starts | At commit, after the cast point; never when a slot receives the ability |
+| An interrupt during the cast point | Cancels the cast; nothing spent, no clock |
+| An order during the backswing | Cancels the backswing, not the cast |
+| Targeting kinds | None, point, unit, direction |
+| Targeted abilities | Commit on the tick that sees the confirming click, with the position resolved at click time |
+| The targeting cursor | Presentation state; the simulation never knows it is open |
+| Effects | A list of primitives and named effects on the definition |
+| Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
+| Bespoke behaviour | A named effect: one function in `domain/abilities/effects/`, referenced by key; no scripting layer |
+| Cooldown clocks | Per ability id, per caster, in ticks; no global cooldown |
+| Percentage cooldown reduction | Read at commit, baked into the clock, never rewrites a running clock |
+| Evicted hero spells | Keep their clocks in a hidden map |
+| Damage types | Physical, magical, pure; mitigation by type in `domain/combat/`, formula as a tunable |
+| Death | Resolved once per tick by its own system |
+| Status stacking | Refresh, stack, or ignore, decided by the status definition |
+| Disables | Stun blocks everything, silence blocks abilities, root blocks movement, disarm blocks attacks; flags computed early in the tick, read by the validator |
+| Invoke | `domain/invoke/`, beside the pipeline; produces the ability the slot key throws |
+| A summon | A unit with an owner id and a lifetime, driven by its behaviour key |
+
+---
+
+## Related documentation
+
+- [Casting a spell](./casting-a-spell-flow.md) — the stages above walked through with real orbs and a real click
+- [Content and registries](./content-and-registries.md) — how a definition names its effects
+- [Movement, collision, and pathing](./movement-collision-pathing.md) — the turn-to-face stage and projectile sweeps
+- [Spells and attack](../product/features/spells-and-attack.md) — what the player experiences the pipeline as
+- [Status effects](../product/features/status-effects.md) — the player-facing side of disables and stacking
