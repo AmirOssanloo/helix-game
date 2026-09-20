@@ -90,7 +90,7 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 | Depends on | T01, T02, T03 |
 | Status | planned |
 
-**Build:** `tests/simulation/stress-zones.spec.ts`: twenty concurrent zones and effects (a mix of walls, bolides, updrafts, and Zeniths) with 100 projectiles and one dummy, asserting the tick under budget. Rerun the bench (views changed this phase: zones, projectiles, icons, numbers). Record a session throwing all ten spells and replay it. Walk every row of the [phase 2 gate](../04-phase-exit-gates.md#phase-2-gate) and record evidence. Docs sync: world model rows for zones, projectiles, summons as kinds and the new definition kinds; where-to-look pointers run; the spells page updated if any behaviour differs from what it says. Replay tests for gate bugs. Fill the phase README's exit record and sized-versus-actual.
+**Build:** `tests/simulation/stress-zones.spec.ts`: twenty concurrent zones and effects (a mix of walls, bolides, updrafts, and Zeniths) with 100 projectiles and one dummy, asserting the tick under budget. Rerun the bench (views changed this phase: zones, projectiles, icons, numbers). Record a session throwing all ten spells and replay it. Walk every row of the [phase 2 gate](../04-phase-exit-gates.md#phase-2-gate) and record evidence. Docs sync: world model rows for zones, projectiles, summons as kinds and the new definition kinds; where-to-look pointers run; the spells page updated if any behaviour differs from what it says. Replay tests for gate bugs. Fill the phase README's exit record and sized-versus-actual.
 
 **Acceptance:**
 - Every gate row holds with evidence, or the phase does not close.

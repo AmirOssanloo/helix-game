@@ -4,7 +4,7 @@
 
 ## Overview
 
-The ten spells the hero can invoke, the auto-attack, and the three damage types. Every spell keeps its the reference patch targeting kind, cast point, cooldown, and mana cost, all scaling with orb levels, adapted only where a the reference game mechanic has no meaning in a single-player dungeon.
+The ten spells the hero can invoke, the auto-attack, and the three damage types. Every spell has a targeting kind, cast point, cooldown, and mana cost, all scaling with orb levels.
 
 Numbers are not on this page. Each spell owns a definition file under `src/content/spells/`, one per spell, and that file holds the tables by orb level. This page says what each spell is and how it behaves at the edges.
 
@@ -27,7 +27,7 @@ Effect words — status, zone, summon, buff — are the [vocabulary's](../vocabu
 
 ## Adaptations
 
-Where the reference game's mechanic depends on something Helix does not have, the spell keeps its role and loses the dependency.
+Where a spell's role depends on something Helix does not have, it keeps the role and loses the dependency.
 
 - **Wane** hides the hero from enemy aggro and drops existing aggro, since there is no fog of war or team vision to hide from. Enemies already touching the hero keep attacking.
 - **Quicken** targets self only. There is no ally to buff.
@@ -80,7 +80,7 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 
 ## Deferred
 
-- **kit upgrades**, kit upgrades effects, and talents. The kit is the base kit.
+- **Kit upgrades and talents.** The kit is the base kit.
 - **Ally targeting** for Quicken and Hoarfrost. There are no allies.
 - **Spell-lifesteal, spell amplification, and other item-driven multipliers.** The damage pipeline accepts modifier sources; none exist.
 - **Enemy summons stealing Emberling aggro.** Summons target enemies only.

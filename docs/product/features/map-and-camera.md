@@ -19,7 +19,7 @@ Every map definition holds:
 
 From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid is inflated per unit size so a wide unit never paths through a gap it cannot fit.
 
-One world unit is one pixel at zoom 1.0. The the reference game numbers apply unchanged: the hero is 27 units across, moves 280 units per second, attacks at 600.
+One world unit is one pixel at zoom 1.0. The body numbers apply unchanged: the hero is 27 units across, moves 280 units per second, attacks at 600.
 
 ## The arena
 

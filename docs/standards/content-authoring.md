@@ -45,7 +45,7 @@ export const fooBarDef = {
 
 **Units in content are the designer's units.** Durations in seconds, distances in world units, speeds in units per second, chances as fractions of one. The domain converts seconds to ticks at load, once. A content file never contains a tick count.
 
-**A number taken from the reference game cites its source in a comment**, with the patch: `// the reference patch`. When the reference changes, the comment says which numbers were copied and which were ours.
+**A number design may retune carries a `// tunable` comment.** Numbers live in content files so they can change without touching code.
 
 ---
 

@@ -55,7 +55,7 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 | Bosses with phases | Enemies | Encounter design |
 | Enemy affixes | Enemies | Items or a difficulty design |
 | Forms as playable content | Hero | Design of a second form; the architecture is ready and tested by a door test in sprint 22 |
-| Talents, kit upgrade, kit upgrades | Hero, Spells | Never in the five phases |
+| Talents and kit upgrades | Hero, Spells | Never in the five phases |
 | Items as modifier sources | Hero | Items; the stack is ready and tested by a door test |
 | Real death rules | Hero | The dungeon loop |
 | Stat growth past 30, prestige | Hero | Never in the five phases |

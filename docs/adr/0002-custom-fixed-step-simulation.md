@@ -16,7 +16,7 @@ Phaser 4 ships two physics systems, both optional and enabled per scene. Arcade 
 
 What the game needs from a simulation is specific, and most of it is not physics:
 
-- A **fixed tick at 30 Hz**, rendered at display refresh with interpolation, because turn rate, cast points, and cooldowns are time values, not frame counts. the reference game's own turn-rate source uses 0.03 s steps, and the [mechanics spec](../product/specs/character-movement-and-mechanics.md) is written in those units.
+- A **fixed tick at 30 Hz**, rendered at display refresh with interpolation, because turn rate, cast points, and cooldowns are time values, not frame counts. The [mechanics spec](../product/specs/character-movement-and-mechanics.md) expresses turn rate in 0.03 s steps, and the tick is sized to match.
 - **Turn-then-move locomotion.** A unit yaws toward its target at a fixed angular rate with a short ramp, and only translates or casts once its bearing is inside an 11.5 degree action cone. Shortest-arc turning, order replacement, a state machine.
 - **Constant speed along a path.** Each tick a moving unit advances exactly speed times the step along its polyline. No acceleration, no momentum, no sliding. Every physics engine integrates velocity and changes it on contact, which is the opposite of this rule.
 - **Hard disc push-out.** Units are solid circles. Overlapping pairs separate along the centre line; a unit inside an obstacle is pushed to the nearest edge. Enemies push each other rather than steering around each other.
@@ -80,7 +80,7 @@ The accepted cost is eleven to twelve engineer days: about two for locomotion an
 
 **A* on a grid has known limits.** Diagonal-looking paths, inflation per radius class, and the re-path budget all need tuning against real enemy counts. Real levels may eventually want a navigation mesh, and that is a rewrite of one module.
 
-**Thirty-three milliseconds of input latency is a design bet.** A command issued just after a tick waits for the next one. the reference game players are used to this; a player who is not may feel it.
+**Thirty-three milliseconds of input latency is a design bet.** A command issued just after a tick waits for the next one. Players who come from click-to-move action games are used to this; a player who is not may feel it.
 
 **Debug visualisation is our job too.** With no engine debug renderer, the domain has to expose discs, ranges, paths, and cells for the presentation to draw.
 

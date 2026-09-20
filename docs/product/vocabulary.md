@@ -16,6 +16,7 @@ When two people call the same thing different names, the names leak into the cod
 | The person at the keyboard | **The player** | User, gamer |
 | One shape the hero can take: its body, kit, resources, and armory | **Form** (the hero has an active form) | Character, class, stance, mode |
 | What the six slot keys mean for a form: Invoke for the caster, a plain hotbar for another | **Kit** | Loadout, spellbook, ability set |
+| The caster kit: three orbs, the Invoke composer, two slots | **Skein** | Any other name for the caster's kit |
 | Per-form equipment that modifies stats | **Armory** | Inventory (that is the shared item bag), gear |
 | The game | **Helix** | Skein (that is the hero's kit, not the product) |
 | Any actor in the world, friendly or hostile | **Unit** | Actor, mob, creature, entity as a game word |

@@ -77,7 +77,7 @@ The spec's acceptance traces, in prose. Each is a test.
 
 ## Deferred
 
-- **A third slot.** kit upgrades grants one in the reference game; the kit here has two, always.
+- **A third slot.** The kit has two, always.
 - **Levelling Invoke** and its talents. Invoke's cooldown scales with total orb levels and nothing else.
 - **A "last invoked" indicator** beyond D and F being ordered. The two slots are the memory.
 - **Sound cues** for compose and throw. Nothing has audio yet.

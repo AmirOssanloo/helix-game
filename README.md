@@ -2,7 +2,7 @@
 
 A 2D hero-combat game for the browser: one hero, ten spells composed from three orbs, packs of enemies, and a fixed-step simulation that replays to the tick. TypeScript, Phaser 4, Vite, Vitest, one package.
 
-The repository folder is named `Skein`; the product is **Helix**. Skein is the hero's kit, not the game.
+The repository and the product are both **Helix**. Skein is the name of the hero's kit, not the game.
 
 ## Where to go
 

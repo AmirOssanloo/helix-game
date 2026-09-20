@@ -6,11 +6,11 @@
 
 There is one hero: Skein, a ranged caster. This page covers the hero as a unit — attributes, resources, levels, the passives each orb instance carries, and what happens on death. How the hero is controlled is in [Controls and orders](./controls-and-orders.md); the kit is in [Orbs and Invoke](./orbs-and-invoke.md) and [Spells and attack](./spells-and-attack.md).
 
-Every number on this page is a starting value taken from the reference patch. The file that owns them is `src/content/hero.ts`, and it wins when the two disagree.
+Every number on this page is a starting value. The file that owns them is `src/content/hero.ts`, and it wins when the two disagree.
 
 ## Attributes
 
-The hero has three attributes in the the reference game model. Each drives two derived values, and every derived value is a modifier pipeline: base, plus flat sources, times percentage sources, so that orb passives now and items later are the same kind of thing.
+The hero has three attributes. Each drives two derived values, and every derived value is a modifier pipeline: base, plus flat sources, times percentage sources, so that orb passives now and items later are the same kind of thing.
 
 | Attribute | Drives | How |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Both are shown as bars with numbers on the [HUD](./hud.md), and both can be push
 
 ## Levels and experience
 
-Levels run 1 to 30 on the reference game's experience table. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent from the HUD and can also be granted or assigned from the developer panel.
+Levels run 1 to 30 on the experience table in `src/content/hero.ts`. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent from the HUD and can also be granted or assigned from the developer panel.
 
 Orb level and orb instance are different things: a level-7 Whorl with one instance out is not a level-1 Whorl with three instances out. Level scales the size of each instance's passive; instance count is how many copies are applied ([mechanics spec](../specs/character-movement-and-mechanics.md) section 9.4).
 
@@ -80,7 +80,7 @@ When health reaches zero the hero enters a death state: the order is cleared, ta
 ## Deferred
 
 - **Forms.** The hero may later swap between forms mid-fight, each with its own body, kit, health, mana, cooldowns, and armory, sharing level, experience, and item slots. The [overview](../overview.md) states the intent; the architecture already treats the hero as one unit pointing at an active form.
-- **Talents, kit upgrades, and kit upgrades.** Out of scope; the kit is the base kit.
+- **Talents and kit upgrades.** Out of scope; the kit is the base kit.
 - **Items as modifier sources.** The stat pipeline is built for them, but no item exists.
 - **Real death rules** — experience loss, corpse runs, difficulty penalties. Respawn is free until the dungeon loop exists.
 - **Stat growth beyond level 30**, and any prestige or rebirth.

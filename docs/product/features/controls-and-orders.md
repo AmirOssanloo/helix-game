@@ -6,7 +6,7 @@
 
 How the player drives the hero: the pointer issues spatial orders, the left hand issues ability keys, and the hero holds exactly one order at a time. This page is the player-facing summary. The [mechanics spec](../specs/character-movement-and-mechanics.md) sections 4, 5, 7, and 14 own the state machine, the turn-rate numbers, and the input sampling rules, and it wins when the two disagree.
 
-The scheme is the reference game's, with normal cast only and four the reference game orders deliberately removed.
+The scheme is the click-to-move action-RPG standard, with normal cast only and four common orders deliberately removed.
 
 ## The pointer
 
@@ -57,7 +57,7 @@ There is no global cooldown. Q, W, E, R, D, and F can be processed on consecutiv
 
 ## Deliberately absent
 
-Four the reference game orders are removed on purpose, and the spec says so in section 5.4 so they cannot be re-imported by habit.
+Four common orders are removed on purpose, and the spec says so in section 5.4 so they cannot be re-imported by habit.
 
 - **Quick-cast**, including quick-cast on key-up and double-tap self-cast
 - **Shift-queue** and any other order queue

@@ -82,7 +82,7 @@ The rules behind each row are in [Performance standards](../standards/performanc
 
 ## Beyond phase 5
 
-Items and inventory, equipment as modifier sources, loot tables and drops on death, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, top-down sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the genre standard.
+Items and inventory, equipment as modifier sources, loot tables and drops on death, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, top-down sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the classic loot-driven action RPGs.
 
 Not at any point: multiplayer, isometric view, hero selection, quick-cast, order queues, mobile.
 

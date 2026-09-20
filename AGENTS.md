@@ -1,6 +1,6 @@
 # Helix
 
-A 2D hero-combat game for the browser. TypeScript, Phaser 4, Vite, Vitest, one package. The product is **Helix**; the repository folder is named `Skein` after the hero's kit, and the [vocabulary](./docs/product/vocabulary.md) says never to call the game that.
+A 2D hero-combat game for the browser. TypeScript, Phaser 4, Vite, Vitest, one package. The product is **Helix**; **Skein** is the name of the hero's kit, and the [vocabulary](./docs/product/vocabulary.md) says never to call the game that.
 
 **The repository has no source code yet.** The pages under `docs/` describe the target and code is held to them. The folder under `.claude/plan/implementation/` describes the order and cost of reaching it. [STATUS.md](./.claude/plan/implementation/STATUS.md) says which sprint is active and which ticket is next. A pointer in the docs to a file under `src/` returns nothing until the ticket that creates it is done; that is expected, not a broken link.
 

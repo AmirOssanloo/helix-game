@@ -12,18 +12,17 @@
 | Product context | Web-based single-player game. No multiplayer, no lockstep netcode. |
 | Classification | Mechanism only. Individual invoked spells are out of scope. |
 | Casting mode | Normal cast only. No quick-cast. |
-| Omitted the reference game orders | Follow, hold position, shift-queue, quick-cast |
-| Reference patch | the reference patch body numbers and wiki mechanics, adapted |
-| Simulation | Local 30 Hz simulation tick (Δt = 1/30 s); turn-rate source uses 0.03 s steps |
+| Omitted orders | Follow, hold position, shift-queue, quick-cast |
+| Simulation | Local 30 Hz simulation tick (Δt = 1/30 s); turn rate expressed in 0.03 s steps |
 | Status | Approved outline with input and platform revisions applied |
 
 ---
 
 ## 1. Purpose
 
-This brief specifies how a player controls an Skein-class caster in a web-based single-player game: pointer and keyboard issuance of orders, continuous locomotion with facing constraints, collision and pathing, the three-orb reagent buffer, the Invoke composer, and the two-slot prepared-spell FIFO.
+This brief specifies how a player controls a Skein-class caster in a web-based single-player game: pointer and keyboard issuance of orders, continuous locomotion with facing constraints, collision and pathing, the three-orb reagent buffer, the Invoke composer, and the two-slot prepared-spell FIFO.
 
-The source of truth for feel and numbers is the reference game Skein as publicly documented around the reference patch. This is not a multiplayer replica and not a catalogue of named invoked spells. Where this product deliberately drops a the reference game order (follow, hold, shift-queue, quick-cast), the brief states the omission and specifies the remaining behaviour so it cannot be re-imported by habit.
+This is a single-player design, not a multiplayer replica, and not a catalogue of named invoked spells. Where the product deliberately drops an order (follow, hold, shift-queue, quick-cast), the brief states the omission and specifies the remaining behaviour so it cannot be re-imported by habit.
 
 The engineering goal is that the character faces the direction of a move command over a measurable turn interval, that a fourth orb press evicts the oldest instance, and that composing a spell and throwing a spell are two different keys.
 
@@ -49,7 +48,7 @@ The engineering goal is that the character faces the direction of a move command
 - Shift-queue and any other order queue. The unit holds at most one current order.
 - Follow (right-click ally) and hold position.
 - Multiplayer, spectating, lockstep, client-side prediction against a remote server, and lag compensation.
-- Item inventory, shop, courier, talent trees as content, and kit upgrade menus except where they would change orb count, orb level, or slot count.
+- Item inventory, shop, and talent trees as content, except where they would change orb count, orb level, or slot count.
 - Team vision, fog of war as a networking problem, and map geometry except as they constrain pathing.
 
 ---
@@ -60,18 +59,17 @@ The character is a ranged caster hero: a ground unit, player-owned, single-selec
 
 ### 3.1 Authoritative locomotion and body numbers
 
-the reference wiki lists these as current on the reference patch. Patch a later patch reduced base movement speed from 285 to 280. Use 280 unless design freezes an older patch.
+These are the body numbers the product starts from. Use 280 base movement speed unless design changes it.
 
 | Property | Value | Notes |
 |---|---|---|
-| Reference unit | `hero_skein` | Identity only; do not require Source engine |
 | Attack type | Ranged | Projectile speed 900 |
 | Attack range / acquire | 600 / 800 | Acquire is auto-attack search radius |
 | Attack point + backswing | 0.4 + 0.7 s | Base attack time 1.7 s |
 | Base movement speed | 280 | World units per second |
 | Night hero bonus (optional) | +30 | Omit if the product has no day/night clock |
 | Turn rate \(T\) | 0.6 | Radians per 0.03 s step |
-| Collision size | 27 | `HULL_SIZE_HERO` equivalent |
+| Collision size | 27 | Impassable body radius |
 | Bound radius | 24 | Range / radius buffer |
 | Default min / max MS | 100 / 550 | Global clamps unless a haste-like rule exists |
 
@@ -83,7 +81,7 @@ Three sizes exist and must not be collapsed into one radius.
 - **Bound radius 24** is the coordinate buffer added to attack range, unit-targeted cast range, and many effect radii. Actual attack reach ≈ attack range + attacker bound + target bound.
 - **Selection size** is the clickable box in screen space. It may scale with the rendered model. It is not a physics value.
 
-Most heroes in the source game share hull `HULL_SIZE_HERO` (collision 27, bound 24). Phased or flying movement, if the product later adds it, ignores collision against other units but not against buildings or trees. Until then, treat every ground unit as a solid disc.
+Every hero form shares the same hull (collision 27, bound 24). Phased or flying movement, if the product later adds it, ignores collision against other units but not against buildings or trees. Until then, treat every ground unit as a solid disc.
 
 ---
 
@@ -128,7 +126,7 @@ Every targeted ability uses a two-step commit.
 1. Press the ability key. If the ability is no-target (Q, W, E, R, and any no-target stub on D or F), it commits on key-down.
 2. If the ability needs a unit or a point, the client enters targeting mode: the cursor becomes a target reticle, and no spell is spent yet. Left click commits. Esc or S cancels targeting without spending mana or starting cooldown.
 
-There is no quick-cast. Hovering a unit and tapping D must not fire D until a confirming left click, unless D’s current stub is no-target. This is slower than the reference game’s common high-APM setup and is an accepted product constraint.
+There is no quick-cast. Hovering a unit and tapping D must not fire D until a confirming left click, unless D’s current stub is no-target. This is slower than a quick-cast setup and is an accepted product constraint.
 
 There is no global cooldown. Q, W, E, R, D, and F may be legally processed on consecutive ticks subject only to each ability’s own cooldown, mana, disable state, and turn-to-face rules.
 
@@ -228,7 +226,7 @@ Instantaneous yaw speed at max rate: \(\omega_{max} = T / 0.03 \approx 20\,\math
 
 ### 7.2 Ramp
 
-Public the reference game documentation states that a unit does not start turning at \(\omega_{max}\) on the first tick; turn rate ramps over an unpublished interval. Implement a short ease-in of 2–4 ticks to \(\omega_{max}\). Do not ease-out in a way that overshoots. Clamp the last tick so facing equals the target when remaining angle ≤ max step.
+A unit does not start turning at \(\omega_{max}\) on the first tick; turn rate ramps over a short interval. Implement a short ease-in of 2–4 ticks to \(\omega_{max}\). Do not ease-out in a way that overshoots. Clamp the last tick so facing equals the target when remaining angle ≤ max step.
 
 ### 7.3 Action cone (the 11.5° rule)
 
@@ -342,7 +340,7 @@ The composer does not cast the compiled spell. It writes the spell identity into
 
 Invoke has a small mana cost (7 in current public data; treat as tunable). It has no cast point (0.00 + 0.00) and does interrupt channels.
 
-Cooldown is a function of the sum of Quartz, Whorl, and Ember skill levels, not of how many instances are currently active. Model since the reference game an earlier patch: base 7.0 s minus 0.3 s per total orb level.
+Cooldown is a function of the sum of Quartz, Whorl, and Ember skill levels, not of how many instances are currently active. The model: base 7.0 s minus 0.3 s per total orb level.
 
 \[
 \mathrm{CD}(n) = 7.0 - 0.3n
@@ -405,7 +403,7 @@ Recency is determined by Invoke order, not by which slot was last thrown. Throwi
 
 ### 11.5 Naming in this milestone
 
-Do not ship named the reference game spells. Bind each multiset to a stub: `spell-qqq`, `spell-qqw`, `spell-qwe`, `spell-www`, `spell-wwe`, `spell-wee`, `spell-eee`, `spell-eeq`, `spell-eqq`, `spell-qww`. Each stub should log, flash a colour-coded glyph, and apply a harmless placeholder so QA can verify compose, shift, evict, and swap.
+Until the spell catalogue lands, bind each multiset to a stub: `spell-qqq`, `spell-qqw`, `spell-qwe`, `spell-www`, `spell-wwe`, `spell-wee`, `spell-eee`, `spell-eeq`, `spell-eqq`, `spell-qww`. Each stub should log, flash a colour-coded glyph, and apply a harmless placeholder so QA can verify compose, shift, evict, and swap.
 
 ---
 
@@ -532,7 +530,7 @@ A build fails this brief if any of the following are true:
 
 ## 17. Parameters to Expose
 
-Do not bury these in code. Designers will retune even if the milestone starts on the reference game numbers.
+Do not bury these in code. Designers will retune these.
 
 | Parameter | Default | Why exposed |
 |---|---|---|
@@ -563,26 +561,16 @@ This file is only the control and locomotion layer. Later briefs, not amendments
 
 ---
 
-## 19. Sources and Conflicts
+## 19. Resolved Conflicts
 
-Public references used for the source-game synthesis:
+Open points settled during the design of this brief:
 
-- [Skein (the reference wiki)](https://example.invalid/ — orbs, Invoke table, stance bonuses, body numbers.
-- [Skein (the reference wiki)](https://example.invalid/ — the reference patch; MS 280; turn 0.6; collision 27; bound 24; slot insert and swap language.
-- [Turn rate](https://example.invalid/ — \(T\) units, 11.5° cone, \(t = 0.03\pi/T\), ramp note.
-- [Movement Speed](https://example.invalid/ — composition order, clamps, order types.
-- [Unit Size](https://example.invalid/ — collision versus bound versus selection.
-- [Cooldown](https://example.invalid/ — pipeline, snapshot CDR, Invoke 0.3 s/level.
-- [Controls (the reference wiki)](https://example.invalid/ — left/right click primitives. Follow, hold, and shift-queue are documented there and are omitted here by product decision.
-
-Conflicts and resolutions:
-
-- Base MS 285 in some reference-wiki snapshots versus 280 after a later patch. **Resolution: 280.**
+- Base MS 285 versus 280 across sources. **Resolution: 280.**
 - \(t_{180}\) at \(T = 0.6\) equals 0.157 s by formula versus 0.175 s in some tables. **Resolution: formula plus optional ramp.**
 - “Max 3 instances per orb” wording in some extracts versus the live 3-total buffer. **Resolution: 3 total.**
 - Whether swap-only Invoke starts composer cooldown. **Resolution: it does not.**
 
-Product deviations from the reference game, restated so they are not treated as omissions by accident: normal cast only; no follow; no hold; no shift-queue; local single-player simulation rather than a networked client.
+Product deviations, restated so they are not treated as omissions by accident: normal cast only; no follow; no hold; no shift-queue; local single-player simulation rather than a networked client.
 
 ---
 
