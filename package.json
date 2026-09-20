@@ -16,7 +16,7 @@
     "lint": "echo 'pnpm lint: not yet. ESLint is not configured' && exit 1",
     "lint:fix": "echo 'pnpm lint:fix: not yet. ESLint and Prettier are not configured' && exit 1",
     "typecheck": "tsc --noEmit",
-    "dev": "echo 'pnpm dev: not yet. The Vite dev server is not configured' && exit 1",
+    "dev": "vite",
     "build": "vite build",
     "bench": "echo 'pnpm bench: not yet. The render benchmark scene does not exist' && exit 1"
   },
@@ -24,6 +24,7 @@
     "phaser": "4.2.1"
   },
   "devDependencies": {
+    "@types/node": "24.13.6",
     "typescript": "6.0.3",
     "vite": "8.3.0"
   }

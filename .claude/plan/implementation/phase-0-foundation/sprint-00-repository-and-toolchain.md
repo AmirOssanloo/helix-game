@@ -72,7 +72,9 @@ Nothing plays. `pnpm check` is green on eight empty layers, and a deliberate vio
 | Layer | tooling, app |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
+
+*Done on 2026-09-20. The define is `__DEV__`, declared in `src/app/build-flags.d.ts` and set from the Vite mode. The sentinel is `DEVTOOLS_SENTINEL` in `src/devtools/devtools-sentinel.ts`; `mountPanel` writes it onto its host, so the string is in a bundle exactly when panel code is. The grep is a Vite plugin in `vite.config.ts` that reads every chunk at `generateBundle`, so the string has one owner and the check runs on every platform; the config imports the sentinel with a `.ts` suffix because Vite's native config loader asks for one, which needed `allowImportingTsExtensions` (harmless under `noEmit`; T03's lint keeps suffixes out of `src/`). `vite.config.ts` is typechecked, so `@types/node` was added. The page serves `<main id="game">` as the host the canvas mounts into; the canvas element itself arrives with the game config in P0-S01-T04. An empty icon link keeps the browser's favicon request out of the console.*
 
 **Build:** `vite.config.ts` with the aliases, an `index.html` mounting the canvas and an empty `<aside id="devtools">`, and one `define` that is true in development and false in production. `src/app/main.ts` mounts the panel only inside a branch on that define, so the production bundle contains no `devtools/` code. The `pnpm build` step greps the bundle for a sentinel string exported by `devtools/` and fails if found.
 
@@ -177,7 +179,7 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | Lint rule branch checks recorded, one row per rule | |
 | Architecture test catches a barrel re-export | |
 | CI green | |
-| Actual days per ticket | T00 1 · T01 0.25 · T02 · T03 · T04 · T05 |
+| Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 · T04 · T05 |
 
 ## Risks in this sprint
 
