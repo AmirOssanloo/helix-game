@@ -1,9 +1,53 @@
-import { mountPanel } from "@devtools/public";
+import Phaser from "phaser";
+import { exposeDevApi, mountPanel } from "@devtools/public";
+import type { MapDef, Registry } from "@domain/public";
+import { createRings } from "@instrumentation/public";
+import type { SceneContext } from "@presentation/public";
+import { BootScene, HudScene, PlayScene } from "@presentation/public";
+import { createWorld } from "@simulation/public";
+import { FixedStepDriver, wallClock } from "./fixed-step-driver";
+import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
 import type { Boot } from "./public";
 
 const DEVTOOLS_HOST_ID = "devtools";
 
+/** Every session starts from this seed until a session can be recorded and replayed under its own. */
+const SESSION_SEED = 1;
+
+/** The content layer holds no definitions yet, and a world needs a registry and a map to exist. */
+const EMPTY_REGISTRY: Registry = { tuning: new Map() };
+const BLANK_MAP: MapDef = { id: "blank" };
+
 export const boot: Boot = (): void => {
+  const world = createWorld({
+    seed: SESSION_SEED,
+    registry: EMPTY_REGISTRY,
+    map: BLANK_MAP,
+  });
+  const rings = createRings();
+  const driver = new FixedStepDriver({ world, rings, clock: wallClock });
+  const context: SceneContext = {
+    driver,
+    world: world.view,
+    report: (message: string): void => {
+      console.log(message);
+    },
+  };
+
+  document.addEventListener("visibilitychange", (): void => {
+    driver.setHidden(document.hidden);
+  });
+
+  new Phaser.Game({
+    ...gameConfig,
+    type: rendererType(readRendererOverrides(window)),
+    scene: [
+      new BootScene(context),
+      new PlayScene(context),
+      new HudScene(context),
+    ],
+  });
+
   if (__DEV__) {
     const host = document.getElementById(DEVTOOLS_HOST_ID);
 
@@ -14,6 +58,7 @@ export const boot: Boot = (): void => {
     }
 
     mountPanel(host);
+    exposeDevApi(window, { rings });
   }
 };
 

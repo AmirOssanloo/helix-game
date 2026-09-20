@@ -103,7 +103,7 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Layer | instrumentation, app, presentation, tests |
 | Size | 1 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/instrumentation/`: one preallocated sample ring per measurement named in `docs/architecture/devtools-and-instrumentation.md` (tick time, render time, live counts, pool misses, event overwrites, frame rate), each a fixed array and a cursor, written by a function that allocates nothing. Under `src/app/`: `game-config.ts` with `Phaser.AUTO`, `render: { maxTextures: 1 }`, `Scale.FIT` at 1920 by 1080 auto-centred, no `physics` key, `FORCE_CANVAS` and `FORCE_WEBGL` window overrides; `fixed-step-driver.ts` as the one file that reads a clock: accumulates the frame delta, runs at most three ticks per frame then drops the remainder, measures around each tick into the ring, computes the interpolation fraction, pauses on `visibilitychange` hidden and discards any command submitted while hidden; `main.ts` wiring config, world, driver, and the development-only panel mount. Under `src/presentation/scenes/`: `boot.scene.ts` that reads the renderer type, logs it, shows a static `Text` warning banner when Canvas, and starts `PlayScene` and `HudScene` as empty shells that call the driver's `onFrame` and log the tick count every second.
 
@@ -120,16 +120,18 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 
 **Definition of done:** Every change · Anything under `src/presentation` (the banner is `Text` in `boot.scene.ts`, the one allowed place).
 
+> Edited while building: presentation may not write to the console, so the scenes take a `SceneContext` with a `report` callback and the composition root supplies `console.log`; the app layer's `no-console` allowance widened from warn and error to log, warn, and error, and was re-probed (`console.info` in app and `console.log` in presentation still fail). `PlayScene` hands frames to the driver and `HudScene` reports the tick count once a second; `BootScene` launches both and stays on top holding the banner, since a started scene would destroy it. The simulation and the pools may not import instrumentation, so the driver samples the pools' miss counters, the live counts, and the event ring's overwrite counter after each tick; live counts are four rings, one per pool. The render-time ring exists and nothing writes it until the sync does. The `FORCE_CANVAS` and `FORCE_WEBGL` reads live in `game-config.ts` as a function over `window`, called from `main.ts`, so the architecture test can import the config in Node. The world boots on an empty registry and a blank map declared in `main.ts` until content has definitions. The driver spec runs in the simulation tier, since it ticks a world; `tests/app/` joined that project.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Phase 0 gate rows | |
-| `pnpm check` green | |
-| Tick count visible in the console at 30 per second | |
-| Actual days per ticket | T01 0.25 · T02 0.25 · T03 0.5 · T04 |
+| Phase 0 gate rows | All ten hold on 2026-09-20: `pnpm check` green; the three lint rows and the wrong-direction architecture row were proven in sprint 00's table; the game boots under `Phaser.AUTO` with `maxTextures: 1` and no `physics` key, the architecture test now imports the config and asserts it; `FORCE_CANVAS` shows the banner over the canvas; `world.spec.ts`, the pool specs, and `fixed-step-driver.spec.ts` are green; every ring reads from `window.DevApi.rings`. The phase does not close until sprint 00's CI row does |
+| `pnpm check` green | Green on 2026-09-20: lint, typecheck, build, then 375 tests in 21 files across five projects in 1.6 s |
+| Tick count visible in the console at 30 per second | Yes (2026-09-20). Under WebGL the console shows `renderer WebGL`, then `tick 29`, `tick 59`, `tick 89`, one line per second; the tick-time ring reads 0 ms per tick on an empty world and the frame-rate ring reads 60 |
+| Actual days per ticket | T01 0.25 · T02 0.25 · T03 0.5 · T04 0.5 |
 
 ## Risks in this sprint
 

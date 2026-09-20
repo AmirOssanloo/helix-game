@@ -1,2 +1,7 @@
-/** One measurement written to a ring; the panel computes statistics, the ring never does. */
-export type Sample = number;
+export { createRings, type InstrumentationRings } from "./rings";
+export {
+  createSampleRing,
+  type Sample,
+  SAMPLE_RING_CAPACITY,
+  type SampleRing,
+} from "./sample-ring";

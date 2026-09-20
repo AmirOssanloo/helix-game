@@ -74,6 +74,8 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 | Input mapper | presentation | Each pointer and key gesture becomes the right command with the tick timestamp; edge triggering, no key repeat; targeting mode commits on click and cancels on escape | Phaser's input plumbing | One per gesture |
 | Scenes | — | Nothing. A scene is lifetime and composition; the benchmark exercises it | | 0 |
 | `DevApi` | simulation | Each panel operation becomes the right `DebugCommand` and lands in the input log | The HTML | One per operation |
+| Fixed-step driver | simulation | The accumulator, the three-tick cap and the drop, the interpolation fraction, no ticks while hidden, a command submitted while hidden discarded; the clock is injected, so it runs in Node | Phaser's frame plumbing | Eight to ten |
+| Instrumentation rings | unit | A write reads back; the oldest sample is overwritten at capacity; the shape holds past capacity, asserted by count and cursor, never by heap | Statistics, which the panel computes | Four or five |
 | `shared/` helpers | unit | Output-based, from a table, with the boundaries — angle wrap at ±π, clamp at the edges, the ring buffer at capacity | One-line wrappers | As many cases as branches |
 
 **Rules and the validator deserve the most attention.** A missed branch is a refusal that never happens, and the player casts through a silence.

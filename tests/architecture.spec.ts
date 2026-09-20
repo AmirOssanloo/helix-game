@@ -13,6 +13,5 @@ describeNoSpecUnderSrc({ srcDir: SOURCE_DIR });
 
 describeGameConfig({
   configFile: join(SOURCE_DIR, "app", "game-config.ts"),
-  // The composition root has no game config yet. Set this to false in the change that creates it.
-  absentUntilCreated: true,
+  absentUntilCreated: false,
 });

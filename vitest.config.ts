@@ -83,7 +83,10 @@ export default defineConfig({
         "tests/shared/**/*.spec.ts",
         "tests/instrumentation/**/*.spec.ts",
       ]),
-      project("simulation", "node", ["tests/simulation/**/*.spec.ts"]),
+      project("simulation", "node", [
+        "tests/simulation/**/*.spec.ts",
+        "tests/app/**/*.spec.ts",
+      ]),
       project("content", "node", ["tests/content/**/*.spec.ts"]),
       project("architecture", "node", [
         "tests/architecture.spec.ts",

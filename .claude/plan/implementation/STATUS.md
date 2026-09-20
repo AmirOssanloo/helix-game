@@ -9,18 +9,18 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | | |
 | --- | --- |
 | **Active phase** | [0 — Foundation](./phase-0-foundation/README.md) |
-| **Active sprint** | [00 — Repository and toolchain](./phase-0-foundation/sprint-00-repository-and-toolchain.md) |
-| **Next ticket** | P0-S01-T04 — Instrumentation rings, the fixed-step driver, the game config, and BootScene |
+| **Active sprint** | [02 — Locomotion, turn rate, and the render benchmark](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md) |
+| **Next ticket** | P1-S02-T01 — Order state machine and the command union |
 | **In progress** | none |
-| **Last closed ticket** | P0-S01-T03 — The world: random source, command buffer, event ring, tick, input log |
-| **Last closed sprint** | none |
-| **Last milestone reached** | none. M0 is the toolchain gate at the end of sprint 01 |
+| **Last closed ticket** | P0-S01-T04 — Instrumentation rings, the fixed-step driver, the game config, and BootScene |
+| **Last closed sprint** | [01 — Simulation skeleton and instrumentation](./phase-0-foundation/sprint-01-simulation-skeleton-and-instrumentation.md), 2026-09-20 |
+| **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
 
 ---
 
 ## Blocked or waiting
 
-Sprint 00's exit waits on one row: CI green on its final commit, which needs that commit pushed. Nothing else blocks; sprint 01 can start.
+Sprint 00's exit waits on one row: CI green on its final commit, which needs that commit pushed. Phase 0's exit record waits on that row too, since every phase 0 gate row already holds locally. Nothing blocks sprint 02.
 
 ---
 
