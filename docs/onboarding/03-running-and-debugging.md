@@ -103,7 +103,7 @@ If it fails, the fix is inside Phaser, never a different engine: draw calls over
 ## The stress test
 
 ```bash
-pnpm test -- -t "stress"
+pnpm test -t "stress"
 ```
 
 This ticks 300 units with random orders on a 4000 by 4000 arena in Node, with no renderer, and asserts a mean tick under 4 ms. It is part of `pnpm test`, so it runs before every push; run it alone when you have touched movement, pathing, collision, or AI and want the number quickly.
@@ -111,7 +111,7 @@ This ticks 300 units with random orders on a 4000 by 4000 arena in Node, with no
 The replay determinism test runs the same way:
 
 ```bash
-pnpm test -- -t "replay"
+pnpm test -t "replay"
 ```
 
 ---

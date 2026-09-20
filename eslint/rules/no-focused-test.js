@@ -10,7 +10,7 @@
  */
 
 const MESSAGE =
-  "`.only` silently drops every other test in the file from the gate. Run the one test with `pnpm test -- -t '<name>'` and take `.only` out before committing. See docs/standards/testing.md#quick-reference.";
+  "`.only` silently drops every other test in the file from the gate. Run the one test with `pnpm test -t '<name>'` and take `.only` out before committing. See docs/standards/testing.md#quick-reference.";
 
 /**
  * Three selectors for the three spellings: `it.only`, a chained modifier such as

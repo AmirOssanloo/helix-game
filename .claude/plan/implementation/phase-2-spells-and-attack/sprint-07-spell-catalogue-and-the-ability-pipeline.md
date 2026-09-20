@@ -8,7 +8,7 @@ The ten spells are specified as data before any is built, every definition kind 
 
 ## Playable outcome
 
-The game plays exactly as at the end of phase 1. Under the hood, every stub now passes through the general pipeline and the registry, and `pnpm test -- tests/content/` runs a real content tier.
+The game plays exactly as at the end of phase 1. Under the hood, every stub now passes through the general pipeline and the registry, and `pnpm test tests/content/` runs a real content tier.
 
 ---
 

@@ -32,11 +32,11 @@ Nothing needs to be up for any of this. No containers, no database. `pnpm test` 
 
 | Tier         | Lives under                     | Environment | Runs in | Tests |
 | ------------ | ------------------------------- | ----------- | ------- | ----- |
-| Unit         | `tests/domain/`, `tests/shared/` | Node       | `pnpm test` | One rule at a time: an orb eviction, a turn step, a damage formula, an A* result |
+| Unit         | `tests/domain/`, `tests/shared/`, `tests/instrumentation/` | Node | `pnpm test` | One rule at a time: an orb eviction, a turn step, a damage formula, an A* result |
 | Simulation   | `tests/simulation/`             | Node        | `pnpm test` | A world ticked with commands: the acceptance tests from the mechanics spec, spell casts, enemy behaviour, the replay determinism test, the stress test |
 | Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
 | Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table, asserted a second time; a wrong-direction import fails here and in lint. Every relative link and anchor in the documentation resolves |
-| Presentation | `tests/presentation/`           | jsdom       | `pnpm test` | Input mapping and view binding, with Phaser stubbed. Few, and small |
+| Presentation | `tests/presentation/`, `tests/devtools/` | jsdom  | `pnpm test` | Input mapping, view binding, and the panel, with Phaser stubbed. Few, and small |
 | Benchmark    | `bench/`                        | A browser   | `pnpm bench`, by hand | Render time, draw calls, heap over 30 seconds. Never in `check` |
 
 The benchmark is deliberately outside `pnpm check`: it needs a GPU and a human reading a performance panel, and it answers a different question — not "is the code right" but "does it still hold frame time on the reference laptop". Run it after touching the atlas, the views, or upgrading Phaser, and put the numbers in the change description.
@@ -45,14 +45,15 @@ The benchmark is deliberately outside `pnpm check`: it needs a GPU and a human r
 
 ## Running one thing
 
-Flags after `--` reach Vitest:
+Flags after the script name reach Vitest as they are. Do not put a `--` before them: pnpm passes it through, and Vitest then reads everything after it as a file filter, so `-t` and `--project` would be ignored.
 
 ```bash
-pnpm test -- -t "AT-M2"                     # One spec by name — here, the 180-degree turn test
-pnpm test -- tests/simulation/spells/        # One folder
-pnpm test -- -t "replay"                     # The determinism test
-pnpm test -- -t "stress"                     # The 300-unit stress test
-pnpm test:watch -- tests/domain/invoke/      # Rerun a folder on save
+pnpm test -t "AT-M2"                     # One spec by name — here, the 180-degree turn test
+pnpm test tests/simulation/spells/        # One folder
+pnpm test --project simulation           # One tier: unit, simulation, content, architecture, or presentation
+pnpm test -t "replay"                    # The determinism test
+pnpm test -t "stress"                    # The 300-unit stress test
+pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
 ```
 
 The acceptance tests from the [mechanics spec](../product/specs/character-movement-and-mechanics.md) are named by their identifiers — `AT-M1` to `AT-I9` — so a failure in review can be pointed at by name.

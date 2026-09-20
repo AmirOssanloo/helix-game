@@ -95,7 +95,7 @@ The registry assembles this list at startup, validates every definition against 
 ## 6. Run the content tier
 
 ```bash
-pnpm test -- tests/content/
+pnpm test tests/content/
 ```
 
 You should see the schema test pass for `frost-lance`, the key test find `frost-lance-hit`, and the frame test find `disc`. A typo in the key fails here with the key named, before the world is ever created.
@@ -122,7 +122,7 @@ And the refusals:
 - Press D, then Escape before the click: no mana spent, no cooldown, no projectile.
 
 ```bash
-pnpm test -- -t "frost-lance"
+pnpm test -t "frost-lance"
 ```
 
 ---

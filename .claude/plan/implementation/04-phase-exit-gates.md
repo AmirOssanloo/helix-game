@@ -17,9 +17,9 @@ Every gate includes the bar. It is repeated once here so no gate can forget a ro
 | Presentation sync | Under 1 ms | Panel sync readout |
 | Phaser render | Under 6 ms, under 5 world draw calls | Panel render and draw-call readouts, or WebGL inspector if the readout is unavailable |
 | Allocations | Zero in tick and sync after warm-up; pool misses zero; heap flat | Panel pool-miss and heap readouts; 30-second allocation sampler recording |
-| Determinism | Same seed and input log give the same state | `pnpm test -- -t "replay"` green; one session recorded during the gate replays identically |
+| Determinism | Same seed and input log give the same state | `pnpm test -t "replay"` green; one session recorded during the gate replays identically |
 | Tests in Node | Domain, simulation, content, architecture tiers green with no canvas | `pnpm check:ci` green |
-| Stress test | 300 units (phase 1) or 200 enemies plus 100 projectiles (phase 3 on) hold the tick budget | `pnpm test -- -t "stress"` green |
+| Stress test | 300 units (phase 1) or 200 enemies plus 100 projectiles (phase 3 on) hold the tick budget | `pnpm test -t "stress"` green |
 | Render benchmark | Passes per ADR 0001 | `pnpm bench` numbers recorded in the phase README |
 
 The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles.
@@ -47,9 +47,9 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 
 | Row | Holds when |
 | --- | --- |
-| Every acceptance test in the mechanics spec section 16 is green by name | `pnpm test -- -t "AT-"` shows AT-M1 to AT-M5, AT-C1 to AT-C5, AT-O1 to AT-O5, AT-I1 to AT-I9 |
+| Every acceptance test in the mechanics spec section 16 is green by name | `pnpm test -t "AT-"` shows AT-M1 to AT-M5, AT-C1 to AT-C5, AT-O1 to AT-O5, AT-I1 to AT-I9 |
 | No feel requirement in section 15 fails | Walk the thirteen bullets in the arena by hand; record each as pass |
-| The 300-unit stress test holds the tick budget | `pnpm test -- -t "stress"` green |
+| The 300-unit stress test holds the tick budget | `pnpm test -t "stress"` green |
 | The render benchmark passes | Numbers recorded |
 | A recorded session replays identically | Record five minutes with the panel open, including a tuning change and a spawn; load it; state matches at every tick |
 | Every phase 1 tunable in spec section 17 is a slider that applies on the next tick and lands in the log | Move each, save the log, find it |
@@ -64,7 +64,7 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | Row | Holds when |
 | --- | --- |
 | Each of the ten spells has a definition file under `src/content/spells/` registered in the index | `ls`; the content tier green |
-| Each spell has a simulation test per effect at orb levels 1 and 7 | `pnpm test -- tests/simulation/spells/` shows twenty or more named tests |
+| Each spell has a simulation test per effect at orb levels 1 and 7 | `pnpm test tests/simulation/spells/` shows twenty or more named tests |
 | Each spell casts correctly at every orb level | A content test walks levels 1 to 7 for every table; the level-1 and level-7 tests assert numbers |
 | Auto-attack and attack-move work against the dummy | `tests/simulation/attack/*.spec.ts` green; by hand in the arena |
 | Every status can be applied to the hero from the panel and blocks what the status page says | `tests/domain/orders/validator.spec.ts` covers every disable against every blocked action |
@@ -79,7 +79,7 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | Row | Holds when |
 | --- | --- |
 | Four archetypes plus the dummy exist as definitions and appear in the panel dropdown with no code change | `ls src/content/enemies/`; dropdown by eye |
-| Each archetype passes the six standard enemy tests: aggro on sight, aggro on damage, pack sharing, range holding or closing, leash, death with experience | `pnpm test -- tests/simulation/enemies/` |
+| Each archetype passes the six standard enemy tests: aggro on sight, aggro on damage, pack sharing, range holding or closing, leash, death with experience | `pnpm test tests/simulation/enemies/` |
 | 200 live enemies chase and attack the hero within budget | Spawn 200 from the panel, run for 60 seconds, panel readouts within every row of the bar, in four browsers |
 | Spells kill enemies correctly by damage type | `tests/simulation/combat/damage-types.spec.ts` covers physical, magical, pure against each archetype's armour and resistance |
 | Experience levels the hero from 1 to 30 | `tests/simulation/hero/experience.spec.ts` |
@@ -106,7 +106,7 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | Row | Holds when |
 | --- | --- |
 | Every enemy ability is an ability definition cast through the pipeline; nothing enemy-specific was added to the pipeline | Review of `domain/abilities/` diff since phase 2; content tier green |
-| The disable matrix exists as data, and every cell is a test | `pnpm test -- tests/domain/orders/disable-matrix.spec.ts` shows one test per cell |
+| The disable matrix exists as data, and every cell is a test | `pnpm test tests/domain/orders/disable-matrix.spec.ts` shows one test per cell |
 | Elite and boss tiers multiply health and add abilities; a boss is stunned like a grunt | `tests/simulation/enemies/tiers.spec.ts` |
 | The roster is complete per the enemy catalogue | `ls src/content/enemies/` matches the catalogue |
 | A boss encounter with adds runs within budget alongside 200 enemies | Panel readouts, four browsers |

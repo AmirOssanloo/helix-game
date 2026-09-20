@@ -13,8 +13,8 @@ const LAYERS = [
   "app",
 ] as const;
 
-/** One alias per layer, `@<layer>` to `src/<layer>`, matching the paths in tsconfig.json. */
-const layerAliases = (): Record<string, string> =>
+/** One alias per layer, `@<layer>` to `src/<layer>`, matching the paths in tsconfig.json. The Vitest config reuses it. */
+export const layerAliases = (): Record<string, string> =>
   Object.fromEntries(
     LAYERS.map((layer) => [
       `@${layer}`,

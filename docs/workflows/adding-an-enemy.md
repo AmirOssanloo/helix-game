@@ -96,7 +96,7 @@ export const enemies = [meleeGrunt, fastRunner, rangedArcher, tank, trainingDumm
 ## 6. Run the content tier
 
 ```bash
-pnpm test -- tests/content/
+pnpm test tests/content/
 ```
 
 You should see `frost-archer` validate, `ranged-kiter` resolve, `frost-volley` resolve, and `square` found in the atlas. A wrong key fails here with the key named.
@@ -119,7 +119,7 @@ Build a world with the hero at the centre and a pack of three Frost Archers just
 - **Death and experience.** Kill one. It enters Dead, its view unbinds, the hero gains `experience`, and its pool slot is released.
 
 ```bash
-pnpm test -- -t "frost-archer"
+pnpm test -t "frost-archer"
 ```
 
 Every enemy gets these six; an ability adds one test per effect, as for a spell.
