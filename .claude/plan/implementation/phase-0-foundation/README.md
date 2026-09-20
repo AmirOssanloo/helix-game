@@ -29,10 +29,14 @@ Run `pnpm dev` and see a blank canvas with the WebGL banner in the console. Run 
 
 ## Exit record
 
-Filled in when the phase closes.
+Closed 2026-09-20.
 
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | | |
-| Sized versus actual | | |
-| Largest miss | | |
+| Gate rows | All ten hold. Evidence per row is in the [sprint 01 exit table](./sprint-01-simulation-skeleton-and-instrumentation.md#sprint-exit); the lint and architecture rows in the [sprint 00 exit table](./sprint-00-repository-and-toolchain.md#sprint-exit). CI green on the final commit, `a185970`, run 35518791906 | the engineer running the plan |
+| Sized versus actual | Sized 9 days, of which 1 unplanned. Actual 4.25: sprint 00 took 2.75 against 5, sprint 01 took 1.5 against 4. Ratio 0.47 | the engineer running the plan |
+| Largest miss | Sprint 00, sized 5 and done in 2.75. Every ticket in the phase landed under its size. An overestimate, not a slip; the sizing scale stays as it is until the phase 1 ratio is in, since that is the number [Estimation and capacity](../03-estimation-and-capacity.md#recording-actuals) says decides a re-cut | the engineer running the plan |
+
+| Phase | Sized | Actual | Ratio | Largest miss |
+| --- | --- | --- | --- | --- |
+| 0 | 9 | 4.25 | 0.47 | Sprint 00: sized 5, actual 2.75 |

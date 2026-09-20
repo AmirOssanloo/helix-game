@@ -184,7 +184,7 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | `pnpm check` green on empty layers | Green on 2026-09-20: lint, typecheck, build, then 154 tests over five projects in under a second; `check:ci` green with the coverage report and both floors |
 | Lint rule branch checks recorded, one row per rule | 92 cases, all as expected, in the table below (2026-09-20) |
 | Architecture test catches a barrel re-export | Yes (2026-09-20). `export type { ViewSync } from "@presentation/public"` in `src/domain/public.ts` fails `src/domain/public.ts imports only the layers its row allows` and names the line. The same line under an `eslint-disable-next-line`, and in `src/domain/leak.mts`, passes `pnpm lint` and fails the same test. A dead link and a dead anchor planted in `docs/README.md` fail with file, line, and target named. A spec planted under `src/domain/` fails naming the file. Untested code planted in `src/domain/` fails `check:ci` at the 90% floor; `check` prints no coverage |
-| CI green | Workflow at `.github/workflows/ci.yml` runs `pnpm check:ci` on every push and pull request; awaiting the first push (2026-09-20) |
+| CI green | Workflow at `.github/workflows/ci.yml` runs `pnpm check:ci` on every push and pull request. Green on 2026-09-20 on the final phase 0 commit, `a185970`, in 33 seconds: run 35518791906 |
 | Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 0.5 · T04 0.5 · T05 0.25 |
 
 ### Lint rule checks
