@@ -16,12 +16,20 @@ export type CommandOrder = {
 const NO_SLOT = Number.MAX_SAFE_INTEGER;
 
 /**
- * The slot a command names, or `null`. The six slot keys become one variant carrying a slot
- * index from 1 to 6, in the order Q, W, E, R, D, F; no variant carries one yet.
+ * The slot a command names, or `null`. The six slot keys are one variant carrying a slot
+ * index from 1 to 6, in the order Q, W, E, R, D, F; every other command names none.
  */
 export const slotOf = (command: AnyCommand): number | null => {
   switch (command.kind) {
+    case "slot":
+      return command.slot;
+
     case "noop":
+    case "move":
+    case "stop":
+    case "attack_move":
+    case "attack_target":
+    case "cast":
     case "debug_noop":
       return null;
   }

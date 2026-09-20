@@ -43,6 +43,21 @@ describe("compareCommandOrder", () => {
 });
 
 describe("slotOf", () => {
+  it("names the slot of a slot command", () => {
+    expect(slotOf({ kind: "slot", tick: 0, timestamp: 0, slot: 4 })).toBe(4);
+  });
+
+  it("names no slot for a move command", () => {
+    expect(
+      slotOf({
+        kind: "move",
+        tick: 0,
+        timestamp: 0,
+        destination: { x: 1, y: 2 },
+      }),
+    ).toBeNull();
+  });
+
   it("names no slot for a noop command", () => {
     expect(slotOf({ kind: "noop", tick: 0, timestamp: 0 })).toBeNull();
   });

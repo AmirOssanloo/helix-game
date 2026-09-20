@@ -1,4 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
+import type { DisableFlags } from "../orders/disable-flags";
+import type { Order, OrderState } from "../orders/order";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
 
@@ -10,18 +12,6 @@ export const STATUS_TABLE_SIZE = 8;
 
 /** Who drives the unit. Movement, collision, statuses, and death treat every kind alike. */
 export type UnitKind = "hero" | "enemy" | "summon";
-
-export type OrderKind = "none" | "move" | "attack_target" | "attack_move";
-
-/**
- * The one current order. A flat record rather than a union of variants, so a new order is
- * written into the fields in place and nothing allocates. Which fields matter follows `kind`.
- */
-export type Order = {
-  kind: OrderKind;
-  destination: Vec2;
-  targetId: EntityId | null;
-};
 
 export type Resources = {
   hp: number;
@@ -47,6 +37,10 @@ export type Unit = {
   curr: Vec2;
   facing: number;
   order: Order;
+  /** Which step of the order the unit is on. Written only by the order state machine. */
+  state: OrderState;
+  /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
+  disables: DisableFlags;
   resources: Resources;
   /** Ability id to the tick the ability is ready again. Allocated once per slot and emptied on release. */
   cooldowns: Map<string, Tick>;
@@ -87,6 +81,13 @@ const createUnit = (): Unit => {
     curr: { x: 0, y: 0 },
     facing: 0,
     order: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
+    state: "idle",
+    disables: {
+      stunned: false,
+      silenced: false,
+      rooted: false,
+      disarmed: false,
+    },
     resources: { hp: 0, mana: 0 },
     cooldowns: new Map(),
     statuses,
@@ -111,6 +112,11 @@ const clearUnit = (unit: Unit): void => {
   unit.order.destination.x = 0;
   unit.order.destination.y = 0;
   unit.order.targetId = null;
+  unit.state = "idle";
+  unit.disables.stunned = false;
+  unit.disables.silenced = false;
+  unit.disables.rooted = false;
+  unit.disables.disarmed = false;
   unit.resources.hp = 0;
   unit.resources.mana = 0;
   unit.cooldowns.clear();

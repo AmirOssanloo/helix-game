@@ -36,6 +36,20 @@ describe("unit pool", () => {
     });
   });
 
+  it("gives each unit an idle state with every disable flag false", () => {
+    const pool = createUnitPool();
+
+    const unit = pool.acquire();
+
+    expect(unit?.state).toBe("idle");
+    expect(unit?.disables).toEqual({
+      stunned: false,
+      silenced: false,
+      rooted: false,
+      disarmed: false,
+    });
+  });
+
   it("clears every field on release so the slot reads like a fresh one", () => {
     const pool = createUnitPool();
     const unit = pool.acquire();
@@ -55,6 +69,9 @@ describe("unit pool", () => {
     unit.order.kind = "move";
     unit.order.destination.x = 4;
     unit.order.targetId = 5;
+    unit.state = "moving";
+    unit.disables.stunned = true;
+    unit.disables.rooted = true;
     unit.resources.hp = 6;
     unit.resources.mana = 7;
     unit.cooldowns.set("fireball", 8);

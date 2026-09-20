@@ -21,7 +21,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | Layer | domain, tests |
 | Size | 0.5 |
 | Depends on | P0-S01-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/orders/`: the order states from spec section 4.4 as a union (`idle`, `turning`, `moving`, `attack_windup`, `attack_backswing`, `ability_cast_point`, `ability_backswing`, `channeling`), the current order on the unit as one value (`none`, `move` with a destination, `attack_target` with a unit id, `attack_move` with a destination), the rule that a new legal order replaces the current one at the end of the tick, and a validator skeleton returning `ok` or a reason with the disable branches present and all flags false. The `Command` union gains `move`, `stop`, `attack_move`, `attack_target`, `slot` with a slot index 1 to 6, and `cast` with an ability id and a target payload (none, point, unit, direction). Shift-modified clicks produce nothing.
 
@@ -44,7 +44,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | --- | --- |
 | Layer | domain, content, simulation, tests |
 | Size | 2 |
-| Depends on | T01 |
+| Depends on | T01, T05 |
 | Status | planned |
 
 **Build:** The tuning table under `src/content/tuning.ts` with every parameter in spec section 17 and its default, typed in `domain/definitions/`, copied into run scope at world creation, read through the world. Under `src/domain/movement/`: the turn step (shortest arc, rate scaled by step over 0.03 s, ramp over `turn_ramp_ticks`, clamp on the last tick so facing equals target), the action cone test, the speed stack (`(base + Σflat) × (1 + Σpct)` clamped by the min and max tunables, recomputed every tick from modifier sources on the unit), and the advance along a fixed-capacity path buffer by `min(speed × dt, remaining)` with a small arrival epsilon. For this sprint the path buffer is one segment to the destination; A* fills it in sprint 03. `movementSystem` registered in `systems.ts` after command application. A `set_tuning` command variant applying on the next tick and landing in the log.
@@ -64,6 +64,8 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 - `tests/simulation/tuning.spec.ts` — a `set_tuning` command changes the next tick's speed and is in the log.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+*Edited while closing T01: the dependency row gained T05, because the acceptance tests submit commands and need the step that applies them to the hero, which neither this ticket nor T01 named.*
 
 ---
 
@@ -111,6 +113,32 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 
 ---
 
+### P1-S02-T05 — Command application: the tick hands consumed commands to the first system
+
+| Field | Value |
+| --- | --- |
+| Layer | simulation, tests |
+| Size | 0.5 |
+| Depends on | T01 |
+| Status | planned |
+
+**Build:** The tick keeps the consumed commands readable for the length of the tick: the buffer stays sorted and intact while the systems run and is cleared after them, and the world exposes the consumed commands to a system in order without copying. `commandSystem` first in `systems.ts`: for each consumed command, resolve the hero through run scope, run the validator, and on `ok` apply the order transition for `move`, `attack_move`, `attack_target`, and `stop`; a refusal drops the command and changes nothing; `slot` and `cast` are validated and then dropped until the kit and the cast skeleton exist in sprint 04; `noop` and `debug_noop` are dropped. A world with no hero drops every player command. A `spawnHero` helper under `tests/helpers/world/` acquires a hero-kind unit at a position and facing and sets `run.heroId`, so a simulation test has a hero before the hero definition exists.
+
+**Acceptance:**
+- A `move` consumed on tick N is the hero's order after tick N, and the hero is turning.
+- A `stop` consumed after it clears the order.
+- A refused command leaves the order and the state as they were.
+- Two moves in one tick leave the later one by timestamp.
+
+**Tests:**
+- `tests/simulation/command-system.spec.ts` — the four acceptance bullets.
+
+**Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+*Unplanned: added while closing T01. T01 is domain only and T02 says `movementSystem` is registered "after command application", but no ticket named the step that walks the consumed commands and applies them to the hero, and the tick handed commands to no system.*
+
+---
+
 ## Sprint exit
 
 | Check | Result |
@@ -118,7 +146,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | |
 | Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | |
 | Milestone M1 | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 · T05 |
 
 ## Risks in this sprint
 

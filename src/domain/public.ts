@@ -1,9 +1,17 @@
-export type {
-  AnyCommand,
-  Command,
-  DebugCommand,
-  DebugNoopCommand,
-  NoopCommand,
+export {
+  type AnyCommand,
+  type AttackMoveCommand,
+  type AttackTargetCommand,
+  type CastCommand,
+  type CastTarget,
+  type Command,
+  type DebugCommand,
+  type DebugNoopCommand,
+  type MoveCommand,
+  type NoopCommand,
+  SLOT_COUNT,
+  type SlotCommand,
+  type StopCommand,
 } from "./commands/command";
 export {
   type CommandOrder,
@@ -25,8 +33,6 @@ export {
 } from "./entities/projectile";
 export {
   createUnitPool,
-  type Order,
-  type OrderKind,
   type Resources,
   STATUS_TABLE_SIZE,
   type StatusEntry,
@@ -51,4 +57,28 @@ export {
   type DomainEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
+export type { DisableFlags } from "./orders/disable-flags";
+export type { Order, OrderKind, OrderState } from "./orders/order";
+export {
+  arrive,
+  beginAttackBackswing,
+  beginAttackWindup,
+  beginCastBackswing,
+  beginCastPoint,
+  beginChannel,
+  beginMoving,
+  clearOrder,
+  endChannel,
+  finishBackswing,
+  issueAttackMove,
+  issueAttackTarget,
+  issueMove,
+  type TransitionRefusal,
+  type TransitionResult,
+} from "./orders/state-machine";
+export {
+  type RefusalReason,
+  validateCommand,
+  type ValidationResult,
+} from "./orders/validator";
 export type { Tick } from "./tick";
