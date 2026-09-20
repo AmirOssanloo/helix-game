@@ -51,7 +51,7 @@ Allocation at world creation and map load is fine. That is where pools fill. The
 
 Two runs with the same seed and the same commands must visit entities in the same order, or the replay diverges at the first pile-up.
 
-- **Iterate pools by index**, from zero to the live count. Never by a `Map` or `Set` whose insertion order depends on the history of a session.
+- **Iterate pools by index**, from zero to the pool's `end`, skipping a slot that reads back `null`. A released slot leaves a hole so every live index stays put. Never by a `Map` or `Set` whose insertion order depends on the history of a session.
 - **Never sort with a comparator that can return equal** unless the tie is broken by id. Two units at the same distance are ordered by id, every time.
 - **Spatial queries return candidates in cell order, then slot order.** The hash is deterministic given the same positions.
 - **Commands in the same tick apply in timestamp order, then by the fixed key priority** on ties. [Commands and events](../architecture/commands-and-events.md#quick-reference) owns that rule.
@@ -66,7 +66,13 @@ A system is a function `(world) => void`, registered once in the single ordered 
 
 ```typescript
 export const fooSystem = (world: World): void => {
-  for (let i = 0; i < world.units.count; i++) {
+  for (let i = 0; i < world.map.units.end; i += 1) {
+    const unit = world.map.units.at(i)
+
+    if (unit === null) {
+      continue
+    }
+
     /* read, decide with a pure function, write */
   }
 }
@@ -126,7 +132,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | Asynchrony | None. A tick runs to completion |
 | Durations | Integer ticks, converted from seconds once at definition load. A system never multiplies by the tick rate |
 | Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch vectors from `shared/`; pools for anything that outlives the tick |
-| Iteration | Pools by index; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
+| Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
 | A rule | A pure function over plain state, testable without a world |
 | Commands | Validated before any mutation; a refusal changes nothing and emits nothing |

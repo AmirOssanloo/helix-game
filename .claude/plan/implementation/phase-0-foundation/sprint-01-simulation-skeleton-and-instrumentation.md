@@ -48,9 +48,11 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Layer | domain, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/entities/`: a pool primitive over one plain-object shape with a free list of indices, a live count, per-slot generation, `acquire` returning the object or `null`, `release` by id that clears the object and bumps the generation, `resolve` by id returning the object or `null`, and index iteration from zero to the live count. One file per kind with its capacity as a constant at the top: units (512), projectiles (512), effects (256), zones (with its own declared capacity, 64). The unit shape holds kind tag, definition id, previous and current position, facing, order, resources, cooldown clock map, a fixed-size status table, active form index, pack id, spawn point, owner id, lifetime. Fields not used until later phases exist now with neutral values so the shape never changes under a running test. The world state type with run scope (hero id, form records, tuning state, random state) and map scope (the four pools, the walkability grid slot, the spatial hash slot), and `domain/public.ts` exporting the types.
+
+> Edited while building: iteration runs from zero to the pool's `end`, not the live count, because a released slot leaves a hole so every live index stays stable; `at` returns `null` for a hole. The lifetime field is `expiresAtTick`, a tick the way cooldowns and statuses are.
 
 **Acceptance:**
 - Acquiring to capacity and one past returns `null` on the last and increments the pool's miss counter.
@@ -125,7 +127,7 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Phase 0 gate rows | |
 | `pnpm check` green | |
 | Tick count visible in the console at 30 per second | |
-| Actual days per ticket | T01 0.25 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.25 · T02 0.25 · T03 · T04 |
 
 ## Risks in this sprint
 
