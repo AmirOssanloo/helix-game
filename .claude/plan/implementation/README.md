@@ -17,6 +17,7 @@ The sprint files **are the work items**. Each ticket block is self-contained: la
 
 | Reader | Start with |
 | --- | --- |
+| Anyone asking where we are | [Status](./STATUS.md) |
 | Leadership deciding whether and when | [Overview](./00-overview.md), then [Risks and hidden work](./02-risks-and-hidden-work.md) |
 | An engineer starting a sprint | The phase `README.md`, then the sprint file, top to bottom |
 | Someone re-cutting scope | [Dependency map](./01-dependency-map.md), then [Deferred](./backlog/deferred.md) |
@@ -69,6 +70,7 @@ A phase closes only when every row of its gate in [Phase exit gates](./04-phase-
 
 ## Keeping it current
 
+- [Status](./STATUS.md) names the active sprint, the ticket in progress, and the next one. It is updated in the same commit as the ticket whose status changed.
 - A ticket that turns out to be wrong is edited in place; the edit says why in a one-line note under the ticket.
 - Work that appears mid-sprint and was not planned gets a new ticket in that sprint with the next free number and a note saying it was unplanned. The sprint's sized total is allowed to exceed 4 days only this way, and the overrun is a data point for [Estimation and capacity](./03-estimation-and-capacity.md).
 - Anything cut goes to [Deferred](./backlog/deferred.md) with the phase it was cut from and what it waits on.
@@ -82,6 +84,7 @@ A phase closes only when every row of its gate in [Phase exit gates](./04-phase-
 ```text
 implementation/
 ├── README.md                          # This page
+├── STATUS.md                          # Active phase, sprint, ticket in progress, next ticket
 ├── 00-overview.md                     # Phase and sprint table, milestones, cut-lines, capacity assumptions
 ├── 01-dependency-map.md               # What must exist before what, across all phases
 ├── 02-risks-and-hidden-work.md        # Risk register, each with trigger, owning sprint, and mitigation ticket

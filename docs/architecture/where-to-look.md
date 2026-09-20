@@ -51,7 +51,9 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which commands exist | Root `package.json` → `scripts` |
 | The pinned Node and pnpm versions | `.nvmrc` and the `packageManager` field of the root `package.json` |
 | Which path aliases exist | The `paths` block of `tsconfig.json` |
-| Which roles and skills automated tooling can load | `.claude/roles/` and `.claude/skills/` — one file or folder each |
+| Where an automated worker starts | `AGENTS.md` at the repository root; `CLAUDE.md` imports it |
+| Which agents, skills, and rules automated tooling can load | `.claude/agents/`, `.claude/skills/`, and `.claude/rules/` — one file or folder each. `.claude/tags/` is for people and is never loaded |
+| Which sprint is active, and which ticket is next | `.claude/plan/implementation/STATUS.md` |
 
 A pointer that returns nothing is an answer too: a map with no spawn list spawns nothing, an enemy definition with an empty ability list casts nothing.
 

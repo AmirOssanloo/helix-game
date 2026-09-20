@@ -33,6 +33,8 @@ Onboarding and workflows are both runbooks; product pages are the fifth kind.
 
 ## For agents: what to load for a task
 
+Automated tooling starts from [AGENTS.md](../AGENTS.md) at the repository root, which points here. This table is what it points at.
+
 Every architecture and standards page ends with a `## Quick reference` table holding every rule the page states. Load the table; read the prose only when you need the reason. Two pages are themselves one table — [Where to look](./architecture/where-to-look.md) and [World model](./architecture/world-model.md). [Where to look](./architecture/where-to-look.md) tells you where the real game's facts live, because these pages don't hold them. Every identifier containing `foo`, `bar`, or `baz` is a placeholder; the [placeholder legend](./documentation-standards.md#reading-a-placeholder) decodes each one.
 
 | Task | Load these anchors first |
