@@ -32,13 +32,16 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
+export { makeMapDef } from "./content/make-map-def";
+export {
+  makeRegistry,
+  type MakeRegistryOptions,
+} from "./content/make-registry";
 export {
   defineFactory,
   type Factory,
   type FactoryDefaults,
 } from "./factories/define-factory";
-export {
-  makeWorld,
-  type MakeWorld,
-  type MakeWorldOptions,
-} from "./world/make-world";
+export { makeWorld, type MakeWorldOptions } from "./world/make-world";
+export { submit } from "./world/submit";
+export { tickUntil } from "./world/tick-until";

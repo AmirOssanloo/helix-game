@@ -1,6 +1,7 @@
 export { bearing, shortestArc, wrapAngle } from "./angle";
 export { assert } from "./assert";
 export { clamp } from "./clamp";
+export type { DeepReadonly } from "./deep-readonly";
 export {
   type EntityId,
   GENERATION_BITS,

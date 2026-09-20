@@ -44,6 +44,8 @@ export type RunScope = {
 
 /** State that lives for one map. A map load releases every pool and rebuilds the grid and the hash. */
 export type MapScope = {
+  /** The id of the loaded map definition; `null` until the first load. */
+  mapId: string | null;
   units: Pool<Unit>;
   projectiles: Pool<Projectile>;
   effects: Pool<Effect>;

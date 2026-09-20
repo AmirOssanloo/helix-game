@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [0 — Foundation](./phase-0-foundation/README.md) |
 | **Active sprint** | [00 — Repository and toolchain](./phase-0-foundation/sprint-00-repository-and-toolchain.md) |
-| **Next ticket** | P0-S01-T03 — The world: random source, command buffer, event ring, tick, input log |
+| **Next ticket** | P0-S01-T04 — Instrumentation rings, the fixed-step driver, the game config, and BootScene |
 | **In progress** | none |
-| **Last closed ticket** | P0-S01-T02 — Pool primitive and the entity pools |
+| **Last closed ticket** | P0-S01-T03 — The world: random source, command buffer, event ring, tick, input log |
 | **Last closed sprint** | none |
 | **Last milestone reached** | none. M0 is the toolchain gate at the end of sprint 01 |
 

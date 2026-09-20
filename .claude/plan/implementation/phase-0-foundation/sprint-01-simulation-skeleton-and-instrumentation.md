@@ -74,9 +74,11 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Layer | simulation, domain, tests |
 | Size | 1.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/commands/` the `Command` and `DebugCommand` unions with a tick timestamp, a millisecond timestamp for ordering, and, for now, one variant each (`noop` and `debug_noop`) to prove the plumbing; the ordering rule as a pure comparator (timestamp, then slot priority for slot-key commands, then arrival index). Under `src/domain/events/` the `DomainEvent` union with one variant (`tick_completed`). Under `src/simulation/`: a seeded random source (xorshift or PCG, chosen once, with `nextFloat`, `nextInt`, and state on the world); the command buffer as a preallocated array with a sort by the comparator at tick start; the event ring as a preallocated array with a write cursor, per-reader cursors, and an overwrite counter; `world.ts` with `createWorld({ seed, registry, map })`, `submit`, `tick`, `loadMap` (releases map scope, leaves run scope), `dispose`; `systems.ts` as an empty ordered list; `tick` copies previous positions, consumes the sorted buffer, runs the list, writes `tick_completed`, appends every consumed command with its tick to the input log, and advances the tick count. `simulation/public.ts` exports the API and a `WorldView` type that is `Readonly` over the state. Test helpers `makeWorld`, `submit`, `tickUntil` under `tests/helpers/`.
+
+> Edited while building: `tick` takes no argument, because the step is a constant and the commands are in the buffer; the simulation-loop page now says so. The object `createWorld` returns is a `Simulation` that owns the domain's `World` state, since `World` is the type a system receives. `createWorld` needs a `Registry` and a `MapDef`, so both exist under `src/domain/definitions/` with only what the world reads today: the tuning defaults it copies, and the map id, which map scope now records as `mapId`. The random source is xorshift32; `nextInt(random, bound)` draws from [0, bound). With no slot-key variant yet, the tie-break is proven on the comparator's key, and `slotOf` names no slot for either variant.
 
 **Acceptance:**
 - Two worlds with the same seed produce the same random sequence; different seeds differ.
@@ -127,7 +129,7 @@ A blank canvas that logs "WebGL" and a tick counter in the console. In a test, a
 | Phase 0 gate rows | |
 | `pnpm check` green | |
 | Tick count visible in the console at 30 per second | |
-| Actual days per ticket | T01 0.25 · T02 0.25 · T03 · T04 |
+| Actual days per ticket | T01 0.25 · T02 0.25 · T03 0.5 · T04 |
 
 ## Risks in this sprint
 

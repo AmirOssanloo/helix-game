@@ -42,11 +42,13 @@ const onFrame = (frameDeltaMs: number): void => {
 
 ## The tick
 
-`tick(dt, commands)` on a world does these things, in this order, every time:
+`tick` on a world takes no argument: the step is a constant and the commands are already in the buffer. It does these things, in this order, every time:
 
 1. Copy each entity's current position into its previous position, so the presentation can interpolate the step about to happen.
-2. Run the systems, in the order the one list in `simulation/systems.ts` gives them.
-3. Advance the tick count.
+2. Sort the command buffer by the ordering rule and consume it, recording every consumed command with this tick in the input log.
+3. Run the systems, in the order the one list in `simulation/systems.ts` gives them.
+4. Write `tick_completed` to the event ring.
+5. Advance the tick count.
 
 The system order is a fact the file owns; [Where to look](./where-to-look.md) points at it. The invariant is that the order is one list, in one file, and that a system is a plain function over world state:
 
@@ -111,7 +113,7 @@ A system holding a module-level variable — a cached list, a counter — that i
 | The step | 30 Hz, constant `dt`; never a frame delta |
 | Catch-up | At most 3 ticks per render frame, then drop the remaining time |
 | Hidden tab | No ticks; cooldowns freeze; input received while hidden is discarded |
-| `tick(dt, commands)` | Copies previous positions, runs the system list in order, advances the tick count; reads no clock |
+| `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order, writes `tick_completed`, advances the tick count; reads no clock |
 | System order | One list, in `simulation/systems.ts` |
 | A system | A plain function over world state; reads the world, the tick count, and the world's random source; allocates nothing in steady state |
 | Time in the domain | A tick count; seconds in a definition become ticks at load |

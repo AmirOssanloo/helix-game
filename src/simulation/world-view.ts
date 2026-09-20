@@ -1,0 +1,31 @@
+import type {
+  Effect,
+  PoolView,
+  Projectile,
+  RunScope,
+  SpatialHash,
+  Tick,
+  Unit,
+  WalkabilityGrid,
+  Zone,
+} from "@domain/public";
+import type { DeepReadonly } from "@shared/public";
+
+/**
+ * A compile-time read-only view over the live world: read by reference during sync, never
+ * copied, never written. Each pool shows its read side only, so `acquire` and `release` are
+ * not reachable through it, and every field under it is `readonly` at every depth.
+ */
+export type WorldView = DeepReadonly<{
+  tick: Tick;
+  run: RunScope;
+  map: {
+    mapId: string | null;
+    units: PoolView<Unit>;
+    projectiles: PoolView<Projectile>;
+    effects: PoolView<Effect>;
+    zones: PoolView<Zone>;
+    walkability: WalkabilityGrid | null;
+    spatialHash: SpatialHash | null;
+  };
+}>;

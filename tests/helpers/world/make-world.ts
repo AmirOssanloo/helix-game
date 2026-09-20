@@ -1,13 +1,20 @@
-/** What a simulation test hands the world it creates. The registry and the map join the seed when the world exists. */
+import type { MapDef, Registry } from "@domain/public";
+import type { Simulation } from "@simulation/public";
+import { createWorld } from "@simulation/public";
+import { makeMapDef } from "../content/make-map-def";
+import { makeRegistry } from "../content/make-registry";
+
+/** What a simulation test hands the world it creates. The seed is explicit; the rest defaults to empty. */
 export type MakeWorldOptions = Readonly<{
   seed: number;
+  registry?: Registry;
+  map?: MapDef;
 }>;
 
-/** Creates a small world for a simulation test: an explicit seed, a factory-made registry, a bare rectangle by default. */
-export type MakeWorld = (options: MakeWorldOptions) => never;
-
-export const makeWorld: MakeWorld = (): never => {
-  throw new Error(
-    "makeWorld has no world to create yet: src/simulation/ exports no createWorld. Fill this helper in with it.",
-  );
-};
+/** Creates a small world for a simulation test: an explicit seed, an empty registry, and a bare map by default. */
+export const makeWorld = (options: MakeWorldOptions): Simulation =>
+  createWorld({
+    seed: options.seed,
+    registry: options.registry ?? makeRegistry(),
+    map: options.map ?? makeMapDef.build(),
+  });
