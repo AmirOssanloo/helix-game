@@ -3,6 +3,8 @@ import type { Unit } from "@domain/public";
 import {
   acquireUnit,
   createCandidateBuffer,
+  issueMove,
+  setStraightPath,
   UNIT_CAPACITY,
 } from "@domain/public";
 import type { EntityId, Rect } from "@shared/public";
@@ -58,18 +60,15 @@ describe("the collision system and obstacles", () => {
     expect(hero.curr).toEqual({ x: 1000 - HULL, y: 0 });
   });
 
-  it("stops a unit walking into a wall at the wall edge, order and speed untouched", () => {
+  it("stops a unit walking a path into a wall at the wall edge, order and speed untouched", () => {
     const world = makeWorld({
       seed: 1,
       map: makeMapDef.build({ obstacles: [WALL] }),
     });
     const hero = spawnHero(world, { x: 990, y: 0, facing: 0 });
-    submit(world, {
-      kind: "move",
-      tick: 0,
-      timestamp: 0,
-      destination: { x: 1100, y: 0 },
-    });
+    issueMove(hero, 1100, 0);
+    setStraightPath(hero.path, 1100, 0);
+    hero.needsPath = false;
 
     world.tick();
 

@@ -102,6 +102,18 @@ describe("issueMove", () => {
     },
   );
 
+  it("asks for a path to the destination, and a stop withdraws the request", () => {
+    const unit = unitIn("idle");
+
+    issueMove(unit, 30, 40);
+
+    expect(unit.needsPath).toBe(true);
+
+    clearOrder(unit);
+
+    expect(unit.needsPath).toBe(false);
+  });
+
   it("while moving replaces the destination; the previous one is gone", () => {
     const unit = unitIn("moving");
 

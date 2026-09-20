@@ -2,6 +2,7 @@ import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
+import type { PathSearch } from "../pathing/astar";
 import type { Tick } from "../tick";
 import type { Effect } from "./effect";
 import type { Pool } from "./pool";
@@ -49,6 +50,8 @@ export type MapScope = {
   obstacles: readonly Rect[];
   /** The index of what is near, created with the world and rebuilt by every map load. */
   spatialHash: SpatialHash;
+  /** The working memory of A* over the grid, sized to it at creation and every map load. */
+  pathSearch: PathSearch;
 };
 
 /**

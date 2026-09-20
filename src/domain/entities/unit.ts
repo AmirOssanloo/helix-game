@@ -82,6 +82,8 @@ export type Unit = {
   /** Which step of the order the unit is on. Written only by the order state machine. */
   state: OrderState;
   path: Path;
+  /** Whether the unit is waiting for the pathing system to plan its path. It keeps following `path` while it waits. */
+  needsPath: boolean;
   modifiers: readonly ModifierEntry[];
   /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
   disables: DisableFlags;
@@ -164,6 +166,7 @@ const createUnit = (): Unit => {
     order: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
     state: "idle",
     path: createPath(),
+    needsPath: false,
     modifiers,
     disables: {
       stunned: false,
@@ -201,6 +204,7 @@ const clearUnit = (unit: Unit): void => {
   unit.order.targetId = null;
   unit.state = "idle";
   clearPath(unit.path);
+  unit.needsPath = false;
 
   for (let row = 0; row < unit.modifiers.length; row += 1) {
     const entry = unit.modifiers[row];

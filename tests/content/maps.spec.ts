@@ -32,7 +32,8 @@ const gridOf = (map: MapDef) => {
   const tuning = createTuningState(tuningTable);
 
   return deriveWalkabilityGrid(
-    map,
+    map.bounds,
+    map.obstacles,
     tuningTable.walkability_cell_size,
     readRadiusClasses(tuning),
   );

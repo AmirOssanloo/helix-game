@@ -43,9 +43,14 @@ const takeOrder = (unit: Unit): void => {
   unit.state = "turning";
   unit.turnTicks = 0;
   clearPath(unit.path);
+  unit.needsPath = false;
 };
 
-/** Replaces the current order with a move to (`x`, `y`). Legal unless a cast point is in progress. */
+/**
+ * Replaces the current order with a move to (`x`, `y`) and asks the pathing system for the
+ * path there. The point is the caller's to make legal: the command system resolves a click on
+ * an obstacle or off the map before it issues the move. Legal unless a cast point is in progress.
+ */
 export const issueMove = (
   unit: Unit,
   x: number,
@@ -59,6 +64,7 @@ export const issueMove = (
   unit.order.kind = "move";
   unit.order.destination.x = x;
   unit.order.destination.y = y;
+  unit.needsPath = true;
 
   return "ok";
 };
@@ -79,7 +85,7 @@ export const issueAttackTarget = (
   return "ok";
 };
 
-/** Replaces the current order with an attack-move to (`x`, `y`). Legal unless a cast point is in progress. */
+/** Replaces the current order with an attack-move to (`x`, `y`), asking for the path as a move does. Legal unless a cast point is in progress. */
 export const issueAttackMove = (
   unit: Unit,
   x: number,
@@ -93,6 +99,7 @@ export const issueAttackMove = (
   unit.order.kind = "attack_move";
   unit.order.destination.x = x;
   unit.order.destination.y = y;
+  unit.needsPath = true;
 
   return "ok";
 };
@@ -111,6 +118,7 @@ export const clearOrder = (unit: Unit): TransitionResult => {
   unit.state = "idle";
   unit.turnTicks = 0;
   clearPath(unit.path);
+  unit.needsPath = false;
 
   return "ok";
 };

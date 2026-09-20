@@ -8,14 +8,17 @@ import type {
   World,
 } from "@domain/public";
 import {
+  cellCount,
   clearOrder,
   createEffectPool,
+  createPathSearch,
   createProjectilePool,
   createSpatialHash,
   createTuningState,
   createUnitPool,
   createZonePool,
   deriveWalkabilityGrid,
+  fitPathSearch,
   readRadiusClasses,
   readTunable,
   releaseUnit,
@@ -39,7 +42,8 @@ export type CreateWorldOptions = Readonly<{
 /** The grid `map` derives under the tuning state's cell size and radius classes. */
 const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
   deriveWalkabilityGrid(
-    map,
+    map.bounds,
+    map.obstacles,
     readTunable(tuning, "walkability_cell_size"),
     readRadiusClasses(tuning),
   );
@@ -96,6 +100,8 @@ export class Simulation {
   constructor(options: CreateWorldOptions) {
     const tuning = createTuningState(options.registry.tuning);
 
+    const walkability = deriveGrid(options.map, tuning);
+
     this.buffer = new CommandBuffer();
     this.state = {
       tick: 0,
@@ -111,10 +117,11 @@ export class Simulation {
         projectiles: createProjectilePool(),
         effects: createEffectPool(),
         zones: createZonePool(),
-        walkability: deriveGrid(options.map, tuning),
+        walkability,
         bounds: options.map.bounds,
         obstacles: options.map.obstacles,
         spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
+        pathSearch: createPathSearch(cellCount(walkability)),
       },
       commands: this.buffer,
     };
@@ -190,10 +197,11 @@ export class Simulation {
 
   /**
    * Takes `map` as the loaded one: releases every map-scoped entity but the hero, derives the
-   * walkability grid for the map's bounds and obstacles, carries the hero to the spawn point
-   * with its order cleared, and rebuilds the spatial hash at the tuned cell size over what is
-   * left. Run scope is untouched; the hero is never recreated. Anything standing on the spawn
-   * point is pushed off by collision on the first tick.
+   * walkability grid for the map's bounds and obstacles with the path search fitted to it,
+   * carries the hero to the spawn point with its order cleared, and rebuilds the spatial hash
+   * at the tuned cell size over what is left. Run scope is untouched; the hero is never
+   * recreated. Anything standing on the spawn point is pushed off by collision on the first
+   * tick.
    */
   loadMap(map: MapDef): void {
     const world = this.state;
@@ -222,6 +230,7 @@ export class Simulation {
       walkabilityCovers(scope.walkability, map.bounds),
       "The walkability grid covers the loaded map's bounds",
     );
+    fitPathSearch(scope.pathSearch, cellCount(scope.walkability));
 
     if (hero !== null) {
       clearOrder(hero);

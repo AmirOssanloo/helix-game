@@ -1,8 +1,11 @@
+import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { Command, DebugCommand } from "../commands/command";
 import { setTunable, validateTuning } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
+import { radiusClassOf } from "../map/walkability";
+import { resolveDestination } from "../pathing/destination";
 import {
   clearOrder,
   issueAttackMove,
@@ -11,19 +14,46 @@ import {
 } from "./state-machine";
 import { validateCommand } from "./validator";
 
+/** Scratch for the legal point a clicked destination resolves to, reused for every command. */
+const resolved: Vec2 = { x: 0, y: 0 };
+
+/**
+ * The legal point the command's destination resolves to for `hero`: a click on an obstacle
+ * lands on its nearest walkable edge, a click outside the map on the nearest point inside.
+ */
+const resolveFor = (
+  world: World,
+  hero: Readonly<Unit>,
+  destination: Readonly<Vec2>,
+): Vec2 => {
+  const grid = world.map.walkability;
+
+  return resolveDestination(
+    grid,
+    radiusClassOf(grid, hero.collisionRadius),
+    world.map.bounds,
+    world.map.obstacles,
+    destination.x,
+    destination.y,
+    resolved,
+  );
+};
+
 /**
  * Writes one validated command onto the hero. The order commands replace the current order
- * through the state machine. A slot key and a cast are dropped here until the kit and the cast
- * pipeline take them; the two no-ops are dropped by definition.
+ * through the state machine, with a destination resolved to a legal point first. A slot key
+ * and a cast are dropped here until the kit and the cast pipeline take them; the two no-ops
+ * are dropped by definition.
  */
-const applyCommand = (hero: Unit, command: Command | DebugCommand): void => {
+const applyCommand = (
+  world: World,
+  hero: Unit,
+  command: Command | DebugCommand,
+): void => {
   switch (command.kind) {
     case "move": {
-      const result = issueMove(
-        hero,
-        command.destination.x,
-        command.destination.y,
-      );
+      const point = resolveFor(world, hero, command.destination);
+      const result = issueMove(hero, point.x, point.y);
 
       assert(result === "ok", "A validated move replaces the current order");
 
@@ -31,11 +61,8 @@ const applyCommand = (hero: Unit, command: Command | DebugCommand): void => {
     }
 
     case "attack_move": {
-      const result = issueAttackMove(
-        hero,
-        command.destination.x,
-        command.destination.y,
-      );
+      const point = resolveFor(world, hero, command.destination);
+      const result = issueAttackMove(hero, point.x, point.y);
 
       assert(
         result === "ok",
@@ -111,6 +138,6 @@ export const commandSystem = (world: World): void => {
       continue;
     }
 
-    applyCommand(hero, command);
+    applyCommand(world, hero, command);
   }
 };

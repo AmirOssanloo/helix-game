@@ -23,6 +23,7 @@ export type TuningKey =
   | "bound_radius"
   | "selection_radius"
   | "push_out_passes"
+  | "repath_budget"
   | "hash_cell_size"
   | "walkability_cell_size"
   | "sim_hz"
@@ -67,6 +68,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   bound_radius: "world_units",
   selection_radius: "world_units",
   push_out_passes: "count",
+  repath_budget: "count",
   hash_cell_size: "world_units",
   walkability_cell_size: "world_units",
   sim_hz: "hertz",

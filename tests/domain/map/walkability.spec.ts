@@ -10,7 +10,6 @@ import {
   walkabilityCovers,
 } from "@domain/public";
 import type { Rect } from "@shared/public";
-import { makeMapDef } from "../../helpers";
 
 const CELL = 32;
 
@@ -38,18 +37,13 @@ const CORRIDOR_WALLS: Rect[] = [
 ];
 
 const derive = (obstacles: Rect[]): WalkabilityGrid =>
-  deriveWalkabilityGrid(
-    makeMapDef.build({ bounds: BOUNDS, obstacles }),
-    CELL,
-    CLASSES,
-  );
+  deriveWalkabilityGrid(BOUNDS, obstacles, CELL, CLASSES);
 
 describe("deriveWalkabilityGrid", () => {
   it("covers the bounds with one cell per cell size, rounding the last cell up", () => {
     const grid = deriveWalkabilityGrid(
-      makeMapDef.build({
-        bounds: { minX: -100, minY: 50, maxX: 100, maxY: 130 },
-      }),
+      { minX: -100, minY: 50, maxX: 100, maxY: 130 },
+      [],
       CELL,
       CLASSES,
     );
@@ -93,11 +87,7 @@ describe("deriveWalkabilityGrid", () => {
   });
 
   it("leaves the cell beyond an edge open when the class radius reaches exactly to the boundary", () => {
-    const grid = deriveWalkabilityGrid(
-      makeMapDef.build({ bounds: BOUNDS, obstacles: [BLOCK] }),
-      CELL,
-      [CELL],
-    );
+    const grid = deriveWalkabilityGrid(BOUNDS, [BLOCK], CELL, [CELL]);
 
     expect(isCellBlocked(grid, 0, 5, 3)).toBe(true);
     expect(isCellBlocked(grid, 0, 6, 3)).toBe(false);
@@ -128,14 +118,11 @@ describe("deriveWalkabilityGrid", () => {
 
   it("refuses a cell size of zero and bounds with no area", () => {
     expect(() => derive([]).cellSize).not.toThrow();
-    expect(() =>
-      deriveWalkabilityGrid(makeMapDef.build({ bounds: BOUNDS }), 0, CLASSES),
-    ).toThrow();
+    expect(() => deriveWalkabilityGrid(BOUNDS, [], 0, CLASSES)).toThrow();
     expect(() =>
       deriveWalkabilityGrid(
-        makeMapDef.build({
-          bounds: { minX: 0, minY: 0, maxX: 0, maxY: 320 },
-        }),
+        { minX: 0, minY: 0, maxX: 0, maxY: 320 },
+        [],
         CELL,
         CLASSES,
       ),
@@ -144,10 +131,7 @@ describe("deriveWalkabilityGrid", () => {
 
   it("refuses classes that do not ascend", () => {
     expect(() =>
-      deriveWalkabilityGrid(makeMapDef.build({ bounds: BOUNDS }), CELL, [
-        HERO,
-        SMALL,
-      ]),
+      deriveWalkabilityGrid(BOUNDS, [], CELL, [HERO, SMALL]),
     ).toThrow();
   });
 });

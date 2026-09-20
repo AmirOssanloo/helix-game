@@ -36,6 +36,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, the speed stack, the path buffer, and the movement system |
 | How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the pass loop, and the tie-break |
+| How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
 | How "what is near" is answered, and what a query returns | The spatial hash under `src/domain/movement/` — the operations, the cell capacity, and the candidate order |
 | How a world is created, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
 | How a session is recorded and replayed | `src/simulation/replay/` |

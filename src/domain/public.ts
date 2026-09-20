@@ -88,7 +88,12 @@ export {
   type TickCompletedEvent,
 } from "./events/domain-event";
 export {
+  cellCentreX,
+  cellCentreY,
+  cellCount,
+  cellIndex,
   columnOf,
+  columnOfIndex,
   deriveWalkabilityGrid,
   isBlockedAt,
   isCellBlocked,
@@ -96,9 +101,11 @@ export {
   radiusClassOf,
   readRadiusClasses,
   rowOf,
+  rowOfIndex,
   type WalkabilityGrid,
   type WalkabilityView,
   walkabilityCovers,
+  walkabilityIsCurrent,
 } from "./map/walkability";
 export {
   keepInsideRect,
@@ -126,6 +133,16 @@ export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";
 export type { DisableFlags } from "./orders/disable-flags";
 export type { Order, OrderKind, OrderState } from "./orders/order";
+export {
+  createPathSearch,
+  fitPathSearch,
+  type PathSearch,
+  searchPath,
+} from "./pathing/astar";
+export { resolveDestination } from "./pathing/destination";
+export { hasLineOfSight, segmentCrossesRect } from "./pathing/line-of-sight";
+export { pathingSystem } from "./pathing/pathing.system";
+export { writeSmoothedPath } from "./pathing/smoothing";
 export {
   arrive,
   beginAttackBackswing,

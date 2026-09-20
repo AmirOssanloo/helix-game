@@ -81,12 +81,14 @@ The hash returns candidates; the caller does the exact test. It returns ids in c
 
 A move order asks `domain/pathing/` for a path from the unit to the target on the walkability grid:
 
-- **A\* with a binary heap**, on the grid inflated for the unit's radius class.
-- **Line-of-sight smoothing** afterwards, dropping every waypoint that the unit can walk straight past, so a path across an open room is one segment.
-- **A re-path budget per tick.** Enemies that need a new path queue for it; the system serves a fixed number each tick and the rest keep their current path. The hero is served first.
-- **A blocked destination** resolves to the nearest legal point on the inflated obstacle.
+- **A blocked destination** resolves to the nearest legal point on the inflated obstacle, and one outside the bounds to the nearest point inside them, when the order is issued, so an order always holds a point the unit can stand on. A point the grid closes on every side snaps to the nearest open cell instead.
+- **A destination in line of sight** is one segment, with no search: the segment crosses no obstacle inflated by the class radius.
+- **A\* with a binary heap** otherwise, on the grid inflated for the unit's radius class, from the cell under the unit to the cell under the destination, with diagonal steps that never cut a blocked corner. The search's arrays are allocated once per grid and reused by every search.
+- **Line-of-sight smoothing** afterwards, dropping every waypoint that the unit can walk straight past, so a path across an open room is one segment and a path around a corner turns once at it.
+- **A re-path budget per tick.** A unit that needs a path waits its turn; the system serves a fixed number each tick, the hero first and the rest in pool order, and a unit not yet served keeps whatever path it has and stands still if it has none.
+- **An unreachable destination** clears the order: the unit has nowhere legal to go.
 
-A path is a fixed-capacity buffer on the unit, not an allocated array.
+A path is a fixed-capacity buffer on the unit, not an allocated array. A path longer than the buffer is walked to its last waypoint and planned again from there.
 
 ---
 
@@ -129,10 +131,11 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | The walkability grid | Derived once per map from the bounds and the obstacle rectangles, one layer per radius class; a cell is open where a disc of the class radius fits anywhere in it; a unit paths on the smallest class that holds it; cell size and class radii are tunables |
 | "What is near" | Always the spatial hash: insert, remove, move, circle, segment, rectangle; the cell size a tunable |
 | Hash results | Candidate ids in cell-then-index order, written into a caller-supplied buffer |
-| Pathing | Grid A* with a binary heap, then line-of-sight smoothing |
-| Re-pathing | A fixed budget per tick, hero first; the rest keep their path |
-| A blocked destination | The nearest legal point on the inflated obstacle |
-| A path | A fixed-capacity buffer on the unit |
+| Pathing | Grid A* with a binary heap, then line-of-sight smoothing; a destination in line of sight is one segment with no search |
+| Re-pathing | A fixed budget per tick, hero first, the rest in pool order; a unit not yet served keeps its path and stands still without one |
+| A blocked destination | The nearest legal point on the inflated obstacle, or the nearest point inside the bounds, resolved when the order is issued; a point the grid closes on every side snaps to the nearest open cell |
+| An unreachable destination | The order is cleared |
+| A path | A fixed-capacity buffer on the unit; one longer than the buffer is walked to its last waypoint and planned again from there |
 | Projectiles | Sweep the segment from previous to current position; first hit wins |
 | Homing projectiles | Test only the target's disc, at the target's current position |
 

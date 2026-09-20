@@ -32,7 +32,7 @@ export type MoveCommand = Readonly<{
   kind: "move";
   tick: Tick;
   timestamp: number;
-  /** The world position resolved at event time; the mapper clamps it to the map. */
+  /** The world position resolved at event time. The command system resolves it to a legal point: inside the map and off any obstacle. */
   destination: Readonly<Vec2>;
 }>;
 

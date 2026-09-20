@@ -100,7 +100,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | Layer | domain, simulation, tests |
 | Size | 1.5 |
 | Depends on | T02, T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/pathing/`: A* over the inflated grid for the unit's radius class with a preallocated binary heap and preallocated open, closed, and parent arrays sized to the grid; line-of-sight smoothing that drops every waypoint the unit can walk straight past; the path written into the unit's fixed-capacity path buffer; a re-path queue served a fixed number of searches per tick (a tunable), hero first, others in id order, with units keeping their current path while they wait; a blocked destination resolved to the nearest legal point on the inflated obstacle; a destination outside the bounds clamped inside. The movement system follows the buffer's waypoints. `pathingSystem` registered before `movementSystem`.
 
@@ -121,15 +121,17 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 
 *Edited while building T03: the pathing system also re-derives the walkability grid when `walkability_cell_size` or a `radius_class` tunable has changed, on the tick that consumes the command, as the movement system rebuilds the hash; the grid records the cell size and radii it was derived under.*
 
+*Edited while building: the pieces are `astar.ts`, `line-of-sight.ts`, `smoothing.ts`, `destination.ts`, and `pathing.system.ts` under `src/domain/pathing/`. The search's workspace, the heap and the per-cell arrays, lives on map scope as `pathSearch`, created with the world and fitted to the grid by `loadMap` and by the pathing system after a re-derive; cells are stamped with the search that touched them, so nothing is cleared between searches. Line of sight is geometric, the segment against every obstacle inflated by the class radius, rather than a walk over grid cells: a unit pushed against a wall stands in a cell the grid closes, and grid line of sight would have it sidestep to a cell centre before walking along the wall; a hair of tolerance keeps a disc touching a wall at exactly its radius in line of sight. For the same reason the search expands the start cell whatever its flag and enters the goal cell whatever its flag; every other cell on a path is open, and diagonal steps never cut a blocked corner. A destination in line of sight is one segment with no search. The destination is resolved when the order is issued, by the command system through `resolveDestination`, since only the state machine writes an order: clamped inside the bounds by the class radius, pushed to the nearest edge of the inflated obstacle for a capped number of passes, and snapped to the nearest open cell when the passes leave it inside overlapping inflations or in a cell no search can enter from beside it. "Nearest walkable edge" is therefore the inflated edge, 27 units off the rectangle for the hero, not the grid's cell boundary. A unit asks for a path through a `needsPath` flag the state machine sets on a move or attack-move and clears on a stop; the movement system no longer fills an empty path and a unit waiting for one stands still; the budget is the `repath_budget` tunable, default 8, counting the hero; an unreachable destination clears the order; a path the buffer cuts short is walked and then asked for again from its last waypoint, decided by the movement system when the path completes short of the destination by the arrival epsilon. `deriveWalkabilityGrid` takes bounds and obstacles rather than a map definition, since map scope holds those and not the definition. The collision-system row "a unit walking into a wall" now arranges its straight path by hand, since a clicked destination inside a wall no longer stays inside it. The arena-crossing row and the two click rows are in `tests/simulation/at-commands.spec.ts` under map headings; the grid re-derive, the unreachable destination, the cut path, and a hero walking around a block are in `tests/simulation/pathing-budget.spec.ts` beside the budget rows.*
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| AT-M5 green; pathing and hash suites green | |
-| Pile-up test deterministic across runs | |
-| Actual days per ticket | T01 1 · T02 1 · T03 0.5 · T04 |
+| AT-M5 green; pathing and hash suites green | Green, 2026-09-20, in `pnpm test`: AT-M5 in `at-locomotion.spec.ts`, the search, smoothing, line of sight, and resolver in `tests/domain/pathing/astar.spec.ts`, the budget in `tests/simulation/pathing-budget.spec.ts`, the hash in its unit and simulation specs |
+| Pile-up test deterministic across runs | Green, 2026-09-20: the two-run determinism row of `tests/simulation/pile-up.spec.ts` |
+| Actual days per ticket | T01 1 · T02 1 · T03 0.5 · T04 1.5 |
 
 ## Risks in this sprint
 

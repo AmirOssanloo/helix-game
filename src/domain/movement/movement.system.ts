@@ -1,15 +1,10 @@
 import type { Vec2 } from "@shared/public";
-import { assert, bearing, length, sub } from "@shared/public";
+import { assert, bearing, distanceSquared, length, sub } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { arrive, beginMoving } from "../orders/state-machine";
-import {
-  isPathComplete,
-  nextWaypoint,
-  passWaypoint,
-  setStraightPath,
-} from "./path";
+import { isPathComplete, nextWaypoint, passWaypoint } from "./path";
 import { movementSpeed } from "./speed-stack";
 import { isInsideCone, turnToward } from "./turn";
 
@@ -24,27 +19,44 @@ const isUnderway = (unit: Readonly<Unit>): boolean =>
 const hasDestination = (unit: Readonly<Unit>): boolean =>
   unit.order.kind === "move" || unit.order.kind === "attack_move";
 
-/** Lands the unit on the waypoint it reached and steps past it; the last one ends the order. */
-const reachWaypoint = (unit: Unit, waypoint: Readonly<Vec2>): void => {
+/**
+ * Lands the unit on the waypoint it reached and steps past it. Passing the last one ends the
+ * order when it is the destination; when the path was cut short of the destination, the unit
+ * asks for the rest of it from where it stands.
+ */
+const reachWaypoint = (
+  unit: Unit,
+  waypoint: Readonly<Vec2>,
+  epsilon: number,
+): void => {
   unit.curr.x = waypoint.x;
   unit.curr.y = waypoint.y;
   passWaypoint(unit.path);
 
-  if (isPathComplete(unit.path)) {
+  if (!isPathComplete(unit.path)) {
+    return;
+  }
+
+  if (distanceSquared(unit.curr, unit.order.destination) <= epsilon * epsilon) {
     const result = arrive(unit);
 
     assert(result === "ok", "A unit underway on a path arrives at its end");
+
+    return;
   }
+
+  unit.needsPath = true;
 };
 
 /**
- * Turns and moves every unit that is underway. Each tick, for each such unit: fill the path
- * if it is empty, with one segment to the destination until the pathing exists to fill it;
- * turn toward the next waypoint along the shortest arc, ramping up over the first ticks of a
- * turn and landing exactly; and only when the bearing is inside the action cone, translate by
- * the lesser of this tick's speed and the distance left, so a unit never overshoots. Speed is
- * the stack over the unit's modifiers, recomputed every tick. The tunables are read in units
- * per tick and radians per tick, converted once when they entered the world.
+ * Turns and moves every unit that is underway along the path the pathing system wrote. Each
+ * tick, for each such unit: stand still while the path is empty, which is a unit waiting its
+ * turn for a path; turn toward the next waypoint along the shortest arc, ramping up over the
+ * first ticks of a turn and landing exactly; and only when the bearing is inside the action
+ * cone, translate by the lesser of this tick's speed and the distance left, so a unit never
+ * overshoots. Speed is the stack over the unit's modifiers, recomputed every tick. The
+ * tunables are read in units per tick and radians per tick, converted once when they entered
+ * the world.
  *
  * The system also keeps the spatial hash true to where units stand: it rebuilds the hash when
  * the cell size tunable has changed, and after translating it moves every live unit to the
@@ -74,24 +86,18 @@ export const movementSystem = (world: World): void => {
       continue;
     }
 
-    if (isPathComplete(unit.path)) {
-      setStraightPath(
-        unit.path,
-        unit.order.destination.x,
-        unit.order.destination.y,
-      );
-    }
-
     const waypoint = nextWaypoint(unit.path);
 
-    assert(waypoint !== null, "A path just filled has a waypoint");
+    if (waypoint === null) {
+      continue;
+    }
 
     sub(waypoint, unit.curr, toWaypoint);
 
     const remaining = length(toWaypoint);
 
     if (remaining <= epsilon) {
-      reachWaypoint(unit, waypoint);
+      reachWaypoint(unit, waypoint, epsilon);
 
       continue;
     }
@@ -121,7 +127,7 @@ export const movementSystem = (world: World): void => {
     const step = Math.min(speed, remaining);
 
     if (remaining - step <= epsilon) {
-      reachWaypoint(unit, waypoint);
+      reachWaypoint(unit, waypoint, epsilon);
 
       continue;
     }

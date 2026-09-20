@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
+import { arenaDef } from "@content/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, spawnHero, submit, tickUntil } from "../helpers";
+import {
+  makeMapDef,
+  makeWorld,
+  spawnHero,
+  submit,
+  tickUntil,
+} from "../helpers";
+
+const HULL = 27;
+
+/** A wall standing across x 1000 to 1200. */
+const WALL = { minX: 1000, minY: -1000, maxX: 1200, maxY: 1000 };
 
 const moveTo = (world: Simulation, x: number, y: number): void => {
   submit(world, {
@@ -78,5 +90,73 @@ describe("AT-C4", () => {
     expect(hero.path.count).toBe(0);
     expect(hero.facing).toBe(facingAtStop);
     expect(hero.curr).toEqual(positionAtStop);
+  });
+});
+
+describe("map: click on an obstacle", () => {
+  it("issues a move to the nearest walkable point on the obstacle's edge and arrives there", () => {
+    const world = makeWorld({
+      seed: 1,
+      map: makeMapDef.build({ obstacles: [WALL] }),
+    });
+    const hero = spawnHero(world, { x: 500, y: 0, facing: 0 });
+    moveTo(world, 1050, 0);
+
+    world.tick();
+
+    expect(hero.order.destination).toEqual({ x: 1000 - HULL, y: 0 });
+
+    tickUntil(world, () => hero.state === "idle", 200);
+
+    expect(hero.curr).toEqual({ x: 1000 - HULL, y: 0 });
+  });
+});
+
+describe("map: click outside the map", () => {
+  it("issues a move to the nearest point inside the bounds", () => {
+    const world = makeWorld({
+      seed: 1,
+      map: makeMapDef.build({
+        bounds: { minX: 0, minY: 0, maxX: 1000, maxY: 1000 },
+        spawnPoint: { x: 500, y: 500 },
+      }),
+    });
+    const hero = spawnHero(world, { x: 500, y: 500, facing: 0 });
+    moveTo(world, 1200, 300);
+
+    world.tick();
+
+    expect(hero.order.destination).toEqual({ x: 1000 - HULL, y: 300 });
+  });
+});
+
+describe("map: a move order crosses the arena around obstacles", () => {
+  it("carries the hero from the spawn point to the far corner of the arena without entering a rectangle", () => {
+    const world = makeWorld({ seed: 1, map: arenaDef });
+    const hero = spawnHero(world, {
+      x: arenaDef.spawnPoint.x,
+      y: arenaDef.spawnPoint.y,
+    });
+    moveTo(world, 3800, 3800);
+    let closest = Infinity;
+
+    world.tick();
+
+    for (let tick = 0; tick < 600 && hero.state !== "idle"; tick += 1) {
+      world.tick();
+
+      for (const rect of arenaDef.obstacles) {
+        const dx =
+          hero.curr.x - Math.min(Math.max(hero.curr.x, rect.minX), rect.maxX);
+        const dy =
+          hero.curr.y - Math.min(Math.max(hero.curr.y, rect.minY), rect.maxY);
+
+        closest = Math.min(closest, Math.hypot(dx, dy));
+      }
+    }
+
+    expect(hero.state).toBe("idle");
+    expect(hero.curr).toEqual({ x: 3800, y: 3800 });
+    expect(closest).toBeGreaterThanOrEqual(HULL - 1e-6);
   });
 });

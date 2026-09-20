@@ -1,6 +1,5 @@
 import type { Rect } from "@shared/public";
 import { assert } from "@shared/public";
-import type { MapDef } from "../definitions/map-def";
 import type { RadiusClassKey } from "../definitions/tuning-def";
 import { readTunable } from "../definitions/tuning-state";
 
@@ -108,18 +107,18 @@ const blockOverlapping = (
 };
 
 /**
- * Derives the grid for `map`: `cellSize` square cells covering the bounds, one layer per entry
- * of `classRadii`. On each layer, every obstacle inflated by the class radius blocks the cells
- * it overlaps, and so does a strip of that radius inside each side of the bounds, since the
- * bounds are walls. Allocated once here, at the size the bounds need; a map load is not steady
- * state.
+ * Derives the grid for a map's `bounds` and `obstacles`: `cellSize` square cells covering the
+ * bounds, one layer per entry of `classRadii`. On each layer, every obstacle inflated by the
+ * class radius blocks the cells it overlaps, and so does a strip of that radius inside each
+ * side of the bounds, since the bounds are walls. Allocated once here, at the size the bounds
+ * need; a map load and a change to the grid's tunables are not steady state.
  */
 export const deriveWalkabilityGrid = (
-  map: MapDef,
+  bounds: Readonly<Rect>,
+  obstacles: readonly Rect[],
   cellSize: number,
   classRadii: readonly number[],
 ): WalkabilityGrid => {
-  const bounds = map.bounds;
   const width = bounds.maxX - bounds.minX;
   const height = bounds.maxY - bounds.minY;
 
@@ -186,8 +185,8 @@ export const deriveWalkabilityGrid = (
       Infinity,
     );
 
-    for (let index = 0; index < map.obstacles.length; index += 1) {
-      const obstacle = map.obstacles[index];
+    for (let index = 0; index < obstacles.length; index += 1) {
+      const obstacle = obstacles[index];
 
       if (obstacle !== undefined) {
         blockOverlapping(
@@ -214,6 +213,63 @@ export const walkabilityCovers = (
   grid.originY === bounds.minY &&
   grid.columns === cellsToCover(bounds.maxX - bounds.minX, grid.cellSize) &&
   grid.rows === cellsToCover(bounds.maxY - bounds.minY, grid.cellSize);
+
+/**
+ * Whether `grid` was derived under the cell size and class radii the tuning state holds now.
+ * Reads the tunables one by one, so the check a system makes every tick allocates nothing.
+ */
+export const walkabilityIsCurrent = (
+  grid: WalkabilityView,
+  tuning: ReadonlyMap<string, number>,
+): boolean => {
+  if (grid.cellSize !== readTunable(tuning, "walkability_cell_size")) {
+    return false;
+  }
+
+  if (grid.classRadii.length !== RADIUS_CLASS_KEYS.length) {
+    return false;
+  }
+
+  for (let index = 0; index < RADIUS_CLASS_KEYS.length; index += 1) {
+    const key = RADIUS_CLASS_KEYS[index];
+
+    if (
+      key !== undefined &&
+      grid.classRadii[index] !== readTunable(tuning, key)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/** How many cells one layer holds: what a search over the grid sizes its arrays to. */
+export const cellCount = (grid: WalkabilityView): number =>
+  grid.columns * grid.rows;
+
+/** The cell's index within one layer, `row` by `column`; what a search over the grid uses as a node. */
+export const cellIndex = (
+  grid: WalkabilityView,
+  column: number,
+  row: number,
+): number => row * grid.columns + column;
+
+/** The column of a within-layer cell index. */
+export const columnOfIndex = (grid: WalkabilityView, index: number): number =>
+  index % grid.columns;
+
+/** The row of a within-layer cell index. */
+export const rowOfIndex = (grid: WalkabilityView, index: number): number =>
+  (index - (index % grid.columns)) / grid.columns;
+
+/** The world x at the centre of `column`. */
+export const cellCentreX = (grid: WalkabilityView, column: number): number =>
+  grid.originX + (column + 1 / 2) * grid.cellSize;
+
+/** The world y at the centre of `row`. */
+export const cellCentreY = (grid: WalkabilityView, row: number): number =>
+  grid.originY + (row + 1 / 2) * grid.cellSize;
 
 /** The column the world x lies in. Past the grid on either side the result is outside `0` to `columns - 1`. */
 export const columnOf = (grid: WalkabilityView, x: number): number =>

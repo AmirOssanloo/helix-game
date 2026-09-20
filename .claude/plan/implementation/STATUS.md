@@ -9,11 +9,11 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | | |
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
-| **Active sprint** | [03 — Collision, pathing, the spatial hash, and the arena](./phase-1-hero-mechanics/sprint-03-collision-pathing-and-the-arena.md) |
-| **Next ticket** | P1-S03-T04 — Grid A*, smoothing, the re-path budget, and blocked destinations |
+| **Active sprint** | [04 — Hero definition, orbs, Invoke, slots, and cooldowns](./phase-1-hero-mechanics/sprint-04-orbs-invoke-and-slots.md) |
+| **Next ticket** | P1-S04-T01 — Hero and form definitions, stats, modifiers, levels |
 | **In progress** | none |
-| **Last closed ticket** | P1-S03-T03 — Map definition, the arena, and the walkability grid |
-| **Last closed sprint** | [02 — Locomotion, turn rate, and the render benchmark](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md), 2026-09-20 |
+| **Last closed ticket** | P1-S03-T04 — Grid A*, smoothing, the re-path budget, and blocked destinations |
+| **Last closed sprint** | [03 — Collision, pathing, the spatial hash, and the arena](./phase-1-hero-mechanics/sprint-03-collision-pathing-and-the-arena.md), 2026-09-20 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
 
@@ -21,7 +21,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 ## Blocked or waiting
 
-- Milestone M1 waits on a person: `pnpm bench` on the reference laptop in Chrome and Safari, once as configured and once with `?textures=default`, with the numbers written into the sprint 02 exit table and the phase 1 README. It holds in Chrome on an Apple M1 laptop and blocks nothing in sprint 03.
+- Milestone M1 waits on a person: `pnpm bench` on the reference laptop in Chrome and Safari, once as configured and once with `?textures=default`, with the numbers written into the sprint 02 exit table and the phase 1 README. It holds in Chrome on an Apple M1 laptop and blocks nothing in sprint 04.
 
 ---
 
