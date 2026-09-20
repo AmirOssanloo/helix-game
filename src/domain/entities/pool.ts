@@ -111,10 +111,24 @@ export class Pool<T extends object> implements PoolView<T> {
 
   /** The next free slot in its neutral state, or `null` when the pool is full. A full pool never grows. */
   acquire(): T | null {
+    const index = this.acquireIndex();
+
+    if (index === -1) {
+      return null;
+    }
+
+    return this.slotAt(index);
+  }
+
+  /**
+   * `acquire`, returning the slot's index instead of the slot, for a caller that needs the id
+   * of what it just acquired: `at` and `idAt` read both. `-1` when the pool is full.
+   */
+  acquireIndex(): number {
     if (this.freeCount === 0) {
       this.missCount += 1;
 
-      return null;
+      return -1;
     }
 
     this.freeCount -= 1;
@@ -123,10 +137,6 @@ export class Pool<T extends object> implements PoolView<T> {
 
     assert(index !== undefined, "The free list holds an index below its count");
 
-    const slot = this.slots[index];
-
-    assert(slot !== undefined, "Every index below capacity has a slot");
-
     this.live[index] = true;
     this.liveCount += 1;
 
@@ -134,7 +144,7 @@ export class Pool<T extends object> implements PoolView<T> {
       this.endIndex = index + 1;
     }
 
-    return slot;
+    return index;
   }
 
   /** Clears the slot `id` names, bumps its generation, and frees it. A stale or unknown id changes nothing. */

@@ -214,4 +214,23 @@ describe("Pool", () => {
     expect(pool.at(CAPACITY)).toBeNull();
     expect(pool.idAt(1)).toBeNull();
   });
+
+  it("hands out the index of the slot acquire would hand out next", () => {
+    const pool = makePool();
+
+    const index = pool.acquireIndex();
+
+    expect(index).toBe(0);
+    expect(pool.at(index)).toEqual({ value: 0 });
+    expect(pool.idAt(index)).not.toBeNull();
+    expect(pool.count).toBe(1);
+  });
+
+  it("hands out -1 and counts a miss when full", () => {
+    const pool = makePool();
+    fillPool(pool);
+
+    expect(pool.acquireIndex()).toBe(-1);
+    expect(pool.misses).toBe(1);
+  });
 });

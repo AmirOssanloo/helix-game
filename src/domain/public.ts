@@ -55,12 +55,14 @@ export {
   PROJECTILE_CAPACITY,
 } from "./entities/projectile";
 export {
+  acquireUnit,
   clearPath,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   type ModifierEntry,
   type Path,
   PATH_CAPACITY,
+  releaseUnit,
   type Resources,
   type Stat,
   STATUS_TABLE_SIZE,
@@ -74,7 +76,6 @@ export type {
   MapScope,
   RandomState,
   RunScope,
-  SpatialHash,
   TuningState,
   WalkabilityGrid,
   World,
@@ -93,6 +94,14 @@ export {
   passWaypoint,
   setStraightPath,
 } from "./movement/path";
+export {
+  CELL_CAPACITY,
+  createCandidateBuffer,
+  createSpatialHash,
+  type Positioned,
+  SpatialHash,
+  type SpatialHashView,
+} from "./movement/spatial-hash";
 export { movementSpeed } from "./movement/speed-stack";
 export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";

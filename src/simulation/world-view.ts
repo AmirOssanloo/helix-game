@@ -3,7 +3,7 @@ import type {
   PoolView,
   Projectile,
   RunScope,
-  SpatialHash,
+  SpatialHashView,
   Tick,
   Unit,
   WalkabilityGrid,
@@ -26,6 +26,6 @@ export type WorldView = DeepReadonly<{
     effects: PoolView<Effect>;
     zones: PoolView<Zone>;
     walkability: WalkabilityGrid | null;
-    spatialHash: SpatialHash | null;
+    spatialHash: SpatialHashView;
   };
 }>;

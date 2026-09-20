@@ -18,6 +18,7 @@ export type TuningKey =
   | "arrival_epsilon"
   | "collision_radius"
   | "bound_radius"
+  | "hash_cell_size"
   | "sim_hz"
   | "orb_capacity"
   | "prepared_slots"
@@ -57,6 +58,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   arrival_epsilon: "world_units",
   collision_radius: "world_units",
   bound_radius: "world_units",
+  hash_cell_size: "world_units",
   sim_hz: "hertz",
   orb_capacity: "count",
   prepared_slots: "count",

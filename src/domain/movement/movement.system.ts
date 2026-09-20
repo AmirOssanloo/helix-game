@@ -45,6 +45,10 @@ const reachWaypoint = (unit: Unit, waypoint: Readonly<Vec2>): void => {
  * the lesser of this tick's speed and the distance left, so a unit never overshoots. Speed is
  * the stack over the unit's modifiers, recomputed every tick. The tunables are read in units
  * per tick and radians per tick, converted once when they entered the world.
+ *
+ * The system also keeps the spatial hash true to where units stand: it rebuilds the hash when
+ * the cell size tunable has changed, and after translating it moves every live unit to the
+ * cell its position is in, which is a no-op for a unit that stayed in its cell.
  */
 export const movementSystem = (world: World): void => {
   const tuning = world.run.tuning;
@@ -55,7 +59,13 @@ export const movementSystem = (world: World): void => {
   const minSpeed = readTunable(tuning, "ms_min");
   const maxSpeed = readTunable(tuning, "ms_max");
   const epsilon = readTunable(tuning, "arrival_epsilon");
+  const cellSize = readTunable(tuning, "hash_cell_size");
   const units = world.map.units;
+  const hash = world.map.spatialHash;
+
+  if (hash.cellSize !== cellSize) {
+    hash.rebuild(cellSize, units);
+  }
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
@@ -118,5 +128,14 @@ export const movementSystem = (world: World): void => {
 
     unit.curr.x += (toWaypoint.x / remaining) * step;
     unit.curr.y += (toWaypoint.y / remaining) * step;
+  }
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+    const id = units.idAt(index);
+
+    if (unit !== null && id !== null) {
+      hash.move(id, unit.curr.x, unit.curr.y);
+    }
   }
 };

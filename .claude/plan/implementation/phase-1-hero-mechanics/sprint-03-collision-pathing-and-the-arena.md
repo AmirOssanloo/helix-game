@@ -21,7 +21,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | Layer | domain, tests |
 | Size | 1 |
 | Depends on | P0-S01-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/movement/spatial-hash.ts`: a uniform grid on 128-unit cells (the cell size a tunable), keyed by integer coordinates packed into one number, each cell a fixed-capacity array of unit ids with a count. Operations: insert, remove, move (when a unit changes cell), circle query, segment query, rectangle query. Every query writes candidate ids into a caller-supplied buffer and returns the count; results come in cell order then slot order; nothing allocates. Pools call insert on acquire and remove on release; the movement system calls move after translating. The hash lives on map scope and is rebuilt by `loadMap`.
 
@@ -35,6 +35,8 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 - `tests/domain/movement/spatial-hash.spec.ts` — the eight to ten from the testing standard.
 
 **Definition of done:** Every change · `src/domain`.
+
+*Edited while building: the hash is created with the world, since the unit pool it indexes is, and `loadMap` rebuilds it rather than filling a null slot; a change to the cell size tunable rebuilds it on the tick that consumes the command. "Pools call insert on acquire and remove on release" landed as the `acquireUnit` and `releaseUnit` doors in the unit's file, the shape the entities page sketches, with a `Pool.acquireIndex` so the door has the id without a scan; the movement system moves every live unit after translating, so a unit taken from the pool directly or displaced by any other write is indexed by the end of the tick. The segment query takes the radius of the disc swept along it, since the cells a segment crosses alone miss a unit whose centre is in the next cell. A cell holds 64 ids and the hash holds one cell per unit slot, so a cell is never refused for want of cells.*
 
 ---
 
@@ -121,7 +123,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | --- | --- |
 | AT-M5 green; pathing and hash suites green | |
 | Pile-up test deterministic across runs | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

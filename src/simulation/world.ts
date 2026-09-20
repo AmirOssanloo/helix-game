@@ -8,9 +8,11 @@ import type {
 import {
   createEffectPool,
   createProjectilePool,
+  createSpatialHash,
   createTuningState,
   createUnitPool,
   createZonePool,
+  readTunable,
 } from "@domain/public";
 import { assert } from "@shared/public";
 import { CommandBuffer } from "./command-buffer";
@@ -77,13 +79,15 @@ export class Simulation {
   private isDisposed = false;
 
   constructor(options: CreateWorldOptions) {
+    const tuning = createTuningState(options.registry.tuning);
+
     this.buffer = new CommandBuffer();
     this.state = {
       tick: 0,
       run: {
         heroId: null,
         forms: [],
-        tuning: createTuningState(options.registry.tuning),
+        tuning,
         random: createRandomState(options.seed),
       },
       map: {
@@ -93,7 +97,7 @@ export class Simulation {
         effects: createEffectPool(),
         zones: createZonePool(),
         walkability: null,
-        spatialHash: null,
+        spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
       },
       commands: this.buffer,
     };
@@ -169,7 +173,7 @@ export class Simulation {
     world.tick += 1;
   }
 
-  /** Releases every map-scoped pool and takes `map` as the loaded one. Run scope is untouched. */
+  /** Releases every map-scoped pool, rebuilds the spatial hash at the tuned cell size, and takes `map` as the loaded one. Run scope is untouched. */
   loadMap(map: MapDef): void {
     const scope = this.state.map;
 
@@ -178,7 +182,10 @@ export class Simulation {
     scope.effects.releaseAll();
     scope.zones.releaseAll();
     scope.walkability = null;
-    scope.spatialHash = null;
+    scope.spatialHash.rebuild(
+      readTunable(this.state.run.tuning, "hash_cell_size"),
+      scope.units,
+    );
     scope.mapId = map.id;
   }
 

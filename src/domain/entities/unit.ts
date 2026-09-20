@@ -1,8 +1,10 @@
 import type { EntityId, Vec2 } from "@shared/public";
+import { assert } from "@shared/public";
 import type { DisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
+import type { World } from "./world-state";
 
 /** Hero, enemies, and summons together. */
 export const UNIT_CAPACITY = 512;
@@ -221,3 +223,44 @@ const clearUnit = (unit: Unit): void => {
 
 export const createUnitPool = (): Pool<Unit> =>
   new Pool(UNIT_CAPACITY, createUnit, clearUnit);
+
+/**
+ * The one way a unit enters the world: a slot from the pool, standing at the position with its
+ * previous position and spawn point there too, indexed in the spatial hash. Returns the id, or
+ * `null` when the pool is full; the caller decides what a spawn that does not happen means.
+ */
+export const acquireUnit = (
+  world: World,
+  kind: UnitKind,
+  x: number,
+  y: number,
+): EntityId | null => {
+  const units = world.map.units;
+  const index = units.acquireIndex();
+
+  if (index === -1) {
+    return null;
+  }
+
+  const unit = units.at(index);
+  const id = units.idAt(index);
+
+  assert(unit !== null && id !== null, "A slot just acquired is live");
+
+  unit.kind = kind;
+  unit.curr.x = x;
+  unit.curr.y = y;
+  unit.prev.x = x;
+  unit.prev.y = y;
+  unit.spawnPoint.x = x;
+  unit.spawnPoint.y = y;
+  world.map.spatialHash.insert(id, x, y);
+
+  return id;
+};
+
+/** The one way a unit leaves the world: out of the spatial hash, then back to the pool. A stale id changes nothing. */
+export const releaseUnit = (world: World, id: EntityId): void => {
+  world.map.spatialHash.remove(id);
+  world.map.units.release(id);
+};

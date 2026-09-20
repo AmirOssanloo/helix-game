@@ -69,10 +69,10 @@ Every question of the form "what is near here" goes through one uniform grid has
 | Insert and remove | Pools, on acquire and release |
 | Move | The movement system, when a unit changes cell |
 | Circle query | Aggro, attack range, area effects, attack-move target search, pack activation |
-| Segment query | Projectile sweeps, line and cone effects |
+| Segment query, widened by a radius | Projectile sweeps, line and cone effects |
 | Rectangle query | The presentation, to bind views to what the camera can see |
 
-The hash returns candidates; the caller does the exact test. It returns ids in cell-then-index order so a replay finds the same target first. Queries write into a caller-supplied buffer and allocate nothing.
+The hash returns candidates; the caller does the exact test. It returns ids in cell-then-index order so a replay finds the same target first. Queries write into a caller-supplied buffer and allocate nothing. A segment query takes the radius of the disc swept along it, so a unit whose centre is in a neighbouring cell is still a candidate. The cell size is a tunable; a change rebuilds the hash.
 
 ---
 
@@ -125,7 +125,7 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Obstacle blocking | Push to the nearest edge of the axis-aligned rectangle |
 | Enemies and each other | Push, never steer |
 | The walkability grid | Derived once per map from obstacle rectangles, inflated per radius class |
-| "What is near" | Always the spatial hash: insert, remove, move, circle, segment, rectangle |
+| "What is near" | Always the spatial hash: insert, remove, move, circle, segment, rectangle; the cell size a tunable |
 | Hash results | Candidate ids in cell-then-index order, written into a caller-supplied buffer |
 | Pathing | Grid A* with a binary heap, then line-of-sight smoothing |
 | Re-pathing | A fixed budget per tick, hero first; the rest keep their path |

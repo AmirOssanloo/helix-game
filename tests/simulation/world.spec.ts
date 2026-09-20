@@ -33,7 +33,7 @@ describe("createWorld", () => {
     expect(world.view.map.effects.count).toBe(0);
     expect(world.view.map.zones.count).toBe(0);
     expect(world.view.map.walkability).toBeNull();
-    expect(world.view.map.spatialHash).toBeNull();
+    expect(world.view.map.spatialHash.count).toBe(0);
     expect(world.view.run.heroId).toBeNull();
     expect(world.view.map.units.capacity).toBe(UNIT_CAPACITY);
   });

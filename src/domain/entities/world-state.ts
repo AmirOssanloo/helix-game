@@ -1,5 +1,6 @@
 import type { EntityId } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { SpatialHash } from "../movement/spatial-hash";
 import type { Tick } from "../tick";
 import type { Effect } from "./effect";
 import type { Pool } from "./pool";
@@ -30,11 +31,6 @@ export type WalkabilityGrid = {
   rows: number;
 };
 
-/** The index of what is near. The movement module owns the cells; this names the slot. */
-export type SpatialHash = {
-  cellSize: number;
-};
-
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
   heroId: EntityId | null;
@@ -52,7 +48,8 @@ export type MapScope = {
   effects: Pool<Effect>;
   zones: Pool<Zone>;
   walkability: WalkabilityGrid | null;
-  spatialHash: SpatialHash | null;
+  /** The index of what is near, created with the world and rebuilt by every map load. */
+  spatialHash: SpatialHash;
 };
 
 /**
