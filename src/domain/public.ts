@@ -25,13 +25,14 @@ export type {
   AtlasFrameList,
   AtlasShape,
 } from "./definitions/atlas-frame-def";
-export type { MapDef } from "./definitions/map-def";
+export type { MapDef, SpawnDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
 export {
   TUNING_KEYS,
   TUNING_UNITS,
   type TuningDef,
   type TuningKey,
+  type RadiusClassKey,
   type TuningUnit,
   type WhorlSpeedKey,
 } from "./definitions/tuning-def";
@@ -77,7 +78,6 @@ export type {
   RandomState,
   RunScope,
   TuningState,
-  WalkabilityGrid,
   World,
 } from "./entities/world-state";
 export { createZonePool, type Zone, ZONE_CAPACITY } from "./entities/zone";
@@ -87,7 +87,24 @@ export {
   type DomainEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
-export { pushOutOfRect, separateDiscs } from "./movement/collision";
+export {
+  columnOf,
+  deriveWalkabilityGrid,
+  isBlockedAt,
+  isCellBlocked,
+  RADIUS_CLASS_KEYS,
+  radiusClassOf,
+  readRadiusClasses,
+  rowOf,
+  type WalkabilityGrid,
+  type WalkabilityView,
+  walkabilityCovers,
+} from "./map/walkability";
+export {
+  keepInsideRect,
+  pushOutOfRect,
+  separateDiscs,
+} from "./movement/collision";
 export { collisionSystem } from "./movement/collision.system";
 export { movementSystem } from "./movement/movement.system";
 export {

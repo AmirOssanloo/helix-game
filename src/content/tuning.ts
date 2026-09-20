@@ -5,8 +5,8 @@ import type { TuningDef } from "@domain/public";
  * spec's default, plus the numbers the architecture exposes for the same reason, all in the
  * designer's units. Speeds are world units per second, durations are seconds, the action cone
  * is a half-angle in degrees, the turn rate is radians per 0.03 s as the spec publishes it,
- * the three radii and the spatial hash's cell size are world units, the push-out passes are a
- * count per tick, and the Whorl table holds a fraction of one per instance at each level. The world converts the table into per-tick rates, ticks, and radians
+ * the three radii, the two cell sizes, and the three radius classes are world units, the
+ * push-out passes are a count per tick, and the Whorl table holds a fraction of one per instance at each level. The world converts the table into per-tick rates, ticks, and radians
  * once at creation, and a `set_tuning` command changes a value mid-session in these same
  * units. A system reads a tunable through the world, never through this file.
  */
@@ -23,12 +23,16 @@ export const tuningTable = {
   selection_radius: 32,
   push_out_passes: 3,
   hash_cell_size: 128,
+  walkability_cell_size: 32,
   sim_hz: 30,
   orb_capacity: 3,
   prepared_slots: 2,
   invoke_cd_base: 7,
   invoke_cd_per_orb_level: 0.3,
   invoke_mana: 7,
+  "radius_class:0": 16,
+  "radius_class:1": 27,
+  "radius_class:2": 50,
   "whorl_ms_per_instance:0": 0.006,
   "whorl_ms_per_instance:1": 0.012,
   "whorl_ms_per_instance:2": 0.018,

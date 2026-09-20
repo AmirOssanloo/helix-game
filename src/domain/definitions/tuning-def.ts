@@ -1,3 +1,6 @@
+/** One key per radius class, the array index after the colon: `:0` is the small class, `:1` the hero class, `:2` the large class. */
+export type RadiusClassKey = `radius_class:${0 | 1 | 2}`;
+
 /** One key per Whorl level, the array index verbatim after the colon: `:0` is Whorl level 1. */
 export type WhorlSpeedKey =
   `whorl_ms_per_instance:${0 | 1 | 2 | 3 | 4 | 5 | 6}`;
@@ -21,12 +24,14 @@ export type TuningKey =
   | "selection_radius"
   | "push_out_passes"
   | "hash_cell_size"
+  | "walkability_cell_size"
   | "sim_hz"
   | "orb_capacity"
   | "prepared_slots"
   | "invoke_cd_base"
   | "invoke_cd_per_orb_level"
   | "invoke_mana"
+  | RadiusClassKey
   | WhorlSpeedKey;
 
 /** The tuning table as content writes it: every key, with its value in the designer's units. */
@@ -63,12 +68,16 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   selection_radius: "world_units",
   push_out_passes: "count",
   hash_cell_size: "world_units",
+  walkability_cell_size: "world_units",
   sim_hz: "hertz",
   orb_capacity: "count",
   prepared_slots: "count",
   invoke_cd_base: "seconds",
   invoke_cd_per_orb_level: "seconds",
   invoke_mana: "count",
+  "radius_class:0": "world_units",
+  "radius_class:1": "world_units",
+  "radius_class:2": "world_units",
   "whorl_ms_per_instance:0": "fraction",
   "whorl_ms_per_instance:1": "fraction",
   "whorl_ms_per_instance:2": "fraction",

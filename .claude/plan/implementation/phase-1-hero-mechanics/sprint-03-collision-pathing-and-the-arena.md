@@ -75,7 +75,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | Layer | domain, content, simulation, tests |
 | Size | 0.5 |
 | Depends on | P0-S01-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** `MapDef` in `domain/definitions/` with bounds, obstacle rectangles (already present; added with the collision system), a spawn point, and an empty spawn-data list for later. `src/content/maps/arena.def.ts`: 4000 by 4000, walled, eight to twelve rectangles of varied size, one corridor wide enough for one unit, spawn at the centre. Under `src/domain/map/`: derive a walkability grid on 32-unit cells (tunable) from the rectangles at `loadMap`, inflated per radius class (small, hero, large, as a tunable list), stored on map scope as typed arrays sized once. `loadMap` sets the hero's position to the spawn point and pushes out any occupier on the first tick (handled by collision).
 
@@ -88,6 +88,8 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 - `tests/content/maps.spec.ts` — the arena validates (full validation lands in sprint 07; for now the shape and the corridor width).
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability (the "one definition file, registered" row applies to maps).
+
+*Edited while building: `MapDef` carries `bounds`, `obstacles`, `spawnPoint`, and `spawns`, the last typed as pack-member spawn data with an archetype id, a position, and a pack id, empty on the arena. The bounds are walls to the simulation and not only to the grid: `keepInsideRect` joined the collision rules and the collision system clamps every unit inside the bounds in its obstacle pass, since a walled arena with no wall would let a unit walk out until pathing clamps destinations. The grid under `src/domain/map/walkability.ts` is one `Uint8Array` with one layer per radius class; a cell is open on a layer when a disc of the class radius fits anywhere in the cell, the conservative reading of "could not stand in" and what smoothing on the inflated grid needs, and the bounds block a strip one class radius wide inside each side. The class radii are the tunables `radius_class:0` to `:2` (small 16, hero 27, large 50) and the cell size is `walkability_cell_size`, both read at load; a unit's class is the smallest whose radius holds it. `loadMap` does not release the hero: every other unit goes, the hero is carried to the spawn point with its order cleared, and the hash is rebuilt over what is left, since the entities page says the hero is never recreated. `walkability` on map scope is never `null`, since a world is created on a map, so the world's constructor assembles map scope directly instead of calling `loadMap`. The maps are listed in `src/content/maps/index.ts` until the registry of sprint 07 takes them, and the app boots on the arena. A change to the grid's tunables mid-map takes effect at the next map load; T04's pathing system re-derives the grid on the tick that consumes the command, as the movement system rebuilds the hash.*
 
 ---
 
@@ -117,6 +119,8 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
+*Edited while building T03: the pathing system also re-derives the walkability grid when `walkability_cell_size` or a `radius_class` tunable has changed, on the tick that consumes the command, as the movement system rebuilds the hash; the grid records the cell size and radii it was derived under.*
+
 ---
 
 ## Sprint exit
@@ -125,7 +129,7 @@ Still no hero on screen. In tests, AT-M5 is green, a move order crosses the aren
 | --- | --- |
 | AT-M5 green; pathing and hash suites green | |
 | Pile-up test deterministic across runs | |
-| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 0.5 · T04 |
 
 ## Risks in this sprint
 

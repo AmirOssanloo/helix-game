@@ -107,3 +107,36 @@ export const pushOutOfRect = (
 
   return true;
 };
+
+/**
+ * Moves a disc back inside a rectangle it has crossed the edge of, so afterwards it just
+ * touches the edge from the inside: the bounds are walls. Each axis is clamped on its own, so
+ * a disc past a corner returns to the corner.
+ *
+ * Returns whether the disc was outside.
+ */
+export const keepInsideRect = (
+  centre: Vec2,
+  radius: number,
+  rect: Readonly<Rect>,
+): boolean => {
+  let moved = false;
+
+  if (centre.x < rect.minX + radius) {
+    centre.x = rect.minX + radius;
+    moved = true;
+  } else if (centre.x > rect.maxX - radius) {
+    centre.x = rect.maxX - radius;
+    moved = true;
+  }
+
+  if (centre.y < rect.minY + radius) {
+    centre.y = rect.minY + radius;
+    moved = true;
+  } else if (centre.y > rect.maxY - radius) {
+    centre.y = rect.maxY - radius;
+    moved = true;
+  }
+
+  return moved;
+};

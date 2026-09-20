@@ -3,7 +3,7 @@ import { unpackIndex } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import { UNIT_CAPACITY } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { pushOutOfRect, separateDiscs } from "./collision";
+import { keepInsideRect, pushOutOfRect, separateDiscs } from "./collision";
 import { createCandidateBuffer } from "./spatial-hash";
 
 /** Scratch for the ids a circle query returns, reused for every unit every pass. */
@@ -20,11 +20,11 @@ const tieSeedOf = (idA: EntityId, idB: EntityId): number =>
  * Keeps units out of each other and out of obstacles after they have moved. Each pass, in pool
  * order, every unit asks the hash for its neighbours and separates from each one with a
  * greater id, so every pair is handled once in a fixed order; then every unit is pushed out
- * of every obstacle rectangle it overlaps. Every push is followed by a move in the hash, so a
- * unit pushed across a cell boundary is found in its new cell by the next query of the same
- * pass; a pile dropped on a boundary would otherwise stall for ticks on pairs the hash no
- * longer proposes. The passes are a capped count from the tuning table, not a loop to
- * convergence: a pile settles over ticks.
+ * of every obstacle rectangle it overlaps and back inside the map's bounds, which are walls.
+ * Every push is followed by a move in the hash, so a unit pushed across a cell boundary is
+ * found in its new cell by the next query of the same pass; a pile dropped on a boundary
+ * would otherwise stall for ticks on pairs the hash no longer proposes. The passes are a
+ * capped count from the tuning table, not a loop to convergence: a pile settles over ticks.
  *
  * Nothing here reads or writes a speed. A unit's collision radius is the disc; the query
  * radius adds the widest disc in the world, so a pair overlaps only if the hash proposed it.
@@ -34,6 +34,7 @@ export const collisionSystem = (world: World): void => {
   const units = world.map.units;
   const hash = world.map.spatialHash;
   const obstacles = world.map.obstacles;
+  const bounds = world.map.bounds;
   let widest = 0;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -107,6 +108,10 @@ export const collisionSystem = (world: World): void => {
         ) {
           pushed = true;
         }
+      }
+
+      if (keepInsideRect(unit.curr, unit.collisionRadius, bounds)) {
+        pushed = true;
       }
 
       if (pushed) {

@@ -136,17 +136,19 @@ describe("the movement system and the hash", () => {
 });
 
 describe("loadMap", () => {
-  it("rebuilds the hash at the tuned cell size with no units in it", () => {
+  it("rebuilds the hash at the tuned cell size with only the hero in it, at the spawn point", () => {
     const world = makeWorld({
       seed: 1,
       registry: makeRegistry({ tuning: { hash_cell_size: 32 } }),
     });
     spawnHero(world, { x: 300, y: 300 });
+    acquireUnit(world.state, "enemy", 300, 300);
 
-    world.loadMap(makeMapDef.build());
+    world.loadMap(makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
 
     expect(world.view.map.spatialHash.cellSize).toBe(32);
-    expect(world.view.map.spatialHash.count).toBe(0);
+    expect(world.view.map.spatialHash.count).toBe(1);
     expect(near(world, 300, 300, 1)).toEqual([]);
+    expect(near(world, 500, 500, 1)).toEqual([world.view.run.heroId]);
   });
 });

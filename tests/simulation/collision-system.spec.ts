@@ -78,13 +78,32 @@ describe("the collision system and obstacles", () => {
     expect(hero.order.destination).toEqual({ x: 1100, y: 0 });
   });
 
-  it("pushes a unit standing on the spawn point of a loaded map out on the first tick", () => {
-    const world = makeWorld({ seed: 1 });
-    const hero = spawnHero(world, { x: 0, y: 0 });
-    const squatter = spawnEnemy(world, 0, 0);
+  it("stops a unit displaced past the map bounds at the wall edge", () => {
+    const world = makeWorld({
+      seed: 1,
+      map: makeMapDef.build({
+        bounds: { minX: 0, minY: 0, maxX: 1000, maxY: 1000 },
+        spawnPoint: { x: 500, y: 500 },
+      }),
+    });
+    const hero = spawnHero(world, { x: 500, y: 500 });
+    hero.curr.x = 1020;
+    hero.curr.y = -10;
 
     world.tick();
 
+    expect(hero.curr).toEqual({ x: 1000 - HULL, y: HULL });
+  });
+
+  it("pushes a unit standing on the spawn point of a loaded map out on the first tick", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    world.loadMap(makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
+    const squatter = spawnEnemy(world, 500, 500);
+
+    world.tick();
+
+    expect(hero.spawnPoint).toEqual({ x: 500, y: 500 });
     expect(
       Math.hypot(squatter.curr.x - hero.curr.x, squatter.curr.y - hero.curr.y),
     ).toBeCloseTo(2 * HULL);

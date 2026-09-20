@@ -1,5 +1,6 @@
 import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { Tick } from "../tick";
 import type { Effect } from "./effect";
@@ -24,13 +25,6 @@ export type FormRecord = {
 /** Tuning key to current value: the tuning table copied at world creation, changed by command. */
 export type TuningState = Map<string, number>;
 
-/** The grid the map module derives from a map's obstacles. The module owns the cells; this names the slot. */
-export type WalkabilityGrid = {
-  cellSize: number;
-  columns: number;
-  rows: number;
-};
-
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
   heroId: EntityId | null;
@@ -41,13 +35,16 @@ export type RunScope = {
 
 /** State that lives for one map. A map load releases every pool and rebuilds the grid and the hash. */
 export type MapScope = {
-  /** The id of the loaded map definition; `null` until the first load. */
-  mapId: string | null;
+  /** The id of the loaded map definition. */
+  mapId: string;
   units: Pool<Unit>;
   projectiles: Pool<Projectile>;
   effects: Pool<Effect>;
   zones: Pool<Zone>;
-  walkability: WalkabilityGrid | null;
+  /** The grid the map module derives from the loaded map, one layer per radius class. */
+  walkability: WalkabilityGrid;
+  /** The loaded map's playable rectangle, which the collision system keeps every unit inside of. */
+  bounds: Readonly<Rect>;
   /** The loaded map's obstacle rectangles, which the collision system keeps every unit out of. */
   obstacles: readonly Rect[];
   /** The index of what is near, created with the world and rebuilt by every map load. */

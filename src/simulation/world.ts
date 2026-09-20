@@ -3,16 +3,23 @@ import type {
   MapDef,
   Registry,
   TickCompletedEvent,
+  TuningState,
+  WalkabilityGrid,
   World,
 } from "@domain/public";
 import {
+  clearOrder,
   createEffectPool,
   createProjectilePool,
   createSpatialHash,
   createTuningState,
   createUnitPool,
   createZonePool,
+  deriveWalkabilityGrid,
+  readRadiusClasses,
   readTunable,
+  releaseUnit,
+  walkabilityCovers,
 } from "@domain/public";
 import { assert } from "@shared/public";
 import { CommandBuffer } from "./command-buffer";
@@ -28,6 +35,14 @@ export type CreateWorldOptions = Readonly<{
   registry: Registry;
   map: MapDef;
 }>;
+
+/** The grid `map` derives under the tuning state's cell size and radius classes. */
+const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
+  deriveWalkabilityGrid(
+    map,
+    readTunable(tuning, "walkability_cell_size"),
+    readRadiusClasses(tuning),
+  );
 
 /** Step one of a tick: every position the presentation interpolates keeps the value it had before this tick moves it. */
 const copyPreviousPositions = (world: World): void => {
@@ -91,12 +106,13 @@ export class Simulation {
         random: createRandomState(options.seed),
       },
       map: {
-        mapId: null,
+        mapId: options.map.id,
         units: createUnitPool(),
         projectiles: createProjectilePool(),
         effects: createEffectPool(),
         zones: createZonePool(),
-        walkability: null,
+        walkability: deriveGrid(options.map, tuning),
+        bounds: options.map.bounds,
         obstacles: options.map.obstacles,
         spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
       },
@@ -105,8 +121,6 @@ export class Simulation {
     this.events = new EventRing();
     this.log = new InputLog();
     this.tickCompleted = { kind: "tick_completed", tick: 0 };
-
-    this.loadMap(options.map);
   }
 
   /** The live state under its read-only type. The same object; no copy. */
@@ -174,21 +188,55 @@ export class Simulation {
     world.tick += 1;
   }
 
-  /** Releases every map-scoped pool, rebuilds the spatial hash at the tuned cell size, and takes `map` as the loaded one, its obstacles included. Run scope is untouched. */
+  /**
+   * Takes `map` as the loaded one: releases every map-scoped entity but the hero, derives the
+   * walkability grid for the map's bounds and obstacles, carries the hero to the spawn point
+   * with its order cleared, and rebuilds the spatial hash at the tuned cell size over what is
+   * left. Run scope is untouched; the hero is never recreated. Anything standing on the spawn
+   * point is pushed off by collision on the first tick.
+   */
   loadMap(map: MapDef): void {
-    const scope = this.state.map;
+    const world = this.state;
+    const scope = world.map;
+    const tuning = world.run.tuning;
+    const heroId = world.run.heroId;
+    const hero = heroId === null ? null : scope.units.resolve(heroId);
 
-    scope.units.releaseAll();
+    for (let index = 0; index < scope.units.end; index += 1) {
+      const id = scope.units.idAt(index);
+
+      if (id !== null && id !== heroId) {
+        releaseUnit(world, id);
+      }
+    }
+
     scope.projectiles.releaseAll();
     scope.effects.releaseAll();
     scope.zones.releaseAll();
-    scope.walkability = null;
+    scope.mapId = map.id;
+    scope.bounds = map.bounds;
+    scope.obstacles = map.obstacles;
+    scope.walkability = deriveGrid(map, tuning);
+
+    assert(
+      walkabilityCovers(scope.walkability, map.bounds),
+      "The walkability grid covers the loaded map's bounds",
+    );
+
+    if (hero !== null) {
+      clearOrder(hero);
+      hero.curr.x = map.spawnPoint.x;
+      hero.curr.y = map.spawnPoint.y;
+      hero.prev.x = map.spawnPoint.x;
+      hero.prev.y = map.spawnPoint.y;
+      hero.spawnPoint.x = map.spawnPoint.x;
+      hero.spawnPoint.y = map.spawnPoint.y;
+    }
+
     scope.spatialHash.rebuild(
-      readTunable(this.state.run.tuning, "hash_cell_size"),
+      readTunable(tuning, "hash_cell_size"),
       scope.units,
     );
-    scope.obstacles = map.obstacles;
-    scope.mapId = map.id;
   }
 
   /** Releases every pool and forgets every waiting command, event, and log record. The world refuses submits afterwards. */

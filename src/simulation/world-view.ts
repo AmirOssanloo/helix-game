@@ -6,7 +6,7 @@ import type {
   SpatialHashView,
   Tick,
   Unit,
-  WalkabilityGrid,
+  WalkabilityView,
   Zone,
 } from "@domain/public";
 import type { DeepReadonly, Rect } from "@shared/public";
@@ -20,12 +20,13 @@ export type WorldView = DeepReadonly<{
   tick: Tick;
   run: RunScope;
   map: {
-    mapId: string | null;
+    mapId: string;
     units: PoolView<Unit>;
     projectiles: PoolView<Projectile>;
     effects: PoolView<Effect>;
     zones: PoolView<Zone>;
-    walkability: WalkabilityGrid | null;
+    walkability: WalkabilityView;
+    bounds: Readonly<Rect>;
     obstacles: readonly Rect[];
     spatialHash: SpatialHashView;
   };

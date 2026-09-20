@@ -57,7 +57,7 @@ Enemies do not steer around each other. They push. That is what makes a pack fee
 
 ## Obstacles and the grid
 
-A map definition holds obstacles as axis-aligned rectangles. At load, `domain/map/` derives a walkability grid from them: one cell per fixed square of world units, blocked where a rectangle covers it. The grid is derived once per map and inflated per radius class — a large unit sees a cell blocked that a small one does not — so pathing never has to ask about a unit's radius mid-search.
+A map definition holds its bounds and its obstacles as axis-aligned rectangles. The bounds are walls: collision keeps every disc inside them exactly as it keeps every disc out of an obstacle. At load, `domain/map/` derives a walkability grid from both: one cell per fixed square of world units, one layer per radius class, a cell open on a layer when a disc of that class's radius can stand anywhere in the cell without overlapping a rectangle or leaving the bounds. The grid is derived once per map and inflated per radius class — a large unit sees a cell blocked that a small one does not — so pathing never has to ask about a unit's radius mid-search. A unit paths on the smallest class whose radius holds its own, so a layer never opens a cell the unit does not fit in. The cell size and the class radii are tunables.
 
 ---
 
@@ -123,10 +123,10 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Speed | A stack of base, modifiers, and clamps, recomputed every tick |
 | Targeted casts and attacks | Wait for the bearing to enter the cone before the cast point |
 | Unit blocking | Positional push-out along the centre line, half each, a capped number of passes the tunable sets, no speed change |
-| Obstacle blocking | Push out of the axis-aligned rectangle until touching: by the nearest edge from inside, away from the nearest point from outside |
+| Obstacle blocking | Push out of the axis-aligned rectangle until touching: by the nearest edge from inside, away from the nearest point from outside; and back inside the bounds, which are walls |
 | Push order | Pool order, each pair once, lower id first; a coincident pair along a direction fixed by the pair; the hash updated on every push |
 | Enemies and each other | Push, never steer |
-| The walkability grid | Derived once per map from obstacle rectangles, inflated per radius class |
+| The walkability grid | Derived once per map from the bounds and the obstacle rectangles, one layer per radius class; a cell is open where a disc of the class radius fits anywhere in it; a unit paths on the smallest class that holds it; cell size and class radii are tunables |
 | "What is near" | Always the spatial hash: insert, remove, move, circle, segment, rectangle; the cell size a tunable |
 | Hash results | Candidate ids in cell-then-index order, written into a caller-supplied buffer |
 | Pathing | Grid A* with a binary heap, then line-of-sight smoothing |

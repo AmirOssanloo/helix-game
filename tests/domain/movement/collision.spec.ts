@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pushOutOfRect, separateDiscs } from "@domain/public";
+import { keepInsideRect, pushOutOfRect, separateDiscs } from "@domain/public";
 import type { Rect, Vec2 } from "@shared/public";
 
 const HULL = 27;
@@ -152,5 +152,45 @@ describe("pushOutOfRect", () => {
     expect(pushOutOfRect(centre, HULL, WALL)).toBe(true);
     expect(centre.x).toBeCloseTo(83.8);
     expect(centre.y).toBeCloseTo(-21.6);
+  });
+});
+
+describe("keepInsideRect", () => {
+  const BOUNDS: Rect = { minX: 0, minY: 0, maxX: 1000, maxY: 1000 };
+
+  it("leaves a disc that is inside where it is", () => {
+    const centre = at(500, 500);
+
+    const moved = keepInsideRect(centre, HULL, BOUNDS);
+
+    expect(moved).toBe(false);
+    expect(centre).toEqual({ x: 500, y: 500 });
+  });
+
+  it("leaves a disc touching the edge from the inside where it is", () => {
+    const centre = at(HULL, 500);
+
+    const moved = keepInsideRect(centre, HULL, BOUNDS);
+
+    expect(moved).toBe(false);
+    expect(centre).toEqual({ x: HULL, y: 500 });
+  });
+
+  it("brings a disc past an edge back to touching it", () => {
+    const centre = at(1010, 500);
+
+    const moved = keepInsideRect(centre, HULL, BOUNDS);
+
+    expect(moved).toBe(true);
+    expect(centre).toEqual({ x: 1000 - HULL, y: 500 });
+  });
+
+  it("brings a disc past a corner back on both axes", () => {
+    const centre = at(-40, 1200);
+
+    const moved = keepInsideRect(centre, HULL, BOUNDS);
+
+    expect(moved).toBe(true);
+    expect(centre).toEqual({ x: HULL, y: 1000 - HULL });
   });
 });

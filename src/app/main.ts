@@ -1,7 +1,7 @@
 import Phaser from "phaser";
-import { atlasFrames, tuningTable } from "@content/public";
+import { arenaDef, atlasFrames, tuningTable } from "@content/public";
 import { exposeDevApi, mountPanel } from "@devtools/public";
-import type { MapDef, Registry } from "@domain/public";
+import type { Registry } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -20,15 +20,14 @@ const DEVTOOLS_HOST_ID = "devtools";
 /** Every session starts from this seed until a session can be recorded and replayed under its own. */
 const SESSION_SEED = 1;
 
-/** The content layer holds the tuning table and no definition yet; a world needs a registry and a map to exist. */
+/** The content layer holds the tuning table and the maps; the registry of every other kind does not exist yet. */
 const REGISTRY: Registry = { tuning: tuningTable };
-const BLANK_MAP: MapDef = { id: "blank", obstacles: [] };
 
 export const boot: Boot = (): void => {
   const world = createWorld({
     seed: SESSION_SEED,
     registry: REGISTRY,
-    map: BLANK_MAP,
+    map: arenaDef,
   });
   const rings = createRings();
   const driver = new FixedStepDriver({ world, rings, clock: wallClock });

@@ -1,12 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { readTunable, UNIT_CAPACITY } from "@domain/public";
+import { readTunable, UNIT_CAPACITY, walkabilityCovers } from "@domain/public";
 import { createEventReader, nextFloat } from "@simulation/public";
 import type { Simulation, WorldView } from "@simulation/public";
 import {
   makeMapDef,
   makeRegistry,
   makeWorld,
+  spawnHero,
   submit,
   tickUntil,
 } from "../helpers";
@@ -23,11 +24,9 @@ const spawnUnit = (world: Simulation): Unit => {
 };
 
 describe("createWorld", () => {
-  it("starts at tick zero on the given map with empty pools", () => {
-    const world = makeWorld({
-      seed: 1,
-      map: makeMapDef.build({ id: "arena" }),
-    });
+  it("starts at tick zero on the given map with empty pools and the map's grid", () => {
+    const map = makeMapDef.build({ id: "arena" });
+    const world = makeWorld({ seed: 1, map });
 
     expect(world.view.tick).toBe(0);
     expect(world.view.map.mapId).toBe("arena");
@@ -35,7 +34,11 @@ describe("createWorld", () => {
     expect(world.view.map.projectiles.count).toBe(0);
     expect(world.view.map.effects.count).toBe(0);
     expect(world.view.map.zones.count).toBe(0);
-    expect(world.view.map.walkability).toBeNull();
+    expect(world.view.map.bounds).toBe(map.bounds);
+    expect(world.view.map.obstacles).toBe(map.obstacles);
+    expect(walkabilityCovers(world.view.map.walkability, map.bounds)).toBe(
+      true,
+    );
     expect(world.view.map.spatialHash.count).toBe(0);
     expect(world.view.run.heroId).toBeNull();
     expect(world.view.map.units.capacity).toBe(UNIT_CAPACITY);
@@ -157,6 +160,53 @@ describe("loadMap", () => {
 
     expect(world.view.tick).toBe(1);
     expect(world.view.run.random.state).toBe(stateBefore);
+  });
+
+  it("carries the hero to the new map's spawn point with its order cleared, and releases every other unit", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { x: 10, y: 20, facing: 1 });
+    spawnUnit(world);
+    submit(world, {
+      kind: "move",
+      tick: 0,
+      timestamp: 0,
+      destination: { x: 600, y: 0 },
+    });
+    world.tick();
+    const facingBefore = hero.facing;
+
+    world.loadMap(makeMapDef.build({ spawnPoint: { x: 300, y: 400 } }));
+
+    expect(world.view.map.units.count).toBe(1);
+    expect(world.view.map.units.resolve(world.view.run.heroId ?? -1)).toBe(
+      hero,
+    );
+    expect(hero.curr).toEqual({ x: 300, y: 400 });
+    expect(hero.prev).toEqual({ x: 300, y: 400 });
+    expect(hero.spawnPoint).toEqual({ x: 300, y: 400 });
+    expect(hero.facing).toBe(facingBefore);
+    expect(hero.order.kind).toBe("none");
+    expect(hero.state).toBe("idle");
+    expect(world.view.map.spatialHash.count).toBe(1);
+  });
+
+  it("derives the walkability grid for the new map's bounds and takes its obstacles", () => {
+    const world = makeWorld({ seed: 1 });
+    const next = makeMapDef.build({
+      bounds: { minX: 0, minY: 0, maxX: 640, maxY: 320 },
+      obstacles: [{ minX: 96, minY: 96, maxX: 160, maxY: 160 }],
+      spawnPoint: { x: 320, y: 160 },
+    });
+
+    world.loadMap(next);
+
+    expect(world.view.map.bounds).toBe(next.bounds);
+    expect(world.view.map.obstacles).toBe(next.obstacles);
+    expect(world.view.map.walkability.columns).toBe(20);
+    expect(world.view.map.walkability.rows).toBe(10);
+    expect(walkabilityCovers(world.view.map.walkability, next.bounds)).toBe(
+      true,
+    );
   });
 });
 
