@@ -12,7 +12,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | **Active sprint** | [00 — Repository and toolchain](./phase-0-foundation/sprint-00-repository-and-toolchain.md) |
 | **Next ticket** | P0-S00-T01 — Package, TypeScript, and path aliases |
 | **In progress** | none |
-| **Last closed ticket** | none |
+| **Last closed ticket** | P0-S00-T00 — Entry points, rules, agents, and the plan's status |
 | **Last closed sprint** | none |
 | **Last milestone reached** | none. M0 is the toolchain gate at the end of sprint 01 |
 
@@ -20,7 +20,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 ## Blocked or waiting
 
-Nothing. The plan starts from a repository with documentation and agent configuration and no source code.
+Nothing. The plan starts from a repository with documentation, agent configuration, and the plan itself discoverable from the root, and no source code.
 
 ---
 

@@ -29,3 +29,7 @@ Move a row here with the date and who answered it when it is settled.
 
 | # | Answer | Date | By |
 | --- | --- | --- | --- |
+| Q13 | No blank line between import groups. Built-in, external, aliased layers, relative; alphabetical inside each group. The coding standard is updated to say so | 2026-09-20 | The maintainer |
+| Q14 | `.only` is banned. `.skip` needs a same-line comment; lint checks that it exists and review checks it names an owner and a condition. No ticket ids in code | 2026-09-20 | The maintainer |
+| Q15 | Phaser is stubbed through a Vitest alias to `tests/helpers/doubles/phaser-stub.ts` in every project. `vi.mock` is banned across the tests tree with no carve-out | 2026-09-20 | The maintainer |
+| Q16 | `no-console` is an error under `src/**` except `src/app/**` and `src/devtools/**`, where `warn` and `error` are allowed | 2026-09-20 | The maintainer |

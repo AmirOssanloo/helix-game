@@ -45,6 +45,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which lint rules enforce the layer table | The layer allow-list in `eslint.config.js` at the repository root |
 | Which lint rules ban the clock and unseeded random | The restricted-globals block for `src/domain` and `src/simulation` in `eslint.config.js` |
 | Which rules the architecture test enforces | `tests/architecture.spec.ts` |
+| Which files the documentation link test walks | `tests/docs-links.spec.ts` — the folder list at the top of the file |
 | Which acceptance tests mirror the mechanics spec | `tests/simulation/` — one spec per section of the spec, named after it |
 | The stress test and the replay determinism test | `tests/simulation/` — the specs named for them |
 | The render benchmark | `bench/` — one scene, with its expected numbers in the file header |

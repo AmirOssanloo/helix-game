@@ -118,7 +118,7 @@ Comments worth writing: a non-obvious constraint, a deliberate choice that looks
 
 **Cross-layer imports use the path aliases** — `@shared`, `@domain`, `@simulation`, `@content`, `@presentation`, `@devtools`, `@app` — and go through that layer's `public.ts`. A relative path that climbs out of a layer is a lint failure. Which layer may import which is in [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference).
 
-**Order them**, with a blank line between groups: external packages, aliased layers, relative imports. **`import type` for anything used only as a type**, so the build can drop it and the domain's type-only view of content stays type-only.
+**Order them** in four groups with no blank line between: Node built-ins, external packages, aliased layers, relative imports. Alphabetical inside each group, case ignored. Lint sorts them, so nobody arranges imports by hand. **`import type` for anything used only as a type**, so the build can drop it and the domain's type-only view of content stays type-only.
 
 ---
 
@@ -164,7 +164,7 @@ It skips the only question worth asking — what should happen when this is miss
 | Optional properties | Never. Absence is `Type \| null` |
 | Missing values | Handled on purpose. No `!` |
 | Comments | Why, not what; docblocks only on what a caller must understand from outside; `TODO` needs an owner and a condition; never a ticket, sprint, or branch |
-| Imports | Top of file; cross-layer through aliases and `public.ts`; grouped external → aliased → relative; `import type` for types |
+| Imports | Top of file; cross-layer through aliases and `public.ts`; grouped built-in → external → aliased → relative, alphabetical, no blank lines between groups; `import type` for types |
 | Replaced code | Deleted in the same change; a temporary survivor names its reason and removal condition |
 
 ---

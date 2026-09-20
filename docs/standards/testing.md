@@ -126,6 +126,21 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 
 A helper **arranges**; it never simulates. It does not branch on its parameters, carry state between calls, or re-implement a production rule. `tickUntil` has a maximum and fails loudly when it reaches it.
 
+**Every helper lives under `tests/helpers/`, one folder per kind, and a spec imports from the barrel** `tests/helpers/index.ts` and nowhere deeper. Lint enforces the barrel. Inside, the folders are the index:
+
+```text
+tests/helpers/
+├── index.ts          # The one import path for a spec
+├── world/            # makeWorld, submit, tickUntil, spawnFoo, loadInputLog
+├── content/          # makeFooDef and the small registries built from them
+├── factories/        # defineFactory: the counter-backed builder every makeFooDef is written with
+├── doubles/          # makeWorldView and the Phaser stub the test runner aliases in
+├── assertions/       # expectAccepted and expectRefused, for a command result
+└── architecture/     # One file per rule the architecture tier checks: a collect function and a describe function
+```
+
+A factory counts, never randomises: the third `makeFooDef()` in a test has the same id every run. An architecture rule exports the function that collects violations beside the `describe` that mounts them, so a test can assert on the message a rule prints.
+
 ---
 
 ## Anti-patterns
@@ -169,6 +184,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Focused and skipped | None focused; skipped only with an owner and condition. No retries |
 | A flaky test | A determinism bug, treated as one the day it flakes |
 | Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate |
+| Where helpers live | `tests/helpers/`, one folder per kind; a spec imports from the barrel only; factories count, never randomise; an architecture rule exports its collect function beside its describe |
 
 ---
 

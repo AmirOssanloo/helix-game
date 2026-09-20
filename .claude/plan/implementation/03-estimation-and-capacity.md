@@ -66,7 +66,7 @@ If every one of these doubles, the plan is 29 sprints. If none does, it is 21, b
 - **A second engineer.** The [dependency map](./01-dependency-map.md) shows where work splits. Expect phases 2 and 3 to shorten by about a third, phase 1 by less, and phases 0, 4, and gates not at all. Two engineers also add review and merge cost that this plan does not count.
 - **Less than full allocation.** Sprints stretch proportionally. Do not shrink the sized days; stretch the calendar.
 - **Design decisions taking longer than their tickets.** The spell catalogue (1 day), the enemy catalogue (0.5 day plus 2 days in phase 5), and the disable matrix (0.5 day) are sized as writing tasks. If they become discussions, they become calendar time outside the sprint.
-- **Actuals.** The engineer records the actual days beside each ticket's size when the sprint closes. After sprint 06, compare. If actuals run more than 30% over sized days, re-cut phases 2 to 5 before starting phase 2, not after.
+- **Actuals.** Sprint 00 gained an unplanned one-day ticket, T00, before it opened: the entry points and agent configuration the plan assumed were there. The table above keeps the original sizing; the sprint file carries the total of 5. The engineer records the actual days beside each ticket's size when the sprint closes. After sprint 06, compare. If actuals run more than 30% over sized days, re-cut phases 2 to 5 before starting phase 2, not after.
 
 ---
 

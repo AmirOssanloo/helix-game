@@ -90,6 +90,7 @@ implementation/
 ├── 02-risks-and-hidden-work.md        # Risk register, each with trigger, owning sprint, and mitigation ticket
 ├── 03-estimation-and-capacity.md      # How sizes were derived and what would change them
 ├── 04-phase-exit-gates.md             # Each phase's "done when" as a checklist with named tests and numbers
+├── notes/                             # Dated notes a ticket links: a decision's working-out, a reference read
 ├── phase-0-foundation/                # Sprints 00–01
 ├── phase-1-hero-mechanics/            # Sprints 02–06
 ├── phase-2-spells-and-attack/         # Sprints 07–11

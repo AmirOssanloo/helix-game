@@ -35,7 +35,7 @@ Nothing needs to be up for any of this. No containers, no database. `pnpm test` 
 | Unit         | `tests/domain/`, `tests/shared/` | Node       | `pnpm test` | One rule at a time: an orb eviction, a turn step, a damage formula, an A* result |
 | Simulation   | `tests/simulation/`             | Node        | `pnpm test` | A world ticked with commands: the acceptance tests from the mechanics spec, spell casts, enemy behaviour, the replay determinism test, the stress test |
 | Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
-| Architecture | `tests/architecture.spec.ts`    | Node        | `pnpm test` | The layer import table, asserted a second time. A wrong-direction import fails here and in lint |
+| Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table, asserted a second time; a wrong-direction import fails here and in lint. Every relative link and anchor in the documentation resolves |
 | Presentation | `tests/presentation/`           | jsdom       | `pnpm test` | Input mapping and view binding, with Phaser stubbed. Few, and small |
 | Benchmark    | `bench/`                        | A browser   | `pnpm bench`, by hand | Render time, draw calls, heap over 30 seconds. Never in `check` |
 
@@ -68,6 +68,7 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 - **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
 - **The stress test** asserts the mean tick under 4 ms with 300 units. It fails when a change makes a system too expensive.
 - **The build** fails if `DevApi` or the developer panel leaks into the production bundle.
+- **The docs link test** fails on a relative link or anchor that does not resolve, so a renamed page or heading cannot leave a dead pointer behind.
 
 ---
 

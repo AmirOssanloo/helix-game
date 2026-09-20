@@ -1,6 +1,6 @@
 # Phase 0 — Foundation
 
-**Sprints:** 00–01 · **Sized days:** 8 · **Gate:** [Phase 0 gate](../04-phase-exit-gates.md#phase-0-gate)
+**Sprints:** 00–01 · **Sized days:** 9, of which 1 unplanned · **Gate:** [Phase 0 gate](../04-phase-exit-gates.md#phase-0-gate)
 
 ## Goal
 
@@ -24,7 +24,7 @@ Run `pnpm dev` and see a blank canvas with the WebGL banner in the console. Run 
 
 | Sprint | Title | Sized days |
 | --- | --- | --- |
-| [00](./sprint-00-repository-and-toolchain.md) | Repository and toolchain | 4 |
+| [00](./sprint-00-repository-and-toolchain.md) | Repository and toolchain | 5, of which 1 unplanned and done |
 | [01](./sprint-01-simulation-skeleton-and-instrumentation.md) | Simulation skeleton and instrumentation | 4 |
 
 ## Exit record
