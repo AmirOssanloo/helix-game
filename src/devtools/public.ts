@@ -1,1 +1,1 @@
-export { mountPanel, type PanelMount } from './mount-panel';
+export { mountPanel, type PanelMount } from "./mount-panel";

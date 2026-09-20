@@ -96,7 +96,9 @@ Nothing plays. `pnpm check` is green on eight empty layers, and a deliberate vio
 | Layer | tooling |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
+
+*Done on 2026-09-20. Layout as the toolchain note: `eslint/matrix.js` owns `LAYER_IMPORTS`, one restriction per file under `eslint/rules/`, one block per layer under `eslint/layers/`, the tests blocks in `eslint/tests.js`, and `eslint/README.md` holds the probe procedure. Decisions the ticket left open: the Phaser ban exempts `src/app/` as well as `src/presentation/`, because the layers page gives the composition root the Phaser game config and every import, and Q17 asks the docs to say so in one place. The `Readonly` cast ban catches a cast to a type named `World`, `Mutable`, or `Writable`; that name list is the contract the live world type and any widening helper keep. `window`, `document`, `navigator`, and `requestAnimationFrame` are restricted globals under domain and simulation, the DOM half of the layers rule. The file-name and skip-reason rules are two small implementations under `eslint/rules/` rather than a plugin dependency. `no-import-type-side-effects` joins `consistent-type-imports` so `import type` is the one spelling. Prettier defaults reformatted the existing source to double quotes. The probe caught one real bug before it shipped: a types-only pattern that overlapped the domain facade let a type import walk past the door, so that pattern names only `public`.*
 
 **Build:** `eslint.config.js` in the layout [the toolchain note](../notes/2026-09-20-toolchain-shape.md) describes — one restriction per file under `eslint/rules/`, one block per layer under `eslint/layers/`, and the allow-list as a matrix the architecture test imports — carrying, as named blocks:
 - The layer allow-list from `docs/architecture/layers-and-dependency-rule.md`, as `no-restricted-imports` per layer folder. `content` may import from `domain` with `import type` only.
@@ -176,10 +178,42 @@ Prettier with defaults. A `.prettierrc` exists so editors find it.
 | Check | Result |
 | --- | --- |
 | `pnpm check` green on empty layers | |
-| Lint rule branch checks recorded, one row per rule | |
+| Lint rule branch checks recorded, one row per rule | 92 cases, all as expected, in the table below (2026-09-20) |
 | Architecture test catches a barrel re-export | |
 | CI green | |
-| Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 · T04 · T05 |
+| Actual days per ticket | T00 1 · T01 0.25 · T02 0.25 · T03 0.5 · T04 · T05 |
+
+### Lint rule checks
+
+Each row is a one-line violation planted by the probe in `eslint/README.md`, linted, and removed. "Fails" means the named rule reported the line; "passes" means nothing did.
+
+| Rule | Violation planted | Result |
+| --- | --- | --- |
+| Layer allow-list, alias spelling | One forbidden import from each of shared, domain, simulation, content, instrumentation, presentation, devtools | Fails, 14 cases; allowed pairs pass, 12 cases |
+| Layer allow-list, relative spelling | `../domain/public` from shared; `../domain/entities/unit` from content; `../simulation/public` from presentation | Fails, fails, passes |
+| Public doors | `@simulation/world` from presentation and devtools; `@domain/entities/unit` from presentation and content; the same from app | Fails ×4; app passes |
+| Content imports domain types only | Value import of `@domain/public`; `import type` of it | Fails; passes |
+| `Math.random`, `Date.now`, `new Date()`, `performance.now`, `globalThis.performance.now` under domain and simulation | One each in domain; two in simulation; `performance.now` in presentation | Fails ×7; presentation passes |
+| DOM globals under domain and simulation | `window.innerWidth`, `document.title` in domain | Fails ×2 |
+| `phaser` outside presentation | In domain, devtools, and a `phaser/` subpath in shared; in presentation and app | Fails ×3; passes ×2 |
+| Shape and Graphics factories under `src/**` | `add.circle`, `add.graphics` in presentation, `add.rectangle` in app; `add.bitmapText` | Fails ×3; passes |
+| `add.text` outside `boot.scene.ts` | In presentation and in another scene file; in `boot.scene.ts` | Fails ×2; passes |
+| Cast away from the `Readonly` world view | `as World` in presentation, `as Mutable<…>` in devtools; `as World` in simulation | Fails ×2; passes |
+| No explicit `any`, no non-null assertion | One each in domain | Fails ×2 |
+| No optional property | `{ a?: number }` and an interface member | Fails ×2 |
+| Named exports, static imports | `export default`, `import()`, `import.meta.glob` in shared | Fails ×3 |
+| `import type` is the one spelling | A type through a value import; the inline `{ type T }` form | Fails ×2 |
+| Import order | Relative before aliased; a blank line between groups; two aliases out of order | Fails ×3 |
+| `no-console` | `console.log` in domain and app, `console.warn` in presentation; `console.warn` in app, `console.error` in devtools | Fails ×3; passes ×2 |
+| Braced control flow | An unbraced `if` | Fails |
+| File names kebab-case | `ProbeNine.ts`, `probe_ten.ts`; `probe-eleven.def.ts` | Fails ×2; passes |
+| Tests: `.only` | `it.only`, `describe.concurrent.only` | Fails ×2 |
+| Tests: `.skip` needs a same-line comment | Without; with | Fails; passes |
+| Tests: no `as any`, no `as unknown as` | One each | Fails ×2 |
+| Tests: no `vi.mock`, no fake timers | `vi.mock("phaser")`, `vi.useFakeTimers()` | Fails ×2 |
+| Tests: no `setTimeout`, no `new Date()` without an argument | One each; `new Date("2026-01-01")` | Fails ×2; passes |
+| Tests: helpers through the barrel only | Deep import from `tests/` and from `tests/domain/`; the barrel from both; a sibling inside `tests/helpers/`; a dynamic import | Fails ×2; passes ×4 |
+| `pnpm lint:fix` applies Prettier | The tree as written with single quotes and 100 columns | 235 formatting findings fixed, then zero |
 
 ## Risks in this sprint
 

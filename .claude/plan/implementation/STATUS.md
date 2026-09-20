@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [0 — Foundation](./phase-0-foundation/README.md) |
 | **Active sprint** | [00 — Repository and toolchain](./phase-0-foundation/sprint-00-repository-and-toolchain.md) |
-| **Next ticket** | P0-S00-T03 — ESLint flat config and Prettier with every documented rule |
+| **Next ticket** | P0-S00-T04 — Vitest tiers and the architecture test |
 | **In progress** | none |
-| **Last closed ticket** | P0-S00-T02 — Vite: dev server, production build, DevApi strip |
+| **Last closed ticket** | P0-S00-T03 — ESLint flat config and Prettier with every documented rule |
 | **Last closed sprint** | none |
 | **Last milestone reached** | none. M0 is the toolchain gate at the end of sprint 01 |
 
