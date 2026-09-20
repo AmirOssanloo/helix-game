@@ -1,2 +1,65 @@
-# macOS
+# Dependencies
+**/node_modules
+node_modules
+.pnp
+.pnp.js
+
+# Misc
 .DS_Store
+Thumbs.db
+~*
+*.tmp
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+**/*.log
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+**/*.tsbuildinfo
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Test scratch dirs — node-framework bin generators create and remove these per test
+**/bin/__fixtures__*
+**/bin/__output__*
+
+# Environment files
+*.local
+.env
+.env.local
+.env.*.local
+
+# Turbo
+.turbo
+
+# Build outputs
+dist/
+build/
+
+# Generated
+generated/
+
+# Reference code
+reference-*
+
+# Security: prevent accidental commit of secrets/keys
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Vite transpiles vite.config.ts to a sibling .mjs and normally unlinks it;
+# an interrupted run leaves it behind, where a bare `eslint` run then lints it.
+vite.config.ts.timestamp-*
