@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { Pool, Unit } from "@domain/public";
 import {
   createUnitPool,
+  MODIFIER_TABLE_SIZE,
+  PATH_CAPACITY,
   STATUS_TABLE_SIZE,
   UNIT_CAPACITY,
 } from "@domain/public";
@@ -36,6 +38,18 @@ describe("unit pool", () => {
     });
   });
 
+  it("gives each unit an empty path of the fixed capacity and a modifier table with every row empty", () => {
+    const pool = createUnitPool();
+
+    const unit = pool.acquire();
+
+    expect(unit?.path.points).toHaveLength(PATH_CAPACITY);
+    expect(unit?.path.count).toBe(0);
+    expect(unit?.path.next).toBe(0);
+    expect(unit?.modifiers).toHaveLength(MODIFIER_TABLE_SIZE);
+    expect(unit?.modifiers[0]).toEqual({ stat: null, flat: 0, percent: 0 });
+  });
+
   it("gives each unit an idle state with every disable flag false", () => {
     const pool = createUnitPool();
 
@@ -56,8 +70,14 @@ describe("unit pool", () => {
     const id = pool.idAt(0);
     const fresh = createUnitPool().acquire();
     const firstStatus = unit?.statuses[0];
+    const firstModifier = unit?.modifiers[0];
 
-    if (unit === null || id === null || firstStatus === undefined) {
+    if (
+      unit === null ||
+      id === null ||
+      firstStatus === undefined ||
+      firstModifier === undefined
+    ) {
       throw new Error("The first acquire succeeds on a fresh pool");
     }
 
@@ -66,6 +86,11 @@ describe("unit pool", () => {
     unit.prev.x = 1;
     unit.curr.y = 2;
     unit.facing = 3;
+    unit.turnTicks = 2;
+    unit.path.count = 1;
+    unit.path.next = 1;
+    firstModifier.stat = "movement_speed";
+    firstModifier.percent = 0.5;
     unit.order.kind = "move";
     unit.order.destination.x = 4;
     unit.order.targetId = 5;
@@ -85,6 +110,7 @@ describe("unit pool", () => {
     pool.release(id);
 
     expect(unit).toEqual(fresh);
+    expect(unit.path.count).toBe(0);
     expect(unit.cooldowns.size).toBe(0);
     expect(unit.resources).toEqual({ hp: 0, mana: 0 });
     expect(unit.ownerId).toBeNull();

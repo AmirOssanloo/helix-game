@@ -1,38 +1,47 @@
 import { describe, expect, it } from "vitest";
-import type { AnyCommand, CastTarget, OrderState, Unit } from "@domain/public";
+import type {
+  CastTarget,
+  Command,
+  DebugCommand,
+  OrderState,
+  Unit,
+} from "@domain/public";
 import { createUnitPool, validateCommand } from "@domain/public";
 
-const move = (x = 1, y = 2): AnyCommand => ({
+/** What the validator decides on: every command but a tuning change, which never reaches a unit. */
+type UnitCommand = Command | DebugCommand;
+
+const move = (x = 1, y = 2): UnitCommand => ({
   kind: "move",
   tick: 0,
   timestamp: 0,
   destination: { x, y },
 });
 
-const attackMove = (x = 1, y = 2): AnyCommand => ({
+const attackMove = (x = 1, y = 2): UnitCommand => ({
   kind: "attack_move",
   tick: 0,
   timestamp: 0,
   destination: { x, y },
 });
 
-const attackTarget = (): AnyCommand => ({
+const attackTarget = (): UnitCommand => ({
   kind: "attack_target",
   tick: 0,
   timestamp: 0,
   targetId: 7,
 });
 
-const stop = (): AnyCommand => ({ kind: "stop", tick: 0, timestamp: 0 });
+const stop = (): UnitCommand => ({ kind: "stop", tick: 0, timestamp: 0 });
 
-const slot = (index: number): AnyCommand => ({
+const slot = (index: number): UnitCommand => ({
   kind: "slot",
   tick: 0,
   timestamp: 0,
   slot: index,
 });
 
-const cast = (target: CastTarget = { kind: "none" }): AnyCommand => ({
+const cast = (target: CastTarget = { kind: "none" }): UnitCommand => ({
   kind: "cast",
   tick: 0,
   timestamp: 0,
@@ -40,16 +49,16 @@ const cast = (target: CastTarget = { kind: "none" }): AnyCommand => ({
   target,
 });
 
-const noop = (): AnyCommand => ({ kind: "noop", tick: 0, timestamp: 0 });
+const noop = (): UnitCommand => ({ kind: "noop", tick: 0, timestamp: 0 });
 
-const debugNoop = (): AnyCommand => ({
+const debugNoop = (): UnitCommand => ({
   kind: "debug_noop",
   tick: 0,
   timestamp: 0,
 });
 
 /** Every player command with a well-formed payload, by name, so a disable is tested against each. */
-const EVERY_COMMAND: readonly (readonly [string, AnyCommand])[] = [
+const EVERY_COMMAND: readonly (readonly [string, UnitCommand])[] = [
   ["move", move()],
   ["attack_move", attackMove()],
   ["attack_target", attackTarget()],
@@ -72,7 +81,7 @@ const unitIn = (state: OrderState = "idle"): Unit => {
 };
 
 /** Every command, the two noops included, which a fresh unit accepts. */
-const ACCEPTED_ON_A_FRESH_UNIT: readonly (readonly [string, AnyCommand])[] = [
+const ACCEPTED_ON_A_FRESH_UNIT: readonly (readonly [string, UnitCommand])[] = [
   ...EVERY_COMMAND,
   ["noop", noop()],
   ["debug_noop", debugNoop()],

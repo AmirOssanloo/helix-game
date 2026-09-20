@@ -46,7 +46,7 @@ const onFrame = (frameDeltaMs: number): void => {
 
 1. Copy each entity's current position into its previous position, so the presentation can interpolate the step about to happen.
 2. Sort the command buffer by the ordering rule and consume it, recording every consumed command with this tick in the input log. The consumed commands stay readable on the world, in that order, for the rest of the tick.
-3. Run the systems, in the order the one list in `simulation/systems.ts` gives them. The first one hands the consumed commands to the hero; every later system sees the orders they produced.
+3. Run the systems, in the order the one list in `simulation/systems.ts` gives them. The first one applies the consumed commands, a tuning change to run scope and every other command to the hero; every later system sees the orders they produced.
 4. Forget the consumed commands.
 5. Write `tick_completed` to the event ring.
 6. Advance the tick count.

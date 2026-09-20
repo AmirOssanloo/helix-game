@@ -65,4 +65,16 @@ describe("slotOf", () => {
   it("names no slot for a debug noop command", () => {
     expect(slotOf({ kind: "debug_noop", tick: 0, timestamp: 0 })).toBeNull();
   });
+
+  it("names no slot for a tuning command", () => {
+    expect(
+      slotOf({
+        kind: "set_tuning",
+        tick: 0,
+        timestamp: 0,
+        key: "base_ms",
+        value: 300,
+      }),
+    ).toBeNull();
+  });
 });

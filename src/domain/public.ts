@@ -9,6 +9,7 @@ export {
   type DebugNoopCommand,
   type MoveCommand,
   type NoopCommand,
+  type SetTuningCommand,
   SLOT_COUNT,
   type SlotCommand,
   type StopCommand,
@@ -22,6 +23,22 @@ export {
 export type { MapDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
 export {
+  TUNING_KEYS,
+  TUNING_UNITS,
+  type TuningDef,
+  type TuningKey,
+  type TuningUnit,
+  type WhorlSpeedKey,
+} from "./definitions/tuning-def";
+export {
+  createTuningState,
+  readTunable,
+  setTunable,
+  type TuningRefusal,
+  type TuningValidation,
+  validateTuning,
+} from "./definitions/tuning-state";
+export {
   createEffectPool,
   type Effect,
   EFFECT_CAPACITY,
@@ -33,8 +50,14 @@ export {
   PROJECTILE_CAPACITY,
 } from "./entities/projectile";
 export {
+  clearPath,
   createUnitPool,
+  MODIFIER_TABLE_SIZE,
+  type ModifierEntry,
+  type Path,
+  PATH_CAPACITY,
   type Resources,
+  type Stat,
   STATUS_TABLE_SIZE,
   type StatusEntry,
   type Unit,
@@ -58,6 +81,15 @@ export {
   type DomainEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
+export { movementSystem } from "./movement/movement.system";
+export {
+  isPathComplete,
+  nextWaypoint,
+  passWaypoint,
+  setStraightPath,
+} from "./movement/path";
+export { movementSpeed } from "./movement/speed-stack";
+export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";
 export type { DisableFlags } from "./orders/disable-flags";
 export type { Order, OrderKind, OrderState } from "./orders/order";

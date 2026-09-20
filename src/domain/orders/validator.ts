@@ -1,4 +1,4 @@
-import type { AnyCommand } from "../commands/command";
+import type { Command, DebugCommand } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
 import type { Unit } from "../entities/unit";
 
@@ -30,7 +30,8 @@ const isInCastPoint = (unit: Readonly<Unit>): boolean =>
 /**
  * Decides whether `unit` may act on `command` this tick, from its disable flags and its order
  * state. Reads nothing else and writes nothing: a refusal is a value, and the caller drops the
- * command. Cooldown and mana checks join the `cast` branch with the cast pipeline.
+ * command. Cooldown and mana checks join the `cast` branch with the cast pipeline. A tuning
+ * change is not a unit's to accept; the tuning state validates it, so it never arrives here.
  *
  * Stun refuses everything, the stop included, so a stunned unit keeps whatever it was doing.
  * Silence refuses the ability keys and leaves movement and attacks alone. Root refuses a move
@@ -41,7 +42,7 @@ const isInCastPoint = (unit: Readonly<Unit>): boolean =>
  */
 export const validateCommand = (
   unit: Readonly<Unit>,
-  command: AnyCommand,
+  command: Command | DebugCommand,
 ): ValidationResult => {
   if (unit.disables.stunned) {
     return "stunned";

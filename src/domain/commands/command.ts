@@ -1,4 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
+import type { TuningKey } from "../definitions/tuning-def";
 import type { Tick } from "../tick";
 
 /**
@@ -110,5 +111,20 @@ export type DebugNoopCommand = Readonly<{
   timestamp: number;
 }>;
 
-/** Anything the buffer accepts: a player command or a debug command. */
-export type AnyCommand = Command | DebugCommand;
+/**
+ * A developer-panel slider: set the tunable `key` to `value`, in the designer's units the
+ * tuning table writes. The tuning state converts it once when the command is applied, and it
+ * lands in the input log like every command, so a session with a retune replays. It is neither
+ * a player command nor a debug command: it changes run scope, not the hero, and needs no hero
+ * to apply.
+ */
+export type SetTuningCommand = Readonly<{
+  kind: "set_tuning";
+  tick: Tick;
+  timestamp: number;
+  key: TuningKey;
+  value: number;
+}>;
+
+/** Anything the buffer accepts: a player command, a debug command, or a tuning change. */
+export type AnyCommand = Command | DebugCommand | SetTuningCommand;

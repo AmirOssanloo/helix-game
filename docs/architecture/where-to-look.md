@@ -21,6 +21,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | The hero's base values and per-level gains | `src/content/hero.ts` |
 | Which forms the hero has, and each form's body, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
+| Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
@@ -32,7 +33,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
 | Which events the tick can emit | The event union in `src/domain/events/` |
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file and the validator beside it |
-| How a consumed command reaches the hero | The command system under `src/domain/orders/` — the first entry in the system list |
+| How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
+| How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, the speed stack, the path buffer, and the movement system |
 | How a world is created, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
 | How a session is recorded and replayed | `src/simulation/replay/` |
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |

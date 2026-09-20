@@ -45,7 +45,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | Layer | domain, content, simulation, tests |
 | Size | 2 |
 | Depends on | T01, T05 |
-| Status | planned |
+| Status | done |
 
 **Build:** The tuning table under `src/content/tuning.ts` with every parameter in spec section 17 and its default, typed in `domain/definitions/`, copied into run scope at world creation, read through the world. Under `src/domain/movement/`: the turn step (shortest arc, rate scaled by step over 0.03 s, ramp over `turn_ramp_ticks`, clamp on the last tick so facing equals target), the action cone test, the speed stack (`(base + Σflat) × (1 + Σpct)` clamped by the min and max tunables, recomputed every tick from modifier sources on the unit), and the advance along a fixed-capacity path buffer by `min(speed × dt, remaining)` with a small arrival epsilon. For this sprint the path buffer is one segment to the destination; A* fills it in sprint 03. `movementSystem` registered in `systems.ts` after command application. A `set_tuning` command variant applying on the next tick and landing in the log.
 
@@ -66,6 +66,8 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
 *Edited while closing T01: the dependency row gained T05, because the acceptance tests submit commands and need the step that applies them to the hero, which neither this ticket nor T01 named.*
+
+*Edited while building: `set_tuning` is applied by the command system to run scope, hero or no hero, rather than by a system of its own, and it refuses `sim_hz`, because every converted duration and the driver's step already depend on it; the driver reads its tick rate from the table at boot so the two agree. The tuning table is typed as a flat record with the Whorl table as one key per level, `whorl_ms_per_instance:0` for level 1, matching Q5. The re-entry from `moving` to `turning` at a path corner is sprint 03's, since a one-segment path never leaves the cone once inside it.*
 
 ---
 
@@ -148,7 +150,7 @@ Nothing draws the hero yet. In tests, AT-M1, AT-M2, AT-M3, and AT-C1 are green. 
 | AT-M1, AT-M2, AT-M3, AT-C1, AT-C2, AT-C4 green by name | |
 | Bench: fps · render ms · draw calls · heap, Chrome and Safari, both `maxTextures` settings | |
 | Milestone M1 | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 · T05 0.5 |
+| Actual days per ticket | T01 0.5 · T02 2 · T03 · T04 · T05 0.5 |
 
 ## Risks in this sprint
 

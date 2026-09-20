@@ -9,13 +9,13 @@ describe("commandSystem", () => {
       kind: "move",
       tick: 0,
       timestamp: 1,
-      destination: { x: 100, y: 40 },
+      destination: { x: -100, y: 40 },
     });
 
     world.tick();
 
     expect(hero.order.kind).toBe("move");
-    expect(hero.order.destination).toEqual({ x: 100, y: 40 });
+    expect(hero.order.destination).toEqual({ x: -100, y: 40 });
     expect(hero.state).toBe("turning");
   });
 
@@ -63,13 +63,14 @@ describe("commandSystem", () => {
       destination: { x: 100, y: 40 },
     });
     world.tick();
+    const facingAtStop = hero.facing;
     submit(world, { kind: "stop", tick: 1, timestamp: 2 });
 
     world.tick();
 
     expect(hero.order.kind).toBe("none");
     expect(hero.state).toBe("idle");
-    expect(hero.facing).toBe(2);
+    expect(hero.facing).toBe(facingAtStop);
   });
 
   it("leaves the order and the state as they were when a command is refused", () => {

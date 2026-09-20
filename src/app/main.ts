@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { tuningTable } from "@content/public";
 import { exposeDevApi, mountPanel } from "@devtools/public";
 import type { MapDef, Registry } from "@domain/public";
 import { createRings } from "@instrumentation/public";
@@ -14,14 +15,14 @@ const DEVTOOLS_HOST_ID = "devtools";
 /** Every session starts from this seed until a session can be recorded and replayed under its own. */
 const SESSION_SEED = 1;
 
-/** The content layer holds no definitions yet, and a world needs a registry and a map to exist. */
-const EMPTY_REGISTRY: Registry = { tuning: new Map() };
+/** The content layer holds the tuning table and no definition yet; a world needs a registry and a map to exist. */
+const REGISTRY: Registry = { tuning: tuningTable };
 const BLANK_MAP: MapDef = { id: "blank" };
 
 export const boot: Boot = (): void => {
   const world = createWorld({
     seed: SESSION_SEED,
-    registry: EMPTY_REGISTRY,
+    registry: REGISTRY,
     map: BLANK_MAP,
   });
   const rings = createRings();

@@ -1,5 +1,6 @@
 import type { EntityId } from "@shared/public";
 import type { Unit } from "../entities/unit";
+import { clearPath } from "../entities/unit";
 
 /** Why a transition did not happen. Each names the state or order the transition needed and did not find. */
 export type TransitionRefusal =
@@ -34,12 +35,14 @@ export type TransitionResult = "ok" | TransitionRefusal;
 const isInCastPoint = (unit: Readonly<Unit>): boolean =>
   unit.state === "attack_windup" || unit.state === "ability_cast_point";
 
-/** The step shared by every order: the previous order is gone, and the unit faces before it acts. */
+/** The step shared by every order: the previous order, its path, and its turn are gone, and the unit faces before it acts. */
 const takeOrder = (unit: Unit): void => {
   unit.order.targetId = null;
   unit.order.destination.x = 0;
   unit.order.destination.y = 0;
   unit.state = "turning";
+  unit.turnTicks = 0;
+  clearPath(unit.path);
 };
 
 /** Replaces the current order with a move to (`x`, `y`). Legal unless a cast point is in progress. */
@@ -98,7 +101,7 @@ export const issueAttackMove = (
  * Clears the order and returns the unit to `idle` from any state: the stop command, and also
  * what a stun does and what happens when an attack target stops existing. A cast point in
  * progress is cancelled; a backswing or a channel ends. Facing is left where it is, so the
- * next order turns from the yaw the unit stopped at.
+ * next order turns from the yaw the unit stopped at; the path and the turn go with the order.
  */
 export const clearOrder = (unit: Unit): TransitionResult => {
   unit.order.kind = "none";
@@ -106,6 +109,8 @@ export const clearOrder = (unit: Unit): TransitionResult => {
   unit.order.destination.y = 0;
   unit.order.targetId = null;
   unit.state = "idle";
+  unit.turnTicks = 0;
+  clearPath(unit.path);
 
   return "ok";
 };

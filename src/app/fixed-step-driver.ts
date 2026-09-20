@@ -1,9 +1,10 @@
+import { tuningTable } from "@content/public";
 import type { AnyCommand, Tick } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
 
-/** Ticks per second. The world's one unit of time is a count of these. */
-export const TICK_RATE = 30;
+/** Ticks per second, from the tuning table so the driver and every converted duration agree. The world's one unit of time is a count of these. */
+export const TICK_RATE = tuningTable.sim_hz;
 
 const MS_PER_SECOND = 1000;
 

@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
 | **Active sprint** | [02 — Locomotion, turn rate, and the render benchmark](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md) |
-| **Next ticket** | P1-S02-T02 — Movement system: turn, cone, constant speed, speed stack, tuning table |
+| **Next ticket** | P1-S02-T03 — The shape atlas and the frame list |
 | **In progress** | none |
-| **Last closed ticket** | P1-S02-T05 — Command application: the tick hands consumed commands to the first system |
+| **Last closed ticket** | P1-S02-T02 — Movement system: turn, cone, constant speed, speed stack, tuning table |
 | **Last closed sprint** | [01 — Simulation skeleton and instrumentation](./phase-0-foundation/sprint-01-simulation-skeleton-and-instrumentation.md), 2026-09-20 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |

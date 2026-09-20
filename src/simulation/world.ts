@@ -8,6 +8,7 @@ import type {
 import {
   createEffectPool,
   createProjectilePool,
+  createTuningState,
   createUnitPool,
   createZonePool,
 } from "@domain/public";
@@ -82,7 +83,7 @@ export class Simulation {
       run: {
         heroId: null,
         forms: [],
-        tuning: new Map(options.registry.tuning),
+        tuning: createTuningState(options.registry.tuning),
         random: createRandomState(options.seed),
       },
       map: {
@@ -196,6 +197,6 @@ export class Simulation {
   }
 }
 
-/** A world at tick zero on `map`, with the registry's tuning copied into run scope and the random source at the start of `seed`'s sequence. */
+/** A world at tick zero on `map`, with the registry's tuning converted into run scope and the random source at the start of `seed`'s sequence. */
 export const createWorld = (options: CreateWorldOptions): Simulation =>
   new Simulation(options);

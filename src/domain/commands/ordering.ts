@@ -31,6 +31,7 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "attack_target":
     case "cast":
     case "debug_noop":
+    case "set_tuning":
       return null;
   }
 };

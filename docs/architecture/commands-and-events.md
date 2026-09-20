@@ -48,7 +48,7 @@ A command is a request. The validator in `domain/orders/` decides whether the un
 
 ### Application
 
-The command system beside the validator runs first in the system order. It walks the commands the tick consumed, validates each against the hero as it is at that moment, and applies the ones that pass: an order command replaces the current order through the state machine, and the last legal order in a tick wins. A world with no hero drops every command. Nothing else reads the consumed commands to change state.
+The command system beside the validator runs first in the system order. It walks the commands the tick consumed, validates each against the hero as it is at that moment, and applies the ones that pass: an order command replaces the current order through the state machine, and the last legal order in a tick wins. A tuning change is validated against the tuning state instead and applied to run scope, hero or no hero. A world with no hero drops every other command. Nothing else reads the consumed commands to change state.
 
 ---
 
@@ -100,10 +100,10 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Slot keys | One command variant carrying a slot index 1 to 6; the active kit resolves it, the mapper and the union never name a mechanic |
 | Pointer picks | World position resolved at event time, stored on the command |
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, then arrival order |
-| Validation | `domain/orders/` decides per tick from disable flags, cooldowns, and cost; refusals are dropped |
-| Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation to the hero; the last legal order in a tick wins |
+| Validation | `domain/orders/` decides per tick from disable flags, cooldowns, and cost; a tuning change is checked against the tuning state in `domain/definitions/`; refusals are dropped |
+| Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation: a tuning change to run scope, every other to the hero; the last legal order in a tick wins |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
-| Tuning changes | A `SetTuning` command, recorded in the input log |
+| Tuning changes | A `SetTuning` command carrying a key of the tuning table and a value in the designer's units, recorded in the input log, converted once when applied |
 | A mutating method on the world | Never |
 | Events | Plain values in a preallocated ring; no emitter, no listeners, no closures |
 | Draining events | Once per render frame by the presentation, with its own cursor; the panel keeps its own |

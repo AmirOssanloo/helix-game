@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { UNIT_CAPACITY } from "@domain/public";
+import { readTunable, UNIT_CAPACITY } from "@domain/public";
 import { createEventReader, nextFloat } from "@simulation/public";
 import type { Simulation, WorldView } from "@simulation/public";
 import {
@@ -38,13 +38,14 @@ describe("createWorld", () => {
     expect(world.view.map.units.capacity).toBe(UNIT_CAPACITY);
   });
 
-  it("copies the registry's tuning into run scope", () => {
-    const tuning = new Map([["turn_ramp_ticks", 3]]);
-    const world = makeWorld({ seed: 1, registry: makeRegistry({ tuning }) });
+  it("copies the registry's tuning into run scope, converted into simulation units", () => {
+    const registry = makeRegistry({
+      tuning: { turn_ramp_ticks: 3, base_ms: 300, sim_hz: 30 },
+    });
+    const world = makeWorld({ seed: 1, registry });
 
-    tuning.set("turn_ramp_ticks", 9);
-
-    expect(world.view.run.tuning.get("turn_ramp_ticks")).toBe(3);
+    expect(readTunable(world.view.run.tuning, "turn_ramp_ticks")).toBe(3);
+    expect(readTunable(world.view.run.tuning, "base_ms")).toBe(10);
   });
 
   it("gives two worlds with the same seed the same random sequence", () => {
@@ -123,8 +124,10 @@ describe("tick", () => {
 
 describe("loadMap", () => {
   it("empties every map-scoped pool and leaves the hero id and tuning state unchanged", () => {
-    const tuning = new Map([["turn_ramp_ticks", 3]]);
-    const world = makeWorld({ seed: 1, registry: makeRegistry({ tuning }) });
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({ tuning: { turn_ramp_ticks: 3 } }),
+    });
     spawnUnit(world);
     world.state.map.projectiles.acquire();
     world.state.map.effects.acquire();
