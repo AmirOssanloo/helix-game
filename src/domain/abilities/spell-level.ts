@@ -1,5 +1,5 @@
-import { ORB_IDS } from "../definitions/spell-def";
-import type { OrbId } from "../definitions/spell-def";
+import { ORB_IDS } from "../definitions/orb-id";
+import type { OrbId } from "../definitions/orb-id";
 
 /** The level a spell is cast at when its recipe names no orb the caster levels. */
 const FIRST_LEVEL = 1;

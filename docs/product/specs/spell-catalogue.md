@@ -354,7 +354,7 @@ A status definition says what the status does; the applier says how long. A spel
 
 | Status | Applied by | Flags | Modifiers and damage | Hook or expiry | Stack | Icon |
 |---|---|---|---|---|---|---|
-| `hoarfrost` | Hoarfrost | none | none | Damage taken, key `hoarfrost`, cooldown Quartz [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8]: apply `stun` 0.4 s to the holder, then magical damage Quartz [8, 16, 24, 32, 40, 48, 56] to the holder | Refresh | `icon_hoarfrost` |
+| `hoarfrost` | Hoarfrost | none | none | Damage taken, cooldown Quartz [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8]: apply `stun` 0.4 s to the holder, then magical damage Quartz [8, 16, 24, 32, 40, 48, 56] to the holder | Refresh | `icon_hoarfrost` |
 | `stun` | The Hoarfrost hook, the panel | stunned | none | none | Refresh, the longer remaining wins | `icon_stun` |
 | `wane` | Wane | aggro hidden | Movement speed −Whorl [0.30, 0.25, 0.20, 0.15, 0.10, 0.05, 0] | none | Refresh | `icon_wane` |
 | `wane_chill` | Wane's circle | none | Movement speed −Quartz [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50] | none | Refresh | `icon_slow` |
@@ -450,7 +450,7 @@ What a status definition must be able to say, each with the status that needs it
 3. **Flags**: stunned, silenced, rooted, and disarmed exist; add **lifted**, **untargetable**, **aggro hidden**, and **displaced**. `updraft_lift`, `wane`, `knockback`.
 4. **Stat modifiers as tables**, flat or a fraction: movement speed for `wane`, `wane_chill`, `glacier_chill`; attack speed and attack damage for `quicken`.
 5. **Damage per second**, magical, taken every tick and credited to the applier. `glacier_chill`, `burn`.
-6. **A damage-taken hook** by key with an internal cooldown table and an effect list run on the unit that took the damage, at most once per cooldown, with hook damage running no hooks. `hoarfrost`. The damage-dealt hook has the same shape and no user among the ten.
+6. **A damage-taken hook**: an internal cooldown table and an effect list run on the unit that took the damage, at most once per cooldown, with hook damage running no hooks. The list is the whole hook; it needs no key of its own. `hoarfrost`. The damage-dealt hook has the same shape and no user among the ten.
 7. **An expiry effect list** run on the holder when the status ends. `updraft_lift`.
 8. **A stack rule**: refresh, stack, or ignore. Every status; `updraft_lift` and `knockback` ignore.
 9. **An icon frame.** Every status.

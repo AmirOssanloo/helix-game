@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { arenaDef, maps, tuningTable } from "@content/public";
+import { arenaDef, contentRegistry, maps, tuningTable } from "@content/public";
 import type { MapDef } from "@domain/public";
 import {
   deriveWalkabilityGrid,
   isBlockedAt,
   readRadiusClasses,
+  validateRegistry,
 } from "@domain/public";
 import { createTuningState } from "@domain/public";
 import type { Rect } from "@shared/public";
@@ -39,7 +40,19 @@ const gridOf = (map: MapDef) => {
   );
 };
 
+const faultsOf = (id: string) =>
+  validateRegistry(contentRegistry).filter((fault) =>
+    fault.file.endsWith(`/${id.replace(/_/g, "-")}.def.ts`),
+  );
+
 describe("every map", () => {
+  it.each(maps.map((map) => [map.id, map] as const))(
+    "%s validates in the registry",
+    (id) => {
+      expect(faultsOf(id)).toEqual([]);
+    },
+  );
+
   it.each(maps.map((map) => [map.id, map] as const))(
     "%s has a snake_case id, bounds with area, obstacles inside them, and a spawn point on open ground",
     (_id, map) => {

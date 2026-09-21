@@ -31,18 +31,28 @@ export const frostLanceDef = {
   targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
   castPointSeconds: 0.1,                          // Before the effect fires; the hero must face the target first
   backswingSeconds: 0.2,                          // After the effect fires; a new order cancels it
-  cooldownSeconds: [20, 18, 16, 14, 12, 10, 8],   // Indexed by orb level 1 to 7
+  cooldownSeconds: [20, 18, 16, 14, 12, 10, 8],   // Indexed by the lowest orb level in the recipe, 1 to 7
   manaCost: [100, 110, 120, 130, 140, 150, 160],
   range: 1000,
   effects: [
-    { kind: 'projectile', speed: 1200, radius: 40, onHit: 'frost_lance_hit' },
+    {
+      kind: 'spawn_projectile',
+      speed: 1200,
+      radius: 40,
+      homing: false,
+      maxRange: 1000,
+      onHit: [{ kind: 'named', key: 'frost_lance_hit', fields: { slowSeconds: 2 } }],
+      atlasFrame: 'disc',
+      tint: 0x66ccff,
+    },
   ],
+  preview: { kind: 'circle', radius: 40, atlasFrame: 'ring_thin' },
   atlasFrame: 'disc',
   tint: 0x66ccff,
 } as const satisfies SpellDef
 ```
 
-`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; `onHit` names a domain effect by string key, so this file imports a type and nothing else. Durations are seconds, converted to ticks once at load; a definition never holds a tick count. The id is snake_case and matches the file name. A cooldown or mana table shorter than seven entries fails validation.
+`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; the projectile's `onHit` list names a domain effect by string key with the fields that effect declares, so this file imports a type and nothing else. A number that scales writes a level table naming its orb, `{ orb: 'quartz', byLevel: [/* seven */] }`. Durations are seconds, converted to ticks once at load; a definition never holds a tick count. The id is snake_case and matches the file name. A cooldown, mana, or level table without seven entries fails validation.
 
 ---
 
@@ -55,16 +65,17 @@ touch src/domain/abilities/effects/frost-lance-hit.effect.ts
 ```
 
 ```typescript
-export const frostLanceHitEffect: NamedEffect = (world, cast, hit) => { /* … */ }
+export const frostLanceHitFields = objectOf({ slowSeconds: nonNegativeSchema })
+export const frostLanceHitEffect: NamedEffect = (world, cast) => { /* … */ }
 ```
 
-Register the key in `src/domain/abilities/effects/index.ts`:
+Register the key in `src/domain/abilities/effects/index.ts` with the schema of its fields beside it:
 
 ```typescript
-'frost_lance_hit': frostLanceHitEffect,
+['frost_lance_hit', { fields: frostLanceHitFields, run: frostLanceHitEffect }],
 ```
 
-The effect runs inside the tick with the world, the cast, and the hit. It allocates nothing, reads no clock, and gets every number from `cast.def` or the tuning table.
+The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, and gets every number from `cast.ability`, its own fields, or the tuning table. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
 
 ---
 

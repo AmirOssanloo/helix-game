@@ -61,7 +61,35 @@ const shapes: readonly AtlasFrameDef[] = [
   },
   { name: "pixel", width: 4, height: 4, shape: { kind: "pixel" } },
   { name: "status_icon", width: 32, height: 32, shape: { kind: "icon" } },
+  // Clarion's cone of 60 degrees, apex at the origin. Drawn as the triangle until a cone painter exists; the name is what the definitions hold.
+  { name: "cone_60", width: 256, height: 256, shape: { kind: "triangle" } },
 ];
+
+/** The frame every status icon names: one per icon, all the plain icon square until each gets its own glyph. */
+const STATUS_ICON_NAMES: readonly string[] = [
+  "icon_hoarfrost",
+  "icon_wane",
+  "icon_quicken",
+  "icon_stun",
+  "icon_slow",
+  "icon_damage_over_time",
+  "icon_lift",
+  "icon_disarm",
+  "icon_knockback",
+  "icon_silence",
+  "icon_root",
+];
+
+const STATUS_ICON_SIZE = 32;
+
+const statusIcons: readonly AtlasFrameDef[] = STATUS_ICON_NAMES.map(
+  (name): AtlasFrameDef => ({
+    name,
+    width: STATUS_ICON_SIZE,
+    height: STATUS_ICON_SIZE,
+    shape: { kind: "icon" },
+  }),
+);
 
 const wedges: readonly AtlasFrameDef[] = Array.from(
   { length: WEDGE_STEPS },
@@ -83,4 +111,9 @@ const glyphs: readonly AtlasFrameDef[] = Array.from(
   }),
 );
 
-export const atlasFrames: AtlasFrameList = [...shapes, ...wedges, ...glyphs];
+export const atlasFrames: AtlasFrameList = [
+  ...shapes,
+  ...statusIcons,
+  ...wedges,
+  ...glyphs,
+];

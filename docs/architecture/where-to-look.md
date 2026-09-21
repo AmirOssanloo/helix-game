@@ -26,7 +26,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
 | Which damage hooks a status may name | `src/domain/combat/hooks/` — one file per hook; the file name is the key |
-| How the registry assembles and validates content | `src/content/index.ts` |
+| How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |
 | Which commands the player can issue | The command union in `src/domain/commands/` |

@@ -1,7 +1,7 @@
 import { assert } from "@shared/public";
 import type { CastTarget } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
-import type { TargetingKind } from "../definitions/spell-def";
+import type { TargetingKind } from "../definitions/ability-def";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
 import { activeFormOf } from "../entities/hero";

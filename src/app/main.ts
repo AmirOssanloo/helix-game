@@ -2,13 +2,11 @@ import Phaser from "phaser";
 import {
   arenaDef,
   atlasFrames,
-  forms,
-  heroDef,
-  spells,
+  contentRegistry,
   tuningTable,
 } from "@content/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
-import type { Registry } from "@domain/public";
+import { assertRegistryValid } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -31,19 +29,14 @@ const DEVTOOLS_HOST_ID = "devtools";
 /** A fresh session's seed: the wall clock at boot, in its low 32 bits, which is all the random source reads. The app layer may read the clock; the seed goes into the log so the session replays under it. */
 const drawSessionSeed = (): number => Date.now() >>> 0;
 
-/** The content layer holds the tuning table, the hero and its forms, the spells, and the maps; the registry of every other kind does not exist yet. */
-const REGISTRY: Registry = {
-  tuning: tuningTable,
-  hero: heroDef,
-  forms,
-  spells,
-};
-
 export const boot: Boot = (): void => {
+  // A broken definition stops the game here, with every fault named, before a world exists.
+  assertRegistryValid(contentRegistry);
+
   // The world with the hero at the map's spawn point; a recreate or a loaded log restarts it in place.
   const session = new Session({
     seed: drawSessionSeed(),
-    registry: REGISTRY,
+    registry: contentRegistry,
     map: arenaDef,
   });
   const world = session.world;

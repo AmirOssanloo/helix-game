@@ -43,7 +43,7 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `domain/definitions/`: `SpellDef` and `AbilityDef` (the same shape, `recipe` present only on the spell), `StatusDef` (blocks, modifiers, stack rule, duration, `onDamageTaken` and `onDamageDealt` hook keys each a key or `null` with an internal cooldown table, flags), `EnemyDef` (fields from the enemies page, all required), `MapDef` finished, the effect entry union (`damage_area`, `apply_status`, `spawn_projectile`, `spawn_zone`, `spawn_unit`, `displace`, `named`), and a schema for each as a runtime validator with no dependency. `src/content/index.ts` assembles every definition of every kind into one registry, validates each against its schema, resolves every effect key against `domain/abilities/effects/index.ts` and every behaviour key against `domain/ai/behaviours/index.ts` (both exist with the empty and `stationary` entries), checks every referenced id exists, every level table has length 7, every `atlasFrame` is in the frame list, and no two definitions share an id; converts seconds to ticks and degrees to radians once; computes the content version stamp; fails loudly. `createWorld` receives the registry; the phase 1 seconds-to-ticks shim is deleted. Every phase 1 stub definition rewritten to the real `SpellDef` shape from the catalogue with empty effect lists for now.
 
@@ -59,6 +59,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
 
 > **Note, 2026-09-21:** the catalogue settled the shape this ticket builds, and it differs from the sketch above in four places: a status definition has no duration, the applier gives one; every level table on a spell or a status names the orb that indexes it, and a status entry snapshots the three orb levels at application; `spawn_zone` carries an activation list and an each-tick list of effects rather than a rule key; and `SpellDef` gains a `preview`, `EnemyDef` gains mana, and a summon definition kind with a follow distance is added. Section 7 of `docs/product/specs/spell-catalogue.md` is the shape.
+>
+> **Note, 2026-09-21, on closing:** built against the catalogue as written, on the maintainer's instruction to pick up the next ticket, while the approval box in STATUS.md stays open; a change to the shape reopens the schemas here, which are data-shaped and cheap to move. Seven things the build decided or found: (1) content may import domain types only, so the validator lives in `src/domain/definitions/validate-registry.ts` beside the schemas, `src/content/index.ts` only assembles, and the composition root and the content test each run the validator; (2) there is no phase 1 seconds-to-ticks shim to delete: the run-scope record builders under `src/domain/definitions/` are the one conversion, run at world creation, and the registry stays in the designer's units so the tuning surface and the content stamp read what a designer wrote; (3) a damage hook is an effect list with a cooldown table and no function key, since the list is the whole behaviour, so `domain/combat/hooks/` is not built and the pipeline page, the vocabulary, and the catalogue's hook wording say so; (4) the fourteen status definitions the catalogue lists arrive here as data, since `statuses.spec.ts` is in this ticket's test list, and sprint 08 T01 builds the system over them; (5) the frames the catalogue calls new exist in the list now, `cone_60` drawn as the triangle until a cone painter arrives and every `icon_*` as the plain icon until sprint 08 T04 gives each a glyph, so no definition renames later; (6) the named-effect registry entry carries the schema of its fields beside the function, and the effects registry is empty until the first bespoke effect in sprint 10; (7) the recorded phase 1 replay was re-stamped from `aabbe4b2` to `a2b0b595`, since the registry gained six kinds and the spell numbers changed, and its commands (move, set_tuning, spawn_units, kill_hero) touch nothing that changed. The render benchmark was not rerun for the thirteen new frames; no view changed.
 
 ---
 
@@ -117,7 +119,7 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 | --- | --- |
 | Spell catalogue approved | Written 2026-09-21 as `docs/product/specs/spell-catalogue.md`; the shape waits on the product owner, recorded under Waiting on a person in STATUS.md |
 | Content tier green; every phase 1 test green through the new pipeline | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 1 · T03 · T04 |
 
 ## Risks in this sprint
 

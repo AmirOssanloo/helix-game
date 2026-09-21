@@ -1,21 +1,29 @@
 import type { SpellDef } from "@domain/public";
 
 /**
- * Glacier: a line of wall segments placed in front of the hero. The recipe and the targeting kind are the spells page's; every number is
- * a placeholder for the spell catalogue, one entry per orb level from one to seven, and the
- * effect list is empty until the effects exist. Every number is a starting value design
- * retunes here.
+ * Glacier: a line of wall segments placed in front of the hero across the cast direction, each a
+ * zone that heavily slows and burns the enemies inside it. The recipe, the targeting kind, the
+ * timings, the tables, and the preview are the spell catalogue's starting values, one entry per
+ * orb level from one to seven, and the effect list is empty until its effects exist. Every number
+ * is a starting value design retunes here.
  */
 export const glacierDef = {
   id: "glacier",
   recipe: ["quartz", "quartz", "ember"],
-  targeting: "point",
-  castPointSeconds: 0.2, // tunable
+  targeting: "direction",
+  castPointSeconds: 0.1, // tunable
   backswingSeconds: 0.1, // tunable
-  cooldownSeconds: [16, 15, 14, 13, 12, 11, 10], // tunable
-  manaCost: [125, 135, 145, 155, 165, 175, 185], // tunable
-  range: 900, // tunable
-  tint: 0x6fb7ff,
-  atlasFrame: "disc",
+  cooldownSeconds: [25, 24, 23, 22, 21, 20, 19], // tunable
+  manaCost: [175, 180, 185, 190, 195, 200, 205], // tunable
+  range: 0, // tunable
   effects: [],
+  preview: {
+    kind: "rectangle",
+    length: 1120, // tunable
+    width: 80, // tunable
+    offset: 200, // tunable
+    atlasFrame: "square_outline",
+  },
+  atlasFrame: "square",
+  tint: 0x6fb7ff,
 } as const satisfies SpellDef;

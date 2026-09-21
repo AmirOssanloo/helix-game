@@ -38,6 +38,8 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new spell, effect, or enemy ability (status definitions).
 
+> **Note, 2026-09-21:** the status definitions are already data. P2-S07-T02 wrote the fourteen the catalogue lists under `src/content/statuses/`, with their flags, modifier tables, damage over time, the Hoarfrost hook, the Updraft expiry list, stack rules, and icon frames, and the content tier validates them. This ticket builds the table, the system, and the flags over them and changes a definition only where the system finds it wrong.
+
 ---
 
 ### P2-S08-T02 — Primitives: damage area, apply status, displace

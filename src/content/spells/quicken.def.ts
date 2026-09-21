@@ -1,10 +1,11 @@
 import type { SpellDef } from "@domain/public";
 
 /**
- * Quicken: a self buff of attack speed and attack damage. The recipe and the targeting kind are the spells page's; every number is
- * a placeholder for the spell catalogue, one entry per orb level from one to seven, and the
- * effect list is empty until the effects exist. Every number is a starting value design
- * retunes here.
+ * Quicken: a self buff of bonus attack speed and attack damage for its duration. A second cast
+ * refreshes the duration and never stacks. The recipe, the targeting kind, the timings, the
+ * tables, and the preview are the spell catalogue's starting values, one entry per orb level from
+ * one to seven, and the effect list is empty until its effects exist. Every number is a starting
+ * value design retunes here.
  */
 export const quickenDef = {
   id: "quicken",
@@ -13,9 +14,10 @@ export const quickenDef = {
   castPointSeconds: 0.05, // tunable
   backswingSeconds: 0.1, // tunable
   cooldownSeconds: [15, 14, 13, 12, 11, 10, 9], // tunable
-  manaCost: [40, 45, 50, 55, 60, 65, 70], // tunable
+  manaCost: [45, 50, 55, 60, 65, 70, 75], // tunable
   range: 0, // tunable
-  tint: 0xff9de2,
-  atlasFrame: "disc",
   effects: [],
+  preview: { kind: "none" },
+  atlasFrame: "disc",
+  tint: 0xff9de2,
 } as const satisfies SpellDef;

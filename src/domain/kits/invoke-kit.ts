@@ -2,7 +2,7 @@ import type { DeepReadonly } from "@shared/public";
 import { assert } from "@shared/public";
 import { spellLevelOf } from "../abilities/spell-level";
 import { SLOT_COUNT } from "../commands/command";
-import { ORB_IDS } from "../definitions/spell-def";
+import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
 import { readTunable } from "../definitions/tuning-state";

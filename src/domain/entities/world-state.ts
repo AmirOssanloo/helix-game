@@ -2,7 +2,7 @@ import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
-import { ORB_IDS } from "../definitions/spell-def";
+import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { EventSink } from "../events/domain-event";
 import type { WalkabilityGrid } from "../map/walkability";

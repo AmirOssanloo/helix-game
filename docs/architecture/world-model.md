@@ -38,6 +38,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
 | Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, tier, behaviour key, and the abilities it may cast | Content |
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
+| Summon definition | `content/summons/`, typed in `domain/definitions` | A unit an ability spawns: enemy-shaped, with the distance it keeps from its owner | Content |
 | Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, spawn points, and spawn data for one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
@@ -48,7 +49,7 @@ The tuning table is the one definition that becomes state: the world copies it a
 
 ## Relationships that matter
 
-- A unit references exactly one definition at a time: the hero's active form definition, or one enemy definition. The hero's reference follows its active form and is read every tick, never cached. A summon references the enemy definition of what it is, and carries the id of its owner.
+- A unit references exactly one definition at a time: the hero's active form definition, one enemy definition, or one summon definition. The hero's reference follows its active form and is read every tick, never cached. A summon references the summon definition of what it is, and carries the id of its owner.
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it and the unit that cast it. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.

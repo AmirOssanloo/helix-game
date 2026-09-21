@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { atlasFrames, heroDef, skeinDef, spells } from "@content/public";
+import { contentRegistry, heroDef, skeinDef, spells } from "@content/public";
 import type { OrbId } from "@domain/public";
-import { ORB_IDS, TARGETING_KINDS } from "@domain/public";
-
-const ID_SHAPE = /^[a-z][a-z0-9_]*$/;
+import { ID_SHAPE, ORB_IDS, validateRegistry } from "@domain/public";
 
 const SPELL_COUNT = 10;
 
-/** The shortest and longest cast point a stub may have, in seconds. */
+/** The shortest and longest cast point a spell in the catalogue has, in seconds. */
 const CAST_POINT_MIN = 0.05;
-const CAST_POINT_MAX = 0.3;
+const CAST_POINT_MAX = 0.1;
 
-const frameNames = atlasFrames.map((frame) => frame.name);
+/** Every spell's backswing, in seconds. */
+const BACKSWING_SECONDS = 0.1;
 
 /** A recipe as a count of each orb in slot-key order, so two arrangements of one multiset read the same. */
 const countsOf = (recipe: readonly OrbId[]): string =>
@@ -31,6 +30,25 @@ const everyMultiset = (): string[] => {
 
   return found;
 };
+
+const isNonIncreasing = (values: readonly number[]): boolean =>
+  values.every((value, index) => {
+    const previous = values[index - 1];
+
+    return previous === undefined || value <= previous;
+  });
+
+const isNonDecreasing = (values: readonly number[]): boolean =>
+  values.every((value, index) => {
+    const previous = values[index - 1];
+
+    return previous === undefined || value >= previous;
+  });
+
+const faultsOf = (id: string) =>
+  validateRegistry(contentRegistry).filter((fault) =>
+    fault.file.endsWith(`/${id.replace(/_/g, "-")}.def.ts`),
+  );
 
 describe("the spells", () => {
   it("are the ten the hero composes, each listed once", () => {
@@ -61,49 +79,59 @@ describe("the spells", () => {
 
 describe("every spell", () => {
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has a snake_case id, three orbs in its recipe, a targeting kind, and a frame in the atlas",
+    "%s validates in the registry",
+    (id) => {
+      expect(faultsOf(id)).toEqual([]);
+    },
+  );
+
+  it.each(spells.map((spell) => [spell.id, spell] as const))(
+    "%s has a snake_case id and three orbs in its recipe",
     (_id, spell) => {
       expect(spell.id).toMatch(ID_SHAPE);
       expect(spell.recipe).toHaveLength(3);
-
-      for (const orb of spell.recipe) {
-        expect(ORB_IDS).toContain(orb);
-      }
-
-      expect(TARGETING_KINDS).toContain(spell.targeting);
-      expect(frameNames).toContain(spell.atlasFrame);
     },
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has a cooldown table and a mana table with one entry per orb level, every entry a non-negative number",
+    "%s has a cooldown table that falls by level and a mana table that rises, one entry per orb level",
     (_id, spell) => {
       expect(spell.cooldownSeconds).toHaveLength(heroDef.maxOrbLevel);
       expect(spell.manaCost).toHaveLength(heroDef.maxOrbLevel);
-
-      for (const seconds of spell.cooldownSeconds) {
-        expect(seconds).toBeGreaterThanOrEqual(0);
-      }
-
-      for (const mana of spell.manaCost) {
-        expect(mana).toBeGreaterThanOrEqual(0);
-      }
+      expect(isNonIncreasing(spell.cooldownSeconds)).toBe(true);
+      expect(isNonDecreasing(spell.manaCost)).toBe(true);
     },
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has a short cast point, a backswing, a range only when it has a target, and no effects yet",
+    "%s has the catalogue's cast point and backswing, and a range only when it aims at a unit or a point",
     (_id, spell) => {
       expect(spell.castPointSeconds).toBeGreaterThanOrEqual(CAST_POINT_MIN);
       expect(spell.castPointSeconds).toBeLessThanOrEqual(CAST_POINT_MAX);
-      expect(spell.backswingSeconds).toBeGreaterThanOrEqual(0);
+      expect(spell.backswingSeconds).toBe(BACKSWING_SECONDS);
 
-      if (spell.targeting === "none") {
+      if (spell.targeting === "none" || spell.targeting === "direction") {
         expect(spell.range).toBe(0);
       } else {
         expect(spell.range).toBeGreaterThan(0);
       }
+    },
+  );
 
+  it.each(spells.map((spell) => [spell.id, spell] as const))(
+    "%s previews nothing when it has no target, and something otherwise",
+    (_id, spell) => {
+      if (spell.targeting === "none") {
+        expect(spell.preview.kind).toBe("none");
+      } else {
+        expect(spell.preview.kind).not.toBe("none");
+      }
+    },
+  );
+
+  it.each(spells.map((spell) => [spell.id, spell] as const))(
+    "%s has no effects until they exist",
+    (_id, spell) => {
       expect(spell.effects).toEqual([]);
     },
   );

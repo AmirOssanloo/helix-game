@@ -32,9 +32,11 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
+export { makeEnemyDef, makeSummonDef } from "./content/make-enemy-def";
 export { makeFormDef } from "./content/make-form-def";
 export { makeMapDef } from "./content/make-map-def";
 export { makeSpellDef } from "./content/make-spell-def";
+export { makeStatusDef } from "./content/make-status-def";
 export {
   makeRegistry,
   type MakeRegistryOptions,

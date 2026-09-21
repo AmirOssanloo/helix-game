@@ -6,6 +6,13 @@ export {
   resourcesOf,
 } from "./abilities/cast";
 export { castSystem } from "./abilities/cast.system";
+export type { Cast } from "./abilities/cast-context";
+export {
+  NAMED_EFFECT_KEYS,
+  type NamedEffect,
+  type NamedEffectEntry,
+  resolveNamedEffect,
+} from "./abilities/effects/index";
 export {
   type CooldownSnapshot,
   createCooldownSnapshot,
@@ -17,6 +24,8 @@ export {
 } from "./abilities/cooldowns";
 export { hasMana, spendMana } from "./abilities/mana";
 export { spellLevelOf } from "./abilities/spell-level";
+export type { Behaviour } from "./ai/behaviour";
+export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export {
   type AnyCommand,
   type ApplyDamageCommand,
@@ -63,11 +72,52 @@ export {
   compareCommandOrder,
   slotOf,
 } from "./commands/ordering";
+export {
+  type AbilityDef,
+  type PreviewDef,
+  TARGETING_KINDS,
+  type TargetingKind,
+} from "./definitions/ability-def";
 export type {
   AtlasFrameDef,
   AtlasFrameList,
   AtlasShape,
 } from "./definitions/atlas-frame-def";
+export {
+  atlasFrameSchema,
+  createLevelledSchemas,
+  heroSchema,
+  type LevelledSchemas,
+  mapSchema,
+  tuningSchema,
+} from "./definitions/definition-schemas";
+export {
+  type ApplyStatusEffectDef,
+  DAMAGE_RATES,
+  type DamageAreaEffectDef,
+  type DamageRate,
+  type DisplaceEffectDef,
+  type EffectDef,
+  type EffectTargetDef,
+  type NamedEffectDef,
+  PUSH_DIRECTIONS,
+  type PushDirection,
+  type ShapeDef,
+  type SpawnProjectileEffectDef,
+  type SpawnUnitEffectDef,
+  type SpawnZoneEffectDef,
+  type SummonBonusDef,
+  ZONE_ANCHORS,
+  type ZoneAnchor,
+  type ZoneLifetimeDef,
+  type ZoneMotionDef,
+} from "./definitions/effect-def";
+export {
+  ENEMY_TIERS,
+  type EnemyDef,
+  type EnemyTier,
+  type SummonDef,
+} from "./definitions/enemy-def";
 export type {
   AttributeConversions,
   Attributes,
@@ -77,16 +127,45 @@ export type {
 } from "./definitions/form-def";
 export { createFormRecords } from "./definitions/form-state";
 export type { HeroDef } from "./definitions/hero-def";
+export type { LevelTable, Scalar } from "./definitions/level-table";
 export type { MapDef, SpawnDef } from "./definitions/map-def";
+export { ORB_IDS, type OrbId } from "./definitions/orb-id";
 export type { Registry } from "./definitions/registry";
 export {
-  ORB_IDS,
-  type OrbId,
-  type SpellDef,
-  type SpellEffectDef,
-  TARGETING_KINDS,
-  type TargetingKind,
-} from "./definitions/spell-def";
+  arrayOf,
+  arrayOfLength,
+  booleanSchema,
+  countSchema,
+  either,
+  type FieldSchemas,
+  ID_SHAPE,
+  idSchema,
+  lazy,
+  nonNegativeSchema,
+  nullable,
+  numberSchema,
+  objectOf,
+  oneOf,
+  recordSchema,
+  type Schema,
+  type SchemaFault,
+  stringSchema,
+  taggedUnion,
+  tintSchema,
+} from "./definitions/schema";
+export type { SpellDef } from "./definitions/spell-def";
+export {
+  type DamageOverTimeDef,
+  STACK_RULES,
+  type StackRule,
+  STATUS_FLAGS,
+  STATUS_MODIFIER_KINDS,
+  type StatusDef,
+  type StatusFlag,
+  type StatusHookDef,
+  type StatusModifierDef,
+  type StatusModifierKind,
+} from "./definitions/status-def";
 export {
   createSpellTable,
   entryAtLevel,
@@ -116,6 +195,12 @@ export {
   type TuningValidation,
   validateTuning,
 } from "./definitions/tuning-state";
+export {
+  assertRegistryValid,
+  describeRegistryFaults,
+  type RegistryFault,
+  validateRegistry,
+} from "./definitions/validate-registry";
 export {
   createEffectPool,
   type Effect,
@@ -148,6 +233,7 @@ export {
   releaseUnit,
   type Resources,
   type Stat,
+  STATS,
   STATUS_TABLE_SIZE,
   type StatusEntry,
   type Unit,

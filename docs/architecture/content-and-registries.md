@@ -55,16 +55,19 @@ A key is the file name. A definition says `key: 'foo'`; the registry maps `'foo'
 
 ## The content registry
 
-`content/index.ts` assembles every definition into one registry and validates it. Validation runs at startup and in CI, and it fails on:
+`content/index.ts` assembles every definition of every kind into one registry, in the designer's units. It is data and nothing else: content imports domain types only, so the validator lives in `domain/definitions/` beside the schemas, and it runs twice. The composition root runs it at startup before a world exists, and the content test runs it in CI. Either fails, with every fault named by content file, path, and expectation, on:
 
-- A definition that does not match its schema.
-- An effect key or behaviour key that resolves to nothing.
+- A definition that does not match its schema, a field the schema does not know included.
+- An effect key or behaviour key that resolves to nothing, or a named effect's fields that fail the schema declared beside the effect.
+- A referenced id that does not exist: a status, a summon, an ability, a form, an archetype.
+- A level table without one entry per orb level.
 - An atlas frame name that is not in the frame list.
-- Two definitions sharing an id.
+- Two definitions of one kind sharing an id. Spells and enemy abilities share one id space, as do enemies and summons.
 
 A world receives the registry when it is created. The domain never imports content; a test hands a world three definitions, and the game hands it all of them.
 
 ```typescript
+assertRegistryValid(registry)
 const world = createWorld({ seed, registry, /* … */ })
 ```
 
@@ -110,8 +113,8 @@ A system writing a stack count back into the status definition. The next unit th
 | Naming code from content | By string key: effect keys, behaviour keys, atlas frame names |
 | Named effects | `domain/abilities/effects/`, one file per key |
 | AI behaviours | `domain/ai/behaviours/`, one file per key |
-| The content registry | Assembled and validated in `content/index.ts`, at startup and in CI |
-| Validation fails on | A schema mismatch, an unresolved key, an unknown atlas frame, a duplicate id |
+| The content registry | Assembled in `content/index.ts`; validated by the domain's validator at startup and in the content test |
+| Validation fails on | A schema mismatch, an unresolved key, a named effect's fields failing its schema, a missing referenced id, a short level table, an unknown atlas frame, a duplicate id |
 | Units in a definition | The designer's: seconds, world units, percentages; converted to ticks and radians once at load |
 | The domain and content | The domain never imports content; the world receives the registry at creation |
 | A number in a system | Never a literal; a tunable or a definition field |

@@ -1,21 +1,23 @@
 import type { SpellDef } from "@domain/public";
 
 /**
- * Wane: the hero hidden from aggro and slowed, with enemies near it slowed. The recipe and the targeting kind are the spells page's; every number is
- * a placeholder for the spell catalogue, one entry per orb level from one to seven, and the
- * effect list is empty until the effects exist. Every number is a starting value design
+ * Wane: the hero drops out of enemy aggro and is slowed, and a circle that moves with the hero
+ * slows every enemy inside it. The recipe, the targeting kind, the timings, the tables, and the
+ * preview are the spell catalogue's starting values, one entry per orb level from one to seven,
+ * and the effect list is empty until its effects exist. Every number is a starting value design
  * retunes here.
  */
 export const waneDef = {
   id: "wane",
   recipe: ["quartz", "quartz", "whorl"],
   targeting: "none",
-  castPointSeconds: 0.1, // tunable
+  castPointSeconds: 0.05, // tunable
   backswingSeconds: 0.1, // tunable
-  cooldownSeconds: [30, 28, 26, 24, 22, 20, 18], // tunable
-  manaCost: [75, 80, 85, 90, 95, 100, 105], // tunable
+  cooldownSeconds: [35, 33, 31, 29, 27, 25, 23], // tunable
+  manaCost: [200, 205, 210, 215, 220, 225, 230], // tunable
   range: 0, // tunable
-  tint: 0xc9d6ff,
-  atlasFrame: "disc",
   effects: [],
+  preview: { kind: "none" },
+  atlasFrame: "ring_thin",
+  tint: 0xc9d6ff,
 } as const satisfies SpellDef;

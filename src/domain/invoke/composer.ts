@@ -1,5 +1,5 @@
 import type { DeepReadonly } from "@shared/public";
-import { ORB_IDS } from "../definitions/spell-def";
+import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { KitState } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";

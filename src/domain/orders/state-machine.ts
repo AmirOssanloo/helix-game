@@ -1,5 +1,5 @@
 import type { EntityId } from "@shared/public";
-import type { TargetingKind } from "../definitions/spell-def";
+import type { TargetingKind } from "../definitions/ability-def";
 import type { Unit } from "../entities/unit";
 import { clearPath } from "../entities/unit";
 

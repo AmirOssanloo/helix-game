@@ -1,7 +1,7 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
+import type { TargetingKind } from "../definitions/ability-def";
 import type { Attributes, Stats } from "../definitions/form-def";
-import type { TargetingKind } from "../definitions/spell-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
@@ -55,6 +55,20 @@ export type Stat =
   | "armour"
   | "attack_speed"
   | "magic_resistance";
+
+/** Every stat a modifier row may name, for content validation to check a definition against. */
+export const STATS: readonly Stat[] = [
+  "movement_speed",
+  "attack_damage",
+  "cooldown_reduction",
+  "max_health",
+  "health_regen",
+  "max_mana",
+  "mana_regen",
+  "armour",
+  "attack_speed",
+  "magic_resistance",
+];
 
 /** What wrote a modifier row: a status, a held orb instance, or later an item. A source removes every row of its kind. */
 export type ModifierKind = "status" | "orb" | "item";
