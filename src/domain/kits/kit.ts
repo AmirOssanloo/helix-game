@@ -1,4 +1,5 @@
 import type { DeepReadonly } from "@shared/public";
+import type { SpellRecord } from "../definitions/spell-state";
 import type { Unit } from "../entities/unit";
 import type { KitState } from "../entities/world-state";
 import type { Tick } from "../tick";
@@ -45,11 +46,12 @@ export type Kit = Readonly<{
     state: DeepReadonly<KitState>,
     out: AbilityRequest,
   ) => AbilityRequest;
-  /** Writes what slot key `slot` shows, reading the unit's clocks and the tuning table for costs. */
+  /** Writes what slot key `slot` shows, reading the unit's clocks, the spell table and the tuning table for costs. */
   describeSlot: (
     slot: number,
     state: DeepReadonly<KitState>,
     cooldowns: ReadonlyMap<string, Tick>,
+    spells: ReadonlyMap<string, SpellRecord>,
     tuning: ReadonlyMap<string, number>,
     out: SlotDescriptor,
   ) => SlotDescriptor;

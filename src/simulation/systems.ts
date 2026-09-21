@@ -1,5 +1,6 @@
 import type { World } from "@domain/public";
 import {
+  castSystem,
   collisionSystem,
   commandSystem,
   kitSystem,
@@ -18,7 +19,9 @@ export type System = (world: World) => void;
  * commands produced. The kit runs next, so the modifier rows the hero's held orbs grant are
  * true to this tick's presses and levels. Stats run after it, so the hero wears its active
  * form's body and carries this tick's derived values, with every modifier the tick added,
- * before anything reads them. Pathing follows, so an order consumed this tick has its path before movement reads
+ * before anything reads them. The cast stages run next, so a cast requested this tick spends
+ * this tick's mana, faces or commits this tick, and asks for its approach before pathing plans
+ * it. Pathing follows, so an order consumed this tick has its path before movement reads
  * it. Movement follows, so an order consumed this tick turns or translates this tick.
  * Collision runs after movement, so every unit is pushed out of every other unit and every
  * obstacle where this tick's moves left it.
@@ -27,6 +30,7 @@ export const systems: readonly System[] = [
   commandSystem,
   kitSystem,
   statsSystem,
+  castSystem,
   pathingSystem,
   movementSystem,
   collisionSystem,

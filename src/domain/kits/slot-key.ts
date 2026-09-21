@@ -1,4 +1,6 @@
 import { assert } from "@shared/public";
+import { requestCast } from "../abilities/cast";
+import type { CastTarget } from "../commands/command";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { FormRecord, World } from "../entities/world-state";
@@ -17,6 +19,9 @@ const event = createDomainEvent();
 
 /** The slot key the newest prepared spell sits on, which a first invoke writes into: the key after the three orbs and the composer. */
 const NEWEST_PREPARED_SLOT = 5;
+
+/** What a slot key aims at: nothing. A targeted spell's aim arrives on a cast command from the click; the key alone cannot carry one. */
+const NO_TARGET: CastTarget = { kind: "none" };
 
 const announceOrbAdded = (world: World, orb: number): void => {
   resetDomainEvent(event);
@@ -104,9 +109,10 @@ const applyInvoke = (
 
 /**
  * Applies a validated slot key to `hero`: the active form's kit says what the key asks for,
- * and the request is fulfilled here. A cast request waits for the cast pipeline and does
- * nothing yet. Returns the reason the key was refused, or `null` when it applied, for the
- * caller to announce. A unit with no form has no kit and nothing to apply.
+ * and the request is fulfilled here. A cast request is a cast with no target, which the
+ * pipeline's request stage takes for a no-target spell and refuses for a targeted one, whose
+ * aim only a cast command carries. Returns the reason the key was refused, or `null` when it
+ * applied, for the caller to announce. A unit with no form has no kit and nothing to apply.
  */
 export const applySlotKey = (
   world: World,
@@ -131,8 +137,16 @@ export const applySlotKey = (
     case "invoke":
       return applyInvoke(world, hero, form);
 
-    case "cast":
-      return null;
+    case "cast": {
+      const abilityId = request.abilityId;
+
+      assert(
+        abilityId !== null,
+        "A cast request names the ability the slot holds",
+      );
+
+      return requestCast(world, hero, abilityId, NO_TARGET);
+    }
 
     case "empty":
       return "empty_slot";

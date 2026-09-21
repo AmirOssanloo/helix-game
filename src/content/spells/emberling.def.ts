@@ -11,6 +11,7 @@ export const emberlingDef = {
   recipe: ["ember", "ember", "quartz"],
   targeting: "none",
   castPointSeconds: 0.1, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [35, 32, 29, 26, 23, 20, 17], // tunable
   manaCost: [75, 85, 95, 105, 115, 125, 135], // tunable
   range: 0, // tunable

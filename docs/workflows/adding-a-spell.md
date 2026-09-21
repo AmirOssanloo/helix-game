@@ -30,6 +30,7 @@ export const frostLanceDef = {
   recipe: ['quartz', 'quartz', 'whorl'],          // The orb multiset; order is ignored
   targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
   castPointSeconds: 0.1,                          // Before the effect fires; the hero must face the target first
+  backswingSeconds: 0.2,                          // After the effect fires; a new order cancels it
   cooldownSeconds: [20, 18, 16, 14, 12, 10, 8],   // Indexed by orb level 1 to 7
   manaCost: [100, 110, 120, 130, 140, 150, 160],
   range: 1000,

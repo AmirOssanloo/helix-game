@@ -15,14 +15,17 @@ const toWaypoint: Vec2 = { x: 0, y: 0 };
 const isUnderway = (unit: Readonly<Unit>): boolean =>
   unit.state === "turning" || unit.state === "moving";
 
-/** Whether the unit's order names a point to walk to. An attack on a target is the attack rule's to move, and it does not exist yet. */
+/** Whether the unit's order names a point to walk to: a move, an attack-move, or a cast's approach. An attack on a target is the attack rule's to move, and it does not exist yet. */
 const hasDestination = (unit: Readonly<Unit>): boolean =>
-  unit.order.kind === "move" || unit.order.kind === "attack_move";
+  unit.order.kind === "move" ||
+  unit.order.kind === "attack_move" ||
+  unit.order.kind === "cast";
 
 /**
- * Lands the unit on the waypoint it reached and steps past it. Passing the last one ends the
- * order when it is the destination; when the path was cut short of the destination, the unit
- * asks for the rest of it from where it stands.
+ * Lands the unit on the waypoint it reached and steps past it. Passing the last one ends a
+ * move when it is the destination; when the path was cut short of the destination, the unit
+ * asks for the rest of it from where it stands. A cast's approach ends nothing here: the cast
+ * rule decides what standing at the end of it means.
  */
 const reachWaypoint = (
   unit: Unit,
@@ -37,15 +40,19 @@ const reachWaypoint = (
     return;
   }
 
-  if (distanceSquared(unit.curr, unit.order.destination) <= epsilon * epsilon) {
-    const result = arrive(unit);
-
-    assert(result === "ok", "A unit underway on a path arrives at its end");
+  if (distanceSquared(unit.curr, unit.order.destination) > epsilon * epsilon) {
+    unit.needsPath = true;
 
     return;
   }
 
-  unit.needsPath = true;
+  if (unit.order.kind === "cast") {
+    return;
+  }
+
+  const result = arrive(unit);
+
+  assert(result === "ok", "A unit underway on a path arrives at its end");
 };
 
 /**

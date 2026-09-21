@@ -4,13 +4,32 @@ import type { KitState } from "@domain/public";
 import {
   createAbilityRequest,
   createSlotDescriptor,
+  createSpellTable,
   createTuningState,
   invokeKit,
   KIT_KEYS,
   resolveKit,
 } from "@domain/public";
+import { makeSpellDef } from "../../helpers";
 
 const TUNING = createTuningState({ ...tuningTable, invoke_mana: 7 });
+
+/** The two prepared spells the descriptions read: a cost that rises with the level, so the level read is visible. */
+const SPELLS = createSpellTable(
+  [
+    makeSpellDef.build({
+      id: "newest",
+      recipe: ["quartz", "whorl", "ember"],
+      manaCost: [10, 20, 30, 40, 50, 60, 70],
+    }),
+    makeSpellDef.build({
+      id: "older",
+      recipe: ["ember", "ember", "ember"],
+      manaCost: [15, 25, 35, 45, 55, 65, 75],
+    }),
+  ],
+  TUNING,
+);
 
 const state = (prepared: (string | null)[]): KitState => ({
   orbLevels: [1, 1, 1],
@@ -106,6 +125,7 @@ describe("the Invoke kit describes a slot", () => {
       slot,
       state([null, null]),
       cooldowns,
+      SPELLS,
       TUNING,
       createSlotDescriptor(),
     );
@@ -123,6 +143,7 @@ describe("the Invoke kit describes a slot", () => {
       4,
       state([null, null]),
       cooldowns,
+      SPELLS,
       TUNING,
       createSlotDescriptor(),
     );
@@ -139,21 +160,76 @@ describe("the Invoke kit describes a slot", () => {
     const kit = state(["newest", "older"]);
 
     expect(
-      invokeKit.describeSlot(5, kit, cooldowns, TUNING, createSlotDescriptor()),
+      invokeKit.describeSlot(
+        5,
+        kit,
+        cooldowns,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ),
     ).toEqual({
       kind: "prepared",
       abilityId: "newest",
       readyAtTick: 0,
-      cost: 0,
+      cost: 10,
     });
     expect(
-      invokeKit.describeSlot(6, kit, cooldowns, TUNING, createSlotDescriptor()),
+      invokeKit.describeSlot(
+        6,
+        kit,
+        cooldowns,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ),
     ).toEqual({
       kind: "prepared",
       abilityId: "older",
       readyAtTick: 90,
-      cost: 0,
+      cost: 15,
     });
+  });
+
+  it("a prepared spell's cost at the lowest level among its recipe's orbs", () => {
+    const kit = state(["newest", "older"]);
+    kit.orbLevels = [4, 2, 5];
+
+    expect(
+      invokeKit.describeSlot(
+        5,
+        kit,
+        cooldowns,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ).cost,
+    ).toBe(20);
+    expect(
+      invokeKit.describeSlot(
+        6,
+        kit,
+        cooldowns,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ).cost,
+    ).toBe(55);
+  });
+
+  it("a prepared spell no table knows as free", () => {
+    const kit = state(["unknown", null]);
+
+    expect(
+      invokeKit.describeSlot(
+        5,
+        kit,
+        cooldowns,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ).cost,
+    ).toBe(0);
   });
 
   it("an empty prepared slot as a socket with nothing in it", () => {
@@ -161,6 +237,7 @@ describe("the Invoke kit describes a slot", () => {
       6,
       state(["newest", null]),
       cooldowns,
+      SPELLS,
       TUNING,
       createSlotDescriptor(),
     );

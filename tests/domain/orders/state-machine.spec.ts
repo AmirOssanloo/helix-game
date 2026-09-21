@@ -7,6 +7,7 @@ import {
   beginCastBackswing,
   beginCastPoint,
   beginChannel,
+  beginFacing,
   beginMoving,
   clearOrder,
   createUnitPool,
@@ -14,6 +15,7 @@ import {
   finishBackswing,
   issueAttackMove,
   issueAttackTarget,
+  issueCast,
   issueMove,
 } from "@domain/public";
 
@@ -63,6 +65,23 @@ const unitIn = (state: OrderState, orderKind = orderKindIn(state)): Unit => {
   unit.facing = 1;
 
   return unit;
+};
+
+/** The cast record a unit holds while a cast is pending, for a spec that arranges one. */
+const pendingCast = (unit: Unit): void => {
+  unit.cast.abilityId = "spell_1";
+  unit.cast.targetKind = "point";
+  unit.cast.position.x = 30;
+  unit.cast.position.y = 40;
+  unit.cast.targetId = null;
+};
+
+/** A cast record with nothing pending. */
+const NO_CAST = {
+  abilityId: null,
+  targetKind: "none",
+  position: { x: 0, y: 0 },
+  targetId: null,
 };
 
 const CAST_POINT_STATES: readonly OrderState[] = [
@@ -129,6 +148,153 @@ describe("issueMove", () => {
 
     expect(unit.order.targetId).toBeNull();
   });
+});
+
+describe("issueCast", () => {
+  it.each(ORDERABLE_STATES)(
+    "from %s lands: the order is a cast approaching the aim, the aim is recorded, and the unit turns first",
+    (state) => {
+      const unit = unitIn(state);
+
+      expect(issueCast(unit, "spell_1", "point", 3, 4, null)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.order).toEqual({
+        kind: "cast",
+        destination: { x: 3, y: 4 },
+        targetId: null,
+      });
+      expect(unit.cast).toEqual({
+        abilityId: "spell_1",
+        targetKind: "point",
+        position: { x: 3, y: 4 },
+        targetId: null,
+      });
+    },
+  );
+
+  it.each(CAST_POINT_STATES)(
+    "from %s is refused and changes nothing",
+    (state) => {
+      const unit = unitIn(state);
+
+      expect(issueCast(unit, "spell_1", "point", 3, 4, null)).toBe(
+        "cast_point_in_progress",
+      );
+      expect(unit.state).toBe(state);
+      expect(unit.order.kind).toBe(orderKindIn(state));
+      expect(unit.cast.abilityId).toBeNull();
+    },
+  );
+
+  it("records the unit a unit-targeted cast aims at on the order and the record", () => {
+    const unit = unitIn("idle");
+
+    issueCast(unit, "spell_1", "unit", 3, 4, 9);
+
+    expect(unit.order.targetId).toBe(9);
+    expect(unit.cast.targetId).toBe(9);
+    expect(unit.cast.targetKind).toBe("unit");
+  });
+
+  it.each(["point", "unit"] as const)(
+    "asks for a path toward a %s aim, which the cast rule withdraws when the aim is in range",
+    (kind) => {
+      const unit = unitIn("idle");
+
+      issueCast(unit, "spell_1", kind, 3, 4, kind === "unit" ? 9 : null);
+
+      expect(unit.needsPath).toBe(true);
+    },
+  );
+
+  it.each(["none", "direction"] as const)(
+    "asks for no path toward a %s aim, which is never walked to",
+    (kind) => {
+      const unit = unitIn("idle");
+
+      issueCast(unit, "spell_1", kind, 3, 4, null);
+
+      expect(unit.needsPath).toBe(false);
+    },
+  );
+
+  it("over a pending cast replaces the aim whole", () => {
+    const unit = unitIn("turning", "cast");
+    pendingCast(unit);
+
+    issueCast(unit, "spell_2", "direction", 5, 6, null);
+
+    expect(unit.cast).toEqual({
+      abilityId: "spell_2",
+      targetKind: "direction",
+      position: { x: 5, y: 6 },
+      targetId: null,
+    });
+  });
+});
+
+describe("a new order over a pending cast", () => {
+  it.each([
+    ["a move", (unit: Unit): unknown => issueMove(unit, 3, 4)],
+    ["an attack", (unit: Unit): unknown => issueAttackTarget(unit, 9)],
+    ["an attack-move", (unit: Unit): unknown => issueAttackMove(unit, 3, 4)],
+  ])("%s forgets the cast", (_name, issue) => {
+    const unit = unitIn("turning", "cast");
+    pendingCast(unit);
+
+    issue(unit);
+
+    expect(unit.cast).toEqual(NO_CAST);
+  });
+});
+
+describe("beginFacing", () => {
+  it.each(["turning", "moving"] as const)(
+    "while %s on a cast lands: the unit stands to turn, its path and its request gone",
+    (state) => {
+      const unit = unitIn(state, "cast");
+      pendingCast(unit);
+      unit.path.count = 2;
+      unit.needsPath = true;
+
+      expect(beginFacing(unit)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.path.count).toBe(0);
+      expect(unit.needsPath).toBe(false);
+      expect(unit.order.kind).toBe("cast");
+      expect(unit.cast.abilityId).toBe("spell_1");
+    },
+  );
+
+  it("from moving starts the turn afresh, and from turning keeps the turn under way", () => {
+    const moving = unitIn("moving", "cast");
+    const turning = unitIn("turning", "cast");
+    moving.turnTicks = 4;
+    turning.turnTicks = 4;
+
+    beginFacing(moving);
+    beginFacing(turning);
+
+    expect(moving.turnTicks).toBe(0);
+    expect(turning.turnTicks).toBe(4);
+  });
+
+  it("while underway on a move is refused: there is no cast to face", () => {
+    const unit = unitIn("moving", "move");
+
+    expect(beginFacing(unit)).toBe("no_cast_in_progress");
+    expect(unit.state).toBe("moving");
+  });
+
+  it.each(STATES.filter((state) => state !== "turning" && state !== "moving"))(
+    "from %s is refused and changes nothing",
+    (state) => {
+      const unit = unitIn(state, "cast");
+
+      expect(beginFacing(unit)).toBe("no_cast_in_progress");
+      expect(unit.state).toBe(state);
+    },
+  );
 });
 
 describe("issueAttackTarget", () => {
@@ -208,6 +374,18 @@ describe("clearOrder", () => {
 
     expect(unit.facing).toBe(2.5);
   });
+
+  it.each(["turning", "ability_cast_point"] as const)(
+    "from %s forgets the pending cast, so nothing of it is spent",
+    (state) => {
+      const unit = unitIn(state, state === "turning" ? "cast" : "none");
+      pendingCast(unit);
+
+      clearOrder(unit);
+
+      expect(unit.cast).toEqual(NO_CAST);
+    },
+  );
 });
 
 describe("beginMoving", () => {
@@ -332,6 +510,16 @@ describe("beginCastPoint", () => {
     },
   );
 
+  it("keeps the cast record, which the commit reads", () => {
+    const unit = unitIn("turning", "cast");
+    pendingCast(unit);
+
+    beginCastPoint(unit);
+
+    expect(unit.cast.abilityId).toBe("spell_1");
+    expect(unit.cast.position).toEqual({ x: 30, y: 40 });
+  });
+
   it.each(CAST_POINT_STATES)(
     "from %s is refused and changes nothing",
     (state) => {
@@ -345,11 +533,13 @@ describe("beginCastPoint", () => {
 });
 
 describe("beginCastBackswing", () => {
-  it("from ability_cast_point lands", () => {
+  it("from ability_cast_point lands, and the cast record is spent", () => {
     const unit = unitIn("ability_cast_point");
+    pendingCast(unit);
 
     expect(beginCastBackswing(unit)).toBe("ok");
     expect(unit.state).toBe("ability_backswing");
+    expect(unit.cast).toEqual(NO_CAST);
   });
 
   it.each(STATES.filter((state) => state !== "ability_cast_point"))(

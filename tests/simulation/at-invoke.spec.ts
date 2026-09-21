@@ -18,6 +18,12 @@ const W = 2;
 const E = 3;
 const R = 4;
 
+/** The factory's cast point at 30 Hz: three ticks. */
+const CAST_POINT_TICKS = 3;
+
+/** The ticks the hero stands and yaws before an aim behind it is inside the action cone. */
+const TURN_TICKS = 5;
+
 /** The spec's numbers: 7 mana per first invoke, a 7.0 s base clock less 0.3 s per orb level, at 30 Hz. */
 const INVOKE_MANA = 7;
 
@@ -66,6 +72,22 @@ const fill = (world: Simulation, ...slots: number[]): void => {
   }
 
   world.tick();
+};
+
+/** Submits the click that throws `abilityId` at the point (`x`, `y`). */
+const castAt = (
+  world: Simulation,
+  abilityId: string,
+  x: number,
+  y: number,
+): void => {
+  submit(world, {
+    kind: "cast",
+    tick: world.view.tick,
+    timestamp: world.view.tick,
+    abilityId,
+    target: { kind: "point", position: { x, y } },
+  });
 };
 
 const prepared = (world: Simulation): (string | null)[] => {
@@ -387,5 +409,100 @@ describe("a throw key", () => {
     expect(eventsOfKind(world, reader, "command_refused")).toMatchObject([
       { kind: "command_refused", slot: 6, reason: "empty_slot" },
     ]);
+  });
+});
+
+describe("AT-I7", () => {
+  it("throwing D starts D's clock alone; F's spell keeps no clock and the mana is spent once", () => {
+    const { world, reader } = worldWithSpells();
+    const hero = world.state.map.units.at(0);
+    fill(world, Q, W, E);
+    pressSlot(world, R);
+    world.tick();
+    hero?.cooldowns.set("invoke", 0);
+    fill(world, Q, Q, Q);
+    pressSlot(world, R);
+    world.tick();
+    const manaBefore = mana(world);
+
+    expect(prepared(world)).toEqual([qqq.id, qwe.id]);
+
+    castAt(world, qqq.id, 300, 0);
+
+    for (let tick = 0; tick <= CAST_POINT_TICKS; tick += 1) {
+      world.tick();
+    }
+
+    expect(hero?.cooldowns.get(qqq.id)).toBeGreaterThan(world.view.tick);
+    expect(hero?.cooldowns.get(qwe.id)).toBeUndefined();
+    expect(mana(world)).toBeCloseTo(manaBefore - 50);
+    expect(eventsOfKind(world, reader, "cast_committed")).toMatchObject([
+      { abilityId: qqq.id },
+    ]);
+  });
+});
+
+describe("AT-I8", () => {
+  it("a cursor opened and closed sends nothing: no mana, no clock, no order, no event but the ticks", () => {
+    const { world, reader } = worldWithSpells();
+    const hero = world.state.map.units.at(0);
+    fill(world, Q, W, E);
+    pressSlot(world, R);
+    world.tick();
+    const manaBefore = mana(world);
+    const facingBefore = hero?.facing;
+    eventsOfKind(world, reader, "tick_completed");
+
+    for (let tick = 0; tick < 10; tick += 1) {
+      world.tick();
+    }
+
+    expect(mana(world)).toBe(manaBefore);
+    expect(hero?.cooldowns.get(qwe.id)).toBeUndefined();
+    expect(hero?.state).toBe("idle");
+    expect(hero?.facing).toBe(facingBefore);
+    expect(world.view.map.projectiles.count).toBe(0);
+
+    let event = world.events.read(reader);
+
+    while (event !== null) {
+      expect(event.kind).toBe("tick_completed");
+      event = world.events.read(reader);
+    }
+  });
+});
+
+describe("AT-I9", () => {
+  it("the click on a point behind the hero starts the cast point only once the hero faces it", () => {
+    const { world, reader } = worldWithSpells();
+    const hero = world.state.map.units.at(0);
+    fill(world, Q, W, E);
+    pressSlot(world, R);
+    world.tick();
+    const manaBefore = mana(world);
+
+    castAt(world, qwe.id, -300, 0);
+
+    for (let tick = 0; tick < TURN_TICKS; tick += 1) {
+      world.tick();
+
+      expect(hero?.state).toBe("turning");
+      expect(hero?.curr).toEqual({ x: 0, y: 0 });
+      expect(mana(world)).toBe(manaBefore);
+    }
+
+    world.tick();
+
+    expect(hero?.state).toBe("ability_cast_point");
+    expect(Math.abs(hero?.facing ?? 0)).toBeCloseTo(Math.PI);
+
+    for (let tick = 0; tick < CAST_POINT_TICKS; tick += 1) {
+      world.tick();
+    }
+
+    expect(eventsOfKind(world, reader, "cast_committed")).toMatchObject([
+      { abilityId: qwe.id },
+    ]);
+    expect(mana(world)).toBeCloseTo(manaBefore - 50);
   });
 });

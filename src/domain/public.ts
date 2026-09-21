@@ -1,4 +1,12 @@
 export {
+  castLevelOf,
+  holdsAbility,
+  isInCastRange,
+  requestCast,
+  resourcesOf,
+} from "./abilities/cast";
+export { castSystem } from "./abilities/cast.system";
+export {
   type CooldownSnapshot,
   createCooldownSnapshot,
   finalCooldownTicks,
@@ -8,6 +16,7 @@ export {
   startCooldown,
 } from "./abilities/cooldowns";
 export { hasMana, spendMana } from "./abilities/mana";
+export { spellLevelOf } from "./abilities/spell-level";
 export {
   type AnyCommand,
   type AttackMoveCommand,
@@ -103,6 +112,7 @@ export {
 } from "./entities/projectile";
 export {
   acquireUnit,
+  type CastState,
   clearPath,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
@@ -132,6 +142,7 @@ export {
 } from "./entities/world-state";
 export { createZonePool, type Zone, ZONE_CAPACITY } from "./entities/zone";
 export {
+  type CastCommittedEvent,
   type CommandRefusedEvent,
   copyDomainEvent,
   createDomainEvent,
@@ -233,7 +244,10 @@ export {
   type PathSearch,
   searchPath,
 } from "./pathing/astar";
-export { resolveDestination } from "./pathing/destination";
+export {
+  resolveDestination,
+  resolveDestinationFor,
+} from "./pathing/destination";
 export { hasLineOfSight, segmentCrossesRect } from "./pathing/line-of-sight";
 export { pathingSystem } from "./pathing/pathing.system";
 export { writeSmoothedPath } from "./pathing/smoothing";
@@ -244,12 +258,14 @@ export {
   beginCastBackswing,
   beginCastPoint,
   beginChannel,
+  beginFacing,
   beginMoving,
   clearOrder,
   endChannel,
   finishBackswing,
   issueAttackMove,
   issueAttackTarget,
+  issueCast,
   issueMove,
   type TransitionRefusal,
   type TransitionResult,

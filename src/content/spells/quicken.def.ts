@@ -11,6 +11,7 @@ export const quickenDef = {
   recipe: ["whorl", "whorl", "ember"],
   targeting: "none",
   castPointSeconds: 0.05, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [15, 14, 13, 12, 11, 10, 9], // tunable
   manaCost: [40, 45, 50, 55, 60, 65, 70], // tunable
   range: 0, // tunable

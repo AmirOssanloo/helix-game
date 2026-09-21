@@ -11,6 +11,7 @@ export const updraftDef = {
   recipe: ["whorl", "whorl", "quartz"],
   targeting: "point",
   castPointSeconds: 0.2, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [18, 17, 16, 15, 14, 13, 12], // tunable
   manaCost: [80, 90, 100, 110, 120, 130, 140], // tunable
   range: 1000, // tunable

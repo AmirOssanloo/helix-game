@@ -11,6 +11,7 @@ export const hoarfrostDef = {
   recipe: ["quartz", "quartz", "quartz"],
   targeting: "unit",
   castPointSeconds: 0.05, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [20, 19, 18, 17, 16, 15, 14], // tunable
   manaCost: [100, 110, 120, 130, 140, 150, 160], // tunable
   range: 1000, // tunable

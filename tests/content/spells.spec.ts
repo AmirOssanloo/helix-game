@@ -92,10 +92,11 @@ describe("every spell", () => {
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has a short cast point, a range only when it has a target, and no effects yet",
+    "%s has a short cast point, a backswing, a range only when it has a target, and no effects yet",
     (_id, spell) => {
       expect(spell.castPointSeconds).toBeGreaterThanOrEqual(CAST_POINT_MIN);
       expect(spell.castPointSeconds).toBeLessThanOrEqual(CAST_POINT_MAX);
+      expect(spell.backswingSeconds).toBeGreaterThanOrEqual(0);
 
       if (spell.targeting === "none") {
         expect(spell.range).toBe(0);

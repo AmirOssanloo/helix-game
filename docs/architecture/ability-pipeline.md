@@ -20,13 +20,15 @@ Because enemies and the hero share it, an enemy's silence is tested by the same 
 Every cast passes these stages, in order, over ticks:
 
 1. **Request.** A command names an ability and, if the targeting kind needs it, a target. For the hero that command comes from a slot key; for an enemy, from its behaviour.
-2. **Validate.** `domain/orders/` checks disable flags, the cooldown clock, and the mana cost, and refuses or accepts. Refusal drops the command.
+2. **Validate.** `domain/orders/` checks disable flags and the order state; the pipeline's request stage checks that the caster holds the ability, that the target is the kind the definition takes and exists, the cooldown clock, the mana cost, and, for a rooted caster, the range. Either refuses or accepts. Refusal drops the command and announces it.
 3. **Face.** A targeted ability first turns the caster toward the target at the unit's turn rate until the bearing is inside the action cone. [Movement, collision, and pathing](./movement-collision-pathing.md) owns the turn.
 4. **Cast point.** The caster holds for the definition's cast point, in ticks. An interrupt during the cast point cancels the cast, spends nothing, and starts no clock.
 5. **Commit.** Mana is spent, the cooldown clock starts, and the effects run.
 6. **Backswing.** The caster is busy for the backswing, in ticks. A new order cancels the backswing without cancelling the cast.
 
 The cooldown starts at commit, never at request. A slot that receives an ability does not start that ability's clock.
+
+A targeted ability whose target is out of range is walked toward first, like an attack, and cast on coming into range; a caster that reaches the end of its walk still out of range has nowhere closer to go, and the cast is cancelled with nothing spent. A second cast requested in the same tick replaces the first, which had spent nothing: one order at a time, never a queue.
 
 ---
 
@@ -126,6 +128,9 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | --- | --- |
 | Who casts | The pipeline in `domain/abilities/`, for the hero, enemies, summons, and later items |
 | The stages | Request, validate, face, cast point, commit, backswing |
+| Validation | Disable flags and order state in `domain/orders/`; the ability, its target, its clock, its cost, and range while rooted in the pipeline's request stage; a refusal is announced with its reason |
+| A target out of range | The caster walks toward it and casts on coming into range; standing at the end of the walk still out of range cancels the cast |
+| Two casts in one tick | The later replaces the earlier, which had spent nothing; the last legal order in a tick wins |
 | Cooldown starts | At commit, after the cast point; never when a slot receives the ability |
 | An interrupt during the cast point | Cancels the cast; nothing spent, no clock |
 | An order during the backswing | Cancels the backswing, not the cast |

@@ -10,6 +10,7 @@ import { readTunable } from "./tuning-state";
 export type SpellRecord = Readonly<{
   def: SpellDef;
   castPointTicks: number;
+  backswingTicks: number;
   /** Indexed by level from zero, one entry per entry of the definition's cooldown table. */
   cooldownTicks: readonly number[];
 }>;
@@ -32,6 +33,7 @@ const createSpellRecord = (def: SpellDef, simHz: number): SpellRecord => {
   return {
     def,
     castPointTicks: toTicks(def.castPointSeconds, simHz),
+    backswingTicks: toTicks(def.backswingSeconds, simHz),
     cooldownTicks,
   };
 };

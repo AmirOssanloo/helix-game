@@ -11,6 +11,7 @@ export const zenithDef = {
   recipe: ["ember", "ember", "ember"],
   targeting: "point",
   castPointSeconds: 0.25, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [30, 27, 24, 21, 18, 15, 12], // tunable
   manaCost: [150, 160, 170, 180, 190, 200, 210], // tunable
   range: 700, // tunable

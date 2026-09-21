@@ -1,4 +1,5 @@
 import type { EntityId } from "@shared/public";
+import type { TargetingKind } from "../definitions/spell-def";
 import type { Unit } from "../entities/unit";
 import { clearPath } from "../entities/unit";
 
@@ -8,6 +9,7 @@ export type TransitionRefusal =
   | "not_turning"
   | "no_move_in_progress"
   | "no_attack_in_progress"
+  | "no_cast_in_progress"
   | "not_in_attack_windup"
   | "not_in_cast_point"
   | "not_in_backswing"
@@ -28,6 +30,9 @@ export type TransitionResult = "ok" | TransitionRefusal;
  * or `ability_cast_point`, only a stop or a disable takes it out, and any other order is
  * refused rather than queued.
  *
+ * The cast record beside the order follows it: a new order or a stop forgets the cast that
+ * was pending, the cast point keeps it, and the commit that ends the cast point clears it.
+ *
  * Every function that refuses does so before writing anything.
  */
 
@@ -35,7 +40,28 @@ export type TransitionResult = "ok" | TransitionRefusal;
 const isInCastPoint = (unit: Readonly<Unit>): boolean =>
   unit.state === "attack_windup" || unit.state === "ability_cast_point";
 
-/** The step shared by every order: the previous order, its path, and its turn are gone, and the unit faces before it acts. */
+/** Forgets the cast that was pending, so nothing of it is spent or aimed. */
+const clearCast = (unit: Unit): void => {
+  unit.cast.abilityId = null;
+  unit.cast.targetKind = "none";
+  unit.cast.position.x = 0;
+  unit.cast.position.y = 0;
+  unit.cast.targetId = null;
+};
+
+/** Forgets the order, its path, and its turn, and leaves the unit idle where it stands, facing where it faced. */
+const dropOrder = (unit: Unit): void => {
+  unit.order.kind = "none";
+  unit.order.destination.x = 0;
+  unit.order.destination.y = 0;
+  unit.order.targetId = null;
+  unit.state = "idle";
+  unit.turnTicks = 0;
+  clearPath(unit.path);
+  unit.needsPath = false;
+};
+
+/** The step shared by every order: the previous order, its path, its turn, and any cast pending under it are gone, and the unit faces before it acts. */
 const takeOrder = (unit: Unit): void => {
   unit.order.targetId = null;
   unit.order.destination.x = 0;
@@ -44,6 +70,7 @@ const takeOrder = (unit: Unit): void => {
   unit.turnTicks = 0;
   clearPath(unit.path);
   unit.needsPath = false;
+  clearCast(unit);
 };
 
 /**
@@ -105,20 +132,48 @@ export const issueAttackMove = (
 };
 
 /**
+ * Replaces the current order with a cast of `abilityId` aimed by `targetKind` at (`x`, `y`)
+ * and, for a unit target, at `targetId`. The order's destination starts at the aim; the cast
+ * rule moves it to a legal approach point when the aim is out of range. The unit turns to
+ * face before the cast point. Legal unless a cast point is in progress.
+ */
+export const issueCast = (
+  unit: Unit,
+  abilityId: string,
+  targetKind: TargetingKind,
+  x: number,
+  y: number,
+  targetId: EntityId | null,
+): TransitionResult => {
+  if (isInCastPoint(unit)) {
+    return "cast_point_in_progress";
+  }
+
+  takeOrder(unit);
+  unit.order.kind = "cast";
+  unit.order.destination.x = x;
+  unit.order.destination.y = y;
+  unit.order.targetId = targetId;
+  unit.cast.abilityId = abilityId;
+  unit.cast.targetKind = targetKind;
+  unit.cast.position.x = x;
+  unit.cast.position.y = y;
+  unit.cast.targetId = targetId;
+  unit.needsPath = targetKind === "point" || targetKind === "unit";
+
+  return "ok";
+};
+
+/**
  * Clears the order and returns the unit to `idle` from any state: the stop command, and also
  * what a stun does and what happens when an attack target stops existing. A cast point in
- * progress is cancelled; a backswing or a channel ends. Facing is left where it is, so the
- * next order turns from the yaw the unit stopped at; the path and the turn go with the order.
+ * progress is cancelled with the cast forgotten; a backswing or a channel ends. Facing is
+ * left where it is, so the next order turns from the yaw the unit stopped at; the path and
+ * the turn go with the order.
  */
 export const clearOrder = (unit: Unit): TransitionResult => {
-  unit.order.kind = "none";
-  unit.order.destination.x = 0;
-  unit.order.destination.y = 0;
-  unit.order.targetId = null;
-  unit.state = "idle";
-  unit.turnTicks = 0;
-  clearPath(unit.path);
-  unit.needsPath = false;
+  dropOrder(unit);
+  clearCast(unit);
 
   return "ok";
 };
@@ -130,6 +185,29 @@ export const beginMoving = (unit: Unit): TransitionResult => {
   }
 
   unit.state = "moving";
+
+  return "ok";
+};
+
+/**
+ * The unit is within range of its cast target and stops where it stands to face it: the path
+ * and any request for one are gone, and a unit that was walking starts its turn afresh.
+ * Legal while turning toward or moving to a cast order.
+ */
+export const beginFacing = (unit: Unit): TransitionResult => {
+  const isUnderway = unit.state === "turning" || unit.state === "moving";
+
+  if (!isUnderway || unit.order.kind !== "cast") {
+    return "no_cast_in_progress";
+  }
+
+  if (unit.state === "moving") {
+    unit.turnTicks = 0;
+  }
+
+  unit.state = "turning";
+  clearPath(unit.path);
+  unit.needsPath = false;
 
   return "ok";
 };
@@ -174,28 +252,29 @@ export const beginAttackBackswing = (unit: Unit): TransitionResult => {
 };
 
 /**
- * A targeted cast starts its cast point. The order is cleared: the cast takes the unit away
- * from a move or an attack, cancels a backswing, and interrupts a channel. Refused while a
- * cast point is already in progress.
+ * A cast starts its cast point. The order is cleared and the cast record kept: the cast takes
+ * the unit away from a move or an attack, cancels a backswing, and interrupts a channel.
+ * Refused while a cast point is already in progress.
  */
 export const beginCastPoint = (unit: Unit): TransitionResult => {
   if (isInCastPoint(unit)) {
     return "cast_point_in_progress";
   }
 
-  clearOrder(unit);
+  dropOrder(unit);
   unit.state = "ability_cast_point";
 
   return "ok";
 };
 
-/** The cast point elapsed and the cast committed. Legal from `ability_cast_point`. */
+/** The cast point elapsed and the cast committed: the cast record is spent and forgotten. Legal from `ability_cast_point`. */
 export const beginCastBackswing = (unit: Unit): TransitionResult => {
   if (unit.state !== "ability_cast_point") {
     return "not_in_cast_point";
   }
 
   unit.state = "ability_backswing";
+  clearCast(unit);
 
   return "ok";
 };

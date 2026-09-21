@@ -11,6 +11,7 @@ export const bolideDef = {
   recipe: ["ember", "ember", "whorl"],
   targeting: "point",
   castPointSeconds: 0.3, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [25, 23, 21, 19, 17, 15, 13], // tunable
   manaCost: [150, 160, 170, 180, 190, 200, 210], // tunable
   range: 700, // tunable

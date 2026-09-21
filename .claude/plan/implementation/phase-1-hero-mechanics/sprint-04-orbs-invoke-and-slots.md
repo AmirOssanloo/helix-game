@@ -107,7 +107,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Layer | domain, simulation, tests |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/abilities/cast.ts` and `castSystem`: the six stages from the ability pipeline page over a `cast` command, with commit spending mana, starting the clock, and emitting `cast_committed`; the effect list is run but empty. Facing reuses the movement module's turn. An interrupt (stop, a debug stun flag, death) during the cast point cancels with nothing spent; a new order during the backswing cancels the backswing only. A `cast` command for a targeted slot is what the mapper sends after the click; the domain never sees the cursor. Targeted stubs whose target is out of range path toward it and cast on arrival, like an attack.
 
@@ -125,14 +125,16 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
+> Edited while building: the spell definition gained a backswing in seconds, since the pipeline page's sixth stage needs a length and the stubs had none; every stub carries a placeholder. The cast's aim lives on a cast record beside the order, so it survives the order being cleared when the cast point begins; the order itself gains a `cast` kind for the approach and the turn to face, and the state machine gains `issueCast` and `beginFacing`. The validator in `domain/orders/` keeps to flags and order state, and the pipeline's request stage refuses the rest, as the kit already did for the composer; the ability pipeline and commands pages now say so. The level a spell's tables are read at is the lowest orb level in its recipe, the proposed answer to Q22, decided at commit; the kit's slot descriptor fills its cost from it. A slot key on a prepared spell is a cast with no target, taken for a no-target spell and refused for a targeted one, so the key alone never casts what needs a click. A stun is read from the unit's disable flags, which a test sets until the status system arrives; death is the hero released from the pool. AT-C5 is read as the domain sees it: the cast command takes the hero off its move on the tick it is consumed, which is the tick the cast point begins when the aim is ahead and in range, and no command at all leaves the move running. Two casts in one tick: the later replaces the earlier, and the spells page row that said the second waits now says so. `describeSlot` on the kit takes the spell table.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| AT-O1 to O5 (O4 pending the channel stub in sprint 06), AT-I1 to I9, AT-M4, AT-C5 green | |
-| Actual days per ticket | T01 1 · T02 1 · T03 1 · T04 |
+| AT-O1 to O5 (O4 pending the channel stub in sprint 06), AT-I1 to I9, AT-M4, AT-C5 green | Green, 2026-09-21, in `pnpm test`: AT-O1, O2, O3, O5 in `tests/simulation/at-orbs.spec.ts`; AT-I1 to I9 in `tests/simulation/at-invoke.spec.ts`; AT-M4 in `tests/simulation/at-locomotion.spec.ts`; AT-C5 in `tests/simulation/at-commands.spec.ts`. AT-O4 waits for the channel stub |
+| Actual days per ticket | T01 1 · T02 1 · T03 1 · T04 0.5 |
 
 ## Risks in this sprint
 

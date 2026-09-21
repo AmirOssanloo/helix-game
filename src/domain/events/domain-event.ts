@@ -25,6 +25,7 @@ export type DomainEvent =
   | OrbAddedEvent
   | SpellInvokedEvent
   | SlotsChangedEvent
+  | CastCommittedEvent
   | CommandRefusedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
@@ -39,7 +40,10 @@ export type SpellInvokedEvent = EventFields & { kind: "spell_invoked" };
 /** The prepared slots hold something different: an insert, a shift, an eviction, or a swap. The view reads them from the world. */
 export type SlotsChangedEvent = EventFields & { kind: "slots_changed" };
 
-/** A player command was refused for `reason`; `slot` names the key when it was a slot key, so the view can flash it. */
+/** A cast of `abilityId` committed: its cast point ended, its mana is spent, its clock has started, and its effects ran. */
+export type CastCommittedEvent = EventFields & { kind: "cast_committed" };
+
+/** A player command was refused for `reason`; `slot` names the key when it was a slot key and `abilityId` the spell when it was a cast, so the view can flash the square. */
 export type CommandRefusedEvent = EventFields & { kind: "command_refused" };
 
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */

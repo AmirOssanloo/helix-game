@@ -11,6 +11,7 @@ export const siphonDef = {
   recipe: ["whorl", "whorl", "whorl"],
   targeting: "point",
   castPointSeconds: 0.15, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [24, 22, 20, 18, 16, 14, 12], // tunable
   manaCost: [100, 110, 120, 130, 140, 150, 160], // tunable
   range: 1000, // tunable

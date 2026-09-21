@@ -71,7 +71,7 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 | Target out of range at commit | The hero paths toward the target and casts on arrival, like an attack. S cancels |
 | Cast while rooted | Allowed for spells in range. Out-of-range targets are refused, since the hero cannot walk |
 | Cast while disarmed | Allowed. Disarm blocks attacks, not spells |
-| Two spells thrown in the same tick | Applied in key order; the second waits for the first cast point, then runs if still legal |
+| Two spells thrown in the same tick | Applied in key order; the second replaces the first, which had spent nothing. One order at a time, never a queue |
 | Zenith or Siphon delay with no enemy left | The spell resolves on empty ground; mana and cooldown were already spent |
 | Updraft lifts a unit with Hoarfrost | Hoarfrost's duration keeps counting while lifted |
 | Emberling out when the hero dies | The summon expires immediately |

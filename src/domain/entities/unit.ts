@@ -1,6 +1,7 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { Attributes, Stats } from "../definitions/form-def";
+import type { TargetingKind } from "../definitions/spell-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
@@ -71,6 +72,20 @@ export type ModifierEntry = {
 };
 
 /**
+ * The cast a unit has requested and not yet committed: the ability, what it is aimed at by
+ * the ability's targeting kind, and the point or the unit it is aimed at. A `null` ability
+ * is no cast. The order carries the approach toward the target; this record carries the
+ * aim, so it survives the order being cleared when the cast point begins, and it is gone
+ * at commit.
+ */
+export type CastState = {
+  abilityId: string | null;
+  targetKind: TargetingKind;
+  position: Vec2;
+  targetId: EntityId | null;
+};
+
+/**
  * The waypoints a unit is walking, a fixed-capacity buffer the pathing fills and the movement
  * system follows. `next` is the index of the waypoint the unit is heading for; the path is
  * complete when it reaches `count`.
@@ -105,6 +120,10 @@ export type Unit = {
   path: Path;
   /** Whether the unit is waiting for the pathing system to plan its path. It keeps following `path` while it waits. */
   needsPath: boolean;
+  /** The cast under way, from its request to its commit. */
+  cast: CastState;
+  /** The tick the cast point or the backswing under way ends. Read in those states only. */
+  stageEndsAtTick: Tick;
   modifiers: readonly ModifierEntry[];
   /** Level, experience, and unspent skill points. Continuous across a form swap. */
   progression: Progression;
@@ -206,6 +225,13 @@ const createUnit = (): Unit => {
     state: "idle",
     path: createPath(),
     needsPath: false,
+    cast: {
+      abilityId: null,
+      targetKind: "none",
+      position: { x: 0, y: 0 },
+      targetId: null,
+    },
+    stageEndsAtTick: 0,
     modifiers,
     progression: { level: 1, experience: 0, skillPoints: 0 },
     attributes: { strength: 0, agility: 0, intelligence: 0 },
@@ -255,6 +281,12 @@ const clearUnit = (unit: Unit): void => {
   unit.state = "idle";
   clearPath(unit.path);
   unit.needsPath = false;
+  unit.cast.abilityId = null;
+  unit.cast.targetKind = "none";
+  unit.cast.position.x = 0;
+  unit.cast.position.y = 0;
+  unit.cast.targetId = null;
+  unit.stageEndsAtTick = 0;
 
   for (let row = 0; row < unit.modifiers.length; row += 1) {
     const entry = unit.modifiers[row];

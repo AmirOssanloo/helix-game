@@ -1,7 +1,10 @@
 import type { DeepReadonly } from "@shared/public";
 import { assert } from "@shared/public";
+import { spellLevelOf } from "../abilities/spell-level";
 import { SLOT_COUNT } from "../commands/command";
 import { ORB_IDS } from "../definitions/spell-def";
+import type { SpellRecord } from "../definitions/spell-state";
+import { entryAtLevel } from "../definitions/spell-state";
 import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { KitState } from "../entities/world-state";
@@ -67,6 +70,7 @@ const describeSlot = (
   slot: number,
   state: DeepReadonly<KitState>,
   cooldowns: ReadonlyMap<string, Tick>,
+  spells: ReadonlyMap<string, SpellRecord>,
   tuning: ReadonlyMap<string, number>,
   out: SlotDescriptor,
 ): SlotDescriptor => {
@@ -96,6 +100,10 @@ const describeSlot = (
   }
 
   const prepared = state.prepared[preparedIndexOf(slot)];
+  const record =
+    prepared === undefined || prepared === null
+      ? undefined
+      : spells.get(prepared);
 
   out.kind = "prepared";
   out.abilityId = prepared === undefined ? null : prepared;
@@ -103,9 +111,13 @@ const describeSlot = (
     prepared === undefined || prepared === null
       ? 0
       : (cooldowns.get(prepared) ?? 0);
-  // The cost is the definition's mana table at the spell's level; the cast pipeline, which
-  // decides the level, fills this.
-  out.cost = 0;
+  out.cost =
+    record === undefined
+      ? 0
+      : entryAtLevel(
+          record.def.manaCost,
+          spellLevelOf(state.orbLevels, record.def.recipe),
+        );
 
   return out;
 };

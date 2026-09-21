@@ -1,7 +1,14 @@
 import type { Rect, Vec2 } from "@shared/public";
 import { assert, clamp } from "@shared/public";
+import type { Unit } from "../entities/unit";
+import type { World } from "../entities/world-state";
 import type { WalkabilityView } from "../map/walkability";
-import { columnOf, isCellBlocked, rowOf } from "../map/walkability";
+import {
+  columnOf,
+  isCellBlocked,
+  radiusClassOf,
+  rowOf,
+} from "../map/walkability";
 
 /**
  * How many times the resolver pushes a point out of every inflated obstacle before it gives
@@ -253,4 +260,29 @@ export const resolveDestination = (
   }
 
   return out;
+};
+
+/**
+ * The legal point (`x`, `y`) resolves to for `unit` on the loaded map: a point on an obstacle
+ * lands on its nearest walkable edge for the unit's radius class, a point outside the map on
+ * the nearest point inside. Written into `out`.
+ */
+export const resolveDestinationFor = (
+  world: World,
+  unit: Readonly<Unit>,
+  x: number,
+  y: number,
+  out: Vec2,
+): Vec2 => {
+  const grid = world.map.walkability;
+
+  return resolveDestination(
+    grid,
+    radiusClassOf(grid, unit.collisionRadius),
+    world.map.bounds,
+    world.map.obstacles,
+    x,
+    y,
+    out,
+  );
 };

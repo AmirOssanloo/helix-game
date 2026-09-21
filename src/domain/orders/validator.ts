@@ -5,10 +5,14 @@ import type { Unit } from "../entities/unit";
 /**
  * Why a command was refused. A disable names the flag that blocked it; the cast-point reason
  * says the unit is committed to an attack point or a cast point; the two invalid reasons are
- * boundary checks on a payload no mapper should produce and a replay file might. The rest are
- * the active kit's, decided when it resolves a slot key after validation: the orb has no
+ * boundary checks on a payload no mapper should produce and a replay file might. The next
+ * are the active kit's, decided when it resolves a slot key after validation: the orb has no
  * level yet, the buffer is short of full, no spell answers to the buffer, the composer costs
- * more mana than the form has or is still on its clock, or the slot holds nothing.
+ * more mana than the form has or is still on its clock, or the slot holds nothing. The last
+ * are the cast pipeline's request stage: no spell has the id, no slot of the kit holds it,
+ * the target is not the kind the spell takes, the unit it names is gone, or the unit is
+ * rooted with the target out of range. The clock and the mana reasons are shared with the
+ * composer.
  */
 export type RefusalReason =
   | "stunned"
@@ -23,7 +27,12 @@ export type RefusalReason =
   | "no_spell_for_recipe"
   | "not_enough_mana"
   | "on_cooldown"
-  | "empty_slot";
+  | "empty_slot"
+  | "unknown_ability"
+  | "ability_not_held"
+  | "invalid_target"
+  | "target_not_found"
+  | "out_of_range";
 
 /** What validation returns: the command may apply, or the reason it may not. */
 export type ValidationResult = "ok" | RefusalReason;
@@ -39,8 +48,9 @@ const isInCastPoint = (unit: Readonly<Unit>): boolean =>
 /**
  * Decides whether `unit` may act on `command` this tick, from its disable flags and its order
  * state. Reads nothing else and writes nothing: a refusal is a value, and the caller drops the
- * command. Cooldown and mana checks join the `cast` branch with the cast pipeline. A tuning
- * change is not a unit's to accept; the tuning state validates it, so it never arrives here.
+ * command. What a cast needs beyond that, the spell, its clock, its cost, its target, and its
+ * range, is the cast pipeline's request stage to refuse. A tuning change is not a unit's to
+ * accept; the tuning state validates it, so it never arrives here.
  *
  * Stun refuses everything, the stop included, so a stunned unit keeps whatever it was doing.
  * Silence refuses the ability keys and leaves movement and attacks alone. Root refuses a move

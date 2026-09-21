@@ -11,6 +11,7 @@ export const waneDef = {
   recipe: ["quartz", "quartz", "whorl"],
   targeting: "none",
   castPointSeconds: 0.1, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [30, 28, 26, 24, 22, 20, 18], // tunable
   manaCost: [75, 80, 85, 90, 95, 100, 105], // tunable
   range: 0, // tunable

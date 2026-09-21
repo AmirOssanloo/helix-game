@@ -27,9 +27,9 @@ export type SpellEffectDef = Readonly<{ kind: "named"; key: string }>;
 /**
  * One of the hero's spells as content writes it. The recipe is the orbs that compose it,
  * written as the buffer would hold them; order is irrelevant, since the composer reads it as
- * a count of each orb. The cast point and the cooldown table are seconds, converted to ticks
- * once when a world is created; the cooldown and mana tables are indexed by level, one entry
- * per orb level from one to the cap. The range is world units, zero for a spell with no
+ * a count of each orb. The cast point, the backswing, and the cooldown table are seconds,
+ * converted to ticks once when a world is created; the cooldown and mana tables are indexed
+ * by level, one entry per orb level from one to the cap. The range is world units, zero for a spell with no
  * target. The tint is the colour the spell is drawn in and the frame is its shape.
  */
 export type SpellDef = Readonly<{
@@ -37,6 +37,8 @@ export type SpellDef = Readonly<{
   recipe: readonly OrbId[];
   targeting: TargetingKind;
   castPointSeconds: number;
+  /** How long the caster is busy after commit. A new order cancels it; the cast already landed. */
+  backswingSeconds: number;
   cooldownSeconds: readonly number[];
   manaCost: readonly number[];
   range: number;

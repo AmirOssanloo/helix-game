@@ -44,7 +44,7 @@ The buffer is consumed at the start of the tick, sorted by timestamp. Commands o
 
 ### Validation
 
-A command is a request. The validator in `domain/orders/` decides whether the unit may act on it this tick: is it stunned, silenced, rooted, mid-cast; is the ability off cooldown; is there mana. The validator reads disable flags the status system computed earlier in the tick. A refused command is dropped and, where the player would want to know, an event says why.
+A command is a request. The validator in `domain/orders/` decides whether the unit may act on it this tick: is it stunned, silenced, rooted, mid-cast. The validator reads disable flags the status system computed earlier in the tick. What a slot key or a cast needs beyond that, the ability, its clock, its cost, its target, is the active kit's or the ability pipeline's to refuse when the command is applied. A refused command is dropped and, where the player would want to know, an event says why.
 
 ### Application
 
@@ -100,7 +100,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Slot keys | One command variant carrying a slot index 1 to 6; the active kit resolves it, the mapper and the union never name a mechanic |
 | Pointer picks | World position resolved at event time, stored on the command |
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, then arrival order |
-| Validation | `domain/orders/` decides per tick from disable flags, cooldowns, and cost; a tuning change is checked against the tuning state in `domain/definitions/`; a refusal is dropped and announced as a refused-command event with its reason |
+| Validation | `domain/orders/` decides per tick from disable flags and order state; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a refusal is dropped and announced as a refused-command event with its reason |
 | Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation: a tuning change to run scope, every other to the hero; the last legal order in a tick wins |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
 | Tuning changes | A `SetTuning` command carrying a key of the tuning table and a value in the designer's units, recorded in the input log, converted once when applied |

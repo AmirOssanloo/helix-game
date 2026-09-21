@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { arenaDef } from "@content/public";
+import { arenaDef, heroDef } from "@content/public";
+import type { Unit } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
+  makeFormDef,
   makeMapDef,
+  makeRegistry,
+  makeSpellDef,
   makeWorld,
   spawnHero,
   submit,
@@ -13,6 +17,33 @@ const HULL = 27;
 
 /** A wall standing across x 1000 to 1200. */
 const WALL = { minX: 1000, minY: -1000, maxX: 1200, maxY: 1000 };
+
+/** A point spell the hero holds in D, so a click can throw it. */
+const pointSpell = makeSpellDef.build({ targeting: "point" });
+
+const form = makeFormDef.build({ abilities: [pointSpell.id] });
+
+/** A world whose hero holds the point spell in D, at the origin facing +X. */
+const worldHoldingD = (): { world: Simulation; hero: Unit } => {
+  const world = makeWorld({
+    seed: 1,
+    registry: makeRegistry({
+      hero: { ...heroDef, forms: [form.id] },
+      forms: [form],
+      spells: [pointSpell],
+    }),
+  });
+  const hero = spawnHero(world, { facing: 0, orbLevels: [1, 1, 1] });
+  const record = world.state.run.forms[0];
+
+  if (record === undefined) {
+    throw new Error("The hero has a form");
+  }
+
+  record.kit.prepared[0] = pointSpell.id;
+
+  return { world, hero };
+};
 
 const moveTo = (world: Simulation, x: number, y: number): void => {
   submit(world, {
@@ -158,5 +189,51 @@ describe("map: a move order crosses the arena around obstacles", () => {
     expect(hero.state).toBe("idle");
     expect(hero.curr).toEqual({ x: 3800, y: 3800 });
     expect(closest).toBeGreaterThanOrEqual(HULL - 1e-6);
+  });
+});
+
+describe("AT-C5", () => {
+  it("a targeting cursor opened and closed over a move sends nothing, and the move runs on", () => {
+    const { world, hero } = worldHoldingD();
+    moveTo(world, 1000, 0);
+    world.tick();
+    world.tick();
+    const before = hero.curr.x;
+
+    world.tick();
+    world.tick();
+    world.tick();
+
+    expect(hero.state).toBe("moving");
+    expect(hero.order.destination).toEqual({ x: 1000, y: 0 });
+    expect(hero.curr.x).toBeGreaterThan(before);
+  });
+
+  it("the click's cast command takes the hero off its move on the tick its cast point begins, and not before", () => {
+    const { world, hero } = worldHoldingD();
+    moveTo(world, 1000, 0);
+    world.tick();
+    world.tick();
+    world.tick();
+    const atClick = hero.curr.x;
+
+    expect(atClick).toBeGreaterThan(0);
+
+    submit(world, {
+      kind: "cast",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      abilityId: pointSpell.id,
+      target: { kind: "point", position: { x: 500, y: 0 } },
+    });
+    world.tick();
+
+    expect(hero.state).toBe("ability_cast_point");
+    expect(hero.order.kind).toBe("none");
+    expect(hero.curr.x).toBe(atClick);
+
+    tickUntil(world, () => hero.state === "idle", 20);
+
+    expect(hero.curr.x).toBe(atClick);
   });
 });

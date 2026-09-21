@@ -11,6 +11,7 @@ export const glacierDef = {
   recipe: ["quartz", "quartz", "ember"],
   targeting: "point",
   castPointSeconds: 0.2, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [16, 15, 14, 13, 12, 11, 10], // tunable
   manaCost: [125, 135, 145, 155, 165, 175, 185], // tunable
   range: 900, // tunable

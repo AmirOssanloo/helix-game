@@ -11,6 +11,7 @@ export const clarionDef = {
   recipe: ["quartz", "whorl", "ember"],
   targeting: "point",
   castPointSeconds: 0.15, // tunable
+  backswingSeconds: 0.1, // tunable
   cooldownSeconds: [22, 20, 18, 16, 14, 12, 10], // tunable
   manaCost: [125, 135, 145, 155, 165, 175, 185], // tunable
   range: 700, // tunable
