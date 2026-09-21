@@ -152,21 +152,23 @@ describe("the pointer", () => {
     ]);
   });
 
-  it("right click on a summon produces nothing", () => {
-    const { world, driver, mapper } = arrange();
+  describe("AT-C3", () => {
+    it("right click on a summon produces nothing: no follow, no move", () => {
+      const { world, driver, mapper } = arrange();
 
-    standUnit(world, "summon", 300, 0);
-    mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+      standUnit(world, "summon", 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
 
-    expect(driver.commands).toEqual([]);
-  });
+      expect(driver.commands).toEqual([]);
+    });
 
-  it("right click on the hero produces nothing", () => {
-    const { driver, mapper } = arrange();
+    it("right click on the hero produces nothing", () => {
+      const { driver, mapper } = arrange();
 
-    mapper.pointerDown(RIGHT_BUTTON, 0, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 0, 0);
 
-    expect(driver.commands).toEqual([]);
+      expect(driver.commands).toEqual([]);
+    });
   });
 
   it("right click outside the map is a move clamped to the map's edge", () => {

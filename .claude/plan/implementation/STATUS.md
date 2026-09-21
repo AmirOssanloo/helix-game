@@ -8,14 +8,14 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 | | |
 | --- | --- |
-| **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
-| **Active sprint** | [06 — Developer panel, replay, stress test, and the phase gate](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md) |
-| **Next ticket** | P1-S06-T04 — The phase 1 gate |
+| **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md): the gate was walked 2026-09-21 and closes when the person rows below hold; work goes on into phase 2 meanwhile |
+| **Active sprint** | [07 — The spell catalogue and the ability pipeline](./phase-2-spells-and-attack/sprint-07-spell-catalogue-and-the-ability-pipeline.md) |
+| **Next ticket** | P2-S07-T01 — The spell catalogue |
 | **In progress** | none |
-| **Last closed ticket** | P1-S06-T03 — Replay in Node, the determinism test, the stress test |
-| **Last closed sprint** | [05 — Input mapper, views, camera, and HUD](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md), 2026-09-21: all thirteen section 15 rows pass, the bench holds one draw call, every ticket done |
+| **Last closed ticket** | P1-S06-T04 — The phase 1 gate |
+| **Last closed sprint** | [06 — Developer panel, replay, stress test, and the phase gate](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md), 2026-09-21: the phase 1 gate walked row by row in Chrome on the Apple M1 laptop, every row holding there, M2 reached; the draw-call inspector row and the bar on the reference laptop wait on a person |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
-| **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
+| **Last milestone reached** | M2, the phase 1 gate, 2026-09-21: 38 acceptance tests green by name, a five-minute session replays identically in the browser and in Node, and 300 units hold the tick budget at a 1.7 ms mean on the Apple M1 laptop. M1 still waits on the reference laptop |
 
 ---
 
@@ -23,10 +23,10 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 Nothing an agent can do moves these rows. Each one says what to do, where the result goes, and what it unblocks.
 
-- [ ] **Sprint 06 exit: the draw-call readout against the WebGL inspector.** Run `pnpm bench` in Chrome with a WebGL inspector extension, capture one frame, and compare its draw-call count with the DRAWS row of the bench readout; then open `pnpm dev`, and compare one frame with the panel's "Draw calls total / world" row. Write both pairs into the draw-call row of the sprint 06 [exit table](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md#sprint-exit). Unblocks: that row of the sprint 06 exit. Blocks no ticket.
+- [ ] **Sprint 06 exit: the draw-call readout against the WebGL inspector.** Run `pnpm bench` in Chrome with a WebGL inspector extension, capture one frame, and compare its draw-call count with the DRAWS row of the bench readout; then open `pnpm dev`, and compare one frame with the panel's "Draw calls total / world" row. Write both pairs into the draw-call row of the sprint 06 [exit table](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md#sprint-exit). Unblocks: that row of the sprint 06 exit and the Phaser render row of the phase 1 gate. Blocks no ticket.
 - [ ] **Milestone M1: the bench on the reference laptop.** Run `pnpm bench` on the reference laptop in Chrome, then in Safari, each twice: once as configured, once with `?textures=default` on the address. Record fps, render ms, draw calls, and heap for each of the four runs in the bench row of the sprint 02 [exit table](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md#sprint-exit) and in the bench row of the phase 1 [exit record](./phase-1-hero-mechanics/README.md#exit-record). Unblocks: M1 and one row of the phase 1 gate. Blocks no ticket.
 
-Coming up in sprint 06 on T04, the phase gate: a five-minute session recorded with the panel open and replayed, the stress test's mean tick on the reference laptop, and the four-browser run at 300 units with the walk-through repeated in the arena.
+- [ ] **Phase 1 gate: the bar in four browsers on the reference laptop.** Open `pnpm dev` on the reference laptop in Chrome, then Firefox, Safari, and Edge; in each, open the panel, spawn 300 units, turn the collision and bound overlays on, walk the hero about for 30 seconds, and take a screenshot of the Readouts group. Record frame rate, tick mean and max, render mean and max, draw calls, pool misses, and view misses per browser in the bar row of the sprint 06 [gate walk](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md#phase-1-gate-walk). In Chrome, also record a 30-second allocation sampler in the performance panel with the 300 units live and note whether the heap is flat. Then run `pnpm test -t "stress"` there and record green, or the failure's mean, in the stress row of the same table and the phase 1 [exit record](./phase-1-hero-mechanics/README.md#exit-record). Unblocks: the bar row, and with it the phase 1 close. Blocks no ticket.
 
 ## How to update this page
 

@@ -40,6 +40,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
 | Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, spawn points, and spawn data for one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
+| Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 
 The tuning table is the one definition that becomes state: the world copies it at creation so a tuning command can change a value mid-session and the change lands in the input log.
 

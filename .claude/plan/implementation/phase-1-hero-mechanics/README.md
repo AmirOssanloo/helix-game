@@ -39,8 +39,12 @@ Right-click to walk, watch the hero turn first. Press Q W E and see orbs orbit. 
 
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | | |
-| Bench numbers (fps, render ms, draw calls, heap) | Sprint 02, Chrome on an Apple M1 laptop: 60 fps, 0.67 ms render (1.7 max), 1 draw call, heap flat, with `maxTextures` 1; 60 fps, 0.9 ms (1.3 max), 1 draw call, heap flat, with the default. Safari and the reference laptop outstanding | the engineer running the plan |
-| Stress test mean tick | | |
-| Sized versus actual | | |
-| Largest miss | | |
+| Gate rows | Walked 2026-09-21; the evidence per row is in the [sprint 06 gate walk](./sprint-06-developer-panel-replay-and-phase-gate.md#phase-1-gate-walk). Eight of nine rows hold. The ninth, the bar, holds in Chrome on the Apple M1 laptop and waits on the reference laptop in four browsers, the WebGL inspector check, and the allocation sampler, each a row under "Waiting on a person" in `STATUS.md`. The phase closes when those hold | the engineer running the plan |
+| Bench numbers (fps, render ms, draw calls, heap) | Sprint 02, Chrome on an Apple M1 laptop: 60 fps, 0.67 ms render (1.7 max), 1 draw call, heap flat, with `maxTextures` 1; 60 fps, 0.9 ms (1.3 max), 1 draw call, heap flat, with the default. Sprint 06, the same machine and browser after the overlays, 90 s as configured: 60 fps, 0.8 to 0.9 ms, 1 draw call, 1 texture, heap 59 to 60 MB flat. Safari and the reference laptop outstanding | the engineer running the plan |
+| Stress test mean tick | 1.67 to 1.80 ms over 300 measured ticks in four of five runs on the Apple M1 laptop, 2.84 in the fifth, which held one 61 ms tick; the max otherwise 7.8 to 9.0 ms. The reference laptop's number outstanding | the engineer running the plan |
+| Sized versus actual | Sized 21.1 days: 20 planned and 1.1 unplanned (P1-S02-T05 0.5, P1-S05-T04 0.5, P1-S05-T05 0.1). Actual 18.6: sprint 02 took 4.5 against 4.5, sprint 03 4 against 4, sprint 04 3.5 against 4, sprint 05 3.1 against 4.6, sprint 06 3.5 against 4. Ratio 0.88 | the engineer running the plan |
+| Largest miss | No ticket went over its size. Five landed half a day under: P1-S04-T02, P1-S05-T01, P1-S05-T02, P1-S05-T03, and P1-S06-T02. The widest sprint gap is sprint 05, sized 4.6 and done in 3.1. A ratio of 0.88 after phase 0's 0.47 says the scale is about right once the toolchain is in; phase 2 keeps it | the engineer running the plan |
+
+| Phase | Sized | Actual | Ratio | Largest miss |
+| --- | --- | --- | --- | --- |
+| 1 | 21.1 | 18.6 | 0.88 | Sprint 05: sized 4.6, actual 3.1 |
