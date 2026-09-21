@@ -5,7 +5,10 @@ import type { Unit } from "../entities/unit";
 /**
  * Why a command was refused. A disable names the flag that blocked it; the cast-point reason
  * says the unit is committed to an attack point or a cast point; the two invalid reasons are
- * boundary checks on a payload no mapper should produce and a replay file might.
+ * boundary checks on a payload no mapper should produce and a replay file might. The rest are
+ * the active kit's, decided when it resolves a slot key after validation: the orb has no
+ * level yet, the buffer is short of full, no spell answers to the buffer, the composer costs
+ * more mana than the form has or is still on its clock, or the slot holds nothing.
  */
 export type RefusalReason =
   | "stunned"
@@ -14,7 +17,13 @@ export type RefusalReason =
   | "disarmed"
   | "cast_point_in_progress"
   | "invalid_slot"
-  | "invalid_destination";
+  | "invalid_destination"
+  | "orb_not_learned"
+  | "buffer_not_full"
+  | "no_spell_for_recipe"
+  | "not_enough_mana"
+  | "on_cooldown"
+  | "empty_slot";
 
 /** What validation returns: the command may apply, or the reason it may not. */
 export type ValidationResult = "ok" | RefusalReason;

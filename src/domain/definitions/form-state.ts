@@ -4,6 +4,7 @@ import { ORB_COUNT } from "../entities/world-state";
 import { attributesAt, deriveStats } from "../stats/derived";
 import type { Attributes, FormDef, Stats } from "./form-def";
 import type { HeroDef } from "./hero-def";
+import { readTunable } from "./tuning-state";
 
 /**
  * `def` with every per-second rate divided into a per-tick one. This is the one conversion
@@ -40,33 +41,53 @@ const fullAtLevelOne = (def: FormDef): Stats => {
   return deriveStats(def, attributesAt(def, 1, attributes), [], stats);
 };
 
-/** One form's record: its definition in simulation units, full health and mana at level one, every orb skill at level zero, and no armory. */
-const createFormRecord = (def: FormDef, simHz: number): FormRecord => {
-  const converted = toSimulationUnits(def, simHz);
+/**
+ * One form's record: its definition in simulation units, full health and mana at level one,
+ * every orb skill at level zero, an empty orb buffer and empty prepared slots sized from the
+ * tuning table, and no armory.
+ */
+const createFormRecord = (
+  def: FormDef,
+  tuning: ReadonlyMap<string, number>,
+): FormRecord => {
+  const converted = toSimulationUnits(def, readTunable(tuning, "sim_hz"));
   const full = fullAtLevelOne(converted);
   const orbLevels: number[] = [];
+  const orbs: number[] = [];
+  const prepared: (string | null)[] = [];
+  const orbCapacity = readTunable(tuning, "orb_capacity");
+  const preparedSlots = readTunable(tuning, "prepared_slots");
 
   for (let orb = 0; orb < ORB_COUNT; orb += 1) {
     orbLevels.push(0);
   }
 
+  for (let index = 0; index < orbCapacity; index += 1) {
+    orbs.push(0);
+  }
+
+  for (let index = 0; index < preparedSlots; index += 1) {
+    prepared.push(null);
+  }
+
   return {
     def: converted,
     resources: { health: full.maxHealth, mana: full.maxMana },
-    kit: { orbLevels },
+    kit: { orbLevels, orbs, orbCount: 0, prepared },
     armory: null,
   };
 };
 
 /**
  * Run scope's form records from the registry: one per id the hero definition lists, in that
- * order, each converted into simulation units. Allocated once, here. An id with no form is a
- * broken invariant, since the content tier resolves every one.
+ * order, each converted into simulation units under the tuning state's step rate and with
+ * its kit's buffers at the tuning state's capacities. Allocated once, here. An id with no
+ * form is a broken invariant, since the content tier resolves every one.
  */
 export const createFormRecords = (
   hero: HeroDef,
   forms: readonly FormDef[],
-  simHz: number,
+  tuning: ReadonlyMap<string, number>,
 ): FormRecord[] => {
   const records: FormRecord[] = [];
 
@@ -78,7 +99,7 @@ export const createFormRecords = (
       def !== undefined,
       "Every form id the hero definition lists resolves to a form",
     );
-    records.push(createFormRecord(def, simHz));
+    records.push(createFormRecord(def, tuning));
   }
 
   return records;

@@ -20,7 +20,7 @@ Orb presses cost no mana, have no cooldown, have no cast time, and never force t
 
 R reads the three instances as a multiset — how many of each, ignoring order — and maps that to one of ten spells. QQW, QWQ, and WQQ are one spell.
 
-On a **first invoke**, when the spell is not already in a slot: R spends 7 mana, starts the Invoke cooldown, and writes the spell into slot D. The cooldown is 7.0 seconds minus 0.3 seconds per total orb level, so a hero with all three orbs at level 7 invokes every 0.7 seconds. Both numbers are tunables in `src/content/hero.ts`; the table is in spec section 10.3.
+On a **first invoke**, when the spell is not already in a slot: R spends 7 mana, starts the Invoke cooldown, and writes the spell into slot D. The cooldown is 7.0 seconds minus 0.3 seconds per total orb level, so a hero with all three orbs at level 7 invokes every 0.7 seconds. Both numbers are tunables in `src/content/tuning.ts`; the table is in spec section 10.3.
 
 On a **re-invoke**, when the spell is already in D or F: nothing is spent and no cooldown starts. If it is in F, D and F swap so the spell is on the primary key. If it is already in D, nothing changes. The player can promote F to D as fast as they can press R.
 
@@ -65,6 +65,7 @@ The spec's acceptance traces, in prose. Each is a test.
 
 | State | What happens |
 | --- | --- |
+| Q, W, or E before that orb has a level | Refused. An instance carries its orb's passive at the orb's level, and an orb with no level has none. The starting skill point buys the first orb's level |
 | R before three instances are out | Refused. The buffer fills on the first three presses of a session and never empties after, so this only happens at the very start and after nothing else |
 | R with the buffer full but too little mana | Refused with a HUD flash; the buffer is untouched |
 | R while the Invoke cooldown is running | Refused with a cooldown flash, unless it would be a swap, which is always free |

@@ -32,6 +32,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which commands the player can issue | The command union in `src/domain/commands/` |
 | Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
 | Which events the tick can emit | The event union in `src/domain/events/` |
+| Which kits exist, and how a slot key becomes an orb press, an invoke, or a cast | `src/domain/kits/` — the registry, one file per kit, and the slot-key application |
+| The orb buffer, the composer, the prepared slots, the Invoke rule, and the orb passives | `src/domain/invoke/` — one file per rule |
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file and the validator beside it |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | How attributes become derived values, how a modifier row changes one, how a unit levels and spends skill points, and how resources regenerate | `src/domain/stats/` — the derivation, the modifier pipeline, the level rule, the regeneration rule, and the stats system |

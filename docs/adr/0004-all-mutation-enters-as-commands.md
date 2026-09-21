@@ -30,7 +30,7 @@ Pause, single-step, and the catch-up cap are not commands. They decide whether t
 
 The command buffer is the only door. There is no exception for debugging, for tests, or for the presentation. The developer panel's power comes from the width of the `DebugCommand` union, not from a back door. Only reads are out of band: the presentation and the panel read the `Readonly` world view and the instrumentation rings, and neither can write through them.
 
-Inside the tick, commands are applied in timestamp order, then by the fixed priority Q, W, E, R, D, F on ties, so several key presses landing in one tick resolve the same way every time. The validator checks each command against the current order, the disable flags, mana, and cooldowns, refuses with a reason, and emits nothing on refusal. A refused command is still in the log.
+Inside the tick, commands are applied in timestamp order, then by the fixed priority Q, W, E, R, D, F on ties, so several key presses landing in one tick resolve the same way every time. The validator checks each command against the current order, the disable flags, mana, and cooldowns, and refuses with a reason; the command system announces the refusal as an event so the screen can react, and the refused command is still in the log.
 
 ```typescript
 // the panel has exactly the power the union gives it

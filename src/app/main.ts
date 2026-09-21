@@ -26,8 +26,13 @@ const DEVTOOLS_HOST_ID = "devtools";
 /** Every session starts from this seed until a session can be recorded and replayed under its own. */
 const SESSION_SEED = 1;
 
-/** The content layer holds the tuning table, the hero and its forms, and the maps; the registry of every other kind does not exist yet. */
-const REGISTRY: Registry = { tuning: tuningTable, hero: heroDef, forms };
+/** The content layer holds the tuning table, the hero and its forms, and the maps; no spell definition exists yet, and the registry of every other kind does not either. */
+const REGISTRY: Registry = {
+  tuning: tuningTable,
+  hero: heroDef,
+  forms,
+  spells: [],
+};
 
 export const boot: Boot = (): void => {
   const world = createWorld({

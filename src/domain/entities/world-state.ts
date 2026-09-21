@@ -2,6 +2,9 @@ import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
+import type { SpellDef } from "../definitions/spell-def";
+import { ORB_IDS } from "../definitions/spell-def";
+import type { EventSink } from "../events/domain-event";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
@@ -19,11 +22,20 @@ export type RandomState = {
 };
 
 /** How many orb skills a kit levels: Q, W, and E. */
-export const ORB_COUNT = 3;
+export const ORB_COUNT = ORB_IDS.length;
 
-/** What a form's kit remembers between ticks. For now the level of each orb skill, which skill points raise. */
+/**
+ * What a form's kit remembers between ticks: the level of each orb skill, which skill points
+ * raise; the held orb instances, oldest first, each an orb index, with `orbCount` saying how
+ * many of the buffer's slots are live; and the prepared spell in each slot, newest first,
+ * `null` being an empty socket. Both buffers are sized from the tuning table when the record
+ * is created and never grow.
+ */
 export type KitState = {
   orbLevels: number[];
+  orbs: number[];
+  orbCount: number;
+  prepared: (string | null)[];
 };
 
 /**
@@ -48,6 +60,8 @@ export type RunScope = {
   hero: HeroDef;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
+  /** Every spell by id, for the composer and the cast pipeline to read. */
+  spells: ReadonlyMap<string, SpellDef>;
   tuning: TuningState;
   random: RandomState;
 };
@@ -74,11 +88,13 @@ export type MapScope = {
 
 /**
  * The whole of world state: plain data a system reads and writes through the world it is
- * handed, and the commands the current tick consumed for the systems to act on.
+ * handed, the commands the current tick consumed for the systems to act on, and the ring a
+ * system announces an event into.
  */
 export type World = {
   tick: Tick;
   run: RunScope;
   map: MapScope;
   commands: ConsumedCommands;
+  events: EventSink;
 };

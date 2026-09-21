@@ -1,4 +1,4 @@
-import type { DomainEvent } from "@domain/public";
+import type { DomainEvent, EventSlot } from "@domain/public";
 import { copyDomainEvent, createDomainEvent } from "@domain/public";
 import { assert } from "@shared/public";
 
@@ -27,7 +27,7 @@ export const createEventReader = (): EventReader => ({ cursor: 0 });
 export class EventRing {
   readonly capacity: number;
 
-  private readonly slots: DomainEvent[];
+  private readonly slots: EventSlot[];
 
   private writeCursor = 0;
 
@@ -119,7 +119,7 @@ export class EventRing {
     this.overwriteCount = 0;
   }
 
-  private slotAt(index: number): DomainEvent {
+  private slotAt(index: number): EventSlot {
     const slot = this.slots[index];
 
     assert(slot !== undefined, "Every index below capacity has a slot");

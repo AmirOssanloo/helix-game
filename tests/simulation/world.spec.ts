@@ -82,11 +82,11 @@ describe("tick", () => {
     world.tick();
 
     expect(world.view.tick).toBe(2);
-    expect(world.events.read(reader)).toEqual({
+    expect(world.events.read(reader)).toMatchObject({
       kind: "tick_completed",
       tick: 0,
     });
-    expect(world.events.read(reader)).toEqual({
+    expect(world.events.read(reader)).toMatchObject({
       kind: "tick_completed",
       tick: 1,
     });

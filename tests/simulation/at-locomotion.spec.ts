@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FixedStepDriver, TICK_RATE } from "@app/public";
-import { acquireUnit } from "@domain/public";
+import { acquireUnit, movementSpeed, readTunable } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import { shortestArc } from "@shared/public";
@@ -140,6 +140,59 @@ describe("AT-M3", () => {
       );
     },
   );
+});
+
+describe("AT-M4", () => {
+  /** The Whorl key, slot 2. */
+  const W = 2;
+
+  it("gives 285.04 units per second before clamps with three Whorl instances at Whorl level 1", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { orbLevels: [0, 1, 0] });
+    const tuning = world.view.run.tuning;
+
+    for (let press = 0; press < 3; press += 1) {
+      submit(world, {
+        kind: "slot",
+        tick: world.view.tick,
+        timestamp: world.view.tick,
+        slot: W,
+      });
+      world.tick();
+    }
+
+    const perTick = movementSpeed(
+      readTunable(tuning, "base_ms"),
+      hero.modifiers,
+      0,
+      Infinity,
+    );
+
+    expect(perTick * TICK_RATE).toBeCloseTo(285.04, 6);
+  });
+
+  it("covers 285.04 units in one second of ticks", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { orbLevels: [0, 1, 0], facing: 0 });
+
+    for (let press = 0; press < 3; press += 1) {
+      submit(world, {
+        kind: "slot",
+        tick: world.view.tick,
+        timestamp: world.view.tick,
+        slot: W,
+      });
+    }
+
+    world.tick();
+    moveTo(world, 10000, 0);
+
+    for (let tick = 0; tick < TICK_RATE; tick += 1) {
+      world.tick();
+    }
+
+    expect(hero.curr.x).toBeCloseTo(285.04, 6);
+  });
 });
 
 describe("AT-M5", () => {

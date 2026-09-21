@@ -1,8 +1,8 @@
 import type {
   AnyCommand,
+  EventSlot,
   MapDef,
   Registry,
-  TickCompletedEvent,
   TuningState,
   WalkabilityGrid,
   World,
@@ -10,11 +10,13 @@ import type {
 import {
   cellCount,
   clearOrder,
+  createDomainEvent,
   createEffectPool,
   createFormRecords,
   createPathSearch,
   createProjectilePool,
   createSpatialHash,
+  createSpellTable,
   createTuningState,
   createUnitPool,
   createZonePool,
@@ -75,9 +77,9 @@ const copyPreviousPositions = (world: World): void => {
 };
 
 /**
- * Owns a world and steps it. Commands enter through `submit`, `tick` consumes them, and
- * everything past the simulation's door reads the result through `view`. There is no method
- * here that changes world state outside a tick.
+ * Owns a world and steps it. Commands enter through `submit`, `tick` consumes them, the
+ * systems announce into `events`, and everything past the simulation's door reads the result
+ * through `view`. There is no method here that changes world state outside a tick.
  *
  * `state` is the live world a system is handed and a test helper arranges. The presentation
  * and the developer panel are given `view`, never `state`.
@@ -94,7 +96,7 @@ export class Simulation {
   private readonly buffer: CommandBuffer;
 
   /** The one `tick_completed` value, written into the ring each tick so nothing is built per tick. */
-  private readonly tickCompleted: TickCompletedEvent;
+  private readonly tickCompleted: EventSlot;
 
   private isDisposed = false;
 
@@ -104,6 +106,7 @@ export class Simulation {
     const walkability = deriveGrid(options.map, tuning);
 
     this.buffer = new CommandBuffer();
+    this.events = new EventRing();
     this.state = {
       tick: 0,
       run: {
@@ -112,8 +115,9 @@ export class Simulation {
         forms: createFormRecords(
           options.registry.hero,
           options.registry.forms,
-          readTunable(tuning, "sim_hz"),
+          tuning,
         ),
+        spells: createSpellTable(options.registry.spells),
         tuning,
         random: createRandomState(options.seed),
       },
@@ -130,10 +134,10 @@ export class Simulation {
         pathSearch: createPathSearch(cellCount(walkability)),
       },
       commands: this.buffer,
+      events: this.events,
     };
-    this.events = new EventRing();
     this.log = new InputLog();
-    this.tickCompleted = { kind: "tick_completed", tick: 0 };
+    this.tickCompleted = createDomainEvent();
   }
 
   /** The live state under its read-only type. The same object; no copy. */

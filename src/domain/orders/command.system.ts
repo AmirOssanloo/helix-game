@@ -1,10 +1,13 @@
 import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { Command, DebugCommand } from "../commands/command";
+import { slotOf } from "../commands/ordering";
 import { setTunable, validateTuning } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
+import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { applySlotKey } from "../kits/slot-key";
 import { radiusClassOf } from "../map/walkability";
 import { resolveDestination } from "../pathing/destination";
 import {
@@ -13,10 +16,28 @@ import {
   issueAttackTarget,
   issueMove,
 } from "./state-machine";
+import type { RefusalReason } from "./validator";
 import { validateCommand } from "./validator";
 
 /** Scratch for the legal point a clicked destination resolves to, reused for every command. */
 const resolved: Vec2 = { x: 0, y: 0 };
+
+/** Scratch for the event a refusal announces, reused for every one. */
+const refused = createDomainEvent();
+
+/** Announces that `command` was refused for `reason`, naming the slot key when it was one so the view can flash it. */
+const announceRefusal = (
+  world: World,
+  command: Command | DebugCommand,
+  reason: RefusalReason,
+): void => {
+  resetDomainEvent(refused);
+  refused.kind = "command_refused";
+  refused.tick = world.tick;
+  refused.slot = slotOf(command) ?? 0;
+  refused.reason = reason;
+  world.events.write(refused);
+};
 
 /**
  * The legal point the command's destination resolves to for `hero`: a click on an obstacle
@@ -43,14 +64,15 @@ const resolveFor = (
 /**
  * Writes one validated command onto the hero. The order commands replace the current order
  * through the state machine, with a destination resolved to a legal point first. A slot key
- * and a cast are dropped here until the kit and the cast pipeline take them; the two no-ops
+ * goes to the active form's kit, which may still refuse it; the reason comes back for the
+ * caller to announce. A cast is dropped here until the cast pipeline takes it; the two no-ops
  * are dropped by definition.
  */
 const applyCommand = (
   world: World,
   hero: Unit,
   command: Command | DebugCommand,
-): void => {
+): RefusalReason | null => {
   switch (command.kind) {
     case "move": {
       const point = resolveFor(world, hero, command.destination);
@@ -90,19 +112,24 @@ const applyCommand = (
       break;
 
     case "slot":
+      return applySlotKey(world, hero, command.slot);
+
     case "cast":
     case "noop":
     case "debug_noop":
       break;
   }
+
+  return null;
 };
 
 /**
  * The first system of every tick: applies the commands the tick consumed. A tuning change goes
  * to run scope, hero or no hero. Every other command goes to the hero, validated against it as
  * it is at that moment, so an earlier command in the same tick shapes what a later one may do,
- * and the last legal order wins. A refused command is dropped and changes nothing. A world with
- * no hero drops every command but a tuning change.
+ * and the last legal order wins. A refused command is dropped, changes nothing, and is
+ * announced with its reason, whether the validator or the kit refused it. A world with no
+ * hero drops every command but a tuning change, silently: there is nothing to flash.
  */
 export const commandSystem = (world: World): void => {
   const hero = resolveHero(world);
@@ -126,10 +153,18 @@ export const commandSystem = (world: World): void => {
       continue;
     }
 
-    if (validateCommand(hero, command) !== "ok") {
+    const validation = validateCommand(hero, command);
+
+    if (validation !== "ok") {
+      announceRefusal(world, command, validation);
+
       continue;
     }
 
-    applyCommand(world, hero, command);
+    const refusal = applyCommand(world, hero, command);
+
+    if (refusal !== null) {
+      announceRefusal(world, command, refusal);
+    }
   }
 };

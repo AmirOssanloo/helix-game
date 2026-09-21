@@ -34,6 +34,7 @@ export {
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
 export { makeFormDef } from "./content/make-form-def";
 export { makeMapDef } from "./content/make-map-def";
+export { makeSpellDef } from "./content/make-spell-def";
 export {
   makeRegistry,
   type MakeRegistryOptions,

@@ -48,7 +48,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Layer | domain, tests |
 | Size | 1.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/kits/`: the kit registry keyed by string (`invoke` now, `hotbar` later), a kit as a function from a slot index and the unit's kit state to an ability request, and the six slot descriptors the world view exposes (ability id or null, clock, cost, kind: orb, composer, prepared). Under `src/domain/invoke/`: the orb buffer with capacity from the tunable, append, FIFO eviction, age order; each held instance as a modifier source (Whorl movement speed per instance from the tunable table by Whorl level, plus placeholders for Quartz regen and Ember damage as sources with their values from `hero.ts`); the composer hashing counts to a spell id via the form's ability list and each spell's recipe; first invoke versus re-invoke (swap if in F, nothing if in D); the insert, shift, and evict algorithm; the hidden cooldown map keyed by ability id; refusal when fewer than three instances are held. `slot` commands resolve through the active form's kit. Events: `orb_added`, `spell_invoked`, `slots_changed`, `command_refused` with a reason.
 
@@ -68,6 +68,8 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 - `tests/domain/kits/invoke-kit.spec.ts` — slot index to request, descriptors.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+> Edited while building: the Quartz and Ember passives live in the tuning table beside the Whorl table, not in `src/content/hero.ts`, so all three orb tables are one kind of thing, retunable from the panel, with per-second regeneration converted once like every other tunable; the hero and orbs pages now point there. The composer reads recipes from a minimal `SpellDef` (id and recipe as a list of orb ids) in `domain/definitions/`, with `spells` on the registry and a spell table on run scope; the ten content files stay with T03, so the real form composes nothing until then. An orb press on an orb with no level is refused, since an instance carries a passive read from its level's table. The world carries an event sink so a domain system can announce; the ring slot is one flat shape and the event union is built over it, so a write copies fields. Refusals from the validator are announced too, which the standards and ADR 0004 said the opposite of; both now say what the commands page and the casting flow already said. Slot keys are 1 to 6 as the command union numbers them, so D is 5 and F is 6, not the spec's 4 and 5.
 
 ---
 
@@ -128,7 +130,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Check | Result |
 | --- | --- |
 | AT-O1 to O5 (O4 pending the channel stub in sprint 06), AT-I1 to I9, AT-M4, AT-C5 green | |
-| Actual days per ticket | T01 1 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
 
 ## Risks in this sprint
 

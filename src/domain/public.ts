@@ -36,13 +36,20 @@ export { createFormRecords } from "./definitions/form-state";
 export type { HeroDef } from "./definitions/hero-def";
 export type { MapDef, SpawnDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
+export { ORB_IDS, type OrbId, type SpellDef } from "./definitions/spell-def";
+export { createSpellTable } from "./definitions/spell-state";
 export {
+  EMBER_DAMAGE_KEYS,
+  type EmberDamageKey,
+  QUARTZ_REGEN_KEYS,
+  type QuartzRegenKey,
+  type RadiusClassKey,
   TUNING_KEYS,
   TUNING_UNITS,
   type TuningDef,
   type TuningKey,
-  type RadiusClassKey,
   type TuningUnit,
+  WHORL_SPEED_KEYS,
   type WhorlSpeedKey,
 } from "./definitions/tuning-def";
 export {
@@ -101,11 +108,55 @@ export {
 } from "./entities/world-state";
 export { createZonePool, type Zone, ZONE_CAPACITY } from "./entities/zone";
 export {
+  type CommandRefusedEvent,
   copyDomainEvent,
   createDomainEvent,
   type DomainEvent,
+  type EventSink,
+  type EventSlot,
+  type OrbAddedEvent,
+  resetDomainEvent,
+  type SlotsChangedEvent,
+  type SpellInvokedEvent,
   type TickCompletedEvent,
 } from "./events/domain-event";
+export {
+  addOrb,
+  countOrbs,
+  isBufferFull,
+  orbAt,
+  orbCapacity,
+  type OrbPressResult,
+  pressOrb,
+} from "./invoke/buffer";
+export { composeSpell } from "./invoke/composer";
+export {
+  INVOKE_ID,
+  invoke,
+  invokeCooldownTicks,
+  type InvokeOutcome,
+  type InvokeRefusal,
+  totalOrbLevels,
+} from "./invoke/invoke";
+export { refreshOrbPassives } from "./invoke/passives";
+export {
+  indexOfPrepared,
+  insertPrepared,
+  promotePrepared,
+} from "./invoke/slots";
+export { invokeKit } from "./kits/invoke-kit";
+export { KIT_KEYS, resolveKit } from "./kits/kit-registry";
+export { kitSystem } from "./kits/kit.system";
+export {
+  type AbilityRequest,
+  type AbilityRequestKind,
+  createAbilityRequest,
+  createSlotDescriptor,
+  type Kit,
+  type SlotDescriptor,
+  type SlotKind,
+} from "./kits/kit";
+export { applySlotKey } from "./kits/slot-key";
 export {
   cellCentreX,
   cellCentreY,

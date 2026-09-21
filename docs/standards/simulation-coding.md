@@ -82,7 +82,7 @@ export const fooSystem = (world: World): void => {
 
 ## Commands and failures
 
-**A command is validated before it mutates anything.** The validator reads the unit's order state, its disable flags, its mana, and the ability's clocks, and returns either `ok` or a reason. A refused command changes nothing and emits nothing.
+**A command is validated before it mutates anything.** The validator reads the unit's order state, its disable flags, its mana, and the ability's clocks, and returns either `ok` or a reason. A refused command changes nothing; the command system announces the refusal as one event carrying the reason, so the screen can flash the key. The event is the only trace it leaves.
 
 **Failures are values.** A rule returns a result with a reason; nothing under these two layers throws for a game outcome. Throwing is for a broken invariant, not for "not enough mana".
 
@@ -135,7 +135,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
 | A rule | A pure function over plain state, testable without a world |
-| Commands | Validated before any mutation; a refusal changes nothing and emits nothing |
+| Commands | Validated before any mutation; a refusal changes nothing and is announced as one event with its reason |
 | Failures | Returned as values with a reason. Throwing is for broken invariants only |
 | Boundary checks | Always on: command validation, content validation, pool acquire, map load |
 | Inner asserts | Development only, stripped from production |

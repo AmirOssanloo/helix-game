@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DomainEvent } from "@domain/public";
+import { createDomainEvent } from "@domain/public";
 import {
   createEventReader,
   EVENT_RING_CAPACITY,
@@ -9,7 +10,7 @@ import {
 const CAPACITY = 3;
 
 const tickCompleted = (tick: number): DomainEvent => ({
-  kind: "tick_completed",
+  ...createDomainEvent(),
   tick,
 });
 
@@ -50,7 +51,7 @@ describe("EventRing", () => {
 
     ring.write(event);
 
-    expect(ring.at(0)).toEqual({ kind: "tick_completed", tick: 4 });
+    expect(ring.at(0)).toMatchObject({ kind: "tick_completed", tick: 4 });
     expect(ring.at(0)).not.toBe(event);
   });
 
@@ -65,8 +66,8 @@ describe("EventRing", () => {
     expect(ring.overwrites).toBe(1);
     expect(ring.oldest).toBe(1);
     expect(ring.at(0)).toBeNull();
-    expect(ring.at(1)).toEqual({ kind: "tick_completed", tick: 2 });
-    expect(ring.at(3)).toEqual({ kind: "tick_completed", tick: 4 });
+    expect(ring.at(1)).toMatchObject({ kind: "tick_completed", tick: 2 });
+    expect(ring.at(3)).toMatchObject({ kind: "tick_completed", tick: 4 });
   });
 
   it("gives a reader the events since its last read", () => {

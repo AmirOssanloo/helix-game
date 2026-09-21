@@ -1,9 +1,17 @@
 /** One key per radius class, the array index after the colon: `:0` is the small class, `:1` the hero class, `:2` the large class. */
 export type RadiusClassKey = `radius_class:${0 | 1 | 2}`;
 
-/** One key per Whorl level, the array index verbatim after the colon: `:0` is Whorl level 1. */
-export type WhorlSpeedKey =
-  `whorl_ms_per_instance:${0 | 1 | 2 | 3 | 4 | 5 | 6}`;
+/** The array index of an orb level table's entry, written after the colon: `:0` is orb level 1. */
+type OrbLevelIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+/** One key per Quartz level: the health regeneration one held Quartz instance adds, per second. */
+export type QuartzRegenKey = `quartz_regen_per_instance:${OrbLevelIndex}`;
+
+/** One key per Whorl level: the fraction of movement speed one held Whorl instance adds. */
+export type WhorlSpeedKey = `whorl_ms_per_instance:${OrbLevelIndex}`;
+
+/** One key per Ember level: the attack damage one held Ember instance adds. */
+export type EmberDamageKey = `ember_damage_per_instance:${OrbLevelIndex}`;
 
 /**
  * The keys of the tuning table: the mechanics spec's parameter names verbatim, so a designer
@@ -33,7 +41,9 @@ export type TuningKey =
   | "invoke_cd_per_orb_level"
   | "invoke_mana"
   | RadiusClassKey
-  | WhorlSpeedKey;
+  | QuartzRegenKey
+  | WhorlSpeedKey
+  | EmberDamageKey;
 
 /** The tuning table as content writes it: every key, with its value in the designer's units. */
 export type TuningDef = Readonly<Record<TuningKey, number>>;
@@ -80,6 +90,13 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   "radius_class:0": "world_units",
   "radius_class:1": "world_units",
   "radius_class:2": "world_units",
+  "quartz_regen_per_instance:0": "units_per_second",
+  "quartz_regen_per_instance:1": "units_per_second",
+  "quartz_regen_per_instance:2": "units_per_second",
+  "quartz_regen_per_instance:3": "units_per_second",
+  "quartz_regen_per_instance:4": "units_per_second",
+  "quartz_regen_per_instance:5": "units_per_second",
+  "quartz_regen_per_instance:6": "units_per_second",
   "whorl_ms_per_instance:0": "fraction",
   "whorl_ms_per_instance:1": "fraction",
   "whorl_ms_per_instance:2": "fraction",
@@ -87,7 +104,47 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   "whorl_ms_per_instance:4": "fraction",
   "whorl_ms_per_instance:5": "fraction",
   "whorl_ms_per_instance:6": "fraction",
+  "ember_damage_per_instance:0": "count",
+  "ember_damage_per_instance:1": "count",
+  "ember_damage_per_instance:2": "count",
+  "ember_damage_per_instance:3": "count",
+  "ember_damage_per_instance:4": "count",
+  "ember_damage_per_instance:5": "count",
+  "ember_damage_per_instance:6": "count",
 };
+
+/** The Quartz table's keys by level, index zero being level one, so a lookup by level builds no string. */
+export const QUARTZ_REGEN_KEYS: readonly QuartzRegenKey[] = [
+  "quartz_regen_per_instance:0",
+  "quartz_regen_per_instance:1",
+  "quartz_regen_per_instance:2",
+  "quartz_regen_per_instance:3",
+  "quartz_regen_per_instance:4",
+  "quartz_regen_per_instance:5",
+  "quartz_regen_per_instance:6",
+];
+
+/** The Whorl table's keys by level, index zero being level one. */
+export const WHORL_SPEED_KEYS: readonly WhorlSpeedKey[] = [
+  "whorl_ms_per_instance:0",
+  "whorl_ms_per_instance:1",
+  "whorl_ms_per_instance:2",
+  "whorl_ms_per_instance:3",
+  "whorl_ms_per_instance:4",
+  "whorl_ms_per_instance:5",
+  "whorl_ms_per_instance:6",
+];
+
+/** The Ember table's keys by level, index zero being level one. */
+export const EMBER_DAMAGE_KEYS: readonly EmberDamageKey[] = [
+  "ember_damage_per_instance:0",
+  "ember_damage_per_instance:1",
+  "ember_damage_per_instance:2",
+  "ember_damage_per_instance:3",
+  "ember_damage_per_instance:4",
+  "ember_damage_per_instance:5",
+  "ember_damage_per_instance:6",
+];
 
 /** Every key, in the table's order. `Object.keys` forgets the key type; the schema above is what fixes it. */
 export const TUNING_KEYS: readonly TuningKey[] = Object.keys(

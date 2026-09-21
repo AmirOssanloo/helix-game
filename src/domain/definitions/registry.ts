@@ -1,5 +1,6 @@
 import type { FormDef } from "./form-def";
 import type { HeroDef } from "./hero-def";
+import type { SpellDef } from "./spell-def";
 import type { TuningDef } from "./tuning-def";
 
 /**
@@ -13,4 +14,6 @@ export type Registry = Readonly<{
   hero: HeroDef;
   /** Every form, in the designer's units; the hero definition says which of them it takes and in what order. */
   forms: readonly FormDef[];
+  /** Every spell a form's ability list may name, keyed into run scope by id when the world is created. */
+  spells: readonly SpellDef[];
 }>;

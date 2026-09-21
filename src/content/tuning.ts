@@ -6,8 +6,9 @@ import type { TuningDef } from "@domain/public";
  * designer's units. Speeds are world units per second, durations are seconds, the action cone
  * is a half-angle in degrees, the turn rate is radians per 0.03 s as the spec publishes it,
  * the three radii, the two cell sizes, and the three radius classes are world units, the
- * push-out passes and the re-path budget are counts per tick, and the Whorl table holds a
- * fraction of one per instance at each level. The world converts the table into per-tick
+ * push-out passes and the re-path budget are counts per tick, and the three orb tables hold
+ * what one held instance grants at each level: Quartz health regeneration per second, Whorl
+ * a fraction of one of movement speed, Ember attack damage. The world converts the table into per-tick
  * rates, ticks, and radians once at creation, and a `set_tuning` command changes a value
  * mid-session in these same units. A system reads a tunable through the world, never through
  * this file.
@@ -36,6 +37,13 @@ export const tuningTable = {
   "radius_class:0": 16,
   "radius_class:1": 27,
   "radius_class:2": 50,
+  "quartz_regen_per_instance:0": 1,
+  "quartz_regen_per_instance:1": 2,
+  "quartz_regen_per_instance:2": 3,
+  "quartz_regen_per_instance:3": 4,
+  "quartz_regen_per_instance:4": 5,
+  "quartz_regen_per_instance:5": 6,
+  "quartz_regen_per_instance:6": 7,
   "whorl_ms_per_instance:0": 0.006,
   "whorl_ms_per_instance:1": 0.012,
   "whorl_ms_per_instance:2": 0.018,
@@ -43,4 +51,11 @@ export const tuningTable = {
   "whorl_ms_per_instance:4": 0.03,
   "whorl_ms_per_instance:5": 0.036,
   "whorl_ms_per_instance:6": 0.042,
+  "ember_damage_per_instance:0": 3,
+  "ember_damage_per_instance:1": 6,
+  "ember_damage_per_instance:2": 9,
+  "ember_damage_per_instance:3": 12,
+  "ember_damage_per_instance:4": 15,
+  "ember_damage_per_instance:5": 18,
+  "ember_damage_per_instance:6": 21,
 } as const satisfies TuningDef;

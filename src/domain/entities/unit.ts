@@ -37,9 +37,10 @@ export type StatusEntry = {
   sourceId: EntityId | null;
 };
 
-/** A derived value a modifier source changes. */
+/** A derived value a modifier source changes. Attack damage has no attribute behind it yet; the attack rule reads its rows when it arrives. */
 export type Stat =
   | "movement_speed"
+  | "attack_damage"
   | "max_health"
   | "health_regen"
   | "max_mana"

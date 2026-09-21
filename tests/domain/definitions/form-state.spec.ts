@@ -1,9 +1,20 @@
 import { describe, expect, it } from "vitest";
+import { tuningTable } from "@content/public";
 import type { HeroDef } from "@domain/public";
-import { createFormRecords, ORB_COUNT } from "@domain/public";
+import {
+  createFormRecords,
+  createTuningState,
+  ORB_COUNT,
+} from "@domain/public";
 import { makeFormDef } from "../../helpers";
 
-const SIM_HZ = 30;
+/** The tuning table at 30 Hz, three orbs, and two prepared slots, in simulation units. */
+const TUNING = createTuningState({
+  ...tuningTable,
+  sim_hz: 30,
+  orb_capacity: 3,
+  prepared_slots: 2,
+});
 
 const first = makeFormDef.build({
   conversions: {
@@ -40,7 +51,7 @@ describe("createFormRecords", () => {
     const records = createFormRecords(
       hero([second.id, first.id]),
       [first, second],
-      SIM_HZ,
+      TUNING,
     );
 
     expect(records.map((record) => record.def.id)).toEqual([
@@ -50,7 +61,7 @@ describe("createFormRecords", () => {
   });
 
   it("divides every per-second rate into a per-tick one, once", () => {
-    const [record] = createFormRecords(hero([first.id]), [first], SIM_HZ);
+    const [record] = createFormRecords(hero([first.id]), [first], TUNING);
 
     expect(record?.def.conversions.healthRegenPerStrength).toBeCloseTo(0.01);
     expect(record?.def.conversions.manaRegenPerIntelligence).toBeCloseTo(0.02);
@@ -59,7 +70,7 @@ describe("createFormRecords", () => {
   });
 
   it("reads everything that is not a rate as written", () => {
-    const [record] = createFormRecords(hero([first.id]), [first], SIM_HZ);
+    const [record] = createFormRecords(hero([first.id]), [first], TUNING);
 
     expect(record?.def.body).toEqual(first.body);
     expect(record?.def.conversions.healthPerStrength).toBe(20);
@@ -68,26 +79,34 @@ describe("createFormRecords", () => {
   });
 
   it("fills health and mana to the first level's maximums", () => {
-    const [record] = createFormRecords(hero([first.id]), [first], SIM_HZ);
+    const [record] = createFormRecords(hero([first.id]), [first], TUNING);
 
     expect(record?.resources).toEqual({ health: 300, mana: 150 });
   });
 
   it("starts every orb skill at level zero, with no armory", () => {
-    const [record] = createFormRecords(hero([first.id]), [first], SIM_HZ);
+    const [record] = createFormRecords(hero([first.id]), [first], TUNING);
 
     expect(record?.kit.orbLevels).toHaveLength(ORB_COUNT);
     expect(record?.kit.orbLevels.every((level) => level === 0)).toBe(true);
     expect(record?.armory).toBeNull();
   });
 
+  it("sizes the orb buffer and the prepared slots from the tuning table, both empty", () => {
+    const [record] = createFormRecords(hero([first.id]), [first], TUNING);
+
+    expect(record?.kit.orbs).toHaveLength(3);
+    expect(record?.kit.orbCount).toBe(0);
+    expect(record?.kit.prepared).toEqual([null, null]);
+  });
+
   it("makes no record for a hero with no forms", () => {
-    expect(createFormRecords(hero([]), [first], SIM_HZ)).toEqual([]);
+    expect(createFormRecords(hero([]), [first], TUNING)).toEqual([]);
   });
 
   it("treats an id no form answers to as a broken invariant", () => {
     expect(() =>
-      createFormRecords(hero(["nobody"]), [first], SIM_HZ),
+      createFormRecords(hero(["nobody"]), [first], TUNING),
     ).toThrow();
   });
 });

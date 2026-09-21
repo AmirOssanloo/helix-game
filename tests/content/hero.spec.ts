@@ -6,7 +6,7 @@ import {
   skeinDef,
   tuningTable,
 } from "@content/public";
-import { ORB_COUNT } from "@domain/public";
+import { KIT_KEYS, ORB_COUNT } from "@domain/public";
 
 const ID_SHAPE = /^[a-z][a-z0-9_]*$/;
 
@@ -35,12 +35,16 @@ describe("the hero", () => {
     expect(isStrictlyIncreasing(heroDef.experienceThresholds)).toBe(true);
   });
 
-  it("caps an orb at the level the Whorl table has an entry for", () => {
-    const whorlLevels = Object.keys(tuningTable).filter((key) =>
-      key.startsWith("whorl_ms_per_instance:"),
+  it.each([
+    "quartz_regen_per_instance:",
+    "whorl_ms_per_instance:",
+    "ember_damage_per_instance:",
+  ])("caps an orb at the level the %s table has an entry for", (prefix) => {
+    const levels = Object.keys(tuningTable).filter((key) =>
+      key.startsWith(prefix),
     );
 
-    expect(heroDef.maxOrbLevel).toBe(whorlLevels.length);
+    expect(heroDef.maxOrbLevel).toBe(levels.length);
   });
 
   it("levels with whole, non-negative skill points and orb levels", () => {
@@ -70,6 +74,7 @@ describe("every form", () => {
     "%s names its kit and its abilities by snake_case key, each ability once",
     (_id, form) => {
       expect(form.kit).toMatch(ID_SHAPE);
+      expect(KIT_KEYS).toContain(form.kit);
 
       for (const ability of form.abilities) {
         expect(ability).toMatch(ID_SHAPE);
