@@ -185,19 +185,15 @@ describe.each(["attack_windup", "ability_cast_point"] as const)(
       ["move", move()],
       ["attack_move", attackMove()],
       ["attack_target", attackTarget()],
-      ["cast", cast()],
-    ])("refuses %s: the unit is committed to the point", (_name, command) => {
-      expect(validateCommand(unitIn(state), command)).toBe(
-        "cast_point_in_progress",
-      );
-    });
-
-    it.each([
       ["stop", stop()],
       ["slot", slot(1)],
-    ])("accepts %s", (_name, command) => {
-      expect(validateCommand(unitIn(state), command)).toBe("ok");
-    });
+      ["cast", cast()],
+    ])(
+      "accepts %s: the point in progress is the state machine's to cancel, not the validator's to guard",
+      (_name, command) => {
+        expect(validateCommand(unitIn(state), command)).toBe("ok");
+      },
+    );
   },
 );
 

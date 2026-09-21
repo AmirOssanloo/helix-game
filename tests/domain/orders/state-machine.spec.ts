@@ -94,7 +94,7 @@ const ORDERABLE_STATES = STATES.filter(
 );
 
 describe("issueMove", () => {
-  it.each(ORDERABLE_STATES)(
+  it.each(STATES)(
     "from %s lands: the order is a move to the point and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -110,14 +110,15 @@ describe("issueMove", () => {
   );
 
   it.each(CAST_POINT_STATES)(
-    "from %s is refused and changes nothing",
+    "from %s cancels the point: the cast pending under it is forgotten and the move is the order",
     (state) => {
       const unit = unitIn(state);
+      pendingCast(unit);
 
-      expect(issueMove(unit, 3, 4)).toBe("cast_point_in_progress");
-      expect(unit.state).toBe(state);
-      expect(unit.order.kind).toBe(orderKindIn(state));
-      expect(unit.order.destination).toEqual({ x: 10, y: 20 });
+      expect(issueMove(unit, 3, 4)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.order.kind).toBe("move");
+      expect(unit.cast).toEqual(NO_CAST);
     },
   );
 
@@ -151,7 +152,7 @@ describe("issueMove", () => {
 });
 
 describe("issueCast", () => {
-  it.each(ORDERABLE_STATES)(
+  it.each(STATES)(
     "from %s lands: the order is a cast approaching the aim, the aim is recorded, and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -173,16 +174,16 @@ describe("issueCast", () => {
   );
 
   it.each(CAST_POINT_STATES)(
-    "from %s is refused and changes nothing",
+    "from %s cancels the point: the new cast replaces the one pending under it",
     (state) => {
       const unit = unitIn(state);
+      pendingCast(unit);
 
-      expect(issueCast(unit, "spell_1", "point", 3, 4, null)).toBe(
-        "cast_point_in_progress",
-      );
-      expect(unit.state).toBe(state);
-      expect(unit.order.kind).toBe(orderKindIn(state));
-      expect(unit.cast.abilityId).toBeNull();
+      expect(issueCast(unit, "spell_2", "none", 0, 0, null)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.order.kind).toBe("cast");
+      expect(unit.cast.abilityId).toBe("spell_2");
+      expect(unit.cast.position).toEqual({ x: 0, y: 0 });
     },
   );
 
@@ -298,7 +299,7 @@ describe("beginFacing", () => {
 });
 
 describe("issueAttackTarget", () => {
-  it.each(ORDERABLE_STATES)(
+  it.each(STATES)(
     "from %s lands: the order is an attack on the target and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -314,19 +315,21 @@ describe("issueAttackTarget", () => {
   );
 
   it.each(CAST_POINT_STATES)(
-    "from %s is refused and changes nothing",
+    "from %s cancels the point: the cast pending under it is forgotten and the attack is the order",
     (state) => {
       const unit = unitIn(state);
+      pendingCast(unit);
 
-      expect(issueAttackTarget(unit, 9)).toBe("cast_point_in_progress");
-      expect(unit.state).toBe(state);
-      expect(unit.order.kind).toBe(orderKindIn(state));
+      expect(issueAttackTarget(unit, 9)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.order.kind).toBe("attack_target");
+      expect(unit.cast).toEqual(NO_CAST);
     },
   );
 });
 
 describe("issueAttackMove", () => {
-  it.each(ORDERABLE_STATES)(
+  it.each(STATES)(
     "from %s lands: the order is an attack-move to the point and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -342,13 +345,15 @@ describe("issueAttackMove", () => {
   );
 
   it.each(CAST_POINT_STATES)(
-    "from %s is refused and changes nothing",
+    "from %s cancels the point: the cast pending under it is forgotten and the attack-move is the order",
     (state) => {
       const unit = unitIn(state);
+      pendingCast(unit);
 
-      expect(issueAttackMove(unit, 3, 4)).toBe("cast_point_in_progress");
-      expect(unit.state).toBe(state);
-      expect(unit.order.kind).toBe(orderKindIn(state));
+      expect(issueAttackMove(unit, 3, 4)).toBe("ok");
+      expect(unit.state).toBe("turning");
+      expect(unit.order.kind).toBe("attack_move");
+      expect(unit.cast).toEqual(NO_CAST);
     },
   );
 });
@@ -554,24 +559,23 @@ describe("beginCastBackswing", () => {
 });
 
 describe("beginChannel", () => {
-  it.each(
-    STATES.filter(
-      (state) => state !== "attack_windup" && state !== "channeling",
-    ),
-  )("from %s lands: the order is cleared and the channel runs", (state) => {
-    const unit = unitIn(state);
+  it.each(STATES.filter((state) => state !== "channeling"))(
+    "from %s lands: the order is cleared and the channel runs",
+    (state) => {
+      const unit = unitIn(state);
+
+      expect(beginChannel(unit)).toBe("ok");
+      expect(unit.state).toBe("channeling");
+      expect(unit.order.kind).toBe("none");
+    },
+  );
+
+  it("from attack_windup cancels the attack point: the attack order is gone", () => {
+    const unit = unitIn("attack_windup");
 
     expect(beginChannel(unit)).toBe("ok");
     expect(unit.state).toBe("channeling");
-    expect(unit.order.kind).toBe("none");
-  });
-
-  it("from attack_windup is refused and changes nothing", () => {
-    const unit = unitIn("attack_windup");
-
-    expect(beginChannel(unit)).toBe("cast_point_in_progress");
-    expect(unit.state).toBe("attack_windup");
-    expect(unit.order.kind).toBe("attack_target");
+    expect(unit.order.targetId).toBeNull();
   });
 
   it("while channeling is refused", () => {

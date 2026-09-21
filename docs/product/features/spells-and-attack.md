@@ -40,7 +40,7 @@ No spell damages or displaces the hero or a summon. Friendly fire does not exist
 
 A spell is thrown from slot D or F ([Orbs and Invoke](./orbs-and-invoke.md)). A no-target spell fires on key-down. A targeted spell opens the cursor, showing a range ring and the spell's area, line, or cone preview under the pointer; left click commits, the hero turns to face the point, the cast point runs, and then mana is spent and the cooldown starts. A cast interrupted before the end of its cast point costs nothing.
 
-Every spell has a cast point, and the numbers per spell are in its definition file. The hero cannot move during a cast point and can cancel it with S.
+Every spell has a cast point, and the numbers per spell are in its definition file. The hero stands still during a cast point; S or a new order cancels it at no cost.
 
 ## The auto-attack
 

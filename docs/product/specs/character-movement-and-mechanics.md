@@ -430,6 +430,8 @@ There is no global cooldown. Each ability id has its own clock.
 
 Attack: 0.4 s point, 0.7 s backswing, 1.7 s base attack time, projectile 900. Backswing is cancelable by a new move, stop, or cast.
 
+> **Amendment 2026-09-21:** an attack point or a cast point is cancelable the same way. A new move, attack, or cast issued during the point cancels it with nothing spent and no clock started, and lands as the order on that tick; nothing is queued for after the point. This is the source game's behaviour and the one kiting depends on.
+
 Once a targeted spell’s cast point has elapsed, the spell is committed: mana is spent and cooldown starts even if the player slams S afterward.
 
 Orbs and Invoke have zero point and zero backswing, so they never lock locomotion. Players can weave QWE while walking.

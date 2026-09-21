@@ -78,7 +78,8 @@ describe("commandSystem", () => {
     const hero = spawnHero(world);
     hero.order.kind = "attack_target";
     hero.order.targetId = 7;
-    hero.state = "attack_windup";
+    hero.state = "turning";
+    hero.disables.stunned = true;
     submit(world, {
       kind: "move",
       tick: 0,
@@ -91,7 +92,7 @@ describe("commandSystem", () => {
     expect(hero.order.kind).toBe("attack_target");
     expect(hero.order.targetId).toBe(7);
     expect(hero.order.destination).toEqual({ x: 0, y: 0 });
-    expect(hero.state).toBe("attack_windup");
+    expect(hero.state).toBe("turning");
   });
 
   it("leaves the later move by timestamp when two arrive in one tick", () => {

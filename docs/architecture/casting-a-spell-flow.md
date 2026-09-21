@@ -50,6 +50,8 @@ Q Q W ──► three orb commands ──► buffer [Q,Q,W] ──► R ──�
 
 **A stun during the cast point.** The cast is cancelled at that tick. Mana was not spent, the clock never started, and the spell stays in its slot.
 
+**A right click during the cast point.** The move is consumed on the next tick, the cast is cancelled with nothing spent, and the hero turns toward the point. The click is neither dropped nor queued: it is the order now, as it would be during a walk.
+
 **The click lands off the map.** The mapper clamps to the map bounds before submitting; a point outside walkable ground is still a valid target for a point spell.
 
 ---
@@ -93,7 +95,7 @@ Opening the targeting cursor by issuing a stop order "so the cast is ready". The
 | Escape | Closes the cursor; sends nothing |
 | Validation | Disable flags, cooldown, mana; a refusal drops the command and emits an event |
 | Before the cast point | The hero turns until the bearing is inside the action cone |
-| During the cast point | An interrupt cancels; nothing spent, no clock |
+| During the cast point | A stop, a new order, a stun, or death cancels; nothing spent, no clock |
 | At commit | Mana, cooldown, then effects in definition order |
 | Damage | Through the combat rules by damage type; death resolved once at the end of the tick |
 | Statuses | Into the target's table under the definition's stack rule |

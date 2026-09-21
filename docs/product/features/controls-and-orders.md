@@ -92,7 +92,7 @@ Copied from spec section 15, because it is the shortest test of whether the cont
 | S with a move running | The move stops, the cursor closes, and yaw freezes where it is |
 | Left click during a cast point | Ignored; the cast is already committed to its target |
 | S during a cast point | The cast is cancelled at no cost. After the cast point, S cannot take it back |
-| Move, attack, or targeted spell issued during an attack point or a cast point | Refused; the hero finishes the point. Nothing is queued for after, and only S, a stun, or death takes the hero out early |
+| Move, attack, or targeted spell issued during an attack point or a cast point | The point is cancelled and the new order starts on the same tick. Nothing was spent and no clock started, because both happen at the end of the point. Nothing is queued |
 | Move or attack issued during a backswing | The backswing is cancelled and the new order starts. The attack or cast it followed already landed |
 | Q held down | One instance. Repeats are ignored |
 | Q, W, E pressed in one tick | Applied in press order; the buffer ends with the last three |

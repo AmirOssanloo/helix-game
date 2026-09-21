@@ -26,9 +26,9 @@ export type TransitionResult = "ok" | TransitionRefusal;
  *
  * Two rules shape the table. A unit holds one order, and a new legal order replaces it whole
  * on the tick that consumes the command, before movement runs, so the first translation can
- * land on the same tick. And a cast point is a commitment: while a unit is in `attack_windup`
- * or `ability_cast_point`, only a stop or a disable takes it out, and any other order is
- * refused rather than queued.
+ * land on the same tick. And a new order cancels whatever the unit was holding for: an attack
+ * point or a cast point in progress ends with nothing spent and no clock started, because
+ * both happen at the end of the point, and nothing is ever queued for after it.
  *
  * The cast record beside the order follows it: a new order or a stop forgets the cast that
  * was pending, the cast point keeps it, and the commit that ends the cast point clears it.
@@ -36,7 +36,7 @@ export type TransitionResult = "ok" | TransitionRefusal;
  * Every function that refuses does so before writing anything.
  */
 
-/** Whether the unit is holding for an attack point or a cast point, which no new order may interrupt. */
+/** Whether the unit is holding for an attack point or a cast point, over which a second point may not begin. */
 const isInCastPoint = (unit: Readonly<Unit>): boolean =>
   unit.state === "attack_windup" || unit.state === "ability_cast_point";
 
@@ -76,17 +76,14 @@ const takeOrder = (unit: Unit): void => {
 /**
  * Replaces the current order with a move to (`x`, `y`) and asks the pathing system for the
  * path there. The point is the caller's to make legal: the command system resolves a click on
- * an obstacle or off the map before it issues the move. Legal unless a cast point is in progress.
+ * an obstacle or off the map before it issues the move. Legal from every state; an attack
+ * point or a cast point in progress is cancelled.
  */
 export const issueMove = (
   unit: Unit,
   x: number,
   y: number,
 ): TransitionResult => {
-  if (isInCastPoint(unit)) {
-    return "cast_point_in_progress";
-  }
-
   takeOrder(unit);
   unit.order.kind = "move";
   unit.order.destination.x = x;
@@ -96,15 +93,11 @@ export const issueMove = (
   return "ok";
 };
 
-/** Replaces the current order with an attack on `targetId`. Legal unless a cast point is in progress. */
+/** Replaces the current order with an attack on `targetId`. Legal from every state; an attack point or a cast point in progress is cancelled. */
 export const issueAttackTarget = (
   unit: Unit,
   targetId: EntityId,
 ): TransitionResult => {
-  if (isInCastPoint(unit)) {
-    return "cast_point_in_progress";
-  }
-
   takeOrder(unit);
   unit.order.kind = "attack_target";
   unit.order.targetId = targetId;
@@ -112,16 +105,12 @@ export const issueAttackTarget = (
   return "ok";
 };
 
-/** Replaces the current order with an attack-move to (`x`, `y`), asking for the path as a move does. Legal unless a cast point is in progress. */
+/** Replaces the current order with an attack-move to (`x`, `y`), asking for the path as a move does. Legal from every state; an attack point or a cast point in progress is cancelled. */
 export const issueAttackMove = (
   unit: Unit,
   x: number,
   y: number,
 ): TransitionResult => {
-  if (isInCastPoint(unit)) {
-    return "cast_point_in_progress";
-  }
-
   takeOrder(unit);
   unit.order.kind = "attack_move";
   unit.order.destination.x = x;
@@ -135,7 +124,8 @@ export const issueAttackMove = (
  * Replaces the current order with a cast of `abilityId` aimed by `targetKind` at (`x`, `y`)
  * and, for a unit target, at `targetId`. The order's destination starts at the aim; the cast
  * rule moves it to a legal approach point when the aim is out of range. The unit turns to
- * face before the cast point. Legal unless a cast point is in progress.
+ * face before the cast point. Legal from every state; an attack point or a cast point in
+ * progress is cancelled, and the cast pending under it is replaced by this one.
  */
 export const issueCast = (
   unit: Unit,
@@ -145,10 +135,6 @@ export const issueCast = (
   y: number,
   targetId: EntityId | null,
 ): TransitionResult => {
-  if (isInCastPoint(unit)) {
-    return "cast_point_in_progress";
-  }
-
   takeOrder(unit);
   unit.order.kind = "cast";
   unit.order.destination.x = x;
@@ -281,13 +267,10 @@ export const beginCastBackswing = (unit: Unit): TransitionResult => {
 
 /**
  * A channel starts, on commit after a cast point or directly where a cast point could have
- * begun. The order is cleared. Refused during an attack point and while already channeling.
+ * begun. The order is cleared, and an attack point in progress is cancelled as a cast would
+ * cancel it. Refused while already channeling.
  */
 export const beginChannel = (unit: Unit): TransitionResult => {
-  if (unit.state === "attack_windup") {
-    return "cast_point_in_progress";
-  }
-
   if (unit.state === "channeling") {
     return "already_channeling";
   }

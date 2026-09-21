@@ -88,13 +88,42 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 
 ---
 
+### P1-S05-T04 — A new order cancels an attack point or a cast point
+
+| Field | Value |
+| --- | --- |
+| Layer | domain, docs, tests |
+| Size | 0.5 |
+| Depends on | P1-S04-T04 |
+| Status | done |
+
+**Build:** The answer to Q20. The four issue functions of the order state machine land from every state: an attack point or a cast point in progress is cancelled on the tick the command is consumed, with nothing spent and no clock started, and the cast pending under it is forgotten or, for a new cast, replaced. `beginChannel` lands from an attack point the same way. The validator reads disable flags only and no longer carries the cast-point refusal reason. The controls page, the ability pipeline page, the casting flow, the spells page, the commands page, the simulation coding standard, and the spec's section 13 say so.
+
+**Acceptance:**
+- A move consumed during a cast point cancels it: no commit event, no refusal event, mana untouched, and the hero walks.
+- A second cast consumed during a cast point cancels the first and commits in its place.
+- Every order lands from `attack_windup` and `ability_cast_point` with the cast record cleared.
+
+**Tests:**
+- `tests/domain/orders/state-machine.spec.ts` — the four issue functions from the two point states, `beginChannel` from the attack point.
+- `tests/domain/orders/validator.spec.ts` — every command accepted during either point.
+- `tests/simulation/cast-skeleton.spec.ts` — the two acceptance bullets through the world.
+
+**Definition of done:** Every change · `src/domain`.
+
+*Unplanned: added before T01 started, when Q20 was answered against its proposed answer. The refusal was built in sprint 02 and the cast skeleton in sprint 04 on the proposed answer; flipping it before sprint 06 records a replay and sprint 09 builds the attack point on top costs half a day and invalidates nothing.*
+
+*Edited while building: a slot key on a no-target prepared spell pressed during a cast point used to reach the request stage, which asserts the issue lands; the validator accepted the slot while the state machine refused the cast. The flip closes that gap without a branch, since the issue now lands.*
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
 | The section 15 feel walk-through by hand, thirteen bullets, each pass or fail | |
 | Bench rerun after views: fps · render ms · draw calls · heap | |
-| Actual days per ticket | T01 · T02 · T03 |
+| Actual days per ticket | T01 · T02 · T03 · T04 0.5 |
 
 ## Risks in this sprint
 

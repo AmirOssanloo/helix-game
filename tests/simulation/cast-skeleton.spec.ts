@@ -465,37 +465,39 @@ describe("during the face stage", () => {
 });
 
 describe("during the cast point", () => {
-  it("a move is refused and the cast commits", () => {
+  it("a move cancels the cast with nothing spent, and the hero walks", () => {
     const { world, hero, reader } = worldHolding([pointSpell.id, null]);
     castAt(world, pointSpell.id, 300, 0);
     world.tick();
 
+    expect(hero.state).toBe("ability_cast_point");
+
     moveTo(world, 300, 300);
     ticks(world, CAST_POINT_TICKS);
 
-    expect(eventsOfKind(world, reader, "command_refused")).toMatchObject([
-      { reason: "cast_point_in_progress" },
-    ]);
-    expect(
-      eventsOfKind(world, createEventReader(), "cast_committed"),
-    ).toHaveLength(1);
-    expect(hero.curr).toEqual({ x: 0, y: 0 });
+    expect(eventsOfKind(world, reader, "command_refused")).toEqual([]);
+    expect(eventsOfKind(world, createEventReader(), "cast_committed")).toEqual(
+      [],
+    );
+    expect(hero.cast.abilityId).toBeNull();
+    expect(hero.order.kind).toBe("move");
+    expect(hero.curr).not.toEqual({ x: 0, y: 0 });
+    expect(mana(world)).toBe(FULL_MANA);
   });
 
-  it("a second cast is refused and the first commits", () => {
+  it("a second cast cancels the first, which spent nothing, and commits in its place", () => {
     const { world, reader } = worldHolding([pointSpell.id, instantSpell.id]);
     castAt(world, pointSpell.id, 300, 0);
     world.tick();
 
     castNone(world, instantSpell.id);
-    ticks(world, CAST_POINT_TICKS);
+    ticks(world, CAST_POINT_TICKS + 1);
 
-    expect(eventsOfKind(world, reader, "command_refused")).toMatchObject([
-      { reason: "cast_point_in_progress", abilityId: instantSpell.id },
-    ]);
+    expect(eventsOfKind(world, reader, "command_refused")).toEqual([]);
     expect(
       eventsOfKind(world, createEventReader(), "cast_committed"),
-    ).toMatchObject([{ abilityId: pointSpell.id }]);
+    ).toMatchObject([{ abilityId: instantSpell.id }]);
+    expect(mana(world)).toBe(FULL_MANA - COST);
   });
 
   it("a stop after the cast point ended takes nothing back", () => {
