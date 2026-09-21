@@ -46,6 +46,7 @@ export {
   IntentRecorder,
   type RecordedRefusal,
 } from "./doubles/intent-recorder";
+export { LabelRecorder } from "./doubles/label-recorder";
 export { PainterRecorder } from "./doubles/painter-recorder";
 export { QuadRecorder, SYNC_FIELDS } from "./doubles/quad-recorder";
 export {

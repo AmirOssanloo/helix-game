@@ -75,7 +75,13 @@ Fixed bands, no per-frame sorting:
 
 The HUD is in its own scene and needs no band. Within a band, draw order is pool order.
 
-**The HUD draws the active kit, not a fixed layout.** Its six ability squares are filled from slot descriptors the world view exposes for the hero's active form — which ability sits in each slot, its clock, its cost, and whether it is a composer or a prepared spell — and the orb display appears only when the active kit has orbs. `HudScene` never names a spell or a kit.
+**The HUD draws the active kit, not a fixed layout.** Its six ability squares are filled from slot descriptors the active form's kit writes for the world view — which ability sits in each slot, whether it is an orb, the composer, or a prepared spell, its clock and the whole length of that clock, its cost, its level, and the disable that blocks its key right now — and the orb display appears only while a descriptor is an orb. A prepared spell's colour comes from the spell table by id. `HudScene` never names a spell or a kit; a kit resolver is a port it is handed, so a second kit is a door test.
+
+**The HUD's elements are not entity views.** They are laid out once at `create` and each frame write what they show: a bar's fill stretches by its horizontal scale, a wedge changes frame once per step of the sweep, and a label is rewritten only when its text changes. The bars, the level, and the experience bar read the world view; nothing on the HUD sums events.
+
+**A refusal is a flash, and a flash ends at a tick.** One record of the six squares' flashes is shared by the two scenes: the play scene's input mapper writes one for a cursor it would not open, which never reaches the buffer to be refused there, and the HUD writes one for every refused-command event that names a slot. Red for mana, grey for a clock, striped for a disable, white for anything else. The end is a tick, so a flash pauses with the simulation.
+
+**A pointer that goes down on the bar is the HUD's.** The HUD scene sits above the play scene and stops the event before the play scene sees it, so a right click on the bar is never a move. A left click on an orb square while a skill point is unspent becomes a spend-skill-point command naming the slot; the kit decides which orb that is.
 
 ---
 
@@ -103,7 +109,7 @@ Static map geometry drawn as a tile layer is a view kind like any other when a m
 
 ## Input
 
-`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas. It holds the only piece of state that is not in the world: which slot's cursor is open.
+`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the definition's frame under the pointer, or on the hero turned toward the pointer for a direction spell. Both turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open.
 
 ---
 
@@ -135,7 +141,12 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | `Shape` and `Graphics` objects | Never, including debug |
 | Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame, a wedge frame |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
-| HUD ability squares | Filled from the active kit's slot descriptors in the world view; never a fixed layout |
+| HUD ability squares | Filled from the active kit's slot descriptors: kind, ability, clock and its whole length, cost, level, and the disable blocking it; never a fixed layout; the kit is a resolver port |
+| HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
+| HUD state | Bars and the level read the world view; nothing sums events |
+| Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
+| HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent is a spend-skill-point command naming the slot |
+| Targeting preview | Two quads at the ground band in world coordinates: the range ring on the hero, the definition's frame under the pointer; red past the range |
 | Binding | By the camera rectangle through the spatial hash, each frame |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |

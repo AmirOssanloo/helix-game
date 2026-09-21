@@ -6,6 +6,31 @@ export {
   ShapeAtlas,
 } from "./atlas/shape-atlas";
 export { WorldCamera } from "./camera/world-camera";
+export {
+  AbilitySquareView,
+  type SquareInput,
+  wedgeStepFor,
+} from "./hud/ability-square.view";
+export { BarView } from "./hud/bar.view";
+export { Hud, type HudPorts, type KitResolver } from "./hud/hud";
+export {
+  BAR_RECT,
+  containsPoint,
+  ORB_ROW_CENTRE_Y,
+  orbSquareCentreX,
+  squareAt,
+  squareCentreX,
+  SQUARES_CENTRE_Y,
+} from "./hud/hud-layout";
+export { LevelView } from "./hud/level.view";
+export { OrbSquaresView } from "./hud/orb-squares.view";
+export { ORB_TINTS, orbTint } from "./hud/palette";
+export {
+  FLASH_TICKS,
+  type FlashKind,
+  flashKindOf,
+  SlotFlashes,
+} from "./hud/slot-flashes";
 export { bindSceneInput, cameraLens } from "./input/bind-scene-input";
 export { InputMapper } from "./input/input-mapper";
 export type { CameraLens, InputIntents, InputPorts } from "./input/input-ports";
@@ -21,6 +46,8 @@ export type {
   SlotKeyOutcome,
   TargetingCursor,
 } from "./input/targeting-cursor";
+export { closeCursor, createTargetingCursor } from "./input/targeting-cursor";
+export { PREVIEW_SIZE, TargetingPreview } from "./input/targeting-preview";
 export type {
   CommandDriver,
   FrameDriver,
@@ -45,6 +72,8 @@ export { createOrbViews, orbSlotsOf, OrbViews } from "./views/orb.view";
 export {
   type FrameSizes,
   interpolate,
+  type Label,
+  type LabelFactory,
   type Quad,
   type QuadFactory,
 } from "./views/quad";

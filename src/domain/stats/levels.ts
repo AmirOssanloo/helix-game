@@ -104,3 +104,31 @@ export const spendSkillPoint = (
 
   return "ok";
 };
+
+/**
+ * How far the unit is from its level to the next, from zero at the level's threshold to one
+ * at the next level's, for an experience bar to read. One at the cap, where the bar shows
+ * full and stops.
+ */
+export const experienceProgress = (
+  progression: Readonly<Progression>,
+  hero: HeroDef,
+): number => {
+  const top = Math.min(hero.maxLevel, hero.experienceThresholds.length);
+
+  if (progression.level >= top) {
+    return 1;
+  }
+
+  const from = thresholdAt(hero.experienceThresholds, progression.level);
+  const to = thresholdAt(hero.experienceThresholds, progression.level + 1);
+
+  if (to <= from) {
+    return 1;
+  }
+
+  return Math.min(
+    1,
+    Math.max(0, (progression.experience - from) / (to - from)),
+  );
+};

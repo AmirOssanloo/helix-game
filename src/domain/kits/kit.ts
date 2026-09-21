@@ -2,6 +2,8 @@ import type { DeepReadonly } from "@shared/public";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { Unit } from "../entities/unit";
 import type { KitState } from "../entities/world-state";
+import type { DisableFlags } from "../orders/disable-flags";
+import type { RefusalReason } from "../orders/validator";
 import type { Tick } from "../tick";
 
 /** What a slot key asks for: an orb press, an invoke, a cast of the ability the slot holds, or nothing because the slot is empty. */
@@ -23,14 +25,20 @@ export type SlotKind = "orb" | "composer" | "prepared";
 
 /**
  * What the view shows for one slot: its kind, the ability in it or `null` for an empty
- * socket, the tick its clock ends, `0` when it is ready, and the mana it costs. One record
- * per reader, filled in place.
+ * socket, the tick its clock ends, `0` when it is ready, the whole clock at the level the
+ * ability is at, so a sweep is the remainder over it, the mana it costs, the level it is at,
+ * the orb's for an orb and the spell's for a prepared spell, zero for the composer and an
+ * empty socket, and the disable that blocks its key right now, or `null`. One record per
+ * reader, filled in place.
  */
 export type SlotDescriptor = {
   kind: SlotKind;
   abilityId: string | null;
   readyAtTick: Tick;
+  clockTicks: number;
   cost: number;
+  level: number;
+  blockedBy: RefusalReason | null;
 };
 
 /**
@@ -46,11 +54,12 @@ export type Kit = Readonly<{
     state: DeepReadonly<KitState>,
     out: AbilityRequest,
   ) => AbilityRequest;
-  /** Writes what slot key `slot` shows, reading the unit's clocks, the spell table and the tuning table for costs. */
+  /** Writes what slot key `slot` shows, reading the unit's clocks and disable flags, and the spell table and the tuning table for costs and clocks. */
   describeSlot: (
     slot: number,
     state: DeepReadonly<KitState>,
     cooldowns: ReadonlyMap<string, Tick>,
+    disables: Readonly<DisableFlags>,
     spells: ReadonlyMap<string, SpellRecord>,
     tuning: ReadonlyMap<string, number>,
     out: SlotDescriptor,
@@ -75,5 +84,8 @@ export const createSlotDescriptor = (): SlotDescriptor => ({
   kind: "prepared",
   abilityId: null,
   readyAtTick: 0,
+  clockTicks: 0,
   cost: 0,
+  level: 0,
+  blockedBy: null,
 });

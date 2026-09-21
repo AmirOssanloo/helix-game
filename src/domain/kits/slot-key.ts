@@ -8,6 +8,7 @@ import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { pressOrb } from "../invoke/buffer";
 import { invoke } from "../invoke/invoke";
 import type { RefusalReason } from "../orders/validator";
+import { spendSkillPoint } from "../stats/levels";
 import { createAbilityRequest } from "./kit";
 import { resolveKit } from "./kit-registry";
 
@@ -151,4 +152,41 @@ export const applySlotKey = (
     case "empty":
       return "empty_slot";
   }
+};
+
+/**
+ * Spends one of `hero`'s skill points on the orb skill slot key `slot` holds in the active
+ * form's kit. The kit says which orb the slot is, so the HUD that clicked the square named
+ * none; a slot that holds no orb skill is refused as an unknown skill. Returns the reason
+ * the spend was refused, or `null` when the level rose, for the caller to announce. A unit
+ * with no form has no kit and nothing to level.
+ */
+export const applySkillPoint = (
+  world: World,
+  hero: Unit,
+  slot: number,
+): RefusalReason | null => {
+  const form = activeFormOf(world, hero);
+
+  if (form === null) {
+    return null;
+  }
+
+  const kit = resolveKit(form.def.kit);
+
+  assert(kit !== null, "The content tier resolves every form's kit key");
+  kit.resolveSlot(slot, form.kit, request);
+
+  if (request.kind !== "orb") {
+    return "unknown_skill";
+  }
+
+  const result = spendSkillPoint(
+    hero.progression,
+    form.kit.orbLevels,
+    request.orb,
+    world.run.hero.maxOrbLevel,
+  );
+
+  return result === "ok" ? null : result;
 };

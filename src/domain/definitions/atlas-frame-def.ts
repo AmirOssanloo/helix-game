@@ -11,6 +11,7 @@ export type AtlasShape =
   | Readonly<{ kind: "triangle" }>
   | Readonly<{ kind: "pixel" }>
   | Readonly<{ kind: "wedge"; step: number; steps: number }>
+  | Readonly<{ kind: "stripes"; thickness: number }>
   | Readonly<{ kind: "icon" }>
   | Readonly<{ kind: "glyph"; character: string }>;
 

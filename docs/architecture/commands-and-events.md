@@ -11,12 +11,12 @@ The only two doors in the simulation: commands go in, events come out. Everythin
 
 ```text
 DOM and Phaser input ──► input mapper ──► Command ─┐
-                                                    ├──► command buffer ──► tick ──► event ring ──► presentation sync
+a click on the HUD ─────► HUD ─────────► Command ───┼──► command buffer ──► tick ──► event ring ──► presentation sync
 developer panel ────────► DevApi ──────► Command ───┘                        │
                                                                              └──► input log
 ```
 
-Two producers, one buffer, one log. The tick consumes the buffer; nothing else writes to the world.
+Three producers, the HUD's one command counted, one buffer, one log. The tick consumes the buffer; nothing else writes to the world.
 
 ---
 
@@ -31,6 +31,8 @@ A command is a plain value: a variant of one union, carrying the tick it applies
 - **Every command carries a tick timestamp.** The mapper stamps it with the tick the command will apply to.
 - **A slot key names a slot, not a mechanic.** Q, W, E, R, D, F become one command variant carrying a slot index from 1 to 6. The active form's kit decides what that index means — an orb, the composer, a prepared spell, or a plain ability — so the mapper and the command union never know which kit the hero is wearing.
 
+**The HUD** issues one command of its own: a left click on an orb square while a skill point is unspent submits a spend-skill-point command naming the slot, and the active kit decides which orb that is. It goes through the same door as a key press.
+
 **The developer panel** issues commands through `DevApi`. Player-shaped things — spawn, damage, heal — are `DebugCommand` variants. A tuning change is a `SetTuning` command. Both land in the same buffer as a right click and are recorded in the same input log. There is no second path into the world, and there is no method on the world that mutates state from outside a tick. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) says why.
 
 ```typescript
@@ -44,7 +46,7 @@ The buffer is consumed at the start of the tick, sorted by timestamp. Commands o
 
 ### Validation
 
-A command is a request. The validator in `domain/orders/` decides whether the unit may act on it this tick: is it stunned, silenced, rooted, mid-cast. The validator reads disable flags the status system computed earlier in the tick. What a slot key or a cast needs beyond that, the ability, its clock, its cost, its target, is the active kit's or the ability pipeline's to refuse when the command is applied. A refused command is dropped and, where the player would want to know, an event says why.
+A command is a request. The validator in `domain/orders/` decides whether the unit may act on it this tick: is it stunned, silenced, rooted, mid-cast. The validator reads disable flags the status system computed earlier in the tick. What a slot key or a cast needs beyond that, the ability, its clock, its cost, its target, is the active kit's or the ability pipeline's to refuse when the command is applied. A skill-point spend is checked for its slot alone; no disable refuses it, since a level is not something the unit does, and the kit and the level rule refuse a slot that holds no orb, a missing point, or an orb at its cap. A refused command is dropped and, where the player would want to know, an event says why.
 
 ### Application
 
@@ -94,13 +96,13 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Rule | Do |
 | --- | --- |
 | Changing world state | Only a command, consumed by a tick |
-| Command producers | The input mapper and `DevApi`, into the same buffer |
+| Command producers | The input mapper, the HUD's orb squares, and `DevApi`, into the same buffer |
 | Command shape | A plain value: one union variant, a tick timestamp, its payload |
 | Ability keys | Edge-triggered on key-down; key repeat never reaches the buffer |
 | Slot keys | One command variant carrying a slot index 1 to 6; the active kit resolves it, the mapper and the union never name a mechanic |
 | Pointer picks | World position resolved at event time, stored on the command |
-| Ordering | By timestamp; ties by Q, W, E, R, D, F, then arrival order |
-| Validation | `domain/orders/` decides per tick from disable flags; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a refusal is dropped and announced as a refused-command event with its reason |
+| Ordering | By timestamp; ties by Q, W, E, R, D, F, a skill-point spend sorting as the slot it names, then arrival order |
+| Validation | `domain/orders/` decides per tick from disable flags; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a skill-point spend is checked for its slot alone and refused by no disable; a refusal is dropped and announced as a refused-command event with its reason |
 | Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation: a tuning change to run scope, every other to the hero; the last legal order in a tick wins |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
 | Tuning changes | A `SetTuning` command carrying a key of the tuning table and a value in the designer's units, recorded in the input log, converted once when applied |

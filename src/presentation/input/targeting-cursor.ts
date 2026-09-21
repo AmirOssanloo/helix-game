@@ -83,6 +83,7 @@ export const pressSlotKey = (
     slot,
     form.kit,
     hero.cooldowns,
+    hero.disables,
     world.run.spells,
     world.run.tuning,
     descriptor,
@@ -102,12 +103,8 @@ export const pressSlotKey = (
     return "send";
   }
 
-  if (hero.disables.stunned) {
-    return "stunned";
-  }
-
-  if (hero.disables.silenced) {
-    return "silenced";
+  if (descriptor.blockedBy !== null) {
+    return descriptor.blockedBy;
   }
 
   if (

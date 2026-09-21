@@ -49,6 +49,13 @@ const cast = (target: CastTarget = { kind: "none" }): UnitCommand => ({
   target,
 });
 
+const spendSkillPoint = (index: number): UnitCommand => ({
+  kind: "spend_skill_point",
+  tick: 0,
+  timestamp: 0,
+  slot: index,
+});
+
 const noop = (): UnitCommand => ({ kind: "noop", tick: 0, timestamp: 0 });
 
 const debugNoop = (): UnitCommand => ({
@@ -83,6 +90,7 @@ const unitIn = (state: OrderState = "idle"): Unit => {
 /** Every command, the two noops included, which a fresh unit accepts. */
 const ACCEPTED_ON_A_FRESH_UNIT: readonly (readonly [string, UnitCommand])[] = [
   ...EVERY_COMMAND,
+  ["spend_skill_point", spendSkillPoint(1)],
   ["noop", noop()],
   ["debug_noop", debugNoop()],
 ];
@@ -196,6 +204,24 @@ describe.each(["attack_windup", "ability_cast_point"] as const)(
     );
   },
 );
+
+describe("validateCommand on a skill-point spend", () => {
+  it.each(["stunned", "silenced", "rooted", "disarmed"] as const)(
+    "accepts it while %s: a level is not something the unit does",
+    (flag) => {
+      const unit = unitIn();
+      unit.disables[flag] = true;
+
+      expect(validateCommand(unit, spendSkillPoint(3))).toBe("ok");
+    },
+  );
+
+  it.each([0, 7, 1.5])("refuses slot %s", (index) => {
+    expect(validateCommand(unitIn(), spendSkillPoint(index))).toBe(
+      "invalid_slot",
+    );
+  });
+});
 
 describe("validateCommand on a slot index", () => {
   it.each([1, 6])("accepts slot %i", (index) => {

@@ -53,6 +53,12 @@ const shapes: readonly AtlasFrameDef[] = [
     shape: { kind: "square_outline", thickness: 16 },
   },
   { name: "triangle", width: 128, height: 128, shape: { kind: "triangle" } },
+  {
+    name: "stripes",
+    width: 128,
+    height: 128,
+    shape: { kind: "stripes", thickness: 12 },
+  },
   { name: "pixel", width: 4, height: 4, shape: { kind: "pixel" } },
   { name: "status_icon", width: 32, height: 32, shape: { kind: "icon" } },
 ];

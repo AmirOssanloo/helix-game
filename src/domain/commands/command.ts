@@ -18,7 +18,8 @@ export type Command =
   | AttackMoveCommand
   | AttackTargetCommand
   | SlotCommand
-  | CastCommand;
+  | CastCommand
+  | SpendSkillPointCommand;
 
 /** Proves the plumbing: ordered, consumed, and logged like any command, and changes nothing. */
 export type NoopCommand = Readonly<{
@@ -96,6 +97,20 @@ export type CastCommand = Readonly<{
   timestamp: number;
   abilityId: string;
   target: CastTarget;
+}>;
+
+/**
+ * A click on one of the HUD's orb squares while a skill point is unspent: spend one on the
+ * orb skill the square's slot holds. It carries the slot, not the orb, so the HUD names no
+ * orb; the active form's kit resolves the slot, and a slot that holds no orb skill is refused.
+ * No disable refuses it: a level is not an action of the unit.
+ */
+export type SpendSkillPointCommand = Readonly<{
+  kind: "spend_skill_point";
+  tick: Tick;
+  timestamp: number;
+  /** 1 to `SLOT_COUNT`, in the order Q, W, E, R, D, F. */
+  slot: number;
 }>;
 
 /**

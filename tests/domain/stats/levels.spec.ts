@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { HeroDef, Progression } from "@domain/public";
 import {
+  experienceProgress,
   grantExperience,
   levelForExperience,
   spendSkillPoint,
@@ -171,5 +172,41 @@ describe("spendSkillPoint", () => {
     expect(levels).toEqual([0, 0, 7]);
     expect(results.at(-1)).toBe("skill_at_cap");
     expect(progression.skillPoints).toBe(1);
+  });
+});
+
+describe("experienceProgress", () => {
+  it.each([
+    [1, 0, 0],
+    [1, 50, 0.5],
+    [1, 99, 0.99],
+    [2, 100, 0],
+    [2, 200, 0.5],
+    [3, 450, 0.5],
+  ])(
+    "at level %i with %i experience is %s of the way to the next",
+    (level, experience, progress) => {
+      expect(
+        experienceProgress({ level, experience, skillPoints: 0 }, hero),
+      ).toBeCloseTo(progress);
+    },
+  );
+
+  it("is full at the cap and stays full", () => {
+    expect(
+      experienceProgress({ level: 4, experience: 600, skillPoints: 0 }, hero),
+    ).toBe(1);
+  });
+
+  it("is full at the end of a table shorter than the cap", () => {
+    expect(
+      experienceProgress(
+        { level: 2, experience: 100, skillPoints: 0 },
+        {
+          ...hero,
+          experienceThresholds: [0, 100],
+        },
+      ),
+    ).toBe(1);
   });
 });

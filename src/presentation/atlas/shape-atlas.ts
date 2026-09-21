@@ -29,8 +29,14 @@ export class ShapeAtlas {
 
   private canvas: HTMLCanvasElement | null = null;
 
+  /** How many wedge frames the list holds: the steps of a cooldown sweep. */
+  readonly wedgeSteps: number;
+
   constructor(frames: AtlasFrameList) {
     this.layout = layoutAtlas(frames);
+    this.wedgeSteps = frames.filter(
+      (frame) => frame.shape.kind === "wedge",
+    ).length;
   }
 
   /** Draws the atlas and registers the texture and the font on the scene's game. Once per game, before any scene draws. */

@@ -9,8 +9,14 @@ import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { KitState } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
-import { INVOKE_ID } from "../invoke/invoke";
+import {
+  INVOKE_ID,
+  invokeCooldownTicks,
+  totalOrbLevels,
+} from "../invoke/invoke";
 import { refreshOrbPassives } from "../invoke/passives";
+import type { DisableFlags } from "../orders/disable-flags";
+import { abilityDisable } from "../orders/validator";
 import type { Tick } from "../tick";
 import type { AbilityRequest, Kit, SlotDescriptor } from "./kit";
 
@@ -70,6 +76,7 @@ const describeSlot = (
   slot: number,
   state: DeepReadonly<KitState>,
   cooldowns: ReadonlyMap<string, Tick>,
+  disables: Readonly<DisableFlags>,
   spells: ReadonlyMap<string, SpellRecord>,
   tuning: ReadonlyMap<string, number>,
   out: SlotDescriptor,
@@ -79,13 +86,17 @@ const describeSlot = (
     "A view describes one of the six keys",
   );
 
+  out.blockedBy = abilityDisable(disables);
+
   if (slot <= ORB_COUNT) {
     const orb = ORB_IDS[slot - 1];
 
     out.kind = "orb";
     out.abilityId = orb === undefined ? null : orb;
     out.readyAtTick = 0;
+    out.clockTicks = 0;
     out.cost = 0;
+    out.level = state.orbLevels[slot - 1] ?? 0;
 
     return out;
   }
@@ -94,7 +105,12 @@ const describeSlot = (
     out.kind = "composer";
     out.abilityId = INVOKE_ID;
     out.readyAtTick = cooldowns.get(INVOKE_ID) ?? 0;
+    out.clockTicks = invokeCooldownTicks(
+      tuning,
+      totalOrbLevels(state.orbLevels),
+    );
     out.cost = readTunable(tuning, "invoke_mana");
+    out.level = 0;
 
     return out;
   }
@@ -104,6 +120,8 @@ const describeSlot = (
     prepared === undefined || prepared === null
       ? undefined
       : spells.get(prepared);
+  const level =
+    record === undefined ? 0 : spellLevelOf(state.orbLevels, record.def.recipe);
 
   out.kind = "prepared";
   out.abilityId = prepared === undefined ? null : prepared;
@@ -111,13 +129,11 @@ const describeSlot = (
     prepared === undefined || prepared === null
       ? 0
       : (cooldowns.get(prepared) ?? 0);
+  out.clockTicks =
+    record === undefined ? 0 : entryAtLevel(record.cooldownTicks, level);
   out.cost =
-    record === undefined
-      ? 0
-      : entryAtLevel(
-          record.def.manaCost,
-          spellLevelOf(state.orbLevels, record.def.recipe),
-        );
+    record === undefined ? 0 : entryAtLevel(record.def.manaCost, level);
+  out.level = level;
 
   return out;
 };

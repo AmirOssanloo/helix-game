@@ -38,6 +38,9 @@ const GLYPH_EM_FRACTION = 0.8;
 
 const GLYPH_FONT_FAMILY = "monospace";
 
+/** A stripe and its gap, in stripe thicknesses. */
+const STRIPE_PERIOD = 2;
+
 /** The placeholder icon: an outline this fraction of the cell thick, with a disc this fraction across inside it. */
 const ICON_OUTLINE_FRACTION = 0.125;
 const ICON_DISC_FRACTION = 0.5;
@@ -126,6 +129,24 @@ const paintShape = (
       painter.arc(centreX, centreY, radius, startAngle, endAngle);
       painter.closePath();
       painter.fill();
+
+      return;
+    }
+
+    case "stripes": {
+      // Bands the thickness of the gap between them, so the square reads as half filled.
+      for (
+        let top = y;
+        top < y + height;
+        top += shape.thickness * STRIPE_PERIOD
+      ) {
+        painter.fillRect(
+          x,
+          top,
+          width,
+          Math.min(shape.thickness, y + height - top),
+        );
+      }
 
       return;
     }

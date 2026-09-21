@@ -32,7 +32,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 
 ## Targeting preview
 
-When a targeted spell's cursor is open: a range ring around the hero at the spell's cast range, and under the pointer the spell's area, line, or cone drawn as a translucent outline. The preview turns red outside range. It closes on commit, Esc, or S.
+When a targeted spell's cursor is open: a range ring around the hero at the spell's cast range, and under the pointer the spell's shape, the frame its definition names, drawn translucent. A direction spell's shape sits on the hero and turns toward the pointer instead. The preview turns red outside range; a direction spell is never out of range. It closes on commit, Esc, or S.
 
 ## Placeholder art
 
@@ -74,6 +74,9 @@ There is no sorting by vertical position; the view is top-down and nothing is ta
 | Empty slot | An empty socket, no key label greyed |
 | Re-invoking a spell whose cooldown is running | The spell moves to D with its sweep still running |
 | Refused cast | The square flashes: red for mana, grey for cooldown, striped for a disable |
+| Refused skill point, because none is unspent or the orb is at its cap | The orb square flashes white |
+| Click on the bottom bar | The HUD takes it; the world never sees it, so a right click on the bar is not a move |
+| Simulation paused with a flash showing | The flash holds until the simulation resumes; it ends on a tick, not a frame |
 | More damage numbers than the pool holds | The oldest number is recycled early; nothing is dropped silently |
 | Health at zero | The bar is empty; the bottom bar greys until respawn |
 | Skill point unspent at level cap | The marker stays until spent |

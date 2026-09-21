@@ -1,14 +1,11 @@
 import { orbAt } from "@domain/public";
 import type { WorldView } from "@simulation/public";
+import { orbTint } from "../hud/palette";
 import { DEPTH_AIR } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
 import { interpolate } from "./quad";
 
 const ORB_FRAME = "disc";
-
-/** Placeholder art: Quartz blue, Whorl purple, Ember orange, by orb index in slot-key order. */
-const ORB_TINTS: readonly number[] = [0x6fb7ff, 0xb388ff, 0xff7a45];
-const UNKNOWN_ORB_TINT = 0xffffff;
 
 const ORB_DIAMETER = 14;
 
@@ -77,7 +74,7 @@ export class OrbViews {
       quad.y = centreY + Math.sin(angle) * radius;
       quad.rotation = 0;
       quad.scale = ORB_DIAMETER * this.scalePerUnit;
-      quad.tint = ORB_TINTS[orb] ?? UNKNOWN_ORB_TINT;
+      quad.tint = orbTint(orb);
       quad.alpha = OPAQUE;
       quad.visible = true;
     }

@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
 | **Active sprint** | [05 — Input mapper, views, camera, and HUD](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md) |
-| **Next ticket** | P1-S05-T03 — HudScene: bars, orbs, six slots, wedges, level, targeting preview |
+| **Next ticket** | P1-S06-T01 — The debug command union, hero death and respawn, the channel stub, once sprint 05's exit table is filled |
 | **In progress** | none |
-| **Last closed ticket** | P1-S05-T02 — PlayScene: views, sync, interpolation, camera, and the unplanned P1-S05-T05 — The hero enters the world at boot |
+| **Last closed ticket** | P1-S05-T03 — HudScene: bars, orbs, six slots, wedges, level, targeting preview |
 | **Last closed sprint** | [04 — Hero definition, orbs, Invoke, slots, and cooldowns](./phase-1-hero-mechanics/sprint-04-orbs-invoke-and-slots.md), 2026-09-21 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
@@ -21,6 +21,7 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 ## Blocked or waiting
 
+- Sprint 05's exit waits on a person: the section 15 feel walk-through by hand, thirteen bullets, each pass or fail, written into the sprint's exit table. Every ticket of the sprint is done; the sprint closes when that row is filled.
 - Milestone M1 waits on a person: `pnpm bench` on the reference laptop in Chrome and Safari, once as configured and once with `?textures=default`, with the numbers written into the sprint 02 exit table and the phase 1 README. It holds in Chrome on an Apple M1 laptop and blocks nothing in sprint 05.
 
 ---

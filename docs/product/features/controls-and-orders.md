@@ -17,6 +17,8 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Right click | Summon or neutral | Nothing. No follow order starts |
 | Left click | World, no targeting cursor open | Selects. Never issues a move |
 | Left click | Targeting cursor open | Commits the target and starts the cast |
+| Left click | An orb square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
+| Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
 | Scroll wheel | Anywhere | Camera zoom, for debugging only. Not an order |
 
 A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it.
@@ -87,6 +89,7 @@ Copied from spec section 15, because it is the shortest test of whether the cont
 | State | What happens |
 | --- | --- |
 | Order issued while stunned | Refused; the hero keeps whatever it was doing when stunned. Nothing is queued for after |
+| Skill point spent while stunned or silenced | Allowed. A level is not an action of the hero, so no disable refuses it |
 | Right click while the targeting cursor is open | The click is a move order; the cursor closes at no cost |
 | Esc with a move running | The cursor closes; the move continues |
 | D or F pressed on a targeted spell that is on cooldown, unaffordable, or blocked by a disable | The cursor does not open and nothing is sent; the square flashes with the reason |

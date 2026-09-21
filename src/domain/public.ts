@@ -31,6 +31,7 @@ export {
   type SetTuningCommand,
   SLOT_COUNT,
   type SlotCommand,
+  type SpendSkillPointCommand,
   type StopCommand,
 } from "./commands/command";
 export type { ConsumedCommands } from "./commands/consumed-commands";
@@ -191,7 +192,7 @@ export {
   type SlotDescriptor,
   type SlotKind,
 } from "./kits/kit";
-export { applySlotKey } from "./kits/slot-key";
+export { applySkillPoint, applySlotKey } from "./kits/slot-key";
 export {
   cellCentreX,
   cellCentreY,
@@ -271,12 +272,14 @@ export {
   type TransitionResult,
 } from "./orders/state-machine";
 export {
+  abilityDisable,
   type RefusalReason,
   validateCommand,
   type ValidationResult,
 } from "./orders/validator";
 export { attributesAt, deriveStats } from "./stats/derived";
 export {
+  experienceProgress,
   grantExperience,
   levelForExperience,
   type Progression,

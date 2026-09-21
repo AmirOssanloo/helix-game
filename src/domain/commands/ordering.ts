@@ -17,11 +17,13 @@ const NO_SLOT = Number.MAX_SAFE_INTEGER;
 
 /**
  * The slot a command names, or `null`. The six slot keys are one variant carrying a slot
- * index from 1 to 6, in the order Q, W, E, R, D, F; every other command names none.
+ * index from 1 to 6, in the order Q, W, E, R, D, F, and a skill-point spend names the slot
+ * of the square that was clicked; every other command names none.
  */
 export const slotOf = (command: AnyCommand): number | null => {
   switch (command.kind) {
     case "slot":
+    case "spend_skill_point":
       return command.slot;
 
     case "noop":

@@ -70,7 +70,7 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 | Layer | presentation, content, tests |
 | Size | 1.5 |
 | Depends on | T02, P1-S04-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `HudScene` running in parallel with its own camera, reading the world view once per frame and draining the ring with its own cursor. The bottom bar per the HUD page: health and mana bars with `BitmapText` numbers; three orb squares in age order coloured by orb; six ability squares filled from the active kit's slot descriptors (key label, wedge sweep from the clock, mana cost for composer and prepared kinds, orb level as a small number on orb kinds, empty socket for null, greyed when the descriptor says a disable blocks it); level with an experience bar and an unspent-point marker; clicking Q W E while a point is unspent submits a `spend_skill_point` command. Refusal flashes from `command_refused` events: red for mana, grey for cooldown, striped for a disable. The targeting preview drawn in `PlayScene`'s coordinate space from the atlas: a range ring at the spell's range around the hero and, under the pointer, the spell's shape (circle, line, or cone per its definition), red outside range, closed on commit, Esc, or S.
 
@@ -85,6 +85,8 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 - `tests/presentation/targeting-preview.spec.ts` — ring radius, red outside range, shape per targeting kind.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A new command, event, or system (`spend_skill_point`).
+
+*Edited while building: the descriptor the kit writes carries the whole clock, the level, and the disable blocking the slot, since a sweep needs the clock's length and the ticket had the HUD read a disable off the descriptor; the spend command names the slot, not the orb, so the HUD names no orb; and the refusal flash the mapper raises reaches the HUD through one record on the scene context, since the two scenes share nothing else.*
 
 ---
 
@@ -144,8 +146,8 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 | Check | Result |
 | --- | --- |
 | The section 15 feel walk-through by hand, thirteen bullets, each pass or fail | |
-| Bench rerun after views: fps · render ms · draw calls · heap | After T02, Chrome on an Apple M1 laptop, 2026-09-21, as configured, 40 s: 60 to 61 fps, render 0.7 ms, 1 draw call every frame, heap 112 to 113 MB flat after warm-up. The bench scene itself did not change; the run confirms the atlas and the batch are as before |
-| Actual days per ticket | T01 0.5 · T02 1 · T03 · T04 0.5 · T05 0.1 |
+| Bench rerun after views: fps · render ms · draw calls · heap | After T02, Chrome on an Apple M1 laptop, 2026-09-21, as configured, 40 s: 60 to 61 fps, render 0.7 ms, 1 draw call every frame, heap 112 to 113 MB flat after warm-up. The bench scene itself did not change; the run confirms the atlas and the batch are as before. After T03, the same machine and browser, 2026-09-21, as configured, 50 s: 60 fps, render 0.9 to 1.0 ms, 1 draw call every frame, 1 texture, heap 61 to 62 MB flat after warm-up, read off the bench readout in a fresh Chrome profile driven from the terminal; the atlas gained the stripes frame and the run confirms the one batch holds |
+| Actual days per ticket | T01 0.5 · T02 1 · T03 1 · T04 0.5 · T05 0.1 |
 
 ## Risks in this sprint
 

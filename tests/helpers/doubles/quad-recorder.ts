@@ -12,8 +12,8 @@ export const SYNC_FIELDS: readonly string[] = [
 ];
 
 /**
- * A quad that draws nothing and remembers every write, in order: each of the seven fields by
- * name, and each bind-time call by method name. Built against the real `Quad` type, so it
+ * A quad that draws nothing and remembers every write, in order: each of the seven fields and
+ * the two axis scales by name, and each bind-time call by method name. Built against the real `Quad` type, so it
  * stops compiling the day a view needs a member it lacks.
  */
 export class QuadRecorder implements Quad {
@@ -36,6 +36,10 @@ export class QuadRecorder implements Quad {
   private fieldRotation = 0;
 
   private fieldScale = 1;
+
+  private fieldScaleX = 1;
+
+  private fieldScaleY = 1;
 
   private fieldTint = 0xffffff;
 
@@ -81,6 +85,24 @@ export class QuadRecorder implements Quad {
   set scale(value: number) {
     this.fieldScale = value;
     this.writes.push("scale");
+  }
+
+  get scaleX(): number {
+    return this.fieldScaleX;
+  }
+
+  set scaleX(value: number) {
+    this.fieldScaleX = value;
+    this.writes.push("scaleX");
+  }
+
+  get scaleY(): number {
+    return this.fieldScaleY;
+  }
+
+  set scaleY(value: number) {
+    this.fieldScaleY = value;
+    this.writes.push("scaleY");
   }
 
   get tint(): number {

@@ -49,6 +49,7 @@ Which status blocks which key, order, and cast state is written as one table: ev
 | Stunned after the cast point | The spell was committed; it resolves normally |
 | Silenced while the targeting cursor is open | The cursor closes at no cost |
 | Silenced with a move running | The move continues; silence blocks abilities only |
+| Stunned or silenced with a skill point unspent | The point can still be spent from the HUD. A level is not an action the unit takes |
 | Rooted while lifted by Updraft | Lift wins; the unit drops where the updraft leaves it, and root keeps counting |
 | Rooted during a move | The move is cleared; the hero stands until root expires and does not resume |
 | Knocked back into an obstacle | The displacement stops at the obstacle edge |

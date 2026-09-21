@@ -17,6 +17,7 @@ import {
   HudScene,
   PlayScene,
   ShapeAtlas,
+  SlotFlashes,
 } from "@presentation/public";
 import { createWorld } from "@simulation/public";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
@@ -60,6 +61,7 @@ export const boot: Boot = (): void => {
     world: world.view,
     events: world.events,
     rings: { viewMisses: rings.viewMisses },
+    flashes: new SlotFlashes(),
     report: (message: string): void => {
       console.log(message);
     },

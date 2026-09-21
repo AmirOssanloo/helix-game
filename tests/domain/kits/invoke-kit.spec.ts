@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
-import type { KitState } from "@domain/public";
+import type { DisableFlags, KitState } from "@domain/public";
 import {
   createAbilityRequest,
   createSlotDescriptor,
@@ -12,7 +12,25 @@ import {
 } from "@domain/public";
 import { makeSpellDef } from "../../helpers";
 
-const TUNING = createTuningState({ ...tuningTable, invoke_mana: 7 });
+const TUNING = createTuningState({
+  ...tuningTable,
+  invoke_mana: 7,
+  invoke_cd_base: 7,
+  invoke_cd_per_orb_level: 0.3,
+});
+
+const NO_DISABLES: DisableFlags = {
+  stunned: false,
+  silenced: false,
+  rooted: false,
+  disarmed: false,
+};
+
+/** The composer's whole clock at three orb levels: 7.0 s less 0.9 s, at 30 Hz. */
+const INVOKE_CLOCK_AT_THREE_LEVELS = 183;
+
+/** The factory's cooldown table: ten seconds at every level, at 30 Hz. */
+const SPELL_CLOCK = 300;
 
 /** The two prepared spells the descriptions read: a cost that rises with the level, so the level read is visible. */
 const SPELLS = createSpellTable(
@@ -125,6 +143,7 @@ describe("the Invoke kit describes a slot", () => {
       slot,
       state([null, null]),
       cooldowns,
+      NO_DISABLES,
       SPELLS,
       TUNING,
       createSlotDescriptor(),
@@ -134,7 +153,10 @@ describe("the Invoke kit describes a slot", () => {
       kind: "orb",
       abilityId: orb,
       readyAtTick: 0,
+      clockTicks: 0,
       cost: 0,
+      level: 1,
+      blockedBy: null,
     });
   });
 
@@ -143,6 +165,7 @@ describe("the Invoke kit describes a slot", () => {
       4,
       state([null, null]),
       cooldowns,
+      NO_DISABLES,
       SPELLS,
       TUNING,
       createSlotDescriptor(),
@@ -152,7 +175,10 @@ describe("the Invoke kit describes a slot", () => {
       kind: "composer",
       abilityId: "invoke",
       readyAtTick: 40,
+      clockTicks: INVOKE_CLOCK_AT_THREE_LEVELS,
       cost: 7,
+      level: 0,
+      blockedBy: null,
     });
   });
 
@@ -164,6 +190,7 @@ describe("the Invoke kit describes a slot", () => {
         5,
         kit,
         cooldowns,
+        NO_DISABLES,
         SPELLS,
         TUNING,
         createSlotDescriptor(),
@@ -172,13 +199,17 @@ describe("the Invoke kit describes a slot", () => {
       kind: "prepared",
       abilityId: "newest",
       readyAtTick: 0,
+      clockTicks: SPELL_CLOCK,
       cost: 10,
+      level: 1,
+      blockedBy: null,
     });
     expect(
       invokeKit.describeSlot(
         6,
         kit,
         cooldowns,
+        NO_DISABLES,
         SPELLS,
         TUNING,
         createSlotDescriptor(),
@@ -187,7 +218,10 @@ describe("the Invoke kit describes a slot", () => {
       kind: "prepared",
       abilityId: "older",
       readyAtTick: 90,
+      clockTicks: SPELL_CLOCK,
       cost: 15,
+      level: 1,
+      blockedBy: null,
     });
   });
 
@@ -200,6 +234,7 @@ describe("the Invoke kit describes a slot", () => {
         5,
         kit,
         cooldowns,
+        NO_DISABLES,
         SPELLS,
         TUNING,
         createSlotDescriptor(),
@@ -210,6 +245,7 @@ describe("the Invoke kit describes a slot", () => {
         6,
         kit,
         cooldowns,
+        NO_DISABLES,
         SPELLS,
         TUNING,
         createSlotDescriptor(),
@@ -225,6 +261,7 @@ describe("the Invoke kit describes a slot", () => {
         5,
         kit,
         cooldowns,
+        NO_DISABLES,
         SPELLS,
         TUNING,
         createSlotDescriptor(),
@@ -237,6 +274,7 @@ describe("the Invoke kit describes a slot", () => {
       6,
       state(["newest", null]),
       cooldowns,
+      NO_DISABLES,
       SPELLS,
       TUNING,
       createSlotDescriptor(),
@@ -246,7 +284,70 @@ describe("the Invoke kit describes a slot", () => {
       kind: "prepared",
       abilityId: null,
       readyAtTick: 0,
+      clockTicks: 0,
       cost: 0,
+      level: 0,
+      blockedBy: null,
     });
   });
+
+  it("an orb slot at the orb's level, so the square shows the number", () => {
+    const kit = state([null, null]);
+    kit.orbLevels = [4, 2, 5];
+
+    expect(
+      invokeKit.describeSlot(
+        2,
+        kit,
+        cooldowns,
+        NO_DISABLES,
+        SPELLS,
+        TUNING,
+        createSlotDescriptor(),
+      ).level,
+    ).toBe(2);
+  });
+
+  it.each([
+    ["stunned", "stunned"],
+    ["silenced", "silenced"],
+  ] as const)(
+    "every slot as blocked by %s, by the rule the validator refuses by",
+    (flag, reason) => {
+      const disables: DisableFlags = { ...NO_DISABLES, [flag]: true };
+
+      for (let slot = 1; slot <= 6; slot += 1) {
+        expect(
+          invokeKit.describeSlot(
+            slot,
+            state(["newest", "older"]),
+            cooldowns,
+            disables,
+            SPELLS,
+            TUNING,
+            createSlotDescriptor(),
+          ).blockedBy,
+        ).toBe(reason);
+      }
+    },
+  );
+
+  it.each(["rooted", "disarmed"] as const)(
+    "no slot as blocked by %s, which blocks no ability key",
+    (flag) => {
+      const disables: DisableFlags = { ...NO_DISABLES, [flag]: true };
+
+      expect(
+        invokeKit.describeSlot(
+          4,
+          state([null, null]),
+          cooldowns,
+          disables,
+          SPELLS,
+          TUNING,
+          createSlotDescriptor(),
+        ).blockedBy,
+      ).toBeNull();
+    },
+  );
 });

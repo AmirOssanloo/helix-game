@@ -2,6 +2,7 @@ import type { AnyCommand, Tick } from "@domain/public";
 import type { RingBuffer } from "@shared/public";
 import type { EventRing, WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
+import type { SlotFlashes } from "./hud/slot-flashes";
 
 /**
  * What the input mapper needs of the driver: the tick a command built now applies to, the
@@ -30,12 +31,18 @@ export type SceneRings = Readonly<{
   viewMisses: RingBuffer<number>;
 }>;
 
-/** Everything a scene is given at construction. A scene composes over these and holds nothing else. */
+/**
+ * Everything a scene is given at construction. A scene composes over these and holds nothing
+ * else. The flashes are shared by the two scenes: the play scene's mapper writes one for a
+ * cursor it would not open, and the HUD writes one for a refused-command event and draws them
+ * all.
+ */
 export type SceneContext = Readonly<{
   atlas: ShapeAtlas;
   driver: FrameDriver;
   world: WorldView;
   events: EventRing;
   rings: SceneRings;
+  flashes: SlotFlashes;
   report: Reporter;
 }>;

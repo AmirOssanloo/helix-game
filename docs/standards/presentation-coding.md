@@ -60,6 +60,7 @@ A view is a pooled Phaser object bound to one entity by id for as long as that e
 - **Depth is a band constant** from the presentation's band table. Never a computed y-sort: the view is top-down, and a per-frame depth write costs a sort.
 - **Nothing is created or destroyed during play.** Pools are filled at scene `create`, sized to the screen plus a margin, and bound and unbound as entities enter and leave the camera rectangle. A pool miss during play is a bug, not a signal to grow.
 - **No allocation inside sync.** The same rules as the simulation: index loops, no closures, no literals. [Simulation coding standards](./simulation-coding.md#quick-reference) list the replacements.
+- **A HUD element is not a view.** It is bound to no entity and laid out once; each frame it writes what it shows, a bar's fill by its horizontal scale, a wedge by its frame once per step, and a label's text only when the text changes, since a `BitmapText` rewrite is the one write that builds a string.
 
 ```typescript
 export class FooView {
@@ -111,6 +112,7 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 | The batch | One texture, normal blend, no filters, no masks, no `Text` updates in sync |
 | A view writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible` |
 | Interpolation | `prev` to `curr` with the driver's alpha |
+| A HUD element | Not a view: laid out once; a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
 | Depth | A band constant. Never a computed y-sort |
 | Game objects during play | None created or destroyed. Pools filled at `create`, sized to the screen, bound by camera rectangle |
 | Allocation in sync | None |

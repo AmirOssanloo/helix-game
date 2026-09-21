@@ -8,7 +8,7 @@ import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
-import { applySlotKey } from "../kits/slot-key";
+import { applySkillPoint, applySlotKey } from "../kits/slot-key";
 import { resolveDestinationFor } from "../pathing/destination";
 import {
   clearOrder,
@@ -54,9 +54,9 @@ const resolveFor = (
 /**
  * Writes one validated command onto the hero. The order commands replace the current order
  * through the state machine, with a destination resolved to a legal point first. A slot key
- * goes to the active form's kit and a cast to the cast pipeline's request stage; either may
- * still refuse it, and the reason comes back for the caller to announce. The two no-ops are
- * dropped by definition.
+ * and a skill-point spend go to the active form's kit and a cast to the cast pipeline's
+ * request stage; any of them may still refuse it, and the reason comes back for the caller
+ * to announce. The two no-ops are dropped by definition.
  */
 const applyCommand = (
   world: World,
@@ -106,6 +106,9 @@ const applyCommand = (
 
     case "cast":
       return requestCast(world, hero, command.abilityId, command.target);
+
+    case "spend_skill_point":
+      return applySkillPoint(world, hero, command.slot);
 
     case "noop":
     case "debug_noop":

@@ -47,6 +47,12 @@ describe("slotOf", () => {
     expect(slotOf({ kind: "slot", tick: 0, timestamp: 0, slot: 4 })).toBe(4);
   });
 
+  it("names the slot of a skill-point spend, which is the square that was clicked", () => {
+    expect(
+      slotOf({ kind: "spend_skill_point", tick: 0, timestamp: 0, slot: 2 }),
+    ).toBe(2);
+  });
+
   it("names no slot for a move command", () => {
     expect(
       slotOf({
