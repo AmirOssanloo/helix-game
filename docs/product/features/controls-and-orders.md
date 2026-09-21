@@ -89,6 +89,10 @@ Copied from spec section 15, because it is the shortest test of whether the cont
 | Order issued while stunned | Refused; the hero keeps whatever it was doing when stunned. Nothing is queued for after |
 | Right click while the targeting cursor is open | The click is a move order; the cursor closes at no cost |
 | Esc with a move running | The cursor closes; the move continues |
+| D or F pressed on a targeted spell that is on cooldown, unaffordable, or blocked by a disable | The cursor does not open and nothing is sent; the square flashes with the reason |
+| Q, W, E, R, D, or F pressed while the targeting cursor is open | The cursor closes first, then the key applies as it would with no cursor |
+| Left click on empty ground with a unit-targeted cursor open | Nothing. The cursor stays open until a unit is clicked, or Esc or S closes it |
+| Left click on a unit with a point-targeted cursor open | The cast aims at the ground under the unit; the unit itself is not the target |
 | S with a move running | The move stops, the cursor closes, and yaw freezes where it is |
 | Left click during a cast point | Ignored; the cast is already committed to its target |
 | S during a cast point | The cast is cancelled at no cost. After the cast point, S cannot take it back |

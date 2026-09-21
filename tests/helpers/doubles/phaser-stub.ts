@@ -16,6 +16,12 @@ class Game {
   constructor(_config: unknown = null) {}
 }
 
+class Vector2 {
+  x = 0;
+
+  y = 0;
+}
+
 const Phaser = {
   AUTO: 0,
   CANVAS: 1,
@@ -34,6 +40,7 @@ const Phaser = {
     CENTER_HORIZONTALLY: 2,
     CENTER_VERTICALLY: 3,
   },
+  Math: { Vector2 },
   Scene,
   Game,
 };

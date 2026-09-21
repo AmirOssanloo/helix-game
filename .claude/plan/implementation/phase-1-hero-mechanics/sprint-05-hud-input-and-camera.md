@@ -21,7 +21,7 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | P1-S04-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/presentation/input/`: keyboard and pointer listeners that produce commands with a tick timestamp from the driver and a millisecond timestamp for ordering. Q W E R D F become `slot` commands 1 to 6 on key-down only; key repeat is ignored. Right click on ground becomes `move` with the world point resolved through the camera at event time and clamped to the map; right click on an enemy becomes `attack_target`; right click on a summon or neutral produces nothing. Left click selects (a no-op until there is something to select) or, with the cursor open, sends `cast` with the resolved point or unit and closes the cursor. `A` then left click becomes `attack_move`. `S` becomes `stop` and closes the cursor. `Esc` closes the cursor and sends nothing. Shift produces nothing extra. The cursor state (which slot is open) is the only presentation state; opening it checks the slot descriptor's clock, cost, and the hero's disable flags on the world view before opening, and flashes instead when refused. Scroll wheel emits a camera zoom intent, not a command.
 
@@ -123,7 +123,7 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 | --- | --- |
 | The section 15 feel walk-through by hand, thirteen bullets, each pass or fail | |
 | Bench rerun after views: fps · render ms · draw calls · heap | |
-| Actual days per ticket | T01 · T02 · T03 · T04 0.5 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 0.5 |
 
 ## Risks in this sprint
 

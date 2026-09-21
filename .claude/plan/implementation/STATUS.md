@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
 | **Active sprint** | [05 — Input mapper, views, camera, and HUD](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md) |
-| **Next ticket** | P1-S05-T01 — The input mapper and the targeting cursor |
+| **Next ticket** | P1-S05-T02 — PlayScene: views, sync, interpolation, camera |
 | **In progress** | none |
-| **Last closed ticket** | P1-S05-T04 — A new order cancels an attack point or a cast point, unplanned, the answer to Q20 |
+| **Last closed ticket** | P1-S05-T01 — The input mapper and the targeting cursor |
 | **Last closed sprint** | [04 — Hero definition, orbs, Invoke, slots, and cooldowns](./phase-1-hero-mechanics/sprint-04-orbs-invoke-and-slots.md), 2026-09-21 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |

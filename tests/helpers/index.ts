@@ -39,6 +39,12 @@ export {
   makeRegistry,
   type MakeRegistryOptions,
 } from "./content/make-registry";
+export { CommandRecorder } from "./doubles/command-recorder";
+export { FixedLens } from "./doubles/fixed-lens";
+export {
+  IntentRecorder,
+  type RecordedRefusal,
+} from "./doubles/intent-recorder";
 export { PainterRecorder } from "./doubles/painter-recorder";
 export {
   defineFactory,
