@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, STEP_MS } from "@app/public";
+import { FixedStepDriver, Session, STEP_MS } from "@app/public";
 import { tuningTable } from "@content/public";
 import type { DevApi, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, spawnHero } from "../helpers";
+import { contentVersionOf } from "@simulation/public";
+import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;
 
@@ -34,9 +35,18 @@ type Arranged = {
 
 /** The api over a world with the hero at the origin, a real driver on a counting clock, and fresh rings. */
 const arrange = (): Arranged => {
-  const world = makeWorld({ seed: SEED });
+  const session = new Session({
+    seed: SEED,
+    registry: makeRegistry(),
+    map: makeMapDef.build(),
+  });
+  const world = session.world;
   const rings = createRings();
-  const driver = new FixedStepDriver({ world, rings, clock: countingClock() });
+  const driver = new FixedStepDriver({
+    world: session,
+    rings,
+    clock: countingClock(),
+  });
   const overlays: OverlayToggles = {
     collisionDiscs: false,
     boundRadii: false,
@@ -46,13 +56,11 @@ const arrange = (): Arranged => {
     hashCells: false,
   };
 
-  spawnHero(world);
-
   const api = createDevApi({
     driver,
+    session,
     view: world.view,
     events: world.events,
-    log: world.log,
     rings,
     overlays,
     tuningDefaults: tuningTable,
@@ -177,7 +185,7 @@ describe("DevApi reads", () => {
     expect(api.overlays).toBe(overlays);
   });
 
-  it("saves the input log as the seed and every consumed command with its tick", () => {
+  it("saves the input log as the seed, the content version, the map, the ticks run, and every consumed command with its tick", () => {
     const { api, world } = arrange();
 
     api.submit({ kind: "level_up" });
@@ -188,10 +196,76 @@ describe("DevApi reads", () => {
 
     expect(JSON.parse(api.saveInputLog())).toEqual({
       seed: SEED,
+      contentVersion: contentVersionOf(makeRegistry()),
+      mapId: world.view.map.mapId,
+      ticks: 3,
       records: [
         { tick: 0, command: { kind: "level_up", tick: 0, timestamp: 1 } },
         { tick: 2, command: { kind: "heal", tick: 2, timestamp: 2 } },
       ],
     });
+  });
+});
+
+describe("DevApi session operations", () => {
+  it("recreates the world under a chosen seed at tick zero with the hero at the spawn point and an empty log", () => {
+    const { api, world } = arrange();
+
+    api.submit({ kind: "level_up" });
+    world.tick();
+    world.tick();
+
+    api.driver.recreate(SEED + 1);
+
+    expect(api.driver.seed).toBe(SEED + 1);
+    expect(world.view.tick).toBe(0);
+    expect(world.log.count).toBe(0);
+    expect(world.view.run.heroId).not.toBeNull();
+    expect(world.view.map.units.count).toBe(1);
+  });
+
+  it("replays a saved log from its first tick and refuses input until the recorded ticks have run", () => {
+    const { api, world, driver } = arrange();
+
+    api.submit({ kind: "level_up" });
+    world.tick();
+    world.tick();
+
+    const saved = api.saveInputLog();
+
+    expect(api.loadInputLog(saved)).toBeNull();
+    expect(world.view.tick).toBe(0);
+    expect(api.submit({ kind: "heal" })).toBe(false);
+
+    driver.onFrame(STEP_MS * 2);
+
+    expect(world.view.tick).toBe(2);
+    expect(world.log.count).toBe(1);
+    expect(world.log.commandAt(0)).toEqual({
+      kind: "level_up",
+      tick: 0,
+      timestamp: 1,
+    });
+    expect(api.submit({ kind: "heal" })).toBe(true);
+  });
+
+  it("refuses a log from another content version with a message naming both, and leaves the session as it was", () => {
+    const { api, world } = arrange();
+    const current = contentVersionOf(makeRegistry());
+
+    world.tick();
+
+    const saved = api.saveInputLog().replace(current, "00000000");
+    const message = api.loadInputLog(saved);
+
+    expect(message).toContain("00000000");
+    expect(message).toContain(current);
+    expect(world.view.tick).toBe(1);
+  });
+
+  it("refuses text that is not a log with a message", () => {
+    const { api } = arrange();
+
+    expect(api.loadInputLog("not json")).toContain("Not an input log");
   });
 });

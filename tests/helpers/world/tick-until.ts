@@ -1,11 +1,12 @@
-import type { Simulation, WorldView } from "@simulation/public";
+import type { Steppable, WorldView } from "@simulation/public";
 
 /**
- * Ticks `world` until `predicate` holds over its view, and returns the ticks it took. Throws
- * at `maxTicks`, so a scenario that never arrives fails with a count instead of hanging.
+ * Ticks `world`, a world or a replay feeding one, until `predicate` holds over its view, and
+ * returns the ticks it took. Throws at `maxTicks`, so a scenario that never arrives fails
+ * with a count instead of hanging.
  */
 export const tickUntil = (
-  world: Simulation,
+  world: Steppable,
   predicate: (view: WorldView) => boolean,
   maxTicks: number,
 ): number => {

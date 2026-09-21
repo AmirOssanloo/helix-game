@@ -6,8 +6,7 @@ import type {
   TuningDef,
 } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
-import type { EventRing, InputLog, WorldView } from "@simulation/public";
-import { serializeInputLog } from "@simulation/public";
+import type { EventRing, WorldView } from "@simulation/public";
 
 /** One variant without the two stamps the driver writes, so a panel control names only its payload. */
 type Unstamped<C> = C extends AnyCommand
@@ -34,11 +33,24 @@ export type DevDriver = Readonly<{
 }>;
 
 /**
+ * What the panel needs of the session: the operations that make a world rather than change
+ * one. Recreating under a seed and loading a log to replay restart the world in place; a
+ * save reads the log. None is a command, and none is in the log. The composition root
+ * supplies the real one.
+ */
+export type DevSession = Readonly<{
+  recreate: (seed: number) => void;
+  saveInputLog: () => string;
+  /** The message a person reads when the log cannot run, or `null` once the replay has begun. */
+  loadInputLog: (text: string) => string | null;
+}>;
+
+/**
  * The driver as the panel and a person at the console drive it. None of these is a command:
  * pause, step, and the cap decide whether the driver calls `tick`, never what a tick does, so
  * the world has no state for them to change and the log never sees them. The seed is shown
- * so a person can name the session; choosing another recreates the world, which is a driver
- * operation too and arrives with the replay loader.
+ * so a person can name the session; choosing another recreates the world under it, which
+ * makes a session rather than changing one and is a driver operation for the same reason.
  */
 export type DriverControls = Readonly<{
   paused: boolean;
@@ -48,6 +60,7 @@ export type DriverControls = Readonly<{
   resume: () => void;
   step: () => boolean;
   setCatchUpCap: (cap: number) => boolean;
+  recreate: (seed: number) => void;
 }>;
 
 /**
@@ -70,7 +83,7 @@ export type OverlayToggles = {
  * in, drives the driver, reads the world view and the event ring by reference, reads the
  * instrumentation rings, and sets the overlay toggles. The tuning table's defaults are here
  * so a slider shows its default beside it; the atlas download and the input-log save are
- * here so a person can take both away as files.
+ * here so a person can take both away as files, and the load so a saved session replays.
  */
 export type DevApi = Readonly<{
   submit: (command: PanelCommand) => boolean;
@@ -80,8 +93,10 @@ export type DevApi = Readonly<{
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   tuningDefaults: TuningDef;
-  /** The session so far as one JSON document: the seed and every consumed command with its tick. */
+  /** The session so far as one JSON document: the seed, the content version, the map, the ticks run, and every consumed command with its tick. */
   saveInputLog: () => string;
+  /** Replays a saved log from its first tick on a world recreated under its seed, or returns the message saying why it cannot run. */
+  loadInputLog: (text: string) => string | null;
   /** The baked shape atlas as a PNG data URL, so a person can save it and look at every frame. */
   downloadAtlas: () => string;
 }>;
@@ -89,9 +104,9 @@ export type DevApi = Readonly<{
 /** What `createDevApi` composes over. The composition root supplies each from the objects it built. */
 export type DevApiPorts = Readonly<{
   driver: DevDriver;
+  session: DevSession;
   view: WorldView;
   events: EventRing;
-  log: InputLog;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   tuningDefaults: TuningDef;
@@ -122,6 +137,9 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     },
     step: (): boolean => driver.step(),
     setCatchUpCap: (cap: number): boolean => driver.setCatchUpCap(cap),
+    recreate: (seed: number): void => {
+      ports.session.recreate(seed);
+    },
   };
 
   return {
@@ -137,8 +155,9 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     rings: ports.rings,
     overlays: ports.overlays,
     tuningDefaults: ports.tuningDefaults,
-    saveInputLog: (): string =>
-      serializeInputLog(view.run.random.seed, ports.log),
+    saveInputLog: (): string => ports.session.saveInputLog(),
+    loadInputLog: (text: string): string | null =>
+      ports.session.loadInputLog(text),
     downloadAtlas: ports.downloadAtlas,
   };
 };

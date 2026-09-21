@@ -1,7 +1,7 @@
 import { tuningTable } from "@content/public";
 import type { AnyCommand, Tick } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Steppable } from "@simulation/public";
 
 /** Ticks per second, from the tuning table so the driver and every converted duration agree. The world's one unit of time is a count of these. */
 export const TICK_RATE = tuningTable.sim_hz;
@@ -25,7 +25,7 @@ export const wallClock: Clock = {
 };
 
 export type FixedStepDriverOptions = Readonly<{
-  world: Simulation;
+  world: Steppable;
   rings: InstrumentationRings;
   clock: Clock;
 }>;
@@ -46,7 +46,7 @@ export type FixedStepDriverOptions = Readonly<{
  * and the hidden check happens before the buffer sees anything.
  */
 export class FixedStepDriver {
-  private readonly world: Simulation;
+  private readonly world: Steppable;
 
   private readonly rings: InstrumentationRings;
 

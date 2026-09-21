@@ -22,13 +22,13 @@ A session with the panel open replays exactly, so a bug found while tuning is a 
 `DevApi` does five things and nothing else:
 
 - **Submits commands.** A panel button becomes a `DebugCommand` variant — spawn a pack here, damage the hero, set an orb level, kill everything — or a `SetTuning` command for a slider. Each goes into the world's command buffer with the next tick's stamp, exactly as a click does.
-- **Drives the driver.** Pause, single-step, and the catch-up cap decide whether the driver calls `tick`, never what a tick does. They change no world state, so they are not commands and are not in the log; a replay feeds ticks with no driver and never needs them. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) draws the line.
+- **Drives the driver.** Pause, single-step, and the catch-up cap decide whether the driver calls `tick`, never what a tick does. They change no world state, so they are not commands and are not in the log; a replay feeds ticks with no driver and never needs them. Recreating the world under a chosen seed and loading a saved log to replay are driver operations for the same reason: each makes a session rather than changing one, restarting the world in place so every reference to its view, its ring, and its log stays good. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) draws the line.
 - **Reads the world view.** The same `Readonly` view the presentation reads, by reference, throttled to once per render frame.
 - **Reads the instrumentation rings.** Timing and counts, for the readouts.
 - **Sets the overlay toggles.** One flag per debug overlay, on an object the world scene reads each frame. A toggle is presentation state: it changes nothing in the world, so it is not a command and is not in the log, and a replay draws whatever overlays are on at the time.
 
 ```typescript
-window.DevApi = { submit, driver, view, rings, overlays, /* … */ }
+window.DevApi = { submit, driver, view, rings, overlays, saveInputLog, loadInputLog, /* … */ }
 ```
 
 **The width of the `DebugCommand` union is where the panel's power comes from.** Wanting the panel to do something new means adding a variant and the system code that handles it, which is also what makes the new thing replayable. There is no `world.setFoo()` for the panel to call; [Commands and events](./commands-and-events.md) holds the rule.
@@ -96,6 +96,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | What it does | Submits commands, drives the driver, reads the world view, reads the instrumentation rings, sets the overlay toggles |
 | Panel actions | `DebugCommand` variants and `SetTuning` commands, into the same buffer and log as player input |
 | Pause, single-step, catch-up cap | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
+| Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log from another content version is refused with a message naming both |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |
 | Reading state | The `Readonly` world view, by reference, throttled per render frame |
 | The panel | Plain DOM outside the canvas; imports nothing from Phaser |

@@ -27,6 +27,8 @@ const PANEL_STYLE = `
 .dev-field { display: inline-flex; align-items: center; gap: 4px; }
 .dev-button { font: inherit; padding: 2px 6px; }
 .dev-number { width: 64px; font: inherit; }
+.dev-file { font: inherit; max-width: 180px; }
+.dev-status { color: #9cc; font-size: 12px; min-height: 1em; }
 .dev-select { font: inherit; }
 .dev-slider-row { display: grid; grid-template-columns: 1fr 120px 56px 56px; gap: 4px; padding: 0 8px; }
 .dev-slider-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

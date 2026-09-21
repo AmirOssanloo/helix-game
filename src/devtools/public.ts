@@ -4,6 +4,7 @@ export {
   type DevApi,
   type DevApiPorts,
   type DevDriver,
+  type DevSession,
   type DriverControls,
   exposeDevApi,
   type OverlayToggles,

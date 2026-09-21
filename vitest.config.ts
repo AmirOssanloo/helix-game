@@ -45,13 +45,22 @@ const PHASER_STUB = fileURLToPath(
   new URL("./tests/helpers/doubles/phaser-stub.ts", import.meta.url),
 );
 
+/**
+ * The stress test measures wall time, so it runs in a group of its own after every other
+ * project has finished: a tick timed while other workers hold the cores is not the tick the
+ * budget is about. The simulation project excludes the file so it runs once.
+ */
+const STRESS_SPEC = "tests/simulation/stress.spec.ts";
+const STRESS_GROUP_ORDER = 1;
+
 /** One project per tier, each inheriting the root aliases and settings. */
 const project = (
   name: string,
   environment: "node" | "jsdom",
   include: string[],
+  exclude: string[] = [],
 ) => ({
-  test: { name, environment, include },
+  test: { name, environment, include, exclude },
 });
 
 export default defineConfig({
@@ -83,10 +92,20 @@ export default defineConfig({
         "tests/shared/**/*.spec.ts",
         "tests/instrumentation/**/*.spec.ts",
       ]),
-      project("simulation", "node", [
-        "tests/simulation/**/*.spec.ts",
-        "tests/app/**/*.spec.ts",
-      ]),
+      project(
+        "simulation",
+        "node",
+        ["tests/simulation/**/*.spec.ts", "tests/app/**/*.spec.ts"],
+        [STRESS_SPEC],
+      ),
+      {
+        test: {
+          name: "stress",
+          environment: "node",
+          include: [STRESS_SPEC],
+          sequence: { groupOrder: STRESS_GROUP_ORDER },
+        },
+      },
       project("content", "node", ["tests/content/**/*.spec.ts"]),
       project("architecture", "node", [
         "tests/architecture.spec.ts",

@@ -79,7 +79,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Layer | simulation, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/simulation/replay/`: an input log format (seed, a content version stamp computed from the registry, the ordered commands with ticks), a loader that creates a world with the seed and feeds commands tick by tick with no driver, and a refusal when the content version differs. `tests/simulation/replays/` with `phase-1-session.json` recorded during this sprint with the panel open, including a tuning change, a spawn, and a death. The determinism test replays it into two worlds and compares state at every tick; a second test replays a live-recorded session and compares against the state the recording world ended in. The stress test: 300 generic units with random orders from the world's seeded source on the full arena for a fixed number of ticks, asserting the mean tick under 4 ms; it runs in `pnpm test` and CI. `loadInputLog` and `tickUntil` helpers finished. The composition root draws a fresh session's seed from the wall clock at boot instead of booting on seed 1, and the panel's seed control recreates the world under a chosen seed as a driver operation, not a command (Q19).
 
@@ -94,6 +94,8 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 - `tests/simulation/replay-format.spec.ts` — version refusal.
 
 **Definition of done:** Every change · `src/domain` or `src/simulation` (the replay and stress rows are this ticket).
+
+> Built 2026-09-21. Four readings settled in the build. The log file carries the map id and the tick count the session ran beside the seed, the content version, and the records, so a replay knows which map to create and when it is done; the content version is a hash over the registry with sorted keys, until the content tier computes one over converted numbers. The hero enters a world through one session door in `src/simulation/session.ts`, used by the composition root and by `beginReplay` alike, so a replay starts from the state the recording did. Recreating under a seed and loading a log restart the world in place: run scope and map scope are rebuilt on the same world object, so the scenes, the mapper, and the panel keep every reference; a test proves a restarted world equals a fresh one. The driver steps a `Steppable`, which a session and a replay both are, and a replay refuses input until its recorded ticks have run. `phase-1-session.json` was recorded in Chrome with the panel open: a move, a `base_ms` slider change, a spawn of 60, two moves, a kill, and a move after the respawn, over 1554 ticks. The stress test runs in a Vitest project group of its own after every other project, since its mean doubled while sharing the cores with the other workers; alone it measured 1.7 to 2.0 ms mean over 300 ticks with 300 units on this machine, max 8 to 29 ms. The reference-laptop number is the phase gate's.
 
 ---
 
@@ -124,7 +126,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Phase 1 gate rows, each with evidence | |
 | Draw-call readout agrees with the WebGL inspector on one bench frame | |
 | Milestone M2 | |
-| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 1 · T04 |
 
 ## Risks in this sprint
 

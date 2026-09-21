@@ -82,6 +82,46 @@ export const numberField = (
   };
 };
 
+/** A file picker with the label beside it. `input` is what a group listens to. */
+export type FileField = Readonly<{
+  row: HTMLElement;
+  input: HTMLInputElement;
+}>;
+
+/**
+ * A file picker for files of `accept`, calling `onText` with the text of each file a person
+ * picks. Reading a file is the one thing in the panel that finishes later; the callback runs
+ * when it has, and a file that cannot be read is reported through `onFailure`.
+ */
+export const fileField = (
+  label: string,
+  accept: string,
+  onText: (text: string) => void,
+  onFailure: (message: string) => void,
+): FileField => {
+  const input = element("input", "dev-file");
+
+  input.type = "file";
+  input.accept = accept;
+  input.addEventListener("change", (): void => {
+    const file = input.files === null ? null : input.files.item(0);
+
+    if (file === null) {
+      return;
+    }
+
+    file.text().then(onText, (): void => {
+      onFailure(`The file "${file.name}" could not be read`);
+    });
+    input.value = "";
+  });
+
+  return {
+    row: element("label", "dev-field", [label, input]),
+    input,
+  };
+};
+
 /** The number a field holds, or `null` when it does not parse, so a control never submits `NaN`. */
 export const readNumber = (input: HTMLInputElement): number | null => {
   const value = Number(input.value);

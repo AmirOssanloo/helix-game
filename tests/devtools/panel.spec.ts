@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver } from "@app/public";
+import { FixedStepDriver, Session } from "@app/public";
 import { tuningTable } from "@content/public";
 import type {
   DevApi,
@@ -11,7 +11,7 @@ import type {
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, spawnHero } from "../helpers";
+import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 3;
 
@@ -52,9 +52,18 @@ type Arranged = {
 
 /** The panel mounted into a host over a world with the hero at the origin, remembering into `store`. */
 const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
-  const world = makeWorld({ seed: SEED });
+  const session = new Session({
+    seed: SEED,
+    registry: makeRegistry(),
+    map: makeMapDef.build(),
+  });
+  const world = session.world;
   const rings = createRings();
-  const driver = new FixedStepDriver({ world, rings, clock: countingClock() });
+  const driver = new FixedStepDriver({
+    world: session,
+    rings,
+    clock: countingClock(),
+  });
   const overlays: OverlayToggles = {
     collisionDiscs: false,
     boundRadii: false,
@@ -64,13 +73,11 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     hashCells: false,
   };
 
-  spawnHero(world);
-
   const api = createDevApi({
     driver,
+    session,
     view: world.view,
     events: world.events,
-    log: world.log,
     rings,
     overlays,
     tuningDefaults: tuningTable,
@@ -106,6 +113,21 @@ const checkboxNamed = (host: HTMLElement, label: string): HTMLInputElement => {
   }
 
   throw new Error(`The panel has no checkbox "${label}"`);
+};
+
+const numberFieldNamed = (
+  host: HTMLElement,
+  label: string,
+): HTMLInputElement => {
+  for (const field of host.querySelectorAll("label")) {
+    const input = field.querySelector('input[type="number"]');
+
+    if (field.textContent === label && input instanceof HTMLInputElement) {
+      return input;
+    }
+  }
+
+  throw new Error(`The panel has no number field "${label}"`);
 };
 
 const sliderNamed = (host: HTMLElement, key: string): HTMLInputElement => {
@@ -196,6 +218,21 @@ describe("the developer panel", () => {
     buttonNamed(arranged.host, "Step").click();
 
     expect(arranged.world.view.tick).toBe(1);
+    expect(arranged.world.log.count).toBe(0);
+
+    arranged.handle.unmount();
+  });
+
+  it("recreates the world from the seed field as a driver operation, with nothing in the log", () => {
+    const arranged = arrange();
+    const field = numberFieldNamed(arranged.host, "Seed");
+
+    arranged.world.tick();
+    field.value = "42";
+    field.dispatchEvent(new Event("change"));
+
+    expect(arranged.world.view.run.random.seed).toBe(42);
+    expect(arranged.world.view.tick).toBe(0);
     expect(arranged.world.log.count).toBe(0);
 
     arranged.handle.unmount();

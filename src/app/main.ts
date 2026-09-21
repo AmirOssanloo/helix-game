@@ -9,7 +9,6 @@ import {
 } from "@content/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
-import { acquireHero } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -22,15 +21,15 @@ import {
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
-import { createWorld } from "@simulation/public";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
 import type { Boot } from "./public";
+import { Session } from "./session";
 
 const DEVTOOLS_HOST_ID = "devtools";
 
-/** Every session starts from this seed until a session can be recorded and replayed under its own. */
-const SESSION_SEED = 1;
+/** A fresh session's seed: the wall clock at boot, in its low 32 bits, which is all the random source reads. The app layer may read the clock; the seed goes into the log so the session replays under it. */
+const drawSessionSeed = (): number => Date.now() >>> 0;
 
 /** The content layer holds the tuning table, the hero and its forms, the spells, and the maps; the registry of every other kind does not exist yet. */
 const REGISTRY: Registry = {
@@ -41,22 +40,20 @@ const REGISTRY: Registry = {
 };
 
 export const boot: Boot = (): void => {
-  const world = createWorld({
-    seed: SESSION_SEED,
+  // The world with the hero at the map's spawn point; a recreate or a loaded log restarts it in place.
+  const session = new Session({
+    seed: drawSessionSeed(),
     registry: REGISTRY,
     map: arenaDef,
   });
-
-  // The hero enters once per session, here, at the map's spawn point; a map load carries it.
-  if (
-    acquireHero(world.state, arenaDef.spawnPoint.x, arenaDef.spawnPoint.y) ===
-    null
-  ) {
-    throw new Error("The unit pool of a fresh world has room for the hero");
-  }
+  const world = session.world;
 
   const rings = createRings();
-  const driver = new FixedStepDriver({ world, rings, clock: wallClock });
+  const driver = new FixedStepDriver({
+    world: session,
+    rings,
+    clock: wallClock,
+  });
   const atlas = new ShapeAtlas(atlasFrames);
   // One object, read by the play scene and written by the panel; the two layers each name its fields.
   const overlays = createOverlayToggles();
@@ -107,9 +104,9 @@ export const boot: Boot = (): void => {
 
     const api = createDevApi({
       driver,
+      session,
       view: world.view,
       events: world.events,
-      log: world.log,
       rings,
       overlays,
       tuningDefaults: tuningTable,

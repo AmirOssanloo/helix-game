@@ -2,7 +2,9 @@ import type {
   AnyCommand,
   EventSlot,
   MapDef,
+  MapScope,
   Registry,
+  RunScope,
   TuningState,
   WalkabilityGrid,
   World,
@@ -51,6 +53,55 @@ const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
     readRadiusClasses(tuning),
   );
 
+/**
+ * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
+ * the hero's form records and the spell table built over it, both switches off, no hero yet,
+ * and the random source at the start of the seed's sequence.
+ */
+const createRunScope = (registry: Registry, seed: number): RunScope => {
+  const tuning = createTuningState(registry.tuning);
+
+  return {
+    heroId: null,
+    hero: registry.hero,
+    forms: createFormRecords(registry.hero, registry.forms, tuning),
+    spells: createSpellTable(registry.spells, tuning),
+    tuning,
+    debug: { noCooldowns: false, infiniteMana: false },
+    random: createRandomState(seed),
+  };
+};
+
+/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, and the path search fitted to the grid. */
+const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
+  const walkability = deriveGrid(map, tuning);
+
+  return {
+    mapId: map.id,
+    units: createUnitPool(),
+    projectiles: createProjectilePool(),
+    effects: createEffectPool(),
+    zones: createZonePool(),
+    walkability,
+    bounds: map.bounds,
+    obstacles: map.obstacles,
+    spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
+    pathSearch: createPathSearch(cellCount(walkability)),
+  };
+};
+
+/**
+ * What the fixed-step driver steps: a world, or a replay feeding one. The driver reads the
+ * view and the ring for the samples it writes, hands commands in, and calls `tick`, and
+ * needs nothing else of what it steps.
+ */
+export type Steppable = Readonly<{
+  view: WorldView;
+  events: EventRing;
+  submit: (command: AnyCommand) => boolean;
+  tick: () => void;
+}>;
+
 /** Step one of a tick: every position the presentation interpolates keeps the value it had before this tick moves it. */
 const copyPreviousPositions = (world: World): void => {
   for (let index = 0; index < world.map.units.end; index += 1) {
@@ -93,6 +144,11 @@ export class Simulation {
   /** Every consumed command with its tick. */
   readonly log: InputLog;
 
+  /** The map the world was created on, which a restart returns it to. A map load changes the loaded map, never this. */
+  readonly mapDef: MapDef;
+
+  private readonly registry: Registry;
+
   private readonly buffer: CommandBuffer;
 
   /** The one `tick_completed` value, written into the ring each tick so nothing is built per tick. */
@@ -101,39 +157,16 @@ export class Simulation {
   private isDisposed = false;
 
   constructor(options: CreateWorldOptions) {
-    const tuning = createTuningState(options.registry.tuning);
+    const run = createRunScope(options.registry, options.seed);
 
-    const walkability = deriveGrid(options.map, tuning);
-
+    this.registry = options.registry;
+    this.mapDef = options.map;
     this.buffer = new CommandBuffer();
     this.events = new EventRing();
     this.state = {
       tick: 0,
-      run: {
-        heroId: null,
-        hero: options.registry.hero,
-        forms: createFormRecords(
-          options.registry.hero,
-          options.registry.forms,
-          tuning,
-        ),
-        spells: createSpellTable(options.registry.spells, tuning),
-        tuning,
-        debug: { noCooldowns: false, infiniteMana: false },
-        random: createRandomState(options.seed),
-      },
-      map: {
-        mapId: options.map.id,
-        units: createUnitPool(),
-        projectiles: createProjectilePool(),
-        effects: createEffectPool(),
-        zones: createZonePool(),
-        walkability,
-        bounds: options.map.bounds,
-        obstacles: options.map.obstacles,
-        spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
-        pathSearch: createPathSearch(cellCount(walkability)),
-      },
+      run,
+      map: createMapScope(options.map, run.tuning),
       commands: this.buffer,
       events: this.events,
     };
@@ -236,6 +269,27 @@ export class Simulation {
     }
 
     resetMapScope(world);
+  }
+
+  /**
+   * Puts the world back to what creation made under `seed`: run scope and map scope rebuilt
+   * from the same registry on the map it was created on, every waiting command, event, and
+   * log record forgotten, and the tick count at zero. The world object, its ring, and its log
+   * keep their identity, so everything holding a reference to one reads the new session. The
+   * door a driver operation recreates a session through; never a command, since it makes a
+   * session rather than changing one, and a replay begins on a world that has never ticked.
+   */
+  restart(seed: number): void {
+    assert(!this.isDisposed, "A disposed world does not restart");
+
+    const world = this.state;
+
+    world.tick = 0;
+    world.run = createRunScope(this.registry, seed);
+    world.map = createMapScope(this.mapDef, world.run.tuning);
+    this.buffer.clear();
+    this.events.clear();
+    this.log.clear();
   }
 
   /** Releases every pool and forgets every waiting command, event, and log record. The world refuses submits afterwards. */

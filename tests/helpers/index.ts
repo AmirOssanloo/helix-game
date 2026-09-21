@@ -54,6 +54,7 @@ export {
   type Factory,
   type FactoryDefaults,
 } from "./factories/define-factory";
+export { loadInputLog } from "./world/load-input-log";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";

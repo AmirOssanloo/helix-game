@@ -62,11 +62,11 @@ The simulation is a function of a seed and the commands it receives, so any sess
 1. Note the **Seed** shown in the Simulation group. Recording is always on; every session is a log from its first tick.
 2. Play. Every keyboard, mouse, and panel command goes into the input log with its tick.
 3. Click **Save input log**. You get a JSON file: the seed, the content registry version, and the ordered commands.
-4. Reload the page, click **Load input log**, pick the file. The world resets to the seed and consumes the commands tick by tick. What you saw happens again, at the same ticks.
+4. Reload the page, click **Load input log**, pick the file. The world resets to the seed and consumes the commands tick by tick. What you saw happens again, at the same ticks. A log saved on another content version is refused, and the status line names both versions.
 
 Use **Pause** and **Single-step** during a replay to stop at the tick that went wrong and read the overlays.
 
-**Turning a replay into a test.** Copy the JSON into `tests/simulation/replays/<name>.json` and add a spec under `tests/simulation/` that loads it, runs the world to the final tick, and asserts the state you expect — the hero's health, an enemy's position, which spell sits in slot D. The replay helper in `tests/simulation/helpers/` does the loading. A bug that came with a replay ships with a test that replays it.
+**Turning a replay into a test.** Copy the JSON into `tests/simulation/replays/<name>.json` and add a spec under `tests/simulation/` that loads it, runs the world to the final tick, and asserts the state you expect — the hero's health, an enemy's position, which spell sits in slot D. The `loadInputLog` helper from `tests/helpers/` reads it, and `beginReplay` from the simulation's public door runs it. A bug that came with a replay ships with a test that replays it.
 
 ---
 
