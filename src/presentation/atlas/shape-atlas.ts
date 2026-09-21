@@ -99,6 +99,17 @@ export class ShapeAtlas {
     this.canvas = canvas;
   }
 
+  /** The baked width of the frame `name`, for a view to turn a world size into a scale. A name not in the list is an error. */
+  frameWidth(name: string): number {
+    for (const placed of this.layout.frames) {
+      if (placed.frame.name === name) {
+        return placed.frame.width;
+      }
+    }
+
+    throw new Error(`The atlas has no frame "${name}"`);
+  }
+
   /** The baked atlas as a PNG data URL, for the developer panel to save so a person can look at every frame. */
   download(): string {
     if (this.canvas === null) {

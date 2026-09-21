@@ -45,7 +45,7 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 | Layer | presentation, tests |
 | Size | 1.5 |
 | Depends on | P1-S02-T03, P1-S03-T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/presentation/views/`: the depth band constants; `unit.view.ts` as a pooled view kind (a disc quad plus a triangle quad for facing, bound to a unit id, writing `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible` from the entity, interpolating previous to current by the driver's fraction); `obstacle.view.ts` for the arena rectangles (static quads bound at map load); `orb.view.ts` for the three floating orb instances orbiting the hero in age order with the orb's colour. `PlayScene` creates every pool at `create` sized to what fits the screen plus a margin, runs the sync each frame after the driver's ticks: rectangle-query the spatial hash for the camera's world rectangle plus margin, bind free views to entities that entered, release views of entities that left, write the seven fields, then drain the event ring with the scene's own cursor. The world camera follows the hero with a lerp, clamps to the map bounds, and consumes zoom intents.
 
@@ -117,13 +117,35 @@ Right-click to walk, watch the turn. Q W E, see orbs orbit. R, see D fill and th
 
 ---
 
+### P1-S05-T05 — The hero enters the world at boot
+
+| Field | Value |
+| --- | --- |
+| Layer | app |
+| Size | 0.1 |
+| Depends on | P1-S04-T01 |
+| Status | done |
+
+**Build:** The composition root acquires the hero through the hero door once per session, at the arena's spawn point, right after it creates the world and before the driver and the scenes are built. Nothing else in the game acquires a hero; a map load carries it.
+
+**Acceptance:**
+- The game boots with the hero standing at the arena's centre, on screen, before any input.
+
+**Tests:** none; the composition root is wiring, and the hero door has its own tests.
+
+**Definition of done:** Every change.
+
+*Unplanned: found while building T02. Every earlier sprint checked the hero through tests, where the `spawnHero` helper acquires it; no ticket had the game itself do so, and T02 cannot show a hero on screen without one.*
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
 | The section 15 feel walk-through by hand, thirteen bullets, each pass or fail | |
-| Bench rerun after views: fps · render ms · draw calls · heap | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 0.5 |
+| Bench rerun after views: fps · render ms · draw calls · heap | After T02, Chrome on an Apple M1 laptop, 2026-09-21, as configured, 40 s: 60 to 61 fps, render 0.7 ms, 1 draw call every frame, heap 112 to 113 MB flat after warm-up. The bench scene itself did not change; the run confirms the atlas and the batch are as before |
+| Actual days per ticket | T01 0.5 · T02 1 · T03 · T04 0.5 · T05 0.1 |
 
 ## Risks in this sprint
 

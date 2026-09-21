@@ -47,6 +47,7 @@ The HTML panel itself is outside the canvas, built from plain DOM, and knows not
 | Draw calls, per frame | A presentation module that wraps the renderer's two public draw methods, `drawElements` and `drawInstancedArrays`, which every batch handler, filter pass, and tile layer draws through; it resets on the renderer's pre-render event, attributes the count per scene on the render event, and writes the frame total and the world scene's share on post-render |
 | Live entity counts, per tick | The world, at the end of `tick` |
 | Pool misses, cumulative | Each pool, on a `null` acquire |
+| View misses, cumulative | `PlayScene`, once per frame, from each view pool's refused binds |
 | Event ring overwrites, cumulative | The event ring |
 | Frame rate | The driver |
 
@@ -98,7 +99,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Reading state | The `Readonly` world view, by reference, throttled per render frame |
 | The panel | Plain DOM outside the canvas; imports nothing from Phaser |
 | Rings | Preallocated fixed arrays with a cursor, one per measurement, under `instrumentation/` |
-| Measurements | Tick time, render time, draw calls, live counts, pool misses, event overwrites, frame rate |
+| Measurements | Tick time, render time, draw calls, live counts, pool misses, view misses, event overwrites, frame rate |
 | Who writes | The driver, `PlayScene`, the draw-call wrapper, the world, the pools, the event ring |
 | Draw calls | Counted by wrapping the renderer's public `drawElements` and `drawInstancedArrays` between its pre-render and post-render events, per scene; never read from internals; a dash under Canvas |
 | Statistics | Computed by the panel from samples, never inside the simulation |

@@ -40,18 +40,21 @@ export {
   type MakeRegistryOptions,
 } from "./content/make-registry";
 export { CommandRecorder } from "./doubles/command-recorder";
+export { FixedHash } from "./doubles/fixed-hash";
 export { FixedLens } from "./doubles/fixed-lens";
 export {
   IntentRecorder,
   type RecordedRefusal,
 } from "./doubles/intent-recorder";
 export { PainterRecorder } from "./doubles/painter-recorder";
+export { QuadRecorder, SYNC_FIELDS } from "./doubles/quad-recorder";
 export {
   defineFactory,
   type Factory,
   type FactoryDefaults,
 } from "./factories/define-factory";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
+export { makeWorldView } from "./world/make-world-view";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { submit } from "./world/submit";
 export { tickUntil } from "./world/tick-until";

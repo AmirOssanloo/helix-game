@@ -23,6 +23,8 @@ export type InstrumentationRings = Readonly<{
   liveZones: SampleRing;
   /** Acquires every pool has refused since the world was created, summed, after one tick. */
   poolMisses: SampleRing;
+  /** Binds every view pool has refused since the play scene was created, summed, after one frame. */
+  viewMisses: SampleRing;
   /** Events the ring has lost to overwrites since the world was created, after one tick. */
   eventOverwrites: SampleRing;
 }>;
@@ -37,5 +39,6 @@ export const createRings = (): InstrumentationRings => ({
   liveEffects: createSampleRing(),
   liveZones: createSampleRing(),
   poolMisses: createSampleRing(),
+  viewMisses: createSampleRing(),
   eventOverwrites: createSampleRing(),
 });

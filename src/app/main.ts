@@ -9,6 +9,7 @@ import {
 } from "@content/public";
 import { exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
+import { acquireHero } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -41,6 +42,15 @@ export const boot: Boot = (): void => {
     registry: REGISTRY,
     map: arenaDef,
   });
+
+  // The hero enters once per session, here, at the map's spawn point; a map load carries it.
+  if (
+    acquireHero(world.state, arenaDef.spawnPoint.x, arenaDef.spawnPoint.y) ===
+    null
+  ) {
+    throw new Error("The unit pool of a fresh world has room for the hero");
+  }
+
   const rings = createRings();
   const driver = new FixedStepDriver({ world, rings, clock: wallClock });
   const atlas = new ShapeAtlas(atlasFrames);
@@ -48,6 +58,8 @@ export const boot: Boot = (): void => {
     atlas,
     driver,
     world: world.view,
+    events: world.events,
+    rings: { viewMisses: rings.viewMisses },
     report: (message: string): void => {
       console.log(message);
     },
