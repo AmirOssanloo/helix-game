@@ -11,7 +11,7 @@ const MS_PER_SECOND = 1000;
 /** The constant step, in wall milliseconds. Never a frame delta. */
 export const STEP_MS = MS_PER_SECOND / TICK_RATE;
 
-/** Ticks one render frame may run before the remaining time is dropped rather than queued. */
+/** The catch-up cap a driver starts with: ticks one render frame may run before the remaining time is dropped rather than queued. */
 export const MAX_TICKS_PER_FRAME = 3;
 
 /** A source of wall milliseconds. The driver takes one so a test can run it in Node with a clock it controls. */
@@ -32,10 +32,15 @@ export type FixedStepDriverOptions = Readonly<{
 
 /**
  * Turns frames into whole ticks. Each frame it adds the delta to an accumulator, runs one tick
- * per whole step held, at most three, and drops the rest; measures each tick into the rings;
- * and keeps the interpolation fraction the presentation reads. While the document is hidden it
- * runs nothing and refuses every submit, so a tab that was away for a minute neither replays
- * a minute nor keeps the input that arrived meanwhile.
+ * per whole step held, at most the catch-up cap, and drops the rest; measures each tick into
+ * the rings; and keeps the interpolation fraction the presentation reads. While the document
+ * is hidden it runs nothing and refuses every submit, so a tab that was away for a minute
+ * neither replays a minute nor keeps the input that arrived meanwhile.
+ *
+ * Pause, single-step, and the cap are the developer panel's: they decide whether a frame
+ * calls `tick`, never what a tick does, so they are not commands and are not in the log. A
+ * paused driver still takes commands; they wait in the buffer for the next tick, as a click
+ * during a pause does.
  *
  * Commands enter the world through `submit` here, so the arrival stamp comes from this clock
  * and the hidden check happens before the buffer sees anything.
@@ -53,6 +58,10 @@ export class FixedStepDriver {
 
   private isHidden = false;
 
+  private isPaused = false;
+
+  private cap = MAX_TICKS_PER_FRAME;
+
   private discardCount = 0;
 
   constructor(options: FixedStepDriverOptions) {
@@ -69,6 +78,16 @@ export class FixedStepDriver {
   /** Whether the driver is paused because the document is hidden. */
   get hidden(): boolean {
     return this.isHidden;
+  }
+
+  /** Whether the developer panel has paused the clock. */
+  get paused(): boolean {
+    return this.isPaused;
+  }
+
+  /** Ticks one frame may run before the remaining time is dropped. */
+  get catchUpCap(): number {
+    return this.cap;
   }
 
   /** Commands refused because they arrived while hidden, since creation. */
@@ -103,6 +122,34 @@ export class FixedStepDriver {
     this.accumulatorMs = 0;
   }
 
+  /** Stops or restarts the clock. The accumulated time is dropped either way, so resuming never catches up. */
+  setPaused(paused: boolean): void {
+    this.isPaused = paused;
+    this.accumulatorMs = 0;
+  }
+
+  /** Runs exactly one tick while paused, or none with `false` while running or hidden: a step is a thing the panel does to a stopped clock. */
+  step(): boolean {
+    if (!this.isPaused || this.isHidden) {
+      return false;
+    }
+
+    this.runTick();
+
+    return true;
+  }
+
+  /** Sets the catch-up cap. A cap below one, or not a whole number, is refused with `false`. */
+  setCatchUpCap(cap: number): boolean {
+    if (!Number.isInteger(cap) || cap < 1) {
+      return false;
+    }
+
+    this.cap = cap;
+
+    return true;
+  }
+
   /** One render frame of `frameDeltaMs` wall milliseconds. */
   onFrame(frameDeltaMs: number): void {
     if (this.isHidden) {
@@ -113,17 +160,21 @@ export class FixedStepDriver {
       this.rings.frameRate.write(MS_PER_SECOND / frameDeltaMs);
     }
 
+    if (this.isPaused) {
+      return;
+    }
+
     this.accumulatorMs += frameDeltaMs;
 
     let steps = 0;
 
-    while (this.accumulatorMs >= STEP_MS && steps < MAX_TICKS_PER_FRAME) {
+    while (this.accumulatorMs >= STEP_MS && steps < this.cap) {
       this.runTick();
       this.accumulatorMs -= STEP_MS;
       steps += 1;
     }
 
-    if (steps === MAX_TICKS_PER_FRAME) {
+    if (steps === this.cap) {
       this.accumulatorMs = 0;
     }
 

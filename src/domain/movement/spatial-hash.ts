@@ -34,6 +34,20 @@ export type Positioned = {
   curr: Readonly<Vec2>;
 };
 
+/** One occupied cell as `readCell` reports it: its integer coordinates and how many units it holds. */
+export type HashCell = {
+  cellX: number;
+  cellY: number;
+  count: number;
+};
+
+/** An empty record for `readCell` to fill, made once by whoever walks the cells. */
+export const createHashCell = (): HashCell => ({
+  cellX: 0,
+  cellY: 0,
+  count: 0,
+});
+
 /**
  * The read side of the hash: what a view of the world exposes. `SpatialHash` satisfies it, so
  * a `Readonly` world view can name the hash without exposing `insert`, `remove`, and `move`.
@@ -44,6 +58,10 @@ export type SpatialHashView = Readonly<{
   cellSize: number;
   count: number;
   misses: number;
+  /** Cells the hash can hold at once; `readCell` walks the indices below it. */
+  cellSlots: number;
+  /** Writes the cell at `index` into `out` and returns `true`, or returns `false` for a free cell, so an overlay walks every occupied cell without allocating. */
+  readCell: (index: number, out: HashCell) => boolean;
   queryCircle: (
     x: number,
     y: number,
@@ -97,6 +115,10 @@ const packKey = (cellX: number, cellY: number): number =>
   (((cellX & COORDINATE_MASK) << COORDINATE_BITS) |
     (cellY & COORDINATE_MASK)) >>>
   0;
+
+/** The signed coordinate `bits` holds: the inverse of the masking `packKey` does, for a cell walk to report where a cell is. */
+const signExtend = (bits: number): number =>
+  (bits << (32 - COORDINATE_BITS)) >> (32 - COORDINATE_BITS);
 
 /**
  * The index of what is near: a uniform grid of square cells keyed by integer coordinates,
@@ -202,6 +224,25 @@ export class SpatialHash implements SpatialHashView {
   /** Inserts refused by a full cell, since creation. The instrumentation reads it. */
   get misses(): number {
     return this.missCount;
+  }
+
+  get cellSlots(): number {
+    return CELL_COUNT;
+  }
+
+  readCell(index: number, out: HashCell): boolean {
+    const key = this.cellKeys[index];
+    const count = this.cellCounts[index];
+
+    if (key === undefined || key === NO_KEY || count === undefined) {
+      return false;
+    }
+
+    out.cellX = signExtend(key >>> COORDINATE_BITS);
+    out.cellY = signExtend(key & COORDINATE_MASK);
+    out.count = count;
+
+    return true;
   }
 
   /**

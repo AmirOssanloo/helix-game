@@ -36,13 +36,14 @@ Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.m
 | Pause | Stops the clock; the picture stays. Not a command: nothing in the world changes and nothing is logged |
 | Single-step | Runs exactly one tick while paused. Not a command, for the same reason |
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
+| Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
 | Save input log | Downloads the session's seed and commands |
 | Load input log | Replays a saved log from the start |
 | Reset map | Reloads the current map; the hero keeps run scope |
 
 ### Enemies
 
-A dropdown of every archetype, a tier selector, a group size, and a spawn mode: at the pointer on click, or at a chosen distance from the hero. Plus clear all, which removes every enemy without deaths, and kill all, which kills them with experience.
+A dropdown of every archetype, a tier selector, a group size, and a spawn mode: at the pointer on click, or at a chosen distance from the hero. Plus clear all, which removes every enemy without deaths, and kill all, which kills them with experience. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test.
 
 ### The atlas
 

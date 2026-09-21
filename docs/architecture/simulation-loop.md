@@ -20,7 +20,7 @@ A 144 Hz display and a 60 Hz display run the same number of ticks per second, so
 The fixed-step driver lives in `app/` and is the only file in the repository that reads a clock. Each render frame it:
 
 1. Receives Phaser's frame delta and adds it to an accumulator.
-2. Runs `tick` once for every whole step the accumulator holds, at most **three** per frame. Time beyond three steps is dropped, not queued.
+2. Runs `tick` once for every whole step the accumulator holds, at most the **catch-up cap** per frame, three unless the developer panel sets another. Time beyond the cap is dropped, not queued.
 3. Measures the wall time around each `tick` and writes it to the instrumentation ring.
 4. Computes the interpolation fraction — how far the accumulator is into the next step — and hands it to the presentation sync.
 
@@ -112,7 +112,7 @@ A system holding a module-level variable — a cached list, a counter — that i
 | --- | --- |
 | The clock | Read in `app/fixed-step-driver.ts` and nowhere else |
 | The step | 30 Hz, constant `dt`; never a frame delta |
-| Catch-up | At most 3 ticks per render frame, then drop the remaining time |
+| Catch-up | At most the catch-up cap of ticks per render frame, 3 unless the developer panel sets another, then drop the remaining time |
 | Hidden tab | No ticks; cooldowns freeze; input received while hidden is discarded |
 | `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order with the consumed commands readable on the world, forgets them, writes `tick_completed`, advances the tick count; reads no clock |
 | System order | One list, in `simulation/systems.ts`; command application runs first |

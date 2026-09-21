@@ -16,7 +16,7 @@ The panel is plain HTML beside the canvas, mounted only in development builds. E
 | Tuning       | One slider per tunable: `base_ms`, `turn_rate_T`, `turn_ramp_ticks`, `action_cone_deg`, `collision_radius`, `bound_radius`, `hash_cell_size`, `orb_capacity`, `prepared_slots`, `invoke_cd_base`, `invoke_cd_per_orb_level`, `invoke_mana`, `whorl_ms_per_instance`, and every number a definition exposes | Retunes the live world; each change is a `SetTuning` command in the log |
 | Enemies      | Archetype dropdown, Tier, Group size, Spawn at click, Clear all, Kill all                                                                                       | Spawns a pack of the chosen archetype where you next click; the dropdown lists the content registry, so a new definition appears without a code change |
 | Simulation   | Pause, Single-step, Catch-up cap, Seed, Save input log, Load input log, Reset map                                                                      | Freezes and steps the world; records and replays a session. Pause, step, and the cap act on the driver and are not in the log |
-| Overlays     | Collision discs, Bound radii, Facing and action cone, Attack and aggro ranges, Path lines, Spell areas, Unit state labels, Spatial hash cells              | Draws diagnostics over the world from a separate quad pool |
+| Overlays     | Collision discs, Bound radii, Facing and action cone, Attack and aggro ranges, Path lines, Spell areas, Unit state labels, Spatial hash cells, Walkability grid | Draws diagnostics over the world from a separate quad pool; a toggle is remembered between reloads |
 | Readouts     | Frame rate, Tick time (mean and max over the last second), Render time, Draw calls, Live units, Live projectiles, Live zones, Pool misses, Heap           | Live numbers from the instrumentation rings; draw calls are counted by wrapping the renderer's draw methods |
 | Atlas        | Download atlas PNG                                                                                                                                        | Saves the shape atlas generated at boot so you can inspect the frames |
 
@@ -50,7 +50,8 @@ Each overlay is a toggle. They draw from their own quad pool at depth 90, above 
 - **Path lines** — the polyline each moving unit follows, after smoothing.
 - **Spell areas** — the live radius, segment, or cone of every zone.
 - **Unit state labels** — the order state of the hero and the AI state of every enemy, as text above the unit.
-- **Spatial hash cells** — the 128-unit grid, with occupied cells shaded.
+- **Spatial hash cells** — the 128-unit grid, each occupied cell outlined with the count of units in it.
+- **Walkability grid** — every cell the hero's radius class may not stand in, shaded.
 
 ---
 

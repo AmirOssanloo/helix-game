@@ -54,6 +54,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
 | The Phaser configuration | `src/app/game-config.ts` |
 | What the developer panel can do | The `DevApi` under `src/devtools/` — its methods are the list |
+| Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay |
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
 | Which lint rules enforce the layer table | The layer allow-list in `eslint.config.js` at the repository root |
 | Which lint rules ban the clock and unseeded random | The restricted-globals block for `src/domain` and `src/simulation` in `eslint.config.js` |

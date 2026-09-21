@@ -150,4 +150,74 @@ describe("FixedStepDriver", () => {
 
     expect(driver.nextTick).toBe(1);
   });
+
+  it("runs no tick while paused, and still samples the frame rate", () => {
+    const { driver, world, rings } = makeDriver();
+
+    driver.setPaused(true);
+    driver.onFrame(200);
+
+    expect(world.view.tick).toBe(0);
+    expect(rings.frameRate.count).toBe(1);
+  });
+
+  it("drops the accumulated time on pause, so resuming never catches up", () => {
+    const { driver, world } = makeDriver();
+
+    driver.onFrame(20);
+    driver.setPaused(true);
+    driver.setPaused(false);
+    driver.onFrame(20);
+
+    expect(world.view.tick).toBe(0);
+  });
+
+  it("takes a command while paused and holds it for the next tick", () => {
+    const { driver, world } = makeDriver();
+
+    driver.setPaused(true);
+
+    expect(driver.submit(noop())).toBe(true);
+    expect(world.pendingCommands).toBe(1);
+  });
+
+  it("steps exactly one tick while paused", () => {
+    const { driver, world } = makeDriver();
+
+    driver.setPaused(true);
+
+    expect(driver.step()).toBe(true);
+    expect(world.view.tick).toBe(1);
+  });
+
+  it("refuses a step while running or hidden", () => {
+    const { driver, world } = makeDriver();
+
+    expect(driver.step()).toBe(false);
+
+    driver.setPaused(true);
+    driver.setHidden(true);
+
+    expect(driver.step()).toBe(false);
+    expect(world.view.tick).toBe(0);
+  });
+
+  it("runs up to the catch-up cap it was set, then drops the rest", () => {
+    const { driver, world } = makeDriver();
+
+    expect(driver.setCatchUpCap(5)).toBe(true);
+
+    driver.onFrame(STEP_MS * 8);
+
+    expect(world.view.tick).toBe(5);
+    expect(driver.alpha).toBe(0);
+  });
+
+  it("refuses a cap below one or not a whole number, and keeps the one it had", () => {
+    const { driver } = makeDriver();
+
+    expect(driver.setCatchUpCap(0)).toBe(false);
+    expect(driver.setCatchUpCap(1.5)).toBe(false);
+    expect(driver.catchUpCap).toBe(MAX_TICKS_PER_FRAME);
+  });
 });

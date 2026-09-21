@@ -48,6 +48,17 @@ export type {
 } from "./input/targeting-cursor";
 export { closeCursor, createTargetingCursor } from "./input/targeting-cursor";
 export { PREVIEW_SIZE, TargetingPreview } from "./input/targeting-preview";
+export { DebugOverlays } from "./overlays/debug-overlays";
+export {
+  createOverlayToggles,
+  type OverlayToggles,
+} from "./overlays/overlay-toggles";
+export {
+  type DrawCallRenderer,
+  type DrawCallRings,
+  installDrawCallCounter,
+  type RenderedScene,
+} from "./render/draw-call-counter";
 export type {
   CommandDriver,
   FrameDriver,

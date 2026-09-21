@@ -3,18 +3,20 @@ import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
-import { ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
+import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
 import { WorldCamera } from "../camera/world-camera";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
 import type { CameraLens, InputIntents } from "../input/input-ports";
 import { TargetingPreview } from "../input/targeting-preview";
+import { DebugOverlays } from "../overlays/debug-overlays";
 import type { SceneContext } from "../scene-context";
+import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { ObstacleViews } from "../views/obstacle.view";
 import { createObstacleViews } from "../views/obstacle.view";
 import type { OrbViews } from "../views/orb.view";
 import { createOrbViews, orbSlotsOf } from "../views/orb.view";
-import type { FrameSizes, QuadFactory } from "../views/quad";
+import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 import { interpolate } from "../views/quad";
 import type { UnitViewPool } from "../views/unit.view";
 import {
@@ -27,11 +29,17 @@ export const PLAY_SCENE_KEY = "play";
 
 const SHUTDOWN_EVENT = "shutdown";
 
+/** Fired by the scene once its children have been rendered, so a frame's render time closes here. */
+const RENDER_EVENT = Phaser.Scenes.Events.RENDER;
+
 /** Unit views: the live cap on screen plus a margin, and what the benchmark drives. A presentation number, not the unit capacity. */
 const UNIT_VIEW_COUNT = 320;
 
 /** Obstacle quads: room for a map several times as busy as the arena. */
 const OBSTACLE_VIEW_COUNT = 64;
+
+/** Labels are centred on their position. */
+const LABEL_ORIGIN = 0.5;
 
 /** The unbind of a scene that has not bound its input yet. */
 const NOT_BOUND = (): void => {};
@@ -45,6 +53,7 @@ type Stage = {
   obstacles: ObstacleViews;
   units: UnitViewPool;
   orbs: OrbViews;
+  overlays: DebugOverlays;
   /** The map whose obstacles and bounds are bound, so a map load rebinds them once. */
   boundMapId: string | null;
 };
@@ -54,8 +63,8 @@ type Stage = {
  * makes every pool it will ever hold; `update` hands the frame to the driver, then reads the
  * world view and writes the views: the camera onto the hero, the obstacles and bounds on a
  * map load, the units inside the camera rectangle through the spatial hash, the orbs, the
- * targeting preview under the pointer, and the view misses into their ring, and drains the
- * event ring with its own cursor.
+ * targeting preview under the pointer, the debug overlays the toggles ask for, and the view
+ * misses into their ring, and drains the event ring with its own cursor.
  */
 export class PlayScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -74,6 +83,9 @@ export class PlayScene extends Phaser.Scene {
 
   private unbindInput: () => void = NOT_BOUND;
 
+  /** When this frame's sync began, on the driver's clock, so the render event measures sync and render together. */
+  private frameStartMs = 0;
+
   constructor(context: SceneContext) {
     super({ key: PLAY_SCENE_KEY });
     this.context = context;
@@ -83,6 +95,13 @@ export class PlayScene extends Phaser.Scene {
     const camera = new WorldCamera(this.cameras.main);
     const makeQuad: QuadFactory = (frame) =>
       this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame).setVisible(false);
+    // The only labels this scene makes are the overlays', so they sit in the debug band.
+    const makeLabel: LabelFactory = (size) =>
+      this.add
+        .bitmapText(0, 0, ATLAS_FONT_KEY, "", size)
+        .setOrigin(LABEL_ORIGIN)
+        .setDepth(DEPTH_DEBUG)
+        .setVisible(false);
     const frameSizes: FrameSizes = (frame) =>
       this.context.atlas.frameWidth(frame);
     const intents: InputIntents = {
@@ -113,11 +132,20 @@ export class PlayScene extends Phaser.Scene {
         makeQuad,
         frameSizes,
       ),
+      overlays: new DebugOverlays(makeQuad, makeLabel, frameSizes),
       boundMapId: null,
     };
 
+    const onRender = (): void => {
+      this.context.rings.renderTime.write(
+        this.context.driver.now() - this.frameStartMs,
+      );
+    };
+
     this.unbindInput = bindSceneInput(this, mapper);
+    this.events.on(RENDER_EVENT, onRender);
     this.events.once(SHUTDOWN_EVENT, (): void => {
+      this.events.off(RENDER_EVENT, onRender);
       this.unbindInput();
       this.unbindInput = NOT_BOUND;
       this.stage = null;
@@ -126,6 +154,9 @@ export class PlayScene extends Phaser.Scene {
 
   override update(_time: number, delta: number): void {
     this.context.driver.onFrame(delta);
+
+    // The ticks ran inside the frame above; what follows is the sync, and the render after it.
+    this.frameStartMs = this.context.driver.now();
 
     const stage = this.stage;
 
@@ -148,8 +179,9 @@ export class PlayScene extends Phaser.Scene {
     syncUnitViews(stage.units, world, this.rect, alpha, this.candidates);
     stage.orbs.sync(world, alpha);
     this.syncPreview(stage);
+    stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
     this.context.rings.viewMisses.write(
-      stage.units.misses + stage.obstacles.misses,
+      stage.units.misses + stage.obstacles.misses + stage.overlays.misses,
     );
     this.drainEvents();
   }

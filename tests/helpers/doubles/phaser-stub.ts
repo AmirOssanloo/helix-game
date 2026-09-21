@@ -22,11 +22,31 @@ class Vector2 {
   y = 0;
 }
 
+/** The renderer's lifecycle events, as the real renderer names them. */
+const RendererEvents = {
+  PRE_RENDER: "prerender",
+  RENDER: "render",
+  POST_RENDER: "postrender",
+};
+
+/** The game's lifecycle events the composition root waits on. */
+const CoreEvents = {
+  READY: "ready",
+};
+
+/** The scene lifecycle events a scene listens on, as the real scene names them. */
+const SceneEvents = {
+  RENDER: "render",
+};
+
 const Phaser = {
   AUTO: 0,
   CANVAS: 1,
   WEBGL: 2,
   HEADLESS: 3,
+  Core: { Events: CoreEvents },
+  Renderer: { Events: RendererEvents },
+  Scenes: { Events: SceneEvents },
   Scale: {
     NONE: 0,
     WIDTH_CONTROLS_HEIGHT: 1,

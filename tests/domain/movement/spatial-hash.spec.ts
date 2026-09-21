@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { SpatialHash } from "@domain/public";
+import type { HashCell, SpatialHash } from "@domain/public";
 import {
   CELL_CAPACITY,
   createCandidateBuffer,
+  createHashCell,
   createSpatialHash,
   createUnitPool,
   UNIT_CAPACITY,
@@ -53,6 +54,21 @@ const rectangle = (
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
   return collect(out, hash.queryRectangle(minX, minY, maxX, maxY, out));
+};
+
+/** Every occupied cell a walk over the hash reports, in slot order. */
+const occupiedCells = (hash: SpatialHash): HashCell[] => {
+  const cells: HashCell[] = [];
+
+  for (let index = 0; index < hash.cellSlots; index += 1) {
+    const cell = createHashCell();
+
+    if (hash.readCell(index, cell)) {
+      cells.push(cell);
+    }
+  }
+
+  return cells;
 };
 
 /** Fills the cell at the origin to capacity with ids from zero. */
@@ -236,5 +252,27 @@ describe("SpatialHash", () => {
       pool.idAt(1),
     ]);
     expect(rectangle(hash, 100, 0, 149, 49)).toEqual([pool.idAt(1)]);
+  });
+
+  it("reports every occupied cell with its coordinates and count, negative coordinates included", () => {
+    const hash = createSpatialHash(CELL);
+
+    hash.insert(id(1), 10, 10);
+    hash.insert(id(2), 20, 20);
+    hash.insert(id(3), -150, 250);
+
+    expect(occupiedCells(hash)).toEqual([
+      { cellX: 0, cellY: 0, count: 2 },
+      { cellX: -2, cellY: 2, count: 1 },
+    ]);
+  });
+
+  it("reports nothing for a cell freed by its last unit leaving", () => {
+    const hash = createSpatialHash(CELL);
+
+    hash.insert(id(1), 10, 10);
+    hash.remove(id(1));
+
+    expect(occupiedCells(hash)).toEqual([]);
   });
 });

@@ -4,7 +4,6 @@ import type { RandomState } from "@domain/public";
 import type { ShapeAtlas } from "@presentation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "@presentation/public";
 import { createRandomState, nextFloat } from "@simulation/public";
-import { countDrawCalls } from "./draw-calls";
 import { Readout } from "./readout";
 
 /**
@@ -241,7 +240,7 @@ export class BenchScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(target, false, CAMERA_LERP, CAMERA_LERP);
     this.target = target;
-    this.readout = new Readout(this, countDrawCalls(this.sys.game.renderer));
+    this.readout = new Readout(this);
   }
 
   override update(time: number, delta: number): void {

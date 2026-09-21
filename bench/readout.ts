@@ -1,6 +1,6 @@
 import Phaser from "phaser";
-import { ATLAS_FONT_KEY } from "@presentation/public";
-import type { DrawCallCounter } from "./draw-calls";
+import { ATLAS_FONT_KEY, installDrawCallCounter } from "@presentation/public";
+import { RingBuffer } from "@shared/public";
 
 /** How often the numbers are retyped: slow enough to read, fast enough to see a change land. */
 const INTERVAL_MS = 250;
@@ -53,17 +53,26 @@ const addRow = (
     .setDepth(DEPTH);
 };
 
+/** A ring the counter writes and this readout reads: one sample per frame is all it keeps. */
+const RING_CAPACITY = 1;
+
+/** A ring of one sample, so the readout reads the last frame's count and nothing older. */
+const oneSampleRing = (): RingBuffer<number> =>
+  new RingBuffer<number>(RING_CAPACITY, () => 0);
+
 /**
  * The corner readout: frame rate as the game loop measures it, the mean CPU time between the
  * renderer's pre-render and post-render events, the most draw calls any frame took, the used
  * heap, and the texture units per batch the renderer came up with. Every number is a
  * `BitmapText` from the atlas font, so the readout itself adds no draw call. The heap and the
- * draw calls show a dash where they cannot be read.
+ * draw calls show a dash where they cannot be read: draw calls are counted by the game's own
+ * counter, installed here on the WebGL renderer, so the benchmark and the panel agree.
  */
 export class Readout {
   private readonly game: Phaser.Game;
 
-  private readonly counter: DrawCallCounter | null;
+  /** The last frame's draw calls, or `null` under the Canvas renderer. */
+  private readonly drawCallRing: RingBuffer<number> | null;
 
   private readonly fps: Phaser.GameObjects.BitmapText;
 
@@ -83,9 +92,8 @@ export class Readout {
 
   private maxDrawCalls = 0;
 
-  constructor(scene: Phaser.Scene, counter: DrawCallCounter | null) {
+  constructor(scene: Phaser.Scene) {
     this.game = scene.sys.game;
-    this.counter = counter;
     this.fps = addRow(scene, 0, "FPS");
     this.renderMs = addRow(scene, 1, "RENDER");
     this.drawCalls = addRow(scene, 2, "DRAWS");
@@ -96,6 +104,17 @@ export class Readout {
 
     if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
       textures.setText(String(renderer.maxTextures));
+
+      const drawCalls = oneSampleRing();
+
+      installDrawCallCounter(
+        renderer,
+        { drawCalls, worldDrawCalls: oneSampleRing() },
+        scene.sys.settings.key,
+      );
+      this.drawCallRing = drawCalls;
+    } else {
+      this.drawCallRing = null;
     }
 
     renderer.on(Phaser.Renderer.Events.PRE_RENDER, (): void => {
@@ -110,8 +129,11 @@ export class Readout {
 
   /** Folds the last frame into the window and retypes the rows when the window is up. */
   update(deltaMs: number): void {
-    if (this.counter !== null) {
-      this.maxDrawCalls = Math.max(this.maxDrawCalls, this.counter.lastFrame());
+    const lastFrame =
+      this.drawCallRing === null ? null : this.drawCallRing.at(0);
+
+    if (lastFrame !== null) {
+      this.maxDrawCalls = Math.max(this.maxDrawCalls, lastFrame);
     }
 
     this.elapsedMs += deltaMs;
@@ -129,7 +151,7 @@ export class Readout {
     this.fps.setText(String(Math.round(this.game.loop.actualFps)));
     this.renderMs.setText(meanRenderMs.toFixed(RENDER_MS_DECIMALS));
     this.drawCalls.setText(
-      this.counter === null ? DASH : String(this.maxDrawCalls),
+      this.drawCallRing === null ? DASH : String(this.maxDrawCalls),
     );
     this.heapMb.setText(heap === null ? DASH : String(Math.round(heap)));
 

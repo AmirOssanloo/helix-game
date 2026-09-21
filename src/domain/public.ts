@@ -253,7 +253,9 @@ export {
 export {
   CELL_CAPACITY,
   createCandidateBuffer,
+  createHashCell,
   createSpatialHash,
+  type HashCell,
   type Positioned,
   SpatialHash,
   type SpatialHashView,

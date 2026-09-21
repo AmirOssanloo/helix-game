@@ -16,7 +16,10 @@ const MEASUREMENTS = [
   "liveEffects",
   "liveZones",
   "poolMisses",
+  "viewMisses",
   "eventOverwrites",
+  "drawCalls",
+  "worldDrawCalls",
 ] as const;
 
 describe("instrumentation rings", () => {

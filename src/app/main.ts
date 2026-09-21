@@ -7,14 +7,17 @@ import {
   spells,
   tuningTable,
 } from "@content/public";
-import { exposeDevApi, mountPanel } from "@devtools/public";
+import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
 import { acquireHero } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
   BootScene,
+  createOverlayToggles,
   HudScene,
+  installDrawCallCounter,
+  PLAY_SCENE_KEY,
   PlayScene,
   ShapeAtlas,
   SlotFlashes,
@@ -55,13 +58,16 @@ export const boot: Boot = (): void => {
   const rings = createRings();
   const driver = new FixedStepDriver({ world, rings, clock: wallClock });
   const atlas = new ShapeAtlas(atlasFrames);
+  // One object, read by the play scene and written by the panel; the two layers each name its fields.
+  const overlays = createOverlayToggles();
   const context: SceneContext = {
     atlas,
     driver,
     world: world.view,
     events: world.events,
-    rings: { viewMisses: rings.viewMisses },
+    rings: { viewMisses: rings.viewMisses, renderTime: rings.renderTime },
     flashes: new SlotFlashes(),
+    overlays,
     report: (message: string): void => {
       console.log(message);
     },
@@ -71,7 +77,7 @@ export const boot: Boot = (): void => {
     driver.setHidden(document.hidden);
   });
 
-  new Phaser.Game({
+  const game = new Phaser.Game({
     ...gameConfig,
     type: rendererType(readRendererOverrides(window)),
     scene: [
@@ -79,6 +85,15 @@ export const boot: Boot = (): void => {
       new PlayScene(context),
       new HudScene(context),
     ],
+  });
+
+  // The renderer exists once the game is ready; the Canvas renderer has nothing to count.
+  game.events.once(Phaser.Core.Events.READY, (): void => {
+    const renderer = game.renderer;
+
+    if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
+      installDrawCallCounter(renderer, rings, PLAY_SCENE_KEY);
+    }
   });
 
   if (__DEV__) {
@@ -90,11 +105,19 @@ export const boot: Boot = (): void => {
       );
     }
 
-    mountPanel(host);
-    exposeDevApi(window, {
+    const api = createDevApi({
+      driver,
+      view: world.view,
+      events: world.events,
+      log: world.log,
       rings,
+      overlays,
+      tuningDefaults: tuningTable,
       downloadAtlas: (): string => atlas.download(),
     });
+
+    exposeDevApi(window, api);
+    mountPanel(host, api, window.localStorage);
   }
 };
 

@@ -3,8 +3,8 @@ import { createSampleRing } from "./sample-ring";
 
 /**
  * One ring per measurement. Every ring is on in every build; the panel that reads them is what
- * a production build strips. Who writes each ring is the driver, the play scene, the pools'
- * counters, and the event ring's counter, sampled after each tick.
+ * a production build strips. Who writes each ring is the driver, the play scene, the
+ * draw-call counter, the pools' counters, and the event ring's counter.
  */
 export type InstrumentationRings = Readonly<{
   /** Wall milliseconds around one `tick`, written by the driver. */
@@ -27,6 +27,10 @@ export type InstrumentationRings = Readonly<{
   viewMisses: SampleRing;
   /** Events the ring has lost to overwrites since the world was created, after one tick. */
   eventOverwrites: SampleRing;
+  /** Draw calls in one frame, every scene, written by the draw-call counter on the renderer's post-render. Never written under the Canvas renderer. */
+  drawCalls: SampleRing;
+  /** The world scene's share of `drawCalls`, so the figure the budget is held to excludes the HUD. */
+  worldDrawCalls: SampleRing;
 }>;
 
 /** Every ring, empty, at the declared capacity. Created once at boot. */
@@ -41,4 +45,6 @@ export const createRings = (): InstrumentationRings => ({
   poolMisses: createSampleRing(),
   viewMisses: createSampleRing(),
   eventOverwrites: createSampleRing(),
+  drawCalls: createSampleRing(),
+  worldDrawCalls: createSampleRing(),
 });

@@ -3,6 +3,7 @@ import type { RingBuffer } from "@shared/public";
 import type { EventRing, WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
 import type { SlotFlashes } from "./hud/slot-flashes";
+import type { OverlayToggles } from "./overlays/overlay-toggles";
 
 /**
  * What the input mapper needs of the driver: the tick a command built now applies to, the
@@ -29,13 +30,15 @@ export type Reporter = (message: string) => void;
 export type SceneRings = Readonly<{
   /** Binds the view pools have refused since the play scene was created, summed, written once per frame. */
   viewMisses: RingBuffer<number>;
+  /** Wall milliseconds from the start of the play scene's sync to the end of its render, written once per frame. */
+  renderTime: RingBuffer<number>;
 }>;
 
 /**
  * Everything a scene is given at construction. A scene composes over these and holds nothing
  * else. The flashes are shared by the two scenes: the play scene's mapper writes one for a
  * cursor it would not open, and the HUD writes one for a refused-command event and draws them
- * all.
+ * all. The overlay toggles are shared with the developer panel, which writes them.
  */
 export type SceneContext = Readonly<{
   atlas: ShapeAtlas;
@@ -44,5 +47,6 @@ export type SceneContext = Readonly<{
   events: EventRing;
   rings: SceneRings;
   flashes: SlotFlashes;
+  overlays: Readonly<OverlayToggles>;
   report: Reporter;
 }>;

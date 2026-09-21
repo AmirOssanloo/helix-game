@@ -50,7 +50,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Layer | devtools, presentation, instrumentation, tests |
 | Size | 1.5 |
 | Depends on | T01, P1-S05-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `window.DevApi` in development with `submit`, `view`, `rings`, `driver` (pause, step, catch-up cap, seed), `saveInputLog`, `loadInputLog`, `downloadAtlas`. The panel as plain DOM in the `<aside>`, importing nothing from Phaser: the Hero group with every control on the developer panel page that exists in phase 1; the Tuning group with one slider per tunable in the tuning table, its default beside it, each change a `set_tuning` command; the Simulation group (pause, step, catch-up cap, seed, save, load, reset map); a Units group with the generic spawn for now (the archetype dropdown arrives with archetypes); the Overlays group with toggles for collision discs, bound radii, facing and action cone, path lines, walkability grid, spatial hash cells with counts; the Readouts group computing mean and max over the last second from the rings for tick time, render time, frame rate, live counts, pool misses, event overwrites, and draw calls; the Atlas group with the download button. The draw-call ring (Q4): a module under `src/presentation/` wraps `drawElements` and `drawInstancedArrays` on the renderer instance at boot, both public Phaser 4 methods that every batch handler, the filter pass, and the GPU tile layer draw through; it resets the count on the renderer's pre-render event, attributes it per scene on the render event, and writes the frame total and the `PlayScene` share to the ring on post-render, so the world figure excludes the HUD. Under the Canvas renderer the readout shows a dash. Overlays drawn by `PlayScene` from a dedicated quad pool at depth 90 with `BitmapText` labels, binding no quads when off. Panel layout, overlay toggles, and last spawn settings in `localStorage`; nothing about the game.
 
@@ -67,6 +67,8 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 - `tests/presentation/draw-call-counter.spec.ts` — with the Phaser stub, three draw method calls between pre-render and post-render write 3 to the ring, and a scene's share is attributed by the render event.
 
 **Definition of done:** Every change · A developer-panel control · Anything under `src/presentation`.
+
+> Built 2026-09-21. Three readings settled in the build. `loadInputLog` and the seed control's recreate are T03's, which owns the log format, the loader, and world recreation; T02 exposes `saveInputLog` over the live log through a serializer under `src/simulation/replay/` that T03 extends with the content version stamp, and shows the seed read-only. The overlay toggles are one object the composition root hands to both the play scene and the panel, each layer naming its fields, since neither may import the other; `DevApi` gained `overlays` and the devtools page says so. The play scene now writes the render-time ring around its sync and render, which the instrumentation table already promised and nothing wrote. The draw-call readout against the WebGL inspector is a person's row in `STATUS.md`; the readout showed 2 total and 1 for the world in Chrome with every overlay on, the same as with none.
 
 ---
 
@@ -122,7 +124,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Phase 1 gate rows, each with evidence | |
 | Draw-call readout agrees with the WebGL inspector on one bench frame | |
 | Milestone M2 | |
-| Actual days per ticket | T01 1 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
 
 ## Risks in this sprint
 
