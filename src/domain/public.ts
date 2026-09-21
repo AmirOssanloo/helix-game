@@ -25,6 +25,15 @@ export type {
   AtlasFrameList,
   AtlasShape,
 } from "./definitions/atlas-frame-def";
+export type {
+  AttributeConversions,
+  Attributes,
+  BodyDef,
+  FormDef,
+  Stats,
+} from "./definitions/form-def";
+export { createFormRecords } from "./definitions/form-state";
+export type { HeroDef } from "./definitions/hero-def";
 export type { MapDef, SpawnDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
 export {
@@ -49,6 +58,13 @@ export {
   type Effect,
   EFFECT_CAPACITY,
 } from "./entities/effect";
+export {
+  acquireHero,
+  activeForm,
+  activeFormOf,
+  resolveHero,
+  wearBody,
+} from "./entities/hero";
 export { Pool, type PoolView } from "./entities/pool";
 export {
   createProjectilePool,
@@ -61,6 +77,7 @@ export {
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   type ModifierEntry,
+  type ModifierKind,
   type Path,
   PATH_CAPACITY,
   releaseUnit,
@@ -72,13 +89,15 @@ export {
   UNIT_CAPACITY,
   type UnitKind,
 } from "./entities/unit";
-export type {
-  FormRecord,
-  MapScope,
-  RandomState,
-  RunScope,
-  TuningState,
-  World,
+export {
+  type FormRecord,
+  type KitState,
+  type MapScope,
+  ORB_COUNT,
+  type RandomState,
+  type RunScope,
+  type TuningState,
+  type World,
 } from "./entities/world-state";
 export { createZonePool, type Zone, ZONE_CAPACITY } from "./entities/zone";
 export {
@@ -165,4 +184,16 @@ export {
   validateCommand,
   type ValidationResult,
 } from "./orders/validator";
+export { attributesAt, deriveStats } from "./stats/derived";
+export {
+  grantExperience,
+  levelForExperience,
+  type Progression,
+  type SkillPointRefusal,
+  type SkillPointResult,
+  spendSkillPoint,
+} from "./stats/levels";
+export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
+export { regenerate } from "./stats/regeneration";
+export { statsSystem } from "./stats/stats.system";
 export type { Tick } from "./tick";

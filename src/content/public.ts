@@ -1,4 +1,7 @@
 export { atlasFrames, GLYPH_CHARACTERS, WEDGE_STEPS } from "./atlas-frames";
+export { forms } from "./forms/index";
+export { skeinDef } from "./forms/skein.def";
+export { heroDef } from "./hero";
 export { arenaDef } from "./maps/arena.def";
 export { maps } from "./maps/index";
 export { tuningTable } from "./tuning";

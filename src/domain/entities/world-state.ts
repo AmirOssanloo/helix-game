@@ -1,5 +1,7 @@
 import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { FormDef } from "../definitions/form-def";
+import type { HeroDef } from "../definitions/hero-def";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
@@ -7,7 +9,7 @@ import type { Tick } from "../tick";
 import type { Effect } from "./effect";
 import type { Pool } from "./pool";
 import type { Projectile } from "./projectile";
-import type { Unit } from "./unit";
+import type { Resources, Unit } from "./unit";
 import type { Zone } from "./zone";
 
 /** The seeded random source's state. It lives on the world so a replay from the same seed reproduces every draw. */
@@ -16,11 +18,24 @@ export type RandomState = {
   state: number;
 };
 
-/** One form the hero can take. The unit holds the active index; a swap changes that index and nothing else. */
+/** How many orb skills a kit levels: Q, W, and E. */
+export const ORB_COUNT = 3;
+
+/** What a form's kit remembers between ticks. For now the level of each orb skill, which skill points raise. */
+export type KitState = {
+  orbLevels: number[];
+};
+
+/**
+ * One form the hero can take: its definition in simulation units, the health and mana it
+ * has, its kit state, and its armory, which is `null` until items exist. The unit holds the
+ * active index; a swap changes that index and nothing else.
+ */
 export type FormRecord = {
-  definitionId: string;
-  hp: number;
-  mana: number;
+  def: FormDef;
+  resources: Resources;
+  kit: KitState;
+  armory: null;
 };
 
 /** Tuning key to current value: the tuning table copied at world creation, changed by command. */
@@ -29,6 +44,9 @@ export type TuningState = Map<string, number>;
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
   heroId: EntityId | null;
+  /** The hero definition as content wrote it: which forms it has and how it levels. */
+  hero: HeroDef;
+  /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
   tuning: TuningState;
   random: RandomState;

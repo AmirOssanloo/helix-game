@@ -1,5 +1,5 @@
 import type { Unit } from "@domain/public";
-import { acquireUnit } from "@domain/public";
+import { acquireHero } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 
 /** Where the hero stands and which way it faces. Everything defaults to the origin facing +X. */
@@ -10,15 +10,15 @@ export type SpawnHeroOptions = Readonly<{
 }>;
 
 /**
- * Arranges a hero before the hero definition exists: acquires a hero-kind unit at a position
- * and facing through the unit door, so it is in the spatial hash, and points run scope at it.
- * Returns the live unit so a spec reads its order and state directly.
+ * Arranges the hero: acquires it through the hero door, so it is in the spatial hash, wears
+ * its first form's body, and is named by run scope, then turns it to face `facing`. Returns
+ * the live unit so a spec reads its order and state directly.
  */
 export const spawnHero = (
   world: Simulation,
   options: SpawnHeroOptions = {},
 ): Unit => {
-  const id = acquireUnit(world.state, "hero", options.x ?? 0, options.y ?? 0);
+  const id = acquireHero(world.state, options.x ?? 0, options.y ?? 0);
   const unit = id === null ? null : world.state.map.units.resolve(id);
 
   if (id === null || unit === null) {
@@ -26,7 +26,6 @@ export const spawnHero = (
   }
 
   unit.facing = options.facing ?? 0;
-  world.state.run.heroId = id;
 
   return unit;
 };

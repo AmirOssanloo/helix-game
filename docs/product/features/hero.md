@@ -6,7 +6,7 @@
 
 There is one hero: Skein, a ranged caster. This page covers the hero as a unit — attributes, resources, levels, the passives each orb instance carries, and what happens on death. How the hero is controlled is in [Controls and orders](./controls-and-orders.md); the kit is in [Orbs and Invoke](./orbs-and-invoke.md) and [Spells and attack](./spells-and-attack.md).
 
-Every number on this page is a starting value. The file that owns them is `src/content/hero.ts`, and it wins when the two disagree.
+Every number on this page is a starting value. The files that own them are `src/content/hero.ts` for levels and `src/content/forms/skein.def.ts` for the body, attributes, and their conversions, and they win when this page disagrees.
 
 ## Attributes
 
@@ -18,7 +18,7 @@ The hero has three attributes. Each drives two derived values, and every derived
 | Agility | Armour, attack speed | Each point adds a fraction of armour and a fraction of attack speed |
 | Intelligence | Mana, mana regeneration | Each point adds maximum mana and a little regeneration per second |
 
-Starting values, level 1: roughly 120 base health plus strength, 75 base mana plus intelligence, 25% base magic resistance, and 0 base armour plus what agility gives. The per-point conversions and per-level gains follow the source game and live in `src/content/hero.ts`.
+Starting values, level 1: roughly 120 base health plus strength, 75 base mana plus intelligence, 25% base magic resistance, and 0 base armour plus what agility gives. The per-point conversions and per-level gains follow the source game and live in `src/content/forms/skein.def.ts`.
 
 ## Resources
 
@@ -59,7 +59,7 @@ Every hit has one damage type, and the type decides what reduces it.
 | Magical | Magic resistance | Most spells |
 | Pure | Nothing | Rare, deliberate |
 
-The formulas follow the source game and live in `src/domain/combat/`; the starting armour and resistance values live in `src/content/hero.ts`.
+The formulas follow the source game and live in `src/domain/combat/`; the starting armour and resistance values live in `src/content/forms/skein.def.ts`.
 
 ## Death and respawn
 

@@ -1,5 +1,11 @@
 import Phaser from "phaser";
-import { arenaDef, atlasFrames, tuningTable } from "@content/public";
+import {
+  arenaDef,
+  atlasFrames,
+  forms,
+  heroDef,
+  tuningTable,
+} from "@content/public";
 import { exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
 import { createRings } from "@instrumentation/public";
@@ -20,8 +26,8 @@ const DEVTOOLS_HOST_ID = "devtools";
 /** Every session starts from this seed until a session can be recorded and replayed under its own. */
 const SESSION_SEED = 1;
 
-/** The content layer holds the tuning table and the maps; the registry of every other kind does not exist yet. */
-const REGISTRY: Registry = { tuning: tuningTable };
+/** The content layer holds the tuning table, the hero and its forms, and the maps; the registry of every other kind does not exist yet. */
+const REGISTRY: Registry = { tuning: tuningTable, hero: heroDef, forms };
 
 export const boot: Boot = (): void => {
   const world = createWorld({

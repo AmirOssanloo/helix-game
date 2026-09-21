@@ -7,7 +7,7 @@ const table = (...rows: Partial<ModifierEntry>[]): ModifierEntry[] => {
   const entries: ModifierEntry[] = [];
 
   for (let row = 0; row < 4; row += 1) {
-    entries.push({ stat: null, flat: 0, percent: 0, ...rows[row] });
+    entries.push({ kind: null, stat: null, flat: 0, percent: 0, ...rows[row] });
   }
 
   return entries;

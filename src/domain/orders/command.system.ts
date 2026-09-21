@@ -2,6 +2,7 @@ import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { Command, DebugCommand } from "../commands/command";
 import { setTunable, validateTuning } from "../definitions/tuning-state";
+import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { radiusClassOf } from "../map/walkability";
@@ -94,15 +95,6 @@ const applyCommand = (
     case "debug_noop":
       break;
   }
-};
-
-/** The hero run scope names, or `null` when there is none or its id is stale. */
-const resolveHero = (world: World): Unit | null => {
-  if (world.run.heroId === null) {
-    return null;
-  }
-
-  return world.map.units.resolve(world.run.heroId);
 };
 
 /**

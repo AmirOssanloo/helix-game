@@ -47,7 +47,12 @@ describe("unit pool", () => {
     expect(unit?.path.count).toBe(0);
     expect(unit?.path.next).toBe(0);
     expect(unit?.modifiers).toHaveLength(MODIFIER_TABLE_SIZE);
-    expect(unit?.modifiers[0]).toEqual({ stat: null, flat: 0, percent: 0 });
+    expect(unit?.modifiers[0]).toEqual({
+      kind: null,
+      stat: null,
+      flat: 0,
+      percent: 0,
+    });
   });
 
   it("gives each unit an idle state with every disable flag false", () => {
@@ -97,8 +102,12 @@ describe("unit pool", () => {
     unit.state = "moving";
     unit.disables.stunned = true;
     unit.disables.rooted = true;
-    unit.resources.hp = 6;
+    unit.resources.health = 6;
     unit.resources.mana = 7;
+    unit.progression.level = 13;
+    unit.progression.skillPoints = 2;
+    unit.attributes.strength = 30;
+    unit.stats.maxHealth = 780;
     unit.cooldowns.set("fireball", 8);
     firstStatus.definitionId = "slow";
     firstStatus.stacks = 2;
@@ -112,7 +121,7 @@ describe("unit pool", () => {
     expect(unit).toEqual(fresh);
     expect(unit.path.count).toBe(0);
     expect(unit.cooldowns.size).toBe(0);
-    expect(unit.resources).toEqual({ hp: 0, mana: 0 });
+    expect(unit.resources).toEqual({ health: 0, mana: 0 });
     expect(unit.ownerId).toBeNull();
   });
 });

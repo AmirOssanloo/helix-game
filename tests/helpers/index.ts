@@ -32,6 +32,7 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
+export { makeFormDef } from "./content/make-form-def";
 export { makeMapDef } from "./content/make-map-def";
 export {
   makeRegistry,

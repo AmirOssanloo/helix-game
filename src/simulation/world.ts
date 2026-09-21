@@ -11,6 +11,7 @@ import {
   cellCount,
   clearOrder,
   createEffectPool,
+  createFormRecords,
   createPathSearch,
   createProjectilePool,
   createSpatialHash,
@@ -107,7 +108,12 @@ export class Simulation {
       tick: 0,
       run: {
         heroId: null,
-        forms: [],
+        hero: options.registry.hero,
+        forms: createFormRecords(
+          options.registry.hero,
+          options.registry.forms,
+          readTunable(tuning, "sim_hz"),
+        ),
         tuning,
         random: createRandomState(options.seed),
       },
@@ -263,6 +269,6 @@ export class Simulation {
   }
 }
 
-/** A world at tick zero on `map`, with the registry's tuning converted into run scope and the random source at the start of `seed`'s sequence. */
+/** A world at tick zero on `map`, with the registry's tuning and forms converted into run scope and the random source at the start of `seed`'s sequence. */
 export const createWorld = (options: CreateWorldOptions): Simulation =>
   new Simulation(options);

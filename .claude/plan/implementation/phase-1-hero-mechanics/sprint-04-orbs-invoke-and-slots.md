@@ -21,7 +21,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | P1-S02-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `HeroDef` and `FormDef` in `domain/definitions/`; `src/content/hero.ts` with the shared values and the form list; `src/content/forms/skein.def.ts` with body (collision 27, bound 24, selection size), base attributes, per-level gains, the ability list (the ten spell ids), the kit key `invoke`, and the atlas frame, every number carrying a `// tunable` comment. Under `src/domain/stats/`: the modifier stack (a fixed-size array of sources on the unit, each with a kind, a stat, a flat and a percentage value), derived values from attributes (health, health regen, mana, mana regen, armour, attack speed, magic resistance), the level table 1 to 30 with experience thresholds, skill points, orb levels capped at 7, regeneration per tick with clamping. Run scope holds one form record per form (definition id, health, mana, kit state, armory placeholder) and the unit holds the active index; systems read the body through the active form each tick. `statsSystem` registered first in the tick, computing derived values from the stack.
 
@@ -36,6 +36,8 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 - `tests/simulation/hero/forms.spec.ts` — the swap keeps the id.
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability (definition file rows).
+
+> Edited while building: `statsSystem` is registered second, right after command application, not first. The simulation loop and commands pages fix command application as the first system, and running stats after it is what lets a modifier a command adds be in that tick's derived values. The base attributes, per-level gains, and per-point conversions live on the form definition, as the world model says, so `src/content/hero.ts` holds only the form list and the level rules.
 
 ---
 
@@ -126,7 +128,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Check | Result |
 | --- | --- |
 | AT-O1 to O5 (O4 pending the channel stub in sprint 06), AT-I1 to I9, AT-M4, AT-C5 green | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

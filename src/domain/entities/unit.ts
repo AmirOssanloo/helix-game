@@ -1,8 +1,10 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
+import type { Attributes, Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
+import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
 import type { World } from "./world-state";
@@ -23,7 +25,7 @@ export const PATH_CAPACITY = 32;
 export type UnitKind = "hero" | "enemy" | "summon";
 
 export type Resources = {
-  hp: number;
+  health: number;
   mana: number;
 };
 
@@ -36,7 +38,18 @@ export type StatusEntry = {
 };
 
 /** A derived value a modifier source changes. */
-export type Stat = "movement_speed";
+export type Stat =
+  | "movement_speed"
+  | "max_health"
+  | "health_regen"
+  | "max_mana"
+  | "mana_regen"
+  | "armour"
+  | "attack_speed"
+  | "magic_resistance";
+
+/** What wrote a modifier row: a status, a held orb instance, or later an item. A source removes every row of its kind. */
+export type ModifierKind = "status" | "orb" | "item";
 
 /**
  * One row of a unit's modifier table: one source's contribution to one stat, a flat amount in
@@ -44,6 +57,7 @@ export type Stat = "movement_speed";
  * reads every row for it each tick; nothing caches the sum.
  */
 export type ModifierEntry = {
+  kind: ModifierKind | null;
   stat: Stat | null;
   flat: number;
   percent: number;
@@ -85,6 +99,12 @@ export type Unit = {
   /** Whether the unit is waiting for the pathing system to plan its path. It keeps following `path` while it waits. */
   needsPath: boolean;
   modifiers: readonly ModifierEntry[];
+  /** Level, experience, and unspent skill points. Continuous across a form swap. */
+  progression: Progression;
+  /** The attributes at the current level, written by the stats system every tick. */
+  attributes: Attributes;
+  /** The derived values the stats system writes every tick from the attributes and the modifier table. */
+  stats: Stats;
   /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
   disables: DisableFlags;
   resources: Resources;
@@ -114,15 +134,27 @@ const clearStatusEntry = (entry: StatusEntry): void => {
 };
 
 const createModifierEntry = (): ModifierEntry => ({
+  kind: null,
   stat: null,
   flat: 0,
   percent: 0,
 });
 
 const clearModifierEntry = (entry: ModifierEntry): void => {
+  entry.kind = null;
   entry.stat = null;
   entry.flat = 0;
   entry.percent = 0;
+};
+
+const clearStats = (stats: Stats): void => {
+  stats.maxHealth = 0;
+  stats.healthRegen = 0;
+  stats.maxMana = 0;
+  stats.manaRegen = 0;
+  stats.armour = 0;
+  stats.attackSpeed = 0;
+  stats.magicResistance = 0;
 };
 
 const createPath = (): Path => {
@@ -168,13 +200,24 @@ const createUnit = (): Unit => {
     path: createPath(),
     needsPath: false,
     modifiers,
+    progression: { level: 1, experience: 0, skillPoints: 0 },
+    attributes: { strength: 0, agility: 0, intelligence: 0 },
+    stats: {
+      maxHealth: 0,
+      healthRegen: 0,
+      maxMana: 0,
+      manaRegen: 0,
+      armour: 0,
+      attackSpeed: 0,
+      magicResistance: 0,
+    },
     disables: {
       stunned: false,
       silenced: false,
       rooted: false,
       disarmed: false,
     },
-    resources: { hp: 0, mana: 0 },
+    resources: { health: 0, mana: 0 },
     cooldowns: new Map(),
     statuses,
     activeFormIndex: 0,
@@ -214,11 +257,18 @@ const clearUnit = (unit: Unit): void => {
     }
   }
 
+  unit.progression.level = 1;
+  unit.progression.experience = 0;
+  unit.progression.skillPoints = 0;
+  unit.attributes.strength = 0;
+  unit.attributes.agility = 0;
+  unit.attributes.intelligence = 0;
+  clearStats(unit.stats);
   unit.disables.stunned = false;
   unit.disables.silenced = false;
   unit.disables.rooted = false;
   unit.disables.disarmed = false;
-  unit.resources.hp = 0;
+  unit.resources.health = 0;
   unit.resources.mana = 0;
   unit.cooldowns.clear();
 
@@ -243,10 +293,10 @@ export const createUnitPool = (): Pool<Unit> =>
 
 /**
  * The one way a unit enters the world: a slot from the pool, standing at the position with its
- * previous position and spawn point there too, wearing the hull the tuning table gives every
- * hero form, indexed in the spatial hash. A spawn from a definition writes that definition's
- * radii over the hull. Returns the id, or `null` when the pool is full; the caller decides what
- * a spawn that does not happen means.
+ * previous position and spawn point there too, wearing the hull the tuning table gives a unit
+ * with no definition, indexed in the spatial hash. A spawn from a definition writes that
+ * definition's radii over the hull; the hero wears its active form's body. Returns the id, or
+ * `null` when the pool is full; the caller decides what a spawn that does not happen means.
  */
 export const acquireUnit = (
   world: World,

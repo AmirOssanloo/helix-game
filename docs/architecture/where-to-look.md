@@ -18,8 +18,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype; the tier is a field of each definition |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist | `src/content/maps/` — one file per map |
-| The hero's base values and per-level gains | `src/content/hero.ts` |
-| Which forms the hero has, and each form's body, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
+| The hero's level cap, experience table, and skill points | `src/content/hero.ts` |
+| Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
 | Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
@@ -34,6 +34,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which events the tick can emit | The event union in `src/domain/events/` |
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file and the validator beside it |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
+| How attributes become derived values, how a modifier row changes one, how a unit levels and spends skill points, and how resources regenerate | `src/domain/stats/` — the derivation, the modifier pipeline, the level rule, the regeneration rule, and the stats system |
 | How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, the speed stack, the path buffer, and the movement system |
 | How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the pass loop, and the tie-break |
 | How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
