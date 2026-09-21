@@ -64,12 +64,11 @@ const applyInvoke = (
   form: FormRecord,
 ): RefusalReason | null => {
   const outcome = invoke(
-    form.kit,
-    form.resources,
-    hero.cooldowns,
-    form.def.abilities,
+    hero,
+    form,
     world.run.spells,
     world.run.tuning,
+    world.run.debug,
     world.tick,
   );
 

@@ -4,6 +4,7 @@ import type { TuningKey } from "../definitions/tuning-def";
 import {
   EMBER_DAMAGE_KEYS,
   QUARTZ_REGEN_KEYS,
+  WHORL_CDR_KEYS,
   WHORL_SPEED_KEYS,
 } from "../definitions/tuning-def";
 import { readTunable } from "../definitions/tuning-state";
@@ -25,15 +26,18 @@ const PASSIVE_KEYS: readonly (readonly TuningKey[])[] = [
   EMBER_DAMAGE_KEYS,
 ];
 
-/** The one orb whose table is a fraction of the stat rather than a flat amount of it. */
+/** The one orb whose table is a fraction of the stat rather than a flat amount of it, and the one with a second passive: a fraction off every cooldown that starts while it is held. */
 const WHORL = 1;
+
+/** The stat Whorl's second passive changes. */
+const WHORL_CDR_STAT: Stat = "cooldown_reduction";
 
 /**
  * Rewrites the orb rows of `unit`'s modifier table from the buffer: every row an orb wrote
- * leaves, then each held instance writes one row at its orb's current level. Run every tick,
- * it makes a swapped-out instance take its passive with it and a raised orb level reach every
- * instance out, both on the tick it happened. An instance whose level has no table entry
- * contributes nothing.
+ * leaves, then each held instance writes one row at its orb's current level, and a Whorl
+ * instance a second one for its cooldown reduction. Run every tick, it makes a swapped-out
+ * instance take its passive with it and a raised orb level reach every instance out, both on
+ * the tick it happened. An instance whose level has no table entry contributes nothing.
  */
 export const refreshOrbPassives = (
   unit: Unit,
@@ -61,5 +65,25 @@ export const refreshOrbPassives = (
         : addModifier(unit.modifiers, "orb", stat, amount, 0);
 
     assert(added, "The modifier table has a row for every held orb instance");
+
+    if (orb !== WHORL || level === undefined) {
+      continue;
+    }
+
+    const cdrKey = WHORL_CDR_KEYS[level - 1];
+
+    if (cdrKey === undefined) {
+      continue;
+    }
+
+    const cdrAdded = addModifier(
+      unit.modifiers,
+      "orb",
+      WHORL_CDR_STAT,
+      0,
+      readTunable(tuning, cdrKey),
+    );
+
+    assert(cdrAdded, "The modifier table has a row for every Whorl passive");
   }
 };

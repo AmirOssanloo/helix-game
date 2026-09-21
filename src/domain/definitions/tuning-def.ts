@@ -10,6 +10,9 @@ export type QuartzRegenKey = `quartz_regen_per_instance:${OrbLevelIndex}`;
 /** One key per Whorl level: the fraction of movement speed one held Whorl instance adds. */
 export type WhorlSpeedKey = `whorl_ms_per_instance:${OrbLevelIndex}`;
 
+/** One key per Whorl level: the fraction one held Whorl instance takes off a cooldown that starts while it is held. */
+export type WhorlCdrKey = `whorl_cdr_per_instance:${OrbLevelIndex}`;
+
 /** One key per Ember level: the attack damage one held Ember instance adds. */
 export type EmberDamageKey = `ember_damage_per_instance:${OrbLevelIndex}`;
 
@@ -43,6 +46,7 @@ export type TuningKey =
   | RadiusClassKey
   | QuartzRegenKey
   | WhorlSpeedKey
+  | WhorlCdrKey
   | EmberDamageKey;
 
 /** The tuning table as content writes it: every key, with its value in the designer's units. */
@@ -104,6 +108,13 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   "whorl_ms_per_instance:4": "fraction",
   "whorl_ms_per_instance:5": "fraction",
   "whorl_ms_per_instance:6": "fraction",
+  "whorl_cdr_per_instance:0": "fraction",
+  "whorl_cdr_per_instance:1": "fraction",
+  "whorl_cdr_per_instance:2": "fraction",
+  "whorl_cdr_per_instance:3": "fraction",
+  "whorl_cdr_per_instance:4": "fraction",
+  "whorl_cdr_per_instance:5": "fraction",
+  "whorl_cdr_per_instance:6": "fraction",
   "ember_damage_per_instance:0": "count",
   "ember_damage_per_instance:1": "count",
   "ember_damage_per_instance:2": "count",
@@ -133,6 +144,17 @@ export const WHORL_SPEED_KEYS: readonly WhorlSpeedKey[] = [
   "whorl_ms_per_instance:4",
   "whorl_ms_per_instance:5",
   "whorl_ms_per_instance:6",
+];
+
+/** The Whorl cooldown table's keys by level, index zero being level one. */
+export const WHORL_CDR_KEYS: readonly WhorlCdrKey[] = [
+  "whorl_cdr_per_instance:0",
+  "whorl_cdr_per_instance:1",
+  "whorl_cdr_per_instance:2",
+  "whorl_cdr_per_instance:3",
+  "whorl_cdr_per_instance:4",
+  "whorl_cdr_per_instance:5",
+  "whorl_cdr_per_instance:6",
 ];
 
 /** The Ember table's keys by level, index zero being level one. */

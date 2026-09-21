@@ -1,6 +1,6 @@
 import type { DeepReadonly } from "@shared/public";
-import type { SpellDef } from "../definitions/spell-def";
 import { ORB_IDS } from "../definitions/spell-def";
+import type { SpellRecord } from "../definitions/spell-state";
 import type { KitState } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
 import { countOrbs } from "./buffer";
@@ -51,7 +51,7 @@ const sameCounts = (a: readonly number[], b: readonly number[]): boolean => {
 export const composeSpell = (
   state: DeepReadonly<KitState>,
   abilities: readonly string[],
-  spells: ReadonlyMap<string, SpellDef>,
+  spells: ReadonlyMap<string, SpellRecord>,
 ): string | null => {
   countOrbs(state, held);
 
@@ -63,8 +63,8 @@ export const composeSpell = (
       continue;
     }
 
-    if (sameCounts(held, countRecipe(spell.recipe, wanted))) {
-      return spell.id;
+    if (sameCounts(held, countRecipe(spell.def.recipe, wanted))) {
+      return spell.def.id;
     }
   }
 

@@ -80,7 +80,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/abilities/cooldowns.ts`: per-ability clocks on the unit in ticks, `CD_final = (base − Σflat) × Π(1 − pct) − Σcurrent_flat` computed once at commit with the Whorl percentage snapshotted then, Invoke's own clock as `7.0 − 0.3 × total orb levels` from the tunables, a running clock never rewritten by a later level or orb change, and the "no cooldowns" and "infinite mana" debug flags on run scope that the validator consults. A minimal `SpellDef` type sufficient for phase 1 (id, recipe, targeting kind, cast point seconds, cooldown table, mana table, range, a tint, an atlas frame, an empty effects list); seconds converted to ticks at world creation for now (the registry proper arrives in sprint 07). Ten definition files under `src/content/spells/` with their final ids, real recipes, real targeting kinds from the spells page, short cast points (0.05 to 0.3 s), placeholder cooldown and mana tables of length 7, and a distinct tint each.
 
@@ -95,6 +95,8 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 - `tests/content/spells.spec.ts` — ten files, ten recipes covering every multiset, table lengths.
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
+
+> Edited while building: run scope holds a spell record, the definition as written beside its durations in ticks, rather than a definition rewritten in place, since the simulation coding standard says the domain stores the tick value at load; the composer reads the recipe through the record. The Whorl cooldown percentage had no number and no tunable anywhere, so a `whorl_cdr_per_instance` table sits beside the speed table with a placeholder value (Q21), each held Whorl instance writes a `cooldown_reduction` modifier row, and the pipeline snapshots those rows at commit; the composer's clock takes the percentage too, as spec 10.3 says, so AT-I1's expected tick moved from 183 to 181 with the one Whorl held. The two debug flags live on run scope and are read by the readiness and mana helpers under `src/domain/abilities/`, which Invoke uses now and the cast validation uses with the skeleton; only a test sets them until the panel's debug commands arrive. Which orb level indexes a multi-orb spell's tables is Q22; the cooldown module takes the level and decides nothing. The test registry defaults to the content spells now. One spec beyond those listed, `tests/simulation/cooldown-pipeline.spec.ts`, joins the percentage, the swap, and the two flags through the world.
 
 ---
 
@@ -130,7 +132,7 @@ Still no hero on screen. In tests, AT-O1 to AT-O5, AT-I1 to AT-I9, AT-M4, and AT
 | Check | Result |
 | --- | --- |
 | AT-O1 to O5 (O4 pending the channel stub in sprint 06), AT-I1 to I9, AT-M4, AT-C5 green | |
-| Actual days per ticket | T01 1 · T02 1 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 1 · T03 1 · T04 |
 
 ## Risks in this sprint
 

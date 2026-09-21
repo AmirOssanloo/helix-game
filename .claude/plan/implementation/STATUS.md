@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
 | **Active sprint** | [04 — Hero definition, orbs, Invoke, slots, and cooldowns](./phase-1-hero-mechanics/sprint-04-orbs-invoke-and-slots.md) |
-| **Next ticket** | P1-S04-T03 — The cooldown pipeline and the ten stub spell definitions |
+| **Next ticket** | P1-S04-T04 — Cast-point skeleton: request, validate, face, cast point, commit, backswing |
 | **In progress** | none |
-| **Last closed ticket** | P1-S04-T02 — The Invoke kit: orb buffer, composer, slots, hidden clocks |
+| **Last closed ticket** | P1-S04-T03 — The cooldown pipeline and the ten stub spell definitions |
 | **Last closed sprint** | [03 — Collision, pathing, the spatial hash, and the arena](./phase-1-hero-mechanics/sprint-03-collision-pathing-and-the-arena.md), 2026-09-20 |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |

@@ -549,6 +549,7 @@ Do not bury these in code. Designers will retune these.
 | `invoke_cd_per_orb_level` | 0.3 | Composer pacing |
 | `invoke_mana` | 7 | Composer tax |
 | `whorl_ms_per_instance[]` | 0.6% × level | Stance feedback |
+| `whorl_cdr_per_instance[]` | 1% × level | Section 12's percentage source; placeholder until a balance pass |
 
 ---
 

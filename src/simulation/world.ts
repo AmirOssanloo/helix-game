@@ -117,8 +117,9 @@ export class Simulation {
           options.registry.forms,
           tuning,
         ),
-        spells: createSpellTable(options.registry.spells),
+        spells: createSpellTable(options.registry.spells, tuning),
         tuning,
+        debug: { noCooldowns: false, infiniteMana: false },
         random: createRandomState(options.seed),
       },
       map: {

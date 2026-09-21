@@ -20,7 +20,12 @@ const R = 4;
 
 /** The spec's numbers: 7 mana per first invoke, a 7.0 s base clock less 0.3 s per orb level, at 30 Hz. */
 const INVOKE_MANA = 7;
-const INVOKE_CD_TICKS_AT_THREE_LEVELS = 210 - 9 * 3;
+
+/** 183 ticks at three orb levels, less the one held Whorl instance's percentage at level one, rounded to a tick. */
+const INVOKE_CD_TICKS_AT_THREE_LEVELS = 181;
+
+/** 21 ticks at twenty-one orb levels, less the one held Whorl instance's percentage at level seven, rounded to a tick. */
+const INVOKE_CD_TICKS_AT_MAX_LEVELS = 20;
 
 const qwe = makeSpellDef.build({ recipe: ["quartz", "whorl", "ember"] });
 const qqq = makeSpellDef.build({ recipe: ["quartz", "quartz", "quartz"] });
@@ -368,7 +373,7 @@ describe("an invoke", () => {
     pressSlot(world, R);
     world.tick();
 
-    expect(invokeReadyAt(world)).toBe(1 + 210 - 9 * 21);
+    expect(invokeReadyAt(world)).toBe(1 + INVOKE_CD_TICKS_AT_MAX_LEVELS);
   });
 });
 

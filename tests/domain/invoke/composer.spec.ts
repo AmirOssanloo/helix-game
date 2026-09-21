@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { tuningTable } from "@content/public";
 import type { KitState, SpellDef } from "@domain/public";
-import { composeSpell, createSpellTable } from "@domain/public";
+import {
+  composeSpell,
+  createSpellTable,
+  createTuningState,
+} from "@domain/public";
 import { makeSpellDef } from "../../helpers";
+
+const tuning = createTuningState(tuningTable);
 
 const QUARTZ = 0;
 const WHORL = 1;
@@ -12,7 +19,7 @@ const qwe = makeSpellDef.build({ recipe: ["quartz", "whorl", "ember"] });
 const wee = makeSpellDef.build({ recipe: ["whorl", "ember", "ember"] });
 const eee = makeSpellDef.build({ recipe: ["ember", "ember", "ember"] });
 
-const spells = createSpellTable([qqw, qwe, wee, eee]);
+const spells = createSpellTable([qqw, qwe, wee, eee], tuning);
 const abilities = [qqw.id, qwe.id, wee.id, eee.id];
 
 /** A full buffer holding `orbs`, oldest first. */
@@ -57,7 +64,7 @@ describe("composeSpell", () => {
       composeSpell(
         holding([QUARTZ, WHORL, EMBER]),
         [ewq.id],
-        createSpellTable([ewq]),
+        createSpellTable([ewq], tuning),
       ),
     ).toBe(ewq.id);
   });

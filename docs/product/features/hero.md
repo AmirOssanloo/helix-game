@@ -40,7 +40,7 @@ Every orb instance the hero holds applies its passive while it is held. Swapping
 | Orb | Each instance grants | Scales with |
 | --- | --- | --- |
 | Quartz | Health regeneration | Quartz level |
-| Whorl | Movement speed and attack speed, as a percentage | Whorl level; +0.6% movement speed per instance at level 1, rising 0.6% per level |
+| Whorl | Movement speed and attack speed, as a percentage, and a percentage off every cooldown that starts while it is held | Whorl level; +0.6% movement speed per instance at level 1, rising 0.6% per level. The cooldown percentage is read when a clock starts and never rewrites a running one |
 | Ember | Attack damage | Ember level |
 
 The Whorl movement value is quoted because it is the one the spec insists players must feel: three Whorl out is visibly faster than three Quartz out. All three tables live in the tuning table, `src/content/tuning.ts`, one entry per orb level.

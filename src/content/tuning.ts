@@ -6,10 +6,11 @@ import type { TuningDef } from "@domain/public";
  * designer's units. Speeds are world units per second, durations are seconds, the action cone
  * is a half-angle in degrees, the turn rate is radians per 0.03 s as the spec publishes it,
  * the three radii, the two cell sizes, and the three radius classes are world units, the
- * push-out passes and the re-path budget are counts per tick, and the three orb tables hold
- * what one held instance grants at each level: Quartz health regeneration per second, Whorl
- * a fraction of one of movement speed, Ember attack damage. The world converts the table into per-tick
- * rates, ticks, and radians once at creation, and a `set_tuning` command changes a value
+ * push-out passes and the re-path budget are counts per tick, and the orb tables hold what
+ * one held instance grants at each level: Quartz health regeneration per second, Whorl a
+ * fraction of one of movement speed and a fraction of one off every cooldown that starts
+ * while it is held, Ember attack damage. The world converts the table into per-tick rates,
+ * ticks, and radians once at creation, and a `set_tuning` command changes a value
  * mid-session in these same units. A system reads a tunable through the world, never through
  * this file.
  */
@@ -51,6 +52,13 @@ export const tuningTable = {
   "whorl_ms_per_instance:4": 0.03,
   "whorl_ms_per_instance:5": 0.036,
   "whorl_ms_per_instance:6": 0.042,
+  "whorl_cdr_per_instance:0": 0.01,
+  "whorl_cdr_per_instance:1": 0.02,
+  "whorl_cdr_per_instance:2": 0.03,
+  "whorl_cdr_per_instance:3": 0.04,
+  "whorl_cdr_per_instance:4": 0.05,
+  "whorl_cdr_per_instance:5": 0.06,
+  "whorl_cdr_per_instance:6": 0.07,
   "ember_damage_per_instance:0": 3,
   "ember_damage_per_instance:1": 6,
   "ember_damage_per_instance:2": 9,

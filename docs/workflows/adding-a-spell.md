@@ -27,7 +27,6 @@ import type { SpellDef } from '@domain/public'
 
 export const frostLanceDef = {
   id: 'frost_lance',
-  name: 'Frost Lance',
   recipe: ['quartz', 'quartz', 'whorl'],          // The orb multiset; order is ignored
   targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
   castPointSeconds: 0.1,                          // Before the effect fires; the hero must face the target first

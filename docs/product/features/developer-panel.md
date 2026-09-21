@@ -26,7 +26,7 @@ Every action on the panel that changes the world is a command that goes through 
 
 ### Tunables
 
-Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider with its default beside it: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, and Whorl speed per instance. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
+Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider with its default beside it: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, and Whorl speed and cooldown reduction per instance. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
 
 ### The simulation
 

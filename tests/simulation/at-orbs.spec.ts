@@ -203,7 +203,7 @@ describe("an orb press", () => {
     ]);
   });
 
-  it("puts each held instance's passive on the hero the same tick, and takes it away when the instance leaves", () => {
+  it("puts each held instance's passives on the hero the same tick, and takes them away when the instance leaves", () => {
     const world = makeWorld({ seed: 1 });
     const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
     const orbRows = (): number =>
@@ -212,12 +212,11 @@ describe("an orb press", () => {
     pressSlot(world, W);
     world.tick();
 
-    expect(orbRows()).toBe(1);
-    expect(hero.modifiers.find((row) => row.kind === "orb")).toMatchObject({
-      stat: "movement_speed",
-      flat: 0,
-      percent: 0.006,
-    });
+    expect(orbRows()).toBe(2);
+    expect(hero.modifiers.filter((row) => row.kind === "orb")).toMatchObject([
+      { stat: "movement_speed", flat: 0, percent: 0.006 },
+      { stat: "cooldown_reduction", flat: 0, percent: 0.01 },
+    ]);
 
     pressSlot(world, Q);
     world.tick();
@@ -255,8 +254,13 @@ describe("an orb press", () => {
 
     expect(
       hero.modifiers
-        .filter((row) => row.kind === "orb")
+        .filter((row) => row.stat === "movement_speed")
         .map((row) => row.percent),
     ).toEqual([0.024, 0.024]);
+    expect(
+      hero.modifiers
+        .filter((row) => row.stat === "cooldown_reduction")
+        .map((row) => row.percent),
+    ).toEqual([0.04, 0.04]);
   });
 });

@@ -2,8 +2,8 @@ import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
-import type { SpellDef } from "../definitions/spell-def";
 import { ORB_IDS } from "../definitions/spell-def";
+import type { SpellRecord } from "../definitions/spell-state";
 import type { EventSink } from "../events/domain-event";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
@@ -53,6 +53,16 @@ export type FormRecord = {
 /** Tuning key to current value: the tuning table copied at world creation, changed by command. */
 export type TuningState = Map<string, number>;
 
+/**
+ * The developer panel's switches over the rules: with no cooldowns, every clock reads as
+ * ready; with infinite mana, a cast never spends any and never wants for it. Both are off
+ * when a world is created and change only by debug command, so a session with one on replays.
+ */
+export type DebugFlags = {
+  noCooldowns: boolean;
+  infiniteMana: boolean;
+};
+
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
   heroId: EntityId | null;
@@ -60,9 +70,10 @@ export type RunScope = {
   hero: HeroDef;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
-  /** Every spell by id, for the composer and the cast pipeline to read. */
-  spells: ReadonlyMap<string, SpellDef>;
+  /** Every spell by id, with its durations in ticks, for the composer and the cast pipeline to read. */
+  spells: ReadonlyMap<string, SpellRecord>;
   tuning: TuningState;
+  debug: DebugFlags;
   random: RandomState;
 };
 

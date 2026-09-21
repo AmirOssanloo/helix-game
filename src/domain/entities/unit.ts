@@ -37,10 +37,16 @@ export type StatusEntry = {
   sourceId: EntityId | null;
 };
 
-/** A derived value a modifier source changes. Attack damage has no attribute behind it yet; the attack rule reads its rows when it arrives. */
+/**
+ * A derived value a modifier source changes. Attack damage has no attribute behind it yet; the
+ * attack rule reads its rows when it arrives. Cooldown reduction is no derived value either:
+ * the cooldown pipeline reads its rows when a clock starts, a flat amount in ticks and a
+ * fraction of the clock, and never again for that clock.
+ */
 export type Stat =
   | "movement_speed"
   | "attack_damage"
+  | "cooldown_reduction"
   | "max_health"
   | "health_regen"
   | "max_mana"

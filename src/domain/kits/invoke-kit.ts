@@ -103,7 +103,8 @@ const describeSlot = (
     prepared === undefined || prepared === null
       ? 0
       : (cooldowns.get(prepared) ?? 0);
-  // A spell definition carries no mana table yet; the cast pipeline's definition fills this.
+  // The cost is the definition's mana table at the spell's level; the cast pipeline, which
+  // decides the level, fills this.
   out.cost = 0;
 
   return out;

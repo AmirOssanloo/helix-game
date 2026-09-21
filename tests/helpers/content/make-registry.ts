@@ -1,4 +1,4 @@
-import { forms, heroDef, tuningTable } from "@content/public";
+import { forms, heroDef, spells, tuningTable } from "@content/public";
 import type {
   FormDef,
   HeroDef,
@@ -7,7 +7,7 @@ import type {
   TuningDef,
 } from "@domain/public";
 
-/** What a test's registry holds. Everything defaults to the content layer's, so a spec names only what it changes; the content layer has no spells yet, so those default to none. */
+/** What a test's registry holds. Everything defaults to the content layer's, so a spec names only what it changes. */
 export type MakeRegistryOptions = Readonly<{
   tuning?: Partial<TuningDef>;
   hero?: HeroDef;
@@ -20,5 +20,5 @@ export const makeRegistry = (options: MakeRegistryOptions = {}): Registry => ({
   tuning: { ...tuningTable, ...options.tuning },
   hero: options.hero ?? heroDef,
   forms: options.forms ?? forms,
-  spells: options.spells ?? [],
+  spells: options.spells ?? spells,
 });

@@ -1,4 +1,14 @@
 export {
+  type CooldownSnapshot,
+  createCooldownSnapshot,
+  finalCooldownTicks,
+  isCooldownReady,
+  remainingCooldownTicks,
+  snapshotCooldownSources,
+  startCooldown,
+} from "./abilities/cooldowns";
+export { hasMana, spendMana } from "./abilities/mana";
+export {
   type AnyCommand,
   type AttackMoveCommand,
   type AttackTargetCommand,
@@ -36,8 +46,19 @@ export { createFormRecords } from "./definitions/form-state";
 export type { HeroDef } from "./definitions/hero-def";
 export type { MapDef, SpawnDef } from "./definitions/map-def";
 export type { Registry } from "./definitions/registry";
-export { ORB_IDS, type OrbId, type SpellDef } from "./definitions/spell-def";
-export { createSpellTable } from "./definitions/spell-state";
+export {
+  ORB_IDS,
+  type OrbId,
+  type SpellDef,
+  type SpellEffectDef,
+  TARGETING_KINDS,
+  type TargetingKind,
+} from "./definitions/spell-def";
+export {
+  createSpellTable,
+  entryAtLevel,
+  type SpellRecord,
+} from "./definitions/spell-state";
 export {
   EMBER_DAMAGE_KEYS,
   type EmberDamageKey,
@@ -49,7 +70,9 @@ export {
   type TuningDef,
   type TuningKey,
   type TuningUnit,
+  WHORL_CDR_KEYS,
   WHORL_SPEED_KEYS,
+  type WhorlCdrKey,
   type WhorlSpeedKey,
 } from "./definitions/tuning-def";
 export {
@@ -97,6 +120,7 @@ export {
   type UnitKind,
 } from "./entities/unit";
 export {
+  type DebugFlags,
   type FormRecord,
   type KitState,
   type MapScope,
