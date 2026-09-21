@@ -5,6 +5,7 @@ import {
   experienceProgress,
   grantExperience,
   levelForExperience,
+  levelUp,
   spendSkillPoint,
 } from "@domain/public";
 
@@ -208,5 +209,63 @@ describe("experienceProgress", () => {
         },
       ),
     ).toBe(1);
+  });
+});
+
+describe("levelUp", () => {
+  it("grants exactly one level, its skill point, and the experience of its threshold", () => {
+    const progression = fresh();
+
+    expect(levelUp(progression, hero)).toBe("ok");
+    expect(progression).toEqual({ level: 2, experience: 100, skillPoints: 1 });
+  });
+
+  it("from partway through a level lands on the next threshold, not past it", () => {
+    const progression: Progression = {
+      level: 2,
+      experience: 250,
+      skillPoints: 0,
+    };
+
+    levelUp(progression, hero);
+
+    expect(progression).toEqual({ level: 3, experience: 300, skillPoints: 1 });
+  });
+
+  it("is refused at the cap and changes nothing", () => {
+    const progression: Progression = {
+      level: 4,
+      experience: 600,
+      skillPoints: 0,
+    };
+
+    expect(levelUp(progression, hero)).toBe("at_level_cap");
+    expect(progression).toEqual({ level: 4, experience: 600, skillPoints: 0 });
+  });
+
+  it("is refused where the table ends below the cap", () => {
+    const short: HeroDef = { ...hero, maxLevel: 10 };
+    const progression: Progression = {
+      level: 4,
+      experience: 600,
+      skillPoints: 0,
+    };
+
+    expect(levelUp(progression, short)).toBe("at_level_cap");
+  });
+
+  it("reaches the content table's cap one level at a time", () => {
+    const progression = fresh();
+    let granted = 0;
+
+    while (levelUp(progression, heroDef) === "ok") {
+      granted += 1;
+    }
+
+    expect(granted).toBe(heroDef.maxLevel - 1);
+    expect(progression.level).toBe(heroDef.maxLevel);
+    expect(progression.skillPoints).toBe(
+      (heroDef.maxLevel - 1) * heroDef.skillPointsPerLevel,
+    );
   });
 });

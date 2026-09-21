@@ -21,7 +21,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Layer | domain, simulation, tests |
 | Size | 1 |
 | Depends on | P1-S04-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** `DebugCommand` variants and their handling system: `apply_damage` (amount, type; mitigation is a pass-through until sprint 07), `drain_mana`, `heal`, `restore_mana`, `level_up`, `set_orb_levels`, `toggle_infinite_mana`, `toggle_no_cooldowns`, `kill_hero`, `spawn_units` (a generic unit definition, count, position, for the stress test), `clear_units`, `reset_map`, `begin_channel` (enters `channeling` for N ticks through the order state machine, not by writing the state field, so the abort path AT-O4 tests is the real one; the only way to channel until an ability does, and kept afterwards as the cheapest way to reach the state in a test), `set_disable_flag` (sets one flag on the hero for a duration so the validator's disable branches are testable before statuses exist). Pause, single-step, and the catch-up cap are driver operations exposed through `DevApi`, not commands: they never change world state, and a replay runs with no driver (Q12). Hero death: health at zero enters a death state that clears the order, closes nothing (the cursor is presentation), keeps clocks counting, ignores input; after a tunable delay the hero respawns at the spawn point with full resources, every clock cleared including the hidden map, orbs and slots kept. Every variant validated with a reason on refusal.
 
@@ -38,6 +38,8 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 - `tests/domain/orders/validator.spec.ts` — every disable against every blocked and unblocked action.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+> Built 2026-09-21. Two readings settled in the build: a generic unit carries no definition, since no enemy definition exists until phase 3, and wears the tuned hull; and `set_disable_flag` writes a row of the status table that a status system at the end of the tick expires and derives the flags from, so the flags are true from the end of the tick that consumes the command. Death is a `dead` order state with `die` and `respawn` transitions, resolved by a death system after collision; the respawn delay is the `respawn_delay` tunable. The replay determinism and stress rows of the definition of done wait on T03, which builds both tests.
 
 ---
 
@@ -120,7 +122,7 @@ Spawn 300 generic units, damage the hero, level up, set orb levels, move every s
 | Phase 1 gate rows, each with evidence | |
 | Draw-call readout agrees with the WebGL inspector on one bench frame | |
 | Milestone M2 | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

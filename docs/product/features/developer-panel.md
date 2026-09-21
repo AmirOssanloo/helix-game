@@ -21,12 +21,13 @@ Every action on the panel that changes the world is a command that goes through 
 | Set orb levels | Sets Quartz, Whorl, and Ember to chosen levels, 0 to 7 |
 | Infinite mana | Casts never spend mana |
 | No cooldowns | Every cooldown reads as ready |
-| Apply status | Puts a chosen status on the hero for a chosen duration |
+| Apply status | Puts a chosen disable on the hero for a chosen duration, as a row of its status table |
 | Kill hero | Health to zero, to test death and respawn |
+| Begin channel | Puts the hero into the channeling state for a chosen duration, to test what interrupts a channel |
 
 ### Tunables
 
-Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider with its default beside it: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, and Whorl speed and cooldown reduction per instance. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
+Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider with its default beside it: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, Whorl speed and cooldown reduction per instance, and the respawn delay. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
 
 ### The simulation
 

@@ -19,21 +19,44 @@ export { hasMana, spendMana } from "./abilities/mana";
 export { spellLevelOf } from "./abilities/spell-level";
 export {
   type AnyCommand,
+  type ApplyDamageCommand,
   type AttackMoveCommand,
   type AttackTargetCommand,
+  type BeginChannelCommand,
   type CastCommand,
   type CastTarget,
+  type ClearUnitsCommand,
   type Command,
   type DebugCommand,
   type DebugNoopCommand,
+  type DrainManaCommand,
+  type HealCommand,
+  isDebugCommand,
+  type KillHeroCommand,
+  type LevelUpCommand,
   type MoveCommand,
   type NoopCommand,
+  type ResetMapCommand,
+  type RestoreManaCommand,
+  type SetDisableFlagCommand,
+  type SetOrbLevelsCommand,
   type SetTuningCommand,
   SLOT_COUNT,
   type SlotCommand,
+  type SpawnUnitsCommand,
   type SpendSkillPointCommand,
   type StopCommand,
+  type ToggleInfiniteManaCommand,
+  type ToggleNoCooldownsCommand,
 } from "./commands/command";
+export {
+  DAMAGE_TYPES,
+  type DamageType,
+  isDamageType,
+  takeDamage,
+} from "./combat/damage";
+export { deathSystem } from "./combat/death.system";
+export { applyDebugCommand } from "./debug/debug-commands";
 export type { ConsumedCommands } from "./commands/consumed-commands";
 export {
   type CommandOrder,
@@ -115,6 +138,7 @@ export {
   acquireUnit,
   type CastState,
   clearPath,
+  clearStatusEntry,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   type ModifierEntry,
@@ -234,10 +258,16 @@ export {
   SpatialHash,
   type SpatialHashView,
 } from "./movement/spatial-hash";
+export { resetMapScope } from "./map/map-scope";
 export { movementSpeed } from "./movement/speed-stack";
 export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";
-export type { DisableFlags } from "./orders/disable-flags";
+export {
+  DISABLE_IDS,
+  type DisableFlags,
+  type DisableId,
+  isDisableId,
+} from "./orders/disable-flags";
 export type { Order, OrderKind, OrderState } from "./orders/order";
 export {
   createPathSearch,
@@ -262,12 +292,14 @@ export {
   beginFacing,
   beginMoving,
   clearOrder,
+  die,
   endChannel,
   finishBackswing,
   issueAttackMove,
   issueAttackTarget,
   issueCast,
   issueMove,
+  respawn,
   type TransitionRefusal,
   type TransitionResult,
 } from "./orders/state-machine";
@@ -275,6 +307,7 @@ export {
   abilityDisable,
   type RefusalReason,
   validateCommand,
+  validateDebugCommand,
   type ValidationResult,
 } from "./orders/validator";
 export { attributesAt, deriveStats } from "./stats/derived";
@@ -282,6 +315,9 @@ export {
   experienceProgress,
   grantExperience,
   levelForExperience,
+  levelUp,
+  type LevelUpRefusal,
+  type LevelUpResult,
   type Progression,
   type SkillPointRefusal,
   type SkillPointResult,
@@ -289,5 +325,11 @@ export {
 } from "./stats/levels";
 export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
 export { regenerate } from "./stats/regeneration";
-export { statsSystem } from "./stats/stats.system";
+export { refreshStats, statsSystem } from "./stats/stats.system";
+export {
+  applyStatus,
+  type StatusRefusal,
+  type StatusResult,
+  statusSystem,
+} from "./statuses/status.system";
 export type { Tick } from "./tick";

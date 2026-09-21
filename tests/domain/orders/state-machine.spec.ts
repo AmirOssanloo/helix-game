@@ -11,12 +11,14 @@ import {
   beginMoving,
   clearOrder,
   createUnitPool,
+  die,
   endChannel,
   finishBackswing,
   issueAttackMove,
   issueAttackTarget,
   issueCast,
   issueMove,
+  respawn,
 } from "@domain/public";
 
 const STATES: readonly OrderState[] = [
@@ -28,7 +30,11 @@ const STATES: readonly OrderState[] = [
   "ability_cast_point",
   "ability_backswing",
   "channeling",
+  "dead",
 ];
+
+/** Every state a unit takes an order from: all of them but death. */
+const LIVING_STATES = STATES.filter((state) => state !== "dead");
 
 /** The order a unit holds in each state when nothing says otherwise: none when idle or casting, a move when underway, an attack in the attack states. */
 const orderKindIn = (state: OrderState): OrderKind => {
@@ -45,6 +51,7 @@ const orderKindIn = (state: OrderState): OrderKind => {
     case "ability_cast_point":
     case "ability_backswing":
     case "channeling":
+    case "dead":
       return "none";
   }
 };
@@ -89,12 +96,12 @@ const CAST_POINT_STATES: readonly OrderState[] = [
   "ability_cast_point",
 ];
 
-const ORDERABLE_STATES = STATES.filter(
+const ORDERABLE_STATES = LIVING_STATES.filter(
   (state) => !CAST_POINT_STATES.includes(state),
 );
 
 describe("issueMove", () => {
-  it.each(STATES)(
+  it.each(LIVING_STATES)(
     "from %s lands: the order is a move to the point and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -152,7 +159,7 @@ describe("issueMove", () => {
 });
 
 describe("issueCast", () => {
-  it.each(STATES)(
+  it.each(LIVING_STATES)(
     "from %s lands: the order is a cast approaching the aim, the aim is recorded, and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -299,7 +306,7 @@ describe("beginFacing", () => {
 });
 
 describe("issueAttackTarget", () => {
-  it.each(STATES)(
+  it.each(LIVING_STATES)(
     "from %s lands: the order is an attack on the target and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -329,7 +336,7 @@ describe("issueAttackTarget", () => {
 });
 
 describe("issueAttackMove", () => {
-  it.each(STATES)(
+  it.each(LIVING_STATES)(
     "from %s lands: the order is an attack-move to the point and the unit turns first",
     (state) => {
       const unit = unitIn(state);
@@ -359,17 +366,20 @@ describe("issueAttackMove", () => {
 });
 
 describe("clearOrder", () => {
-  it.each(STATES)("from %s clears the order and the unit is idle", (state) => {
-    const unit = unitIn(state);
+  it.each(LIVING_STATES)(
+    "from %s clears the order and the unit is idle",
+    (state) => {
+      const unit = unitIn(state);
 
-    expect(clearOrder(unit)).toBe("ok");
-    expect(unit.state).toBe("idle");
-    expect(unit.order).toEqual({
-      kind: "none",
-      destination: { x: 0, y: 0 },
-      targetId: null,
-    });
-  });
+      expect(clearOrder(unit)).toBe("ok");
+      expect(unit.state).toBe("idle");
+      expect(unit.order).toEqual({
+        kind: "none",
+        destination: { x: 0, y: 0 },
+        targetId: null,
+      });
+    },
+  );
 
   it("freezes yaw: facing stays where the turn was", () => {
     const unit = unitIn("turning");
@@ -559,7 +569,7 @@ describe("beginCastBackswing", () => {
 });
 
 describe("beginChannel", () => {
-  it.each(STATES.filter((state) => state !== "channeling"))(
+  it.each(LIVING_STATES.filter((state) => state !== "channeling"))(
     "from %s lands: the order is cleared and the channel runs",
     (state) => {
       const unit = unitIn(state);
@@ -631,6 +641,74 @@ describe("finishBackswing", () => {
     const unit = unitIn(state);
 
     expect(finishBackswing(unit)).toBe("not_in_backswing");
+    expect(unit.state).toBe(state);
+  });
+});
+
+describe("a dead unit", () => {
+  it.each([
+    ["issueMove", (unit: Unit): string => issueMove(unit, 3, 4)],
+    ["issueAttackTarget", (unit: Unit): string => issueAttackTarget(unit, 7)],
+    ["issueAttackMove", (unit: Unit): string => issueAttackMove(unit, 3, 4)],
+    [
+      "issueCast",
+      (unit: Unit): string => issueCast(unit, "spell_1", "point", 3, 4, null),
+    ],
+    ["clearOrder", (unit: Unit): string => clearOrder(unit)],
+    ["beginCastPoint", (unit: Unit): string => beginCastPoint(unit)],
+    ["beginChannel", (unit: Unit): string => beginChannel(unit)],
+    ["die", (unit: Unit): string => die(unit)],
+  ])("refuses %s and stays dead with no order", (_name, transition) => {
+    const unit = unitIn("dead");
+
+    expect(transition(unit)).toBe("dead");
+    expect(unit.state).toBe("dead");
+    expect(unit.order.kind).toBe("none");
+  });
+});
+
+describe("die", () => {
+  it.each(LIVING_STATES)(
+    "from %s lands: the order is gone, the cast is forgotten, and the unit is dead",
+    (state) => {
+      const unit = unitIn(state);
+      pendingCast(unit);
+
+      expect(die(unit)).toBe("ok");
+      expect(unit.state).toBe("dead");
+      expect(unit.order).toEqual({
+        kind: "none",
+        destination: { x: 0, y: 0 },
+        targetId: null,
+      });
+      expect(unit.cast).toEqual(NO_CAST);
+      expect(unit.needsPath).toBe(false);
+    },
+  );
+
+  it("freezes yaw: facing stays where it was", () => {
+    const unit = unitIn("moving");
+    unit.facing = 2.5;
+
+    die(unit);
+
+    expect(unit.facing).toBe(2.5);
+  });
+});
+
+describe("respawn", () => {
+  it("from dead lands: the unit is idle with no order", () => {
+    const unit = unitIn("dead");
+
+    expect(respawn(unit)).toBe("ok");
+    expect(unit.state).toBe("idle");
+    expect(unit.order.kind).toBe("none");
+  });
+
+  it.each(LIVING_STATES)("from %s is refused and changes nothing", (state) => {
+    const unit = unitIn(state);
+
+    expect(respawn(unit)).toBe("not_dead");
     expect(unit.state).toBe(state);
   });
 });

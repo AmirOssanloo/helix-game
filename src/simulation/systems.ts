@@ -3,10 +3,12 @@ import {
   castSystem,
   collisionSystem,
   commandSystem,
+  deathSystem,
   kitSystem,
   movementSystem,
   pathingSystem,
   statsSystem,
+  statusSystem,
 } from "@domain/public";
 
 /** A per-tick pass over world state. It reads the world, the tick count, and the random source, and nothing else. */
@@ -24,7 +26,10 @@ export type System = (world: World) => void;
  * it. Pathing follows, so an order consumed this tick has its path before movement reads
  * it. Movement follows, so an order consumed this tick turns or translates this tick.
  * Collision runs after movement, so every unit is pushed out of every other unit and every
- * obstacle where this tick's moves left it.
+ * obstacle where this tick's moves left it. Death resolves next, once, so every hit the tick
+ * landed is counted and a hero at zero dies where collision left it. The status pass runs
+ * last, so the rows death emptied are gone before the disable flags are derived for the next
+ * tick's validator.
  */
 export const systems: readonly System[] = [
   commandSystem,
@@ -34,4 +39,6 @@ export const systems: readonly System[] = [
   pathingSystem,
   movementSystem,
   collisionSystem,
+  deathSystem,
+  statusSystem,
 ];

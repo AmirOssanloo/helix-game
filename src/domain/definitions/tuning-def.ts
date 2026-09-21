@@ -43,6 +43,7 @@ export type TuningKey =
   | "invoke_cd_base"
   | "invoke_cd_per_orb_level"
   | "invoke_mana"
+  | "respawn_delay"
   | RadiusClassKey
   | QuartzRegenKey
   | WhorlSpeedKey
@@ -91,6 +92,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   invoke_cd_base: "seconds",
   invoke_cd_per_orb_level: "seconds",
   invoke_mana: "count",
+  respawn_delay: "seconds",
   "radius_class:0": "world_units",
   "radius_class:1": "world_units",
   "radius_class:2": "world_units",

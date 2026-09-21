@@ -474,21 +474,25 @@ When the document is hidden, pause the simulation clock or keep consuming ticks 
 
 ## 15. Player-Facing Feel Requirements
 
-A build fails this brief if any of the following are true:
+Thirteen things a person checks by hand in the arena, with the game running under `pnpm dev`. Each row says what to do, what you should see, and what counts as a fail. Where the exact number is beyond what an eye can judge, the row says which acceptance test in section 16 proves it; the walk-through checks only what is visible. Any fail fails the build.
 
-- The unit translates while its back is still more than 11.5° off the move bearing.
-- A 180° order completes in one rendered frame.
-- Right click on empty ground auto-attacks something.
-- Right click on an ally starts a follow leash.
-- Shift plus click creates a waypoint queue.
-- A targeted D or F spell fires on key-down without a confirming left click.
-- Q, W, or E requires a target click.
-- A fourth orb press does not evict the oldest instance.
-- `QQW` and `WQQ` compile different prepared identities.
-- A third prepared spell appears, or D and F share one cooldown.
-- Throwing a spell is the same key as composing it.
-- Collision, bound, and selection radii are a single number.
-- Turn speed scales with the monitor refresh rate.
+Six rows need the developer panel: row 3 a spawned unit, rows 8 to 11 every orb at level one or more, which only the panel's orb-level control can give a fresh hero, and row 12 the tunable sliders and the overlays. Until the panel exists, record them as waiting on it, not as pass. The panel's facing overlay and its pause and single-step also make rows 1 and 2 sharper once they exist; until then, judge those by eye.
+
+| | Do | You should see | Fail if |
+| --- | --- | --- | --- |
+| 1 | Right-click a point directly behind the hero | The hero pivots on the spot until it faces the point, then starts walking | The hero slides, curves, or walks off while still visibly facing away from where it is going. The exact threshold, walking begins within 11.5° of the direction of travel, is AT-M2's to prove |
+| 2 | Same click as row 1 | The turn is a visible rotation over a few frames, about a sixth of a second | The hero snaps to face the point instantly. The exact tick count is AT-M2's to prove |
+| 3 | Needs the panel. Spawn a unit from it, then right-click the empty ground beside the unit | The hero walks to the ground point and ignores the unit | The hero attacks the unit, or walks to it instead of the point |
+| 4 | Right-click the hero itself, the one unit that is not an enemy | Nothing happens; the hero stands or keeps its current order | The hero starts following or walking to the clicked unit |
+| 5 | Hold Shift and right-click two different ground points | Each click is an ordinary move, as if Shift were not held: the hero heads for the first point, then abandons it for the second | The hero walks to the first point and then on to the second |
+| 6 | With a targeted spell in D, press D and then press Esc | The targeting cursor opens on the key, nothing fires, and Esc closes it with no mana spent and no cooldown started | The spell fires on the key press, before any left click |
+| 7 | Press Q, W, or E with the mouse anywhere | The orb square lights on the key alone | A click is needed before the orb counts |
+| 8 | Needs the panel: set every orb to level 1 first. Press Q, Q, Q, then W | The three orb squares read Q, Q, W in age order: the oldest Q is gone | The fourth press is ignored, or a fourth orb appears |
+| 9 | Needs the panel: orbs at level 1. Buffer Q, Q, W and press R; note the spell in D. Then buffer W, Q, Q and press R | D holds the same spell as before; the order of the presses does not matter | A different spell appears, or the slots change |
+| 10 | Needs the panel: orbs at level 1. Invoke three different spells in a row, then throw D | Only D and F ever hold a spell, the oldest leaving when the third arrives; throwing D starts D's cooldown sweep and F's square stays ready | A third prepared square appears, or F's square shows a cooldown when D was thrown |
+| 11 | Needs the panel: orbs at level 1. Buffer three orbs and press R, then press D | R puts the spell into D and fires nothing; D throws it | Pressing R fires the spell, or D composes one |
+| 12 | Needs the panel. Open its tunables and find the collision, bound, and selection radii, then turn the collision and bound overlays on | Three separate sliders, and two circles of different sizes around the hero | One slider stands for all three, or the two circles are always the same size |
+| 13 | If a 144 Hz monitor is at hand, do row 2 on it and on a 60 Hz one | The about-face takes the same time on both | The turn is faster on the faster monitor. Without two monitors this row is AT-M3's to prove, which runs the same turn at both rates |
 
 ---
 

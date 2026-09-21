@@ -9,7 +9,8 @@ import type { EntityId, Vec2 } from "@shared/public";
  * cast order is the approach toward the target and the turn to face it. The two attack states
  * carry an attack order. The three ability states and `channeling` carry none: a cast takes
  * the unit away from whatever it was doing, and it is idle afterwards. The cast's aim lives
- * on the unit's cast record, not on the order.
+ * on the unit's cast record, not on the order. `dead` carries none either: a unit whose
+ * health reached zero holds no order and takes none until it respawns.
  */
 export type OrderState =
   | "idle"
@@ -19,7 +20,8 @@ export type OrderState =
   | "attack_backswing"
   | "ability_cast_point"
   | "ability_backswing"
-  | "channeling";
+  | "channeling"
+  | "dead";
 
 export type OrderKind =
   "none" | "move" | "attack_target" | "attack_move" | "cast";

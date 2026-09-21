@@ -14,7 +14,9 @@ export type TransitionRefusal =
   | "not_in_cast_point"
   | "not_in_backswing"
   | "already_channeling"
-  | "not_channeling";
+  | "not_channeling"
+  | "dead"
+  | "not_dead";
 
 /** What a transition returns: it landed, or the reason it was refused. A refused transition changes nothing. */
 export type TransitionResult = "ok" | TransitionRefusal;
@@ -32,6 +34,9 @@ export type TransitionResult = "ok" | TransitionRefusal;
  *
  * The cast record beside the order follows it: a new order or a stop forgets the cast that
  * was pending, the cast point keeps it, and the commit that ends the cast point clears it.
+ *
+ * Death is the one state nothing lands from but a respawn: a dead unit holds no order and
+ * refuses every transition until `respawn` returns it to idle.
  *
  * Every function that refuses does so before writing anything.
  */
@@ -76,14 +81,18 @@ const takeOrder = (unit: Unit): void => {
 /**
  * Replaces the current order with a move to (`x`, `y`) and asks the pathing system for the
  * path there. The point is the caller's to make legal: the command system resolves a click on
- * an obstacle or off the map before it issues the move. Legal from every state; an attack
- * point or a cast point in progress is cancelled.
+ * an obstacle or off the map before it issues the move. Legal from every state but `dead`;
+ * an attack point or a cast point in progress is cancelled.
  */
 export const issueMove = (
   unit: Unit,
   x: number,
   y: number,
 ): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   takeOrder(unit);
   unit.order.kind = "move";
   unit.order.destination.x = x;
@@ -93,11 +102,15 @@ export const issueMove = (
   return "ok";
 };
 
-/** Replaces the current order with an attack on `targetId`. Legal from every state; an attack point or a cast point in progress is cancelled. */
+/** Replaces the current order with an attack on `targetId`. Legal from every state but `dead`; an attack point or a cast point in progress is cancelled. */
 export const issueAttackTarget = (
   unit: Unit,
   targetId: EntityId,
 ): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   takeOrder(unit);
   unit.order.kind = "attack_target";
   unit.order.targetId = targetId;
@@ -105,12 +118,16 @@ export const issueAttackTarget = (
   return "ok";
 };
 
-/** Replaces the current order with an attack-move to (`x`, `y`), asking for the path as a move does. Legal from every state; an attack point or a cast point in progress is cancelled. */
+/** Replaces the current order with an attack-move to (`x`, `y`), asking for the path as a move does. Legal from every state but `dead`; an attack point or a cast point in progress is cancelled. */
 export const issueAttackMove = (
   unit: Unit,
   x: number,
   y: number,
 ): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   takeOrder(unit);
   unit.order.kind = "attack_move";
   unit.order.destination.x = x;
@@ -124,8 +141,8 @@ export const issueAttackMove = (
  * Replaces the current order with a cast of `abilityId` aimed by `targetKind` at (`x`, `y`)
  * and, for a unit target, at `targetId`. The order's destination starts at the aim; the cast
  * rule moves it to a legal approach point when the aim is out of range. The unit turns to
- * face before the cast point. Legal from every state; an attack point or a cast point in
- * progress is cancelled, and the cast pending under it is replaced by this one.
+ * face before the cast point. Legal from every state but `dead`; an attack point or a cast
+ * point in progress is cancelled, and the cast pending under it is replaced by this one.
  */
 export const issueCast = (
   unit: Unit,
@@ -135,6 +152,10 @@ export const issueCast = (
   y: number,
   targetId: EntityId | null,
 ): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   takeOrder(unit);
   unit.order.kind = "cast";
   unit.order.destination.x = x;
@@ -151,13 +172,18 @@ export const issueCast = (
 };
 
 /**
- * Clears the order and returns the unit to `idle` from any state: the stop command, and also
- * what a stun does and what happens when an attack target stops existing. A cast point in
- * progress is cancelled with the cast forgotten; a backswing or a channel ends. Facing is
- * left where it is, so the next order turns from the yaw the unit stopped at; the path and
- * the turn go with the order.
+ * Clears the order and returns the unit to `idle` from any state but `dead`: the stop
+ * command, and also what a stun does and what happens when an attack target stops existing.
+ * A cast point in progress is cancelled with the cast forgotten; a backswing or a channel
+ * ends. Facing is left where it is, so the next order turns from the yaw the unit stopped
+ * at; the path and the turn go with the order. A dead unit already holds nothing, and only
+ * a respawn brings it back to idle.
  */
 export const clearOrder = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   dropOrder(unit);
   clearCast(unit);
 
@@ -240,9 +266,13 @@ export const beginAttackBackswing = (unit: Unit): TransitionResult => {
 /**
  * A cast starts its cast point. The order is cleared and the cast record kept: the cast takes
  * the unit away from a move or an attack, cancels a backswing, and interrupts a channel.
- * Refused while a cast point is already in progress.
+ * Refused while a cast point is already in progress, and while dead.
  */
 export const beginCastPoint = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   if (isInCastPoint(unit)) {
     return "cast_point_in_progress";
   }
@@ -268,9 +298,13 @@ export const beginCastBackswing = (unit: Unit): TransitionResult => {
 /**
  * A channel starts, on commit after a cast point or directly where a cast point could have
  * begun. The order is cleared, and an attack point in progress is cancelled as a cast would
- * cancel it. Refused while already channeling.
+ * cancel it. Refused while already channeling, and while dead.
  */
 export const beginChannel = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
   if (unit.state === "channeling") {
     return "already_channeling";
   }
@@ -300,6 +334,34 @@ export const finishBackswing = (unit: Unit): TransitionResult => {
   }
 
   unit.state = unit.order.kind === "none" ? "idle" : "turning";
+
+  return "ok";
+};
+
+/**
+ * The unit's health reached zero: whatever it was doing ends with nothing spent, the cast
+ * pending under it is forgotten, and it holds no order until it respawns. Facing is left
+ * where it is. Refused while already dead, so a second zero in one tick changes nothing.
+ */
+export const die = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
+  dropOrder(unit);
+  clearCast(unit);
+  unit.state = "dead";
+
+  return "ok";
+};
+
+/** The respawn delay elapsed: the unit is idle again, holding no order. Legal from `dead`. */
+export const respawn = (unit: Unit): TransitionResult => {
+  if (unit.state !== "dead") {
+    return "not_dead";
+  }
+
+  unit.state = "idle";
 
   return "ok";
 };

@@ -122,7 +122,7 @@ export type Unit = {
   needsPath: boolean;
   /** The cast under way, from its request to its commit. */
   cast: CastState;
-  /** The tick the cast point or the backswing under way ends. Read in those states only. */
+  /** The tick the stage under way ends: a cast point, a backswing, a channel, or the death before a respawn. Read in those states only. */
   stageEndsAtTick: Tick;
   modifiers: readonly ModifierEntry[];
   /** Level, experience, and unspent skill points. Continuous across a form swap. */
@@ -134,8 +134,9 @@ export type Unit = {
   /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
   disables: DisableFlags;
   resources: Resources;
-  /** Ability id to the tick the ability is ready again. Allocated once per slot and emptied on release. */
+  /** Ability id to the tick the ability is ready again, evicted spells included. Allocated once per slot, emptied on release and on respawn. */
   cooldowns: Map<string, Tick>;
+  /** The status table: every lasting condition on the unit, an empty row being a `null` definition id. Cleared by death. */
   statuses: readonly StatusEntry[];
   activeFormIndex: number;
   packId: number | null;
@@ -152,7 +153,8 @@ const createStatusEntry = (): StatusEntry => ({
   sourceId: null,
 });
 
-const clearStatusEntry = (entry: StatusEntry): void => {
+/** Puts the row back to empty. */
+export const clearStatusEntry = (entry: StatusEntry): void => {
   entry.definitionId = null;
   entry.endsAtTick = 0;
   entry.stacks = 0;

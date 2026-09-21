@@ -13,6 +13,7 @@ import {
   beginCastPoint,
   beginFacing,
   clearOrder,
+  endChannel,
   finishBackswing,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
@@ -101,6 +102,17 @@ const endBackswingWhenDue = (world: World, unit: Unit): void => {
   const result = finishBackswing(unit);
 
   assert(result === "ok", "A backswing that ran its course finishes");
+};
+
+/** The channel stage: on its tick, the channel ran its course and the unit is idle. */
+const endChannelWhenDue = (world: World, unit: Unit): void => {
+  if (unit.state !== "channeling" || world.tick < unit.stageEndsAtTick) {
+    return;
+  }
+
+  const result = endChannel(unit);
+
+  assert(result === "ok", "A channel that ran its course ends");
 };
 
 /** Ends the cast with nothing spent and no clock started: the unit is idle where it stands. */
@@ -217,11 +229,12 @@ const commit = (world: World, unit: Unit, record: SpellRecord): void => {
  * Runs the stages of every cast under way, one unit at a time: the approach while the aim is
  * out of range, the turn to face once it is in range, the cast point once the bearing is
  * inside the action cone, the commit on the tick the cast point ends, and the backswing
- * until its tick. A stun, a unit target that is gone, or an approach that ends short of
- * range cancels the cast with nothing spent; a stop or a new order does the same through the
- * state machine before this system runs. The cast point and the backswing are counted in
- * ticks from the record; a cast point of zero ticks commits on the tick it begins, and a
- * backswing of zero ticks ends on the tick of the commit.
+ * until its tick, and a channel until its tick. A stun, a unit target that is gone, or an
+ * approach that ends short of range cancels the cast with nothing spent; a stop or a new
+ * order does the same through the state machine before this system runs. The cast point and
+ * the backswing are counted in ticks from the record; a cast point of zero ticks commits on
+ * the tick it begins, and a backswing of zero ticks ends on the tick of the commit. A
+ * channel's ticks are whoever began it's to set; nothing channels but the panel's stub yet.
  *
  * Runs after the stats, so the mana it spends is this tick's, and before pathing, so an
  * approach asked for here is planned this tick and an aim already in range is never walked
@@ -245,6 +258,12 @@ export const castSystem = (world: World): void => {
 
     if (unit.state === "ability_backswing") {
       endBackswingWhenDue(world, unit);
+
+      continue;
+    }
+
+    if (unit.state === "channeling") {
+      endChannelWhenDue(world, unit);
 
       continue;
     }

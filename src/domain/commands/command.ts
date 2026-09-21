@@ -1,5 +1,7 @@
 import type { EntityId, Vec2 } from "@shared/public";
+import type { DamageType } from "../combat/damage";
 import type { TuningKey } from "../definitions/tuning-def";
+import type { DisableId } from "../orders/disable-flags";
 import type { Tick } from "../tick";
 
 /**
@@ -8,8 +10,9 @@ import type { Tick } from "../tick";
  * stamp the driver writes at submit time. The ordering rule sorts by `timestamp`; it is an
  * ordering key, never a duration, and nothing inside the simulation does arithmetic on it.
  *
- * No variant carries a modifier. A shift-modified click produces nothing at the mapper, so
- * there is no queue variant and no waypoint list: one order at a time, replaced whole.
+ * No variant carries a modifier. The mapper never reads Shift, so a Shift-click is the same
+ * click without it, and there is no queue variant and no waypoint list: one order at a time,
+ * replaced whole.
  */
 export type Command =
   | NoopCommand
@@ -115,15 +118,155 @@ export type SpendSkillPointCommand = Readonly<{
 
 /**
  * A developer-panel intent. It lands in the same buffer and the same input log as a player
- * command, so a session with the panel open replays exactly.
+ * command, so a session with the panel open replays exactly. The panel has exactly the power
+ * this union gives it: a new control is a new variant here and its handling in the domain,
+ * never a method on the world. A duration a variant carries is in ticks, converted by the
+ * panel from what a person typed, so the log holds what the tick read. Every variant is
+ * validated for its shape before it applies, and refused with a reason when the world cannot
+ * take it: no hero to act on, no room in the pool, a level at its cap.
  */
-export type DebugCommand = DebugNoopCommand;
+export type DebugCommand =
+  | DebugNoopCommand
+  | ApplyDamageCommand
+  | DrainManaCommand
+  | HealCommand
+  | RestoreManaCommand
+  | LevelUpCommand
+  | SetOrbLevelsCommand
+  | ToggleInfiniteManaCommand
+  | ToggleNoCooldownsCommand
+  | KillHeroCommand
+  | SpawnUnitsCommand
+  | ClearUnitsCommand
+  | ResetMapCommand
+  | BeginChannelCommand
+  | SetDisableFlagCommand;
 
 /** The debug twin of `noop`: proves the panel's path through the buffer and the log. */
 export type DebugNoopCommand = Readonly<{
   kind: "debug_noop";
   tick: Tick;
   timestamp: number;
+}>;
+
+/** Takes `amount` health from the hero as `damageType`, through the combat rules. A zero is read by the death system at the end of the tick. */
+export type ApplyDamageCommand = Readonly<{
+  kind: "apply_damage";
+  tick: Tick;
+  timestamp: number;
+  amount: number;
+  damageType: DamageType;
+}>;
+
+/** Takes `amount` mana from the hero's active form, never below zero. */
+export type DrainManaCommand = Readonly<{
+  kind: "drain_mana";
+  tick: Tick;
+  timestamp: number;
+  amount: number;
+}>;
+
+/** Sets the hero's health to its maximum. */
+export type HealCommand = Readonly<{
+  kind: "heal";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Sets the hero's mana to its maximum. */
+export type RestoreManaCommand = Readonly<{
+  kind: "restore_mana";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Grants the hero one level, with the skill points a level brings. Refused at the level cap. */
+export type LevelUpCommand = Readonly<{
+  kind: "level_up";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Sets the level of every orb skill on the hero's active form: one entry per orb in slot-key order, each from zero to the cap. */
+export type SetOrbLevelsCommand = Readonly<{
+  kind: "set_orb_levels";
+  tick: Tick;
+  timestamp: number;
+  levels: readonly number[];
+}>;
+
+/** Flips the switch under which a cast never spends mana and never wants for it. */
+export type ToggleInfiniteManaCommand = Readonly<{
+  kind: "toggle_infinite_mana";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Flips the switch under which every clock reads as ready. */
+export type ToggleNoCooldownsCommand = Readonly<{
+  kind: "toggle_no_cooldowns";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Sets the hero's health to zero, so the death system takes it at the end of the tick. */
+export type KillHeroCommand = Readonly<{
+  kind: "kill_hero";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/**
+ * Puts `count` generic units into the world around `position`, for a stress test: enemy-kind
+ * units with no definition, wearing the tuned hull, in a grid the collision rule settles. A
+ * position on an obstacle or off the map resolves to the nearest legal point. Refused when
+ * the pool has no room for all of them.
+ */
+export type SpawnUnitsCommand = Readonly<{
+  kind: "spawn_units";
+  tick: Tick;
+  timestamp: number;
+  count: number;
+  position: Readonly<Vec2>;
+}>;
+
+/** Releases every unit but the hero, with no deaths and no experience. */
+export type ClearUnitsCommand = Readonly<{
+  kind: "clear_units";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Reloads the current map: every map-scoped pool is emptied and the hero stands at the spawn point again with its order cleared. Run scope is untouched. */
+export type ResetMapCommand = Readonly<{
+  kind: "reset_map";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/**
+ * Enters `channeling` for `ticks` through the order state machine, so the abort path an orb
+ * press takes is the real one. The only way to channel until an ability does, and the
+ * cheapest way to reach the state in a test afterwards. Refused while already channeling.
+ */
+export type BeginChannelCommand = Readonly<{
+  kind: "begin_channel";
+  tick: Tick;
+  timestamp: number;
+  ticks: number;
+}>;
+
+/**
+ * Puts the status that sets `disable` on the hero for `ticks`, as a row of its status table,
+ * so the validator's disable branches are testable before any status definition exists. The
+ * flag is true from the end of the tick that consumes the command until the row expires.
+ */
+export type SetDisableFlagCommand = Readonly<{
+  kind: "set_disable_flag";
+  tick: Tick;
+  timestamp: number;
+  disable: DisableId;
+  ticks: number;
 }>;
 
 /**
@@ -143,3 +286,26 @@ export type SetTuningCommand = Readonly<{
 
 /** Anything the buffer accepts: a player command, a debug command, or a tuning change. */
 export type AnyCommand = Command | DebugCommand | SetTuningCommand;
+
+/** The kinds of the debug union, so the command system can tell a panel intent from a player's without a field for it. */
+const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
+  "debug_noop",
+  "apply_damage",
+  "drain_mana",
+  "heal",
+  "restore_mana",
+  "level_up",
+  "set_orb_levels",
+  "toggle_infinite_mana",
+  "toggle_no_cooldowns",
+  "kill_hero",
+  "spawn_units",
+  "clear_units",
+  "reset_map",
+  "begin_channel",
+  "set_disable_flag",
+]);
+
+/** Whether `command` is a developer-panel intent. */
+export const isDebugCommand = (command: AnyCommand): command is DebugCommand =>
+  DEBUG_COMMAND_KINDS.has(command.kind);

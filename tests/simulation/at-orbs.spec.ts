@@ -145,6 +145,47 @@ describe("AT-O3", () => {
   });
 });
 
+describe("AT-O4", () => {
+  it("aborts a channel on an orb press, and the instance is added", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
+    submit(world, {
+      kind: "begin_channel",
+      tick: 0,
+      timestamp: 0,
+      ticks: 100,
+    });
+    world.tick();
+
+    expect(hero.state).toBe("channeling");
+
+    pressSlot(world, Q);
+    world.tick();
+
+    expect(hero.state).toBe("idle");
+    expect(hero.order.kind).toBe("none");
+    expect(buffer(world)).toEqual([QUARTZ]);
+  });
+
+  it("leaves the channel running when the orb press is refused", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { orbLevels: [0, 1, 1] });
+    submit(world, {
+      kind: "begin_channel",
+      tick: 0,
+      timestamp: 0,
+      ticks: 100,
+    });
+    world.tick();
+
+    pressSlot(world, Q);
+    world.tick();
+
+    expect(hero.state).toBe("channeling");
+    expect(buffer(world)).toEqual([]);
+  });
+});
+
 describe("AT-O5", () => {
   it("adds one instance per command: a held key is one command at the mapper, so one instance", () => {
     const world = makeWorld({ seed: 1 });

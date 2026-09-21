@@ -33,6 +33,20 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "attack_target":
     case "cast":
     case "debug_noop":
+    case "apply_damage":
+    case "drain_mana":
+    case "heal":
+    case "restore_mana":
+    case "level_up":
+    case "set_orb_levels":
+    case "toggle_infinite_mana":
+    case "toggle_no_cooldowns":
+    case "kill_hero":
+    case "spawn_units":
+    case "clear_units":
+    case "reset_map":
+    case "begin_channel":
+    case "set_disable_flag":
     case "set_tuning":
       return null;
   }

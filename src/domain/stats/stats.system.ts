@@ -1,7 +1,19 @@
 import { activeFormOf, resolveHero, wearBody } from "../entities/hero";
-import type { World } from "../entities/world-state";
+import type { Unit } from "../entities/unit";
+import type { FormRecord, World } from "../entities/world-state";
 import { attributesAt, deriveStats } from "./derived";
 import { regenerate } from "./regeneration";
+
+/**
+ * Writes `form`'s body, this level's attributes, and the seven derived values onto `unit`,
+ * in place. The stats system runs it every tick; a debug command that reads a maximum
+ * before the system has run this tick runs it first.
+ */
+export const refreshStats = (unit: Unit, form: FormRecord): void => {
+  wearBody(unit, form.def);
+  attributesAt(form.def, unit.progression.level, unit.attributes);
+  deriveStats(form.def, unit.attributes, unit.modifiers, unit.stats);
+};
 
 /**
  * Keeps the hero's body, attributes, derived values, and resources true to its active form
@@ -10,7 +22,9 @@ import { regenerate } from "./regeneration";
  * the form's body goes on the unit, the attributes are read at the current level, the seven
  * derived values are run through the modifier table, and the form's health and mana
  * regenerate against the maximums just derived. Nothing is cached across ticks: a swap of the
- * active index is seen in full on the next tick.
+ * active index is seen in full on the next tick. A hero at zero health regenerates nothing:
+ * it is the death system's at the end of the tick, and a dead hero keeps its values until the
+ * respawn fills it.
  *
  * A unit other than the hero has no source of attributes yet, so it is left alone.
  */
@@ -27,8 +41,9 @@ export const statsSystem = (world: World): void => {
     return;
   }
 
-  wearBody(hero, form.def);
-  attributesAt(form.def, hero.progression.level, hero.attributes);
-  deriveStats(form.def, hero.attributes, hero.modifiers, hero.stats);
-  regenerate(form.resources, hero.stats);
+  refreshStats(hero, form);
+
+  if (hero.state !== "dead" && form.resources.health > 0) {
+    regenerate(form.resources, hero.stats);
+  }
 };

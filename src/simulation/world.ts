@@ -9,7 +9,6 @@ import type {
 } from "@domain/public";
 import {
   cellCount,
-  clearOrder,
   createDomainEvent,
   createEffectPool,
   createFormRecords,
@@ -24,7 +23,8 @@ import {
   fitPathSearch,
   readRadiusClasses,
   readTunable,
-  releaseUnit,
+  resetMapScope,
+  resolveHero,
   walkabilityCovers,
 } from "@domain/public";
 import { assert } from "@shared/public";
@@ -207,35 +207,22 @@ export class Simulation {
   }
 
   /**
-   * Takes `map` as the loaded one: releases every map-scoped entity but the hero, derives the
-   * walkability grid for the map's bounds and obstacles with the path search fitted to it,
-   * carries the hero to the spawn point with its order cleared, and rebuilds the spatial hash
-   * at the tuned cell size over what is left. Run scope is untouched; the hero is never
-   * recreated. Anything standing on the spawn point is pushed off by collision on the first
-   * tick.
+   * Takes `map` as the loaded one: derives the walkability grid for the map's bounds and
+   * obstacles with the path search fitted to it, gives the hero the map's spawn point, and
+   * resets map scope around it: every map-scoped entity but the hero released, the hero
+   * carried to the spawn point with its order cleared, and the spatial hash rebuilt over
+   * what is left. Run scope is untouched; the hero is never recreated. Anything standing on
+   * the spawn point is pushed off by collision on the first tick.
    */
   loadMap(map: MapDef): void {
     const world = this.state;
     const scope = world.map;
-    const tuning = world.run.tuning;
-    const heroId = world.run.heroId;
-    const hero = heroId === null ? null : scope.units.resolve(heroId);
+    const hero = resolveHero(world);
 
-    for (let index = 0; index < scope.units.end; index += 1) {
-      const id = scope.units.idAt(index);
-
-      if (id !== null && id !== heroId) {
-        releaseUnit(world, id);
-      }
-    }
-
-    scope.projectiles.releaseAll();
-    scope.effects.releaseAll();
-    scope.zones.releaseAll();
     scope.mapId = map.id;
     scope.bounds = map.bounds;
     scope.obstacles = map.obstacles;
-    scope.walkability = deriveGrid(map, tuning);
+    scope.walkability = deriveGrid(map, world.run.tuning);
 
     assert(
       walkabilityCovers(scope.walkability, map.bounds),
@@ -244,19 +231,11 @@ export class Simulation {
     fitPathSearch(scope.pathSearch, cellCount(scope.walkability));
 
     if (hero !== null) {
-      clearOrder(hero);
-      hero.curr.x = map.spawnPoint.x;
-      hero.curr.y = map.spawnPoint.y;
-      hero.prev.x = map.spawnPoint.x;
-      hero.prev.y = map.spawnPoint.y;
       hero.spawnPoint.x = map.spawnPoint.x;
       hero.spawnPoint.y = map.spawnPoint.y;
     }
 
-    scope.spatialHash.rebuild(
-      readTunable(tuning, "hash_cell_size"),
-      scope.units,
-    );
+    resetMapScope(world);
   }
 
   /** Releases every pool and forgets every waiting command, event, and log record. The world refuses submits afterwards. */

@@ -6,10 +6,14 @@ import type {
   OrderState,
   Unit,
 } from "@domain/public";
-import { createUnitPool, validateCommand } from "@domain/public";
+import {
+  createUnitPool,
+  validateCommand,
+  validateDebugCommand,
+} from "@domain/public";
 
-/** What the validator decides on: every command but a tuning change, which never reaches a unit. */
-type UnitCommand = Command | DebugCommand;
+/** What the validator decides on: every player command; a tuning change and a debug command never reach a unit. */
+type UnitCommand = Command;
 
 const move = (x = 1, y = 2): UnitCommand => ({
   kind: "move",
@@ -58,12 +62,6 @@ const spendSkillPoint = (index: number): UnitCommand => ({
 
 const noop = (): UnitCommand => ({ kind: "noop", tick: 0, timestamp: 0 });
 
-const debugNoop = (): UnitCommand => ({
-  kind: "debug_noop",
-  tick: 0,
-  timestamp: 0,
-});
-
 /** Every player command with a well-formed payload, by name, so a disable is tested against each. */
 const EVERY_COMMAND: readonly (readonly [string, UnitCommand])[] = [
   ["move", move()],
@@ -87,12 +85,11 @@ const unitIn = (state: OrderState = "idle"): Unit => {
   return unit;
 };
 
-/** Every command, the two noops included, which a fresh unit accepts. */
+/** Every command, the noop included, which a fresh unit accepts. */
 const ACCEPTED_ON_A_FRESH_UNIT: readonly (readonly [string, UnitCommand])[] = [
   ...EVERY_COMMAND,
   ["spend_skill_point", spendSkillPoint(1)],
   ["noop", noop()],
-  ["debug_noop", debugNoop()],
 ];
 
 describe("validateCommand on a fresh unit", () => {
@@ -102,6 +99,22 @@ describe("validateCommand on a fresh unit", () => {
       expect(validateCommand(unitIn(), command)).toBe("ok");
     },
   );
+});
+
+describe("validateCommand while dead", () => {
+  it.each(ACCEPTED_ON_A_FRESH_UNIT)(
+    "refuses %s: nothing responds until the respawn",
+    (_name, command) => {
+      expect(validateCommand(unitIn("dead"), command)).toBe("dead");
+    },
+  );
+
+  it("refuses before any disable is read", () => {
+    const unit = unitIn("dead");
+    unit.disables.stunned = true;
+
+    expect(validateCommand(unit, move())).toBe("dead");
+  });
 });
 
 describe("validateCommand while stunned", () => {
@@ -268,5 +281,115 @@ describe("validateCommand on a destination", () => {
     expect(validateCommand(unitIn(), cast({ kind: "unit", unitId: 7 }))).toBe(
       "ok",
     );
+  });
+});
+
+/** A debug command of `kind` with no payload, well formed by construction. */
+const debug = (
+  kind:
+    | "debug_noop"
+    | "heal"
+    | "restore_mana"
+    | "level_up"
+    | "toggle_infinite_mana"
+    | "toggle_no_cooldowns"
+    | "kill_hero"
+    | "clear_units"
+    | "reset_map",
+): DebugCommand => ({ kind, tick: 0, timestamp: 0 });
+
+const applyDamage = (
+  amount: number,
+  damageType = "physical",
+): DebugCommand => ({
+  kind: "apply_damage",
+  tick: 0,
+  timestamp: 0,
+  amount,
+  damageType: damageType as "physical",
+});
+
+const drainMana = (amount: number): DebugCommand => ({
+  kind: "drain_mana",
+  tick: 0,
+  timestamp: 0,
+  amount,
+});
+
+const setOrbLevels = (levels: readonly number[]): DebugCommand => ({
+  kind: "set_orb_levels",
+  tick: 0,
+  timestamp: 0,
+  levels,
+});
+
+const spawnUnits = (count: number, x = 0, y = 0): DebugCommand => ({
+  kind: "spawn_units",
+  tick: 0,
+  timestamp: 0,
+  count,
+  position: { x, y },
+});
+
+const beginChannel = (ticks: number): DebugCommand => ({
+  kind: "begin_channel",
+  tick: 0,
+  timestamp: 0,
+  ticks,
+});
+
+const setDisableFlag = (disable: string, ticks: number): DebugCommand => ({
+  kind: "set_disable_flag",
+  tick: 0,
+  timestamp: 0,
+  disable: disable as "stun",
+  ticks,
+});
+
+describe("validateDebugCommand on a well-formed payload", () => {
+  it.each([
+    ["debug_noop", debug("debug_noop")],
+    ["apply_damage", applyDamage(10)],
+    ["apply_damage of zero", applyDamage(0, "pure")],
+    ["drain_mana", drainMana(10)],
+    ["heal", debug("heal")],
+    ["restore_mana", debug("restore_mana")],
+    ["level_up", debug("level_up")],
+    ["set_orb_levels", setOrbLevels([0, 3, 7])],
+    ["toggle_infinite_mana", debug("toggle_infinite_mana")],
+    ["toggle_no_cooldowns", debug("toggle_no_cooldowns")],
+    ["kill_hero", debug("kill_hero")],
+    ["spawn_units", spawnUnits(1)],
+    ["clear_units", debug("clear_units")],
+    ["reset_map", debug("reset_map")],
+    ["begin_channel", beginChannel(1)],
+    ["set_disable_flag", setDisableFlag("root", 1)],
+  ])("accepts %s", (_name, command) => {
+    expect(validateDebugCommand(command)).toBe("ok");
+  });
+});
+
+describe("validateDebugCommand on a malformed payload", () => {
+  it.each([
+    ["a negative damage amount", applyDamage(-1), "invalid_amount"],
+    ["a non-finite damage amount", applyDamage(Number.NaN), "invalid_amount"],
+    ["an unknown damage type", applyDamage(1, "chaos"), "invalid_damage_type"],
+    ["a negative mana amount", drainMana(-1), "invalid_amount"],
+    ["two orb levels", setOrbLevels([1, 1]), "invalid_orb_level"],
+    ["four orb levels", setOrbLevels([1, 1, 1, 1]), "invalid_orb_level"],
+    ["a negative orb level", setOrbLevels([0, -1, 0]), "invalid_orb_level"],
+    ["a fractional orb level", setOrbLevels([0, 1.5, 0]), "invalid_orb_level"],
+    ["a spawn count of zero", spawnUnits(0), "invalid_count"],
+    ["a fractional spawn count", spawnUnits(1.5), "invalid_count"],
+    [
+      "a non-finite spawn position",
+      spawnUnits(1, Number.NaN),
+      "invalid_destination",
+    ],
+    ["a channel of zero ticks", beginChannel(0), "invalid_duration"],
+    ["an unknown disable", setDisableFlag("sleep", 1), "invalid_disable"],
+    ["a disable of zero ticks", setDisableFlag("stun", 0), "invalid_duration"],
+  ] as const)("refuses %s", (_name, command, reason) => {
+    expect(validateDebugCommand(command)).toBe(reason);
   });
 });

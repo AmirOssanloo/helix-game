@@ -1,7 +1,7 @@
 import type { RefusalReason, Tick } from "@domain/public";
 import { SLOT_COUNT } from "@domain/public";
 
-/** What a square flashes for: mana is red, a clock grey, a disable striped, and any other refusal a plain white blink. */
+/** What a square flashes for: mana is red, a clock grey, a disable or death striped, and any other refusal a plain white blink. */
 export type FlashKind = "none" | "mana" | "cooldown" | "disable" | "refused";
 
 /** How long a flash shows, in ticks: a third of a second at thirty ticks a second. */
@@ -20,10 +20,17 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "silenced":
     case "rooted":
     case "disarmed":
+    case "dead":
       return "disable";
 
     case "invalid_slot":
     case "invalid_destination":
+    case "invalid_amount":
+    case "invalid_damage_type":
+    case "invalid_disable":
+    case "invalid_orb_level":
+    case "invalid_count":
+    case "invalid_duration":
     case "orb_not_learned":
     case "buffer_not_full":
     case "no_spell_for_recipe":
@@ -36,6 +43,10 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "no_skill_point":
     case "unknown_skill":
     case "skill_at_cap":
+    case "at_level_cap":
+    case "pool_full":
+    case "already_channeling":
+    case "status_table_full":
       return "refused";
   }
 };

@@ -48,7 +48,7 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | Row | Holds when |
 | --- | --- |
 | Every acceptance test in the mechanics spec section 16 is green by name | `pnpm test -t "AT-"` shows AT-M1 to AT-M5, AT-C1 to AT-C5, AT-O1 to AT-O5, AT-I1 to AT-I9 |
-| No feel requirement in section 15 fails | Walk the thirteen bullets in the arena by hand; record each as pass |
+| No feel requirement in section 15 fails | Walk the thirteen rows of section 15 in the arena by hand, as each row says; record each as pass |
 | The 300-unit stress test holds the tick budget | `pnpm test -t "stress"` green |
 | The render benchmark passes | Numbers recorded |
 | A recorded session replays identically | Record five minutes with the panel open, including a tuning change and a spawn; load it; state matches at every tick |

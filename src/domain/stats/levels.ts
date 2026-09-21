@@ -14,6 +14,12 @@ export type SkillPointRefusal =
 /** What spending a skill point returns: it was spent, or the reason it was not. */
 export type SkillPointResult = "ok" | SkillPointRefusal;
 
+/** Why a level was not granted: the unit is at the cap. */
+export type LevelUpRefusal = "at_level_cap";
+
+/** What granting a level returns: it was granted, or the reason it was not. */
+export type LevelUpResult = "ok" | LevelUpRefusal;
+
 /** The threshold a hero at `level` has reached. A level past the table reads the last entry. */
 const thresholdAt = (thresholds: readonly number[], level: number): number => {
   const threshold = thresholds[Math.min(level, thresholds.length) - 1];
@@ -72,6 +78,28 @@ export const grantExperience = (
   progression.skillPoints += gained * hero.skillPointsPerLevel;
 
   return gained;
+};
+
+/**
+ * Grants exactly one level: the experience rises to the next level's threshold, and the
+ * skill points a level brings come with it. Refused, with nothing changed, at the cap, and
+ * where the table ends below it.
+ */
+export const levelUp = (
+  progression: Progression,
+  hero: HeroDef,
+): LevelUpResult => {
+  const top = Math.min(hero.maxLevel, hero.experienceThresholds.length);
+
+  if (progression.level >= top) {
+    return "at_level_cap";
+  }
+
+  const next = thresholdAt(hero.experienceThresholds, progression.level + 1);
+
+  grantExperience(progression, next - progression.experience, hero);
+
+  return "ok";
 };
 
 /**

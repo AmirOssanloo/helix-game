@@ -44,7 +44,7 @@ Q Q W ──► three orb commands ──► buffer [Q,Q,W] ──► R ──�
 
 **Re-invoking a spell that is already out.** The buffer names the spell sitting in F. R swaps D and F, spends no mana, and starts no composer cooldown. If the spell is already in D, nothing happens at all. The player can promote F as fast as they can press R.
 
-**Pressing D while silenced.** The command is submitted; the validator reads the silence flag the status system set earlier in the tick and drops it. The cursor does not open, because the mapper checks the same flag on the world view before opening. A refused-command event tells the HUD to flash the square.
+**Pressing D while silenced.** The command is submitted; the validator reads the silence flag the status system set at the end of the previous tick and drops it. The cursor does not open, because the mapper checks the same flag on the world view before opening. A refused-command event tells the HUD to flash the square.
 
 **Escape with the cursor open.** The mapper closes the cursor and submits nothing. No mana, no clock, no order change. The hero keeps whatever order it had.
 
