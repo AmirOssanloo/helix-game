@@ -34,6 +34,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 
 **Definition of done:** Every change · A documentation change.
 
+> **Note, 2026-09-21:** the product owner approved the shape as written: the effect lists of section 3, the statuses of section 4, and the primitives, named effects, and capabilities of section 7, including the three calls flagged for review. Q10 is closed. T02 was built against this shape and needs no change.
+
 ---
 
 ### P2-S07-T02 — Definition types, schemas, the registry, and the content tier
@@ -117,7 +119,7 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 
 | Check | Result |
 | --- | --- |
-| Spell catalogue approved | Written 2026-09-21 as `docs/product/specs/spell-catalogue.md`; the shape waits on the product owner, recorded under Waiting on a person in STATUS.md |
+| Spell catalogue approved | Written 2026-09-21 as `docs/product/specs/spell-catalogue.md`; the shape approved by the product owner as written, 2026-09-21 |
 | Content tier green; every phase 1 test green through the new pipeline | |
 | Actual days per ticket | T01 0.5 · T02 1 · T03 · T04 |
 
