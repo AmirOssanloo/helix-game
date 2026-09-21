@@ -9,11 +9,11 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | | |
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md) |
-| **Active sprint** | [05 — Input mapper, views, camera, and HUD](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md) |
+| **Active sprint** | [06 — Developer panel, replay, stress test, and the phase gate](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md) |
 | **Next ticket** | P1-S06-T03 — Replay in Node, the determinism test, the stress test |
 | **In progress** | none |
 | **Last closed ticket** | P1-S06-T02 — DevApi, the HTML panel, readouts, sliders, overlays |
-| **Last closed sprint** | [04 — Hero definition, orbs, Invoke, slots, and cooldowns](./phase-1-hero-mechanics/sprint-04-orbs-invoke-and-slots.md), 2026-09-21 |
+| **Last closed sprint** | [05 — Input mapper, views, camera, and HUD](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md), 2026-09-21: all thirteen section 15 rows pass, the bench holds one draw call, every ticket done |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M0, the toolchain gate, 2026-09-20: `pnpm check` is green on an empty world and a wrong-direction import fails lint and the architecture test |
 
@@ -23,7 +23,6 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 Nothing an agent can do moves these rows. Each one says what to do, where the result goes, and what it unblocks.
 
-- [ ] **Sprint 05 exit: the section 15 feel walk-through, six rows left.** Seven rows are recorded in the sprint 05 [exit table](./phase-1-hero-mechanics/sprint-05-hud-input-and-camera.md#sprint-exit), all pass. Rows 3, 8, 9, 10, 11, and 12 of [section 15](../../../docs/product/specs/character-movement-and-mechanics.md#15-player-facing-feel-requirements) need the developer panel, which P1-S06-T02 has built. Run `pnpm dev`, use the panel's Hero group to set every orb to level 1 and its Units group to spawn a unit, walk those six rows as each says, and write each as pass or fail into the same cell. Unblocks: closing sprint 05 and moving **Last closed sprint** here. Any fail becomes a new ticket in sprint 06.
 - [ ] **Sprint 06 exit: the draw-call readout against the WebGL inspector.** Run `pnpm bench` in Chrome with a WebGL inspector extension, capture one frame, and compare its draw-call count with the DRAWS row of the bench readout; then open `pnpm dev`, and compare one frame with the panel's "Draw calls total / world" row. Write both pairs into the draw-call row of the sprint 06 [exit table](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md#sprint-exit). Unblocks: that row of the sprint 06 exit. Blocks no ticket.
 - [ ] **Milestone M1: the bench on the reference laptop.** Run `pnpm bench` on the reference laptop in Chrome, then in Safari, each twice: once as configured, once with `?textures=default` on the address. Record fps, render ms, draw calls, and heap for each of the four runs in the bench row of the sprint 02 [exit table](./phase-1-hero-mechanics/sprint-02-locomotion-turn-rate-and-the-render-benchmark.md#sprint-exit) and in the bench row of the phase 1 [exit record](./phase-1-hero-mechanics/README.md#exit-record). Unblocks: M1 and one row of the phase 1 gate. Blocks no ticket.
 
