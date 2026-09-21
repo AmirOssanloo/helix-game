@@ -6,7 +6,7 @@
 
 A status is a lasting condition on a unit: it slows, stuns, burns, silences, or empowers for a duration. Spells put statuses on enemies; enemy abilities put them on the hero. The same rules apply to both.
 
-Each status kind has a definition file under `src/content/statuses/` holding its duration rules and numbers. This page says what each one does and what it blocks.
+Each status kind has a definition file under `src/content/statuses/` holding its stack rule and numbers; a spell whose status needs numbers of its own has its own definition of the kind, named in the [spell catalogue](../specs/spell-catalogue.md). The applier gives the duration. This page says what each one does and what it blocks.
 
 ## The statuses
 

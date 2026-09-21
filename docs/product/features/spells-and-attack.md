@@ -6,7 +6,7 @@
 
 The ten spells the hero can invoke, the auto-attack, and the three damage types. Every spell has a targeting kind, cast point, cooldown, and mana cost, all scaling with orb levels.
 
-Numbers are not on this page. Each spell owns a definition file under `src/content/spells/`, one per spell, and that file holds the tables by orb level. This page says what each spell is and how it behaves at the edges.
+Numbers are not on this page. Each spell owns a definition file under `src/content/spells/`, one per spell, and that file holds the tables by orb level; the [spell catalogue](../specs/spell-catalogue.md) holds each spell's effect list and the starting values the file was written from. This page says what each spell is and how it behaves at the edges.
 
 ## The ten spells
 
@@ -14,14 +14,14 @@ Numbers are not on this page. Each spell owns a definition file under `src/conte
 | --- | --- | --- | --- |
 | QQQ | Hoarfrost | Unit | A status on one enemy: every hit it takes for the duration also stuns it briefly and deals bonus damage. Scales with Quartz |
 | QQW | Wane | None, self | The hero turns invisible to enemy aggro for the duration and is slowed; enemies near the hero are slowed. Scales with Quartz and Whorl |
-| QQE | Glacier | Point, placed | A zone: a line of wall segments placed in front of the hero, facing the cast direction. Enemies inside the wall's aura are heavily slowed and take damage over time. Scales with Quartz and Ember |
+| QQE | Glacier | Direction, placed | A zone: a line of wall segments placed in front of the hero, facing the cast direction. Enemies inside the wall's aura are heavily slowed and take damage over time. Scales with Quartz and Ember |
 | WWW | Siphon | Point, delayed | A zone that charges for a moment, then burns mana from every enemy in the area and deals damage for mana burned. Scales with Whorl |
-| WWQ | Updraft | Point, line | A zone that travels in a line, lifting every enemy it touches into the air for a duration, then dropping them with damage. Lifted units are stunned and untargetable. Scales with Whorl and Quartz |
+| WWQ | Updraft | Direction, line | A zone that travels in a line, lifting every enemy it touches into the air for a duration, then dropping them with damage. Lifted units are stunned and untargetable. Scales with Whorl and Quartz |
 | WWE | Quicken | None, self | A self buff: bonus attack speed and attack damage for the duration. Scales with Whorl and Ember |
 | EEE | Zenith | Point, delayed | A ground strike: after a delay, pure damage in a small area, split among everything inside. Scales with Ember |
 | EEQ | Emberling | None, self | A summon: one player-owned unit next to the hero that auto-attacks nearby enemies for its lifetime and cannot be ordered. Scales with Ember and Quartz |
 | EEW | Bolide | Point, line | A zone: a meteor lands after a delay and rolls in a line, damaging what it passes and leaving a burn status on them. Scales with Ember and Whorl |
-| QWE | Clarion | Point, cone | A wave in a cone: damage, knockback, and a disarm status on everything hit. Scales with all three |
+| QWE | Clarion | Direction, cone | A wave in a cone: damage, knockback, and a disarm status on everything hit. Scales with all three |
 
 Effect words — status, zone, summon, buff — are the [vocabulary's](../vocabulary.md). A zone has rules and lives in the world; a status lives on a unit.
 

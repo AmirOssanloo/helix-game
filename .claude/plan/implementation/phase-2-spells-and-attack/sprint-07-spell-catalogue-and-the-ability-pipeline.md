@@ -21,7 +21,7 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 | Layer | docs |
 | Size | 1 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** `docs/product/specs/spell-catalogue.md`, the document the roadmap lists as arriving with phase 2. For each of the ten spells: the recipe, targeting kind, cast point, backswing, cast range, cooldown and mana by orb level, adapted where the spells page says so, the effect list written as primitives and named effects with parameters, the statuses it applies with durations by level, the zone or projectile shape and speed, the atlas frames and cone angles it needs, and the tint. A closing section lists every primitive parameter and every named effect the ten spells need, and every status-definition capability they need (the damage-taken hook for Hoarfrost, the untargetable flag for lift, the aggro-hidden flag for Wane, an aura slow for Wane and Glacier). Numbers live in the definition files.
 
@@ -57,6 +57,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 - `tests/content/spells.spec.ts`, `statuses.spec.ts`, `maps.spec.ts` — every real definition validates.
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
+
+> **Note, 2026-09-21:** the catalogue settled the shape this ticket builds, and it differs from the sketch above in four places: a status definition has no duration, the applier gives one; every level table on a spell or a status names the orb that indexes it, and a status entry snapshots the three orb levels at application; `spawn_zone` carries an activation list and an each-tick list of effects rather than a rule key; and `SpellDef` gains a `preview`, `EnemyDef` gains mana, and a summon definition kind with a follow distance is added. Section 7 of `docs/product/specs/spell-catalogue.md` is the shape.
 
 ---
 
@@ -113,9 +115,9 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 
 | Check | Result |
 | --- | --- |
-| Spell catalogue approved | |
+| Spell catalogue approved | Written 2026-09-21 as `docs/product/specs/spell-catalogue.md`; the shape waits on the product owner, recorded under Waiting on a person in STATUS.md |
 | Content tier green; every phase 1 test green through the new pipeline | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

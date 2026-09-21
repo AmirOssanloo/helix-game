@@ -27,6 +27,7 @@ Each archetype has a colour on the [HUD page's art table](./hud.md#placeholder-a
 Every archetype carries the same fields. A field an archetype does not use is set to its neutral value, not left out.
 
 - Health, health regeneration, armour, magic resistance
+- Mana, mana regeneration, zero for an archetype that has none, so a spell that burns mana finds a number
 - Movement speed, turn rate, collision radius
 - Attack damage, attack range, attack point, base attack time, projectile speed for ranged
 - Aggro radius, leash radius

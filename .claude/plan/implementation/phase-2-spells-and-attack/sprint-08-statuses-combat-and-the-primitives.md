@@ -86,6 +86,8 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · Anything under `src/presentation`.
 
+> **Note, 2026-09-21:** the catalogue replaced the zone rule registry with two effect lists on the `spawn_zone` entry, run once on activation and once per tick with the zone as context, so a zone's rules are primitives with `target: zone` or a named effect and there is one registry of named functions, not two. The `aura_status`, `damage_each_tick`, and `damage_once_then_expire` rules become apply-status and damage-area entries in those lists; the travel is the zone's `motion`. Section 7.1 of `docs/product/specs/spell-catalogue.md` has the fields.
+
 ---
 
 ### P2-S08-T04 — Statuses on screen: icons and greyed keys

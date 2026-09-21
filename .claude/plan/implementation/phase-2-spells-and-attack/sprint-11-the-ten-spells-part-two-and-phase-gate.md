@@ -35,6 +35,8 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
 
+> **Note, 2026-09-21:** per the catalogue Updraft is a `spawn_zone` with a line motion whose each-tick list runs the named effect `updraft_carry`, which lifts on first contact and carries; the drop and its damage are the expiry list of the `updraft_lift` status, so they happen on time after the zone is gone. There is no `updraft_launch`; the effect test is `tests/domain/abilities/effects/updraft-carry.spec.ts`. Section 3.5 of `docs/product/specs/spell-catalogue.md`.
+
 ---
 
 ### P2-S11-T02 — Bolide and Clarion
@@ -57,6 +59,8 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 - `tests/simulation/spells/bolide.spec.ts`, `clarion.spec.ts`.
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
+
+> **Note, 2026-09-21:** per the catalogue Bolide needs no named effect: it is one `spawn_zone` with a delay, a line motion, and an each-tick list of damage area and apply status, so `meteor_launch` and its test are dropped. Clarion is a direction spell. Section 3.9 and 3.10 of `docs/product/specs/spell-catalogue.md`.
 
 ---
 

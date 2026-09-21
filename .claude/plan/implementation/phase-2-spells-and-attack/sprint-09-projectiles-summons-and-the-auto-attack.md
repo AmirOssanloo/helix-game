@@ -60,6 +60,8 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
+> **Note, 2026-09-21:** per the catalogue the summon definition is its own kind with a follow distance, and `spawn_unit` writes the spell's bonuses as modifier rows on the summon at spawn, so the definition owns the base and the spell owns what the orbs add. Section 5 and 7.1 of `docs/product/specs/spell-catalogue.md`.
+
 ---
 
 ### P2-S09-T03 — The training dummy and the auto-attack
