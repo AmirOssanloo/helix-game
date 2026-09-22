@@ -1,5 +1,6 @@
 import type { World } from "@domain/public";
 import {
+  aiSystem,
   castSystem,
   collisionSystem,
   commandSystem,
@@ -27,7 +28,9 @@ export type System = (world: World) => void;
  * form's body and carries this tick's derived values, with every modifier the tick added,
  * before anything reads them. The cast stages run next, so a cast requested this tick spends
  * this tick's mana, faces or commits this tick, and asks for its approach before pathing plans
- * it. Pathing follows, so an order consumed this tick has its path before movement reads
+ * it. The behaviours run after them, so a unit nobody commands issues its order where the
+ * player's own order was issued, and the systems after it carry out both alike. Pathing
+ * follows, so an order consumed this tick has its path before movement reads
  * it. Movement follows, so an order consumed this tick turns or translates this tick.
  * Collision runs after movement, so every unit is pushed out of every other unit and every
  * obstacle where this tick's moves left it. Projectiles fly after collision, so a sweep reads
@@ -44,6 +47,7 @@ export const systems: readonly System[] = [
   kitSystem,
   statsSystem,
   castSystem,
+  aiSystem,
   pathingSystem,
   movementSystem,
   collisionSystem,

@@ -55,7 +55,7 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 | Apply status | Adds a status to a unit or to units in a shape |
 | Spawn projectile | Acquires a projectile that homes on a unit or travels a direction, with the list it runs on what it touches. A homing entry the cast aimed at no unit fires nothing |
 | Spawn zone | Acquires a zone with a shape, a delay before it bites, a lifetime, and the two lists it runs: once when the delay ends, and every tick after that |
-| Spawn unit | Acquires a summon owned by the caster, with a lifetime |
+| Spawn unit | Acquires summons owned by the caster, each with a lifetime and the entry's bonuses as modifier rows |
 | Displace | Moves a unit — a push, or a lift that suspends its order — and puts a status on it for the same ticks |
 
 **Whom an entry touches** is the entry's own field: the cast's target unit, every unit inside the zone running the list, or every unit a shape at the anchor covers. A shape and a zone collect units hostile to the caster only, and neither collects a corpse or a unit a status has made untargetable, so a lifted unit cannot be hit. The collection is complete before the first effect lands, so a hit that kills one unit or moves another does not change whom the entry touches. [Movement, collision, and pathing](./movement-collision-pathing.md) owns the shape tests and the displacement steps.
@@ -103,7 +103,11 @@ Keeping them apart is what lets an enemy, and later an item, cast without owning
 
 ## Summons
 
-A summon is a unit like any other: it lives in the unit pool, moves, collides, takes statuses, and dies through the same systems. What makes it a summon is an owner id and a lifetime in ticks. Its behaviour key drives it; the hero does not order it. When the owner dies, the summon expires on the same tick, in the death system's pass, as an expiry that grants no experience. The rule is the same for a hero's summon and an enemy's adds, so owner and dependants always resolve together.
+A summon is a unit like any other: it lives in the unit pool, moves, collides, takes statuses, and dies through the same systems. What makes it a summon is an owner id and a lifetime in ticks. The definition it names owns its body and its base numbers; the bonuses the spawning entry carries are written on it at spawn as modifier rows of their own source kind, so the definition and the ability each own their half.
+
+**Its behaviour key drives it; the hero does not order it.** A pass of its own runs the behaviour every unit's definition names, once per tick, after the cast stages and before pathing, so an order a behaviour issues is planned and walked on the tick it was issued. The hero carries no definition and is driven by commands, so the pass passes over it. A behaviour decides and issues orders through the same state machine a command does; it moves nothing itself.
+
+**A summon ends on its lifetime, and on the same tick its owner dies**, in the death system's pass. Both are an expiry rather than a death: the slot goes back at once with no corpse, nothing is announced, and no experience is granted. The rule is the same for a hero's summon and an enemy's adds, so owner and dependants always resolve together.
 
 ---
 
@@ -157,7 +161,9 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Damage hooks | A status definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with a cooldown table; run by the damage function after mitigation; hook damage runs no hooks; the ready-at tick lives on the entry |
 | Invoke | `domain/invoke/`, beside the pipeline; produces the ability the slot key throws |
 | Kits | Invoke is one kit; a form definition names its kit by string key, resolved from a domain registry; a kit turns a slot index into an ability request |
-| A summon | A unit with an owner id and a lifetime, driven by its behaviour key; expires on the tick its owner dies, granting no experience |
+| A summon | A unit with an owner id and a lifetime; its definition owns its base numbers and the spawning entry's bonuses go on it as modifier rows |
+| A summon's end | Its lifetime, or the tick its owner dies; both release the slot at once, announce nothing, and grant no experience |
+| Behaviours | One pass runs each unit's behaviour by key, once per tick, after the cast stages and before pathing; a behaviour issues orders through the state machine and moves nothing itself |
 
 ---
 

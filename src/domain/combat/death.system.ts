@@ -103,6 +103,52 @@ const endDeath = (world: World, unit: Unit, id: EntityId): void => {
 };
 
 /**
+ * Whether the summon's time is up: its lifetime has run out, or the owner it belongs to is
+ * dead or gone. An owner that died this tick was taken by the pass above, so owner and
+ * dependants always resolve together and a summon never outlives its owner by a tick.
+ */
+const hasExpired = (world: World, unit: Readonly<Unit>): boolean => {
+  const expiresAtTick = unit.expiresAtTick;
+
+  if (expiresAtTick !== null && world.tick >= expiresAtTick) {
+    return true;
+  }
+
+  const ownerId = unit.ownerId;
+
+  if (ownerId === null) {
+    return false;
+  }
+
+  const owner = world.map.units.resolve(ownerId);
+
+  return owner === null || owner.state === "dead";
+};
+
+/**
+ * Releases every summon whose time is up, after the tick's deaths are resolved. An expiry is
+ * not a death: the slot goes back at once with no corpse to stand over, nothing is announced,
+ * and nothing is credited, so no experience is granted for a summon that simply ran out. What
+ * it put on other units stays on them, as a caster's leaving never lifts what it cast.
+ */
+const expireSummons = (world: World): void => {
+  const units = world.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+    const id = units.idAt(index);
+
+    if (unit === null || id === null || unit.kind !== "summon") {
+      continue;
+    }
+
+    if (hasExpired(world, unit)) {
+      releaseUnit(world, id);
+    }
+  }
+};
+
+/**
  * Resolves death once per tick, last, so every hit the tick landed is counted and two zeros
  * make one death: a unit is taken on the tick its health reaches zero, whoever emptied it
  * and however many hits did. A unit with no health pool is not a unit that dies. The hero
@@ -110,6 +156,9 @@ const endDeath = (world: World, unit: Unit, id: EntityId): void => {
  * holds its slot for the corpse delay and is released then, so an id held across it resolves
  * to nothing. Nothing revives a unit early: a heal while dead raises a number the respawn
  * overwrites.
+ *
+ * Summons are taken after, in a pass of their own, so one expires on the same tick its owner
+ * dies whichever slot each of them holds.
  */
 export const deathSystem = (world: World): void => {
   const units = world.map.units;
@@ -141,4 +190,6 @@ export const deathSystem = (world: World): void => {
       );
     }
   }
+
+  expireSummons(world);
 };

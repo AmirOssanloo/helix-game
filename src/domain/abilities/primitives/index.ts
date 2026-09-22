@@ -15,6 +15,7 @@ import { applyStatusEffect } from "./apply-status";
 import { damageArea } from "./damage-area";
 import { displace } from "./displace";
 import { spawnProjectile } from "./spawn-projectile";
+import { spawnUnit } from "./spawn-unit";
 import { spawnZone } from "./spawn-zone";
 
 /** Every effect entry the runner dispatches to a primitive: the union less the named effect. */
@@ -53,7 +54,7 @@ const primitives: PrimitiveTable = {
   apply_status: applyStatusEffect,
   spawn_projectile: spawnProjectile,
   spawn_zone: spawnZone,
-  spawn_unit: null,
+  spawn_unit: spawnUnit,
   displace,
 };
 

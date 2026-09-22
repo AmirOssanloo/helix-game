@@ -77,8 +77,8 @@ export const STATS: readonly Stat[] = [
   "magic_resistance",
 ];
 
-/** What wrote a modifier row: a status, a held orb instance, or later an item. A source removes every row of its kind. */
-export type ModifierKind = "status" | "orb" | "item";
+/** What wrote a modifier row: a status, a held orb instance, the ability that summoned the unit, or later an item. A source removes every row of its kind. */
+export type ModifierKind = "status" | "orb" | "summon" | "item";
 
 /**
  * One row of a unit's modifier table: one source's contribution to one stat, a flat amount in

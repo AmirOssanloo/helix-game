@@ -50,12 +50,12 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | Layer | domain, simulation, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
-**Build:** The `spawn_unit` primitive acquires a unit from the unit pool with kind `summon`, the definition id of what it is (an enemy-shaped definition under `src/content/summons/`), an owner id, a lifetime in ticks, and a behaviour key. The AI module lands in phase 3; for now `domain/ai/` holds the behaviour registry with `stationary` and a `summon_follow` behaviour that idles beside its owner, moves when the owner is beyond a tunable distance, and auto-attacks the nearest enemy within its attack range using the attack code from T03. A summon expires on its lifetime or on the same tick its owner dies, in the death system's pass as an expiry that grants no experience, so owner and dependants resolve together and an enemy's adds follow the same rule in phase 5. It is a valid enemy target and cannot be selected or ordered. The ability pipeline page already states the rule (Q1).
+**Build:** The `spawn_unit` primitive acquires a unit from the unit pool with kind `summon`, the definition id of what it is (an enemy-shaped definition under `src/content/summons/`), an owner id, a lifetime in ticks, and a behaviour key. The AI module lands in phase 3; for now `domain/ai/` holds the behaviour registry with `stationary` and a `summon_follow` behaviour that idles beside its owner and walks back when the owner is beyond the distance its definition gives, plus the pass that runs a unit's behaviour each tick. The acquire and the attack are T03's, with the attack code. A summon expires on its lifetime or on the same tick its owner dies, in the death system's pass as an expiry that grants no experience, so owner and dependants resolve together and an enemy's adds follow the same rule in phase 5. It is a valid enemy target and cannot be selected or ordered. The ability pipeline page already states the rule (Q1).
 
 **Acceptance:**
-- A summon lives for its lifetime, follows its owner, and attacks a dummy in range.
+- A summon lives for its lifetime and follows its owner. Attacking a dummy in range moved to T03 with the attack code and the dummy, per the note below.
 - Owner death expires the summon on that tick, with no experience granted for the expiry.
 - Hoarfrost on a summon works like on any unit (tested in sprint 10 with the real spell; here with `apply_status`).
 
@@ -65,6 +65,18 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
 > **Note, 2026-09-21:** per the catalogue the summon definition is its own kind with a follow distance, and `spawn_unit` writes the spell's bonuses as modifier rows on the summon at spawn, so the definition owns the base and the spell owns what the orbs add. Section 5 and 7.1 of `docs/product/specs/spell-catalogue.md`.
+>
+> **Note, 2026-09-22:** four things came out differently and the ticket stands as edited here.
+>
+> The acquire-and-attack half of `summon_follow` moved to T03, which owns the attack system, the acquire radius, and the dummy to attack. A behaviour issues orders and runs none of them; an `attack_target` order with no attack system behind it would only make the summon stand still beside what it meant to hit, which is worse than not acquiring at all. What this ticket built of the behaviour is the follow: it holds its ground inside its definition's follow distance and walks to the near side of that ring once its owner has left it behind, one order per walk rather than a fresh one every tick, and a root keeps it where it stands.
+>
+> Something has to run a behaviour, so the pass is `aiSystem` under `src/domain/ai/`, registered after the cast stages and before pathing, so an order a behaviour issues is planned and walked on the tick it was issued. The ability pipeline page states where it sits and what a behaviour may do.
+>
+> A summon expires with no event of its own. An expiry is not a death, and the definition of done removes an event nobody reads, so the release is silent and the spec asserts the slot is back and that no `unit_died` names the summon, which is what "grants no experience" comes to while nothing grants any.
+>
+> Run scope gained a unit table, `src/domain/definitions/unit-state.ts`: every archetype and every summon by id with its rates in ticks, since the world holds no registry and a spawn must find the definition it names. The spawn itself is `src/domain/entities/unit-spawn.ts` — the body and the seven derived values from a definition, with the modifier rows written between the two — and T03's dummy spawn uses it as it is.
+>
+> One thing the ticket did not ask for and did not get: the movement system still reads `base_ms` and `turn_rate_T` for every unit, so a definition's `movementSpeed` and `turnRate` are written by content and read by nothing, and the summon follows at the hero's base speed. In [Deferred](../backlog/deferred.md), waiting on the AI module in sprint 12.
 
 ---
 
@@ -74,21 +86,23 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | --- | --- |
 | Layer | domain, content, simulation, devtools, tests |
 | Size | 1.5 |
-| Depends on | T01 |
+| Depends on | T01, T02 |
 | Status | planned |
 
-**Build:** `src/content/enemies/training-dummy.def.ts` with every `EnemyDef` field at neutral values, tier normal, behaviour `stationary`, an empty ability list, the clamp-at-one flag, zero experience, and a square-with-outline frame. The panel's Enemies group reads the registry for its dropdown; spawn at click or at a distance, group size, nearest free cells, refusal past the live cap. Under `src/domain/attack/` and `attackSystem`: `attack_target` paths into range (attack range plus both bound radii), faces, runs the attack point, fires a homing projectile carrying physical damage from the caster's attack damage (base plus Ember instances plus modifiers), then the backswing, repeating on the base attack time scaled by attack speed; `attack_move` walks to the point, acquires the nearest valid enemy within the acquire radius through the hash, switches to `attack_target`, and resumes the walk without backtracking when the target is lost; the attack point and the backswing cancel on move, stop, or cast, a cancelled attack point firing nothing and starting no attack clock (Q20); disarm refuses attacks; a target that becomes untargetable drops the order to idle. Idle policy: no acquire. The hero's attack numbers live in `content/hero.ts`.
+**Build:** `src/content/enemies/training-dummy.def.ts` with every `EnemyDef` field at neutral values, tier normal, behaviour `stationary`, an empty ability list, the clamp-at-one flag, zero experience, and a square-with-outline frame. The panel's Enemies group reads the registry for its dropdown; spawn at click or at a distance, group size, nearest free cells, refusal past the live cap. Under `src/domain/attack/` and `attackSystem`: `attack_target` paths into range (attack range plus both bound radii), faces, runs the attack point, fires a homing projectile carrying physical damage from the caster's attack damage (base plus Ember instances plus modifiers), then the backswing, repeating on the base attack time scaled by attack speed; `attack_move` walks to the point, acquires the nearest valid enemy within the acquire radius through the hash, switches to `attack_target`, and resumes the walk without backtracking when the target is lost; the attack point and the backswing cancel on move, stop, or cast, a cancelled attack point firing nothing and starting no attack clock (Q20); disarm refuses attacks; a target that becomes untargetable drops the order to idle. Idle policy: no acquire. The hero's attack numbers live in `content/hero.ts`. `summon_follow` gains the other half it was written without: before it decides to follow, it acquires the nearest enemy inside its definition's acquire radius and issues an attack on it through the same state machine, and follows only while it has nothing to hit.
 
 **Acceptance:**
 - Right-clicking the dummy from 1200 units paths to 600 plus bounds, faces, fires after 0.4 s, hits at 900 units per second, and fires again 1.7 s after the first attack point at base attack speed.
 - Attack-move past the dummy acquires it within 800 and, after `clear_units`, resumes the walk without turning back.
 - Three Ember instances at level 1 raise the hit by the definition's per-instance value.
 - The dummy at 1 health takes a 100-damage hit and shows 100 in the event, staying at 1.
+- A summon beside a dummy inside its acquire radius attacks it, and goes back to following when it is gone.
 
 **Tests:**
 - `tests/simulation/attack/attack-target.spec.ts`, `attack-move.spec.ts`, `backswing.spec.ts`, `disarm.spec.ts`.
 - `tests/content/enemies.spec.ts` — the dummy validates.
 - `tests/simulation/dev-api.spec.ts` extended with spawn by archetype.
+- `tests/simulation/summons/follow.spec.ts` extended with the acquire.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new enemy or behaviour (the dropdown row) · A developer-panel control.
 
@@ -124,7 +138,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | --- | --- |
 | Auto-attack cadence matches the spec's numbers in tests | |
 | Dummy spawns from the registry-driven dropdown | |
-| Actual days per ticket | T01 1.0 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1.0 · T02 1.0 · T03 · T04 |
 
 ## Risks in this sprint
 

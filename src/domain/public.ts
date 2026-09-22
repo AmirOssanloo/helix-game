@@ -40,6 +40,7 @@ export { hasMana, spendMana } from "./abilities/mana";
 export { projectileSystem } from "./abilities/projectiles/projectile.system";
 export { zoneSystem } from "./abilities/zones/zone.system";
 export { spellLevelOf } from "./abilities/spell-level";
+export { aiSystem } from "./ai/ai.system";
 export type { Behaviour } from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export {
@@ -203,6 +204,7 @@ export {
   type StatusModifierRecord,
   type StatusRecord,
 } from "./definitions/status-state";
+export { createUnitTable, type UnitRecord } from "./definitions/unit-state";
 export {
   EMBER_DAMAGE_KEYS,
   type EmberDamageKey,
@@ -275,6 +277,7 @@ export {
   UNIT_CAPACITY,
   type UnitKind,
 } from "./entities/unit";
+export { fillFromDefinition, wearDefinition } from "./entities/unit-spawn";
 export {
   type DebugFlags,
   type FormRecord,

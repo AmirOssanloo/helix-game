@@ -21,6 +21,7 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Damage-number crit styling | Sprint 16 | No crit exists | Colour per type is enough for the balance pass |
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
 | The disable matrix's draft | Sprint 18 | Sprint 20 | Only the headings are drafted early so sprint 20 starts on content |
+| A unit's own movement speed and turn rate | Sprint 09 | Sprint 12 | The movement system reads the two tunables for every unit; a definition's `movementSpeed` and `turnRate` are written by content and read by nothing. The summon follows at the hero's base speed, which is enough for it; the AI module is where enemies of different speeds first matter |
 
 ---
 

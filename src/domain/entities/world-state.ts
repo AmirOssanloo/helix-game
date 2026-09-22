@@ -5,6 +5,7 @@ import type { HeroDef } from "../definitions/hero-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { StatusRecord } from "../definitions/status-state";
+import type { UnitRecord } from "../definitions/unit-state";
 import type { EventSink } from "../events/domain-event";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
@@ -75,6 +76,8 @@ export type RunScope = {
   spells: ReadonlyMap<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */
   statuses: ReadonlyMap<string, StatusRecord>;
+  /** Every archetype and every summon by id, with its rates read for the tick, for a spawn to dress a unit from. The live units are map scope's. */
+  units: ReadonlyMap<string, UnitRecord>;
   tuning: TuningState;
   debug: DebugFlags;
   random: RandomState;
