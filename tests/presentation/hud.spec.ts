@@ -454,6 +454,7 @@ describe("refusal flashes", () => {
       unitId: null,
       sourceId: null,
       zoneId: null,
+      projectileId: null,
       amount: 0,
       damageType: null,
     });

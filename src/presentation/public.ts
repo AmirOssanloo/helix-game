@@ -89,6 +89,12 @@ export {
   type QuadFactory,
 } from "./views/quad";
 export {
+  createProjectileViewPool,
+  ProjectileView,
+  type ProjectileViewPool,
+  syncProjectileViews,
+} from "./views/projectile.view";
+export {
   createStatusIconViewPool,
   StatusIconView,
   type StatusIconViewPool,

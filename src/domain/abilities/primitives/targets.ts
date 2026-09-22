@@ -109,8 +109,11 @@ const shapeCovers = (
   }
 };
 
-/** Whether anything may land on the unit at all: a corpse and a unit out of reach take nothing. */
-const isReachable = (unit: Readonly<Unit>): boolean =>
+/**
+ * Whether anything may land on the unit at all: a corpse and a unit out of reach take
+ * nothing. It is what keeps a lifted unit out of an area, and out of a projectile's way.
+ */
+export const isReachable = (unit: Readonly<Unit>): boolean =>
   unit.state !== "dead" && !unit.disables.untargetable;
 
 /**

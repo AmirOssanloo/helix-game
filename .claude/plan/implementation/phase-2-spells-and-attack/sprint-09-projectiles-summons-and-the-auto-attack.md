@@ -21,7 +21,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | Layer | domain, simulation, presentation, tests |
 | Size | 1 |
 | Depends on | P2-S08-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The projectile pool's shape finished: caster id, ability id, previous and current position, direction, speed in units per tick, radius, a homing target id or null, an on-hit effect list, a max range or lifetime, a tint. `projectileSystem` after movement: advance; a linear projectile sweeps the segment from previous to current against candidate discs from the hash's segment query and the first hit along the segment wins; a homing projectile skips the query, follows its target's current position, and tests only that disc; on hit run the on-hit effects with the hit unit as target and release; on max range or a target resolving to null, release. Events `projectile_spawned`, `projectile_hit`, `projectile_expired`. The `spawn_projectile` primitive. A `projectile.view.ts` at the projectiles band.
 
@@ -36,6 +36,10 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 - `tests/presentation/projectile-view.spec.ts`.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · Anything under `src/presentation`.
+
+> **Note, 2026-09-22:** five things came out differently and the ticket stands as edited here. The projectile holds the ability itself, whose id names it, and the three orb levels the cast snapshotted, exactly as the zone does, because its hit list runs through the same cast context and every table in it must be read at the levels the caster committed with. Its heading and speed are a facing and world units per tick; there is no lifetime beside the max range, since the max range is the only limit content writes and a field nothing ever sets is a branch nothing ever takes. A homing entry the cast aimed at no unit fires nothing rather than quietly becoming a line shot, which is a rule the ability pipeline page now states. An expiry for a dead target lands on the first tick after the death, because the projectile pass runs before the death pass so that a hit is counted on the tick it landed. And the segment sweep is `src/domain/movement/sweep.ts`, a pure disc-against-disc rule the spatial hash's candidates are tested with.
+>
+> Two things beside the build: the placeholder case in `tests/simulation/combat/death.spec.ts` that stood in for a projectile system was removed, since `tests/simulation/projectiles/stale-target.spec.ts` now owns what it asserted; and the panel gained a **Last projectile** readout, so the three new events are drained by something, per the definition of done's rule that an event nobody reads is removed. The developer-panel page lists it.
 
 ---
 
@@ -120,7 +124,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | --- | --- |
 | Auto-attack cadence matches the spec's numbers in tests | |
 | Dummy spawns from the registry-driven dropdown | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 1.0 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

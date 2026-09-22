@@ -37,6 +37,7 @@ export {
   startCooldown,
 } from "./abilities/cooldowns";
 export { hasMana, spendMana } from "./abilities/mana";
+export { projectileSystem } from "./abilities/projectiles/projectile.system";
 export { zoneSystem } from "./abilities/zones/zone.system";
 export { spellLevelOf } from "./abilities/spell-level";
 export type { Behaviour } from "./ai/behaviour";
@@ -246,6 +247,7 @@ export {
 } from "./entities/hero";
 export { Pool, type PoolView } from "./entities/pool";
 export {
+  acquireProjectile,
   createProjectilePool,
   type Projectile,
   PROJECTILE_CAPACITY,
@@ -299,6 +301,9 @@ export {
   type EventSink,
   type EventSlot,
   type OrbAddedEvent,
+  type ProjectileExpiredEvent,
+  type ProjectileHitEvent,
+  type ProjectileSpawnedEvent,
   resetDomainEvent,
   type SlotsChangedEvent,
   type SpellInvokedEvent,
@@ -397,6 +402,7 @@ export {
 } from "./movement/spatial-hash";
 export { resetMapScope } from "./map/map-scope";
 export { movementSpeed } from "./movement/speed-stack";
+export { NO_CONTACT, sweepDisc } from "./movement/sweep";
 export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";
 export {

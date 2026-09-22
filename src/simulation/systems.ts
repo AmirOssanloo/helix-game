@@ -7,6 +7,7 @@ import {
   kitSystem,
   movementSystem,
   pathingSystem,
+  projectileSystem,
   statsSystem,
   statusSystem,
   zoneSystem,
@@ -29,8 +30,9 @@ export type System = (world: World) => void;
  * it. Pathing follows, so an order consumed this tick has its path before movement reads
  * it. Movement follows, so an order consumed this tick turns or translates this tick.
  * Collision runs after movement, so every unit is pushed out of every other unit and every
- * obstacle where this tick's moves left it. Zones run after collision, so a zone's rules read
- * where the tick's pushes and walks left every unit, and a zone that travels moves before it
+ * obstacle where this tick's moves left it. Projectiles fly after collision, so a sweep reads
+ * where the tick's pushes and walks left every unit it could touch. Zones run after them, so
+ * a zone's rules read the same settled positions, and a zone that travels moves before it
  * touches anything. Death resolves last, once, so every hit the tick
  * landed is counted, a damage over time that emptied a unit is read on the tick it emptied
  * it, and a hero at zero dies where collision left it; the table it empties is read by the
@@ -45,6 +47,7 @@ export const systems: readonly System[] = [
   pathingSystem,
   movementSystem,
   collisionSystem,
+  projectileSystem,
   zoneSystem,
   deathSystem,
 ];

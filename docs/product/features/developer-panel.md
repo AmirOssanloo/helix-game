@@ -70,6 +70,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last damage | What the last hit landed after mitigation, and its damage type |
 | Last status | The last status to land or end, and the unit it was on |
 | Last zone | The last zone to go down or expire |
+| Last projectile | The last projectile to land, and whom it landed on, or to expire |
 | Deaths | How many units have died since the page was loaded |
 
 ## Overlays

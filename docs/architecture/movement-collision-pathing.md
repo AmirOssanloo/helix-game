@@ -112,6 +112,8 @@ A path is a fixed-capacity buffer on the unit, not an allocated array. A path lo
 
 A projectile moves fast enough that testing where it ends up would skip over a unit. Each tick the projectile system sweeps the segment from the projectile's previous position to its current one against the discs the spatial hash returns for that segment, and the first hit along it wins. A homing projectile skips the query and tests only its target's disc, following the target's current position each tick.
 
+A hit stops the projectile where it touched, so its hit list runs from the point of contact, and releases it. A projectile that touches nothing is released when it has flown its maximum range; a homing one is released the moment its target dies, is put out of reach, or has its pool slot reused, so it never lands on whatever took the slot. The system runs after collision, so a sweep reads where the tick's pushes and walks left every unit, and before death resolves, so a hit it landed is counted on the tick it landed it.
+
 ---
 
 ## Anti-patterns
@@ -157,6 +159,8 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | A path | A fixed-capacity buffer on the unit; one longer than the buffer is walked to its last waypoint and planned again from there |
 | Projectiles | Sweep the segment from previous to current position; first hit wins |
 | Homing projectiles | Test only the target's disc, at the target's current position |
+| A projectile that hits | Stops at the point of contact, runs its hit list there, and is released |
+| A projectile that touches nothing | Released when it has flown its maximum range, or, homing, the moment its target is gone or out of reach |
 
 ---
 

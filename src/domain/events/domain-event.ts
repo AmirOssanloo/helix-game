@@ -25,6 +25,8 @@ type EventFields = {
   sourceId: EntityId | null;
   /** The zone the event is about. */
   zoneId: EntityId | null;
+  /** The projectile the event is about. */
+  projectileId: EntityId | null;
   /** Health, after mitigation. */
   amount: number;
   damageType: DamageType | null;
@@ -46,7 +48,10 @@ export type DomainEvent =
   | StatusAppliedEvent
   | StatusExpiredEvent
   | ZoneSpawnedEvent
-  | ZoneExpiredEvent;
+  | ZoneExpiredEvent
+  | ProjectileSpawnedEvent
+  | ProjectileHitEvent
+  | ProjectileExpiredEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -84,6 +89,19 @@ export type ZoneSpawnedEvent = EventFields & { kind: "zone_spawned" };
 /** `zoneId`'s lifetime ran out and its slot was released. Nothing it put on a unit ends with it. */
 export type ZoneExpiredEvent = EventFields & { kind: "zone_expired" };
 
+/** `projectileId` is in flight: it was fired this tick and is drawn from now until it lands or expires. */
+export type ProjectileSpawnedEvent = EventFields & {
+  kind: "projectile_spawned";
+};
+
+/** `projectileId` touched `unitId` and was released; `sourceId` is the unit that fired it. Its hit list runs after this, so what it did is announced behind it. */
+export type ProjectileHitEvent = EventFields & { kind: "projectile_hit" };
+
+/** `projectileId` was released without touching anything: it ran out of range, or the unit it homed on is gone. */
+export type ProjectileExpiredEvent = EventFields & {
+  kind: "projectile_expired";
+};
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -104,6 +122,7 @@ export const createDomainEvent = (): EventSlot => ({
   unitId: null,
   sourceId: null,
   zoneId: null,
+  projectileId: null,
   amount: 0,
   damageType: null,
 });
@@ -123,6 +142,7 @@ export const copyDomainEvent = (
   target.unitId = source.unitId;
   target.sourceId = source.sourceId;
   target.zoneId = source.zoneId;
+  target.projectileId = source.projectileId;
   target.amount = source.amount;
   target.damageType = source.damageType;
 };
@@ -139,6 +159,7 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.unitId = null;
   event.sourceId = null;
   event.zoneId = null;
+  event.projectileId = null;
   event.amount = 0;
   event.damageType = null;
 };

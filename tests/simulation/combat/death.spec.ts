@@ -155,25 +155,6 @@ describe("death", () => {
     ).toBe(tuningTable.sim_hz * 2);
   });
 
-  it("leaves a projectile that was flying at the unit nothing to resolve", () => {
-    const { world, id } = arrange();
-    const projectile = world.state.map.projectiles.at(
-      world.state.map.projectiles.acquireIndex(),
-    );
-
-    if (projectile === null) {
-      throw new Error("The projectile pool has room for one");
-    }
-
-    projectile.targetId = id;
-    applyDamage(world.state, id, LETHAL, "pure", null);
-    world.tick();
-    tickUntil(world, () => world.state.map.units.resolve(id) === null, 200);
-
-    expect(projectile.targetId).toBe(id);
-    expect(world.state.map.units.resolve(projectile.targetId)).toBeNull();
-  });
-
   it("takes nothing from a corpse, and announces nothing for it", () => {
     const { world, unit, id, reader } = arrange();
 

@@ -16,7 +16,7 @@ const DASH = "-";
 const MS_DECIMALS = 2;
 const FPS_DECIMALS = 0;
 
-/** What the refusal line shows until a command is refused, the damage line until a hit lands, and the status line until one does. */
+/** What the refusal line shows until a command is refused, the damage line until a hit lands, and the status, zone, and projectile lines until one of theirs happens. */
 const NOTHING_YET = "none";
 
 /** Decimals a damage amount is shown to: mitigation leaves fractions, and the tenth is enough to read one. */
@@ -40,7 +40,8 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
  * for the timings and as the latest sample for the counts, plus the tick number from the view
  * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
- * zone to go down or expire, and how many units have died. The ring stores samples;
+ * zone to go down or expire, the last projectile to land or expire, and how many units have
+ * died. The ring stores samples;
  * the statistics are computed here, on each refresh, and nowhere in the simulation. Draw
  * calls show a dash while nothing has counted them.
  */
@@ -62,6 +63,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
   const damage = readoutRow("Last damage");
   const status = readoutRow("Last status");
   const zone = readoutRow("Last zone");
+  const projectile = readoutRow("Last projectile");
   const deaths = readoutRow("Deaths");
   const table = element("table", "dev-readouts", [
     tickTime.row,
@@ -80,12 +82,14 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
     damage.row,
     status.row,
     zone.row,
+    projectile.row,
     deaths.row,
   ]);
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
   let lastStatus = NOTHING_YET;
   let lastZone = NOTHING_YET;
+  let lastProjectile = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -114,6 +118,14 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
 
       if (event.kind === "zone_expired") {
         lastZone = `${String(event.zoneId)} gone`;
+      }
+
+      if (event.kind === "projectile_hit") {
+        lastProjectile = `${String(event.projectileId)} hit ${String(event.unitId)}`;
+      }
+
+      if (event.kind === "projectile_expired") {
+        lastProjectile = `${String(event.projectileId)} gone`;
       }
 
       if (event.kind === "unit_died") {
@@ -158,6 +170,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
       damage.value.textContent = lastDamage;
       status.value.textContent = lastStatus;
       zone.value.textContent = lastZone;
+      projectile.value.textContent = lastProjectile;
       deaths.value.textContent = String(deathCount);
     },
   };

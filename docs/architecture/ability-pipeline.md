@@ -53,7 +53,7 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 | --- | --- |
 | Damage area | Applies damage of a type to units in a shape around a point |
 | Apply status | Adds a status to a unit or to units in a shape |
-| Spawn projectile | Acquires a projectile that homes on a unit or travels a direction |
+| Spawn projectile | Acquires a projectile that homes on a unit or travels a direction, with the list it runs on what it touches. A homing entry the cast aimed at no unit fires nothing |
 | Spawn zone | Acquires a zone with a shape, a delay before it bites, a lifetime, and the two lists it runs: once when the delay ends, and every tick after that |
 | Spawn unit | Acquires a summon owned by the caster, with a lifetime |
 | Displace | Moves a unit — a push, or a lift that suspends its order — and puts a status on it for the same ticks |
@@ -143,6 +143,7 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, the target unit or none, the zone or none |
 | Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status hook's list; the effect cannot tell which |
 | Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
+| A homing entry with no target | Fires nothing; it never falls back to flying the facing |
 | Whom an entry touches | The cast's target, the zone running the list, or a shape at the anchor; a shape and a zone collect hostile units only, never a corpse and never an untargetable one; collected in full before the first effect lands |
 | Displacement | The primitive applies the status it names for the duration and hands the movement over to the movement step, so a push stops at a wall and a lift's status carries the suspended order |
 | Bespoke behaviour | A named effect: one function in `domain/abilities/effects/`, referenced by key; no scripting layer |
