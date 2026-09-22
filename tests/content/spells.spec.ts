@@ -1,7 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { contentRegistry, heroDef, skeinDef, spells } from "@content/public";
-import type { OrbId } from "@domain/public";
-import { ID_SHAPE, ORB_IDS, validateRegistry } from "@domain/public";
+import {
+  contentRegistry,
+  heroDef,
+  skeinDef,
+  spells,
+  tuningTable,
+} from "@content/public";
+import type {
+  LevelTable,
+  OrbId,
+  SpellDef,
+  TargetingKind,
+} from "@domain/public";
+import {
+  createSpellTable,
+  createTuningState,
+  entryAtLevel,
+  ID_SHAPE,
+  ORB_IDS,
+  validateRegistry,
+} from "@domain/public";
 
 const SPELL_COUNT = 10;
 
@@ -44,6 +62,73 @@ const isNonDecreasing = (values: readonly number[]): boolean =>
 
     return previous === undefined || value >= previous;
   });
+
+/**
+ * The preview each targeting kind draws with: a no-target spell commits on the key and shows
+ * nothing, a unit spell puts a reticle on whoever is under the pointer, a point spell puts a
+ * circle there, and a direction spell lays the ground it would cover on the hero, which is a
+ * rectangle or a cone.
+ */
+const PREVIEW_KINDS: Readonly<Record<TargetingKind, readonly string[]>> = {
+  none: ["none"],
+  unit: ["unit"],
+  point: ["circle"],
+  direction: ["rectangle", "cone"],
+};
+
+/** Whether the value is a level table: the one shape a scalar takes when it is not a number. */
+const isLevelTable = (value: unknown): value is LevelTable =>
+  value !== null &&
+  typeof value === "object" &&
+  "orb" in value &&
+  "byLevel" in value;
+
+/**
+ * Every level table anywhere inside a definition, at the path it sits at: the preview's
+ * length and offset, and every table an effect, a zone's lists, or a named effect's fields
+ * carry, however deep. One walk, so a table added anywhere is checked without a new test.
+ */
+const tablesOf = (
+  value: unknown,
+  at: string,
+): (readonly [string, LevelTable])[] => {
+  if (isLevelTable(value)) {
+    return [[at, value]];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((entry, index) => tablesOf(entry, `${at}[${index}]`));
+  }
+
+  if (value !== null && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, entry]) =>
+      tablesOf(entry, `${at}.${key}`),
+    );
+  }
+
+  return [];
+};
+
+/** Every spell as run scope holds it, with its seconds converted to ticks under the real tuning table. */
+const records = createSpellTable(spells, createTuningState(tuningTable));
+
+/** The levels a spell is cast at, one to the orb cap. */
+const everyLevel: readonly number[] = Array.from(
+  { length: heroDef.maxOrbLevel },
+  (_, index) => index + 1,
+);
+
+const recordOf = (spell: SpellDef) => {
+  const record = records.get(spell.id);
+
+  if (record === undefined) {
+    throw new Error(
+      `The spell table holds every spell; ${spell.id} is missing`,
+    );
+  }
+
+  return record;
+};
 
 const faultsOf = (id: string) =>
   validateRegistry(contentRegistry).filter((fault) =>
@@ -119,20 +204,39 @@ describe("every spell", () => {
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s previews nothing when it has no target, and something otherwise",
+    "%s holds one entry per orb level in every table it carries, wherever it sits",
     (_id, spell) => {
-      if (spell.targeting === "none") {
-        expect(spell.preview.kind).toBe("none");
-      } else {
-        expect(spell.preview.kind).not.toBe("none");
-      }
+      const wrong = tablesOf(spell, spell.id)
+        .filter(([, table]) => table.byLevel.length !== heroDef.maxOrbLevel)
+        .map(([at]) => at);
+
+      expect(wrong).toEqual([]);
+    },
+  );
+
+  it.each(
+    spells.flatMap((spell) =>
+      everyLevel.map((level) => [spell.id, spell, level] as const),
+    ),
+  )(
+    "%s casts at orb level %i: a cast point and a cooldown of whole ticks, and a cost it can pay",
+    (_id, spell, level) => {
+      const record = recordOf(spell);
+
+      expect(record.castPointTicks).toBeGreaterThan(0);
+      expect(Number.isInteger(record.castPointTicks)).toBe(true);
+      expect(entryAtLevel(record.cooldownTicks, level)).toBeGreaterThan(0);
+      expect(Number.isInteger(entryAtLevel(record.cooldownTicks, level))).toBe(
+        true,
+      );
+      expect(entryAtLevel(spell.manaCost, level)).toBeGreaterThanOrEqual(0);
     },
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has no effects until they exist",
+    "%s previews the shape its targeting kind aims with",
     (_id, spell) => {
-      expect(spell.effects).toEqual([]);
+      expect(PREVIEW_KINDS[spell.targeting]).toContain(spell.preview.kind);
     },
   );
 });

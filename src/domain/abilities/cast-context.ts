@@ -100,6 +100,29 @@ export const fillCast = (
 };
 
 /**
+ * Writes one damage hook's context into `out` and returns it: the caster is whoever applied
+ * the status, or its holder when nobody did, so the hook's damage is credited where the
+ * status came from and a shape in its list collects what is hostile to that caster; the
+ * anchor and the facing are the holder's, since the hook fires where its holder stands; and
+ * the target is the unit the damage landed on, which is the holder for a damage-taken hook
+ * and the unit on the other side for a damage-dealt one. The levels are the row's snapshot,
+ * so every table the list reads is read at the levels the status was applied with.
+ *
+ * The ability is the one the record already holds, since no ability stands behind a hook:
+ * whoever keeps the record keeps it as scratch for hooks alone.
+ */
+export const fillHookCast = (
+  out: CastRecord,
+  casterId: EntityId,
+  orbLevels: readonly number[],
+  x: number,
+  y: number,
+  facing: number,
+  damagedId: EntityId,
+): Cast =>
+  fillCast(out, casterId, out.ability, orbLevels, x, y, facing, damagedId);
+
+/**
  * Writes one zone's context into `out` and returns it: the caster, the ability, and the orb
  * levels the zone kept from the commit that spawned it, anchored on the zone and turned to
  * its facing, aimed at no unit. It is what a zone's activation and each-tick lists run with,

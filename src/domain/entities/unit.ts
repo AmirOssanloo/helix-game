@@ -35,7 +35,9 @@ export type Resources = {
 /**
  * One row of a unit's status table. A `null` definition id is an empty row. `orbLevels` is the
  * applier's three orb levels as they stood when the status landed, in orb order, which is what
- * every table on the definition is read at for as long as the row lasts.
+ * every table on the definition is read at for as long as the row lasts. The two ready ticks
+ * are the internal cooldowns of the definition's damage hooks: the tick each side may fire on
+ * again, kept on the row so the state replays and a refresh does not hand the hook back early.
  */
 export type StatusEntry = {
   definitionId: string | null;
@@ -43,6 +45,8 @@ export type StatusEntry = {
   stacks: number;
   sourceId: EntityId | null;
   orbLevels: number[];
+  damageTakenReadyAtTick: Tick;
+  damageDealtReadyAtTick: Tick;
 };
 
 /**
@@ -207,6 +211,8 @@ const createStatusEntry = (): StatusEntry => ({
   stacks: 0,
   sourceId: null,
   orbLevels: ORB_IDS.map(() => 0),
+  damageTakenReadyAtTick: 0,
+  damageDealtReadyAtTick: 0,
 });
 
 /** Puts the row back to empty. The level snapshot keeps its last values; the definition id says whether the row is live. */
@@ -215,6 +221,8 @@ export const clearStatusEntry = (entry: StatusEntry): void => {
   entry.endsAtTick = 0;
   entry.stacks = 0;
   entry.sourceId = null;
+  entry.damageTakenReadyAtTick = 0;
+  entry.damageDealtReadyAtTick = 0;
 };
 
 const createModifierEntry = (): ModifierEntry => ({

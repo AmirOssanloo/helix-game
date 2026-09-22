@@ -3,15 +3,16 @@ import type { EnemyDef } from "@domain/public";
 /**
  * The training dummy: it stands where it is put, never moves, never attacks, and never dies.
  * Damage leaves it at one health and the number still shows the whole hit, so every spell and
- * every attack can be read off it. Every field it does not use holds its neutral value, which
- * for a body that never acts is most of them. Every number is a starting value design retunes
- * here.
+ * every attack can be read off it. It carries a mana pool deep enough for a burn at any orb
+ * level to take its whole table off it, and regenerates neither pool, so what a spell took is
+ * still readable afterwards. Every field it does not use holds its neutral value, which for a
+ * body that never acts is most of them. Every number is a starting value design retunes here.
  */
 export const trainingDummyDef = {
   id: "training_dummy",
   health: 1000, // tunable
   healthRegen: 0,
-  mana: 0,
+  mana: 1000, // tunable
   manaRegen: 0,
   armour: 0,
   magicResistance: 0,

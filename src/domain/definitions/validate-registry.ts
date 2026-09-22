@@ -149,120 +149,170 @@ const checkFrame = (
 };
 
 /**
- * Checks one effect and everything inside it: a named key resolves and its fields pass the
- * effect's own schema, every status and summon id exists, every frame is in the list, and
- * a per-second damage rate appears only in a zone's each-tick list.
+ * Checks one effect and everything inside it: a named key resolves, its fields pass the
+ * effect's own schema, and every effect entry those fields carry is checked as an entry of
+ * its own; every status and summon id exists; every frame is in the list; and a per-second
+ * damage rate appears only in a zone's each-tick list.
  */
+const checkEffect = (
+  faults: RegistryFault[],
+  file: string,
+  at: string,
+  effect: EffectDef,
+  spaces: IdSpaces,
+  effectSchema: Schema<EffectDef>,
+  eachTick: boolean,
+): void => {
+  switch (effect.kind) {
+    case "damage_area":
+      if (effect.rate === "per_second" && !eachTick) {
+        faults.push({
+          file,
+          path: `${at}.rate`,
+          message: "a per-second rate is legal only in a zone's each-tick list",
+        });
+      }
+
+      break;
+
+    case "apply_status":
+      checkReference(
+        faults,
+        file,
+        `${at}.statusId`,
+        effect.statusId,
+        spaces.statuses,
+      );
+
+      break;
+
+    case "spawn_projectile":
+      checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
+      checkEffects(
+        faults,
+        file,
+        `${at}.onHit`,
+        effect.onHit,
+        spaces,
+        effectSchema,
+        false,
+      );
+
+      break;
+
+    case "spawn_zone":
+      checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
+      checkEffects(
+        faults,
+        file,
+        `${at}.onActivate`,
+        effect.onActivate,
+        spaces,
+        effectSchema,
+        false,
+      );
+      checkEffects(
+        faults,
+        file,
+        `${at}.eachTick`,
+        effect.eachTick,
+        spaces,
+        effectSchema,
+        true,
+      );
+
+      break;
+
+    case "spawn_unit":
+      checkReference(
+        faults,
+        file,
+        `${at}.summonId`,
+        effect.summonId,
+        spaces.summons,
+      );
+
+      break;
+
+    case "displace":
+      checkReference(
+        faults,
+        file,
+        `${at}.statusId`,
+        effect.statusId,
+        spaces.statuses,
+      );
+
+      break;
+
+    case "named": {
+      const entry = resolveNamedEffect(effect.key);
+
+      if (entry === null) {
+        faults.push({
+          file,
+          path: `${at}.key`,
+          message: `"${effect.key}" resolves to no named effect`,
+        });
+
+        break;
+      }
+
+      const found: SchemaFault[] = [];
+
+      if (!entry.fields(effect.fields, `${at}.fields`, found)) {
+        report(faults, file, found);
+
+        break;
+      }
+
+      for (const nested of entry.nested(effect.fields)) {
+        const inner: SchemaFault[] = [];
+        const where = `${at}.fields.${nested.path}`;
+
+        if (effectSchema(nested.entry, where, inner)) {
+          checkEffect(
+            faults,
+            file,
+            where,
+            nested.entry,
+            spaces,
+            effectSchema,
+            false,
+          );
+        } else {
+          report(faults, file, inner);
+        }
+      }
+
+      break;
+    }
+  }
+};
+
+/** Every effect of a list, each under its own index in `path`. */
 const checkEffects = (
   faults: RegistryFault[],
   file: string,
   path: string,
   effects: readonly EffectDef[],
   spaces: IdSpaces,
+  effectSchema: Schema<EffectDef>,
   eachTick: boolean,
 ): void => {
   for (let index = 0; index < effects.length; index += 1) {
     const effect = effects[index];
-    const at = `${path}[${String(index)}]`;
 
-    if (effect === undefined) {
-      continue;
-    }
-
-    switch (effect.kind) {
-      case "damage_area":
-        if (effect.rate === "per_second" && !eachTick) {
-          faults.push({
-            file,
-            path: `${at}.rate`,
-            message:
-              "a per-second rate is legal only in a zone's each-tick list",
-          });
-        }
-
-        break;
-
-      case "apply_status":
-        checkReference(
-          faults,
-          file,
-          `${at}.statusId`,
-          effect.statusId,
-          spaces.statuses,
-        );
-
-        break;
-
-      case "spawn_projectile":
-        checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
-        checkEffects(faults, file, `${at}.onHit`, effect.onHit, spaces, false);
-
-        break;
-
-      case "spawn_zone":
-        checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
-        checkEffects(
-          faults,
-          file,
-          `${at}.onActivate`,
-          effect.onActivate,
-          spaces,
-          false,
-        );
-        checkEffects(
-          faults,
-          file,
-          `${at}.eachTick`,
-          effect.eachTick,
-          spaces,
-          true,
-        );
-
-        break;
-
-      case "spawn_unit":
-        checkReference(
-          faults,
-          file,
-          `${at}.summonId`,
-          effect.summonId,
-          spaces.summons,
-        );
-
-        break;
-
-      case "displace":
-        checkReference(
-          faults,
-          file,
-          `${at}.statusId`,
-          effect.statusId,
-          spaces.statuses,
-        );
-
-        break;
-
-      case "named": {
-        const entry = resolveNamedEffect(effect.key);
-
-        if (entry === null) {
-          faults.push({
-            file,
-            path: `${at}.key`,
-            message: `"${effect.key}" resolves to no named effect`,
-          });
-
-          break;
-        }
-
-        const found: SchemaFault[] = [];
-
-        if (!entry.fields(effect.fields, `${at}.fields`, found)) {
-          report(faults, file, found);
-        }
-
-        break;
-      }
+    if (effect !== undefined) {
+      checkEffect(
+        faults,
+        file,
+        `${path}[${String(index)}]`,
+        effect,
+        spaces,
+        effectSchema,
+        eachTick,
+      );
     }
   }
 };
@@ -272,6 +322,7 @@ const checkAbility = (
   file: string,
   def: AbilityDef,
   spaces: IdSpaces,
+  effectSchema: Schema<EffectDef>,
 ): void => {
   checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
 
@@ -285,7 +336,15 @@ const checkAbility = (
     );
   }
 
-  checkEffects(faults, file, "effects", def.effects, spaces, false);
+  checkEffects(
+    faults,
+    file,
+    "effects",
+    def.effects,
+    spaces,
+    effectSchema,
+    false,
+  );
 };
 
 const checkStatus = (
@@ -293,6 +352,7 @@ const checkStatus = (
   file: string,
   def: StatusDef,
   spaces: IdSpaces,
+  effectSchema: Schema<EffectDef>,
 ): void => {
   checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
 
@@ -303,6 +363,7 @@ const checkStatus = (
       "onDamageTaken.effects",
       def.onDamageTaken.effects,
       spaces,
+      effectSchema,
       false,
     );
   }
@@ -314,11 +375,20 @@ const checkStatus = (
       "onDamageDealt.effects",
       def.onDamageDealt.effects,
       spaces,
+      effectSchema,
       false,
     );
   }
 
-  checkEffects(faults, file, "onExpiry", def.onExpiry, spaces, false);
+  checkEffects(
+    faults,
+    file,
+    "onExpiry",
+    def.onExpiry,
+    spaces,
+    effectSchema,
+    false,
+  );
 };
 
 const checkUnitDef = (
@@ -488,15 +558,15 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
   }
 
   for (const { file, def } of spells) {
-    checkAbility(faults, file, def, spaces);
+    checkAbility(faults, file, def, spaces, schemas.effect);
   }
 
   for (const { file, def } of abilities) {
-    checkAbility(faults, file, def, spaces);
+    checkAbility(faults, file, def, spaces, schemas.effect);
   }
 
   for (const { file, def } of statuses) {
-    checkStatus(faults, file, def, spaces);
+    checkStatus(faults, file, def, spaces, schemas.effect);
   }
 
   for (const { file, def } of enemies) {

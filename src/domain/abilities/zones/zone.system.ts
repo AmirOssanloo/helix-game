@@ -43,8 +43,18 @@ const carry = (world: World, zone: Zone): void => {
   }
 };
 
-/** Runs the lists the tick calls for with the zone as their context, or nothing when no ability stands behind it. */
-const runRules = (world: World, zone: Zone, zoneId: EntityId): void => {
+/**
+ * Runs the lists the tick calls for with the zone as their context, or nothing when no
+ * ability stands behind it. The activation list runs on the tick the delay ends, whatever
+ * the lifetime; the each-tick list runs only while the zone is still alive, so a lifetime of
+ * nothing buys no tick of it.
+ */
+const runRules = (
+  world: World,
+  zone: Zone,
+  zoneId: EntityId,
+  isAlive: boolean,
+): void => {
   const ability = zone.ability;
   const casterId = zone.casterId;
 
@@ -67,14 +77,19 @@ const runRules = (world: World, zone: Zone, zoneId: EntityId): void => {
     runEffects(world, cast, zone.onActivate);
   }
 
-  runEffects(world, cast, zone.eachTick);
+  if (isAlive) {
+    runEffects(world, cast, zone.eachTick);
+  }
 };
 
 /**
- * Keeps every zone on the ground true to its own clock, after the tick's moves: a zone whose
- * expiry tick has come is announced and released without running anything, so a lifetime ends
- * exactly on its tick; every other one is carried to where it stands this tick and runs the
- * lists its clock calls for. A zone still inside its delay is drawn and touches nothing.
+ * Keeps every zone on the ground true to its own clock, after the tick's moves: a zone still
+ * alive is carried to where it stands this tick and runs the lists its clock calls for, and a
+ * zone whose expiry tick has come is announced and released, so a lifetime ends exactly on its
+ * tick. The one thing an expiry does not cut short is the activation the delay has just
+ * earned: a zone whose lifetime is nothing activates and is gone on the same tick, which is
+ * how a strike lands once on ground it claimed and leaves nothing behind. A zone still inside
+ * its delay is drawn and touches nothing.
  *
  * It runs after collision, so a list reads the positions the tick's pushes and walks left,
  * and before death resolves, so damage a zone dealt is counted on the tick it dealt it.
@@ -90,14 +105,16 @@ export const zoneSystem = (world: World): void => {
       continue;
     }
 
-    if (world.tick >= zone.expiresAtTick) {
-      announceExpired(world, zoneId);
-      zones.release(zoneId);
+    const isAlive = world.tick < zone.expiresAtTick;
 
-      continue;
+    if (isAlive || world.tick === zone.activeAtTick) {
+      carry(world, zone);
+      runRules(world, zone, zoneId, isAlive);
     }
 
-    carry(world, zone);
-    runRules(world, zone, zoneId);
+    if (!isAlive) {
+      announceExpired(world, zoneId);
+      zones.release(zoneId);
+    }
   }
 };

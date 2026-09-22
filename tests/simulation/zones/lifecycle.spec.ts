@@ -47,6 +47,25 @@ const zoneEntry = (
   tint: 0xffffff,
 });
 
+/**
+ * A zone that strikes once when its delay ends and lives no longer: what a ground strike is.
+ * Its each-tick list damages too, so a spec reads whether a lifetime of nothing bought a tick
+ * of it.
+ */
+const strikeEntry = (delaySeconds: number): SpawnZoneEffectDef => ({
+  ...zoneEntry(delaySeconds, 0),
+  onActivate: [
+    {
+      kind: "damage_area",
+      target: { kind: "zone" },
+      damageType: "pure",
+      amount: { orb: "quartz", byLevel: [HIT] },
+      rate: "once",
+      split: false,
+    },
+  ],
+});
+
 type Arranged = { world: Simulation; enemy: Unit; simHz: number };
 
 /** The hero at the origin with one enemy beside it, both inside any zone a case spawns there. */
@@ -126,6 +145,30 @@ describe("a zone's lifecycle", () => {
     }
 
     expect(kinds).toEqual(["zone_spawned", "zone_expired"]);
+  });
+
+  it("strikes and is gone on the same tick when its lifetime is nothing", () => {
+    const { world, enemy, simHz } = arrange();
+
+    spawn(world, strikeEntry(DELAY_SECONDS));
+    tickTimes(world, DELAY_SECONDS * simHz);
+
+    expect(world.view.map.zones.count).toBe(1);
+    expect(enemy.resources.health).toBe(ENEMY_HEALTH);
+
+    world.tick();
+
+    expect(world.view.map.zones.count).toBe(0);
+    expect(enemy.resources.health).toBe(ENEMY_HEALTH - HIT);
+  });
+
+  it("buys no tick of its each-tick list with a lifetime of nothing", () => {
+    const { world, enemy, simHz } = arrange();
+
+    spawn(world, strikeEntry(DELAY_SECONDS));
+    tickTimes(world, DELAY_SECONDS * simHz + LIFETIME_SECONDS * simHz);
+
+    expect(enemy.resources.health).toBe(ENEMY_HEALTH - HIT);
   });
 
   it("fills the pool and refuses the zone past its capacity, counting the miss", () => {

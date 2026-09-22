@@ -1,5 +1,7 @@
+import type { PreviewDef } from "@domain/public";
+import { scalarAtOrbLevels } from "@domain/public";
+import type { DeepReadonly, Vec2 } from "@shared/public";
 import { bearing } from "@shared/public";
-import type { Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "../views/depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "../views/quad";
@@ -8,16 +10,20 @@ import type { TargetingCursor } from "./targeting-cursor";
 
 const RING_FRAME = "ring_thin";
 
-/** Placeholder art: white, red when the pointer is past the spell's range. */
-const IN_RANGE_TINT = 0xffffff;
+/** What the cursor wears where the click would be refused; in range it wears the spell's own colour. */
 const OUT_OF_RANGE_TINT = 0xff3030;
+
 const RING_ALPHA = 0.5;
 const SHAPE_ALPHA = 0.4;
 
-/** How wide the spell's shape is drawn under the pointer, in world units, until a definition carries a size. */
-export const PREVIEW_SIZE = 120;
+/** How wide a unit reticle is drawn, in world units: wider than a unit's hull, so the ring reads as around whoever is under the pointer. */
+export const RETICLE_SIZE = 120;
 
+/** A radius drawn as a diameter, and a cone's length drawn as a radius from the apex at its frame's centre. */
 const DIAMETERS_PER_RADIUS = 2;
+
+/** The levels a caster that levels no orb reads a table at. */
+const NO_ORB_LEVELS: readonly number[] = [];
 
 /** Scratch for the hero's drawn position and the pointer, for the bearing of a direction spell. */
 const from: Vec2 = { x: 0, y: 0 };
@@ -25,11 +31,14 @@ const to: Vec2 = { x: 0, y: 0 };
 
 /**
  * The open targeting cursor, drawn in the play scene's world coordinates: a ring at the
- * spell's range around the hero where it is drawn this frame, and the spell's shape under
- * the pointer, both from the atlas. A point or a unit spell puts the shape at the pointer
- * and turns both red once the pointer is past the range; a direction spell turns the shape
- * on the hero toward the pointer and is never out of range. Nothing shows while the cursor
- * is closed. Two quads, made once; the shape's frame changes only when the spell does.
+ * spell's range around the hero where it is drawn this frame, and the spell's preview shape,
+ * both from the atlas, both in the spell's own colour until the pointer is past the range,
+ * when they turn red. The definition says which shape: a reticle or a circle sits under the
+ * pointer, and a rectangle or a cone is placed on the hero and turned toward it, so a
+ * direction spell shows the ground it would cover and is never out of range. A rectangle's
+ * length and offset may be tables, read at the hero's orb levels as the cast would read them.
+ * Nothing shows while the cursor is closed, or for a spell that previews nothing. Two quads,
+ * made once; the shape's frame changes only when the spell does.
  */
 export class TargetingPreview {
   private readonly ring: Quad;
@@ -81,42 +90,107 @@ export class TargetingPreview {
       return;
     }
 
+    const def = record.def;
+    const form = world.run.forms[hero.activeFormIndex];
+
     from.x = interpolate(hero.prev.x, hero.curr.x, alpha);
     from.y = interpolate(hero.prev.y, hero.curr.y, alpha);
     to.x = pointerX;
     to.y = pointerY;
 
-    const range = record.def.range;
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const outOfRange =
-      cursor.targeting !== "direction" && dx * dx + dy * dy > range * range;
-    const tint = outOfRange ? OUT_OF_RANGE_TINT : IN_RANGE_TINT;
+      cursor.targeting !== "direction" &&
+      dx * dx + dy * dy > def.range * def.range;
+    const tint = outOfRange ? OUT_OF_RANGE_TINT : def.tint;
 
     this.ring.x = from.x;
     this.ring.y = from.y;
     this.ring.rotation = 0;
-    this.ring.scale = range * DIAMETERS_PER_RADIUS * this.ringScalePerUnit;
+    this.ring.scale = def.range * DIAMETERS_PER_RADIUS * this.ringScalePerUnit;
     this.ring.tint = tint;
-    this.ring.visible = range > 0;
+    this.ring.visible = def.range > 0;
 
-    if (record.def.atlasFrame !== this.shapeFrame) {
-      this.shapeFrame = record.def.atlasFrame;
-      this.shapeScalePerUnit = 1 / this.frameSizes(record.def.atlasFrame);
-      this.shape.setFrame(record.def.atlasFrame);
+    this.syncShape(
+      def.preview,
+      form === undefined ? NO_ORB_LEVELS : form.kit.orbLevels,
+      tint,
+    );
+  }
+
+  /** Lays the shape quad over what the definition previews, in the tint the range decided. */
+  private syncShape(
+    preview: DeepReadonly<PreviewDef>,
+    orbLevels: readonly number[],
+    tint: number,
+  ): void {
+    if (preview.kind === "none") {
+      this.shape.visible = false;
+
+      return;
     }
 
-    if (cursor.targeting === "direction") {
-      this.shape.x = from.x;
-      this.shape.y = from.y;
-      this.shape.rotation = bearing(from, to);
-    } else {
-      this.shape.x = to.x;
-      this.shape.y = to.y;
-      this.shape.rotation = 0;
+    if (preview.atlasFrame !== this.shapeFrame) {
+      this.shapeFrame = preview.atlasFrame;
+      this.shapeScalePerUnit = 1 / this.frameSizes(preview.atlasFrame);
+      this.shape.setFrame(preview.atlasFrame);
     }
 
-    this.shape.scale = PREVIEW_SIZE * this.shapeScalePerUnit;
+    const perUnit = this.shapeScalePerUnit;
+
+    switch (preview.kind) {
+      case "unit": {
+        const size = RETICLE_SIZE * perUnit;
+
+        this.shape.x = to.x;
+        this.shape.y = to.y;
+        this.shape.rotation = 0;
+        this.shape.scaleX = size;
+        this.shape.scaleY = size;
+
+        break;
+      }
+
+      case "circle": {
+        const size = preview.radius * DIAMETERS_PER_RADIUS * perUnit;
+
+        this.shape.x = to.x;
+        this.shape.y = to.y;
+        this.shape.rotation = 0;
+        this.shape.scaleX = size;
+        this.shape.scaleY = size;
+
+        break;
+      }
+
+      case "rectangle": {
+        const facing = bearing(from, to);
+        const offset = scalarAtOrbLevels(preview.offset, orbLevels);
+
+        this.shape.x = from.x + Math.cos(facing) * offset;
+        this.shape.y = from.y + Math.sin(facing) * offset;
+        this.shape.rotation = facing;
+        this.shape.scaleX =
+          scalarAtOrbLevels(preview.length, orbLevels) * perUnit;
+        this.shape.scaleY = preview.width * perUnit;
+
+        break;
+      }
+
+      case "cone": {
+        const size = preview.length * DIAMETERS_PER_RADIUS * perUnit;
+
+        this.shape.x = from.x;
+        this.shape.y = from.y;
+        this.shape.rotation = bearing(from, to);
+        this.shape.scaleX = size;
+        this.shape.scaleY = size;
+
+        break;
+      }
+    }
+
     this.shape.tint = tint;
     this.shape.visible = true;
   }

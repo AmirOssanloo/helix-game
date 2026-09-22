@@ -169,6 +169,10 @@ const atlasShapeSchema: Schema<AtlasShape> = taggedUnion<"kind", AtlasShape>(
       thickness: nonNegativeSchema,
     }),
     triangle: objectOf({ kind: oneOf(["triangle"]) }),
+    cone: objectOf({
+      kind: oneOf(["cone"]),
+      angleDegrees: nonNegativeSchema,
+    }),
     pixel: objectOf({ kind: oneOf(["pixel"]) }),
     wedge: objectOf({
       kind: oneOf(["wedge"]),
@@ -225,7 +229,12 @@ export const mapSchema: Schema<MapDef> = objectOf<MapDef>({
   ),
 });
 
-/** The schema of every definition kind whose tables are indexed by orb level. */
+/**
+ * The schema of every definition kind whose tables are indexed by orb level, and the effect
+ * entry's own, which the registry needs by itself: a named effect declares the entries its
+ * fields carry and they are checked with this, since the orb level cap is the registry's to
+ * know and no function beside an effect knows it.
+ */
 export type LevelledSchemas = Readonly<{
   form: Schema<FormDef>;
   spell: Schema<SpellDef>;
@@ -233,6 +242,7 @@ export type LevelledSchemas = Readonly<{
   status: Schema<StatusDef>;
   enemy: Schema<EnemyDef>;
   summon: Schema<SummonDef>;
+  effect: Schema<EffectDef>;
 }>;
 
 /**
@@ -471,5 +481,6 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
       ...enemyFields,
       followDistance: nonNegativeSchema,
     }),
+    effect: effectSchema,
   };
 };

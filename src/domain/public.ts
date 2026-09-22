@@ -19,6 +19,8 @@ export {
   NAMED_EFFECT_KEYS,
   type NamedEffect,
   type NamedEffectEntry,
+  type NamedEffectNesting,
+  type NestedEffect,
   resolveNamedEffect,
 } from "./abilities/effects/index";
 export {
@@ -303,6 +305,8 @@ export {
 export {
   acquireZone,
   createZonePool,
+  hasTakenHit,
+  takeHit,
   type Zone,
   ZONE_CAPACITY,
 } from "./entities/zone";
@@ -494,5 +498,9 @@ export {
   type StatusResult,
   statusSystem,
 } from "./statuses/status.system";
-export { type StatusWrite, writeStatus } from "./statuses/status-table";
+export {
+  holdsStatus,
+  type StatusWrite,
+  writeStatus,
+} from "./statuses/status-table";
 export type { Tick } from "./tick";

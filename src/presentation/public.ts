@@ -47,7 +47,7 @@ export type {
   TargetingCursor,
 } from "./input/targeting-cursor";
 export { closeCursor, createTargetingCursor } from "./input/targeting-cursor";
-export { PREVIEW_SIZE, TargetingPreview } from "./input/targeting-preview";
+export { RETICLE_SIZE, TargetingPreview } from "./input/targeting-preview";
 export { DebugOverlays } from "./overlays/debug-overlays";
 export {
   createOverlayToggles,

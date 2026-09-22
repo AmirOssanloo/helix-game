@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
-import type { RegistryFault, SpellDef } from "@domain/public";
+import type { RegistryFault, SpellDef, StatusDef } from "@domain/public";
 import { assertRegistryValid, validateRegistry } from "@domain/public";
 import {
   makeEnemyDef,
@@ -18,6 +18,12 @@ const SHORT_TABLE = [1, 1, 1, 1, 1, 1];
 /** The content's spells with `extra` beside them, so the form that lists the ten still resolves and only the fixture is broken. */
 const withSpells = (...extra: readonly SpellDef[]): readonly SpellDef[] => [
   ...contentRegistry.spells,
+  ...extra,
+];
+
+/** The content's statuses with `extra` beside them, so every spell that applies one still resolves. */
+const withStatuses = (...extra: readonly StatusDef[]): readonly StatusDef[] => [
+  ...contentRegistry.statuses,
   ...extra,
 ];
 
@@ -64,6 +70,150 @@ describe("a broken definition", () => {
     expect(fault.message).toContain("frost_lance_hti");
   });
 
+  it("fails on a named effect's field that its own schema refuses, naming the field", () => {
+    const registry = makeRegistry({
+      spells: withSpells(
+        makeSpellDef.build({
+          id: "frost_lance",
+          effects: [
+            {
+              kind: "named",
+              key: "siphon_burn",
+              fields: { burn: 100, damagePerMana: 0.5 },
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.file).toBe("spells/frost-lance.def.ts");
+    expect(fault.path).toBe("effects[0].fields.burn");
+  });
+
+  it("fails on a status id named inside a named effect's own zone entry", () => {
+    const registry = makeRegistry({
+      spells: withSpells(
+        makeSpellDef.build({
+          id: "frost_lance",
+          effects: [
+            {
+              kind: "named",
+              key: "glacier_place",
+              fields: {
+                segments: 3,
+                spacing: 100,
+                distance: 100,
+                zone: {
+                  kind: "spawn_zone",
+                  shape: { kind: "rectangle", length: 100, width: 50 },
+                  anchor: "anchor",
+                  delaySeconds: 0,
+                  lifetime: { kind: "seconds", seconds: 1 },
+                  motion: { kind: "still" },
+                  onActivate: [],
+                  eachTick: [
+                    {
+                      kind: "apply_status",
+                      target: { kind: "zone" },
+                      statusId: "frostbite",
+                      seconds: 0.5,
+                    },
+                  ],
+                  atlasFrame: "square",
+                  tint: 0xffffff,
+                },
+              },
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.file).toBe("spells/frost-lance.def.ts");
+    expect(fault.path).toBe("effects[0].fields.zone.eachTick[0].statusId");
+  });
+
+  it("fails on a frame a named effect's own zone entry names that is not in the list", () => {
+    const registry = makeRegistry({
+      spells: withSpells(
+        makeSpellDef.build({
+          id: "frost_lance",
+          effects: [
+            {
+              kind: "named",
+              key: "glacier_place",
+              fields: {
+                segments: 3,
+                spacing: 100,
+                distance: 100,
+                zone: {
+                  kind: "spawn_zone",
+                  shape: { kind: "rectangle", length: 100, width: 50 },
+                  anchor: "anchor",
+                  delaySeconds: 0,
+                  lifetime: { kind: "seconds", seconds: 1 },
+                  motion: { kind: "still" },
+                  onActivate: [],
+                  eachTick: [],
+                  atlasFrame: "hexagon",
+                  tint: 0xffffff,
+                },
+              },
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("effects[0].fields.zone.atlasFrame");
+  });
+
+  it("fails on a level table of six entries inside a named effect's own zone entry", () => {
+    const registry = makeRegistry({
+      spells: withSpells(
+        makeSpellDef.build({
+          id: "frost_lance",
+          effects: [
+            {
+              kind: "named",
+              key: "glacier_place",
+              fields: {
+                segments: 3,
+                spacing: 100,
+                distance: 100,
+                zone: {
+                  kind: "spawn_zone",
+                  shape: { kind: "rectangle", length: 100, width: 50 },
+                  anchor: "anchor",
+                  delaySeconds: 0,
+                  lifetime: {
+                    kind: "seconds",
+                    seconds: { orb: "quartz", byLevel: SHORT_TABLE },
+                  },
+                  motion: { kind: "still" },
+                  onActivate: [],
+                  eachTick: [],
+                  atlasFrame: "square",
+                  tint: 0xffffff,
+                },
+              },
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("effects[0].fields.zone.lifetime.seconds");
+  });
+
   it("fails on a cooldown table of six entries, naming the table", () => {
     const registry = makeRegistry({
       spells: withSpells(
@@ -80,7 +230,7 @@ describe("a broken definition", () => {
 
   it("fails on a level table of six entries inside a status modifier", () => {
     const registry = makeRegistry({
-      statuses: [
+      statuses: withStatuses(
         makeStatusDef.build({
           id: "frost",
           modifiers: [
@@ -91,7 +241,7 @@ describe("a broken definition", () => {
             },
           ],
         }),
-      ],
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));

@@ -180,3 +180,28 @@ export const acquireZone = (
 
   return id;
 };
+
+/**
+ * Whether a once-per-unit rule on this zone has already taken `id`. A list with no room left
+ * answers yes to every unit it does not hold, so a rule that runs out of room costs itself a
+ * hit rather than taking one unit twice.
+ */
+export const hasTakenHit = (zone: Readonly<Zone>, id: EntityId): boolean => {
+  for (let slot = 0; slot < zone.hitCount; slot += 1) {
+    if (zone.hits[slot] === id) {
+      return true;
+    }
+  }
+
+  return zone.hitCount >= ZONE_HIT_CAPACITY;
+};
+
+/** Records `id` as taken by a once-per-unit rule on this zone. A full list keeps what it holds. */
+export const takeHit = (zone: Zone, id: EntityId): void => {
+  if (zone.hitCount >= ZONE_HIT_CAPACITY) {
+    return;
+  }
+
+  zone.hits[zone.hitCount] = id;
+  zone.hitCount += 1;
+};

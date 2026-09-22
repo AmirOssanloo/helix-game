@@ -61,8 +61,10 @@ export type DamageOverTimeDef = Readonly<{
 
 /**
  * An effect list the status runs when its holder takes or deals damage, at most once per
- * cooldown, with the unit on the other side of the damage as the target. Damage a hook
- * deals runs no hooks, so a hook can neither trigger itself nor ping-pong with another.
+ * cooldown, anchored on the holder and aimed at the unit the damage landed on: the holder
+ * itself for a damage-taken hook, and the unit on the other side for a damage-dealt one.
+ * Damage a hook deals runs no hooks, so a hook can neither trigger itself nor ping-pong with
+ * another.
  */
 export type StatusHookDef = Readonly<{
   cooldownSeconds: LevelTable;

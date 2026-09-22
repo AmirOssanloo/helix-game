@@ -52,6 +52,12 @@ describe("the training dummy", () => {
     expect(trainingDummyDef.tier).toBe("normal");
   });
 
+  it("carries a mana pool for a burn to take, and regenerates neither pool", () => {
+    expect(trainingDummyDef.mana).toBeGreaterThan(0);
+    expect(trainingDummyDef.manaRegen).toBe(0);
+    expect(trainingDummyDef.healthRegen).toBe(0);
+  });
+
   it("clamps at one health and is drawn as an outlined square", () => {
     expect(trainingDummyDef.indestructible).toBe(true);
     expect(trainingDummyDef.health).toBeGreaterThan(0);

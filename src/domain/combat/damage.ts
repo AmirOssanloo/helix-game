@@ -4,6 +4,7 @@ import type { Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { runDamageHooks } from "./damage-hooks";
 
 /**
  * What reduces a hit: physical damage by armour, magical by magic resistance, pure by
@@ -88,6 +89,9 @@ const announceDamaged = (
  * was less. Returns what landed, zero for a stale id and for a unit already dead: a corpse
  * takes nothing, and two lethal hits in one tick both land, because death is resolved at the
  * end of the tick and not here.
+ *
+ * Every instance that lands runs the damage hooks of both units' statuses, after the
+ * mitigation and once, so a hook reads the amount the target actually took.
  */
 export const applyDamage = (
   world: World,
@@ -113,6 +117,7 @@ export const applyDamage = (
 
   resources.health = Math.max(floor, resources.health - landed);
   announceDamaged(world, targetId, sourceId, landed, type);
+  runDamageHooks(world, targetId, sourceId);
 
   return landed;
 };

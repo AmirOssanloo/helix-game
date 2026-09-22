@@ -60,9 +60,30 @@ const shapes: readonly AtlasFrameDef[] = [
     shape: { kind: "stripes", thickness: 12 },
   },
   { name: "pixel", width: 4, height: 4, shape: { kind: "pixel" } },
-  // Clarion's cone of 60 degrees, apex at the origin. Drawn as the triangle until a cone painter exists; the name is what the definitions hold.
-  { name: "cone_60", width: 256, height: 256, shape: { kind: "triangle" } },
 ];
+
+/** The full angles, in degrees, a cone is baked at: one frame per angle a definition aims a cone or a cone preview with. */
+export const CONE_ANGLES: readonly number[] = [60];
+
+/**
+ * How wide a cone frame is baked. A cone's apex is the frame's centre and its arc the frame's
+ * edge, so a cone drawn `length` from its apex covers twice this across; the longest cone on
+ * screen reaches 900, which is 1800 across and bakes at half of that.
+ */
+const CONE_SIZE = 900;
+
+/** The frame name a cone of `angleDegrees` is drawn with, so the frame list and whoever looks one up name it the same way. */
+export const coneFrame = (angleDegrees: number): string =>
+  `cone_${angleDegrees}`;
+
+const cones: readonly AtlasFrameDef[] = CONE_ANGLES.map(
+  (angleDegrees): AtlasFrameDef => ({
+    name: coneFrame(angleDegrees),
+    width: CONE_SIZE,
+    height: CONE_SIZE,
+    shape: { kind: "cone", angleDegrees },
+  }),
+);
 
 /**
  * The frame each status is drawn with, one per status definition, keyed by the status id the
@@ -124,6 +145,7 @@ const glyphs: readonly AtlasFrameDef[] = Array.from(
 
 export const atlasFrames: AtlasFrameList = [
   ...shapes,
+  ...cones,
   ...statusIcons,
   ...wedges,
   ...glyphs,

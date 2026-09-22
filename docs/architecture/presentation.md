@@ -110,7 +110,7 @@ Static map geometry drawn as a tile layer is a view kind like any other when a m
 
 ## Input
 
-`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the definition's frame under the pointer, or on the hero turned toward the pointer for a direction spell. Both turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open. Each frame it reads the hero's disable flags and closes a cursor the hero may no longer commit — a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash.
+`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the shape the definition previews. The definition says which shape and how big: a reticle or a circle sits under the pointer, a rectangle is placed its offset in front of the hero and a cone on the hero, both turned toward the pointer, and a definition that previews nothing draws no shape. A rectangle's length and offset may be level tables, read at the hero's orb levels as the cast would read them. Both quads wear the ability's own tint and turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open. Each frame it reads the hero's disable flags and closes a cursor the hero may no longer commit — a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash.
 
 ---
 
@@ -140,14 +140,14 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | The atlas | One white texture baked at boot by `ShapeAtlas`; frame names from the content frame list |
 | Colour | Always a runtime tint on a white frame |
 | `Shape` and `Graphics` objects | Never, including debug |
-| Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame, a wedge frame |
+| Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame baked per angle with its apex at the frame's centre, a wedge frame |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
 | HUD ability squares | Filled from the active kit's slot descriptors: kind, ability, clock and its whole length, cost, level, and the disable blocking it; never a fixed layout; the kit is a resolver port |
 | HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
 | HUD state | Bars and the level read the world view; nothing sums events |
 | Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
 | HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent is a spend-skill-point command naming the slot |
-| Targeting preview | Two quads at the ground band in world coordinates: the range ring on the hero, the definition's frame under the pointer; red past the range |
+| Targeting preview | Two quads at the ground band in world coordinates: the range ring on the hero, and the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a definition that previews none. The ability's tint; red past the range |
 | Binding | By the camera rectangle through the spatial hash, each frame |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |

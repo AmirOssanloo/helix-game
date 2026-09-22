@@ -57,7 +57,8 @@ export class ZoneView {
 /**
  * Lays `quad` over the shape, once: a circle at its diameter, a rectangle at its length along
  * the facing and its width across it, and a cone at its length both ways, since the cone frame
- * is baked square. The frame is one texture whatever the shape, so the size is a scale.
+ * is baked square with its apex at the centre, which is where the zone stands. The frame is one
+ * texture whatever the shape, so the size is a scale.
  */
 const sizeToShape = (
   quad: Quad,
@@ -79,11 +80,14 @@ const sizeToShape = (
 
       break;
 
-    case "cone":
-      quad.scaleX = shape.length * perUnit;
-      quad.scaleY = quad.scaleX;
+    case "cone": {
+      const size = shape.length * DIAMETERS_PER_RADIUS * perUnit;
+
+      quad.scaleX = size;
+      quad.scaleY = size;
 
       break;
+    }
   }
 };
 

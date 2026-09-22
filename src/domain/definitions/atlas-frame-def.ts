@@ -9,6 +9,8 @@ export type AtlasShape =
   | Readonly<{ kind: "square" }>
   | Readonly<{ kind: "square_outline"; thickness: number }>
   | Readonly<{ kind: "triangle" }>
+  /** A filled cone of `angleDegrees` opening either side of the frame's rightward axis, its apex at the frame's centre and its arc at the frame's edge. */
+  | Readonly<{ kind: "cone"; angleDegrees: number }>
   | Readonly<{ kind: "pixel" }>
   | Readonly<{ kind: "wedge"; step: number; steps: number }>
   | Readonly<{ kind: "stripes"; thickness: number }>

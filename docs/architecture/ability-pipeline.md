@@ -54,7 +54,7 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 | Damage area | Applies damage of a type to units in a shape around a point |
 | Apply status | Adds a status to a unit or to units in a shape |
 | Spawn projectile | Acquires a projectile that homes on a unit or travels a direction, with the list it runs on what it touches. A homing entry the cast aimed at no unit fires nothing |
-| Spawn zone | Acquires a zone with a shape, a delay before it bites, a lifetime, and the two lists it runs: once when the delay ends, and every tick after that |
+| Spawn zone | Acquires a zone with a shape, a delay before it bites, a lifetime, and the two lists it runs: the activation list once, on the tick the delay ends, and the each-tick list on that tick and every one after it the zone is still alive for |
 | Spawn unit | Acquires summons owned by the caster, each with a lifetime and the entry's bonuses as modifier rows |
 | Displace | Moves a unit — a push, or a lift that suspends its order — and puts a status on it for the same ticks |
 
@@ -62,12 +62,14 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 
 A primitive is parameterised by the definition and by orb level where the definition says so. Anything the primitives can't express — a wall laid as segments perpendicular to the caster, a zone that carries units along a path — is a named effect: one function in `domain/abilities/effects/`, referenced by key. There is no scripting layer and no expression language; a bespoke behaviour is TypeScript in the domain, tested like any other rule.
 
+**A named effect's fields are content, and may carry an effect entry of their own** — a wall's named effect decides only where each segment stands, and the segment itself is a spawn-zone entry the definition writes in full. The effect declares which of its fields hold entries, and the content tier checks each of them as it checks any entry: against the effect schema, which knows the orb level cap, and then every key, id, and frame inside it.
+
 ```typescript
 // domain/abilities/effects/foo-bar.effect.ts — key 'foo-bar'
 export const fooBarEffect = (world: World, cast: Cast, fields: FooBarFields): void => { /* … */ }
 ```
 
-**One runner runs every list.** It walks the entries in the order the definition wrote them and hands each to the primitive its kind names or the function its key names, together with the **cast context**: the caster, the ability, the orb levels as they stood at commit, an anchor point with a facing, the unit the effect is aimed at or none, and the zone running it or none. The same runner runs a cast's list at commit, a zone's activation and each-tick lists, a projectile's hit list, and a status hook's list, so an effect never learns which of them ran it, and a named effect reads its own fields and nothing else about the definition. The runner refuses nothing: the content tier resolved every key before a world existed.
+**One runner runs every list.** It walks the entries in the order the definition wrote them and hands each to the primitive its kind names or the function its key names, together with the **cast context**: the caster, the ability, the orb levels as they stood at commit, an anchor point with a facing, the unit the effect is aimed at or none, and the zone running it or none. The same runner runs a cast's list at commit, a zone's activation and each-tick lists, a projectile's hit list, and a status's hook and expiry lists, so an effect never learns which of them ran it, and a named effect reads its own fields and nothing else about the definition. The runner refuses nothing: the content tier resolved every key before a world existed.
 
 Where the anchor lands follows the targeting kind — a no-target ability anchors on the caster and is aimed at it, a unit ability on its target, a point ability on the click, a direction ability on the caster — and the orb levels are copied at commit, so one raised afterwards does not change what landed.
 
@@ -87,7 +89,8 @@ Each ability id has its own cooldown clock on the caster, in ticks. There is no 
 - **Death** is resolved by its own system at the end of the tick, so two effects that kill the same unit in one tick produce one death event. It clears the unit's status table and announces it once. The hero goes through a death state and comes back after the respawn delay; every other unit holds its slot for a tuned delay, so what was aimed at it resolves for a moment longer, and is then released. A unit whose definition makes it indestructible stops at one health and is never taken.
 - **A status** is an entry in the target's status table referencing a status definition. The definition's stack rule decides what a second application does: **refresh** resets the end tick, **stack** adds a stack and resets, **ignore** does nothing while one is active.
 - **Disables** are statuses that block: stun blocks every command, silence blocks every ability, root blocks movement, disarm blocks attacks. The status system derives disable flags from the status table early in every tick, right after the commands are applied; the next tick's validator reads them.
-- **A damage hook** is a status definition's answer to "when this unit takes or deals damage, do X". The definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with an internal cooldown table, so a hook is written with the same primitives and named effects as a cast and needs no registry of its own. The damage function runs the target's taken hooks and the source's dealt hooks once per damage instance, after mitigation, with the holder as the anchor and the unit on the other side of the damage as the target. Damage caused by a hook runs no hooks, so a hook can neither trigger itself nor ping-pong with another. The cooldown's length is on the definition and its ready-at tick on the status table entry, so the state replays and nothing allocates.
+- **An expiry list** is a status definition's answer to "when this ends, do X". It is an effect list run on the holder on the tick the status pass sweeps the row, anchored where the holder stands, aimed at the holder, and cast by whoever applied the status, read at the levels the row snapshotted. It runs after the whole table has been read, so what it does lands on a unit already free of what the status set: a lift's damage reaches a holder the lift no longer makes untargetable, and it lands where the unit was dropped. Death clears the table without a sweep, so a status a death took never expires and never runs its list.
+- **A damage hook** is a status definition's answer to "when this unit takes or deals damage, do X". The definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with an internal cooldown table, so a hook is written with the same primitives and named effects as a cast and needs no registry of its own. The damage function runs the damaged unit's taken hooks and the dealing unit's dealt hooks once per damage instance, after mitigation, with the holder as the anchor and the damaged unit as the target, so a taken hook answers on its own holder and a dealt hook answers on whom its holder hit. The caster of the list is whoever applied the status, so what the hook deals is credited where the status came from. Damage caused by a hook runs no hooks, so a hook can neither trigger itself nor ping-pong with another. The cooldown's length is on the definition and its ready-at tick on the status table entry, so the state replays and nothing allocates.
 
 ---
 
@@ -163,12 +166,14 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Effects | A list of primitives and named effects on the definition |
 | The effect runner | One runner for every list; entries run in the order written, each with the cast context |
 | The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, the target unit or none, the zone or none |
-| Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status hook's list; the effect cannot tell which |
+| Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status's hook and expiry lists; the effect cannot tell which |
 | Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
 | A homing entry with no target | Fires nothing; it never falls back to flying the facing |
+| A zone's clock | The delay, then the activation list on the tick it ends, then the each-tick list for as long as the lifetime lasts; a lifetime of nothing activates and is gone on the same tick, which is a strike that claims ground and leaves nothing on it |
 | Whom an entry touches | The cast's target, the zone running the list, or a shape at the anchor; a shape and a zone collect hostile units only, never a corpse and never an untargetable one; collected in full before the first effect lands |
 | Displacement | The primitive applies the status it names for the duration and hands the movement over to the movement step, so a push stops at a wall and a lift's status carries the suspended order |
 | Bespoke behaviour | A named effect: one function in `domain/abilities/effects/`, referenced by key; no scripting layer |
+| A named effect's fields | Content, checked by the effect's own schema; a field holding an effect entry is declared by the effect and checked by the content tier as an entry of its own |
 | Cooldown clocks | Per ability id, per caster, in ticks; no global cooldown |
 | Percentage cooldown reduction | Read at commit, baked into the clock, never rewrites a running clock |
 | Evicted hero spells | Keep their clocks in a hidden map |
@@ -176,7 +181,8 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Death | Resolved once per tick by its own system: statuses cleared, announced once, the hero respawning and every other unit released after a tuned delay; an indestructible unit stops at one health |
 | Status stacking | Refresh, stack, or ignore, decided by the status definition |
 | Disables | Stun blocks everything, silence blocks abilities, root blocks movement, disarm blocks attacks; flags derived from the status table at the end of the tick, read by the next tick's validator |
-| Damage hooks | A status definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with a cooldown table; run by the damage function after mitigation; hook damage runs no hooks; the ready-at tick lives on the entry |
+| Status expiry | A status definition carries an effect list run on the holder when its row is swept, anchored on the holder, aimed at it, cast by whoever applied the status, at the row's levels; it runs after the table is read, so the flags the status set are already off; a status a death cleared runs nothing |
+| Damage hooks | A status definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with a cooldown table; run by the damage function after mitigation, anchored on the holder, aimed at the damaged unit, cast by whoever applied the status; hook damage runs no hooks; the ready-at tick lives on the entry |
 | Invoke | `domain/invoke/`, beside the pipeline; produces the ability the slot key throws |
 | Kits | Invoke is one kit; a form definition names its kit by string key, resolved from a domain registry; a kit turns a slot index into an ability request |
 | A summon | A unit with an owner id and a lifetime; its definition owns its base numbers and the spawning entry's bonuses go on it as modifier rows |

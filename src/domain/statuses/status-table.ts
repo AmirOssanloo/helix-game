@@ -36,6 +36,10 @@ const take = (
  * longer remaining duration wins, and both take the new applier's source and orb levels,
  * since the new application's numbers are the ones it was made with.
  *
+ * A hook's internal cooldown is the row's, not the application's: a row that takes the status
+ * for the first time is ready to fire both hooks at once, and a refresh leaves the ready ticks
+ * where they stand, so recasting a status never hands its hook back early.
+ *
  * A pure function over the rows: it reads no world and announces nothing.
  */
 export const writeStatus = (
@@ -84,7 +88,36 @@ export const writeStatus = (
   empty.definitionId = statusId;
   empty.endsAtTick = 0;
   empty.stacks = FIRST_STACK;
+  empty.damageTakenReadyAtTick = 0;
+  empty.damageDealtReadyAtTick = 0;
   take(empty, endsAtTick, sourceId, orbLevels);
 
   return "applied";
+};
+
+/**
+ * Whether `table` holds `statusId` with ticks still to run at `tick`. A row whose end tick has
+ * come reads as gone, whether or not the status pass has swept it yet, so a rule that asks
+ * mid-tick gets the same answer the sweep will give.
+ *
+ * A pure function over the rows, as the write beside it is.
+ */
+export const holdsStatus = (
+  table: readonly StatusEntry[],
+  statusId: string,
+  tick: number,
+): boolean => {
+  for (let row = 0; row < table.length; row += 1) {
+    const entry = table[row];
+
+    if (
+      entry !== undefined &&
+      entry.definitionId === statusId &&
+      tick < entry.endsAtTick
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 };

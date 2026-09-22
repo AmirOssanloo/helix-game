@@ -56,6 +56,8 @@ describe("writeStatus onto a table that does not hold the status", () => {
         stacks: 1,
         sourceId: FIRST_SOURCE,
         orbLevels: [...FIRST_LEVELS],
+        damageTakenReadyAtTick: 0,
+        damageDealtReadyAtTick: 0,
       });
     },
   );
@@ -176,6 +178,8 @@ describe("writeStatus under the ignore rule", () => {
       stacks: 1,
       sourceId: FIRST_SOURCE,
       orbLevels: [...FIRST_LEVELS],
+      damageTakenReadyAtTick: 0,
+      damageDealtReadyAtTick: 0,
     });
   });
 });

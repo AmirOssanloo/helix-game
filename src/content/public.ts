@@ -1,6 +1,8 @@
 export { abilities } from "./abilities/index";
 export {
   atlasFrames,
+  CONE_ANGLES,
+  coneFrame,
   GLYPH_CHARACTERS,
   statusIconFrame,
   WEDGE_STEPS,

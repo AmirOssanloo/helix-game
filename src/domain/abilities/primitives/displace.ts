@@ -5,6 +5,7 @@ import type { DisplaceEffectDef } from "../../definitions/effect-def";
 import { tableAtOrbLevels } from "../../definitions/level-table";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
+import type { StatusResult } from "../../statuses/status.system";
 import { applyStatus } from "../../statuses/status.system";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
@@ -22,6 +23,21 @@ const directionOf = (
   unit: Readonly<Unit>,
 ): number =>
   entry.direction === "facing" ? cast.facing : bearing(cast.anchor, unit.curr);
+
+/**
+ * Puts a lift's status on one unit for `ticks`, from the cast that lifted it. Everything a
+ * lift does is the status's: its flags take the unit's order off it until the lift ends, and
+ * its expiry list is what lands when the unit comes down. This is the one way a lift goes on,
+ * so the primitive and a named effect that carries units agree on what lifting is.
+ */
+export const lift = (
+  world: World,
+  cast: Cast,
+  targetId: EntityId,
+  statusId: string,
+  ticks: number,
+): StatusResult =>
+  applyStatus(world, targetId, statusId, ticks, cast.casterId, cast.orbLevels);
 
 /**
  * Takes hold of the unit for `ticks` and moves it `distance` over them, in even steps along
@@ -85,6 +101,12 @@ export const displace: Primitive<DisplaceEffectDef> = (
       continue;
     }
 
+    if (entry.mode === "lift") {
+      lift(world, cast, id, entry.statusId, ticks);
+
+      continue;
+    }
+
     const applied = applyStatus(
       world,
       id,
@@ -94,7 +116,7 @@ export const displace: Primitive<DisplaceEffectDef> = (
       cast.orbLevels,
     );
 
-    if (applied === "ok" && entry.mode === "push") {
+    if (applied === "ok") {
       push(unit, directionOf(entry, cast, unit), distance, ticks);
     }
   }

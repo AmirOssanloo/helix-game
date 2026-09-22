@@ -36,6 +36,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 
 > **Note, 2026-09-21:** the product owner approved the shape as written: the effect lists of section 3, the statuses of section 4, and the primitives, named effects, and capabilities of section 7, including the three calls flagged for review. Q10 is closed. T02 was built against this shape and needs no change.
 
+> **Note, 2026-09-22:** one line of that approval is withdrawn. Section 3.5 had Updraft's funnel carry the units it lifts and drop them where it left them; the maintainer walked it in the arena on 2026-09-22 and reversed it — a unit carried the length of the funnel's travel leaves the screen and reads as a knockback. Updraft lifts in place and the unit comes down where it stood. The catalogue is rewritten in P2-S11-T06. Nothing else in sections 3, 4, or 7 moves, and the shape the approval was about — the effect lists, the primitives, and the capabilities — is untouched: the change is which of them Updraft's named effect does.
+
 ---
 
 ### P2-S07-T02 — Definition types, schemas, the registry, and the content tier

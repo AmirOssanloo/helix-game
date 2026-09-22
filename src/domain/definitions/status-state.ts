@@ -1,7 +1,12 @@
 import type { DamageType } from "../combat/damage";
 import type { Stat } from "../entities/unit";
+import type { EffectDef } from "./effect-def";
 import { ORB_IDS } from "./orb-id";
-import type { StatusDef, StatusModifierKind } from "./status-def";
+import type {
+  StatusDef,
+  StatusHookDef,
+  StatusModifierKind,
+} from "./status-def";
 import { readTunable } from "./tuning-state";
 
 /** The level a table is read at when the orb behind it has none: an applier that levels no orb reads the first entry. */
@@ -24,15 +29,28 @@ export type StatusDamageRecord = Readonly<{
 }>;
 
 /**
+ * One damage hook as run scope holds it: the list the runner runs, and the internal cooldown
+ * in ticks, one entry per orb level, converted from the definition's seconds.
+ */
+export type StatusHookRecord = Readonly<{
+  orbIndex: number;
+  byLevel: readonly number[];
+  effects: readonly EffectDef[];
+}>;
+
+/**
  * One status as run scope holds it: the definition as content wrote it, its modifier tables
- * with the orb each names resolved to an index, and its damage over time in health per tick.
- * This is the one conversion for a status, run once per status when a world is created, so no
- * system ever multiplies by the tick rate or searches the orb list.
+ * with the orb each names resolved to an index, its damage over time in health per tick, and
+ * its two damage hooks with their cooldowns in ticks. This is the one conversion for a status,
+ * run once per status when a world is created, so no system ever multiplies by the tick rate
+ * or searches the orb list.
  */
 export type StatusRecord = Readonly<{
   def: StatusDef;
   modifiers: readonly StatusModifierRecord[];
   damageOverTime: StatusDamageRecord | null;
+  onDamageTaken: StatusHookRecord | null;
+  onDamageDealt: StatusHookRecord | null;
 }>;
 
 /** A table's entry at the level `orbLevels` holds for its orb, never below the first, and zero past the table's end. */
@@ -92,6 +110,29 @@ const createDamageRecord = (
   };
 };
 
+const createHookRecord = (
+  hook: StatusHookDef | null,
+  simHz: number,
+): StatusHookRecord | null => {
+  if (hook === null) {
+    return null;
+  }
+
+  const byLevel: number[] = [];
+
+  for (let index = 0; index < hook.cooldownSeconds.byLevel.length; index += 1) {
+    byLevel.push(
+      Math.round((hook.cooldownSeconds.byLevel[index] ?? 0) * simHz),
+    );
+  }
+
+  return {
+    orbIndex: ORB_IDS.indexOf(hook.cooldownSeconds.orb),
+    byLevel,
+    effects: hook.effects,
+  };
+};
+
 /**
  * Run scope's status table from the registry: every status by id, each with its tables read
  * for the tick rather than the second, for the status rule to write onto a unit and the status
@@ -113,6 +154,8 @@ export const createStatusTable = (
         def,
         modifiers: createModifierRecords(def),
         damageOverTime: createDamageRecord(def, simHz),
+        onDamageTaken: createHookRecord(def.onDamageTaken, simHz),
+        onDamageDealt: createHookRecord(def.onDamageDealt, simHz),
       });
     }
   }

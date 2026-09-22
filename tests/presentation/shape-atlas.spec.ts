@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { atlasFrames, GLYPH_CHARACTERS, WEDGE_STEPS } from "@content/public";
+import {
+  atlasFrames,
+  CONE_ANGLES,
+  coneFrame,
+  GLYPH_CHARACTERS,
+  WEDGE_STEPS,
+} from "@content/public";
 import type { AtlasFrameDef } from "@domain/public";
 import {
   ATLAS_WIDTH,
   layoutAtlas,
   type PlacedFrame,
 } from "@presentation/atlas/atlas-layout";
-import { paintFrame, wedgeSweep } from "@presentation/atlas/shape-painter";
+import {
+  coneSweep,
+  paintFrame,
+  wedgeSweep,
+} from "@presentation/atlas/shape-painter";
 import { PainterRecorder } from "./../helpers";
 
 const TWO_PI = Math.PI * 2;
@@ -92,6 +102,18 @@ describe("layoutAtlas over the content frame list", () => {
     });
   });
 
+  it("holds a cone frame per angle a definition aims one at", () => {
+    const cones = atlasFrames.filter((frame) => frame.shape.kind === "cone");
+
+    expect(cones.map((frame) => frame.name)).toEqual(
+      CONE_ANGLES.map(coneFrame),
+    );
+
+    for (const frame of cones) {
+      expect(frame.width).toBe(frame.height);
+    }
+  });
+
   it("lists one wedge frame per step, from one to the full disc", () => {
     const steps = atlasFrames
       .map((frame) => frame.shape)
@@ -133,6 +155,18 @@ describe("layoutAtlas refusals", () => {
   });
 });
 
+describe("coneSweep", () => {
+  it.each([[60], [90], [180]])(
+    "a cone of %i degrees opens half of it either side of the rightward axis",
+    (angleDegrees) => {
+      const { startAngle, endAngle } = coneSweep(angleDegrees);
+
+      expect(startAngle).toBeCloseTo(-endAngle);
+      expect(endAngle - startAngle).toBeCloseTo((angleDegrees * Math.PI) / 180);
+    },
+  );
+});
+
 describe("wedgeSweep", () => {
   it.each([
     [1, 64],
@@ -171,6 +205,31 @@ describe("paintFrame over the content frame list", () => {
     }
 
     expect(unpainted).toEqual([]);
+  });
+
+  it("draws a cone as an arc from the frame's centre, half its angle either side of the rightward axis", () => {
+    const painter = new PainterRecorder();
+
+    paintFrame(painter, {
+      frame: {
+        name: coneFrame(60),
+        width: 64,
+        height: 64,
+        shape: { kind: "cone", angleDegrees: 60 },
+      },
+      x: 10,
+      y: 20,
+    });
+
+    expect(painter.arcs).toEqual([
+      {
+        x: 42,
+        y: 52,
+        radius: 32,
+        startAngle: -Math.PI / 6,
+        endAngle: Math.PI / 6,
+      },
+    ]);
   });
 
   it("draws a wedge as an arc from the frame's centre over its sweep", () => {

@@ -37,6 +37,8 @@ describe("unit pool", () => {
       stacks: 0,
       sourceId: null,
       orbLevels: [0, 0, 0],
+      damageTakenReadyAtTick: 0,
+      damageDealtReadyAtTick: 0,
     });
   });
 

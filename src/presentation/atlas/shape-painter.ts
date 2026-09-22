@@ -1,4 +1,5 @@
 import type { AtlasFrameDef, AtlasShape } from "@domain/public";
+import { coneHalfAngle } from "@domain/public";
 import type { AtlasLayout, PlacedFrame } from "./atlas-layout";
 
 /**
@@ -44,6 +45,20 @@ const STRIPE_PERIOD = 2;
 /** A status icon: an outline this fraction of the cell thick, with its glyph this fraction of the cell tall inside it. */
 const ICON_OUTLINE_FRACTION = 0.125;
 const ICON_EM_FRACTION = 0.6;
+
+/**
+ * Where a cone of `angleDegrees` starts and ends: half of it either side of the rightward
+ * axis, in canvas radians, so a quad turned to a facing of zero opens the way the facing
+ * points. The apex is the frame's centre, which is a quad's own origin, so a view puts the
+ * quad where the cone's apex belongs and turns it to the facing.
+ */
+export const coneSweep = (
+  angleDegrees: number,
+): Readonly<{ startAngle: number; endAngle: number }> => {
+  const half = coneHalfAngle(angleDegrees);
+
+  return { startAngle: -half, endAngle: half };
+};
 
 /** Where the wedge covering `step` of `steps` starts and ends: clockwise from twelve o'clock, in canvas radians. */
 export const wedgeSweep = (
@@ -109,6 +124,18 @@ const paintShape = (
       painter.moveTo(x + width, centreY);
       painter.lineTo(x, y);
       painter.lineTo(x, y + height);
+      painter.closePath();
+      painter.fill();
+
+      return;
+    }
+
+    case "cone": {
+      const { startAngle, endAngle } = coneSweep(shape.angleDegrees);
+
+      painter.beginPath();
+      painter.moveTo(centreX, centreY);
+      painter.arc(centreX, centreY, radius, startAngle, endAngle);
       painter.closePath();
       painter.fill();
 
