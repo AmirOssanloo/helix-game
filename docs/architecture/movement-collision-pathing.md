@@ -42,6 +42,22 @@ Targeted casts and attacks use the same turn: the ability pipeline waits for the
 
 ---
 
+## Being moved
+
+A unit does not only walk. A displacement — a knockback from a cone, a pull, the drift of a wind — takes hold of it for a number of ticks and moves it a distance over them, in even steps. The steps are the first thing the movement system does each tick, before anything walks, so a displaced unit is left to the collision pass exactly as a walking one is: a push into a wall stops at the wall's edge, with the rest of the push spent against it, and nothing ever ends up inside an obstacle.
+
+The unit keeps its order throughout. What stops it walking its own order meanwhile is a status flag, not the displacement: the effect that takes hold of a unit puts a status on it for the same ticks, and the flag that status raises is what the movement system reads. When the ticks run out the flag goes with the status and the unit walks on from wherever it was left. A unit a displacement already has hold of ignores a second one.
+
+A lift is the other half of the same idea and moves nothing by itself: its status takes the unit's order off it for as long as the unit is in the air and gives the order back on the tick the status ends, from wherever the unit was dropped. The unit asks for a new path from there, since the one it was walking started somewhere else.
+
+---
+
+## Areas
+
+An effect that touches everything in a shape asks the hash for the units inside the smallest circle around the shape, then does the exact test on each candidate: a circle by its radius, a rectangle by its length along a facing and its width across it, a cone by its half angle and its length. The three tests are pure functions over plain numbers in `domain/movement/`, so the rule is testable without a world and the same test serves a cast, a zone, and a preview. The shape is placed at a point with a facing, the boundary counts as inside, and a unit is measured by where its centre stands.
+
+---
+
 ## Blocking
 
 After every unit has moved, the collision system separates overlaps. It is positional: it moves discs apart and changes no speed.
@@ -124,6 +140,9 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Moving | `min(speed × dt, remaining)` along the path; no acceleration, no overshoot |
 | Speed | A stack of base, modifiers, and clamps, recomputed every tick |
 | Targeted casts and attacks | Wait for the bearing to enter the cone before the cast point |
+| Displacement | Even steps over a count of ticks, taken before anything walks and left to the same collision pass, so a push stops at a wall; the unit keeps its order and a status flag is what stops it walking meanwhile; a second displacement on a unit already held is ignored |
+| A lift | Moves nothing itself: its status takes the order off the unit and gives it back on the tick the status ends, from where the unit was dropped, with a new path asked for |
+| Area shapes | Circle, rotated rectangle, and cone, each a pure test in `domain/movement/`; candidates from the hash's circle query, then the exact test on the unit's centre; the boundary is inside |
 | Unit blocking | Positional push-out along the centre line, half each, a capped number of passes the tunable sets, no speed change |
 | Obstacle blocking | Push out of the axis-aligned rectangle until touching: by the nearest edge from inside, away from the nearest point from outside; and back inside the bounds, which are walls |
 | Push order | Pool order, each pair once, lower id first; a coincident pair along a direction fixed by the pair; the hash updated on every push |

@@ -11,6 +11,9 @@ import type {
 } from "../../definitions/effect-def";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
+import { applyStatusEffect } from "./apply-status";
+import { damageArea } from "./damage-area";
+import { displace } from "./displace";
 
 /** Every effect entry the runner dispatches to a primitive: the union less the named effect. */
 export type PrimitiveEffectDef = Exclude<EffectDef, NamedEffectDef>;
@@ -44,12 +47,12 @@ type PrimitiveTable = Readonly<{
 }>;
 
 const primitives: PrimitiveTable = {
-  damage_area: null,
-  apply_status: null,
+  damage_area: damageArea,
+  apply_status: applyStatusEffect,
   spawn_projectile: null,
   spawn_zone: null,
   spawn_unit: null,
-  displace: null,
+  displace,
 };
 
 const call = <E extends PrimitiveEffectDef>(

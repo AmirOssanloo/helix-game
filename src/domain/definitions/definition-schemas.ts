@@ -269,6 +269,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
       kind: oneOf(["displace"]),
       mode: oneOf(["push"]),
       target: effectTargetSchema,
+      statusId: idSchema,
       direction: oneOf(PUSH_DIRECTIONS),
       distance: levelTableSchema,
       seconds: nonNegativeSchema,

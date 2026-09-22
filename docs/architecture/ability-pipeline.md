@@ -56,7 +56,9 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 | Spawn projectile | Acquires a projectile that homes on a unit or travels a direction |
 | Spawn zone | Acquires a zone with a shape, a lifetime, and per-tick rules |
 | Spawn unit | Acquires a summon owned by the caster, with a lifetime |
-| Displace | Moves a unit — a push, a pull, or a lift that suspends its order |
+| Displace | Moves a unit — a push, or a lift that suspends its order — and puts a status on it for the same ticks |
+
+**Whom an entry touches** is the entry's own field: the cast's target unit, every unit inside the zone running the list, or every unit a shape at the anchor covers. A shape and a zone collect units hostile to the caster only, and neither collects a corpse or a unit a status has made untargetable, so a lifted unit cannot be hit. The collection is complete before the first effect lands, so a hit that kills one unit or moves another does not change whom the entry touches. [Movement, collision, and pathing](./movement-collision-pathing.md) owns the shape tests and the displacement steps.
 
 A primitive is parameterised by the definition and by orb level where the definition says so. Anything the primitives can't express — a wall laid as segments perpendicular to the caster, a zone that carries units along a path — is a named effect: one function in `domain/abilities/effects/`, referenced by key. There is no scripting layer and no expression language; a bespoke behaviour is TypeScript in the domain, tested like any other rule.
 
@@ -141,6 +143,8 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, the target unit or none, the zone or none |
 | Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status hook's list; the effect cannot tell which |
 | Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
+| Whom an entry touches | The cast's target, the zone running the list, or a shape at the anchor; a shape and a zone collect hostile units only, never a corpse and never an untargetable one; collected in full before the first effect lands |
+| Displacement | The primitive applies the status it names for the duration and hands the movement over to the movement step, so a push stops at a wall and a lift's status carries the suspended order |
 | Bespoke behaviour | A named effect: one function in `domain/abilities/effects/`, referenced by key; no scripting layer |
 | Cooldown clocks | Per ability id, per caster, in ticks; no global cooldown |
 | Percentage cooldown reduction | Read at commit, baked into the clock, never rewrites a running clock |

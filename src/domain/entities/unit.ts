@@ -107,6 +107,18 @@ export type CastState = {
 };
 
 /**
+ * The push a displacement has a unit in: how far it moves each tick, and how many ticks of it
+ * are left. No ticks left is no push. The movement step translates by `step` while ticks
+ * remain and collision decides where that leaves the unit, which is why a push into a wall
+ * stops at the wall; the `knockback` status the displacement applies beside it raises the
+ * displaced flag, which is what stops the unit walking itself meanwhile.
+ */
+export type Push = {
+  step: Vec2;
+  ticksLeft: number;
+};
+
+/**
  * The waypoints a unit is walking, a fixed-capacity buffer the pathing fills and the movement
  * system follows. `next` is the index of the waypoint the unit is heading for; the path is
  * complete when it reaches `count`.
@@ -141,6 +153,13 @@ export type Unit = {
   path: Path;
   /** Whether the unit is waiting for the pathing system to plan its path. It keeps following `path` while it waits. */
   needsPath: boolean;
+  /** The push carrying the unit, if one is; no ticks left is none. */
+  push: Push;
+  /**
+   * The order a lift took away, given back on the tick the lift ends. `none` is nothing
+   * suspended, which is what a unit that was never lifted holds.
+   */
+  suspended: Order;
   /** The cast under way, from its request to its commit. */
   cast: CastState;
   /** The tick the stage under way ends: a cast point, a backswing, a channel, or the death before a respawn. Read in those states only. */
@@ -219,6 +238,21 @@ const createPath = (): Path => {
   return { points, count: 0, next: 0 };
 };
 
+/** Forgets the push. The step keeps its last values; the ticks left say whether one is carrying the unit. */
+export const clearPush = (push: Push): void => {
+  push.step.x = 0;
+  push.step.y = 0;
+  push.ticksLeft = 0;
+};
+
+/** Forgets the order a lift took away, so nothing is given back when the lift ends. */
+export const clearSuspendedOrder = (order: Order): void => {
+  order.kind = "none";
+  order.destination.x = 0;
+  order.destination.y = 0;
+  order.targetId = null;
+};
+
 /** Forgets the waypoints. The points keep their last values; `count` says which ones are live. */
 export const clearPath = (path: Path): void => {
   path.count = 0;
@@ -251,6 +285,8 @@ const createUnit = (): Unit => {
     state: "idle",
     path: createPath(),
     needsPath: false,
+    push: { step: { x: 0, y: 0 }, ticksLeft: 0 },
+    suspended: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
     cast: {
       abilityId: null,
       targetKind: "none",
@@ -303,6 +339,8 @@ const clearUnit = (unit: Unit): void => {
   unit.state = "idle";
   clearPath(unit.path);
   unit.needsPath = false;
+  clearPush(unit.push);
+  clearSuspendedOrder(unit.suspended);
   unit.cast.abilityId = null;
   unit.cast.targetKind = "none";
   unit.cast.position.x = 0;

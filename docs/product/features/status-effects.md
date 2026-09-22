@@ -19,7 +19,7 @@ Each status kind has a definition file under `src/content/statuses/` holding its
 | Slow | Movement speed reduced by a percentage | Nothing; stacks into the speed formula |
 | Damage over time | Loses health every tick for the duration | Nothing |
 | Knockback | Displaced along a direction over a few ticks | Movement while displaced; the order is kept |
-| Lift | Raised into the air, stunned and untargetable | Everything, as stun; and the unit cannot be hit |
+| Lift | Raised into the air, stunned and untargetable, with its order put aside until it lands | Everything, as stun; and the unit cannot be hit |
 
 Stun and lift are **disables**. Silence, root, and disarm are disables of one thing each. Slow and damage over time are not disables.
 
@@ -51,6 +51,7 @@ Which status blocks which key, order, and cast state is one table with a cell pe
 | Silenced with a move running | The move continues; silence blocks abilities only |
 | Stunned or silenced with a skill point unspent | The point can still be spent from the HUD. A level is not an action the unit takes |
 | Rooted while lifted by Updraft | Lift wins; the unit drops where the updraft leaves it, and root keeps counting |
+| Lifted with a move running | The move is put aside, not cleared: the unit takes it up again where it lands and walks there from the drop |
 | Rooted during a move | The move is cleared; the hero stands until root expires and does not resume |
 | Knocked back into an obstacle | The displacement stops at the obstacle edge |
 | Slowed below the minimum speed | Speed clamps at the spec's minimum of 100 |

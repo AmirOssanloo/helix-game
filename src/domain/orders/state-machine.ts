@@ -1,7 +1,8 @@
 import type { EntityId } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
 import type { Unit } from "../entities/unit";
-import { clearPath } from "../entities/unit";
+import { clearPath, clearSuspendedOrder } from "../entities/unit";
+import type { OrderKind } from "./order";
 
 /** Why a transition did not happen. Each names the state or order the transition needed and did not find. */
 export type TransitionRefusal =
@@ -15,6 +16,7 @@ export type TransitionRefusal =
   | "not_in_backswing"
   | "already_channeling"
   | "not_channeling"
+  | "no_order_suspended"
   | "dead"
   | "not_dead";
 
@@ -350,6 +352,7 @@ export const die = (unit: Unit): TransitionResult => {
 
   dropOrder(unit);
   clearCast(unit);
+  clearSuspendedOrder(unit.suspended);
   unit.state = "dead";
 
   return "ok";
@@ -362,6 +365,60 @@ export const respawn = (unit: Unit): TransitionResult => {
   }
 
   unit.state = "idle";
+
+  return "ok";
+};
+
+/** Whether an order survives being lifted. A cast does not: a lift stuns, and a stun cancels a cast. */
+const isKeptWhileLifted = (kind: OrderKind): boolean =>
+  kind === "move" || kind === "attack_move" || kind === "attack_target";
+
+/**
+ * A lift took the unit off the ground: the order it was walking is put aside and the unit
+ * holds nothing until the lift ends. A cast is cancelled rather than put aside, as the stun
+ * the lift carries would cancel it. Called every tick the unit is in the air, so the second
+ * tick finds nothing left to put aside and changes nothing; the order the first tick saved
+ * stands until `resumeOrder` gives it back. Refused while dead.
+ */
+export const suspendOrder = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
+  if (unit.suspended.kind === "none" && isKeptWhileLifted(unit.order.kind)) {
+    unit.suspended.kind = unit.order.kind;
+    unit.suspended.destination.x = unit.order.destination.x;
+    unit.suspended.destination.y = unit.order.destination.y;
+    unit.suspended.targetId = unit.order.targetId;
+  }
+
+  dropOrder(unit);
+  clearCast(unit);
+
+  return "ok";
+};
+
+/**
+ * The unit is back on the ground and takes up the order the lift put aside: it turns to face
+ * afresh from where it was dropped and asks for a new path, since the one it was walking
+ * started somewhere else. Refused while dead, and when nothing was put aside.
+ */
+export const resumeOrder = (unit: Unit): TransitionResult => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
+  if (unit.suspended.kind === "none") {
+    return "no_order_suspended";
+  }
+
+  takeOrder(unit);
+  unit.order.kind = unit.suspended.kind;
+  unit.order.destination.x = unit.suspended.destination.x;
+  unit.order.destination.y = unit.suspended.destination.y;
+  unit.order.targetId = unit.suspended.targetId;
+  unit.needsPath = unit.suspended.kind !== "attack_target";
+  clearSuspendedOrder(unit.suspended);
 
   return "ok";
 };

@@ -51,9 +51,9 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | Layer | domain, tests |
 | Size | 1 |
 | Depends on | T01, P2-S07-T04 |
-| Status | planned |
+| Status | done |
 
-**Build:** Under `src/domain/abilities/primitives/`: `damage_area` over a shape (circle, rotated rectangle, cone by angle) around a point, querying the hash and doing the exact test per shape, applying damage of a type with an amount from a level table, optionally split among those hit; `apply_status` to a unit or to units in a shape, with a duration table; `displace` as push (a direction and distance over N ticks), pull, or lift (sets the lifted status and suspends the order, restores it on drop). Displacement moves the unit each tick through the movement system's translate step so push-out and obstacle rules apply. Every shape test is a pure function in `domain/movement/shapes.ts`.
+**Build:** Under `src/domain/abilities/primitives/`: `damage_area` over a shape (circle, rotated rectangle, cone by angle) around a point, querying the hash and doing the exact test per shape, applying damage of a type with an amount from a level table, optionally split among those hit; `apply_status` to a unit or to units in a shape, with a duration table; `displace` as push (a direction and distance over N ticks) or lift (sets the lifted status and suspends the order, restores it on drop). Displacement moves the unit each tick through the movement system's translate step so push-out and obstacle rules apply. Every shape test is a pure function in `domain/movement/shapes.ts`.
 
 **Acceptance:**
 - Circle, rectangle, and cone each hit exactly the units inside from a fixture of twelve positioned units.
@@ -63,8 +63,23 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 **Tests:**
 - `tests/domain/movement/shapes.spec.ts` — the three shapes at boundaries.
 - `tests/domain/abilities/primitives/damage-area.spec.ts`, `apply-status.spec.ts`, `displace.spec.ts` — one to three each.
+- `tests/simulation/movement/displacement.spec.ts` — the two acceptance rows that are sequences: the push into a wall and the lift that gives the order back.
 
 **Definition of done:** Every change · `src/domain`.
+
+> **Note, 2026-09-22:** six things came out differently and the ticket stands as edited above.
+>
+> **Pull is not built.** Section 7.1 of the catalogue says pull has no user among the ten spells and is not built until one exists, and `DisplaceEffectDef` has carried push and lift only since P2-S07-T02. The ticket's "pull" is struck; the first ability that needs one adds the mode, the schema row, and its spec together.
+>
+> **A push names its status.** The catalogue says a push applies `knockback` for its duration, and the `displaced` flag is a status flag, so the flag can only come from a status. Rather than name a content id in the domain, the push variant gains `statusId` beside the lift's, the schema and the registry validation check it like every other status reference, and the catalogue's displace row is corrected to list it. Behaviour is unchanged; nothing was approved differently.
+>
+> **A lift suspends rather than clears.** T01 built the stun rule, and a lift is a stun, so a lift cleared the order for good. `suspendOrder` and `resumeOrder` join the order state machine with a `suspended` order beside the unit's own, and the status pass puts the order aside while the lifted flag is up and gives it back on the tick it falls, asking for a fresh path from the drop. A cast is cancelled rather than put aside, as the stun would cancel it. Death clears what was put aside.
+>
+> **A push is a record on the unit.** The unit gains a `push` of a per-tick step and a count of ticks left; the movement system carries it before anything walks and leaves it to the collision pass, which is what stops a push at a wall's edge. A second push on a unit one already has hold of is ignored, as `knockback` ignores.
+>
+> **Who is hostile is now a rule.** `EffectTargetDef` has said since P2-S07-T02 that a shape or a zone collects hostile units only, and nothing decided what that meant. `src/domain/combat/sides.ts` is the two sides — the hero with its summons against the enemies — as a pure function over the unit kinds. It is what an attack's target rule will read in sprint 09.
+>
+> **Effect durations are converted where they are read.** An effect list has no record beside it the way a spell and a status do, so a duration in seconds on an entry becomes ticks when the effect runs, through one door, `ticksOfSeconds` in `src/domain/definitions/`. It is a departure from "a system never multiplies by the tick rate" and it is [Q26](../backlog/open-questions.md).
 
 ---
 
@@ -122,7 +137,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | --- | --- |
 | Every disable-versus-action test green through real statuses | |
 | Zone pool at capacity behaves | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 0.5 · T03 · T04 |
 
 ## Risks in this sprint
 

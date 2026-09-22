@@ -1,7 +1,9 @@
 import type { Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared, length, sub } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
+import type { PoolView } from "../entities/pool";
 import type { Unit } from "../entities/unit";
+import { clearPush } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { arrive, beginMoving } from "../orders/state-machine";
 import { isPathComplete, nextWaypoint, passWaypoint } from "./path";
@@ -56,6 +58,35 @@ const reachWaypoint = (
 };
 
 /**
+ * Moves every unit a push has hold of by this tick's step of it and counts the tick off. A
+ * unit whose ticks run out is let go where the step and the collision pass after it left it.
+ * A push does not survive death: a corpse is not carried.
+ */
+const carryPushed = (units: PoolView<Unit>): void => {
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit === null || unit.push.ticksLeft === 0) {
+      continue;
+    }
+
+    if (unit.state === "dead") {
+      clearPush(unit.push);
+
+      continue;
+    }
+
+    unit.curr.x += unit.push.step.x;
+    unit.curr.y += unit.push.step.y;
+    unit.push.ticksLeft -= 1;
+
+    if (unit.push.ticksLeft === 0) {
+      clearPush(unit.push);
+    }
+  }
+};
+
+/**
  * Turns and moves every unit that is underway along the path the pathing system wrote. Each
  * tick, for each such unit: stand still while the path is empty, which is a unit waiting its
  * turn for a path; turn toward the next waypoint along the shortest arc, ramping up over the
@@ -66,7 +97,9 @@ const reachWaypoint = (
  * the world.
  *
  * A unit a push is carrying neither turns nor translates itself: it keeps its order and
- * resumes walking it when the push ends.
+ * resumes walking it when the push ends. The push itself is the first step of the system, so
+ * a displaced unit moves by the same arithmetic as a walking one and is left to the collision
+ * pass the same way, which is what stops a knockback inside a wall.
  *
  * The system also keeps the spatial hash true to where units stand: it rebuilds the hash when
  * the cell size tunable has changed, and after translating it moves every live unit to the
@@ -88,6 +121,8 @@ export const movementSystem = (world: World): void => {
   if (hash.cellSize !== cellSize) {
     hash.rebuild(cellSize, units);
   }
+
+  carryPushed(units);
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);

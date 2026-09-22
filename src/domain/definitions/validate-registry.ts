@@ -232,15 +232,13 @@ const checkEffects = (
         break;
 
       case "displace":
-        if (effect.mode === "lift") {
-          checkReference(
-            faults,
-            file,
-            `${at}.statusId`,
-            effect.statusId,
-            spaces.statuses,
-          );
-        }
+        checkReference(
+          faults,
+          file,
+          `${at}.statusId`,
+          effect.statusId,
+          spaces.statuses,
+        );
 
         break;
 

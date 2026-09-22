@@ -7,7 +7,7 @@ import { clearStatusEntry } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
-import { clearOrder } from "../orders/state-machine";
+import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
 import { writeStatus } from "./status-table";
 
@@ -200,7 +200,10 @@ const readTable = (world: World, unit: Unit, unitId: EntityId): void => {
  *
  * A stun clears the order, so a stunned unit stands where it was and whatever it was casting
  * is cancelled; a root clears a move or an attack-move, so a rooted unit does not resume it
- * when the root ends. A dead unit holds no order and keeps its empty table until it respawns.
+ * when the root ends. A lift is the one condition that gives an order back: it takes the
+ * order off the unit for as long as the unit is in the air and puts it on again on the tick
+ * the lift ends, from wherever the unit was dropped. A dead unit holds no order and keeps its
+ * empty table until it respawns.
  */
 export const statusSystem = (world: World): void => {
   const units = world.map.units;
@@ -217,6 +220,16 @@ export const statusSystem = (world: World): void => {
 
     if (unit.state === "dead") {
       continue;
+    }
+
+    if (unit.disables.lifted) {
+      suspendOrder(unit);
+
+      continue;
+    }
+
+    if (unit.suspended.kind !== "none") {
+      resumeOrder(unit);
     }
 
     const isWalking =

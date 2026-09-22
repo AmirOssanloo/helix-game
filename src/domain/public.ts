@@ -71,6 +71,7 @@ export {
   type ToggleInfiniteManaCommand,
   type ToggleNoCooldownsCommand,
 } from "./commands/command";
+export { isHostile, type Side, sideOf } from "./combat/sides";
 export {
   applyDamage,
   DAMAGE_TYPES,
@@ -141,7 +142,13 @@ export type {
 } from "./definitions/form-def";
 export { createFormRecords } from "./definitions/form-state";
 export type { HeroDef } from "./definitions/hero-def";
-export type { LevelTable, Scalar } from "./definitions/level-table";
+export {
+  type LevelTable,
+  type Scalar,
+  scalarAtOrbLevels,
+  tableAtOrbLevels,
+} from "./definitions/level-table";
+export { ticksOfSeconds } from "./definitions/duration";
 export type { MapDef, SpawnDef } from "./definitions/map-def";
 export { ORB_IDS, type OrbId } from "./definitions/orb-id";
 export type { Registry } from "./definitions/registry";
@@ -244,6 +251,7 @@ export {
   acquireUnit,
   type CastState,
   clearPath,
+  clearPush,
   clearStatusEntry,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
@@ -251,6 +259,7 @@ export {
   type ModifierKind,
   type Path,
   PATH_CAPACITY,
+  type Push,
   releaseUnit,
   type Resources,
   type Stat,
@@ -351,6 +360,12 @@ export {
   pushOutOfRect,
   separateDiscs,
 } from "./movement/collision";
+export {
+  circleCovers,
+  coneCovers,
+  coneHalfAngle,
+  rectangleCovers,
+} from "./movement/shapes";
 export { collisionSystem } from "./movement/collision.system";
 export { movementSystem } from "./movement/movement.system";
 export {
@@ -411,6 +426,8 @@ export {
   issueCast,
   issueMove,
   respawn,
+  resumeOrder,
+  suspendOrder,
   type TransitionRefusal,
   type TransitionResult,
 } from "./orders/state-machine";
