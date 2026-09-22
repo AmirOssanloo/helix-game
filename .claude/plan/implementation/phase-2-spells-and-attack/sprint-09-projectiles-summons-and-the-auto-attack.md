@@ -88,6 +88,8 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new enemy or behaviour (the dropdown row) · A developer-panel control.
 
+> **Note, 2026-09-22:** the clamp-at-one flag is `indestructible` on `EnemyDef`, built in sprint 07 with the damage door that reads it. The damage rule and the death system read the unit, not the definition, so the spawn this ticket builds writes the definition's health, armour, magic resistance, and that flag onto the unit it acquires. A unit spawned with no maximum health is never taken by the death system, which is what keeps the panel's plain stress bodies standing.
+
 ---
 
 ### P2-S09-T04 — Hit feedback from events: flashes and floating numbers

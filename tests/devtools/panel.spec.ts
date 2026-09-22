@@ -304,6 +304,25 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("shows what the last hit landed and how many units have died", () => {
+    const arranged = arrange();
+
+    arranged.api.submit({
+      kind: "apply_damage",
+      amount: 60,
+      damageType: "pure",
+    });
+    arranged.world.tick();
+    arranged.api.submit({ kind: "kill_hero" });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last damage")).toBe("60.0 pure");
+    expect(readoutNamed(arranged.host, "Deaths")).toBe("1");
+
+    arranged.handle.unmount();
+  });
+
   it("leaves nothing in the host once unmounted", () => {
     const arranged = arrange();
 

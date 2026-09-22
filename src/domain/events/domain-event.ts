@@ -1,10 +1,13 @@
+import type { EntityId } from "@shared/public";
+import type { DamageType } from "../combat/damage";
 import type { RefusalReason } from "../orders/validator";
 import type { Tick } from "../tick";
 
 /**
  * The fields every event carries, so a ring slot is one shape and a write copies values,
  * never objects. A kind reads the fields its docblock names; the rest hold their neutral
- * value: `-1` for an orb, `0` for a slot, `null` for an id or a reason.
+ * value: `-1` for an orb, `0` for a slot or an amount, `null` for an id, a reason, or a
+ * damage type.
  */
 type EventFields = {
   tick: Tick;
@@ -14,6 +17,13 @@ type EventFields = {
   /** A slot key, 1 to 6 in the order Q, W, E, R, D, F. */
   slot: number;
   reason: RefusalReason | null;
+  /** The unit the event happened to. */
+  unitId: EntityId | null;
+  /** The unit that caused it, or `null` where nothing did. */
+  sourceId: EntityId | null;
+  /** Health, after mitigation. */
+  amount: number;
+  damageType: DamageType | null;
 };
 
 /**
@@ -26,7 +36,9 @@ export type DomainEvent =
   | SpellInvokedEvent
   | SlotsChangedEvent
   | CastCommittedEvent
-  | CommandRefusedEvent;
+  | CommandRefusedEvent
+  | UnitDamagedEvent
+  | UnitDiedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -46,6 +58,12 @@ export type CastCommittedEvent = EventFields & { kind: "cast_committed" };
 /** A player command was refused for `reason`; `slot` names the key when it was a slot key and `abilityId` the spell when it was a cast, so the view can flash the square. */
 export type CommandRefusedEvent = EventFields & { kind: "command_refused" };
 
+/** `unitId` took `amount` of `damageType` from `sourceId`: the amount that landed after mitigation, which is the number a view shows, even where the health it removed was less. */
+export type UnitDamagedEvent = EventFields & { kind: "unit_damaged" };
+
+/** `unitId`'s health reached zero and the death system took it, once, at the end of the tick. `sourceId` is the unit that landed the last hit, or `null`. */
+export type UnitDiedEvent = EventFields & { kind: "unit_died" };
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -62,6 +80,10 @@ export const createDomainEvent = (): EventSlot => ({
   abilityId: null,
   slot: 0,
   reason: null,
+  unitId: null,
+  sourceId: null,
+  amount: 0,
+  damageType: null,
 });
 
 /** Writes `source`'s fields into `target`, so the ring stores an event without allocating. */
@@ -75,6 +97,10 @@ export const copyDomainEvent = (
   target.abilityId = source.abilityId;
   target.slot = source.slot;
   target.reason = source.reason;
+  target.unitId = source.unitId;
+  target.sourceId = source.sourceId;
+  target.amount = source.amount;
+  target.damageType = source.damageType;
 };
 
 /** Puts every field back to its neutral value, so an announcer that fills only what its kind needs never carries the last event's fields. */
@@ -85,4 +111,8 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.abilityId = null;
   event.slot = 0;
   event.reason = null;
+  event.unitId = null;
+  event.sourceId = null;
+  event.amount = 0;
+  event.damageType = null;
 };

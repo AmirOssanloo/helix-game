@@ -82,7 +82,7 @@ Each ability id has its own cooldown clock on the caster, in ticks. There is no 
 `domain/combat/` owns what happens after an effect lands.
 
 - **Damage** has a type — physical, magical, or pure — and mitigation depends on the type: physical against armour, magical against magic resistance, pure against nothing. The formula is a tunable, not a literal.
-- **Death** is resolved by its own system at the end of the tick, so two effects that kill the same unit in one tick produce one death event.
+- **Death** is resolved by its own system at the end of the tick, so two effects that kill the same unit in one tick produce one death event. It clears the unit's status table and announces it once. The hero goes through a death state and comes back after the respawn delay; every other unit holds its slot for a tuned delay, so what was aimed at it resolves for a moment longer, and is then released. A unit whose definition makes it indestructible stops at one health and is never taken.
 - **A status** is an entry in the target's status table referencing a status definition. The definition's stack rule decides what a second application does: **refresh** resets the end tick, **stack** adds a stack and resets, **ignore** does nothing while one is active.
 - **Disables** are statuses that block: stun blocks every command, silence blocks every ability, root blocks movement, disarm blocks attacks. The status system derives disable flags from the status table at the end of every tick; the next tick's validator reads them.
 - **A damage hook** is a status definition's answer to "when this unit takes or deals damage, do X". The definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with an internal cooldown table, so a hook is written with the same primitives and named effects as a cast and needs no registry of its own. The damage function runs the target's taken hooks and the source's dealt hooks once per damage instance, after mitigation, with the holder as the anchor and the unit on the other side of the damage as the target. Damage caused by a hook runs no hooks, so a hook can neither trigger itself nor ping-pong with another. The cooldown's length is on the definition and its ready-at tick on the status table entry, so the state replays and nothing allocates.
@@ -146,7 +146,7 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Percentage cooldown reduction | Read at commit, baked into the clock, never rewrites a running clock |
 | Evicted hero spells | Keep their clocks in a hidden map |
 | Damage types | Physical, magical, pure; mitigation by type in `domain/combat/`, formula as a tunable |
-| Death | Resolved once per tick by its own system |
+| Death | Resolved once per tick by its own system: statuses cleared, announced once, the hero respawning and every other unit released after a tuned delay; an indestructible unit stops at one health |
 | Status stacking | Refresh, stack, or ignore, decided by the status definition |
 | Disables | Stun blocks everything, silence blocks abilities, root blocks movement, disarm blocks attacks; flags derived from the status table at the end of the tick, read by the next tick's validator |
 | Damage hooks | A status definition carries a damage-taken hook, a damage-dealt hook, or neither, each an effect list with a cooldown table; run by the damage function after mitigation; hook damage runs no hooks; the ready-at tick lives on the entry |

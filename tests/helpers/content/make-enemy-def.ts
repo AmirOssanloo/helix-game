@@ -22,6 +22,7 @@ const unitDefaults = (id: string): EnemyDef => ({
   aggroRadius: 500,
   leashRadius: 1000,
   experience: 0,
+  indestructible: false,
   tier: "normal",
   abilities: [],
   behaviour: "stationary",

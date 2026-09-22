@@ -60,5 +60,6 @@ export { loadInputLog } from "./world/load-input-log";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
+export { spawnUnit, type SpawnUnitOptions } from "./world/spawn-unit";
 export { submit } from "./world/submit";
 export { tickUntil } from "./world/tick-until";

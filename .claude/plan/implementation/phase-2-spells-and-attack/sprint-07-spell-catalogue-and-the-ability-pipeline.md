@@ -100,7 +100,7 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 | Layer | domain, simulation, tests |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Under `src/domain/combat/`: `applyDamage(world, targetId, amount, type, sourceId)` with physical reduced by armour, magical by magic resistance, pure by nothing, the formulas as tunables per the hero page, a `unit_damaged` event with the post-mitigation amount and the type, and health clamped at zero; the training dummy's clamp-at-one rule as a definition flag, not a special case in the formula. `deathSystem` registered at the end of the tick: every unit at zero health emits one `unit_died` event, clears its status table, and is released after a tunable delay (the hero goes through its death state instead). The `apply_damage` debug command now goes through `applyDamage`.
 
@@ -115,6 +115,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
 
+> **Note, 2026-09-22, on closing:** built as written, with the damage door, the two events, the general death system, and the two specs the ticket names. Nine things the build decided or found: (1) `applyDamage` in `src/domain/combat/damage.ts` is the one door, and `mitigate` beside it is the pure rule it calls, a function over an amount, a type, a unit's stats, and the armour constant, so the table in `tests/domain/combat/mitigation.spec.ts` needs no world; (2) the armour formula is the source game's curve, `constant * armour / (1 + constant * |armour|)` off the hit, with `armour_constant` a new tunable at 0.06, so each point is worth less than the one before it, no amount reaches immunity, and negative armour adds what it would have taken; magic resistance needs no constant, being a fraction of one already, and every type's result stops at zero so mitigation never heals; (3) the panel's damage derives the hero's stats first, as its heal and its restore already did, since the stats system has not run when a command applies and mitigation must read this tick's armour; (4) the clamp-at-one rule is `indestructible` on `EnemyDef` and on the unit, written from the definition when a unit is spawned from one, which is sprint 09's spawn to do; the damage door reads the unit, since the world holds no table of enemy definitions to resolve a definition id through; (5) the event ring's one shape gains four fields, `unitId`, `sourceId`, `amount`, and `damageType`, and `unit_damaged` carries what landed after mitigation even where the health it removed was less, which is the number the enemies page says the dummy shows; (6) the death system now runs over every unit, but only over one with a health pool: a plain body the panel spawns for the stress test carries no maximum health and is not taken for dead, so 300 of them still stand; a unit spawned from a definition carries its definition's health and dies; (7) death announces once, clears the table, and writes the tick it is due on, the hero's from `respawn_delay` and every other unit's from `corpse_delay`, a new tunable at one second; the hero respawns on that tick and every other unit is released, so an id held across it resolves to nothing; (8) damage to a unit already dead lands nothing and announces nothing, while two lethal hits in one tick both land and make one death, because death is resolved at the end of the tick and not in the damage door; (9) the developer panel's Readouts group gains **Last damage** and **Deaths**, drained from the event ring with the cursor it already keeps, so the two new events have a reader as the definition of done asks and the panel's Apply damage button shows what mitigation left of it; the presentation's hit flashes and damage numbers over the same event arrive in sprint 09. The recorded phase 1 replay was re-stamped from `a2b0b595` to `d7d73b03` for the two new tunables; its commands touch nothing that changed. A `spawnUnit` test helper was added beside `spawnHero` for a unit that is not the hero, and sprint 09's dummy ticket carries a note that a spawn writes the health and the flag onto the unit.
+
 ---
 
 ## Sprint exit
@@ -122,8 +124,8 @@ The game plays exactly as at the end of phase 1. Under the hood, every stub now 
 | Check | Result |
 | --- | --- |
 | Spell catalogue approved | Written 2026-09-21 as `docs/product/specs/spell-catalogue.md`; the shape approved by the product owner as written, 2026-09-21 |
-| Content tier green; every phase 1 test green through the new pipeline | |
-| Actual days per ticket | T01 0.5 · T02 1 · T03 0.5 · T04 |
+| Content tier green; every phase 1 test green through the new pipeline | `pnpm check` green on 2026-09-22: lint, typecheck, build, and 1635 tests in 84 files, the content tier at 139 and the simulation tier at 324, the phase 1 acceptance specs and the replay determinism test among them |
+| Actual days per ticket | T01 0.5 · T02 1 · T03 0.5 · T04 0.5 |
 
 ## Risks in this sprint
 

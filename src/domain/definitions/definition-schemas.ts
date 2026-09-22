@@ -408,6 +408,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
     aggroRadius: nonNegativeSchema,
     leashRadius: nonNegativeSchema,
     experience: nonNegativeSchema,
+    indestructible: booleanSchema,
     tier: oneOf(ENEMY_TIERS),
     abilities: arrayOf(idSchema),
     behaviour: idSchema,

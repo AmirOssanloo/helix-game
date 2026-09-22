@@ -1,10 +1,16 @@
+import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
+import { resourcesOf } from "../abilities/cast";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
-import { clearStatusEntry } from "../entities/unit";
+import { clearStatusEntry, releaseUnit } from "../entities/unit";
 import type { FormRecord, World } from "../entities/world-state";
+import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { die, respawn } from "../orders/state-machine";
+
+/** Scratch for the event a death announces, reused for every one. */
+const event = createDomainEvent();
 
 /** Empties the unit's status table, so nothing that was on it outlives it. */
 const clearStatuses = (unit: Unit): void => {
@@ -17,18 +23,39 @@ const clearStatuses = (unit: Unit): void => {
   }
 };
 
+const announceDied = (world: World, unitId: EntityId): void => {
+  resetDomainEvent(event);
+  event.kind = "unit_died";
+  event.tick = world.tick;
+  event.unitId = unitId;
+  world.events.write(event);
+};
+
 /**
- * The hero's health reached zero: it enters the death state with its order cleared and its
- * status table emptied, and the respawn is due after the tuned delay. Its clocks keep
- * counting, its orbs and prepared slots are untouched, and it stands where it fell.
+ * Whether the unit has health to lose. The hero and a unit spawned from a definition both
+ * carry a maximum; the plain body the panel spawns for the stress test carries none, and
+ * what was never alive is never taken for dead.
  */
-const takeDeath = (world: World, hero: Unit): void => {
-  const result = die(hero);
+const hasHealthPool = (unit: Readonly<Unit>): boolean =>
+  unit.stats.maxHealth > 0;
+
+/**
+ * The unit's health reached zero: whatever it was doing ends, its status table is emptied,
+ * the death is announced once, and the tick it is due on is written. The hero respawns on
+ * that tick; every other unit is released then.
+ */
+const takeDeath = (
+  world: World,
+  unit: Unit,
+  id: EntityId,
+  delay: number,
+): void => {
+  const result = die(unit);
 
   assert(result === "ok", "A living unit whose health reached zero dies");
-  clearStatuses(hero);
-  hero.stageEndsAtTick =
-    world.tick + readTunable(world.run.tuning, "respawn_delay");
+  clearStatuses(unit);
+  announceDied(world, id);
+  unit.stageEndsAtTick = world.tick + delay;
 };
 
 /**
@@ -42,12 +69,10 @@ const takeRespawn = (
   world: World,
   hero: Unit,
   form: FormRecord,
-  index: number,
+  id: EntityId,
 ): void => {
-  const id = world.map.units.idAt(index);
   const result = respawn(hero);
 
-  assert(id !== null, "A live slot has an id");
   assert(result === "ok", "A dead unit whose delay elapsed respawns");
   hero.curr.x = hero.spawnPoint.x;
   hero.curr.y = hero.spawnPoint.y;
@@ -59,39 +84,58 @@ const takeRespawn = (
   world.map.spatialHash.move(id, hero.curr.x, hero.curr.y);
 };
 
+/** The tick a dead unit was due on: the hero stands up again, and every other unit gives its slot back. */
+const endDeath = (world: World, unit: Unit, id: EntityId): void => {
+  if (unit.kind !== "hero") {
+    releaseUnit(world, id);
+
+    return;
+  }
+
+  const form = activeFormOf(world, unit);
+
+  if (form !== null) {
+    takeRespawn(world, unit, form, id);
+  }
+};
+
 /**
- * Resolves death once per tick, last, so every hit this tick landed is counted and two zeros
- * make one death. The hero is the only unit with a health source, so it is the only unit
- * this system reads; an enemy's death arrives with its definition. A living hero at zero
- * dies; a dead hero whose delay has run out respawns. Nothing revives a hero early: a heal
- * while dead raises a number the respawn overwrites.
+ * Resolves death once per tick, last, so every hit the tick landed is counted and two zeros
+ * make one death: a unit is taken on the tick its health reaches zero, whoever emptied it
+ * and however many hits did. A unit with no health pool is not a unit that dies. The hero
+ * goes through its death state and comes back after the respawn delay; every other unit
+ * holds its slot for the corpse delay and is released then, so an id held across it resolves
+ * to nothing. Nothing revives a unit early: a heal while dead raises a number the respawn
+ * overwrites.
  */
 export const deathSystem = (world: World): void => {
   const units = world.map.units;
+  const corpseDelay = readTunable(world.run.tuning, "corpse_delay");
+  const respawnDelay = readTunable(world.run.tuning, "respawn_delay");
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
+    const id = units.idAt(index);
 
-    if (unit === null || unit.kind !== "hero") {
-      continue;
-    }
-
-    const form = activeFormOf(world, unit);
-
-    if (form === null) {
+    if (unit === null || id === null) {
       continue;
     }
 
     if (unit.state === "dead") {
       if (world.tick >= unit.stageEndsAtTick) {
-        takeRespawn(world, unit, form, index);
+        endDeath(world, unit, id);
       }
 
       continue;
     }
 
-    if (form.resources.health <= 0) {
-      takeDeath(world, unit);
+    if (hasHealthPool(unit) && resourcesOf(world, unit).health <= 0) {
+      takeDeath(
+        world,
+        unit,
+        id,
+        unit.kind === "hero" ? respawnDelay : corpseDelay,
+      );
     }
   }
 };

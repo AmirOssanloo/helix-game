@@ -148,6 +148,8 @@ export type Unit = {
   /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
   disables: DisableFlags;
   resources: Resources;
+  /** Whether damage leaves the unit at one health instead of zero: the training dummy's rule, written from its definition at spawn. */
+  indestructible: boolean;
   /** Ability id to the tick the ability is ready again, evicted spells included. Allocated once per slot, emptied on release and on respawn. */
   cooldowns: Map<string, Tick>;
   /** The status table: every lasting condition on the unit, an empty row being a `null` definition id. Cleared by death. */
@@ -267,6 +269,7 @@ const createUnit = (): Unit => {
       disarmed: false,
     },
     resources: { health: 0, mana: 0 },
+    indestructible: false,
     cooldowns: new Map(),
     statuses,
     activeFormIndex: 0,
@@ -325,6 +328,7 @@ const clearUnit = (unit: Unit): void => {
   unit.disables.disarmed = false;
   unit.resources.health = 0;
   unit.resources.mana = 0;
+  unit.indestructible = false;
   unit.cooldowns.clear();
 
   for (let row = 0; row < unit.statuses.length; row += 1) {

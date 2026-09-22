@@ -98,6 +98,10 @@ describe("a skill-point spend through the world", () => {
         abilityId: null,
         slot: Q,
         reason: "no_skill_point",
+        unitId: null,
+        sourceId: null,
+        amount: 0,
+        damageType: null,
       },
     ]);
   });

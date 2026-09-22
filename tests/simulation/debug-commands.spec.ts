@@ -97,6 +97,30 @@ const refusals = (world: Simulation, reader: EventReader): DomainEvent[] => {
 const reasons = (world: Simulation, reader: EventReader): string[] =>
   refusals(world, reader).map((event) => String(event.reason));
 
+/** What each hit the reader has not seen landed on whom, advancing it past everything. */
+const damageEvents = (
+  world: Simulation,
+  reader: EventReader,
+): Record<string, unknown>[] => {
+  const found: Record<string, unknown>[] = [];
+  let event = world.events.read(reader);
+
+  while (event !== null) {
+    if (event.kind === "unit_damaged") {
+      found.push({
+        unitId: event.unitId,
+        sourceId: event.sourceId,
+        amount: event.amount,
+        damageType: event.damageType,
+      });
+    }
+
+    event = world.events.read(reader);
+  }
+
+  return found;
+};
+
 describe("debug_noop", () => {
   it("lands in the input log and changes nothing", () => {
     const { world, hero } = arrange();
@@ -112,20 +136,64 @@ describe("debug_noop", () => {
 });
 
 describe("apply_damage", () => {
-  it.each(["physical", "magical", "pure"] as const)(
-    "takes the whole amount as %s: mitigation passes every type through",
-    (damageType) => {
-      const { world, form } = arrange();
+  it("takes a physical hit through the hero's armour", () => {
+    const { world, form } = arrange();
 
-      debug(
-        world,
-        stamp(world, { kind: "apply_damage", amount: 60, damageType }),
-      );
-      world.tick();
+    debug(
+      world,
+      stamp(world, {
+        kind: "apply_damage",
+        amount: 112,
+        damageType: "physical",
+      }),
+    );
+    world.tick();
 
-      expect(form.resources.health).toBe(FULL_HEALTH - 60);
-    },
-  );
+    expect(form.resources.health).toBe(FULL_HEALTH - 100);
+  });
+
+  it("takes a magical hit through the hero's magic resistance", () => {
+    const { world, form } = arrange();
+
+    debug(
+      world,
+      stamp(world, { kind: "apply_damage", amount: 60, damageType: "magical" }),
+    );
+    world.tick();
+
+    expect(form.resources.health).toBe(FULL_HEALTH - 45);
+  });
+
+  it("takes a pure hit whole", () => {
+    const { world, form } = arrange();
+
+    debug(
+      world,
+      stamp(world, { kind: "apply_damage", amount: 60, damageType: "pure" }),
+    );
+    world.tick();
+
+    expect(form.resources.health).toBe(FULL_HEALTH - 60);
+  });
+
+  it("announces the hit with what landed and its type", () => {
+    const { world, reader } = arrange();
+
+    debug(
+      world,
+      stamp(world, { kind: "apply_damage", amount: 60, damageType: "magical" }),
+    );
+    world.tick();
+
+    expect(damageEvents(world, reader)).toEqual([
+      {
+        unitId: world.view.run.heroId,
+        sourceId: null,
+        amount: 45,
+        damageType: "magical",
+      },
+    ]);
+  });
 
   it("never takes health below zero, and the hero dies at the end of the tick", () => {
     const { world, hero, form } = arrange();

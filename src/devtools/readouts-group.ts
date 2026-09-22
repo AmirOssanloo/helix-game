@@ -16,8 +16,11 @@ const DASH = "-";
 const MS_DECIMALS = 2;
 const FPS_DECIMALS = 0;
 
-/** What the refusal line shows until a command is refused. */
-const NO_REFUSAL = "none";
+/** What the refusal line shows until a command is refused, and the damage line until a hit lands. */
+const NOTHING_YET = "none";
+
+/** Decimals a damage amount is shown to: mitigation leaves fractions, and the tenth is enough to read one. */
+const DAMAGE_DECIMALS = 1;
 
 const formatNumber = (value: number | null, decimals: number): string =>
   value === null ? DASH : value.toFixed(decimals);
@@ -35,9 +38,10 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
 /**
  * The readouts group: every measurement the rings hold, as mean and max over the last second
  * for the timings and as the latest sample for the counts, plus the tick number from the view
- * and the last refusal from the event ring, read with the panel's own cursor. The ring
- * stores samples; the statistics are computed here, on each refresh, and nowhere in the
- * simulation. Draw calls show a dash while nothing has counted them.
+ * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
+ * with what mitigation left of it, and how many units have died. The ring stores samples;
+ * the statistics are computed here, on each refresh, and nowhere in the simulation. Draw
+ * calls show a dash while nothing has counted them.
  */
 export const readoutsGroup = (api: DevApi): PanelGroup => {
   const reader: EventReader = createEventReader();
@@ -54,6 +58,8 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
   const overwrites = readoutRow("Event overwrites");
   const tick = readoutRow("Tick");
   const refusal = readoutRow("Last refusal");
+  const damage = readoutRow("Last damage");
+  const deaths = readoutRow("Deaths");
   const table = element("table", "dev-readouts", [
     tickTime.row,
     renderTime.row,
@@ -68,15 +74,27 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
     overwrites.row,
     tick.row,
     refusal.row,
+    damage.row,
+    deaths.row,
   ]);
-  let lastRefusal = NO_REFUSAL;
+  let lastRefusal = NOTHING_YET;
+  let lastDamage = NOTHING_YET;
+  let deathCount = 0;
 
-  const drainRefusals = (): void => {
+  const drainEvents = (): void => {
     let event = api.events.read(reader);
 
     while (event !== null) {
       if (event.kind === "command_refused" && event.reason !== null) {
         lastRefusal = event.reason;
+      }
+
+      if (event.kind === "unit_damaged" && event.damageType !== null) {
+        lastDamage = `${event.amount.toFixed(DAMAGE_DECIMALS)} ${event.damageType}`;
+      }
+
+      if (event.kind === "unit_died") {
+        deathCount += 1;
       }
 
       event = api.events.read(reader);
@@ -89,7 +107,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
       const rings = api.rings;
       const tickWindow = readTunable(api.view.run.tuning, "sim_hz");
 
-      drainRefusals();
+      drainEvents();
       tickTime.value.textContent = meanAndMax(
         rings.tickTime,
         tickWindow,
@@ -114,6 +132,8 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
       overwrites.value.textContent = latest(rings.eventOverwrites);
       tick.value.textContent = String(api.view.tick);
       refusal.value.textContent = lastRefusal;
+      damage.value.textContent = lastDamage;
+      deaths.value.textContent = String(deathCount);
     },
   };
 };

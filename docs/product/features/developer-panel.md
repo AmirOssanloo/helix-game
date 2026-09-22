@@ -51,7 +51,7 @@ A button that downloads the generated shape atlas as a PNG, so anyone can see wh
 
 ## Readouts
 
-Updated a few times per second, from preallocated sample rings.
+Updated a few times per second, from the preallocated sample rings and the event ring.
 
 | Readout | Shows |
 | --- | --- |
@@ -62,6 +62,9 @@ Updated a few times per second, from preallocated sample rings.
 | Live counts | Units, projectiles, zones, effects, views |
 | Pool misses | How many times a pool was asked for more than it holds |
 | Tick number | The simulation's clock |
+| Last refusal | The reason the last refused command was refused |
+| Last damage | What the last hit landed after mitigation, and its damage type |
+| Deaths | How many units have died since the page was loaded |
 
 ## Overlays
 

@@ -1,7 +1,7 @@
 import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
-import { takeDamage } from "../combat/damage";
+import { applyDamage } from "../combat/damage";
 import type { DebugCommand } from "../commands/command";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
@@ -137,10 +137,11 @@ const setOrbLevels = (
  * Applies one validated debug command. The switches, the spawn, the clear, and the reset act
  * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
- * not take the command, for the caller to announce, or `null` when it applied. A kill
- * writes the zero and leaves the death to the death system at the end of the tick; a heal
- * and a restore read this tick's maximums by deriving them first, since the stats system
- * has not yet run.
+ * not take the command, for the caller to announce, or `null` when it applied. Damage goes
+ * through the damage door, so the panel takes the mitigation every other hit does; a kill
+ * writes the zero and leaves the death to the death system at the end of the tick; damage,
+ * a heal, and a restore read this tick's stats by deriving them first, since the stats
+ * system has not yet run.
  */
 export const applyDebugCommand = (
   world: World,
@@ -186,8 +187,9 @@ export const applyDebugCommand = (
   }
 
   const hero = resolveHero(world);
+  const heroId = world.run.heroId;
 
-  if (hero === null) {
+  if (hero === null || heroId === null) {
     return null;
   }
 
@@ -196,7 +198,11 @@ export const applyDebugCommand = (
 
   switch (command.kind) {
     case "apply_damage":
-      takeDamage(resources, command.amount, command.damageType);
+      if (form !== null) {
+        refreshStats(hero, form);
+      }
+
+      applyDamage(world, heroId, command.amount, command.damageType, null);
 
       return null;
 

@@ -59,7 +59,7 @@ Every hit has one damage type, and the type decides what reduces it.
 | Magical | Magic resistance | Most spells |
 | Pure | Nothing | Rare, deliberate |
 
-The formulas follow the source game and live in `src/domain/combat/`; the starting armour and resistance values live in `src/content/forms/skein.def.ts`.
+The formulas follow the source game and live in `src/domain/combat/`. Armour runs through a curve, so each point is worth less than the one before it and no amount of it reaches immunity; magic resistance is a fraction of one taken off the hit. The curve's constant is a tunable in `src/content/tuning.ts`, and the starting armour and resistance values live in `src/content/forms/skein.def.ts`.
 
 ## Death and respawn
 

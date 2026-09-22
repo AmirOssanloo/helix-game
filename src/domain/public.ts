@@ -72,10 +72,11 @@ export {
   type ToggleNoCooldownsCommand,
 } from "./commands/command";
 export {
+  applyDamage,
   DAMAGE_TYPES,
   type DamageType,
   isDamageType,
-  takeDamage,
+  mitigate,
 } from "./combat/damage";
 export { deathSystem } from "./combat/death.system";
 export { applyDebugCommand } from "./debug/debug-commands";
@@ -278,6 +279,8 @@ export {
   type SlotsChangedEvent,
   type SpellInvokedEvent,
   type TickCompletedEvent,
+  type UnitDamagedEvent,
+  type UnitDiedEvent,
 } from "./events/domain-event";
 export {
   addOrb,

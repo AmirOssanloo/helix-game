@@ -35,6 +35,8 @@ export type EnemyDef = Readonly<{
   aggroRadius: number;
   leashRadius: number;
   experience: number;
+  /** Whether damage leaves a unit of it at one health instead of killing it: the training dummy takes and shows every hit and never dies. */
+  indestructible: boolean;
   tier: EnemyTier;
   abilities: readonly string[];
   behaviour: string;

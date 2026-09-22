@@ -393,6 +393,10 @@ describe("refusal flashes", () => {
       abilityId: null,
       slot,
       reason,
+      unitId: null,
+      sourceId: null,
+      amount: 0,
+      damageType: null,
     });
   };
 
