@@ -1,7 +1,9 @@
+import type { FolderApi } from "tweakpane";
 import type { TuningKey } from "@domain/public";
 import { TUNING_KEYS, TUNING_UNITS } from "@domain/public";
+import type { Binding } from "./bindings";
+import { onCommit } from "./bindings";
 import type { DevApi } from "./dev-api";
-import { sliderField } from "./dom";
 import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";
 
@@ -35,13 +37,20 @@ const isWhole = (key: TuningKey): boolean => {
 };
 
 /**
- * One slider per key of the tuning table, its default beside it. A release of the thumb is
- * one `set_tuning` command carrying the key and the value in the designer's units; the
- * world converts it once when the command applies and the log holds what was typed. The
- * sliders show what was sent, not the world: a reload is a fresh world at the defaults.
+ * One slider per key of the tuning table. A release of the thumb is one `set_tuning` command
+ * carrying the key and the value in the designer's units; the world converts it once when the
+ * command applies and the log holds what was typed.
+ *
+ * The sliders show what was sent, not the world: a reload is a fresh world at the defaults.
+ * The reset sends every key a person moved back to its default, one command each, so the way
+ * back from a session of pushing numbers around is a click and is in the log like the rest.
  */
-export const tuningGroup = (api: DevApi): PanelGroup => {
-  const nodes: Node[] = [];
+export const tuningGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
+  const values: Record<TuningKey, number> = { ...api.tuningDefaults };
+  const sliders: Binding<number>[] = [];
+  // A reset writes the sliders itself, and a slider rewritten reports a finished change like a
+  // released thumb does. This tells the two apart: only a hand on a slider sends a command.
+  let resetting = false;
 
   for (const key of TUNING_KEYS) {
     const fallback = api.tuningDefaults[key];
@@ -49,17 +58,38 @@ export const tuningGroup = (api: DevApi): PanelGroup => {
     const max = whole
       ? Math.max(fallback * RANGE_PER_DEFAULT, MIN_WHOLE_RANGE)
       : fallback * RANGE_PER_DEFAULT;
-    const step = whole ? 1 : max / CONTINUOUS_STEPS;
-    const slider = sliderField(key, fallback, 0, max, step, (value): void => {
-      api.submit({ kind: "set_tuning", key, value });
+    const slider = folder.addBinding(values, key, {
+      disabled: key === FIXED_KEY,
+      label: key,
+      max,
+      min: 0,
+      step: whole ? 1 : max / CONTINUOUS_STEPS,
     });
 
-    if (key === FIXED_KEY) {
-      slider.input.disabled = true;
-    }
-
-    nodes.push(slider.row);
+    onCommit(slider, (value): void => {
+      if (!resetting) {
+        api.submit({ key, kind: "set_tuning", value });
+      }
+    });
+    sliders.push(slider);
   }
 
-  return { nodes, refresh: NO_REFRESH };
+  folder.addButton({ title: "Reset tunables" }).on("click", (): void => {
+    for (const key of TUNING_KEYS) {
+      if (key !== FIXED_KEY && values[key] !== api.tuningDefaults[key]) {
+        values[key] = api.tuningDefaults[key];
+        api.submit({ key, kind: "set_tuning", value: values[key] });
+      }
+    }
+
+    resetting = true;
+
+    for (const slider of sliders) {
+      slider.refresh();
+    }
+
+    resetting = false;
+  });
+
+  return { refresh: NO_REFRESH };
 };

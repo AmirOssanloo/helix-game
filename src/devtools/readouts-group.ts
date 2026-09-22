@@ -1,9 +1,10 @@
+import type { FolderApi } from "tweakpane";
 import { readTunable } from "@domain/public";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import { readout } from "./bindings";
 import type { DevApi } from "./dev-api";
-import { element, readoutRow } from "./dom";
 import type { PanelGroup } from "./panel-group";
 import { lastSample, windowMax, windowMean } from "./statistics";
 
@@ -41,50 +42,29 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
  * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, and how many units have
- * died. The ring stores samples;
- * the statistics are computed here, on each refresh, and nowhere in the simulation. Draw
- * calls show a dash while nothing has counted them.
+ * died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
+ * in the simulation. Draw calls show a dash while nothing has counted them.
  */
-export const readoutsGroup = (api: DevApi): PanelGroup => {
+export const readoutsGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
   const reader: EventReader = createEventReader();
-  const tickTime = readoutRow("Tick ms mean / max");
-  const renderTime = readoutRow("Render ms mean / max");
-  const frameRate = readoutRow("Frame rate");
-  const drawCalls = readoutRow("Draw calls total / world");
-  const units = readoutRow("Units");
-  const projectiles = readoutRow("Projectiles");
-  const zones = readoutRow("Zones");
-  const effects = readoutRow("Effects");
-  const poolMisses = readoutRow("Pool misses");
-  const viewMisses = readoutRow("View misses");
-  const overwrites = readoutRow("Event overwrites");
-  const tick = readoutRow("Tick");
-  const refusal = readoutRow("Last refusal");
-  const damage = readoutRow("Last damage");
-  const status = readoutRow("Last status");
-  const zone = readoutRow("Last zone");
-  const projectile = readoutRow("Last projectile");
-  const deaths = readoutRow("Deaths");
-  const table = element("table", "dev-readouts", [
-    tickTime.row,
-    renderTime.row,
-    frameRate.row,
-    drawCalls.row,
-    units.row,
-    projectiles.row,
-    zones.row,
-    effects.row,
-    poolMisses.row,
-    viewMisses.row,
-    overwrites.row,
-    tick.row,
-    refusal.row,
-    damage.row,
-    status.row,
-    zone.row,
-    projectile.row,
-    deaths.row,
-  ]);
+  const tickTime = readout(folder, "Tick ms mean / max");
+  const renderTime = readout(folder, "Render ms mean / max");
+  const frameRate = readout(folder, "Frame rate");
+  const drawCalls = readout(folder, "Draw calls total / world");
+  const units = readout(folder, "Units");
+  const projectiles = readout(folder, "Projectiles");
+  const zones = readout(folder, "Zones");
+  const effects = readout(folder, "Effects");
+  const poolMisses = readout(folder, "Pool misses");
+  const viewMisses = readout(folder, "View misses");
+  const overwrites = readout(folder, "Event overwrites");
+  const tick = readout(folder, "Tick");
+  const refusal = readout(folder, "Last refusal");
+  const damage = readout(folder, "Last damage");
+  const status = readout(folder, "Last status");
+  const zone = readout(folder, "Last zone");
+  const projectile = readout(folder, "Last projectile");
+  const deaths = readout(folder, "Deaths");
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
   let lastStatus = NOTHING_YET;
@@ -137,41 +117,33 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
   };
 
   return {
-    nodes: [table],
     refresh: (): void => {
       const rings = api.rings;
       const tickWindow = readTunable(api.view.run.tuning, "sim_hz");
 
       drainEvents();
-      tickTime.value.textContent = meanAndMax(
-        rings.tickTime,
-        tickWindow,
-        MS_DECIMALS,
+      tickTime.show(meanAndMax(rings.tickTime, tickWindow, MS_DECIMALS));
+      renderTime.show(meanAndMax(rings.renderTime, FRAME_WINDOW, MS_DECIMALS));
+      frameRate.show(
+        formatNumber(windowMean(rings.frameRate, FRAME_WINDOW), FPS_DECIMALS),
       );
-      renderTime.value.textContent = meanAndMax(
-        rings.renderTime,
-        FRAME_WINDOW,
-        MS_DECIMALS,
+      drawCalls.show(
+        `${latest(rings.drawCalls)} / ${latest(rings.worldDrawCalls)}`,
       );
-      frameRate.value.textContent = formatNumber(
-        windowMean(rings.frameRate, FRAME_WINDOW),
-        FPS_DECIMALS,
-      );
-      drawCalls.value.textContent = `${latest(rings.drawCalls)} / ${latest(rings.worldDrawCalls)}`;
-      units.value.textContent = latest(rings.liveUnits);
-      projectiles.value.textContent = latest(rings.liveProjectiles);
-      zones.value.textContent = latest(rings.liveZones);
-      effects.value.textContent = latest(rings.liveEffects);
-      poolMisses.value.textContent = latest(rings.poolMisses);
-      viewMisses.value.textContent = latest(rings.viewMisses);
-      overwrites.value.textContent = latest(rings.eventOverwrites);
-      tick.value.textContent = String(api.view.tick);
-      refusal.value.textContent = lastRefusal;
-      damage.value.textContent = lastDamage;
-      status.value.textContent = lastStatus;
-      zone.value.textContent = lastZone;
-      projectile.value.textContent = lastProjectile;
-      deaths.value.textContent = String(deathCount);
+      units.show(latest(rings.liveUnits));
+      projectiles.show(latest(rings.liveProjectiles));
+      zones.show(latest(rings.liveZones));
+      effects.show(latest(rings.liveEffects));
+      poolMisses.show(latest(rings.poolMisses));
+      viewMisses.show(latest(rings.viewMisses));
+      overwrites.show(latest(rings.eventOverwrites));
+      tick.show(String(api.view.tick));
+      refusal.show(lastRefusal);
+      damage.show(lastDamage);
+      status.show(lastStatus);
+      zone.show(lastZone);
+      projectile.show(lastProjectile);
+      deaths.show(String(deathCount));
     },
   };
 };

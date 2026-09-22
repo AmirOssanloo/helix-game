@@ -95,6 +95,14 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
   return { api, world, driver, overlays, host, store, handle };
 };
 
+/**
+ * A control is found by the label beside it, the one name the panel and its page share. The
+ * two class names below are the pane's own and are the only place this spec knows them, so a
+ * pane upgrade that renames a row fails here and nowhere else.
+ */
+const ROW = ".tp-lblv";
+const ROW_LABEL = ".tp-lblv_l";
+
 const buttonNamed = (host: HTMLElement, label: string): HTMLButtonElement => {
   for (const button of host.querySelectorAll("button")) {
     if (button.textContent === label) {
@@ -105,66 +113,59 @@ const buttonNamed = (host: HTMLElement, label: string): HTMLButtonElement => {
   throw new Error(`The panel has no button "${label}"`);
 };
 
-const checkboxNamed = (host: HTMLElement, label: string): HTMLInputElement => {
-  for (const field of host.querySelectorAll("label")) {
-    const input = field.querySelector("input");
+const rowNamed = (host: HTMLElement, label: string): HTMLElement => {
+  for (const name of host.querySelectorAll(ROW_LABEL)) {
+    const row = name.closest(ROW);
 
-    if (field.textContent === label && input !== null) {
-      return input;
+    if (name.textContent === label && row instanceof HTMLElement) {
+      return row;
     }
   }
 
-  throw new Error(`The panel has no checkbox "${label}"`);
+  throw new Error(`The panel has no control labelled "${label}"`);
 };
 
+const checkboxNamed = (host: HTMLElement, label: string): HTMLInputElement => {
+  const input = rowNamed(host, label).querySelector('input[type="checkbox"]');
+
+  if (input instanceof HTMLInputElement) {
+    return input;
+  }
+
+  throw new Error(`The control "${label}" is not a checkbox`);
+};
+
+/** The text box of a number control, which a slider writes and a person types into. */
 const numberFieldNamed = (
   host: HTMLElement,
   label: string,
 ): HTMLInputElement => {
-  for (const field of host.querySelectorAll("label")) {
-    const input = field.querySelector('input[type="number"]');
+  const input = rowNamed(host, label).querySelector('input[type="text"]');
 
-    if (field.textContent === label && input instanceof HTMLInputElement) {
-      return input;
-    }
+  if (input instanceof HTMLInputElement) {
+    return input;
   }
 
-  throw new Error(`The panel has no number field "${label}"`);
-};
-
-const sliderNamed = (host: HTMLElement, key: string): HTMLInputElement => {
-  for (const field of host.querySelectorAll(".dev-slider-row")) {
-    const label = field.querySelector(".dev-slider-label");
-    const input = field.querySelector("input");
-
-    if (label?.textContent === key && input !== null) {
-      return input;
-    }
-  }
-
-  throw new Error(`The panel has no slider "${key}"`);
+  throw new Error(`The control "${label}" is not a number field`);
 };
 
 const selectNamed = (host: HTMLElement, label: string): HTMLSelectElement => {
-  for (const field of host.querySelectorAll("label")) {
-    const select = field.querySelector("select");
+  const select = rowNamed(host, label).querySelector("select");
 
-    if (field.childNodes[0]?.textContent === label && select !== null) {
-      return select;
-    }
+  if (select instanceof HTMLSelectElement) {
+    return select;
   }
 
-  throw new Error(`The panel has no select "${label}"`);
+  throw new Error(`The control "${label}" is not a dropdown`);
 };
 
-const readoutNamed = (host: HTMLElement, label: string): string => {
-  for (const readout of host.querySelectorAll(".dev-readout")) {
-    if (readout.querySelector("th")?.textContent === label) {
-      return readout.querySelector("td")?.textContent ?? "";
-    }
-  }
+const readoutNamed = (host: HTMLElement, label: string): string =>
+  numberFieldNamed(host, label).value;
 
-  throw new Error(`The panel has no readout "${label}"`);
+/** Types `value` into a field and commits it, as leaving the field or pressing enter does. */
+const typeInto = (input: HTMLInputElement, value: string): void => {
+  input.value = value;
+  input.dispatchEvent(new Event("change"));
 };
 
 describe("the developer panel", () => {
@@ -192,10 +193,8 @@ describe("the developer panel", () => {
 
   it("turns a released slider into a tuning command in the designer's units", () => {
     const arranged = arrange();
-    const slider = sliderNamed(arranged.host, "base_ms");
 
-    slider.value = "350";
-    slider.dispatchEvent(new Event("change"));
+    typeInto(numberFieldNamed(arranged.host, "base_ms"), "350");
     arranged.world.tick();
 
     expect(arranged.world.log.commandAt(0)).toMatchObject({
@@ -203,6 +202,41 @@ describe("the developer panel", () => {
       key: "base_ms",
       value: 350,
     });
+
+    arranged.handle.unmount();
+  });
+
+  it("puts every tunable a person moved back with the reset, and sends nothing for the rest", () => {
+    const arranged = arrange();
+
+    typeInto(numberFieldNamed(arranged.host, "base_ms"), "350");
+    buttonNamed(arranged.host, "Reset tunables").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.count).toBe(2);
+    expect(arranged.world.log.commandAt(1)).toMatchObject({
+      kind: "set_tuning",
+      key: "base_ms",
+      value: tuningTable.base_ms,
+    });
+    // The field is written by the pane, which shows a value stepped in fractions to one decimal.
+    expect(Number(numberFieldNamed(arranged.host, "base_ms").value)).toBe(
+      tuningTable.base_ms,
+    );
+
+    arranged.handle.unmount();
+  });
+
+  it("sends nothing when a refresh rewrites the controls that follow the world", () => {
+    const arranged = arrange();
+
+    buttonNamed(arranged.host, "Kill hero").click();
+    arranged.world.tick();
+    arranged.handle.refresh();
+    arranged.handle.refresh();
+    arranged.world.tick();
+
+    expect(arranged.world.log.count).toBe(1);
 
     arranged.handle.unmount();
   });
@@ -246,7 +280,7 @@ describe("the developer panel", () => {
   it("spawns ahead of the hero at the distance the field names", () => {
     const arranged = arrange();
 
-    numberFieldNamed(arranged.host, "Ahead").value = "500";
+    typeInto(numberFieldNamed(arranged.host, "Ahead"), "500");
     buttonNamed(arranged.host, "Spawn ahead").click();
     arranged.world.tick();
 
@@ -275,11 +309,9 @@ describe("the developer panel", () => {
 
   it("recreates the world from the seed field as a driver operation, with nothing in the log", () => {
     const arranged = arrange();
-    const field = numberFieldNamed(arranged.host, "Seed");
 
     arranged.world.tick();
-    field.value = "42";
-    field.dispatchEvent(new Event("change"));
+    typeInto(numberFieldNamed(arranged.host, "Seed"), "42");
 
     expect(arranged.world.view.run.random.seed).toBe(42);
     expect(arranged.world.view.tick).toBe(0);

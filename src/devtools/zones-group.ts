@@ -1,6 +1,6 @@
+import type { FolderApi } from "tweakpane";
 import { readTunable } from "@domain/public";
 import type { DevApi } from "./dev-api";
-import { button, numberField, readNumber, row } from "./dom";
 import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";
 
@@ -16,48 +16,40 @@ const ticksOf = (api: DevApi, seconds: number): number =>
 
 /**
  * The zones group: one bare circle on the ground at a world position, standing through its
- * delay and released after its lifetime. It has no ability behind it, so it runs no rules;
- * it is here so the zone pool, the zone view, and the spell-areas overlay can be driven
- * before a spell casts one.
+ * delay and released after its lifetime. It has no ability behind it, so it runs no rules; it
+ * is here so the zone pool, the zone view, and the spell-areas overlay can be driven before a
+ * spell casts one.
  */
-export const zonesGroup = (api: DevApi): PanelGroup => {
-  const x = numberField("X", 0, WHOLE_STEP);
-  const y = numberField("Y", 0, WHOLE_STEP);
-  const radius = numberField("Radius", ZONE_RADIUS, WHOLE_STEP);
-  const delay = numberField("Delay s", DELAY_SECONDS, WHOLE_STEP);
-  const lifetime = numberField("Life s", LIFETIME_SECONDS, WHOLE_STEP);
+export const zonesGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
+  const zone = {
+    delaySeconds: DELAY_SECONDS,
+    lifetimeSeconds: LIFETIME_SECONDS,
+    radius: ZONE_RADIUS,
+    x: 0,
+    y: 0,
+  };
 
-  const spawn = (): void => {
-    const atX = readNumber(x.input);
-    const atY = readNumber(y.input);
-    const size = readNumber(radius.input);
-    const waits = readNumber(delay.input);
-    const lives = readNumber(lifetime.input);
+  folder.addBinding(zone, "x", { label: "X", step: WHOLE_STEP });
+  folder.addBinding(zone, "y", { label: "Y", step: WHOLE_STEP });
+  folder.addBinding(zone, "radius", { label: "Radius", step: WHOLE_STEP });
+  folder.addBinding(zone, "delaySeconds", {
+    label: "Delay s",
+    step: WHOLE_STEP,
+  });
+  folder.addBinding(zone, "lifetimeSeconds", {
+    label: "Life s",
+    step: WHOLE_STEP,
+  });
 
-    if (
-      atX === null ||
-      atY === null ||
-      size === null ||
-      waits === null ||
-      lives === null
-    ) {
-      return;
-    }
-
+  folder.addButton({ title: "Spawn zone" }).on("click", (): void => {
     api.submit({
+      delayTicks: ticksOf(api, zone.delaySeconds),
       kind: "spawn_zone",
-      position: { x: atX, y: atY },
-      radius: size,
-      delayTicks: ticksOf(api, waits),
-      lifetimeTicks: ticksOf(api, lives),
+      lifetimeTicks: ticksOf(api, zone.lifetimeSeconds),
+      position: { x: zone.x, y: zone.y },
+      radius: zone.radius,
     });
-  };
+  });
 
-  return {
-    nodes: [
-      row([button("Spawn zone", spawn), x.row, y.row, radius.row]),
-      row([delay.row, lifetime.row]),
-    ],
-    refresh: NO_REFRESH,
-  };
+  return { refresh: NO_REFRESH };
 };

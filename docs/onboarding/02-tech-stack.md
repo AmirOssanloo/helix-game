@@ -28,9 +28,19 @@ The renderer is configured with `type: Phaser.AUTO` and `render: { maxTextures: 
 
 **Vite.** The dev server with hot reload, and the production build.
 
-One Vite `define` matters: it strips `DevApi` and the developer panel from production builds. In development, `window.DevApi` exists and the panel is mounted; in production neither is in the bundle. Content definitions under `src/content/` hot-reload, so retuning a spell does not restart the world.
+One Vite `define` matters: it strips `DevApi` and the developer panel from production builds. In development, `window.DevApi` exists and the panel is mounted; in production neither is in the bundle, and neither is the pane the panel is built from. Content definitions under `src/content/` hot-reload, so retuning a spell does not restart the world.
+
+The production build asks for its bundle beside the page rather than at the server root, so one build serves from a domain root and from a path under it alike. [Development workflow](../workflows/development.md#publishing-the-playable-build) says where it is published.
 
 **pnpm**, pinned through `packageManager` in `package.json` and picked up by Corepack. One package, one `package.json`, no workspace.
+
+---
+
+## The developer panel
+
+**Tweakpane.** The controls the developer panel is made of: a folder per group, a slider, a checkbox, a dropdown, a button, and a read-only line, each bound to a plain object the group owns.
+
+It is the only runtime dependency besides Phaser, and the only one that is not in the game a player loads. The panel is development-only, so the pane goes out with it; the build refuses to ship either. A binding reports a change when a person makes one and when the panel rewrites it from the world, which is why a control that follows the world compares before it acts. [Developer tools and instrumentation](../architecture/devtools-and-instrumentation.md) holds that rule.
 
 ---
 

@@ -1,5 +1,5 @@
+import type { FolderApi } from "tweakpane";
 import type { DevApi } from "./dev-api";
-import { button, numberField, readNumber, row } from "./dom";
 import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";
 import type { PanelMemory } from "./panel-memory";
@@ -7,48 +7,35 @@ import type { PanelMemory } from "./panel-memory";
 const WHOLE_STEP = 1;
 
 /**
- * The units group: a generic spawn for the stress test, and the clear. The archetype
- * dropdown, the tier, and the spawn modes arrive with the archetypes; until then a spawn is
- * a count at a world position, remembered between reloads.
+ * The units group: a generic spawn for the stress test, and the clear. The archetype dropdown,
+ * the tier, and the spawn modes arrive with the archetypes; until then a spawn is a count at a
+ * world position. The fields are bound to the memory itself, so what a person last spawned is
+ * what the panel offers after a reload.
  */
 export const unitsGroup = (
+  folder: FolderApi,
   api: DevApi,
   memory: PanelMemory,
   remember: () => void,
 ): PanelGroup => {
-  const count = numberField("Count", memory.spawn.count, WHOLE_STEP);
-  const x = numberField("X", memory.spawn.x, WHOLE_STEP);
-  const y = numberField("Y", memory.spawn.y, WHOLE_STEP);
+  folder.addBinding(memory.spawn, "count", {
+    label: "Count",
+    step: WHOLE_STEP,
+  });
+  folder.addBinding(memory.spawn, "x", { label: "X", step: WHOLE_STEP });
+  folder.addBinding(memory.spawn, "y", { label: "Y", step: WHOLE_STEP });
 
-  const spawn = (): void => {
-    const units = readNumber(count.input);
-    const atX = readNumber(x.input);
-    const atY = readNumber(y.input);
-
-    if (units === null || atX === null || atY === null) {
-      return;
-    }
-
-    memory.spawn.count = units;
-    memory.spawn.x = atX;
-    memory.spawn.y = atY;
+  folder.addButton({ title: "Spawn units" }).on("click", (): void => {
     remember();
     api.submit({
+      count: memory.spawn.count,
       kind: "spawn_units",
-      count: units,
-      position: { x: atX, y: atY },
+      position: { x: memory.spawn.x, y: memory.spawn.y },
     });
-  };
+  });
+  folder.addButton({ title: "Clear units" }).on("click", (): void => {
+    api.submit({ kind: "clear_units" });
+  });
 
-  return {
-    nodes: [
-      row([button("Spawn units", spawn), count.row, x.row, y.row]),
-      row([
-        button("Clear units", (): void => {
-          api.submit({ kind: "clear_units" });
-        }),
-      ]),
-    ],
-    refresh: NO_REFRESH,
-  };
+  return { refresh: NO_REFRESH };
 };

@@ -1,0 +1,54 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One live site: a run waits for the one ahead of it instead of racing it to the same URL.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+# What the deploy needs and nothing more: the tree to build, the site to write, the token to claim it.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # The commit hook is for a working tree; install must not try to register it here.
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v7
+
+      # Reads the pnpm version from the packageManager field, so the pin has one owner.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The production build: the developer panel and DevApi are stripped, and the page asks for
+      # its bundle beside itself, so it runs under the repository name without knowing it.
+      - run: pnpm build
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,5 +1,5 @@
+import type { FolderApi } from "tweakpane";
 import type { DevApi, OverlayToggles } from "./dev-api";
-import { checkboxField, row } from "./dom";
 import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";
 import type { PanelMemory } from "./panel-memory";
@@ -19,28 +19,26 @@ const OVERLAYS: readonly Readonly<{
 ];
 
 /**
- * The overlays group: one checkbox per overlay, writing the toggle the play scene reads each
- * frame. A toggle is presentation state, not a command; it changes nothing in the world and
- * is not in the log. The memory restores last session's toggles before the first frame.
+ * The overlays group: one checkbox per overlay, bound to the toggles object the play scene
+ * reads each frame, so a click writes the flag the next frame draws from. A toggle is
+ * presentation state, not a command; it changes nothing in the world and is not in the log.
+ * The memory restores last session's toggles before the first frame.
  */
 export const overlaysGroup = (
+  folder: FolderApi,
   api: DevApi,
   memory: PanelMemory,
   remember: () => void,
 ): PanelGroup => {
-  const nodes: Node[] = [];
-
   for (const { key, label } of OVERLAYS) {
     api.overlays[key] = memory.overlays[key] === true;
-
-    const box = checkboxField(label, api.overlays[key], (checked): void => {
-      api.overlays[key] = checked;
-      memory.overlays[key] = checked;
-      remember();
-    });
-
-    nodes.push(row([box.row]));
+    folder
+      .addBinding(api.overlays, key, { label })
+      .on("change", (event): void => {
+        memory.overlays[key] = event.value;
+        remember();
+      });
   }
 
-  return { nodes, refresh: NO_REFRESH };
+  return { refresh: NO_REFRESH };
 };

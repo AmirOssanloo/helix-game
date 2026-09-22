@@ -68,8 +68,23 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 - **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
 - **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
 - **The stress test** asserts the mean tick under 4 ms with 300 units. It fails when a change makes a system too expensive.
-- **The build** fails if `DevApi` or the developer panel leaks into the production bundle.
+- **The build** fails if `DevApi`, the developer panel, or the pane the panel is built from leaks into the production bundle.
 - **The docs link test** fails on a relative link or anchor that does not resolve, so a renamed page or heading cannot leave a dead pointer behind.
+
+---
+
+## Publishing the playable build
+
+A push to `main` builds the game and publishes it to GitHub Pages at **https://amirossanloo.github.io/helix-game/**, from `.github/workflows/pages.yml`. It is the production build, so the developer panel and `DevApi` are not in it.
+
+The workflow runs `pnpm build` and nothing else; `ci.yml` runs the gate on the same push, in parallel. A red gate does not hold the deploy back, so a push that builds but fails a test still reaches the site — read CI, not the site, for whether a change is good.
+
+The build asks for its bundle beside itself rather than at the server root, which is what lets one build serve from the repository-name path a project page uses. Nothing in the page knows the repository name, so a rename or a custom domain needs no change here.
+
+Two things are a person's, once:
+
+- **Settings → Pages → Source** must be **GitHub Actions**. Until it is, the deploy job fails and the site stays empty.
+- The first run creates the `github-pages` environment. Nothing to approve unless the repository adds a protection rule.
 
 ---
 

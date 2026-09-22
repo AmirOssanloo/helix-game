@@ -27,7 +27,9 @@ Every action on the panel that changes the world is a command that goes through 
 
 ### Tunables
 
-Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider with its default beside it: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, Whorl speed and cooldown reduction per instance, and the respawn delay. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
+Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider showing its value: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, Whorl speed and cooldown reduction per instance, and the respawn delay. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. Spell and enemy numbers appear here as content grows. A change applies on the next tick and is recorded in the input log.
+
+**Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
 ### The simulation
 

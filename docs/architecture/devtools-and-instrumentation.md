@@ -33,7 +33,20 @@ window.DevApi = { submit, driver, view, rings, overlays, saveInputLog, loadInput
 
 **The width of the `DebugCommand` union is where the panel's power comes from.** Wanting the panel to do something new means adding a variant and the system code that handles it, which is also what makes the new thing replayable. There is no `world.setFoo()` for the panel to call; [Commands and events](./commands-and-events.md) holds the rule.
 
-The HTML panel itself is outside the canvas, built from plain DOM, and knows nothing about Phaser.
+The HTML panel itself is outside the canvas and knows nothing about Phaser. It is built from a pane library rather than by hand: a folder per group, and in it a slider, a checkbox, a dropdown, a button, or a read-only line. The pane belongs to the panel and never ships with the game; the build refuses a bundle that holds either.
+
+---
+
+## What a control is
+
+**A control is a binding over a plain object the group owns.** The pane writes what a person does into the object and reports it; the group turns the report into a command, a driver call, or a toggle. Nothing reads a control back to learn what the world is.
+
+Two rules come out of that, and both are load-bearing:
+
+- **A control that follows the world compares before it acts.** Rewriting a control from the world reports a change exactly as a hand on it does, so a handler that acted on every report would answer its own refresh forever. The two switches on the hero, the seed, and the catch-up cap each check what they were handed against what the world or the driver already says, and do nothing when they match.
+- **A control holding a person's own value is never rewritten.** The refresh touches only the few controls that mirror the world. A count, a position, or an amount is the person's until they change it; rewriting it would move the field under the hand typing in it.
+
+The panel refreshes a few times a second while it is open, and stops while it is closed. The rings sample either way.
 
 ---
 
@@ -82,6 +95,10 @@ Importing `World` into the panel and calling a method. It works, it is not in th
 
 A system computing a rolling average for the panel. The average is now in the tick's budget and in the replay's state. Systems write samples; the panel computes.
 
+### A control that sends on every report it makes
+
+A switch that submits its command whenever the pane reports a change. The refresh that writes the world's answer back into it reports a change too, so the switch answers itself, and the log fills with commands nobody sent. Compare against the world first.
+
 ### Instrumentation that is on only in development
 
 Rings guarded by a build flag. The production build is the one whose frame time matters and the one with no numbers. Rings are always on; the panel that reads them is what is stripped.
@@ -99,7 +116,10 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log from another content version is refused with a message naming both |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |
 | Reading state | The `Readonly` world view, by reference, throttled per render frame |
-| The panel | Plain DOM outside the canvas; imports nothing from Phaser |
+| The panel | A pane outside the canvas; imports nothing from Phaser, and neither it nor the pane is in a production bundle |
+| A control | A binding over a plain object the group owns; the group turns each report into a command, a driver call, or a toggle |
+| A control that follows the world | Compares what it is handed against the world before it acts, because a refresh reports a change like a hand does |
+| A control holding a typed value | Never rewritten by the refresh; it is the person's until they change it |
 | Rings | Preallocated fixed arrays with a cursor, one per measurement, under `instrumentation/` |
 | Measurements | Tick time, render time, draw calls, live counts, pool misses, view misses, event overwrites, frame rate |
 | Who writes | The driver, `PlayScene`, the draw-call wrapper, the world, the pools, the event ring |

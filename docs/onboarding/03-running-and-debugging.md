@@ -8,12 +8,14 @@
 
 ## The developer panel
 
-The panel is plain HTML beside the canvas, mounted only in development builds. Every control that changes the world sends a `DebugCommand` through the same buffer as the keyboard and mouse, so a panel session records into the input log and replays like any other. Nothing in the panel reaches world state by another route.
+The panel is a pane beside the canvas, mounted only in development builds. Every control that changes the world sends a `DebugCommand` through the same buffer as the keyboard and mouse, so a panel session records into the input log and replays like any other. Nothing in the panel reaches world state by another route.
+
+Each group is a folder you can collapse, and what you leave open is remembered. A number is typed into its field and committed by leaving it or pressing enter, or dragged; a slider sends its command when you let go, so one drag is one command and not a hundred.
 
 | Group        | Controls                                                                                                                                                  | What it does |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | Hero         | Apply damage, Heal, Drain mana, Restore mana, Level up, Set orb levels (Quartz, Whorl, Ember), Infinite mana, No cooldowns, Apply status (stun, slow, silence, root) | Puts the hero in any state without a fight |
-| Tuning       | One slider per tunable: `base_ms`, `turn_rate_T`, `turn_ramp_ticks`, `action_cone_deg`, `collision_radius`, `bound_radius`, `hash_cell_size`, `orb_capacity`, `prepared_slots`, `invoke_cd_base`, `invoke_cd_per_orb_level`, `invoke_mana`, `whorl_ms_per_instance`, and every number a definition exposes | Retunes the live world; each change is a `SetTuning` command in the log |
+| Tuning       | One slider per tunable: `base_ms`, `turn_rate_T`, `turn_ramp_ticks`, `action_cone_deg`, `collision_radius`, `bound_radius`, `hash_cell_size`, `orb_capacity`, `prepared_slots`, `invoke_cd_base`, `invoke_cd_per_orb_level`, `invoke_mana`, `whorl_ms_per_instance`, and every number a definition exposes, plus Reset tunables | Retunes the live world; each change is a `SetTuning` command in the log, and the reset sends one per slider that moved |
 | Enemies      | Archetype dropdown, Tier, Group size, Spawn at click, Clear all, Kill all                                                                                       | Spawns a pack of the chosen archetype where you next click; the dropdown lists the content registry, so a new definition appears without a code change |
 | Simulation   | Pause, Single-step, Catch-up cap, Seed, Save input log, Load input log, Reset map                                                                      | Freezes and steps the world; records and replays a session. Pause, step, and the cap act on the driver and are not in the log |
 | Overlays     | Collision discs, Bound radii, Facing and action cone, Attack and aggro ranges, Path lines, Spell areas, Unit state labels, Spatial hash cells, Walkability grid | Draws diagnostics over the world from a separate quad pool; a toggle is remembered between reloads |

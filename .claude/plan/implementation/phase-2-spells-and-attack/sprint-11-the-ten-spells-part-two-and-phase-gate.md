@@ -167,6 +167,63 @@ Content: `src/content/spells/updraft.def.ts` names the new key. Docs: section 3.
 
 ---
 
+### P2-S11-T07 — The playable build on GitHub Pages
+
+| Field | Value |
+| --- | --- |
+| Layer | build, docs |
+| Size | 0.5 |
+| Depends on | none |
+| Status | done |
+
+**Build:** A push to `main` publishes the production build so anyone with the link can play it. The build asks for its bundle beside the page instead of at the server root, which is what lets one build serve from a project page's path under the repository name; the dev server keeps the root, where the bench entry is an absolute path away. A workflow beside `ci.yml` installs, builds, and deploys the artifact; it runs the build alone, since the same push runs the gate in `ci.yml`. Docs: the publishing section of [development workflow](../../../../docs/workflows/development.md), and the build paragraph of [tech stack](../../../../docs/onboarding/02-tech-stack.md).
+
+**Acceptance:**
+- The built page loads and plays from a path under the domain root, not only from the root itself.
+- The published build has no developer panel and no `DevApi`.
+- A person can reach it at the repository's Pages address.
+
+**Tests:**
+- No new spec: `pnpm build` and the strip check already own what a build may contain. The subpath was proved by serving `dist/` under one and loading it in a browser.
+
+**Definition of done:** Every change · A documentation change.
+
+> **Note, 2026-09-22:** unplanned, asked for by the maintainer. Nothing in the game changed: the only reason a build could not already be published was the absolute path in the emitted page. Turning **Settings → Pages → Source** to **GitHub Actions** is a person's, once, and is on the status page until it is done.
+
+---
+
+### P2-S11-T08 — The developer panel on a pane
+
+| Field | Value |
+| --- | --- |
+| Layer | devtools, build, docs, tests |
+| Size | 1 |
+| Depends on | none |
+| Status | done |
+
+**Build:** The panel's hand-written controls are replaced by Tweakpane. `dom.ts` goes; what it held that no pane control offers — saving a file and picking one — becomes `files.ts`, and the shapes every group binds through become `bindings.ts`. Each group takes the folder it builds into and returns its refresh; the panel keeps its groups, its memory, its refresh loop, and its sentinel. A control is a binding over a plain object the group owns, so a group reads a field rather than parsing an input, and the overlays bind to the toggles object itself.
+
+A binding reports a change when the panel rewrites it as well as when a person moves it, so every control that follows the world — the two hero switches, the seed, the catch-up cap — compares what it is handed against the world before it acts, and the refresh touches only those. The pane declares no side effects of its own, so the build is told it has none; without that the production bundle keeps the whole pane although the panel that builds one is gone. The strip check grows a second half that fails the build on a pane module in the bundle, so that cannot regress in silence.
+
+Tunables lose the default printed beside each slider, which the pane has no column for, and gain **Reset tunables** in its place: every slider a person moved goes back to its default, one command each.
+
+Docs: the panel section of [devtools and instrumentation](../../../../docs/architecture/devtools-and-instrumentation.md), the tunables section of [developer panel](../../../../docs/product/features/developer-panel.md), the panel section of [running and debugging](../../../../docs/onboarding/03-running-and-debugging.md), and [tech stack](../../../../docs/onboarding/02-tech-stack.md).
+
+**Acceptance:**
+- Every control the panel had still sends what it sent: the spec's cases pass unchanged but for how a control is found.
+- The panel's own refresh sends nothing; a session that only refreshes leaves an empty log.
+- The reset sends one command per slider that moved and none for the rest.
+- The production bundle holds neither the panel nor the pane, and the build says so when it does.
+
+**Tests:**
+- `tests/devtools/panel.spec.ts`, its helpers rewritten to find a control by the label beside it, plus the two cases above.
+
+**Definition of done:** Every change · A developer-panel control · A documentation change.
+
+> **Note, 2026-09-22:** unplanned, asked for by the maintainer. The panel was walked in the browser: every group renders, the readouts run, a spawn and a kill land, and the infinite-mana switch agrees with the world after the refresh that had every chance to flip it back. The one thing a person still has to say is whether the pane reads better than what it replaces.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
@@ -175,10 +232,10 @@ Content: `src/content/spells/updraft.def.ts` names the new key. Docs: section 3.
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 0.5 |
+| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 |
 
 ## Risks in this sprint
 
 - **R8 lives here.** Updraft carrying units is the hardest thing in the phase. If T01 runs past 1.5 days, T04's gate day is the buffer and the gate slides into the following week; do not cut Updraft's carry to make the date. Answered on 2026-09-22: T01 landed on its 1.5 days with the carry built, and the carry was then cut by the maintainer as a design call rather than a date one, in T06. R8 retires.
-- **The buffer is spent.** T05 and T06 add a day to a sprint sized four with one day of buffer, so the sprint is sized five against five. Anything that slips now moves T04's gate day, and the phase gate with it. Both are corrections to what the maintainer walked, so neither is a candidate for cutting; if the date matters more than the gate, T04 is the row to move.
+- **The buffer is spent, and then some.** T05 and T06 add a day to a sprint sized four with one day of buffer, so the sprint is sized five against five. T07 and T08 add another one and a half on top, neither of them spell work: the sprint now carries six and a half sized days, and T02, T03, and T04 — two spells and the phase gate — are all still open. The date moves or something else does; the maintainer asked for both, so this is a fact to plan around rather than a call to reverse. Anything that slips now moves T04's gate day, and the phase gate with it. Both are corrections to what the maintainer walked, so neither is a candidate for cutting; if the date matters more than the gate, T04 is the row to move.
 - After this sprint the ratio of actual to sized days across phases 1 and 2 is known. If it is over 1.3, re-cut phases 3 to 5 before starting sprint 12.

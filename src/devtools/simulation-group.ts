@@ -1,14 +1,7 @@
+import type { FolderApi } from "tweakpane";
+import { onCommit, readout } from "./bindings";
 import type { DevApi } from "./dev-api";
-import {
-  button,
-  downloadText,
-  downloadUrl,
-  element,
-  fileField,
-  numberField,
-  readNumber,
-  row,
-} from "./dom";
+import { downloadText, downloadUrl, pickTextFile } from "./files";
 import type { PanelGroup } from "./panel-group";
 
 const WHOLE_STEP = 1;
@@ -29,94 +22,108 @@ const logFilename = (seed: number, tick: number): string =>
 const LOG_FILE_TYPES = ".json,application/json";
 
 /**
- * The simulation group: the three driver operations, which change nothing in the world and
- * are not in the log; the seed, shown so a person can name the session and editable to
- * recreate the world under another; the input log save and load; the atlas download; and
- * the map reset, which is a command like any other. A load that cannot run says why in the
- * status line; one that can says what it is replaying.
+ * The simulation group: the three driver operations, which change nothing in the world and are
+ * not in the log; the seed, shown so a person can name the session and editable to recreate the
+ * world under another; the input log save and load; the atlas download; and the map reset,
+ * which is a command like any other. A load that cannot run says why in the status line; one
+ * that can says what it is replaying.
+ *
+ * The cap and the seed are read back from the driver on each refresh, so a value it refused and
+ * a seed a replay changed are both shown as they are. Each compares what it is handed against
+ * the driver before it acts, so a refresh never recreates a world.
  */
-export const simulationGroup = (api: DevApi): PanelGroup => {
-  const pause = button(PAUSE_LABEL, (): void => {
+export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
+  const driver = { catchUpCap: api.driver.catchUpCap, seed: api.driver.seed };
+  const report = { status: "" };
+  const pause = folder.addButton({ title: PAUSE_LABEL });
+
+  pause.on("click", (): void => {
     if (api.driver.paused) {
       api.driver.resume();
     } else {
       api.driver.pause();
     }
   });
-  const cap = numberField("Catch-up cap", api.driver.catchUpCap, WHOLE_STEP);
-  const seed = numberField("Seed", api.driver.seed, WHOLE_STEP);
-  const status = element("span", "dev-status");
-  const load = fileField(
-    "Load input log",
-    LOG_FILE_TYPES,
-    (text: string): void => {
-      const refusal = api.loadInputLog(text);
-
-      status.textContent =
-        refusal ?? `Replaying from seed ${String(api.driver.seed)}`;
-    },
-    (message: string): void => {
-      status.textContent = message;
-    },
-  );
-
-  cap.input.addEventListener("change", (): void => {
-    const value = readNumber(cap.input);
-
-    if (value === null || !api.driver.setCatchUpCap(value)) {
-      cap.input.value = String(api.driver.catchUpCap);
-    }
+  folder.addButton({ title: "Step" }).on("click", (): void => {
+    api.driver.step();
   });
 
-  seed.input.addEventListener("change", (): void => {
-    const value = readNumber(seed.input);
+  const cap = folder.addBinding(driver, "catchUpCap", {
+    label: "Catch-up cap",
+    step: WHOLE_STEP,
+  });
+  const seed = folder.addBinding(driver, "seed", {
+    label: "Seed",
+    step: WHOLE_STEP,
+  });
 
-    if (value === null || !Number.isInteger(value)) {
-      seed.input.value = String(api.driver.seed);
+  onCommit(cap, (value): void => {
+    if (value !== api.driver.catchUpCap && !api.driver.setCatchUpCap(value)) {
+      driver.catchUpCap = api.driver.catchUpCap;
+      cap.refresh();
+    }
+  });
+  onCommit(seed, (value): void => {
+    if (value === api.driver.seed) {
+      return;
+    }
+
+    if (!Number.isInteger(value)) {
+      driver.seed = api.driver.seed;
+      seed.refresh();
 
       return;
     }
 
     api.driver.recreate(value);
-    status.textContent = `Recreated under seed ${String(value)}`;
+    report.status = `Recreated under seed ${String(value)}`;
   });
 
+  folder.addButton({ title: "Save input log" }).on("click", (): void => {
+    downloadText(
+      logFilename(api.driver.seed, api.view.tick),
+      api.saveInputLog(),
+      JSON_MIME_TYPE,
+    );
+  });
+  folder.addButton({ title: "Load input log" }).on("click", (): void => {
+    pickTextFile(
+      LOG_FILE_TYPES,
+      (text: string): void => {
+        const refusal = api.loadInputLog(text);
+
+        report.status =
+          refusal ?? `Replaying from seed ${String(api.driver.seed)}`;
+      },
+      (message: string): void => {
+        report.status = message;
+      },
+    );
+  });
+
+  folder.addButton({ title: "Reset map" }).on("click", (): void => {
+    api.submit({ kind: "reset_map" });
+  });
+  folder.addButton({ title: "Download atlas" }).on("click", (): void => {
+    downloadUrl(ATLAS_FILENAME, api.downloadAtlas());
+  });
+
+  const status = readout(folder, "Status");
+
   return {
-    nodes: [
-      row([
-        pause,
-        button("Step", (): void => {
-          api.driver.step();
-        }),
-        cap.row,
-      ]),
-      row([seed.row]),
-      row([
-        button("Save input log", (): void => {
-          downloadText(
-            logFilename(api.driver.seed, api.view.tick),
-            api.saveInputLog(),
-            JSON_MIME_TYPE,
-          );
-        }),
-        load.row,
-      ]),
-      row([status]),
-      row([
-        button("Reset map", (): void => {
-          api.submit({ kind: "reset_map" });
-        }),
-        button("Download atlas", (): void => {
-          downloadUrl(ATLAS_FILENAME, api.downloadAtlas());
-        }),
-      ]),
-    ],
     refresh: (): void => {
-      pause.textContent = api.driver.paused ? RESUME_LABEL : PAUSE_LABEL;
+      pause.title = api.driver.paused ? RESUME_LABEL : PAUSE_LABEL;
+      status.show(report.status);
 
       // A loaded log changes the seed under a person's feet; the field follows unless they are typing in it.
-      if (document.activeElement !== seed.input) {
-        seed.input.value = String(api.driver.seed);
+      if (!seed.element.contains(document.activeElement)) {
+        driver.seed = api.driver.seed;
+        seed.refresh();
+      }
+
+      if (!cap.element.contains(document.activeElement)) {
+        driver.catchUpCap = api.driver.catchUpCap;
+        cap.refresh();
       }
     },
   };

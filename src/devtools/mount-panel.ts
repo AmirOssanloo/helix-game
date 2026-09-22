@@ -1,6 +1,7 @@
+import type { FolderApi } from "tweakpane";
+import { Pane } from "tweakpane";
 import type { DevApi } from "./dev-api";
 import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
-import { element, group } from "./dom";
 import { enemiesGroup } from "./enemies-group";
 import { heroGroup } from "./hero-group";
 import { overlaysGroup } from "./overlays-group";
@@ -19,24 +20,15 @@ const REFRESH_INTERVAL_MS = 250;
 /** The panel itself is a group too, remembered under this key. */
 const PANEL_KEY = "panel";
 
-/** The panel's look: one column beside the canvas, dark, monospace, nothing the game draws. */
+const PANEL_TITLE = "Helix developer panel";
+
+/**
+ * The column the panel stands in, beside the canvas. The pane brings its own look; this gives
+ * it the width to lay a label and a control out in and nothing else.
+ */
 const PANEL_STYLE = `
-#devtools { width: 360px; overflow-y: auto; background: #111; color: #ddd; font: 12px/1.4 ui-monospace, monospace; }
-.dev-panel > summary { padding: 8px; font-weight: bold; cursor: pointer; }
-.dev-group { border-top: 1px solid #333; }
-.dev-group-title { padding: 6px 8px; cursor: pointer; }
-.dev-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 8px; }
-.dev-field { display: inline-flex; align-items: center; gap: 4px; }
-.dev-button { font: inherit; padding: 2px 6px; }
-.dev-number { width: 64px; font: inherit; }
-.dev-file { font: inherit; max-width: 180px; }
-.dev-status { color: #9cc; font-size: 12px; min-height: 1em; }
-.dev-select { font: inherit; }
-.dev-slider-row { display: grid; grid-template-columns: 1fr 120px 56px 56px; gap: 4px; padding: 0 8px; }
-.dev-slider-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dev-slider-default { color: #777; }
-.dev-readouts { border-collapse: collapse; margin: 4px 8px; }
-.dev-readout-label { text-align: left; font-weight: normal; color: #999; padding-right: 8px; }
+#devtools { width: 360px; overflow-y: auto; background: #111; }
+#devtools .tp-rotv { --tp-base-width: 100%; }
 `;
 
 /** What `mountPanel` hands back: a refresh a test drives by hand, and the way to take the panel down. */
@@ -53,68 +45,47 @@ export type PanelMount = (
 ) => PanelHandle;
 
 /**
- * Builds the panel from plain DOM inside `host`: one disclosure per group, the readouts
- * retyped a few times a second while the panel is open and left alone while it is closed,
- * the rings sampling either way. What the panel remembers goes to `store`; nothing about
- * the game does.
+ * Builds the panel inside `host`: one folder per group, the readouts retyped a few times a
+ * second while the panel is open and left alone while it is closed, the rings sampling either
+ * way. What the panel remembers goes to `store`; nothing about the game does.
  */
 export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
   const memory = readPanelMemory(store);
   const remember = (): void => {
     writePanelMemory(store, memory);
   };
-  const groups: readonly Readonly<{
-    key: string;
-    title: string;
-    group: PanelGroup;
-  }>[] = [
-    { key: "hero", title: "Hero", group: heroGroup(api) },
-    { key: "tuning", title: "Tuning", group: tuningGroup(api) },
-    { key: "simulation", title: "Simulation", group: simulationGroup(api) },
-    { key: "units", title: "Units", group: unitsGroup(api, memory, remember) },
-    {
-      key: "enemies",
-      title: "Enemies",
-      group: enemiesGroup(api, memory, remember),
-    },
-    { key: "zones", title: "Zones", group: zonesGroup(api) },
-    {
-      key: "overlays",
-      title: "Overlays",
-      group: overlaysGroup(api, memory, remember),
-    },
-    { key: "readouts", title: "Readouts", group: readoutsGroup(api) },
-  ];
   const isOpen = (key: string): boolean => memory.open[key] !== false;
-  const openGroup = (
-    key: string,
-    title: string,
-    nodes: readonly Node[],
-  ): Node =>
-    group(
-      title,
-      isOpen(key),
-      (open): void => {
-        memory.open[key] = open;
-        remember();
-      },
-      nodes,
-    );
+  const style = document.createElement("style");
+  const pane = new Pane({
+    container: host,
+    expanded: isOpen(PANEL_KEY),
+    title: PANEL_TITLE,
+  });
+  const folder = (key: string, title: string): FolderApi => {
+    const added = pane.addFolder({ expanded: isOpen(key), title });
+
+    added.on("fold", (event): void => {
+      memory.open[key] = event.expanded;
+      remember();
+    });
+
+    return added;
+  };
+  const groups: readonly PanelGroup[] = [
+    heroGroup(folder("hero", "Hero"), api),
+    tuningGroup(folder("tuning", "Tuning"), api),
+    simulationGroup(folder("simulation", "Simulation"), api),
+    unitsGroup(folder("units", "Units"), api, memory, remember),
+    enemiesGroup(folder("enemies", "Enemies"), api, memory, remember),
+    zonesGroup(folder("zones", "Zones"), api),
+    overlaysGroup(folder("overlays", "Overlays"), api, memory, remember),
+    readoutsGroup(folder("readouts", "Readouts"), api),
+  ];
   const refresh = (): void => {
-    for (const entry of groups) {
-      entry.group.refresh();
+    for (const group of groups) {
+      group.refresh();
     }
   };
-  const panel = group(
-    "Helix developer panel",
-    isOpen(PANEL_KEY),
-    (open): void => {
-      memory.open[PANEL_KEY] = open;
-      remember();
-      schedule(open);
-    },
-    groups.map((entry) => openGroup(entry.key, entry.title, entry.group.nodes)),
-  );
   let timer: ReturnType<typeof setInterval> | null = null;
 
   const schedule = (open: boolean): void => {
@@ -129,16 +100,23 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     }
   };
 
-  panel.classList.add("dev-panel");
+  pane.on("fold", (event): void => {
+    memory.open[PANEL_KEY] = event.expanded;
+    remember();
+    schedule(event.expanded);
+  });
+
+  style.textContent = PANEL_STYLE;
   host.setAttribute("data-panel", DEVTOOLS_SENTINEL);
-  host.replaceChildren(element("style", "", [PANEL_STYLE]), panel);
+  host.prepend(style);
   host.hidden = false;
-  schedule(panel.open);
+  schedule(pane.expanded);
 
   return {
     refresh,
     unmount: (): void => {
       schedule(false);
+      pane.dispose();
       host.replaceChildren();
       host.hidden = true;
     },
