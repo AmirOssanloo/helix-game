@@ -433,7 +433,7 @@ A zone keeps, besides what its entry says: the caster, the ability, the orb leve
 
 ### 7.2 Named effects
 
-Three functions, one file each under `src/domain/abilities/effects/`, each taking the world and the cast context and nothing else.
+Three functions, one file each under `src/domain/abilities/effects/`, each taking the world, the cast context, and its own fields, and nothing else.
 
 | Key | Fields | Does |
 |---|---|---|

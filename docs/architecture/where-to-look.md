@@ -24,8 +24,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |
+| Which primitives the effect runner runs | `src/domain/abilities/primitives/` — the table, keyed by the kind an effect entry names |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
-| Which damage hooks a status may name | `src/domain/combat/hooks/` — one file per hook; the file name is the key |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |

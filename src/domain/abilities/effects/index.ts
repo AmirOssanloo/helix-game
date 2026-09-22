@@ -2,8 +2,16 @@ import type { Schema } from "../../definitions/schema";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
 
-/** A bespoke effect: it reads the world and the cast context and nothing else, which the signature enforces. */
-export type NamedEffect = (world: World, cast: Cast) => void;
+/**
+ * A bespoke effect: it reads the world, the cast context, and the fields the entry that
+ * named it carries, and nothing else, which the signature enforces. The fields passed its
+ * schema when content was loaded, so it reads them without checking.
+ */
+export type NamedEffect = (
+  world: World,
+  cast: Cast,
+  fields: Readonly<Record<string, unknown>>,
+) => void;
 
 /**
  * One registered named effect: the schema of the fields a definition's `named` entry

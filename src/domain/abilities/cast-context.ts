@@ -1,5 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
+import { ORB_IDS } from "../definitions/orb-id";
 
 /**
  * What every effect runs with, whoever ran it: the caster, the ability, the three orb
@@ -20,3 +21,80 @@ export type Cast = Readonly<{
   targetId: EntityId | null;
   zoneId: EntityId | null;
 }>;
+
+/**
+ * The record behind a context, filled in place. Whoever runs an effect list holds one as
+ * scratch and writes its own cast into it, so a commit, a zone's tick, and a damage hook
+ * each allocate nothing. Every field is the context's, read through `Cast` once written.
+ */
+export type CastRecord = {
+  casterId: EntityId;
+  ability: AbilityDef;
+  orbLevels: number[];
+  anchor: Vec2;
+  facing: number;
+  targetId: EntityId | null;
+  zoneId: EntityId | null;
+};
+
+/**
+ * The ability a fresh record holds. An ability has no neutral member, as a unit's kind has
+ * none: whoever runs a list writes its own over this first, and no effect ever reads it.
+ */
+const NO_ABILITY: AbilityDef = {
+  id: "",
+  targeting: "none",
+  castPointSeconds: 0,
+  backswingSeconds: 0,
+  cooldownSeconds: [],
+  manaCost: [],
+  range: 0,
+  effects: [],
+  preview: { kind: "none" },
+  atlasFrame: "",
+  tint: 0,
+};
+
+/** A record with room for one level per orb, for a caller to keep as scratch and fill. */
+export const createCastRecord = (): CastRecord => ({
+  casterId: 0,
+  ability: NO_ABILITY,
+  orbLevels: ORB_IDS.map(() => 0),
+  anchor: { x: 0, y: 0 },
+  facing: 0,
+  targetId: null,
+  zoneId: null,
+});
+
+/**
+ * Writes one cast into `out` and returns it as the context an effect reads: the caster, the
+ * ability, the caster's orb levels copied so one raised afterwards does not change what
+ * committed, the anchor and the facing the targeting kind gives, and the unit the effects
+ * are aimed at. The zone is cleared, since a cast runs from no zone; a zone running a list
+ * of its own writes its id over it.
+ */
+export const fillCast = (
+  out: CastRecord,
+  casterId: EntityId,
+  ability: AbilityDef,
+  orbLevels: readonly number[],
+  x: number,
+  y: number,
+  facing: number,
+  targetId: EntityId | null,
+): Cast => {
+  out.casterId = casterId;
+  out.ability = ability;
+
+  for (let orb = 0; orb < out.orbLevels.length; orb += 1) {
+    out.orbLevels[orb] = orbLevels[orb] ?? 0;
+  }
+
+  out.anchor.x = x;
+  out.anchor.y = y;
+  out.facing = facing;
+  out.targetId = targetId;
+  out.zoneId = null;
+
+  return out;
+};

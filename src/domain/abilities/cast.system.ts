@@ -1,4 +1,4 @@
-import type { Vec2 } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared } from "@shared/public";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
@@ -17,7 +17,9 @@ import {
   finishBackswing,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
-import { castLevelOf, isInCastRange, resourcesOf } from "./cast";
+import { castLevelOf, isInCastRange, orbLevelsOf, resourcesOf } from "./cast";
+import type { Cast, CastRecord } from "./cast-context";
+import { createCastRecord, fillCast } from "./cast-context";
 import type { CooldownSnapshot } from "./cooldowns";
 import {
   createCooldownSnapshot,
@@ -25,6 +27,7 @@ import {
   snapshotCooldownSources,
   startCooldown,
 } from "./cooldowns";
+import { runEffects } from "./effect-runner";
 import { hasMana, spendMana } from "./mana";
 
 /** What the turn-and-face stage reads from the tuning table, filled once per tick. */
@@ -42,6 +45,9 @@ const approach: Vec2 = { x: 0, y: 0 };
 
 /** Scratch for what the modifier table takes off a clock at commit, reused for every commit. */
 const snapshot: CooldownSnapshot = createCooldownSnapshot();
+
+/** Scratch for the context a commit's effects run with, reused for every commit. */
+const context: CastRecord = createCastRecord();
 
 /** Scratch for the event a commit announces, reused for every one. */
 const event = createDomainEvent();
@@ -184,14 +190,45 @@ const faceTarget = (unit: Unit): boolean => {
 };
 
 /**
+ * Writes the context `unit`'s committing cast runs its effects with, from the aim this tick:
+ * a point or a unit cast anchors where it is aimed, a no-target or a direction cast on the
+ * caster, and every one faces where the caster faces. A no-target cast is aimed at the
+ * caster itself, a unit cast at the unit it named, and the other two at no unit.
+ */
+const contextOf = (
+  world: World,
+  unit: Readonly<Unit>,
+  casterId: EntityId,
+  record: SpellRecord,
+): Cast => {
+  const onTarget =
+    unit.cast.targetKind === "point" || unit.cast.targetKind === "unit";
+
+  return fillCast(
+    context,
+    casterId,
+    record.def,
+    orbLevelsOf(world, unit),
+    onTarget ? aim.x : unit.curr.x,
+    onTarget ? aim.y : unit.curr.y,
+    unit.facing,
+    unit.cast.targetKind === "none" ? casterId : unit.cast.targetId,
+  );
+};
+
+/**
  * The commit stage, on the tick the cast point ends: the mana is spent, the clock starts for
  * the definition's cooldown at the unit's current level with the percentage the unit holds
- * at this moment baked in, the effects run, the commit is announced, and the backswing
- * begins. Mana that left since the request cancels instead, with nothing spent. The stubs
- * list no effects and no runner exists yet, so a definition that lists one is a broken
- * invariant until the runner arrives.
+ * at this moment baked in, the effect list runs in order with the cast as its context, the
+ * commit is announced, and the backswing begins. Mana that left since the request cancels
+ * instead, with nothing spent.
  */
-const commit = (world: World, unit: Unit, record: SpellRecord): void => {
+const commit = (
+  world: World,
+  unit: Unit,
+  casterId: EntityId,
+  record: SpellRecord,
+): void => {
   const flags = world.run.debug;
   const level = castLevelOf(world, unit, record);
   const resources = resourcesOf(world, unit);
@@ -213,9 +250,10 @@ const commit = (world: World, unit: Unit, record: SpellRecord): void => {
       snapshotCooldownSources(unit.modifiers, snapshot),
     ),
   );
-  assert(
-    record.def.effects.length === 0,
-    "A definition with effects needs the effect runner",
+  runEffects(
+    world,
+    contextOf(world, unit, casterId, record),
+    record.def.effects,
   );
   announceCommitted(world, record.def.id);
 
@@ -275,10 +313,11 @@ export const castSystem = (world: World): void => {
     }
 
     const record = world.run.spells.get(abilityId);
+    const casterId = units.idAt(index);
 
     assert(
-      record !== undefined,
-      "A cast names a spell the request stage found",
+      record !== undefined && casterId !== null,
+      "A cast names a spell the request stage found, on a live slot",
     );
 
     if (unit.disables.stunned) {
@@ -318,7 +357,7 @@ export const castSystem = (world: World): void => {
       unit.state === "ability_cast_point" &&
       world.tick >= unit.stageEndsAtTick
     ) {
-      commit(world, unit, record);
+      commit(world, unit, casterId, record);
       endBackswingWhenDue(world, unit);
     }
   }

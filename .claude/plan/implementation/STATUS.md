@@ -1,6 +1,6 @@
 # Status
 
-**Updated:** 2026-09-21 · **By:** the engineer running the plan
+**Updated:** 2026-09-22 · **By:** the engineer running the plan
 
 Where the plan is right now. One screen. Update it in the same commit as the ticket whose status changed, and move the date.
 
@@ -10,9 +10,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 | --- | --- |
 | **Active phase** | [1 — Hero mechanics, camera, and the arena](./phase-1-hero-mechanics/README.md): the gate was walked 2026-09-21 and closes when the person rows below hold; work goes on into phase 2 meanwhile |
 | **Active sprint** | [07 — The spell catalogue and the ability pipeline](./phase-2-spells-and-attack/sprint-07-spell-catalogue-and-the-ability-pipeline.md) |
-| **Next ticket** | P2-S07-T03 — The pipeline: stages, targeting kinds, the effect runner, refusals |
+| **Next ticket** | P2-S07-T04 — Damage types, mitigation, and death resolution |
 | **In progress** | none |
-| **Last closed ticket** | P2-S07-T02 — Definition types, schemas, the registry, and the content tier, 2026-09-21: every definition kind typed and schema-checked under `src/domain/definitions/`, the registry assembled in `src/content/index.ts` and validated at boot and in the content tier, the ten spells and fourteen statuses as catalogue data, the named-effect and behaviour registries in place |
+| **Last closed ticket** | P2-S07-T03 — The pipeline: stages, targeting kinds, the effect runner, refusals, 2026-09-22: the effect runner and the cast context built over the phase 1 skeleton, which was already the rest of the pipeline; a named effect now takes its own validated fields; the primitive table is in place and empty until sprint 08; the pipeline suite lives under `tests/simulation/pipeline/` |
 | **Last closed sprint** | [06 — Developer panel, replay, stress test, and the phase gate](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md), 2026-09-21: the phase 1 gate walked row by row in Chrome on the Apple M1 laptop, every row holding there, M2 reached; the bar on the reference laptop waits on a person |
 | **Last closed phase** | [0 — Foundation](./phase-0-foundation/README.md), 2026-09-20: every gate row holds and CI is green on the final commit; the exit record is in the phase README |
 | **Last milestone reached** | M2, the phase 1 gate, 2026-09-21: 38 acceptance tests green by name, a five-minute session replays identically in the browser and in Node, and 300 units hold the tick budget at a 1.7 ms mean on the Apple M1 laptop. M1 still waits on the reference laptop |

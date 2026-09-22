@@ -37,6 +37,8 @@ Hoarfrost, Quicken, Zenith, Siphon, and Wane cast against the dummy with preview
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
 
+> **Note, 2026-09-22:** the hook registry sentence is superseded. P2-S07-T02 built a damage hook as an effect list with a cooldown table and no function key, so there is no `domain/combat/hooks/` and no row for it in `docs/architecture/where-to-look.md`; the stale row was removed in P2-S07-T03. What this ticket builds is `applyDamage` running a hook's list through the effect runner, and the Hoarfrost definitions over the shape already in `src/domain/definitions/status-def.ts`.
+
 ---
 
 ### P2-S10-T02 — Quicken and Zenith

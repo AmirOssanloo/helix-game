@@ -13,11 +13,19 @@ export const resolveHero = (world: World): Unit | null => {
   return world.map.units.resolve(world.run.heroId);
 };
 
-/** The form record `unit` points at, or `null` when it points past the records; only the hero points at one. */
+/**
+ * The form record `unit` points at, or `null` when it points past the records or the unit
+ * is not the hero. Only the hero wears a form: an enemy and a summon carry their own body,
+ * resources, and abilities on their definition, and read nothing from run scope.
+ */
 export const activeFormOf = (
   world: World,
   unit: Readonly<Unit>,
 ): FormRecord | null => {
+  if (unit.kind !== "hero") {
+    return null;
+  }
+
   const form = world.run.forms[unit.activeFormIndex];
 
   return form === undefined ? null : form;

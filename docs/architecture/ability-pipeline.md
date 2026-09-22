@@ -62,8 +62,12 @@ A primitive is parameterised by the definition and by orb level where the defini
 
 ```typescript
 // domain/abilities/effects/foo-bar.effect.ts — key 'foo-bar'
-export const fooBarEffect = (world: World, cast: Cast): void => { /* … */ }
+export const fooBarEffect = (world: World, cast: Cast, fields: FooBarFields): void => { /* … */ }
 ```
+
+**One runner runs every list.** It walks the entries in the order the definition wrote them and hands each to the primitive its kind names or the function its key names, together with the **cast context**: the caster, the ability, the orb levels as they stood at commit, an anchor point with a facing, the unit the effect is aimed at or none, and the zone running it or none. The same runner runs a cast's list at commit, a zone's activation and each-tick lists, a projectile's hit list, and a status hook's list, so an effect never learns which of them ran it, and a named effect reads its own fields and nothing else about the definition. The runner refuses nothing: the content tier resolved every key before a world existed.
+
+Where the anchor lands follows the targeting kind — a no-target ability anchors on the caster and is aimed at it, a unit ability on its target, a point ability on the click, a direction ability on the caster — and the orb levels are copied at commit, so one raised afterwards does not change what landed.
 
 ---
 
@@ -133,6 +137,9 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Targeted abilities | Commit on the tick that sees the confirming click, with the position resolved at click time |
 | The targeting cursor | Presentation state; the simulation never knows it is open |
 | Effects | A list of primitives and named effects on the definition |
+| The effect runner | One runner for every list; entries run in the order written, each with the cast context |
+| The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, the target unit or none, the zone or none |
+| Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status hook's list; the effect cannot tell which |
 | Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
 | Bespoke behaviour | A named effect: one function in `domain/abilities/effects/`, referenced by key; no scripting layer |
 | Cooldown clocks | Per ability id, per caster, in ticks; no global cooldown |

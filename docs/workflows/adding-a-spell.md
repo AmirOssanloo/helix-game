@@ -66,7 +66,7 @@ touch src/domain/abilities/effects/frost-lance-hit.effect.ts
 
 ```typescript
 export const frostLanceHitFields = objectOf({ slowSeconds: nonNegativeSchema })
-export const frostLanceHitEffect: NamedEffect = (world, cast) => { /* … */ }
+export const frostLanceHitEffect: NamedEffect = (world, cast, fields) => { /* … */ }
 ```
 
 Register the key in `src/domain/abilities/effects/index.ts` with the schema of its fields beside it:

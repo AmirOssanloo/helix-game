@@ -23,9 +23,19 @@ const request = createAbilityRequest();
 
 /** The pool a cast of `unit`'s draws on: the hero's is its active form's, every other unit's is its own. */
 export const resourcesOf = (world: World, unit: Unit): Resources => {
-  const form = unit.kind === "hero" ? activeFormOf(world, unit) : null;
+  const form = activeFormOf(world, unit);
 
   return form === null ? unit.resources : form.resources;
+};
+
+/** The orb levels `unit` casts at: its active form's, or none for a caster that levels no orbs. */
+export const orbLevelsOf = (
+  world: World,
+  unit: Readonly<Unit>,
+): readonly number[] => {
+  const form = activeFormOf(world, unit);
+
+  return form === null ? NO_ORB_LEVELS : form.kit.orbLevels;
 };
 
 /** The level `unit` casts `record` at: from its active form's orb levels, or the first level for a unit with no form. */
@@ -33,14 +43,7 @@ export const castLevelOf = (
   world: World,
   unit: Readonly<Unit>,
   record: SpellRecord,
-): number => {
-  const form = activeFormOf(world, unit);
-
-  return spellLevelOf(
-    form === null ? NO_ORB_LEVELS : form.kit.orbLevels,
-    record.def.recipe,
-  );
-};
+): number => spellLevelOf(orbLevelsOf(world, unit), record.def.recipe);
 
 /**
  * Whether a slot key of `unit`'s active form's kit throws `abilityId`, which is what makes an

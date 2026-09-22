@@ -2,17 +2,30 @@ export {
   castLevelOf,
   holdsAbility,
   isInCastRange,
+  orbLevelsOf,
   requestCast,
   resourcesOf,
 } from "./abilities/cast";
 export { castSystem } from "./abilities/cast.system";
-export type { Cast } from "./abilities/cast-context";
+export {
+  type Cast,
+  type CastRecord,
+  createCastRecord,
+  fillCast,
+} from "./abilities/cast-context";
+export { runEffects } from "./abilities/effect-runner";
 export {
   NAMED_EFFECT_KEYS,
   type NamedEffect,
   type NamedEffectEntry,
   resolveNamedEffect,
 } from "./abilities/effects/index";
+export {
+  type Primitive,
+  type PrimitiveEffectDef,
+  type PrimitiveKind,
+  runPrimitive,
+} from "./abilities/primitives/index";
 export {
   type CooldownSnapshot,
   createCooldownSnapshot,
