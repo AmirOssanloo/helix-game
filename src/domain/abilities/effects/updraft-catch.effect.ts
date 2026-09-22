@@ -29,7 +29,7 @@ import type { NamedEffect } from "./index";
 const INSIDE: EffectTargetDef = { kind: "zone" };
 
 /** The fields the entry naming this effect carries: how long a unit stays in the air, and the status that holds it there. */
-export type UpdraftCarryFields = Readonly<{
+export type UpdraftCatchFields = Readonly<{
   liftSeconds: LevelTable;
   statusId: string;
 }>;
@@ -45,8 +45,8 @@ const levelTableSchema: Schema<LevelTable> = objectOf<LevelTable>({
 });
 
 /** The schema the registry validates an entry's fields against when content is loaded. */
-export const updraftCarryFields: Schema<UpdraftCarryFields> =
-  objectOf<UpdraftCarryFields>({
+export const updraftCatchFields: Schema<UpdraftCatchFields> =
+  objectOf<UpdraftCatchFields>({
     liftSeconds: levelTableSchema,
     statusId: idSchema,
   });
@@ -57,12 +57,13 @@ export const updraftCarryFields: Schema<UpdraftCarryFields> =
  */
 const fieldsOf = (
   fields: Readonly<Record<string, unknown>>,
-): UpdraftCarryFields => fields as UpdraftCarryFields;
+): UpdraftCatchFields => fields as UpdraftCatchFields;
 
 /**
  * Lifts every unit inside the zone that the zone has not taken and that is not already in
- * the air, and records each one on the zone's hit list, so one updraft lifts a unit once and
- * a second updraft passing over a unit already lifted leaves it where the first put it.
+ * the air, and records each one on the zone's hit list, so one updraft lifts a unit once —
+ * including where the lift ends while the funnel is still over the unit — and a second
+ * updraft passing over a unit already lifted leaves it where the first put it.
  */
 const pickUp = (
   world: World,
@@ -95,41 +96,16 @@ const pickUp = (
 };
 
 /**
- * Moves every unit the zone has taken and is still holding in the air by the step the zone
- * travelled this tick, and tells the spatial hash where that left it, since the pass that
- * keeps the hash true ran earlier in the tick. A unit whose lift has ended, or that has
- * died, is left where it stands.
- */
-const carry = (world: World, zone: Readonly<Zone>, statusId: string): void => {
-  for (let slot = 0; slot < zone.hitCount; slot += 1) {
-    const id = zone.hits[slot];
-    const unit = id === undefined ? null : world.map.units.resolve(id);
-
-    if (
-      id === undefined ||
-      unit === null ||
-      unit.state === "dead" ||
-      !holdsStatus(unit.statuses, statusId, world.tick)
-    ) {
-      continue;
-    }
-
-    unit.curr.x += zone.travel.x;
-    unit.curr.y += zone.travel.y;
-    world.map.spatialHash.move(id, unit.curr.x, unit.curr.y);
-  }
-};
-
-/**
- * Updraft's carry, run every tick by the zone that travels: it picks up whoever it has
- * reached and takes everyone it is holding along with it.
+ * Updraft's catch, run every tick by the zone that travels: it lifts whoever it has reached
+ * and moves nobody. A unit stands where the funnel found it for the whole of its lift, so the
+ * spell buys the window it is for rather than the displacement Clarion owns.
  *
  * What comes after is the lift status's, not this function's. The zone expires when its
- * motion is spent and the units it was carrying stay in the air where it left them; each one
- * comes down on its own tick, and the drop and its damage are the status's expiry list, so
- * they happen on time whether or not the zone still exists.
+ * motion is spent and the units it lifted stay in the air where they stood; each one comes
+ * down on its own tick, and the drop and its damage are the status's expiry list, so they
+ * happen on time whether or not the zone still exists.
  */
-export const updraftCarryEffect: NamedEffect = (
+export const updraftCatchEffect: NamedEffect = (
   world: World,
   cast: Cast,
   fields: Readonly<Record<string, unknown>>,
@@ -149,5 +125,4 @@ export const updraftCarryEffect: NamedEffect = (
     statusId,
     ticksOfSeconds(world.run.tuning, liftSeconds, cast.orbLevels),
   );
-  carry(world, zone, statusId);
 };

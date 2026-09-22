@@ -143,7 +143,7 @@ Numbers are white, so a merged number needs no colour rule yet; the HUD page's d
 | Layer | domain, content, docs, tests |
 | Size | 0.5 |
 | Depends on | P2-S11-T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Updraft's funnel lifts and moves nobody. `updraft_carry` becomes `updraft_catch`: each tick the travelling zone lifts every enemy inside it that it has not already taken and records it on the zone's hit list, and that is all it does. A lifted unit stands where it was lifted for the whole of its lift and comes down on that spot, which leaves the drop and its damage exactly where they are, in the `updraft_lift` status's expiry list. The zone still travels its distance along the facing and still expires with its motion. The hit list stays: without it a lift ending while the funnel is still over the unit would lift it again.
 
@@ -163,17 +163,19 @@ Content: `src/content/spells/updraft.def.ts` names the new key. Docs: section 3.
 
 > **Note, 2026-09-22:** unplanned, from the maintainer's arena walk of P2-S11-T01, and a reversal rather than a fix: P2-S11-T01 built the carry section 3.5 asked for, and the product owner approved that section on 2026-09-21. The maintainer reversed it on seeing it. At the orb cap the funnel carries a unit close to 2000 world units, which takes it off the screen and out of the fight — more displacement than anything else in the game — and with nothing drawing a lifted unit as airborne it reads as a knockback. The spell's identity is the window it buys, not the displacement, which Clarion already owns. The catalogue is rewritten to say lift in place, so the approved text and the code agree again.
 
+> **Note, 2026-09-22:** the carry came out whole: the named effect is now the pick-up alone, so nothing writes a unit's position or tells the spatial hash about it, and the zone's own travel is untouched. Two pieces the build needed and did not name. The acceptance row about a lift ending while the funnel is still over the unit cannot be reached with the catalogue's numbers — the funnel covers a unit for 0.4 s and the shortest lift is 0.8 s — so it is the effect spec that ends a lift under a standing zone and reads that the hit list still refuses the second lift; the spell spec reads instead that one cast drops a dummy once. And the recorded session's content stamp had to be restamped, since renaming the key changes the registry hash; the session casts no spell, so its records stand as they are.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06 |
+| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06, which needs a walk of its own |
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 |
+| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 0.5 |
 
 ## Risks in this sprint
 

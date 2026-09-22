@@ -1,10 +1,10 @@
 import type { SpellDef } from "@domain/public";
 
 /**
- * Updraft: a zone that travels in a line from the hero, lifting every enemy it touches, carrying
- * it along, then dropping it with damage. The zone's lifetime is its motion, so it is gone the
- * moment the distance is covered; the drop and its damage are the lift status's expiry, so they
- * land on their own tick whether or not the zone is still there. The preview rectangle starts at
+ * Updraft: a zone that travels in a line from the hero, lifting every enemy it touches where it
+ * stands, then dropping it with damage on the spot it was lifted from. The zone's lifetime is its
+ * motion, so it is gone the moment the distance is covered; the drop and its damage are the lift
+ * status's expiry, so they land on their own tick whether or not the zone is still there. The preview rectangle starts at
  * the hero, so its centre sits half its length ahead. The recipe, the targeting kind, the
  * timings, the tables, and the preview are the spell catalogue's starting values, one entry per
  * orb level from one to seven. Every number is a starting value design retunes here.
@@ -37,7 +37,7 @@ export const updraftDef = {
       eachTick: [
         {
           kind: "named",
-          key: "updraft_carry",
+          key: "updraft_catch",
           fields: {
             liftSeconds: {
               orb: "quartz",

@@ -7,7 +7,7 @@ import {
   glacierPlaceNested,
 } from "./glacier-place.effect";
 import { siphonBurnEffect, siphonBurnFields } from "./siphon-burn.effect";
-import { updraftCarryEffect, updraftCarryFields } from "./updraft-carry.effect";
+import { updraftCatchEffect, updraftCatchFields } from "./updraft-catch.effect";
 
 /**
  * A bespoke effect: it reads the world, the cast context, and the fields the entry that
@@ -70,11 +70,11 @@ const effects: ReadonlyMap<string, NamedEffectEntry> = new Map<
     { fields: siphonBurnFields, nested: NO_NESTING, run: siphonBurnEffect },
   ],
   [
-    "updraft_carry",
+    "updraft_catch",
     {
-      fields: updraftCarryFields,
+      fields: updraftCatchFields,
       nested: NO_NESTING,
-      run: updraftCarryEffect,
+      run: updraftCatchEffect,
     },
   ],
 ]);

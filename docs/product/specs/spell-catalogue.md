@@ -94,7 +94,7 @@ The table is the whole catalogue at a glance; the entries below hold the effect 
 | QQW | Wane | None | 0.05 | 0 | 35 → 23 | 200 → 230 | Apply status, spawn zone | none |
 | QQE | Glacier | Direction | 0.1 | 0 | 25 → 19 | 175 → 205 | Named | `glacier_place` |
 | WWW | Siphon | Point | 0.1 | 950 | 30 → 18 | 125 → 155 | Spawn zone | `siphon_burn` |
-| WWQ | Updraft | Direction | 0.1 | 0 | 30 → 18 | 150 → 180 | Spawn zone | `updraft_carry` |
+| WWQ | Updraft | Direction | 0.1 | 0 | 30 → 18 | 150 → 180 | Spawn zone | `updraft_catch` |
 | WWE | Quicken | None | 0.05 | 0 | 15 → 9 | 45 → 75 | Apply status | none |
 | EEE | Zenith | Point | 0.1 | 1200 | 25 → 19 | 175 → 205 | Spawn zone | none |
 | EEQ | Emberling | None | 0.05 | 0 | 30 → 18 | 75 → 105 | Spawn unit | none |
@@ -200,7 +200,7 @@ A zone that charges, then burns mana from every enemy inside and deals damage fo
 
 ### 3.5 Updraft — WWQ
 
-A zone that travels in a line from the hero, lifting every enemy it touches, carrying it along, then dropping it with damage.
+A zone that travels in a line from the hero, lifting every enemy it touches where it stands, then dropping it with damage on the spot it was lifted from.
 
 | Field | Value |
 |---|---|
@@ -215,13 +215,13 @@ A zone that travels in a line from the hero, lifting every enemy it touches, car
 
 **Effects:**
 
-1. Spawn zone — circle, radius 200; anchored at the hero; delay 0; motion: a line along the facing at 1000 per second for Whorl [800, 1000, 1200, 1400, 1600, 1800, 2000]; lifetime: the motion, so the zone expires when the distance is covered. Each tick: named `updraft_carry` — lift seconds Quartz [0.8, 1.1, 1.4, 1.7, 2.0, 2.3, 2.6].
+1. Spawn zone — circle, radius 200; anchored at the hero; delay 0; motion: a line along the facing at 1000 per second for Whorl [800, 1000, 1200, 1400, 1600, 1800, 2000]; lifetime: the motion, so the zone expires when the distance is covered. Each tick: named `updraft_catch` — lift seconds Quartz [0.8, 1.1, 1.4, 1.7, 2.0, 2.3, 2.6].
 
 **Statuses:** `updraft_lift` sets the lifted, stunned, and untargetable flags, suspends the unit's order, and on expiry drops the unit where it is, resumes the order, and deals magical damage Whorl [70, 100, 130, 160, 190, 220, 250] to it.
 
-**What `updraft_carry` does:** each tick, every enemy inside the zone that is not on the zone's hit list is lifted for the lift seconds and added to the list, so nothing is lifted twice by one updraft. Every unit on the list that is still lifted moves with the zone. When the zone expires, the units it carried stay lifted where it left them until their own lift ends. The drop and its damage are the status's expiry, so they happen on time whether or not the zone still exists.
+**What `updraft_catch` does:** each tick, every enemy inside the zone that is not on the zone's hit list is lifted for the lift seconds and added to the list, and that is all it does. Nothing is lifted twice by one updraft, including a unit whose lift ends while the funnel is still over it. A lifted unit moves nowhere: it stands where the funnel found it for the whole of its lift and comes down on that spot, so the spell buys the window it is for rather than the displacement Clarion owns. The drop and its damage are the status's expiry, so they happen on time whether or not the zone still exists.
 
-**Edges:** a lifted unit cannot be hit by a projectile or a shape. Hoarfrost and every other status on it keep counting. A rooted unit is lifted, dropped where the updraft leaves it, and root keeps counting. A second updraft ignores a unit already lifted.
+**Edges:** a lifted unit cannot be hit by a projectile or a shape. Hoarfrost and every other status on it keep counting. A rooted unit is lifted, comes down where it stood, and root keeps counting. A second updraft ignores a unit already lifted.
 
 **Adapted:** the source aims at a point in range; Helix reads only the direction, so the funnel always launches. Enemies only.
 
@@ -425,7 +425,7 @@ Every entry has a `kind`. A `target` is `target`, `zone`, or a shape from [secti
 | Apply status | `target`; the status id; `seconds`, a number or a table. Applying the same status every tick with a short duration is how a zone's slow lingers after a unit leaves | Hoarfrost, Wane, Glacier, Quicken, Bolide, Clarion, the Hoarfrost hook |
 | Spawn zone | The shape; `anchor`, the context's anchor or the caster, a caster-anchored zone moving with the caster; `delaySeconds` before it activates; `lifetimeSeconds`, a number, a table, or the motion; `motion`, still or a line along the facing with a speed and a distance table; `onActivate`, an effect list run once when the delay ends; `eachTick`, an effect list run every tick while active; the frame and tint it is drawn with | Wane, Glacier through its named effect, Siphon, Updraft, Zenith, Bolide |
 | Spawn unit | The summon definition id; `count`; `offset`, forward and right of the caster's facing; `lifetimeSeconds`, a table; `bonuses`, a list of stat and flat table written as modifier rows on the summon for its life | Emberling |
-| Displace | `target`; `mode`, push or lift; the status it applies for its duration; for push, `direction`, away from the caster or along the facing, `distance`, a table, and `seconds`; for lift, `seconds`, a table. A push moves the unit through the movement step each tick so it stops at an obstacle edge, and names `knockback` as its status. A lift applies its status, which suspends the order, and the order comes back on expiry | Clarion pushes; `updraft_carry` lifts through the same function. Pull has no user and is not built until one exists |
+| Displace | `target`; `mode`, push or lift; the status it applies for its duration; for push, `direction`, away from the caster or along the facing, `distance`, a table, and `seconds`; for lift, `seconds`, a table. A push moves the unit through the movement step each tick so it stops at an obstacle edge, and names `knockback` as its status. A lift applies its status, which suspends the order, and the order comes back on expiry | Clarion pushes; `updraft_catch` lifts through the same function. Pull has no user and is not built until one exists |
 | Spawn projectile | A speed, a radius, homing on the target or not, a maximum range, an on-hit effect list, a frame and tint | No spell. The auto-attack and the summon's attack fire one |
 | Named | A key resolved from `src/domain/abilities/effects/`, and the effect's own fields, declared beside the function and validated by its schema | Glacier, Siphon, Updraft |
 
@@ -439,7 +439,7 @@ Three functions, one file each under `src/domain/abilities/effects/`, each takin
 |---|---|---|
 | `glacier_place` | `segments`, `spacing`, `distance`, and the segment zone as a spawn-zone entry | Computes `segments` anchors on a line across the facing, `distance` in front of the anchor, `spacing` apart and centred, and spawns the zone at each with the facing turned across the cast direction |
 | `siphon_burn` | `burn`, a table; `damagePerMana` | For each enemy in the zone: takes the lesser of `burn` and the unit's mana, and deals that times `damagePerMana` as magical damage |
-| `updraft_carry` | `liftSeconds`, a table; the lift status id | Runs each tick from the zone: lifts every enemy inside not yet on the hit list and records it; moves every recorded unit that is still lifted with the zone |
+| `updraft_catch` | `liftSeconds`, a table; the lift status id | Runs each tick from the zone: lifts every enemy inside not yet on the hit list and records it, and moves nobody |
 
 ### 7.3 Status-definition capabilities
 
@@ -465,7 +465,7 @@ What a status definition must be able to say, each with the status that needs it
 
 ### 7.5 What the ten do not need
 
-A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a status that stacks, a zone that runs an effect once per unit on contact other than through `updraft_carry`, and any number a system holds. Each waits for the first ability that needs it.
+A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a status that stacks, a zone that runs an effect once per unit on contact other than through `updraft_catch`, and any number a system holds. Each waits for the first ability that needs it.
 
 ---
 

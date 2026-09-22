@@ -2,10 +2,10 @@ import type { StatusDef } from "@domain/public";
 
 /**
  * Updraft's lift: the holder is raised, stunned, and untargetable with its order suspended, and on
- * expiry it drops where it is and takes magical damage. A unit already lifted ignores a second
- * lift. The tables are the spell catalogue's starting values, one entry per orb level from one to
- * seven, each naming the orb that indexes it; the applier gives the duration. Every number is a
- * starting value design retunes here.
+ * expiry it comes down on the spot it was lifted from and takes magical damage. A unit already
+ * lifted ignores a second lift. The tables are the spell catalogue's starting values, one entry per
+ * orb level from one to seven, each naming the orb that indexes it; the applier gives the duration.
+ * Every number is a starting value design retunes here.
  */
 export const updraftLiftDef = {
   id: "updraft_lift",

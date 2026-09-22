@@ -72,7 +72,7 @@ The accepted cost is eleven to twelve engineer days: about two for locomotion an
 
 **Zero allocation is achievable.** Pools, a preallocated spatial hash, and a preallocated open list for A* mean the tick produces no garbage, so there is no collector pause in the middle of a fight.
 
-**Phased, flying, or displaced units are one rule each.** Updraft lifting a unit, Clarion pushing one, Bolide rolling across a pack — these are scripted motion the domain writes directly, with no solver to argue with.
+**Phased, flying, or displaced units are one rule each.** Updraft lifting a unit out of reach, Clarion pushing one, Bolide rolling across a pack — these are rules the domain writes directly, with no solver to argue with.
 
 ### What this makes hard
 

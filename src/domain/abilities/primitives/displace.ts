@@ -28,7 +28,7 @@ const directionOf = (
  * Puts a lift's status on one unit for `ticks`, from the cast that lifted it. Everything a
  * lift does is the status's: its flags take the unit's order off it until the lift ends, and
  * its expiry list is what lands when the unit comes down. This is the one way a lift goes on,
- * so the primitive and a named effect that carries units agree on what lifting is.
+ * so the primitive and a named effect that lifts a unit of its own agree on what lifting is.
  */
 export const lift = (
   world: World,

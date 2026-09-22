@@ -50,7 +50,7 @@ Which status blocks which key, order, and cast state is one table with a cell pe
 | Silenced or stunned while the targeting cursor is open | The cursor closes at no cost. An attack-move cursor closes on a stun and survives a silence |
 | Silenced with a move running | The move continues; silence blocks abilities only |
 | Stunned or silenced with a skill point unspent | The point can still be spent from the HUD. A level is not an action the unit takes |
-| Rooted while lifted by Updraft | Lift wins; the unit drops where the updraft leaves it, and root keeps counting |
+| Rooted while lifted by Updraft | Lift wins; the unit comes down on the spot it was lifted from, and root keeps counting |
 | Lifted with a move running | The move is put aside, not cleared: the unit takes it up again where it lands and walks there from the drop |
 | Rooted during a move | The move is cleared; the hero stands until root expires and does not resume |
 | Knocked back into an obstacle | The displacement stops at the obstacle edge |

@@ -18,24 +18,25 @@ import {
   makeWorld,
   spawnHero,
   spawnUnit,
+  tickUntil,
   unitIdOf,
 } from "../../../helpers";
 
 /** The effect under test, by the key the registry holds it under. */
-const UPDRAFT_CARRY = "updraft_carry";
+const UPDRAFT_CATCH = "updraft_catch";
 
-/** The status the carry puts on whoever it picks up, by the id content registers it under. */
+/** The status the catch puts on whoever it lifts, by the id content registers it under. */
 const LIFT = "updraft_lift";
 
 /** The circle the fixture's zone covers, and how far it travels each tick. */
 const RADIUS = 200;
 const STEP = 33;
 
-/** A travel of several hash cells, so a carried unit lands in a cell it did not start in. */
-const CELLS_AWAY = 1280;
-
-/** How long a lift the entries below give, in seconds, and the same in ticks under the real tuning. */
+/** How long a lift the entries below give, in seconds. */
 const LIFT_SECONDS = 2;
+
+/** Ticks enough for a lift that long to run out under any tuning a spec runs at. */
+const PATIENCE = 500;
 
 /** The health every unit of the fixture stands on, well above anything the fixture deals. */
 const HEALTH = 10000;
@@ -61,7 +62,7 @@ const ZONE: SpawnZoneEffectDef = {
 /** One entry naming the effect, lifting for `seconds` at every orb level unless a table says otherwise. */
 const entry = (seconds: number): EffectDef => ({
   kind: "named",
-  key: UPDRAFT_CARRY,
+  key: UPDRAFT_CATCH,
   fields: {
     liftSeconds: { orb: "quartz", byLevel: [seconds] },
     statusId: LIFT,
@@ -71,7 +72,7 @@ const entry = (seconds: number): EffectDef => ({
 /** One entry whose lift rises with Quartz, for reading it at the levels the cast carries. */
 const tieredEntry = (byLevel: readonly number[]): EffectDef => ({
   kind: "named",
-  key: UPDRAFT_CARRY,
+  key: UPDRAFT_CATCH,
   fields: { liftSeconds: { orb: "quartz", byLevel }, statusId: LIFT },
 });
 
@@ -85,7 +86,7 @@ type Arranged = {
 
 /**
  * The hero at the origin with a unit at each of `xs` and a travelling zone over the origin,
- * so the entry the spec runs collects whoever stands inside it. Nothing is ticked: the carry
+ * so the entry the spec runs collects whoever stands inside it. Nothing is ticked: the catch
  * is the whole subject, and the zone's own clock would run its empty lists.
  */
 const arrange = (xs: readonly number[]): Arranged => {
@@ -169,6 +170,14 @@ const liftEndsAt = (unit: Readonly<Unit> | undefined): number =>
 const alongX = ({ units }: Arranged): number[] =>
   units.map((unit) => unit.curr.x);
 
+/**
+ * Ticks until the lift on the first unit has run out and it is standing again, so what
+ * follows reads a zone whose hit list outlived the lift it recorded.
+ */
+const expireLift = (fixture: Arranged): void => {
+  tickUntil(fixture.world, () => inAir(fixture)[0] === false, PATIENCE);
+};
+
 /** Room for every id one query could propose. */
 const PROPOSED = createCandidateBuffer(UNIT_CAPACITY);
 
@@ -179,7 +188,7 @@ const proposedAt = ({ world }: Arranged, x: number, id: EntityId): boolean => {
   return PROPOSED.slice(0, found).includes(id);
 };
 
-describe("the updraft carry", () => {
+describe("the updraft catch", () => {
   it("lifts every unit inside the zone and nothing outside it", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0, INSIDE_X[1] ?? 0, OUTSIDE_X]);
 
@@ -197,28 +206,26 @@ describe("the updraft carry", () => {
     expect(hasTakenHit(fixture.zone, fixture.ids[1] ?? 0)).toBe(false);
   });
 
-  it("carries every unit it holds by the step the zone travels, each tick it runs", () => {
+  it("leaves the unit it lifted where it stood, however many ticks it runs", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0, OUTSIDE_X]);
 
     run(fixture, [entry(LIFT_SECONDS)]);
 
-    expect(alongX(fixture)).toEqual([STEP, OUTSIDE_X]);
+    expect(alongX(fixture)).toEqual([INSIDE_X[0] ?? 0, OUTSIDE_X]);
 
     run(fixture, [entry(LIFT_SECONDS)]);
 
-    expect(alongX(fixture)).toEqual([STEP * 2, OUTSIDE_X]);
+    expect(alongX(fixture)).toEqual([INSIDE_X[0] ?? 0, OUTSIDE_X]);
   });
 
-  it("tells the spatial hash where it left the unit it carried", () => {
+  it("leaves the spatial hash reading the unit where it stands", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0]);
     const id = fixture.ids[0] ?? 0;
     const from = fixture.units[0]?.curr.x ?? 0;
 
-    fixture.zone.travel.x = CELLS_AWAY;
     run(fixture, [entry(LIFT_SECONDS)]);
 
-    expect(proposedAt(fixture, from + CELLS_AWAY, id)).toBe(true);
-    expect(proposedAt(fixture, from, id)).toBe(false);
+    expect(proposedAt(fixture, from, id)).toBe(true);
   });
 
   it("lifts a unit once, however many ticks it spends inside the zone", () => {
@@ -233,6 +240,17 @@ describe("the updraft carry", () => {
     expect(liftEndsAt(fixture.units[0])).toBe(ends);
   });
 
+  it("does not lift a unit again when its lift ends under the same zone", () => {
+    const fixture = arrange([INSIDE_X[0] ?? 0]);
+
+    run(fixture, [entry(LIFT_SECONDS)]);
+    expireLift(fixture);
+
+    run(fixture, [entry(LIFT_SECONDS)]);
+
+    expect(inAir(fixture)).toEqual([false]);
+  });
+
   it("does not take a unit a lift already holds, so a second updraft passes over it", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0]);
 
@@ -243,7 +261,7 @@ describe("the updraft carry", () => {
     runFrom(fixture, second, [entry(LIFT_SECONDS)]);
 
     expect(hasTakenHit(second.zone, fixture.ids[0] ?? 0)).toBe(false);
-    expect(alongX(fixture)).toEqual([STEP]);
+    expect(alongX(fixture)).toEqual([INSIDE_X[0] ?? 0]);
   });
 
   it("reads its lift at the orb levels the cast carries", () => {
@@ -259,7 +277,7 @@ describe("the updraft carry", () => {
     );
   });
 
-  it("carries nothing when the zone running it is gone", () => {
+  it("lifts nothing when the zone running it is gone", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0]);
 
     fixture.world.state.map.zones.release(fixture.zoneId);

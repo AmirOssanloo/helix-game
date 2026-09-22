@@ -16,7 +16,7 @@ Numbers are not on this page. Each spell owns a definition file under `src/conte
 | QQW | Wane | None, self | The hero turns invisible to enemy aggro for the duration and is slowed; enemies near the hero are slowed. Scales with Quartz and Whorl |
 | QQE | Glacier | Direction, placed | A zone: a line of wall segments placed in front of the hero, facing the cast direction. Enemies inside the wall's aura are heavily slowed and take damage over time. Scales with Quartz and Ember |
 | WWW | Siphon | Point, delayed | A zone that charges for a moment, then burns mana from every enemy in the area and deals damage for mana burned. Scales with Whorl |
-| WWQ | Updraft | Direction, line | A zone that travels in a line, lifting every enemy it touches into the air for a duration, then dropping them with damage. Lifted units are stunned and untargetable. Scales with Whorl and Quartz |
+| WWQ | Updraft | Direction, line | A zone that travels in a line, lifting every enemy it touches into the air for a duration where it stands, then dropping it on that spot with damage. A lifted unit is stunned and untargetable and moves nowhere. Scales with Whorl and Quartz |
 | WWE | Quicken | None, self | A self buff: bonus attack speed and attack damage for the duration. Scales with Whorl and Ember |
 | EEE | Zenith | Point, delayed | A ground strike: after a delay, pure damage in a small area, split among everything inside. Scales with Ember |
 | EEQ | Emberling | None, self | A summon: one player-owned unit next to the hero that auto-attacks nearby enemies for its lifetime and cannot be ordered. Scales with Ember and Quartz |
@@ -32,7 +32,7 @@ Where a spell's role depends on something Helix does not have, it keeps the role
 - **Wane** hides the hero from enemy aggro and drops existing aggro, since there is no fog of war or team vision to hide from. Enemies already touching the hero keep attacking.
 - **Quicken** targets self only. There is no ally to buff.
 - **Emberling** summons are enemy targets, follow the hero when idle, and expire on their timer. They cannot be selected or ordered.
-- **Updraft and Clarion** apply their displacement to enemies only.
+- **Updraft and Clarion** reach enemies only: Updraft lifts where the unit stands, and Clarion is the spell that pushes.
 
 No spell damages or displaces the hero or a summon. Friendly fire does not exist.
 

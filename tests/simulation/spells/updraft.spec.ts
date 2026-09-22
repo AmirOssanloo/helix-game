@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
-import type { SpawnProjectileEffectDef, Unit } from "@domain/public";
+import type {
+  ApplyStatusEffectDef,
+  SpawnProjectileEffectDef,
+  Unit,
+} from "@domain/public";
 import { runPrimitive } from "@domain/public";
 import type { Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
@@ -17,7 +21,7 @@ import {
 /** The spell under test, by the id content registers it under. */
 const UPDRAFT = "updraft";
 
-/** The status the carry puts on whoever it picks up, by the id content registers it under. */
+/** The status the catch puts on whoever it lifts, by the id content registers it under. */
 const LIFT = "updraft_lift";
 
 /** The status Hoarfrost puts on a unit, for reading that a lift does not pause what is already counting. */
@@ -70,6 +74,18 @@ const PROJECTILE: SpawnProjectileEffectDef = {
   tint: 0xffffff,
 };
 
+/** The status a root puts on a unit, by the id content registers it under, and how long the spec roots for. */
+const ROOT = "root";
+const ROOT_SECONDS = 10;
+
+/** A root the spec puts on a dummy by hand, to read what a lift does to a unit already held in place. */
+const ROOTING: ApplyStatusEffectDef = {
+  kind: "apply_status",
+  target: { kind: "target" },
+  statusId: ROOT,
+  seconds: ROOT_SECONDS,
+};
+
 /** A point well to the side of the line the zone travels. */
 const ASIDE: Readonly<Vec2> = { x: 400, y: 2000 };
 
@@ -100,7 +116,7 @@ type Arranged = {
 /**
  * The hero at the origin facing along +X with every orb at `level` and Updraft prepared on D,
  * and a dummy at each of `places`. The registry is the content layer's, so the spell, the
- * zone, the carry, and the lift status are the ones the game ships.
+ * zone, the catch, and the lift status are the ones the game ships.
  */
 const arrange = (
   level: number,
@@ -209,6 +225,32 @@ const castHoarfrostAt = (fixture: Arranged, dummy: Readonly<Unit>): void => {
 const alongX = ({ dummies }: Arranged): number[] =>
   dummies.map((dummy) => dummy.curr.x);
 
+/** Roots the first dummy where it stands, for longer than anything the spec does after it. */
+const rootFirst = ({ world, dummies }: Arranged): void => {
+  const dummy = dummies[0];
+
+  if (dummy === undefined) {
+    throw new Error("The fixture placed a dummy");
+  }
+
+  runPrimitive(
+    world.state,
+    makeCast(world, { targetId: unitIdOf(world, dummy) }),
+    ROOTING,
+  );
+};
+
+/** Whether each dummy is rooted, in the order they were placed. */
+const rooted = ({ dummies }: Arranged): boolean[] =>
+  dummies.map(
+    (dummy) =>
+      dummy.statuses.find((row) => row.definitionId === ROOT) !== undefined,
+  );
+
+/** Where the funnel stands along the line it travels, and the origin once it is gone. */
+const funnelX = ({ world }: Arranged): number =>
+  world.state.map.zones.at(0)?.curr.x ?? 0;
+
 /** What each dummy has lost in health, in the order they were placed. */
 const lost = ({ dummies }: Arranged): number[] =>
   dummies.map((dummy) => DUMMY_HEALTH - dummy.resources.health);
@@ -216,35 +258,36 @@ const lost = ({ dummies }: Arranged): number[] =>
 describe.each(CASES)(
   "Updraft at orb level $level",
   ({ level, liftSeconds, drop, distance }) => {
-    it("lifts a dummy it reaches and carries it along with the funnel", () => {
+    it("lifts a dummy it reaches and leaves it where it stood", () => {
       const fixture = arrange(level, [NEAR]);
 
       castAndLaunch(fixture.world, AIM);
       tickWhile(fixture.world, () => inAir(fixture)[0] === true);
 
-      const picked = alongX(fixture)[0] ?? 0;
+      expect(alongX(fixture)).toEqual([NEAR.x]);
 
       tickTimes(fixture.world, 2);
 
-      expect(alongX(fixture)[0] ?? 0).toBeGreaterThan(picked);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
       expect(inAir(fixture)).toEqual([true]);
     });
 
-    it("carries it at the speed the funnel travels", () => {
+    it("travels on past the dummy it lifted, at the speed the funnel travels", () => {
       const fixture = arrange(level, [NEAR]);
       const perTick = SPEED / tuningTable.sim_hz;
 
       castAndLaunch(fixture.world, AIM);
       tickWhile(fixture.world, () => inAir(fixture)[0] === true);
 
-      const picked = alongX(fixture)[0] ?? 0;
+      const funnel = funnelX(fixture);
 
       tickTimes(fixture.world, 1);
 
-      expect((alongX(fixture)[0] ?? 0) - picked).toBeCloseTo(perTick);
+      expect(funnelX(fixture) - funnel).toBeCloseTo(perTick);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
     });
 
-    it("drops it after its lift with the damage its table gives", () => {
+    it("drops it after its lift, on the spot it was lifted from, with the damage its table gives", () => {
       const fixture = arrange(level, [NEAR]);
 
       castAndLaunch(fixture.world, AIM);
@@ -254,13 +297,12 @@ describe.each(CASES)(
 
       tickWhile(fixture.world, () => inAir(fixture)[0] === false);
 
-      const dropped = alongX(fixture)[0] ?? 0;
-
       expect(lost(fixture)).toEqual([drop]);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
 
       tickTimes(fixture.world, 2);
 
-      expect(alongX(fixture)[0] ?? 0).toBe(dropped);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
     });
 
     it("holds the dummy for the seconds its table gives", () => {
@@ -293,6 +335,7 @@ describe.each(CASES)(
       tickWhile(fixture.world, () => inAir(fixture)[1] === true);
 
       expect(inAir(fixture)[1]).toBe(true);
+      expect(alongX(fixture)).toEqual([NEAR.x, FAR.x]);
     });
 
     it("passes a dummy standing aside from its line by", () => {
@@ -319,24 +362,35 @@ describe.each(CASES)(
       );
     });
 
-    it("leaves the units it carried in the air where it left them, and they drop on their own", () => {
+    it("leaves the units it lifted in the air where they stood, and they drop on their own", () => {
       const fixture = arrange(level, [NEAR]);
 
       castAndLaunch(fixture.world, AIM);
       tickWhile(fixture.world, () => fixture.world.view.map.zones.count === 0);
 
-      const left = alongX(fixture)[0] ?? 0;
-
       expect(inAir(fixture)).toEqual([true]);
-
-      tickTimes(fixture.world, 2);
-
-      expect(alongX(fixture)[0] ?? 0).toBe(left);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
 
       tickWhile(fixture.world, () => inAir(fixture)[0] === false);
 
       expect(lost(fixture)).toEqual([drop]);
-      expect(alongX(fixture)[0] ?? 0).toBe(left);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
+    });
+
+    it("lifts a dummy once, so one cast drops it once", () => {
+      const fixture = arrange(level, [NEAR]);
+
+      castAndLaunch(fixture.world, AIM);
+      tickWhile(fixture.world, () => inAir(fixture)[0] === true);
+      tickWhile(fixture.world, () => inAir(fixture)[0] === false);
+
+      expect(lost(fixture)).toEqual([drop]);
+
+      tickTimes(fixture.world, BACKSWING_TICKS);
+
+      expect(inAir(fixture)).toEqual([false]);
+      expect(lost(fixture)).toEqual([drop]);
+      expect(alongX(fixture)).toEqual([NEAR.x]);
     });
   },
 );
@@ -367,6 +421,22 @@ describe("a dummy Updraft has lifted", () => {
     tickTimes(fixture.world, FLIGHT_TICKS);
 
     expect(lost(fixture)[0] ?? 0).toBe(dropped + PROJECTILE_HIT);
+  });
+
+  it("comes down where it stood even when a root held it there", () => {
+    const fixture = arrange(CAPPED, [NEAR]);
+
+    rootFirst(fixture);
+    castAndLaunch(fixture.world, AIM);
+    tickWhile(fixture.world, () => inAir(fixture)[0] === true);
+
+    expect(rooted(fixture)).toEqual([true]);
+    expect(alongX(fixture)).toEqual([NEAR.x]);
+
+    tickWhile(fixture.world, () => inAir(fixture)[0] === false);
+
+    expect(alongX(fixture)).toEqual([NEAR.x]);
+    expect(rooted(fixture)).toEqual([true]);
   });
 
   it("keeps counting down every other status it wears, and sheds it on its own tick", () => {
