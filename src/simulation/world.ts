@@ -11,6 +11,7 @@ import type {
 } from "@domain/public";
 import {
   cellCount,
+  createAttackRecord,
   createDomainEvent,
   createEffectPool,
   createFormRecords,
@@ -57,9 +58,9 @@ const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
 
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
- * the hero's form records and the spell, status, and unit tables built over it, both switches
- * off, no hero yet,
- * and the random source at the start of the seed's sequence.
+ * the hero's form records, its attack read for the tick, and the spell, status, and unit
+ * tables built over it, both switches off, no hero yet, and the random source at the start
+ * of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
   const tuning = createTuningState(registry.tuning);
@@ -67,6 +68,10 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   return {
     heroId: null,
     hero: registry.hero,
+    heroAttack: createAttackRecord(
+      registry.hero.attack,
+      readTunable(tuning, "sim_hz"),
+    ),
     forms: createFormRecords(registry.hero, registry.forms, tuning),
     spells: createSpellTable(registry.spells, tuning),
     statuses: createStatusTable(registry.statuses, tuning),

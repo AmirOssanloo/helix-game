@@ -35,6 +35,7 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "no_spell_for_recipe":
     case "empty_slot":
     case "unknown_ability":
+    case "unknown_archetype":
     case "ability_not_held":
     case "invalid_target":
     case "target_not_found":

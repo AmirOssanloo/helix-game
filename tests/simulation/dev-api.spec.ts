@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
 import { FixedStepDriver, Session, STEP_MS } from "@app/public";
-import { tuningTable } from "@content/public";
+import {
+  contentRegistry,
+  trainingDummyDef,
+  tuningTable,
+} from "@content/public";
 import type { DevApi, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
+import type { Unit } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
-import { contentVersionOf } from "@simulation/public";
+import { contentVersionOf, createEventReader } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;
@@ -65,10 +70,47 @@ const arrange = (): Arranged => {
     rings,
     overlays,
     tuningDefaults: tuningTable,
+    archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
   });
 
   return { api, world, driver, rings, overlays };
+};
+
+/** Where a spawn by archetype lands, well clear of the hero at the origin. */
+const SPAWN_AT = 600;
+
+/** The first unit in the pool that is not the hero. */
+const spawnedOf = (world: Simulation): Unit | null => {
+  const units = world.state.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit !== null && unit.kind !== "hero") {
+      return unit;
+    }
+  }
+
+  return null;
+};
+
+/** Every refusal reason the world has announced. */
+const refusals = (world: Simulation): string[] => {
+  const reader = createEventReader();
+  const found: string[] = [];
+
+  for (
+    let event = world.events.read(reader);
+    event !== null;
+    event = world.events.read(reader)
+  ) {
+    if (event.kind === "command_refused" && event.reason !== null) {
+      found.push(event.reason);
+    }
+  }
+
+  return found;
 };
 
 describe("DevApi.submit", () => {
@@ -174,6 +216,52 @@ describe("DevApi.driver", () => {
     const { api } = arrange();
 
     expect(api.driver.seed).toBe(SEED);
+  });
+});
+
+describe("DevApi spawns by archetype", () => {
+  it("puts one unit of the archetype into the world, wearing its definition", () => {
+    const { api, world } = arrange();
+
+    api.submit({
+      kind: "spawn_enemies",
+      archetypeId: trainingDummyDef.id,
+      count: 1,
+      position: { x: SPAWN_AT, y: 0 },
+    });
+    world.tick();
+
+    const spawned = spawnedOf(world);
+
+    expect(spawned?.kind).toBe("enemy");
+    expect(spawned?.definitionId).toBe(trainingDummyDef.id);
+    expect(spawned?.indestructible).toBe(true);
+    expect(spawned?.stats.maxHealth).toBe(trainingDummyDef.health);
+    expect(spawned?.collisionRadius).toBe(
+      trainingDummyDef.body.collisionRadius,
+    );
+  });
+
+  it("refuses an archetype the registry does not hold, spawning nothing", () => {
+    const { api, world } = arrange();
+    const before = world.view.map.units.count;
+
+    api.submit({
+      kind: "spawn_enemies",
+      archetypeId: "no_such_archetype",
+      count: 1,
+      position: { x: SPAWN_AT, y: 0 },
+    });
+    world.tick();
+
+    expect(world.view.map.units.count).toBe(before);
+    expect(refusals(world)).toContain("unknown_archetype");
+  });
+
+  it("lists every archetype the registry holds, for the dropdown to read", () => {
+    const { api } = arrange();
+
+    expect(api.archetypes).toContain(trainingDummyDef.id);
   });
 });
 

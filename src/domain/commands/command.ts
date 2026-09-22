@@ -136,6 +136,7 @@ export type DebugCommand =
   | ToggleNoCooldownsCommand
   | KillHeroCommand
   | SpawnUnitsCommand
+  | SpawnEnemiesCommand
   | ClearUnitsCommand
   | ResetMapCommand
   | BeginChannelCommand
@@ -230,6 +231,21 @@ export type SpawnUnitsCommand = Readonly<{
   position: Readonly<Vec2>;
 }>;
 
+/**
+ * Puts `count` units of the archetype `archetypeId` names into the world around `position`,
+ * each wearing that definition's body, numbers, and behaviour. A position on an obstacle or
+ * off the map resolves to the nearest legal point, and the group fills the free cells around
+ * it. Refused when no archetype has the id and when the pool has no room for all of them.
+ */
+export type SpawnEnemiesCommand = Readonly<{
+  kind: "spawn_enemies";
+  tick: Tick;
+  timestamp: number;
+  archetypeId: string;
+  count: number;
+  position: Readonly<Vec2>;
+}>;
+
 /** Releases every unit but the hero, with no deaths and no experience. */
 export type ClearUnitsCommand = Readonly<{
   kind: "clear_units";
@@ -317,6 +333,7 @@ const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
   "toggle_no_cooldowns",
   "kill_hero",
   "spawn_units",
+  "spawn_enemies",
   "clear_units",
   "reset_map",
   "begin_channel",

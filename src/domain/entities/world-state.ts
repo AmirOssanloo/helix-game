@@ -1,5 +1,6 @@
 import type { EntityId, Rect } from "@shared/public";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { AttackRecord } from "../definitions/attack-state";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
 import { ORB_IDS } from "../definitions/orb-id";
@@ -70,6 +71,8 @@ export type RunScope = {
   heroId: EntityId | null;
   /** The hero definition as content wrote it: which forms it has and how it levels. */
   hero: HeroDef;
+  /** The hero's attack with its seconds read for the tick, which the attack rule reads for whichever form is active. */
+  heroAttack: AttackRecord;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
   /** Every spell by id, with its durations in ticks, for the composer and the cast pipeline to read. */

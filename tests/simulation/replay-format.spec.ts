@@ -76,6 +76,7 @@ describe("the content version stamp", () => {
         startingSkillPoints: registry.hero.startingSkillPoints,
         experienceThresholds: registry.hero.experienceThresholds,
         maxLevel: registry.hero.maxLevel,
+        attack: registry.hero.attack,
         forms: registry.hero.forms,
       },
     });

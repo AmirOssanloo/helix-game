@@ -1,5 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { makeWorld, spawnHero, submit } from "../helpers";
+import type { EntityId } from "@shared/public";
+import type { Simulation } from "@simulation/public";
+import { makeWorld, spawnHero, spawnUnit, submit } from "../helpers";
+
+/** Behind the hero and far enough that no attack reaches it, so an order on it stays a turn and an approach for as long as a spec runs. */
+const FAR_AWAY = -5000;
+
+/** An enemy well out of the hero's reach, and the id an order names it by: an attack on a unit that is not there drops to idle before a spec can read it. */
+const enemyId = (world: Simulation): EntityId => {
+  const unit = spawnUnit(world, { x: FAR_AWAY, y: 0 });
+  const units = world.state.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    if (units.at(index) === unit) {
+      const id = units.idAt(index);
+
+      if (id !== null) {
+        return id;
+      }
+    }
+  }
+
+  throw new Error("The spec expects the unit it just spawned in the pool");
+};
 
 describe("commandSystem", () => {
   it("makes a move consumed on tick N the hero's order after tick N, with the hero turning", () => {
@@ -39,17 +62,19 @@ describe("commandSystem", () => {
   it("makes an attack on a target the hero's order with its target id", () => {
     const world = makeWorld({ seed: 1 });
     const hero = spawnHero(world);
+    const targetId = enemyId(world);
+
     submit(world, {
       kind: "attack_target",
       tick: 0,
       timestamp: 1,
-      targetId: 7,
+      targetId,
     });
 
     world.tick();
 
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.order.targetId).toBe(7);
+    expect(hero.order.targetId).toBe(targetId);
     expect(hero.state).toBe("turning");
   });
 
@@ -76,8 +101,10 @@ describe("commandSystem", () => {
   it("leaves the order and the state as they were when a command is refused", () => {
     const world = makeWorld({ seed: 1 });
     const hero = spawnHero(world);
+    const targetId = enemyId(world);
+
     hero.order.kind = "attack_target";
-    hero.order.targetId = 7;
+    hero.order.targetId = targetId;
     hero.state = "turning";
     hero.disables.stunned = true;
     submit(world, {
@@ -90,8 +117,8 @@ describe("commandSystem", () => {
     world.tick();
 
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.order.targetId).toBe(7);
-    expect(hero.order.destination).toEqual({ x: 0, y: 0 });
+    expect(hero.order.targetId).toBe(targetId);
+    expect(hero.order.destination).not.toEqual({ x: 100, y: 40 });
     expect(hero.state).toBe("turning");
   });
 

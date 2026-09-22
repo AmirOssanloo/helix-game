@@ -18,7 +18,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype; the tier is a field of each definition |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist | `src/content/maps/` — one file per map |
-| The hero's level cap, experience table, and skill points | `src/content/hero.ts` |
+| The hero's level cap, experience table, skill points, and the attack every form swings | `src/content/hero.ts` |
 | Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
 | Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
@@ -27,6 +27,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which primitives the effect runner runs | `src/domain/abilities/primitives/` — the table, keyed by the kind an effect entry names |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
 | How a unit's behaviour is chosen and run each tick | `src/domain/ai/` — the registry and the pass over it |
+| How a unit auto-attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |

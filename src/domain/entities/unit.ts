@@ -46,8 +46,9 @@ export type StatusEntry = {
 };
 
 /**
- * A derived value a modifier source changes. Attack damage has no attribute behind it yet; the
- * attack rule reads its rows when it arrives. Cooldown reduction is no derived value either:
+ * A derived value a modifier source changes. Attack damage is no derived value the stats
+ * system writes: the attack rule reads its rows over the attacker's definition at the moment
+ * of a shot, so an Ember instance out now is in this shot. Cooldown reduction is none either:
  * the cooldown pipeline reads its rows when a clock starts, a flat amount in ticks and a
  * fraction of the clock, and never again for that clock.
  */
@@ -164,6 +165,18 @@ export type Unit = {
   cast: CastState;
   /** The tick the stage under way ends: a cast point, a backswing, a channel, or the death before a respawn. Read in those states only. */
   stageEndsAtTick: Tick;
+  /**
+   * The point an attack-move was walking to before it acquired something, given back when
+   * the target is gone so the walk carries on from where the unit then stands rather than
+   * from where it left the line. Read only while an attack-move holds a target.
+   */
+  attackMovePoint: Vec2;
+  /**
+   * The earliest tick a shot of this unit's may land. An attack point begins early enough to
+   * land on it, so two shots are one attack time apart however long the point is; a tick in
+   * the past is a unit that may shoot as soon as it faces something.
+   */
+  attackReadyAtTick: Tick;
   modifiers: readonly ModifierEntry[];
   /** Level, experience, and unspent skill points. Continuous across a form swap. */
   progression: Progression;
@@ -294,6 +307,8 @@ const createUnit = (): Unit => {
       targetId: null,
     },
     stageEndsAtTick: 0,
+    attackMovePoint: { x: 0, y: 0 },
+    attackReadyAtTick: 0,
     modifiers,
     progression: { level: 1, experience: 0, skillPoints: 0 },
     attributes: { strength: 0, agility: 0, intelligence: 0 },
@@ -347,6 +362,9 @@ const clearUnit = (unit: Unit): void => {
   unit.cast.position.y = 0;
   unit.cast.targetId = null;
   unit.stageEndsAtTick = 0;
+  unit.attackMovePoint.x = 0;
+  unit.attackMovePoint.y = 0;
+  unit.attackReadyAtTick = 0;
 
   for (let row = 0; row < unit.modifiers.length; row += 1) {
     const entry = unit.modifiers[row];

@@ -1,6 +1,7 @@
 import type { World } from "@domain/public";
 import {
   aiSystem,
+  attackSystem,
   castSystem,
   collisionSystem,
   commandSystem,
@@ -48,6 +49,7 @@ export const systems: readonly System[] = [
   statsSystem,
   castSystem,
   aiSystem,
+  attackSystem,
   pathingSystem,
   movementSystem,
   collisionSystem,

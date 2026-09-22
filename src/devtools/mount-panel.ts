@@ -1,6 +1,7 @@
 import type { DevApi } from "./dev-api";
 import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
 import { element, group } from "./dom";
+import { enemiesGroup } from "./enemies-group";
 import { heroGroup } from "./hero-group";
 import { overlaysGroup } from "./overlays-group";
 import type { PanelGroup } from "./panel-group";
@@ -71,6 +72,11 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     { key: "tuning", title: "Tuning", group: tuningGroup(api) },
     { key: "simulation", title: "Simulation", group: simulationGroup(api) },
     { key: "units", title: "Units", group: unitsGroup(api, memory, remember) },
+    {
+      key: "enemies",
+      title: "Enemies",
+      group: enemiesGroup(api, memory, remember),
+    },
     { key: "zones", title: "Zones", group: zonesGroup(api) },
     {
       key: "overlays",

@@ -41,6 +41,9 @@ export { projectileSystem } from "./abilities/projectiles/projectile.system";
 export { zoneSystem } from "./abilities/zones/zone.system";
 export { spellLevelOf } from "./abilities/spell-level";
 export { aiSystem } from "./ai/ai.system";
+export { nearestEnemy } from "./attack/acquire";
+export { attackDamageOf, attackOf, isInAttackRange } from "./attack/attack";
+export { attackSystem } from "./attack/attack.system";
 export type { Behaviour } from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export {
@@ -69,6 +72,7 @@ export {
   type SetTuningCommand,
   SLOT_COUNT,
   type SlotCommand,
+  type SpawnEnemiesCommand,
   type SpawnUnitsCommand,
   type SpawnZoneCommand,
   type SpendSkillPointCommand,
@@ -98,6 +102,13 @@ export {
   TARGETING_KINDS,
   type TargetingKind,
 } from "./definitions/ability-def";
+export type { AttackDef } from "./definitions/attack-def";
+export {
+  type AttackRecord,
+  attackTicks,
+  BASE_ATTACK_SPEED,
+  createAttackRecord,
+} from "./definitions/attack-state";
 export type {
   AtlasFrameDef,
   AtlasFrameList,
@@ -432,6 +443,7 @@ export {
   arrive,
   beginAttackBackswing,
   beginAttackWindup,
+  cancelAttackWindup,
   beginCastBackswing,
   beginCastPoint,
   beginChannel,
@@ -439,7 +451,9 @@ export {
   beginMoving,
   clearOrder,
   die,
+  disengageTarget,
   endChannel,
+  engageTarget,
   finishBackswing,
   issueAttackMove,
   issueAttackTarget,

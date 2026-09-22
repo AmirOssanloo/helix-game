@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
 import { FixedStepDriver, Session } from "@app/public";
-import { tuningTable } from "@content/public";
+import { contentRegistry, tuningTable } from "@content/public";
 import type {
   DevApi,
   MemoryStore,
@@ -82,6 +82,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     rings,
     overlays,
     tuningDefaults: tuningTable,
+    archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
   });
   const host = document.createElement("aside");
@@ -144,6 +145,18 @@ const sliderNamed = (host: HTMLElement, key: string): HTMLInputElement => {
   throw new Error(`The panel has no slider "${key}"`);
 };
 
+const selectNamed = (host: HTMLElement, label: string): HTMLSelectElement => {
+  for (const field of host.querySelectorAll("label")) {
+    const select = field.querySelector("select");
+
+    if (field.childNodes[0]?.textContent === label && select !== null) {
+      return select;
+    }
+  }
+
+  throw new Error(`The panel has no select "${label}"`);
+};
+
 const readoutNamed = (host: HTMLElement, label: string): string => {
   for (const readout of host.querySelectorAll(".dev-readout")) {
     if (readout.querySelector("th")?.textContent === label) {
@@ -204,6 +217,42 @@ describe("the developer panel", () => {
       kind: "spawn_units",
       count: 300,
       position: { x: 0, y: 0 },
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("turns the enemies group into a spawn of the archetype its dropdown names", () => {
+    const arranged = arrange();
+    const dropdown = selectNamed(arranged.host, "Archetype");
+
+    expect([...dropdown.options].map((option) => option.value)).toEqual(
+      contentRegistry.enemies.map((def) => def.id),
+    );
+
+    buttonNamed(arranged.host, "Spawn at point").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "spawn_enemies",
+      archetypeId: dropdown.value,
+      count: 1,
+      position: { x: 0, y: 0 },
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("spawns ahead of the hero at the distance the field names", () => {
+    const arranged = arrange();
+
+    numberFieldNamed(arranged.host, "Ahead").value = "500";
+    buttonNamed(arranged.host, "Spawn ahead").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "spawn_enemies",
+      position: { x: 500, y: 0 },
     });
 
     arranged.handle.unmount();

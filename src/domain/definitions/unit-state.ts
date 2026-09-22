@@ -1,16 +1,20 @@
+import type { AttackRecord } from "./attack-state";
+import { createAttackRecord } from "./attack-state";
 import type { EnemyDef, SummonDef } from "./enemy-def";
 import { readTunable } from "./tuning-state";
 
 /**
  * One archetype or summon as run scope holds it: the definition as content wrote it, its
- * regeneration in health and mana per tick, and the distance a summon keeps from its owner,
- * zero for a definition nothing owns. This is the one conversion for a unit definition, run
- * once per definition when a world is created, so no spawn ever multiplies by the tick rate.
+ * regeneration in health and mana per tick, its attack read for the tick, and the distance a
+ * summon keeps from its owner, zero for a definition nothing owns. This is the one
+ * conversion for a unit definition, run once per definition when a world is created, so no
+ * spawn ever multiplies by the tick rate.
  */
 export type UnitRecord = Readonly<{
   def: EnemyDef;
   healthRegenPerTick: number;
   manaRegenPerTick: number;
+  attack: AttackRecord;
   followDistance: number;
 }>;
 
@@ -22,6 +26,7 @@ const createUnitRecord = (
   def,
   healthRegenPerTick: def.healthRegen / simHz,
   manaRegenPerTick: def.manaRegen / simHz,
+  attack: createAttackRecord(def.attack, simHz),
   followDistance,
 });
 

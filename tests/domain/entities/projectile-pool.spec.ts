@@ -53,6 +53,7 @@ describe("projectile pool", () => {
 
     expect(projectile).toEqual({
       ability: null,
+      attackDamage: 0,
       casterId: null,
       orbLevels: [0, 0, 0],
       targetId: null,

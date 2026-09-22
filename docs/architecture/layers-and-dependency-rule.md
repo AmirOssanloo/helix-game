@@ -12,7 +12,7 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 | Layer | Job | Holds |
 | --- | --- | --- |
 | `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids |
-| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the hero's Invoke mechanics, stats, combat, AI, map derivation, and `public.ts` |
+| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and `public.ts` |
 | `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, and `public.ts` |
 | `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
 | `instrumentation/` | Measures | Preallocated sample rings: tick time, render time, live counts, pool misses, frame rate |

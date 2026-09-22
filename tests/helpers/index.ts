@@ -32,6 +32,7 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
+export { makeAttackDef } from "./content/make-attack-def";
 export { makeEnemyDef, makeSummonDef } from "./content/make-enemy-def";
 export { makeFormDef } from "./content/make-form-def";
 export { makeMapDef } from "./content/make-map-def";
@@ -63,4 +64,5 @@ export { makeWorldView } from "./world/make-world-view";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { spawnUnit, type SpawnUnitOptions } from "./world/spawn-unit";
 export { submit } from "./world/submit";
+export { unitIdOf } from "./world/unit-id";
 export { tickUntil } from "./world/tick-until";

@@ -4,6 +4,7 @@ import { STATS } from "../entities/unit";
 import type { AbilityDef, PreviewDef } from "./ability-def";
 import { TARGETING_KINDS } from "./ability-def";
 import type { AtlasFrameDef, AtlasShape } from "./atlas-frame-def";
+import type { AttackDef } from "./attack-def";
 import type {
   DamageAreaEffectDef,
   DisplaceEffectDef,
@@ -116,6 +117,19 @@ const bodySchema: Schema<BodyDef> = objectOf<BodyDef>({
   selectionRadius: nonNegativeSchema,
 });
 
+const attackSchema: Schema<AttackDef> = objectOf<AttackDef>({
+  damage: nonNegativeSchema,
+  range: nonNegativeSchema,
+  acquireRadius: nonNegativeSchema,
+  pointSeconds: nonNegativeSchema,
+  backswingSeconds: nonNegativeSchema,
+  baseAttackTimeSeconds: nonNegativeSchema,
+  projectileSpeed: nonNegativeSchema,
+  projectileRadius: nonNegativeSchema,
+  atlasFrame: stringSchema,
+  tint: tintSchema,
+});
+
 const attributesSchema: Schema<Readonly<Attributes>> = objectOf<
   Readonly<Attributes>
 >({
@@ -181,6 +195,7 @@ export const atlasFrameSchema: Schema<AtlasFrameDef> = objectOf<AtlasFrameDef>({
 /** The hero: its forms by id and how it levels. The threshold table's length against the level cap is a cross-field check the registry makes. */
 export const heroSchema: Schema<HeroDef> = objectOf<HeroDef>({
   forms: arrayOf(idSchema),
+  attack: attackSchema,
   maxLevel: countSchema,
   experienceThresholds: arrayOf(nonNegativeSchema),
   startingSkillPoints: countSchema,
@@ -400,12 +415,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
     movementSpeed: nonNegativeSchema,
     turnRate: nonNegativeSchema,
     body: bodySchema,
-    attackDamage: nonNegativeSchema,
-    attackRange: nonNegativeSchema,
-    attackPointSeconds: nonNegativeSchema,
-    attackBackswingSeconds: nonNegativeSchema,
-    baseAttackTimeSeconds: nonNegativeSchema,
-    projectileSpeed: nonNegativeSchema,
+    attack: attackSchema,
     aggroRadius: nonNegativeSchema,
     leashRadius: nonNegativeSchema,
     experience: nonNegativeSchema,

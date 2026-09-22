@@ -34,6 +34,8 @@ When two people call the same thing different names, the names leak into the cod
 | A spell sitting in a slot | **Prepared spell** | Active spell, equipped spell |
 | Casting a prepared spell | **Throw** | Fire, use, cast (cast is the pipeline's word) |
 | What the hero is currently doing: move, attack, stop | **Order** (the hero holds one current order) | Action, task, intent, queue |
+| The ordinary swing a unit repeats, with no mana and no cooldown | **Attack** | Auto-attack, basic attack, white hit |
+| Taking a unit as what to attack, from the enemies near enough | **Acquire** | Target, lock on, aggro (aggro is the enemy's word for noticing the hero) |
 | A player or panel intent entering the simulation | **Command** | Input, action, message |
 | Something the simulation announces after it happens | **Event** | Message, signal, notification |
 | One fixed step of the simulation | **Tick** | Frame, step, update |

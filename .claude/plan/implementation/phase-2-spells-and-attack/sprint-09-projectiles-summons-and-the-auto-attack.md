@@ -87,7 +87,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | Layer | domain, content, simulation, devtools, tests |
 | Size | 1.5 |
 | Depends on | T01, T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/content/enemies/training-dummy.def.ts` with every `EnemyDef` field at neutral values, tier normal, behaviour `stationary`, an empty ability list, the clamp-at-one flag, zero experience, and a square-with-outline frame. The panel's Enemies group reads the registry for its dropdown; spawn at click or at a distance, group size, nearest free cells, refusal past the live cap. Under `src/domain/attack/` and `attackSystem`: `attack_target` paths into range (attack range plus both bound radii), faces, runs the attack point, fires a homing projectile carrying physical damage from the caster's attack damage (base plus Ember instances plus modifiers), then the backswing, repeating on the base attack time scaled by attack speed; `attack_move` walks to the point, acquires the nearest valid enemy within the acquire radius through the hash, switches to `attack_target`, and resumes the walk without backtracking when the target is lost; the attack point and the backswing cancel on move, stop, or cast, a cancelled attack point firing nothing and starting no attack clock (Q20); disarm refuses attacks; a target that becomes untargetable drops the order to idle. Idle policy: no acquire. The hero's attack numbers live in `content/hero.ts`. `summon_follow` gains the other half it was written without: before it decides to follow, it acquires the nearest enemy inside its definition's acquire radius and issues an attack on it through the same state machine, and follows only while it has nothing to hit.
 
@@ -107,6 +107,26 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new enemy or behaviour (the dropdown row) · A developer-panel control.
 
 > **Note, 2026-09-22:** the clamp-at-one flag is `indestructible` on `EnemyDef`, built in sprint 07 with the damage door that reads it. The damage rule and the death system read the unit, not the definition, so the spawn this ticket builds writes the definition's health, armour, magic resistance, and that flag onto the unit it acquires. A unit spawned with no maximum health is never taken by the death system, which is what keeps the panel's plain stress bodies standing.
+>
+> **Note, 2026-09-22:** nine things came out differently and the ticket stands as edited here.
+>
+> An attack is not an ability, and it needed a shape of its own. `AttackDef` — damage, range, acquire radius, the two stages, the base attack time, and the projectile it fires — sits on the hero definition and on every archetype, replacing the six flat attack fields `EnemyDef` carried, with the acquire radius added beside them because the catalogue gives the summon one and `aggroRadius` is the AI module's. `AttackRecord` reads its seconds for the tick once, per definition in the unit table and once for the hero on run scope, so nothing multiplies by the step rate at the moment of a shot. The rule is `src/domain/attack/`, and `attackSystem` is registered after the behaviours and before pathing, so an attack a command or a behaviour issued is walked and faced on the tick it was issued.
+>
+> The attack clock is counted from the shot, not from the attack point. Q20 says a cancelled point starts no clock, so the clock cannot start when the point begins; and two shots have to be one attack time apart, so the next point begins early enough to land on the tick the clock names. `attackReadyAtTick` on the unit is that tick.
+>
+> Attack speed's unhurried base is a hundred, not one. Every form definition writes `attackSpeed: 100` and the Quicken status adds flat tens, so the `UNHURRIED = 1` the summon spawn was written with in T02 was a base a hundredth of what every table is in. It is `BASE_ATTACK_SPEED` now, in one place, read by the spawn and by the attack time.
+>
+> An attack-move keeps its order kind while it is engaging, holding its walk point on the unit in `attackMovePoint` and its target in the order. The lift's `suspended` slot could not be borrowed for the walk: the status pass gives a suspended order back on the first tick the unit is not lifted, so anything left there is resumed at once. Two transitions, `engageTarget` and `disengageTarget`, are the only writers of it, and the walk resumes from where the unit stands, which is what keeps it from backtracking.
+>
+> Three more state-machine changes. `beginFacing` is any order that aims at something, not a cast alone, so its refusal is `no_order_to_face`. `cancelAttackWindup` is new: a disarm ends the point it landed in with nothing fired and the order kept, so the unit swings again the moment it may. And reaching a destination ends the order only for a move and for an attack-move that has acquired nothing; an approach is a place to act from, and the rule that asked for it decides what standing there means.
+>
+> The projectile carries `attackDamage`, a number, beside the hit list a spell's carries. An attack has no ability behind it and no list to run, and a list built per shot would allocate; the number is read through the modifier table at the moment of the shot, so an Ember instance out now is in this shot and not in the one already flying. The hit lands as physical through the damage door.
+>
+> The panel's spawn is `spawn_enemies`, a command of its own beside `spawn_units` rather than a field on it: the two spawn different things, and one refuses `unknown_archetype` where the other cannot. The dropdown reads `DevApi.archetypes`, which the composition root fills from the registry, since run scope's unit table holds summons beside archetypes and the dropdown lists only what a map may spawn.
+>
+> The dummy at one health is proved end to end here; the rule itself was already covered by the death spec, so this ticket's case shoots it with the hero instead of calling the damage door. And the recorded phase 1 replay is re-stamped for the hero's attack block and the dummy.
+>
+> Two things the ticket did not get. Every attack fires a homing projectile: nothing in the game attacks in melee, and a projectile speed of nothing would fire one that never arrives, so the melee branch waits for the first melee archetype. And the enemies group has the dropdown, the group size, and two spawn points but no tier selector, no kill-all, and no spawn at the pointer. Both are in [Deferred](../backlog/deferred.md).
 
 ---
 
@@ -138,7 +158,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | --- | --- |
 | Auto-attack cadence matches the spec's numbers in tests | |
 | Dummy spawns from the registry-driven dropdown | |
-| Actual days per ticket | T01 1.0 · T02 1.0 · T03 · T04 |
+| Actual days per ticket | T01 1.0 · T02 1.0 · T03 1.5 · T04 |
 
 ## Risks in this sprint
 

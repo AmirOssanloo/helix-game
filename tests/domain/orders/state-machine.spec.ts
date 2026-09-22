@@ -287,10 +287,20 @@ describe("beginFacing", () => {
     expect(turning.turnTicks).toBe(4);
   });
 
-  it("while underway on a move is refused: there is no cast to face", () => {
+  it("while underway on an attack lands: an attack faces its target as a cast does", () => {
+    const unit = unitIn("moving", "attack_target");
+    unit.path.count = 2;
+
+    expect(beginFacing(unit)).toBe("ok");
+    expect(unit.state).toBe("turning");
+    expect(unit.path.count).toBe(0);
+    expect(unit.order.kind).toBe("attack_target");
+  });
+
+  it("while underway on a move is refused: a move has nothing to face but its way", () => {
     const unit = unitIn("moving", "move");
 
-    expect(beginFacing(unit)).toBe("no_cast_in_progress");
+    expect(beginFacing(unit)).toBe("no_order_to_face");
     expect(unit.state).toBe("moving");
   });
 
@@ -299,7 +309,7 @@ describe("beginFacing", () => {
     (state) => {
       const unit = unitIn(state, "cast");
 
-      expect(beginFacing(unit)).toBe("no_cast_in_progress");
+      expect(beginFacing(unit)).toBe("no_order_to_face");
       expect(unit.state).toBe(state);
     },
   );

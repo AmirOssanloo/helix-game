@@ -1,5 +1,7 @@
 import type { EntityId } from "@shared/public";
 import { bearing } from "@shared/public";
+import type { DamageType } from "../../combat/damage";
+import { applyDamage } from "../../combat/damage";
 import { isHostile } from "../../combat/sides";
 import { readTunable } from "../../definitions/tuning-state";
 import type { Projectile } from "../../entities/projectile";
@@ -13,6 +15,9 @@ import { NO_CONTACT, sweepDisc } from "../../movement/sweep";
 import { createCastRecord, fillCast } from "../cast-context";
 import { runEffects } from "../effect-runner";
 import { isReachable } from "../primitives/targets";
+
+/** What an attack lands as. Every attack in the game is physical; a spell's type is its entry's. */
+const ATTACK_DAMAGE_TYPE: DamageType = "physical";
 
 /** Scratch for the context a hit list runs with, reused for every hit of every tick. */
 const context = createCastRecord();
@@ -152,10 +157,11 @@ const sweepAhead = (world: World, projectile: Readonly<Projectile>): void => {
 
 /**
  * Lands the projectile on the unit `contact` names: it stops where it touched, so the hit is
- * announced and the list runs from the point of contact rather than from wherever the step
- * would have carried it. The hit is announced before the list runs, so everything the list
- * did reads behind it. A projectile with no ability behind it announces the hit and runs
- * nothing.
+ * announced and what it carries lands from the point of contact rather than from wherever
+ * the step would have carried it. The hit is announced before anything lands, so everything
+ * that followed reads behind it. An attack's shot lands its damage as physical from the unit
+ * that fired it; a spell's runs its hit list. A projectile carrying neither announces the
+ * hit and does nothing.
  */
 const strike = (
   world: World,
@@ -170,8 +176,19 @@ const strike = (
 
   announce(world, "projectile_hit", projectile, projectileId, hitId);
 
-  const ability = projectile.ability;
   const casterId = projectile.casterId;
+
+  if (projectile.attackDamage > 0) {
+    applyDamage(
+      world,
+      hitId,
+      projectile.attackDamage,
+      ATTACK_DAMAGE_TYPE,
+      casterId,
+    );
+  }
+
+  const ability = projectile.ability;
 
   if (ability === null || casterId === null) {
     return;

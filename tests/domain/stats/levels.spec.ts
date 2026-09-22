@@ -8,10 +8,12 @@ import {
   levelUp,
   spendSkillPoint,
 } from "@domain/public";
+import { makeAttackDef } from "../../helpers";
 
 /** A four-level curve a boundary is easy to read on. */
 const hero: HeroDef = {
   forms: ["form_1"],
+  attack: makeAttackDef.build(),
   maxLevel: 4,
   experienceThresholds: [0, 100, 300, 600],
   startingSkillPoints: 1,

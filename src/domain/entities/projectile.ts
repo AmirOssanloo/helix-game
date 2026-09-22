@@ -20,9 +20,10 @@ const event = createDomainEvent();
 
 /**
  * A moving thing that hits: it flies from where it was fired until it touches a unit or runs
- * out of range, and runs its hit list on what it touched. It references the ability that
+ * out of range, and lands what it carries on what it touched. It references the ability that
  * fired it and the unit that cast it, and carries the orb levels the cast snapshotted, so
- * every table its list reads is read at the levels the caster had when it committed.
+ * every table its list reads is read at the levels the caster had when it committed. An
+ * attack's shot has no ability behind it and carries its damage as a number instead.
  *
  * A non-null `targetId` makes it homing: it turns to its target every tick and tests that
  * target's disc alone. A null one makes it linear: it holds the bearing it was fired along
@@ -45,6 +46,12 @@ export type Projectile = {
   radius: number;
   /** Run on the unit it touches, with the projectile as the context. */
   onHit: readonly EffectDef[];
+  /**
+   * The physical damage an attack's shot lands on what it touches, before mitigation. Zero
+   * for a projectile a spell fired, whose hit list carries everything it does; an attack has
+   * no ability behind it and carries its damage here instead.
+   */
+  attackDamage: number;
   /** How far it has flown, and how far it may before it expires. */
   travelled: number;
   maxRange: number;
@@ -64,6 +71,7 @@ const createProjectile = (): Projectile => ({
   speed: 0,
   radius: 0,
   onHit: NO_EFFECTS,
+  attackDamage: 0,
   travelled: 0,
   maxRange: NO_RANGE,
   frame: null,
@@ -88,6 +96,7 @@ const clearProjectile = (projectile: Projectile): void => {
   projectile.speed = 0;
   projectile.radius = 0;
   projectile.onHit = NO_EFFECTS;
+  projectile.attackDamage = 0;
   projectile.travelled = 0;
   projectile.maxRange = NO_RANGE;
   projectile.frame = null;

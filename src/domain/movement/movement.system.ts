@@ -17,17 +17,28 @@ const toWaypoint: Vec2 = { x: 0, y: 0 };
 const isUnderway = (unit: Readonly<Unit>): boolean =>
   unit.state === "turning" || unit.state === "moving";
 
-/** Whether the unit's order names a point to walk to: a move, an attack-move, or a cast's approach. An attack on a target is the attack rule's to move, and it does not exist yet. */
+/** Whether the unit's order names a point to walk to: a move, an attack-move, or the approach of a cast or an attack on a target. */
 const hasDestination = (unit: Readonly<Unit>): boolean =>
   unit.order.kind === "move" ||
   unit.order.kind === "attack_move" ||
+  unit.order.kind === "attack_target" ||
   unit.order.kind === "cast";
+
+/**
+ * Whether reaching the destination is the end of the order. A move and an attack-move that
+ * has acquired nothing arrive there; a cast's approach and an attack's do not, since the
+ * point they walk to is a place to act from and the rule that wrote it decides what standing
+ * there means.
+ */
+const endsAtDestination = (unit: Readonly<Unit>): boolean =>
+  unit.order.kind === "move" ||
+  (unit.order.kind === "attack_move" && unit.order.targetId === null);
 
 /**
  * Lands the unit on the waypoint it reached and steps past it. Passing the last one ends a
  * move when it is the destination; when the path was cut short of the destination, the unit
- * asks for the rest of it from where it stands. A cast's approach ends nothing here: the cast
- * rule decides what standing at the end of it means.
+ * asks for the rest of it from where it stands. An approach ends nothing here: the rule that
+ * asked for it decides what standing at the end of it means.
  */
 const reachWaypoint = (
   unit: Unit,
@@ -48,7 +59,7 @@ const reachWaypoint = (
     return;
   }
 
-  if (unit.order.kind === "cast") {
+  if (!endsAtDestination(unit)) {
     return;
   }
 

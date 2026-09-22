@@ -94,6 +94,8 @@ export type DevApi = Readonly<{
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   tuningDefaults: TuningDef;
+  /** Every archetype the registry holds, by id, in the order content wrote them: what the enemies dropdown lists, without a code change per archetype. */
+  archetypes: readonly string[];
   /** The session so far as one JSON document: the seed, the content version, the map, the ticks run, and every consumed command with its tick. */
   saveInputLog: () => string;
   /** Replays a saved log from its first tick on a world recreated under its seed, or returns the message saying why it cannot run. */
@@ -111,6 +113,7 @@ export type DevApiPorts = Readonly<{
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   tuningDefaults: TuningDef;
+  archetypes: readonly string[];
   downloadAtlas: () => string;
 }>;
 
@@ -156,6 +159,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     rings: ports.rings,
     overlays: ports.overlays,
     tuningDefaults: ports.tuningDefaults,
+    archetypes: ports.archetypes,
     saveInputLog: (): string => ports.session.saveInputLog(),
     loadInputLog: (text: string): string | null =>
       ports.session.loadInputLog(text),

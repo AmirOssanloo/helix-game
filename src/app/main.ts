@@ -103,6 +103,7 @@ export const boot: Boot = (): void => {
       rings,
       overlays,
       tuningDefaults: tuningTable,
+      archetypes: contentRegistry.enemies.map((def): string => def.id),
       downloadAtlas: (): string => atlas.download(),
     });
 

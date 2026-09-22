@@ -2,11 +2,16 @@ import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { applyDamage } from "../combat/damage";
-import type { DebugCommand, SpawnZoneCommand } from "../commands/command";
+import type {
+  DebugCommand,
+  SpawnEnemiesCommand,
+  SpawnZoneCommand,
+} from "../commands/command";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import { acquireUnit, releaseUnit } from "../entities/unit";
+import { fillFromDefinition, wearDefinition } from "../entities/unit-spawn";
 import type { World } from "../entities/world-state";
 import { acquireZone } from "../entities/zone";
 import { resetMapScope } from "../map/map-scope";
@@ -32,19 +37,21 @@ const DEBUG_ZONE_FRAME = "ring_thin";
 const DEBUG_ZONE_TINT = 0xffffff;
 
 /**
- * Puts `count` generic units around `position` in a square grid two hulls apart, each cell
- * resolved to a legal point, so a spawn on an obstacle or off the map lands beside it and
- * the collision rule settles the rest. Refused, with nothing spawned, when the pool cannot
- * take every one of them.
+ * Puts `count` units around `position` in a square grid two hulls apart, each cell resolved
+ * to a legal point for a body of `radius`, so a spawn on an obstacle or off the map lands
+ * beside it and the collision rule settles the rest. `dress` puts whatever the caller is
+ * spawning on each unit. Refused, with nothing spawned, when the pool cannot take every one
+ * of them.
  */
-const spawnUnits = (
+const spawnGrid = (
   world: World,
   count: number,
   position: Readonly<Vec2>,
+  radius: number,
+  dress: (unit: Unit) => void,
 ): RefusalReason | null => {
   const units = world.map.units;
   const grid = world.map.walkability;
-  const radius = readTunable(world.run.tuning, "collision_radius");
   const radiusClass = radiusClassOf(grid, radius);
   const spacing = radius + radius;
   const side = Math.ceil(Math.sqrt(count));
@@ -69,11 +76,60 @@ const spawnUnits = (
     );
 
     const id = acquireUnit(world, "enemy", landing.x, landing.y);
+    const unit = id === null ? null : world.map.units.resolve(id);
 
-    assert(id !== null, "A pool with room for the count takes every spawn");
+    assert(unit !== null, "A pool with room for the count takes every spawn");
+    dress(unit);
   }
 
   return null;
+};
+
+/** A generic body for the stress test wears nothing but the hull the acquire gave it. */
+const wearNothing = (): void => {};
+
+/**
+ * Puts `count` generic units around `position`, for a stress test: enemy-kind units with no
+ * definition, wearing the tuned hull, which no behaviour drives and no death takes.
+ */
+const spawnUnits = (
+  world: World,
+  count: number,
+  position: Readonly<Vec2>,
+): RefusalReason | null =>
+  spawnGrid(
+    world,
+    count,
+    position,
+    readTunable(world.run.tuning, "collision_radius"),
+    wearNothing,
+  );
+
+/**
+ * Puts `count` units of the archetype the command names around its position, each wearing
+ * that definition's body, numbers, and behaviour, exactly as a map spawn or a summon wears
+ * one. Refused when no archetype has the id, and when the pool has no room for all of them.
+ */
+const spawnEnemies = (
+  world: World,
+  command: SpawnEnemiesCommand,
+): RefusalReason | null => {
+  const record = world.run.units.get(command.archetypeId);
+
+  if (record === undefined) {
+    return "unknown_archetype";
+  }
+
+  return spawnGrid(
+    world,
+    command.count,
+    command.position,
+    record.def.body.collisionRadius,
+    (unit: Unit): void => {
+      wearDefinition(unit, record);
+      fillFromDefinition(unit, record);
+    },
+  );
 };
 
 /**
@@ -206,6 +262,9 @@ export const applyDebugCommand = (
 
     case "spawn_units":
       return spawnUnits(world, command.count, command.position);
+
+    case "spawn_enemies":
+      return spawnEnemies(world, command);
 
     case "clear_units":
       clearUnits(world);

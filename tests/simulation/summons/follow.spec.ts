@@ -10,23 +10,34 @@ import { runPrimitive } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  makeAttackDef,
   makeCast,
   makeRegistry,
   makeStatusDef,
   makeSummonDef,
   makeWorld,
   spawnHero,
+  spawnUnit,
   submit,
+  unitIdOf,
 } from "../../helpers";
 
 /** How far from its owner the summon below is content to stand. */
 const FOLLOW_DISTANCE = 250;
 
-/** The summon every case below spawns: it follows, and does nothing else. */
+/** How far the summon below looks for something to attack, and how far its shot reaches. */
+const ACQUIRE_RADIUS = 600;
+const ATTACK_RANGE = 300;
+
+/** The summon every case below spawns: it attacks what is near and follows its owner when nothing is. */
 const EMBERLING: SummonDef = makeSummonDef.build({
   id: "emberling",
   behaviour: "summon_follow",
   followDistance: FOLLOW_DISTANCE,
+  attack: makeAttackDef.build({
+    range: ATTACK_RANGE,
+    acquireRadius: ACQUIRE_RADIUS,
+  }),
 });
 
 /** A root, for the case that asks whether a summon obeys one. */
@@ -141,6 +152,37 @@ describe("a summon following its owner", () => {
     tickTimes(world, PATIENCE);
 
     expect(summon.curr.x).toBeGreaterThan(0);
+    expect(distance(hero, summon)).toBeCloseTo(FOLLOW_DISTANCE);
+  });
+
+  it("attacks the nearest enemy inside its acquire radius instead of following", () => {
+    const { world, summon } = arrange();
+    const enemy = spawnUnit(world, { x: ACQUIRE_RADIUS - 100, y: 0 });
+    const enemyId = unitIdOf(world, enemy);
+
+    world.tick();
+
+    expect(summon.order.kind).toBe("attack_target");
+    expect(summon.order.targetId).toBe(enemyId);
+  });
+
+  it("goes back to following once what it acquired is dead", () => {
+    const { world, hero, summon } = arrange();
+    const enemy = spawnUnit(world, { x: ACQUIRE_RADIUS - 100, y: 0 });
+
+    world.tick();
+
+    expect(summon.order.kind).toBe("attack_target");
+
+    enemy.resources.health = 0;
+    world.tick();
+    world.tick();
+
+    expect(summon.order.kind).toBe("none");
+
+    walkHeroAway(world);
+    tickTimes(world, PATIENCE);
+
     expect(distance(hero, summon)).toBeCloseTo(FOLLOW_DISTANCE);
   });
 

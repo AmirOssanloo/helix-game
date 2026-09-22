@@ -6,6 +6,7 @@ export {
   WEDGE_STEPS,
 } from "./atlas-frames";
 export { enemies } from "./enemies/index";
+export { trainingDummyDef } from "./enemies/training-dummy.def";
 export { forms } from "./forms/index";
 export { skeinDef } from "./forms/skein.def";
 export { heroDef } from "./hero";

@@ -328,6 +328,7 @@ const checkUnitDef = (
   spaces: IdSpaces,
 ): void => {
   checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
+  checkFrame(faults, file, "attack.atlasFrame", def.attack.atlasFrame, spaces);
 
   if (resolveBehaviour(def.behaviour) === null) {
     faults.push({
@@ -437,6 +438,14 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
       ids: new Set(frames.map((entry) => entry.def.name)),
     },
   };
+
+  checkFrame(
+    faults,
+    "hero.ts",
+    "attack.atlasFrame",
+    hero.attack.atlasFrame,
+    spaces,
+  );
 
   for (let index = 0; index < hero.forms.length; index += 1) {
     const id = hero.forms[index];

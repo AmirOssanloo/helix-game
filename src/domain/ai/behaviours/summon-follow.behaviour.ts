@@ -1,8 +1,10 @@
 import type { Vec2 } from "@shared/public";
 import { assert, distanceSquared, length, sub } from "@shared/public";
+import { nearestEnemy } from "../../attack/acquire";
+import { attackOf } from "../../attack/attack";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
-import { issueMove } from "../../orders/state-machine";
+import { issueAttackTarget, issueMove } from "../../orders/state-machine";
 import { resolveDestinationFor } from "../../pathing/destination";
 import type { Behaviour } from "../behaviour";
 
@@ -51,13 +53,42 @@ const writeFollowPoint = (
 };
 
 /**
- * The summon's driver: it keeps within its definition's follow distance of its owner and
- * does nothing else. Standing inside that distance it holds its ground, so a hero taking one
- * step does not drag it along; past it, and only once it is idle, it walks to the near side
- * of the ring, which is what makes the walk one order rather than a fresh one every tick.
+ * Whether the summon took something to attack: the nearest enemy inside its definition's
+ * acquire radius, ordered through the same state machine a player's attack goes through, so
+ * the attack rule carries it out exactly as it carries out the hero's. Returns whether one
+ * was found, which is what stops it following while it has something to hit.
+ */
+const acquired = (world: World, unit: Unit): boolean => {
+  const record = attackOf(world, unit);
+
+  if (record === null || unit.disables.disarmed) {
+    return false;
+  }
+
+  const targetId = nearestEnemy(world, unit, record.def.acquireRadius);
+
+  if (targetId === null) {
+    return false;
+  }
+
+  const result = issueAttackTarget(unit, targetId);
+
+  assert(result === "ok", "An idle summon takes the enemy it acquired");
+
+  return true;
+};
+
+/**
+ * The summon's driver: it attacks what is near and follows its owner when nothing is.
+ * Standing idle it takes the nearest enemy inside its acquire radius and attacks it; with
+ * nothing to hit it keeps within its definition's follow distance of its owner, holding its
+ * ground inside that distance so a hero taking one step does not drag it along, and walking
+ * to the near side of the ring past it, which is what makes the walk one order rather than a
+ * fresh one every tick. Both only once it is idle, so neither interrupts the other.
  *
- * A root keeps it where it is, as a root keeps anyone. An owner that is gone leaves it
- * standing: the death pass takes it on the same tick, and nothing it did in between matters.
+ * A root keeps it where it is, as a root keeps anyone, and a disarm stops it acquiring. An
+ * owner that is gone leaves it standing: the death pass takes it on the same tick, and
+ * nothing it did in between matters.
  */
 export const summonFollowBehaviour: Behaviour = (
   world: World,
@@ -66,7 +97,11 @@ export const summonFollowBehaviour: Behaviour = (
   const ownerId = unit.ownerId;
   const owner = ownerId === null ? null : world.map.units.resolve(ownerId);
 
-  if (owner === null || unit.state !== "idle" || unit.disables.rooted) {
+  if (owner === null || unit.state !== "idle") {
+    return;
+  }
+
+  if (acquired(world, unit) || unit.disables.rooted) {
     return;
   }
 

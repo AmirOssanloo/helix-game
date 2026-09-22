@@ -1,6 +1,6 @@
 /**
  * What the panel remembers between reloads, in the browser's local storage: which groups
- * are open, which overlays are on, and the last spawn settings. Nothing about the game is
+ * are open, which overlays are on, and the last spawn settings of each kind. Nothing about the game is
  * here; a reload is a fresh world, and a memory that fails to parse is forgotten.
  */
 export type PanelMemory = {
@@ -13,6 +13,13 @@ export type PanelMemory = {
     x: number;
     y: number;
   };
+  enemies: {
+    archetypeId: string;
+    count: number;
+    x: number;
+    y: number;
+    distance: number;
+  };
 };
 
 /** The key the memory is stored under. */
@@ -24,11 +31,12 @@ export type MemoryStore = Readonly<{
   setItem: (key: string, value: string) => void;
 }>;
 
-/** A fresh memory: every group open, every overlay off, a stress-test sized spawn at the origin. */
+/** A fresh memory: every group open, every overlay off, a stress-test sized spawn at the origin, and one enemy a walk in front of the hero. */
 export const createPanelMemory = (): PanelMemory => ({
   open: {},
   overlays: {},
   spawn: { count: 300, x: 0, y: 0 },
+  enemies: { archetypeId: "", count: 1, x: 0, y: 0, distance: 600 },
 });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -84,6 +92,24 @@ export const readPanelMemory = (store: MemoryStore | null): PanelMemory => {
     memory.spawn.count = readNumber(spawn["count"], memory.spawn.count);
     memory.spawn.x = readNumber(spawn["x"], memory.spawn.x);
     memory.spawn.y = readNumber(spawn["y"], memory.spawn.y);
+  }
+
+  const enemies = parsed["enemies"];
+
+  if (isRecord(enemies)) {
+    const archetypeId = enemies["archetypeId"];
+
+    memory.enemies.archetypeId =
+      typeof archetypeId === "string"
+        ? archetypeId
+        : memory.enemies.archetypeId;
+    memory.enemies.count = readNumber(enemies["count"], memory.enemies.count);
+    memory.enemies.x = readNumber(enemies["x"], memory.enemies.x);
+    memory.enemies.y = readNumber(enemies["y"], memory.enemies.y);
+    memory.enemies.distance = readNumber(
+      enemies["distance"],
+      memory.enemies.distance,
+    );
   }
 
   return memory;

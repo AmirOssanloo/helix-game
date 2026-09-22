@@ -1,9 +1,7 @@
+import { BASE_ATTACK_SPEED } from "../definitions/attack-state";
 import type { UnitRecord } from "../definitions/unit-state";
 import { modifiedValue } from "../stats/modifiers";
 import type { Unit } from "./unit";
-
-/** The attack speed a unit wears before anything changes it: its base attack time, unhurried. */
-const UNHURRIED = 1;
 
 /**
  * Puts `record`'s definition on `unit`: which definition it is, the body it wears, and
@@ -46,7 +44,11 @@ export const fillFromDefinition = (unit: Unit, record: UnitRecord): void => {
     "mana_regen",
   );
   stats.armour = modifiedValue(def.armour, modifiers, "armour");
-  stats.attackSpeed = modifiedValue(UNHURRIED, modifiers, "attack_speed");
+  stats.attackSpeed = modifiedValue(
+    BASE_ATTACK_SPEED,
+    modifiers,
+    "attack_speed",
+  );
   stats.magicResistance = modifiedValue(
     def.magicResistance,
     modifiers,

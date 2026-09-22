@@ -1,13 +1,25 @@
 import type { HeroDef } from "@domain/public";
 
 /**
- * The hero: the forms it takes, in the order their records are created, and how it levels.
- * The experience table is the source game's hero table at patch 7.35, one entry per level
- * from one to the cap, each the total experience a hero at that level has reached. Every
+ * The hero: the forms it takes, in the order their records are created, the attack every
+ * form swings, and how it levels. The experience table is the source game's hero table at
+ * patch 7.35, one entry per level from one to the cap, each the total experience a hero at that level has reached. Every
  * number is a starting value design retunes here.
  */
 export const heroDef = {
   forms: ["skein"],
+  attack: {
+    damage: 42, // tunable
+    range: 600, // tunable
+    acquireRadius: 800, // tunable
+    pointSeconds: 0.4, // tunable
+    backswingSeconds: 0.7, // tunable
+    baseAttackTimeSeconds: 1.7, // tunable
+    projectileSpeed: 900, // tunable
+    projectileRadius: 12, // tunable
+    atlasFrame: "disc",
+    tint: 0xffffff, // tunable
+  },
   maxLevel: 30, // tunable
   experienceThresholds: [
     0, // tunable

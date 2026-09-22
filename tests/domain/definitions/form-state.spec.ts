@@ -6,7 +6,7 @@ import {
   createTuningState,
   ORB_COUNT,
 } from "@domain/public";
-import { makeFormDef } from "../../helpers";
+import { makeAttackDef, makeFormDef } from "../../helpers";
 
 /** The tuning table at 30 Hz, three orbs, and two prepared slots, in simulation units. */
 const TUNING = createTuningState({
@@ -39,6 +39,7 @@ const second = makeFormDef.build();
 
 const hero = (forms: readonly string[]): HeroDef => ({
   forms,
+  attack: makeAttackDef.build(),
   maxLevel: 30,
   experienceThresholds: [0],
   startingSkillPoints: 1,

@@ -21,8 +21,9 @@ import type { DisableFlags } from "./disable-flags";
  * with the target out of range. The clock and the mana reasons are shared with the composer.
  * Then the level rule's, when a skill point is spent or a level granted: there is none to
  * spend, the slot holds no orb skill, the skill is at its cap, or the level is. The last
- * are the debug commands' at apply: the pool has no room for the spawn, a channel is
- * already running, or the status rule refused the application.
+ * are the debug commands' at apply: no archetype has the id the spawn names, the pool has
+ * no room for the spawn, a channel is already running, or the status rule refused the
+ * application.
  */
 export type RefusalReason =
   | "stunned"
@@ -44,6 +45,7 @@ export type RefusalReason =
   | "on_cooldown"
   | "empty_slot"
   | "unknown_ability"
+  | "unknown_archetype"
   | "ability_not_held"
   | "invalid_target"
   | "target_not_found"
@@ -209,10 +211,11 @@ export const validateCommand = (
 /**
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
  * type the rules know, one non-negative integer level per orb, a count and a duration of at
- * least one, a delay of none or more, and a finite position. No disable and no state refuses a debug command; the
- * panel is not the unit acting. What the world can take, room in the pool, a level below the
- * cap, an orb level under its cap, no channel running, a status with the id it names, the
- * handler refuses when the command applies, with the same kind of reason.
+ * least one, a delay of none or more, and a finite position. No disable and no state refuses
+ * a debug command; the panel is not the unit acting. What the world can take, an archetype
+ * with the id it names, room in the pool, a level below the cap, an orb level under its cap,
+ * no channel running, a status with the id it names, the handler refuses when the command
+ * applies, with the same kind of reason.
  */
 export const validateDebugCommand = (
   command: DebugCommand,
@@ -236,7 +239,8 @@ export const validateDebugCommand = (
     case "set_orb_levels":
       return areOrbLevels(command.levels) ? "ok" : "invalid_orb_level";
 
-    case "spawn_units": {
+    case "spawn_units":
+    case "spawn_enemies": {
       if (!isCount(command.count)) {
         return "invalid_count";
       }

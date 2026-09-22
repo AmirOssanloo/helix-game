@@ -11,6 +11,7 @@ export type TransitionRefusal =
   | "no_move_in_progress"
   | "no_attack_in_progress"
   | "no_cast_in_progress"
+  | "no_order_to_face"
   | "not_in_attack_windup"
   | "not_in_cast_point"
   | "not_in_backswing"
@@ -204,15 +205,20 @@ export const beginMoving = (unit: Unit): TransitionResult => {
 };
 
 /**
- * The unit is within range of its cast target and stops where it stands to face it: the path
- * and any request for one are gone, and a unit that was walking starts its turn afresh.
- * Legal while turning toward or moving to a cast order.
+ * The unit is within reach of what its order aims at and stops where it stands to face it:
+ * the path and any request for one are gone, and a unit that was walking starts its turn
+ * afresh. Legal while turning toward or moving to a cast or an attack; a move has nothing to
+ * face but the way it is going.
  */
 export const beginFacing = (unit: Unit): TransitionResult => {
   const isUnderway = unit.state === "turning" || unit.state === "moving";
+  const aimsAtSomething =
+    unit.order.kind === "cast" ||
+    unit.order.kind === "attack_target" ||
+    unit.order.kind === "attack_move";
 
-  if (!isUnderway || unit.order.kind !== "cast") {
-    return "no_cast_in_progress";
+  if (!isUnderway || !aimsAtSomething) {
+    return "no_order_to_face";
   }
 
   if (unit.state === "moving") {
@@ -261,6 +267,70 @@ export const beginAttackBackswing = (unit: Unit): TransitionResult => {
   }
 
   unit.state = "attack_backswing";
+
+  return "ok";
+};
+
+/**
+ * The attack point ends without a shot and without a clock: what a disarm landing mid-point
+ * does. The order is kept and the unit turns to face afresh, so it swings again the moment
+ * it may; a new order, which drops the order as well, goes through the order itself. Legal
+ * from `attack_windup`.
+ */
+export const cancelAttackWindup = (unit: Unit): TransitionResult => {
+  if (unit.state !== "attack_windup") {
+    return "not_in_attack_windup";
+  }
+
+  unit.state = "turning";
+  unit.turnTicks = 0;
+
+  return "ok";
+};
+
+/**
+ * An attack-move acquired something to hit: the point it was walking to is put aside on the
+ * unit and the order, still an attack-move, takes the target. The unit turns to face it
+ * afresh, and the attack rule writes the approach over the order's destination. Legal while
+ * an attack-move is walking and has acquired nothing yet.
+ */
+export const engageTarget = (
+  unit: Unit,
+  targetId: EntityId,
+): TransitionResult => {
+  if (unit.order.kind !== "attack_move" || unit.order.targetId !== null) {
+    return "no_move_in_progress";
+  }
+
+  unit.attackMovePoint.x = unit.order.destination.x;
+  unit.attackMovePoint.y = unit.order.destination.y;
+  unit.order.targetId = targetId;
+  unit.state = "turning";
+  unit.turnTicks = 0;
+  clearPath(unit.path);
+  unit.needsPath = false;
+
+  return "ok";
+};
+
+/**
+ * The attack-move's target is gone and the walk is taken up again: the order's destination
+ * is the point put aside, and a new path is asked for from where the unit stands, so it
+ * carries on from there and never backtracks to where it left the line. Legal while an
+ * attack-move holds a target.
+ */
+export const disengageTarget = (unit: Unit): TransitionResult => {
+  if (unit.order.kind !== "attack_move" || unit.order.targetId === null) {
+    return "no_attack_in_progress";
+  }
+
+  unit.order.targetId = null;
+  unit.order.destination.x = unit.attackMovePoint.x;
+  unit.order.destination.y = unit.attackMovePoint.y;
+  unit.state = "turning";
+  unit.turnTicks = 0;
+  clearPath(unit.path);
+  unit.needsPath = true;
 
   return "ok";
 };

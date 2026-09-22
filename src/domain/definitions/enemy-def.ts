@@ -1,3 +1,4 @@
+import type { AttackDef } from "./attack-def";
 import type { BodyDef } from "./form-def";
 
 /** How an archetype's numbers are multiplied and how it is drawn: plain, three times the health with a thicker outline, or ten times with the thickest. */
@@ -11,8 +12,8 @@ export const ENEMY_TIERS: readonly EnemyTier[] = ["normal", "elite", "boss"];
  * designer's units, the abilities it may cast by id, and the behaviour that drives it by
  * key. A field an archetype does not use holds its neutral value rather than being left
  * out, so a spell that burns mana or fires at range always finds a number. Regeneration is
- * per second, the attack timings are seconds, and the turn rate is radians per the spec's
- * turn step, all converted once when a unit of it is spawned.
+ * per second and the turn rate is radians per the spec's turn step, both converted once when
+ * the world is created; the attack it swings is its own block, converted the same way.
  */
 export type EnemyDef = Readonly<{
   id: string;
@@ -25,13 +26,8 @@ export type EnemyDef = Readonly<{
   movementSpeed: number;
   turnRate: number;
   body: BodyDef;
-  attackDamage: number;
-  attackRange: number;
-  attackPointSeconds: number;
-  attackBackswingSeconds: number;
-  baseAttackTimeSeconds: number;
-  /** Speed of the projectile a ranged attack fires; zero for a melee archetype. */
-  projectileSpeed: number;
+  /** What it swings, how far, and what it fires. An archetype that never attacks holds one of zeroes. */
+  attack: AttackDef;
   aggroRadius: number;
   leashRadius: number;
   experience: number;

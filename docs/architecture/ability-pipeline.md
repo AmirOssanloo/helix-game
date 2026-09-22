@@ -111,6 +111,20 @@ A summon is a unit like any other: it lives in the unit pool, moves, collides, t
 
 ---
 
+## The attack is beside the pipeline, not inside it
+
+**An attack is not an ability.** It has no definition in the ability space, no mana, no cooldown clock, and no effect list: it is a block of numbers on the hero definition and on every archetype — what it lands, how far it reaches, how far it looks for something to hit, its two stages, the time from one shot to the next, and the projectile it fires. The rule that carries it out lives in `domain/attack/`, and the pass that runs it is registered after the behaviours and before pathing, so an attack a command or a behaviour issued is walked and faced on the tick it was issued.
+
+It borrows everything it can. The order state machine owns the two attack states as it owns the two cast states; the turn to face is the same turn, against the same action cone; the approach is the same walk to a legal point; the shot is the same projectile entity a spell fires, carrying its damage as a number rather than a hit list; and the damage lands through the same door, as physical.
+
+**The stages** are the walk while the target is out of reach, the turn to face once it is in reach, the attack point, the shot on the tick the point ends, and the backswing. Reach is the attack's range plus the attacker's bound radius and the target's. A new order, a stop, or a cast cancels a point or a backswing through the state machine, and a cancelled point fires nothing and starts no clock; a disarm ends a point the same way but keeps the order, so the unit swings again the moment it may.
+
+**The clock is counted from the shot, not from the point.** A shot sets the earliest tick the next shot may land, one attack time later, and the next attack point begins early enough to land on it, so two shots are one attack time apart however long the point between them is. The attack time is the definition's base attack time scaled by the unit's attack speed, which is a modifier-stack stat like movement speed and is never computed inside the attack rule.
+
+**Two orders reach it.** An attack on a target holds one unit until it dies, becomes untargetable, or the order changes; an attack-move walks to a point and, each tick it has acquired nothing, takes the nearest enemy inside the acquire radius. While it is engaged the order is still an attack-move, holding its target and its walk point at once, so losing the target gives the walk back from where the unit then stands rather than from where it left the line. Nothing acquires while idle.
+
+---
+
 ## Anti-patterns
 
 ### A spell as a system
@@ -120,6 +134,10 @@ A `tickFooSpell` system that watches for the spell's key. It bypasses validation
 ### Committing on key-down for a targeted ability
 
 Spending mana when the cursor opens, then refunding on Escape. The refund is the bug: a cancel during the refund window and a cast in the same tick double-spend. Nothing is spent until the tick that sees the click.
+
+### An attack written as an ability
+
+Giving the auto-attack a definition in the ability space so it can reuse the cast pipeline. It has no mana, no cooldown clock, and no effect list, so every stage would need a special case for it, and the cast pipeline would grow a branch per stage. The attack is its own rule over the same state machine, the same turn, and the same projectile.
 
 ### A named effect that reads the clock or the cursor
 
@@ -164,6 +182,13 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | A summon | A unit with an owner id and a lifetime; its definition owns its base numbers and the spawning entry's bonuses go on it as modifier rows |
 | A summon's end | Its lifetime, or the tick its owner dies; both release the slot at once, announce nothing, and grant no experience |
 | Behaviours | One pass runs each unit's behaviour by key, once per tick, after the cast stages and before pathing; a behaviour issues orders through the state machine and moves nothing itself |
+| The attack | Not an ability: a block of numbers on the hero definition and every archetype, carried out by `domain/attack/`, registered after the behaviours and before pathing |
+| The attack stages | Walk while out of reach, turn to face, attack point, shot, backswing; reach is the range plus both bound radii |
+| A cancelled attack point | A new order, a stop, a cast, or a disarm ends it; nothing is fired and no clock starts |
+| The attack clock | Counted from the shot: the next point begins early enough that two shots are one attack time apart |
+| Attack time | The definition's base attack time scaled by the unit's attack speed, a modifier-stack stat the attack rule never computes |
+| Attack-move | Holds its walk point and its acquired target at once; losing the target resumes the walk from where the unit stands, never backtracking |
+| Idle policy | Nothing acquires while idle; only an attack-move and a behaviour acquire |
 
 ---
 

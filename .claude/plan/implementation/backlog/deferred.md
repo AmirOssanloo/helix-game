@@ -22,6 +22,8 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
 | The disable matrix's draft | Sprint 18 | Sprint 20 | Only the headings are drafted early so sprint 20 starts on content |
 | A unit's own movement speed and turn rate | Sprint 09 | Sprint 12 | The movement system reads the two tunables for every unit; a definition's `movementSpeed` and `turnRate` are written by content and read by nothing. The summon follows at the hero's base speed, which is enough for it; the AI module is where enemies of different speeds first matter |
+| A melee attack | Sprint 09 | Sprint 12 | Every attack fires a homing projectile, since the hero's and the summon's both do. An archetype with a projectile speed of nothing would fire one that never arrives; the rule refuses to pretend otherwise, and the melee branch is written with the first melee archetype |
+| The enemies group's tier selector, kill-all, and spawn at the pointer | Sprint 09 | Sprint 12 | A tier multiplies numbers no archetype has yet, a kill-all grants experience nothing grants, and a spawn at the pointer is presentation work the ticket's layers did not include. The dropdown, the group size, and the two spawn points cover what the dummy is for |
 
 ---
 
