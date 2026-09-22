@@ -10,14 +10,16 @@
   },
   "scripts": {
     "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
-    "check:ci": "pnpm lint && pnpm typecheck && pnpm build && vitest run --coverage",
+    "check:ci": "pnpm lint && pnpm typecheck && pnpm build && vitest run --coverage --project '!stress' && pnpm test:budget",
     "test": "vitest run",
+    "test:budget": "vitest run --project stress",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",
+    "build:playtest": "vite build --mode playtest",
     "bench": "vite --open /bench/",
     "prepare": "husky"
   },

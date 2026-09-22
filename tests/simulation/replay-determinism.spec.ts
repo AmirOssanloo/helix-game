@@ -29,6 +29,14 @@ const LIVE_TICKS = 240;
 
 const LIVE_SEED = 77;
 
+/**
+ * Longer than a spec is normally given. This one replays a recorded session into two worlds and
+ * compares them tick by tick, which takes a couple of seconds uninstrumented and about three
+ * times that under the coverage run. It asserts that the two worlds agree, never how fast they
+ * got there, so the only thing this number must do is outlast the slowest machine that runs it.
+ */
+const REPLAY_TIMEOUT_MS = 30_000;
+
 /** A map's entries in insertion order, so a `Map` compares as data. */
 const replacer = (_key: string, value: unknown): unknown =>
   value instanceof Map ? [...value.entries()] : value;
@@ -253,34 +261,38 @@ const saved = (world: Simulation): InputLogFile => {
 };
 
 describe("replay", () => {
-  it("replays the recorded phase 1 session into two worlds that agree at every tick", () => {
-    const file = loadInputLog(RECORDED_SESSION);
-    const first = replayOf(file);
-    const second = replayOf(file);
+  it(
+    "replays the recorded phase 1 session into two worlds that agree at every tick",
+    () => {
+      const file = loadInputLog(RECORDED_SESSION);
+      const first = replayOf(file);
+      const second = replayOf(file);
 
-    expect(
-      file.records.some((record) => record.command.kind === "set_tuning"),
-    ).toBe(true);
-    expect(
-      file.records.some((record) => record.command.kind === "spawn_units"),
-    ).toBe(true);
-    expect(
-      file.records.some((record) => record.command.kind === "kill_hero"),
-    ).toBe(true);
+      expect(
+        file.records.some((record) => record.command.kind === "set_tuning"),
+      ).toBe(true);
+      expect(
+        file.records.some((record) => record.command.kind === "spawn_units"),
+      ).toBe(true);
+      expect(
+        file.records.some((record) => record.command.kind === "kill_hero"),
+      ).toBe(true);
 
-    while (!first.done) {
-      first.tick();
-      second.tick();
+      while (!first.done) {
+        first.tick();
+        second.tick();
 
-      const difference = tickDifference(first.view, second.view);
+        const difference = tickDifference(first.view, second.view);
 
-      expect(difference, `after tick ${String(first.view.tick)}`).toBeNull();
-    }
+        expect(difference, `after tick ${String(first.view.tick)}`).toBeNull();
+      }
 
-    expect(first.view.tick).toBe(file.ticks);
-    expect(first.view.map.units.count).toBeGreaterThan(1);
-    expect(snapshot(second.view)).toBe(snapshot(first.view));
-  });
+      expect(first.view.tick).toBe(file.ticks);
+      expect(first.view.map.units.count).toBeGreaterThan(1);
+      expect(snapshot(second.view)).toBe(snapshot(first.view));
+    },
+    REPLAY_TIMEOUT_MS,
+  );
 
   it("replays a live-recorded session to the state the recording world ended in", () => {
     const recorder = createSessionWorld({

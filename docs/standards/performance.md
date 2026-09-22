@@ -46,6 +46,8 @@ Two instruments, and both are read:
 
 **The stress test runs in CI.** Three hundred units with random orders on the full arena for a fixed number of ticks, asserting the mean tick under budget. It runs in Node with no canvas. A change that fails it does not merge.
 
+**It runs uninstrumented, outside the coverage pass.** Coverage instrumentation makes the same tick about three times slower, so a budget measured through it measures the profiler and nothing else. Every other tier is instrumented and holds its coverage floors; this one runs on its own afterwards. A test that asserts a duration belongs outside the profiler or it asserts nothing.
+
 ---
 
 ## What breaks the batch
@@ -123,7 +125,7 @@ The stress test fails, so the tick budget becomes 5 ms. The budget is the produc
 | A hot-path change | Carries before and after numbers from the rings and the performance panel |
 | Optimising | Only from a profile |
 | Render benchmark | `bench/`, manual, rerun after every Phaser upgrade and any atlas, view, or scene change |
-| Stress test | 300 units in Node, in CI, asserting the tick budget |
+| Stress test | 300 units in Node, in CI, asserting the tick budget; uninstrumented, outside the coverage pass |
 | Batch breaks | Second texture, blend mode, filter, mask, `Text` update in sync — each counted, none in the world scene |
 | Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections — each with its replacement above |
 | Re-pathing | Budgeted per tick, the budget a tunable |
