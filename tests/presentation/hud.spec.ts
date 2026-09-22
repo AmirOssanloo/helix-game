@@ -7,7 +7,7 @@ import type {
   SlotDescriptor,
   Unit,
 } from "@domain/public";
-import { resolveKit } from "@domain/public";
+import { applyStatus, resolveKit } from "@domain/public";
 import type { KitResolver } from "@presentation/public";
 import {
   FLASH_TICKS,
@@ -37,6 +37,12 @@ const Q = 1;
 const R = 4;
 const D = 5;
 const F = 6;
+
+/** Every slot key, in bar order. */
+const SLOTS: readonly number[] = [1, 2, 3, 4, 5, 6];
+
+/** How long a status a case applies lasts: two seconds at 30 Hz, well past the tick that reads it. */
+const STATUS_TICKS = 60;
 
 /** The DOM buttons. */
 const LEFT = 0;
@@ -124,6 +130,33 @@ const arrange = (kits: KitResolver = resolveKit): Arranged => {
 const quadsOf = (arranged: Arranged, frame: string): QuadRecorder[] =>
   arranged.quads.filter((quad) => quad.frame === frame);
 
+/** Puts `statusId` on the hero and runs the tick whose status pass raises its flags. */
+const wear = (arranged: Arranged, statusId: string): void => {
+  const heroId = arranged.world.state.run.heroId;
+
+  if (heroId === null) {
+    throw new Error("The world names its hero");
+  }
+
+  applyStatus(
+    arranged.world.state,
+    heroId,
+    statusId,
+    STATUS_TICKS,
+    null,
+    [1, 1, 1],
+  );
+  arranged.world.tick();
+};
+
+/** The slot keys whose descriptor named a disable at the last sync. */
+const greyedSlots = (arranged: Arranged): readonly number[] =>
+  SLOTS.filter((slot) => {
+    const descriptor = arranged.hud.descriptorOf(slot);
+
+    return descriptor !== null && descriptor.blockedBy !== null;
+  });
+
 /** The labels showing `text`. */
 const labelsShowing = (arranged: Arranged, text: string): LabelRecorder[] =>
   arranged.labels.filter((label) => label.visible && label.text === text);
@@ -197,17 +230,41 @@ describe("the six ability squares", () => {
     expect(quadsOf(arranged, `wedge_${WEDGE_STEPS / 2}`)).toHaveLength(1);
   });
 
-  it("grey every square while the hero is silenced, as the descriptor says", () => {
+  it("grey all six while a silence is on the hero, and dim what each square shows", () => {
     const arranged = arrange();
 
-    arranged.hero.disables.silenced = true;
+    wear(arranged, "silence");
     arranged.hud.sync(arranged.view);
 
+    expect(greyedSlots(arranged)).toEqual(SLOTS);
     expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("silenced");
 
     const keyLabels = arranged.labels.filter((label) => label.text === "Q");
 
     expect(keyLabels[0]?.alpha).toBeLessThan(1);
+  });
+
+  it("grey all six while a stun is on the hero", () => {
+    const arranged = arrange();
+
+    wear(arranged, "stun");
+    arranged.hud.sync(arranged.view);
+
+    expect(greyedSlots(arranged)).toEqual(SLOTS);
+    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("stunned");
+  });
+
+  it("grey none while a disarm is on the hero: a disarm blocks no key", () => {
+    const arranged = arrange();
+
+    wear(arranged, "disarm");
+    arranged.hud.sync(arranged.view);
+
+    expect(greyedSlots(arranged)).toEqual([]);
+
+    const keyLabels = arranged.labels.filter((label) => label.text === "Q");
+
+    expect(keyLabels[0]?.alpha).toBe(1);
   });
 
   it("rewrite a label only when its number changes", () => {

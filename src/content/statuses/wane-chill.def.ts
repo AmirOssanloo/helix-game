@@ -24,5 +24,5 @@ export const waneChillDef = {
   onDamageDealt: null,
   onExpiry: [],
   stack: "refresh",
-  atlasFrame: "icon_slow",
+  atlasFrame: "icon_wane_chill",
 } as const satisfies StatusDef;

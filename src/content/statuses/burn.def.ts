@@ -18,5 +18,5 @@ export const burnDef = {
   onDamageDealt: null,
   onExpiry: [],
   stack: "refresh",
-  atlasFrame: "icon_damage_over_time",
+  atlasFrame: "icon_burn",
 } as const satisfies StatusDef;

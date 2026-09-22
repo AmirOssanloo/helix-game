@@ -41,9 +41,9 @@ const GLYPH_FONT_FAMILY = "monospace";
 /** A stripe and its gap, in stripe thicknesses. */
 const STRIPE_PERIOD = 2;
 
-/** The placeholder icon: an outline this fraction of the cell thick, with a disc this fraction across inside it. */
+/** A status icon: an outline this fraction of the cell thick, with its glyph this fraction of the cell tall inside it. */
 const ICON_OUTLINE_FRACTION = 0.125;
-const ICON_DISC_FRACTION = 0.5;
+const ICON_EM_FRACTION = 0.6;
 
 /** Where the wedge covering `step` of `steps` starts and ends: clockwise from twelve o'clock, in canvas radians. */
 export const wedgeSweep = (
@@ -161,9 +161,10 @@ const paintShape = (
         width - outline,
         height - outline,
       );
-      painter.beginPath();
-      painter.arc(centreX, centreY, radius * ICON_DISC_FRACTION, 0, TWO_PI);
-      painter.fill();
+      painter.font = `bold ${Math.round(height * ICON_EM_FRACTION)}px ${GLYPH_FONT_FAMILY}`;
+      painter.textAlign = "center";
+      painter.textBaseline = "middle";
+      painter.fillText(shape.glyph, centreX, centreY);
 
       return;
     }

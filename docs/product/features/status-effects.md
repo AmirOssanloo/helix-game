@@ -35,7 +35,7 @@ Statuses expire on their own tick. A unit's death clears its table.
 
 ## What the hero sees
 
-Every status on a unit shows as an icon above it ([HUD](./hud.md)). A disable on the hero also greys the keys it blocks on the ability bar, so silence greys six squares and disarm greys none.
+Every status on a unit shows as an icon above it ([HUD](./hud.md)), one glyph per status. A disable on the hero also greys the keys it blocks on the ability bar, so silence greys six squares, stun greys six, and disarm greys none.
 
 ## The disable matrix
 
@@ -47,7 +47,7 @@ Which status blocks which key, order, and cast state is one table with a cell pe
 | --- | --- |
 | Stunned during a cast point | The cast is cancelled at no cost. Mana and cooldown are spent at the end of the cast point, so nothing was spent |
 | Stunned after the cast point | The spell was committed; it resolves normally |
-| Silenced while the targeting cursor is open | The cursor closes at no cost |
+| Silenced or stunned while the targeting cursor is open | The cursor closes at no cost. An attack-move cursor closes on a stun and survives a silence |
 | Silenced with a move running | The move continues; silence blocks abilities only |
 | Stunned or silenced with a skill point unspent | The point can still be spent from the HUD. A level is not an action the unit takes |
 | Rooted while lifted by Updraft | Lift wins; the unit drops where the updraft leaves it, and root keeps counting |

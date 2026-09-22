@@ -22,6 +22,11 @@ import type { OrbViews } from "../views/orb.view";
 import { createOrbViews, orbSlotsOf } from "../views/orb.view";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 import { interpolate } from "../views/quad";
+import type { StatusIconViewPool } from "../views/status-icon.view";
+import {
+  createStatusIconViewPool,
+  syncStatusIconViews,
+} from "../views/status-icon.view";
 import type { UnitViewPool } from "../views/unit.view";
 import {
   createUnitViewPool,
@@ -47,6 +52,9 @@ const OBSTACLE_VIEW_COUNT = 64;
 /** Zone views: the zone pool's whole capacity, since every zone alive can be on screen at once. */
 const ZONE_VIEW_COUNT = ZONE_CAPACITY;
 
+/** Rows of status icons: how many units on screen wear a status at once in a busy fight. A presentation number. */
+const STATUS_ICON_VIEW_COUNT = 64;
+
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;
 
@@ -61,6 +69,7 @@ type Stage = {
   preview: TargetingPreview;
   obstacles: ObstacleViews;
   units: UnitViewPool;
+  statusIcons: StatusIconViewPool;
   zones: ZoneViewPool;
   orbs: OrbViews;
   overlays: DebugOverlays;
@@ -72,9 +81,10 @@ type Stage = {
  * Owns the world camera, runs the sync each frame, and maps input to commands. `create`
  * makes every pool it will ever hold; `update` hands the frame to the driver, then reads the
  * world view and writes the views: the camera onto the hero, the obstacles and bounds on a
- * map load, the zones and the units inside the camera rectangle, the orbs, the
- * targeting preview under the pointer, the debug overlays the toggles ask for, and the view
- * misses into their ring, and drains the event ring with its own cursor.
+ * map load, the zones, the units, and their status icons inside the camera rectangle, the
+ * orbs, the targeting preview under the pointer, the debug overlays the toggles ask for, and
+ * the view misses into their ring, and drains the event ring with its own cursor. A cursor the
+ * hero may no longer commit is closed before the preview reads it.
  */
 export class PlayScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -137,6 +147,11 @@ export class PlayScene extends Phaser.Scene {
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
       units: createUnitViewPool(UNIT_VIEW_COUNT, makeQuad, frameSizes),
+      statusIcons: createStatusIconViewPool(
+        STATUS_ICON_VIEW_COUNT,
+        makeQuad,
+        frameSizes,
+      ),
       zones: createZoneViewPool(ZONE_VIEW_COUNT, makeQuad, frameSizes),
       orbs: createOrbViews(
         orbSlotsOf(this.context.world),
@@ -189,11 +204,20 @@ export class PlayScene extends Phaser.Scene {
     stage.camera.worldRect(UNIT_VIEW_MARGIN, this.rect);
     syncZoneViews(stage.zones, world, this.rect, alpha);
     syncUnitViews(stage.units, world, this.rect, alpha, this.candidates);
+    syncStatusIconViews(
+      stage.statusIcons,
+      world,
+      this.rect,
+      alpha,
+      this.candidates,
+    );
     stage.orbs.sync(world, alpha);
+    stage.mapper.syncCursor();
     this.syncPreview(stage);
     stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
     this.context.rings.viewMisses.write(
       stage.units.misses +
+        stage.statusIcons.misses +
         stage.zones.misses +
         stage.obstacles.misses +
         stage.overlays.misses,

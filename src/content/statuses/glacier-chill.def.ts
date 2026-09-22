@@ -28,5 +28,5 @@ export const glacierChillDef = {
   onDamageDealt: null,
   onExpiry: [],
   stack: "refresh",
-  atlasFrame: "icon_slow",
+  atlasFrame: "icon_glacier_chill",
 } as const satisfies StatusDef;

@@ -1,5 +1,9 @@
 import type { AnyCommand, CastTarget } from "@domain/public";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
+import {
+  abilityDisable,
+  createCandidateBuffer,
+  UNIT_CAPACITY,
+} from "@domain/public";
 import type { EntityId, Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
@@ -60,6 +64,34 @@ export class InputMapper {
 
     for (let index = 0; index < KEY_BINDINGS.length; index += 1) {
       this.held.push(false);
+    }
+  }
+
+  /**
+   * One frame, before the preview is drawn: an open cursor the hero may no longer commit is
+   * closed. A slot cursor goes when a stun or a silence lands, since both refuse the cast the
+   * click would send; the attack-move cursor goes on a stun alone, because silence leaves
+   * movement and attacks to the hero. Nothing flashes: the player asked for nothing yet.
+   */
+  syncCursor(): void {
+    if (this.cursor.kind === "closed") {
+      return;
+    }
+
+    const heroId = this.world.run.heroId;
+    const hero = heroId === null ? null : this.world.map.units.resolve(heroId);
+
+    if (hero === null) {
+      return;
+    }
+
+    const blocked =
+      this.cursor.kind === "attack_move"
+        ? hero.disables.stunned
+        : abilityDisable(hero.disables) !== null;
+
+    if (blocked) {
+      closeCursor(this.cursor);
     }
   }
 

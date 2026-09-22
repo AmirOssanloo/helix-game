@@ -165,7 +165,7 @@ const atlasShapeSchema: Schema<AtlasShape> = taggedUnion<"kind", AtlasShape>(
       kind: oneOf(["stripes"]),
       thickness: nonNegativeSchema,
     }),
-    icon: objectOf({ kind: oneOf(["icon"]) }),
+    icon: objectOf({ kind: oneOf(["icon"]), glyph: stringSchema }),
     glyph: objectOf({ kind: oneOf(["glyph"]), character: stringSchema }),
   },
 );

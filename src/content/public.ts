@@ -1,5 +1,10 @@
 export { abilities } from "./abilities/index";
-export { atlasFrames, GLYPH_CHARACTERS, WEDGE_STEPS } from "./atlas-frames";
+export {
+  atlasFrames,
+  GLYPH_CHARACTERS,
+  statusIconFrame,
+  WEDGE_STEPS,
+} from "./atlas-frames";
 export { enemies } from "./enemies/index";
 export { forms } from "./forms/index";
 export { skeinDef } from "./forms/skein.def";

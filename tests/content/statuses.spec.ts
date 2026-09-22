@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { contentRegistry, statuses } from "@content/public";
+import {
+  atlasFrames,
+  contentRegistry,
+  statuses,
+  statusIconFrame,
+} from "@content/public";
 import { ID_SHAPE, validateRegistry } from "@domain/public";
 
 /** The eight status kinds the status page names plus the six spell-specific definitions the catalogue adds. */
@@ -55,6 +60,47 @@ describe("every status", () => {
       expect(status).not.toHaveProperty("durationSeconds");
     },
   );
+});
+
+describe("the status icons", () => {
+  it("give every status a frame of its own, and share none", () => {
+    const frames = statuses.map((status) => status.atlasFrame);
+
+    expect(new Set(frames).size).toBe(statuses.length);
+
+    for (const status of statuses) {
+      expect(status.atlasFrame).toBe(statusIconFrame(status.id));
+    }
+  });
+
+  it("are in the frame list, each an icon square with a glyph no other icon shows", () => {
+    const glyphs: string[] = [];
+
+    for (const status of statuses) {
+      const frame = atlasFrames.find(
+        (entry) => entry.name === status.atlasFrame,
+      );
+
+      expect(frame?.shape.kind).toBe("icon");
+
+      if (frame?.shape.kind === "icon") {
+        glyphs.push(frame.shape.glyph);
+      }
+    }
+
+    expect(glyphs).toHaveLength(statuses.length);
+    expect(new Set(glyphs).size).toBe(glyphs.length);
+  });
+
+  it("leave no icon frame in the list that no status names", () => {
+    const named = new Set(statuses.map((status) => status.atlasFrame));
+    const orphans = atlasFrames
+      .filter((entry) => entry.shape.kind === "icon")
+      .map((entry) => entry.name)
+      .filter((name) => !named.has(name));
+
+    expect(orphans).toEqual([]);
+  });
 });
 
 describe("the catalogue's capabilities", () => {

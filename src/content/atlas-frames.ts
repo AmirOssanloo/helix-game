@@ -60,36 +60,47 @@ const shapes: readonly AtlasFrameDef[] = [
     shape: { kind: "stripes", thickness: 12 },
   },
   { name: "pixel", width: 4, height: 4, shape: { kind: "pixel" } },
-  { name: "status_icon", width: 32, height: 32, shape: { kind: "icon" } },
   // Clarion's cone of 60 degrees, apex at the origin. Drawn as the triangle until a cone painter exists; the name is what the definitions hold.
   { name: "cone_60", width: 256, height: 256, shape: { kind: "triangle" } },
 ];
 
-/** The frame every status icon names: one per icon, all the plain icon square until each gets its own glyph. */
-const STATUS_ICON_NAMES: readonly string[] = [
-  "icon_hoarfrost",
-  "icon_wane",
-  "icon_quicken",
-  "icon_stun",
-  "icon_slow",
-  "icon_damage_over_time",
-  "icon_lift",
-  "icon_disarm",
-  "icon_knockback",
-  "icon_silence",
-  "icon_root",
-];
+/**
+ * The frame each status is drawn with, one per status definition, keyed by the status id the
+ * definition carries: an outlined square with one letter inside it, so two statuses on a unit
+ * are told apart at a glance. The letter is the status's initial where that letter is free and
+ * another of its own where it is taken, since a glyph is placeholder art and reads only as
+ * "not the one beside it". A status definition names `icon_<its id>` and nothing else does.
+ */
+const STATUS_ICON_GLYPHS: Readonly<Record<string, string>> = {
+  burn: "B",
+  disarm: "D",
+  glacier_chill: "G",
+  hoarfrost: "H",
+  knockback: "K",
+  lift: "L",
+  quicken: "Q",
+  root: "R",
+  silence: "S",
+  slow: "O",
+  stun: "T",
+  updraft_lift: "U",
+  wane: "W",
+  wane_chill: "C",
+};
+
+/** The frame name a status of `id` is drawn with. The definition and the frame list both read it, so neither spells it out. */
+export const statusIconFrame = (id: string): string => `icon_${id}`;
 
 const STATUS_ICON_SIZE = 32;
 
-const statusIcons: readonly AtlasFrameDef[] = STATUS_ICON_NAMES.map(
-  (name): AtlasFrameDef => ({
-    name,
-    width: STATUS_ICON_SIZE,
-    height: STATUS_ICON_SIZE,
-    shape: { kind: "icon" },
-  }),
-);
+const statusIcons: readonly AtlasFrameDef[] = Object.entries(
+  STATUS_ICON_GLYPHS,
+).map(([id, glyph]): AtlasFrameDef => ({
+  name: statusIconFrame(id),
+  width: STATUS_ICON_SIZE,
+  height: STATUS_ICON_SIZE,
+  shape: { kind: "icon", glyph },
+}));
 
 const wedges: readonly AtlasFrameDef[] = Array.from(
   { length: WEDGE_STEPS },

@@ -25,5 +25,5 @@ export const updraftLiftDef = {
     },
   ],
   stack: "ignore",
-  atlasFrame: "icon_lift",
+  atlasFrame: "icon_updraft_lift",
 } as const satisfies StatusDef;

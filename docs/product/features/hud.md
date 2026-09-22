@@ -26,7 +26,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 
 - **Floating orbs.** The three orb instances orbit the hero, matching the bar's order, so the player reads the buffer without looking down.
 - **Hit flash.** A unit that takes damage flashes white for a few frames.
-- **Status icons.** A small icon above a unit for each status on it — stun, slow, silence, and the rest.
+- **Status icons.** A row of small icons above a unit, one per status on it — stun, slow, silence, and the rest — each an outlined square with its own glyph, so two statuses read apart at a glance. An icon is there while the status is and shows no duration.
 - **Damage numbers.** Every hit spawns a number at the point of impact that rises and fades. White for now; a colour per damage type when the balance pass needs it.
 - **Facing.** The hero's triangle points where the hero faces, which is what the turn rate acts on.
 

@@ -89,6 +89,13 @@ export {
   type QuadFactory,
 } from "./views/quad";
 export {
+  createStatusIconViewPool,
+  StatusIconView,
+  type StatusIconViewPool,
+  type StatusRecords,
+  syncStatusIconViews,
+} from "./views/status-icon.view";
+export {
   createUnitViewPool,
   syncUnitViews,
   UNIT_VIEW_MARGIN,

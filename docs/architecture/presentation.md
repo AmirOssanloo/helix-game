@@ -90,7 +90,7 @@ The HUD is in its own scene and needs no band. Within a band, draw order is pool
 - **Archetype colour** is a tint on the unit's quad.
 - **A hit flash** is a fill-mode tint for a few frames, then the archetype tint again.
 - **An elite outline** is a second quad from the outline frame, bound to the same entity.
-- **A status icon** is a baked icon frame drawn above the unit.
+- **A status icon** is a baked icon frame — an outlined square with one glyph, one frame per status — drawn above the unit. A unit's icons are their own view kind: one row of quads per unit at the text band, bound while the unit is on screen and wearing anything, one icon per row of its status table in table order. The row holds no clock; a status is on the table or it is not.
 - **Damage numbers and every HUD number** are `BitmapText` with the atlas font. `Text` is for a static label that changes rarely — a warning banner, a menu — and is never updated inside the sync.
 
 No filters, no post-processing, no masks, no blend modes. Each one breaks the batch.
@@ -109,7 +109,7 @@ Static map geometry drawn as a tile layer is a view kind like any other when a m
 
 ## Input
 
-`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the definition's frame under the pointer, or on the hero turned toward the pointer for a direction spell. Both turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open.
+`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the definition's frame under the pointer, or on the hero turned toward the pointer for a direction spell. Both turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open. Each frame it reads the hero's disable flags and closes a cursor the hero may no longer commit — a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash.
 
 ---
 
@@ -154,7 +154,8 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Interpolation | Previous to current entity position by the driver's fraction |
 | Depth | Fixed bands: ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
 | Hit flash | Fill-mode tint for a few frames |
-| Elite outline, status icon | A second quad bound to the entity |
+| Elite outline | A second quad bound to the entity |
+| Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |
 | Filters, post-processing, masks, blend modes | None |
 | Camera | Locked follow with lerp, clamped to map bounds; zoom for debugging |
@@ -162,6 +163,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
 | Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands |
+| An open cursor | Closed each frame when the hero's flags refuse what it would send: a slot cursor on stun or silence, the attack-move cursor on stun |
 
 ---
 

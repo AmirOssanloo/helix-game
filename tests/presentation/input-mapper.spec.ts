@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import { acquireUnit } from "@domain/public";
+import { acquireUnit, applyStatus } from "@domain/public";
 import { InputMapper, LEFT_BUTTON, RIGHT_BUTTON } from "@presentation/public";
 import type { Simulation } from "@simulation/public";
 import {
@@ -25,6 +25,9 @@ const MAP_REACH = 5000;
 
 /** Ten seconds at 30 Hz: a clock that has not run out by the tick the test presses D. */
 const COOLDOWN_END_TICK = 300;
+
+/** How long a status a case applies lasts: two seconds at 30 Hz, well past the frame that reads it. */
+const STATUS_TICKS = 60;
 
 const pointSpell = makeSpellDef.build({
   recipe: ["quartz", "whorl", "ember"],
@@ -99,6 +102,18 @@ const arrange = (
   });
 
   return { world, hero, driver, lens, intents, mapper };
+};
+
+/** Puts `statusId` on the hero and runs the tick whose status pass raises its flags. */
+const wear = (world: Simulation, statusId: string): void => {
+  const heroId = world.state.run.heroId;
+
+  if (heroId === null) {
+    throw new Error("The world names its hero");
+  }
+
+  applyStatus(world.state, heroId, statusId, STATUS_TICKS, null, [1, 1, 1]);
+  world.tick();
 };
 
 /** A unit of `kind` standing at (`x`, `y`), by id. */
@@ -477,6 +492,48 @@ describe("the cursor", () => {
       expect(driver.commands).toEqual([]);
     },
   );
+
+  it.each(["silence", "stun"])(
+    "closes an open slot cursor on the frame a %s lands, at no cost",
+    (statusId) => {
+      const { world, driver, intents, mapper } = arrange();
+
+      mapper.keyDown("KeyD");
+
+      expect(mapper.cursor.kind).toBe("slot");
+
+      wear(world, statusId);
+      mapper.syncCursor();
+
+      expect(mapper.cursor.kind).toBe("closed");
+      expect(driver.commands).toEqual([]);
+      expect(intents.refusals).toEqual([]);
+    },
+  );
+
+  it("leaves an open cursor alone while nothing blocks the hero", () => {
+    const { mapper } = arrange();
+
+    mapper.keyDown("KeyD");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("slot");
+  });
+
+  it("keeps the attack-move cursor through a silence and closes it on a stun", () => {
+    const { world, mapper } = arrange();
+
+    mapper.keyDown("KeyA");
+    wear(world, "silence");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("attack_move");
+
+    wear(world, "stun");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("closed");
+  });
 
   it("right click while the cursor is open is a move, and the cursor closes at no cost", () => {
     const { driver, mapper } = arrange();

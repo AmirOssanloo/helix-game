@@ -132,7 +132,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | Layer | content, presentation, devtools, tests |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** One baked icon frame per status in the frame list (a small square with a distinct glyph each); a `status-icon.view.ts` pool binding one quad per active status above its unit, at the floating-text band; the HUD greys each slot square whose descriptor reports a blocking flag; the mapper closes an open cursor when the silence or stun flag appears on the world view. The panel's Apply Status control offers all eight with a duration.
 
@@ -145,15 +145,28 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 
 **Definition of done:** Every change · Anything under `src/presentation` · A developer-panel control.
 
+> **Note, 2026-09-22:** five things came out differently and the ticket stands as edited above.
+>
+> **An icon frame is renamed per status, not per kind.** Sprint 07 wrote eleven `icon_*` frames and said no definition would be renamed later, but three statuses shared `icon_slow` and two shared `icon_lift`, so "one frame per status" could not be met without moving them. The frame list now holds fourteen, one per status, named `icon_<the status id>` by `statusIconFrame` so the list and a definition spell it one way, and the content test refuses a shared frame, a shared glyph, and an icon frame no status names. `icon_damage_over_time` is gone; burn names `icon_burn`.
+>
+> **A glyph is a field on the icon shape.** `AtlasShape`'s `icon` gained a `glyph`, the schema validates it like the font's character, and the painter draws the letter inside the outlined square instead of the placeholder disc. The letter is the status's initial where it is free and another of its own where it is taken, which is all a placeholder glyph has to be.
+>
+> **The icons are a view kind, not a second quad on the unit view.** The presentation page said a status icon is "a second quad bound to the entity", which does not describe eight of them laid in a row. `status-icon.view.ts` is a pool of rows keyed by unit id, each row a table's worth of quads at the text band, and the page's row is split in two. It runs its own camera-rectangle query after the unit views and shares their buffer.
+>
+> **An icon reads the table, not the ring.** The acceptance says "driven by events"; the row is driven by the status table on the world view instead, which is the same thing one step earlier and is what keeps a paused simulation, a replay, and a unit that walks back on screen all correct. The view holds no clock, which is what the row was protecting.
+>
+> **The cursor rule is the validator's, not "stun or silence".** A slot cursor closes on either flag, since `abilityDisable` refuses the cast the click would send; the attack-move cursor closes on a stun alone, because silence leaves movement and attacks to the hero. `InputMapper.syncCursor` runs each frame before the preview reads the cursor. The HUD greying and the panel's Apply Status control needed nothing: T01 built both.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Every disable-versus-action test green through real statuses | |
+| Every disable-versus-action test green through real statuses | Yes: the matrix runs under `tests/simulation/statuses/`, and the bar now greys from the same flags — six squares under a silence, six under a stun, none under a disarm |
 | Zone pool at capacity behaves | Yes: the sixty-fifth spawn returns nothing, the pool counts the miss, and the effect list runs on |
-| Actual days per ticket | T01 0.5 · T02 0.5 · T03 0.5 · T04 |
+| Render benchmark after the icon frames and the icon views | Waiting on a person: it needs a GPU and is not in CI. The steps and where the numbers go are in the sprint 08 row of [STATUS.md](../STATUS.md#waiting-on-a-person) |
+| Actual days per ticket | T01 0.5 · T02 0.5 · T03 0.5 · T04 0.5 |
 
 ## Risks in this sprint
 
