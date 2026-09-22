@@ -22,7 +22,7 @@ How code under `src/presentation/` is written so that the world renders in a han
 Every visible thing is a tinted quad from the one white atlas baked at boot. The reasoning is in [ADR 0001](../adr/0001-phaser-renderer-and-quad-atlas.md); the rules that follow are these.
 
 - **`Graphics` and every `Shape` game object are banned**, including `this.add.rectangle`, `this.add.circle`, `this.add.line`, and the rest. Including in debug overlays. A shape rebuilds its geometry every frame and breaks the quad batch.
-- **Colour is a tint, never a second texture.** An archetype colour, a hit flash, a status tint: `setTint`, and `TintModes.FILL` when the whole quad must go one colour.
+- **Colour is a tint, never a second texture.** An archetype colour, a hit flash, a status tint: the `tint` field, with the fill tint mode when the whole quad must go one colour. Colour and mode are two settings: the tint is written every frame, the mode only when it turns.
 - **Adding a shape means adding a frame** to the frame list in `content/`, baked at boot. Nothing draws at runtime.
 - **Scale a frame down, never up by more than two.** Frames are baked large. A small frame scaled up shows its edge pixels.
 - **A line is a stretched pixel frame. A cone is its baked frame at the cast angle. A ring is the ring frame scaled to radius.** [Presentation](../architecture/presentation.md) has the recipes.
@@ -105,7 +105,7 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 | Scenes | Lifetime and composition only. No rules |
 | Camera and input | The input mapper reads input; the camera consumes intents |
 | Drawing | Tinted quads from the boot-time atlas. `Graphics` and `Shape` objects are banned, debug overlays included |
-| Colour | Tint, never a second texture. `TintModes.FILL` for a flat flash |
+| Colour | Tint, never a second texture. The fill tint mode for a flat flash, written only when it turns |
 | A new shape | A new frame in the frame list, baked at boot |
 | Scaling | Down freely; up by at most two |
 | Text | `Text` for static labels only; `BitmapText` for anything updated in sync |

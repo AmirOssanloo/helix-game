@@ -17,6 +17,9 @@ export class LabelRecorder implements Label {
 
   visible = false;
 
+  /** The band the label was last put in, or `null` before any. */
+  depth: number | null = null;
+
   /** The last text set, or `null` before any. */
   text: string | null = null;
 
@@ -33,5 +36,9 @@ export class LabelRecorder implements Label {
   setText(text: string): void {
     this.text = text;
     this.rewrites += 1;
+  }
+
+  setDepth(depth: number): void {
+    this.depth = depth;
   }
 }

@@ -3,15 +3,20 @@ import type { Unit } from "@domain/public";
 import {
   acquireUnit,
   createCandidateBuffer,
+  releaseUnit,
   UNIT_CAPACITY,
 } from "@domain/public";
 import type { UnitViewPool } from "@presentation/public";
 import {
   createUnitViewPool,
   DEPTH_UNITS,
+  HIT_FLASH_TICKS,
+  HitFlashes,
   syncUnitViews,
+  TINT_FILL,
+  TINT_MULTIPLY,
 } from "@presentation/public";
-import type { Rect } from "@shared/public";
+import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeWorld, QuadRecorder, spawnHero, SYNC_FIELDS } from "../helpers";
 
@@ -28,14 +33,21 @@ const FAR_AWAY: Rect = { minX: 3000, minY: 3000, maxX: 3300, maxY: 3300 };
 
 const HALF_WAY = 0.5;
 
-const BIND_WRITES = ["setFrame", "setDepth", "tint"];
+const BIND_WRITES = ["setFrame", "setDepth", "tint", "setTintMode"];
+
+/** What a unit that is not flashing is drawn with, so a case reads the archetype tint back. */
+const HERO_TINT = 0xffffff;
+const FACING_TINT = 0x202020;
+const FLASH_TINT = 0xffffff;
 
 type Arranged = {
   world: Simulation;
   hero: Unit;
+  heroId: EntityId;
   pool: UnitViewPool;
   /** Every quad the pool made, bodies first, then facing markers. */
   quads: QuadRecorder[];
+  flashes: HitFlashes;
   sync: (rect: Rect, alpha: number) => void;
 };
 
@@ -56,14 +68,22 @@ const arrange = (size: number): Arranged => {
     () => FRAME_WIDTH,
   );
   const candidates = createCandidateBuffer(UNIT_CAPACITY);
+  const flashes = new HitFlashes();
+  const heroId = world.state.run.heroId;
+
+  if (heroId === null) {
+    throw new Error("The world names its hero");
+  }
 
   return {
     world,
     hero,
+    heroId,
     pool,
     quads,
+    flashes,
     sync: (rect, alpha): void => {
-      syncUnitViews(pool, world.view, rect, alpha, candidates);
+      syncUnitViews(pool, world.view, rect, alpha, candidates, flashes);
     },
   };
 };
@@ -84,7 +104,7 @@ const firstView = (
 };
 
 describe("a unit view", () => {
-  it("writes the frame, the depth, and the tint once at bind, and only the seven fields in the sync", () => {
+  it("writes the frame, the depth, the tint, and the tint mode once at bind, and only the seven fields in the sync", () => {
     const size = 2;
     const arranged = arrange(size);
     const { body, marker } = firstView(arranged, size);
@@ -154,6 +174,86 @@ describe("a unit view", () => {
     expect(arranged.pool.bound).toBe(0);
     expect(body.visible).toBe(false);
     expect(marker.visible).toBe(false);
+  });
+
+  it("goes white and fills for the length of a flash, then back to the archetype colours", () => {
+    const size = 1;
+    const arranged = arrange(size);
+    const { body, marker } = firstView(arranged, size);
+
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(body.tint).toBe(HERO_TINT);
+    expect(marker.tint).toBe(FACING_TINT);
+    expect(body.tintMode).toBe(TINT_MULTIPLY);
+
+    arranged.flashes.flash(arranged.heroId, arranged.world.view.tick);
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(body.tint).toBe(FLASH_TINT);
+    expect(marker.tint).toBe(FLASH_TINT);
+    expect(body.tintMode).toBe(TINT_FILL);
+    expect(marker.tintMode).toBe(TINT_FILL);
+
+    for (let tick = 0; tick < HIT_FLASH_TICKS; tick += 1) {
+      arranged.world.tick();
+    }
+
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(body.tint).toBe(HERO_TINT);
+    expect(marker.tint).toBe(FACING_TINT);
+    expect(body.tintMode).toBe(TINT_MULTIPLY);
+    expect(marker.tintMode).toBe(TINT_MULTIPLY);
+  });
+
+  it("writes the tint mode when the flash turns and on no frame between", () => {
+    const size = 1;
+    const arranged = arrange(size);
+    const { body } = firstView(arranged, size);
+
+    arranged.flashes.flash(arranged.heroId, arranged.world.view.tick);
+    arranged.sync(AROUND_HERO, 0);
+    body.forgetWrites();
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(body.writes).not.toContain("setTintMode");
+    expect([...new Set(body.writes)].sort()).toEqual([...SYNC_FIELDS].sort());
+  });
+
+  it("does not hand a flash to the next unit to take the same slot", () => {
+    const arranged = arrange(1);
+    const now = arranged.world.view.tick;
+    const enemyId = acquireUnit(
+      arranged.world.state,
+      "enemy",
+      HERO_X + 20,
+      HERO_Y,
+    );
+
+    if (enemyId === null) {
+      throw new Error("The unit pool has room for an enemy");
+    }
+
+    arranged.flashes.flash(enemyId, now);
+
+    expect(arranged.flashes.isFlashing(enemyId, now)).toBe(true);
+
+    releaseUnit(arranged.world.state, enemyId);
+
+    const reusedId = acquireUnit(
+      arranged.world.state,
+      "enemy",
+      HERO_X + 20,
+      HERO_Y,
+    );
+
+    if (reusedId === null) {
+      throw new Error("The released slot is free again");
+    }
+
+    expect(reusedId).not.toBe(enemyId);
+    expect(arranged.flashes.isFlashing(reusedId, now)).toBe(false);
   });
 
   it("reports a miss when no view is free, and does not grow", () => {

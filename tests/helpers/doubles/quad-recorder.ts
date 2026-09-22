@@ -13,8 +13,8 @@ export const SYNC_FIELDS: readonly string[] = [
 
 /**
  * A quad that draws nothing and remembers every write, in order: each of the seven fields and
- * the two axis scales by name, and each bind-time call by method name. Built against the real `Quad` type, so it
- * stops compiling the day a view needs a member it lacks.
+ * the two axis scales by name, and each bind-time call by method name. Built against the real
+ * `Quad` type, so it stops compiling the day a view needs a member it lacks.
  */
 export class QuadRecorder implements Quad {
   /** The frame the quad was made with, then whatever `setFrame` set last. */
@@ -25,6 +25,9 @@ export class QuadRecorder implements Quad {
   displayWidth: number | null = null;
 
   displayHeight: number | null = null;
+
+  /** How the tint meets the frame, as the last `setTintMode` left it. */
+  tintMode: number | null = null;
 
   /** Every write since the last `forgetWrites`, by field or method name. */
   readonly writes: string[] = [];
@@ -146,6 +149,11 @@ export class QuadRecorder implements Quad {
     this.displayWidth = width;
     this.displayHeight = height;
     this.writes.push("setDisplaySize");
+  }
+
+  setTintMode(mode: number): void {
+    this.tintMode = mode;
+    this.writes.push("setTintMode");
   }
 
   /** Forgets the writes so far, so a spec asserts on one frame's. */

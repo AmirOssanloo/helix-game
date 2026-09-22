@@ -45,10 +45,10 @@ A view is the pooled Phaser object that draws one entity. There is one view kind
 
 Each render frame, after the driver's ticks, the sync:
 
-1. Asks the spatial hash for the entities inside the camera's world rectangle, plus a margin.
-2. Binds a view to each — a view already bound stays bound; an entity that entered gets a free view; an entity that left releases its view.
-3. Writes `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible` on each bound view from the entity's state, interpolating position between the entity's previous and current position by the driver's fraction.
-4. Drains the event ring and reacts: a floating number, a flash, a HUD wedge.
+1. Drains the event ring and reacts: a floating number, a flash, a HUD wedge. It comes first, so a hit the ticks just landed is drawn on the frame that follows them rather than the one after.
+2. Asks the spatial hash for the entities inside the camera's world rectangle, plus a margin.
+3. Binds a view to each — a view already bound stays bound; an entity that entered gets a free view; an entity that left releases its view.
+4. Writes `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible` on each bound view from the entity's state, interpolating position between the entity's previous and current position by the driver's fraction.
 
 A view never creates or destroys a game object during play. A view never reads a game object back to learn where a unit is. The view pool is sized to what fits on screen plus a margin, not to the simulation's capacity, so the pool is a presentation number and a large map costs the screen nothing.
 
@@ -88,10 +88,11 @@ The HUD is in its own scene and needs no band. Within a band, draw order is pool
 ## Colour, flashes, and marks
 
 - **Archetype colour** is a tint on the unit's quad.
-- **A hit flash** is a fill-mode tint for a few frames, then the archetype tint again.
+- **A hit flash** is a fill-mode tint over the whole of a unit's view, body and marker, then the archetype tint again. One record holds which units were hit and the tick each one's flash stops, beside the views rather than on them, so a view bound halfway through a flash picks it up where it stands and a view released mid-flash loses nothing. The end is a tick, so a flash pauses with the simulation, and the id is kept beside the tick so a unit taking a released unit's slot inherits no flash.
 - **An elite outline** is a second quad from the outline frame, bound to the same entity.
 - **A status icon** is a baked icon frame — an outlined square with one glyph, one frame per status — drawn above the unit. A unit's icons are their own view kind: one row of quads per unit at the text band, bound while the unit is on screen and wearing anything, one icon per row of its status table in table order. The row holds no clock; a status is on the table or it is not.
 - **Damage numbers and every HUD number** are `BitmapText` with the atlas font. `Text` is for a static label that changes rarely — a warning banner, a menu — and is never updated inside the sync.
+- **A floating number** is one of a fixed set of those texts at the text band, parked where a hit landed and rising and fading over its whole life. Its rise is the tick count plus the driver's fraction against the tick it was spawned on, so it freezes with a paused simulation and replays the same. Spawning walks the set in order, so more hits at once than the set holds recycles the number whose rise began longest ago and counts it, rather than dropping the newest or making a text mid-play. The set is emptied when a map loads.
 
 No filters, no post-processing, no masks, no blend modes. Each one breaks the batch.
 
@@ -152,8 +153,10 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Creating or destroying game objects during play | Never |
 | View pool size | What fits on screen plus a margin; a presentation number |
 | Interpolation | Previous to current entity position by the driver's fraction |
+| The event drain | First of the frame, before the views, so a hit the ticks just landed shows on that frame |
 | Depth | Fixed bands: ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
-| Hit flash | Fill-mode tint for a few frames |
+| Hit flash | Fill-mode tint over the whole view, from one record of which units were hit and until which tick; never a clock on a view |
+| Damage numbers | A fixed set of `BitmapText` at the text band, spawned where a hit landed, rising and fading by the tick count and the fraction; the oldest recycled when the set is full, and counted |
 | Elite outline | A second quad bound to the entity |
 | Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |

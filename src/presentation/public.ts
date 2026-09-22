@@ -78,6 +78,13 @@ export {
   DEPTH_TEXT,
   DEPTH_UNITS,
 } from "./views/depth-bands";
+export {
+  createFloatingNumberViews,
+  FLOATING_NUMBER_SIZE,
+  FLOATING_NUMBER_TICKS,
+  FloatingNumberViews,
+} from "./views/floating-number.view";
+export { HIT_FLASH_TICKS, HitFlashes, showHit } from "./views/hit-feedback";
 export { createObstacleViews, ObstacleViews } from "./views/obstacle.view";
 export { createOrbViews, orbSlotsOf, OrbViews } from "./views/orb.view";
 export {
@@ -108,6 +115,7 @@ export {
   UnitView,
   type UnitViewPool,
 } from "./views/unit.view";
+export { TINT_FILL, TINT_MULTIPLY } from "./views/tint-modes";
 export { type View, ViewPool } from "./views/view-pool";
 export {
   createZoneViewPool,

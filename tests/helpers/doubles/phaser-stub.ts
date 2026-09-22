@@ -39,6 +39,17 @@ const SceneEvents = {
   RENDER: "render",
 };
 
+/** How a tint meets its frame, as the real renderer numbers the modes. */
+const TintModes = {
+  MULTIPLY: 0,
+  FILL: 1,
+  ADD: 2,
+  SCREEN: 3,
+  OVERLAY: 4,
+  HARD_LIGHT: 5,
+  MULTIPLY_TWO: 6,
+};
+
 const Phaser = {
   AUTO: 0,
   CANVAS: 1,
@@ -61,6 +72,7 @@ const Phaser = {
     CENTER_VERTICALLY: 3,
   },
   Math: { Vector2 },
+  TintModes,
   Scene,
   Game,
 };

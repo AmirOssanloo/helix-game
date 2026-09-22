@@ -51,7 +51,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |
 | Which scenes exist | `src/presentation/scenes/` — one file per scene |
 | The depth bands | The depth constants in `src/presentation/views/` |
-| Which views exist | `src/presentation/views/` — one file per entity kind |
+| Which views exist | `src/presentation/views/` — one file per entity kind, plus the feedback a hit raises |
 | How input becomes commands | `src/presentation/input/` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
 | The Phaser configuration | `src/app/game-config.ts` |

@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import type { DomainEvent } from "@domain/public";
 import {
   createCandidateBuffer,
   UNIT_CAPACITY,
@@ -16,6 +17,9 @@ import { TargetingPreview } from "../input/targeting-preview";
 import { DebugOverlays } from "../overlays/debug-overlays";
 import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
+import type { FloatingNumberViews } from "../views/floating-number.view";
+import { createFloatingNumberViews } from "../views/floating-number.view";
+import { HitFlashes, showHit } from "../views/hit-feedback";
 import type { ObstacleViews } from "../views/obstacle.view";
 import { createObstacleViews } from "../views/obstacle.view";
 import type { OrbViews } from "../views/orb.view";
@@ -63,6 +67,9 @@ const PROJECTILE_VIEW_COUNT = 128;
 /** Rows of status icons: how many units on screen wear a status at once in a busy fight. A presentation number. */
 const STATUS_ICON_VIEW_COUNT = 64;
 
+/** Floating numbers: how many hits a busy fight lands inside one number's rise. Past this the oldest is recycled. */
+const FLOATING_NUMBER_COUNT = 64;
+
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;
 
@@ -81,6 +88,8 @@ type Stage = {
   projectiles: ProjectileViewPool;
   zones: ZoneViewPool;
   orbs: OrbViews;
+  numbers: FloatingNumberViews;
+  flashes: HitFlashes;
   overlays: DebugOverlays;
   /** The map whose obstacles and bounds are bound, so a map load rebinds them once. */
   boundMapId: string | null;
@@ -88,12 +97,14 @@ type Stage = {
 
 /**
  * Owns the world camera, runs the sync each frame, and maps input to commands. `create`
- * makes every pool it will ever hold; `update` hands the frame to the driver, then reads the
- * world view and writes the views: the camera onto the hero, the obstacles and bounds on a
- * map load, the zones, the units, and their status icons inside the camera rectangle, the
- * projectiles in flight, the orbs, the targeting preview under the pointer, the debug overlays the toggles ask for, and
- * the view misses into their ring, and drains the event ring with its own cursor. A cursor the
- * hero may no longer commit is closed before the preview reads it.
+ * makes every pool it will ever hold; `update` hands the frame to the driver, then drains the
+ * event ring with its own cursor so a hit the ticks just landed shows on this frame, then
+ * reads the world view and writes the views: the camera onto the hero, the obstacles and
+ * bounds on a map load, the zones, the units and their flashes, their status icons inside the
+ * camera rectangle, the projectiles in flight, the orbs, the numbers rising where hits landed,
+ * the targeting preview under the pointer, the debug overlays the toggles ask for, and the
+ * view misses into their ring. A cursor the hero may no longer commit is closed before the
+ * preview reads it.
  */
 export class PlayScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -124,7 +135,7 @@ export class PlayScene extends Phaser.Scene {
     const camera = new WorldCamera(this.cameras.main);
     const makeQuad: QuadFactory = (frame) =>
       this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame).setVisible(false);
-    // The only labels this scene makes are the overlays', so they sit in the debug band.
+    // The debug band is the default; a view whose labels belong in another sets its own.
     const makeLabel: LabelFactory = (size) =>
       this.add
         .bitmapText(0, 0, ATLAS_FONT_KEY, "", size)
@@ -172,6 +183,8 @@ export class PlayScene extends Phaser.Scene {
         makeQuad,
         frameSizes,
       ),
+      numbers: createFloatingNumberViews(FLOATING_NUMBER_COUNT, makeLabel),
+      flashes: new HitFlashes(),
       overlays: new DebugOverlays(makeQuad, makeLabel, frameSizes),
       boundMapId: null,
     };
@@ -213,11 +226,21 @@ export class PlayScene extends Phaser.Scene {
       stage.boundMapId = world.map.mapId;
       stage.obstacles.bind(world.map.obstacles);
       stage.camera.fitBounds(world.map.bounds);
+      stage.numbers.releaseAll();
     }
 
+    // Before the views, so a hit the ticks just landed is flashing and counted on this frame.
+    this.drainEvents(stage, alpha);
     stage.camera.worldRect(UNIT_VIEW_MARGIN, this.rect);
     syncZoneViews(stage.zones, world, this.rect, alpha);
-    syncUnitViews(stage.units, world, this.rect, alpha, this.candidates);
+    syncUnitViews(
+      stage.units,
+      world,
+      this.rect,
+      alpha,
+      this.candidates,
+      stage.flashes,
+    );
     syncStatusIconViews(
       stage.statusIcons,
       world,
@@ -227,6 +250,7 @@ export class PlayScene extends Phaser.Scene {
     );
     syncProjectileViews(stage.projectiles, world, this.rect, alpha);
     stage.orbs.sync(world, alpha);
+    stage.numbers.sync(world.tick, alpha);
     stage.mapper.syncCursor();
     this.syncPreview(stage);
     stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
@@ -238,7 +262,6 @@ export class PlayScene extends Phaser.Scene {
         stage.obstacles.misses +
         stage.overlays.misses,
     );
-    this.drainEvents();
   }
 
   /** The cursor's ring and shape, at the pointer's world point as the camera stands this frame. */
@@ -255,11 +278,14 @@ export class PlayScene extends Phaser.Scene {
     );
   }
 
-  /** Reads every event since last frame. Nothing in this scene reacts to one yet; the cursor stays current for the day something does. */
-  private drainEvents(): void {
-    let event = this.context.events.read(this.reader);
+  /** Reads every event since last frame and shows what each one is worth on screen. The HUD drains the same ring with a cursor of its own. */
+  private drainEvents(stage: Stage, alpha: number): void {
+    let event: Readonly<DomainEvent> | null = this.context.events.read(
+      this.reader,
+    );
 
     while (event !== null) {
+      showHit(event, this.context.world, alpha, stage.flashes, stage.numbers);
       event = this.context.events.read(this.reader);
     }
   }

@@ -137,7 +137,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | Layer | presentation, tests |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** The play scene's event drain reacts to `unit_damaged` with a fill-mode white tint on the unit's view for a tunable number of frames (the end is a frame count read from a tunable, not a timer the view owns) and a floating `BitmapText` number from a pool at the impact point that rises and fades over a tunable duration; when the pool is full the oldest is recycled early. `cast_committed` and `command_refused` events drive the HUD square reactions already built. Numbers are white.
 
@@ -150,15 +150,30 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 
 **Definition of done:** Every change · Anything under `src/presentation`.
 
+> **Note, 2026-09-22:** five things came out differently and the ticket stands as edited here.
+>
+> The flash ends at a tick, not a frame count. The ticket's build line asked for a frame count and its acceptance for a freeze under a paused driver, and the two cannot both hold: a frame count runs on while the simulation stands still. The acceptance wins, and it is the rule the HUD's refusal flashes and the status icons were already built to, so both flashes now read the same way. `HIT_FLASH_TICKS` is the number, in one place.
+>
+> Which units are flashing lives in a record beside the views, `HitFlashes`, not on them: one entry per slot of the unit pool holding the id that was hit and the tick its flash stops. A view is bound and released by the camera rectangle, so a clock on a view would start again every time a unit walked back on screen; the id is kept beside the tick so a unit taking a released unit's slot inherits nothing.
+>
+> The whole view flashes, body and facing marker, not the body alone. The hero's body is already white, so a white fill on it is no change at all; taking the dark marker with it is what makes a hit on the hero read. Phaser 4 splits the tint from its mode, so the mode is a `setTintMode` on the quad surface, written when a flash starts and when it ends and on no frame between, which leaves the seven sync fields as they were.
+>
+> The drain moved to the front of the frame. It was last, after every view had been written, so anything it raised waited a frame to be drawn — a quarter of a flash. The architecture page's list of what a sync does now has it first.
+>
+> A hit carries no point of its own, so a number is spawned over the unit the event names, at the position that unit is drawn at this frame, lifted clear of its body. A unit already released when the event is read — the ring holds a tick the world has moved past — shows nothing, since there is nowhere to put it. The reaction itself is `showHit` under `src/presentation/views/`, so the whole chain from an event to a number is tested without a scene.
+>
+> One thing the ticket did not ask for and did not get: the recycle count is a counter on the set, read by its spec, and is not on the panel. A readout reads an instrumentation ring or the world view, and this is neither.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Auto-attack cadence matches the spec's numbers in tests | |
-| Dummy spawns from the registry-driven dropdown | |
-| Actual days per ticket | T01 1.0 · T02 1.0 · T03 1.5 · T04 |
+| Auto-attack cadence matches the spec's numbers in tests | Yes: the four specs under `tests/simulation/attack/` hold the walk into reach, the 0.4 s attack point, the shot at 900 units a second, the next point timed so the shot lands one base attack time after the last, the attack-move acquire and the walk resumed where it stands, and a disarm that ends a point with nothing fired |
+| Dummy spawns from the registry-driven dropdown | Yes: the Enemies group reads `DevApi.archetypes`, which the composition root fills from the registry, and `spawn_enemies` refuses `unknown_archetype`; `tests/simulation/dev-api.spec.ts` and `tests/content/enemies.spec.ts` cover both |
+| Render benchmark after the hit flash and the floating numbers | Waiting on a person: it needs a GPU and is not in CI. The steps and where the numbers go are in the sprint 09 row of [STATUS.md](../STATUS.md#waiting-on-a-person) |
+| Actual days per ticket | T01 1.0 · T02 1.0 · T03 1.5 · T04 0.5 |
 
 ## Risks in this sprint
 

@@ -6,7 +6,11 @@ import {
   UNIT_CAPACITY,
 } from "@domain/public";
 import type { UnitViewPool } from "@presentation/public";
-import { createUnitViewPool, syncUnitViews } from "@presentation/public";
+import {
+  createUnitViewPool,
+  HitFlashes,
+  syncUnitViews,
+} from "@presentation/public";
 import type { EntityId } from "@shared/public";
 import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
@@ -57,6 +61,7 @@ const arrange = (size: number): Arranged => {
     () => FRAME_WIDTH,
   );
   const candidates = createCandidateBuffer(UNIT_CAPACITY);
+  const flashes = new HitFlashes();
 
   return {
     world,
@@ -65,7 +70,7 @@ const arrange = (size: number): Arranged => {
     hash,
     pool,
     sync: (): void => {
-      syncUnitViews(pool, view, CAMERA_RECT, 0, candidates);
+      syncUnitViews(pool, view, CAMERA_RECT, 0, candidates, flashes);
     },
   };
 };
