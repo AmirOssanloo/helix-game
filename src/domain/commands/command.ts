@@ -1,7 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import type { DamageType } from "../combat/damage";
 import type { TuningKey } from "../definitions/tuning-def";
-import type { DisableId } from "../orders/disable-flags";
 import type { Tick } from "../tick";
 
 /**
@@ -140,7 +139,7 @@ export type DebugCommand =
   | ClearUnitsCommand
   | ResetMapCommand
   | BeginChannelCommand
-  | SetDisableFlagCommand;
+  | ApplyStatusCommand;
 
 /** The debug twin of `noop`: proves the panel's path through the buffer and the log. */
 export type DebugNoopCommand = Readonly<{
@@ -257,15 +256,16 @@ export type BeginChannelCommand = Readonly<{
 }>;
 
 /**
- * Puts the status that sets `disable` on the hero for `ticks`, as a row of its status table,
- * so the validator's disable branches are testable before any status definition exists. The
- * flag is true from the end of the tick that consumes the command until the row expires.
+ * Puts the status `statusId` names on the hero for `ticks`, as a row of its status table, at
+ * the hero's current orb levels and from nobody. Refused when no status has the id, and by
+ * everything the status rule refuses an application for. Whatever the status blocks is blocked
+ * from the tick after the one that consumed the command until the row expires.
  */
-export type SetDisableFlagCommand = Readonly<{
-  kind: "set_disable_flag";
+export type ApplyStatusCommand = Readonly<{
+  kind: "apply_status";
   tick: Tick;
   timestamp: number;
-  disable: DisableId;
+  statusId: string;
   ticks: number;
 }>;
 
@@ -303,7 +303,7 @@ const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
   "clear_units",
   "reset_map",
   "begin_channel",
-  "set_disable_flag",
+  "apply_status",
 ]);
 
 /** Whether `command` is a developer-panel intent. */

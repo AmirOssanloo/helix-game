@@ -20,6 +20,9 @@ import { applyStatus } from "../statuses/status.system";
 /** Scratch for the legal point one spawned unit lands on, reused for every spawn. */
 const landing: Vec2 = { x: 0, y: 0 };
 
+/** The levels a status the panel applies is read at when the hero has no form to read them from. */
+const NO_ORB_LEVELS: readonly number[] = [];
+
 /**
  * Puts `count` generic units around `position` in a square grid two hulls apart, each cell
  * resolved to a legal point, so a spawn on an obstacle or off the map lands beside it and
@@ -182,7 +185,7 @@ export const applyDebugCommand = (
     case "set_orb_levels":
     case "kill_hero":
     case "begin_channel":
-    case "set_disable_flag":
+    case "apply_status":
       break;
   }
 
@@ -246,11 +249,14 @@ export const applyDebugCommand = (
     case "begin_channel":
       return beginChannelFor(world, hero, command.ticks);
 
-    case "set_disable_flag": {
+    case "apply_status": {
       const result = applyStatus(
-        hero,
-        command.disable,
-        world.tick + command.ticks,
+        world,
+        heroId,
+        command.statusId,
+        command.ticks,
+        null,
+        form === null ? NO_ORB_LEVELS : form.kit.orbLevels,
       );
 
       return result === "ok" ? null : result;

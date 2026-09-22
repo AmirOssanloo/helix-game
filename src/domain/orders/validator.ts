@@ -6,14 +6,13 @@ import { ORB_COUNT } from "../entities/world-state";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/status.system";
 import type { DisableFlags } from "./disable-flags";
-import { isDisableId } from "./disable-flags";
 
 /**
  * Why a command was refused. A disable names the flag that blocked it, and `dead` says the
  * unit is between death and respawn, where nothing responds. The invalid reasons are boundary
  * checks on a payload no mapper or panel should produce and a replay file might: a slot
- * outside the six keys, a point that is not finite, an amount below zero, a damage type or a
- * disable no rule knows, an orb level outside the cap, a count or a duration below one. The
+ * outside the six keys, a point that is not finite, an amount below zero, a damage type no
+ * rule knows, an orb level outside the cap, a count or a duration below one. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -23,7 +22,7 @@ import { isDisableId } from "./disable-flags";
  * Then the level rule's, when a skill point is spent or a level granted: there is none to
  * spend, the slot holds no orb skill, the skill is at its cap, or the level is. The last
  * are the debug commands' at apply: the pool has no room for the spawn, a channel is
- * already running, or the status table has no row for the disable.
+ * already running, or the status rule refused the application.
  */
 export type RefusalReason =
   | "stunned"
@@ -35,7 +34,6 @@ export type RefusalReason =
   | "invalid_destination"
   | "invalid_amount"
   | "invalid_damage_type"
-  | "invalid_disable"
   | "invalid_orb_level"
   | "invalid_count"
   | "invalid_duration"
@@ -206,11 +204,11 @@ export const validateCommand = (
 
 /**
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
- * type and a disable the rules know, one non-negative integer level per orb, a count and a
- * duration of at least one, and a finite position. No disable and no state refuses a debug
- * command; the panel is not the unit acting. What the world can take, room in the pool, a
- * level below the cap, an orb level under its cap, no channel running, the handler refuses
- * when the command applies, with the same kind of reason.
+ * type the rules know, one non-negative integer level per orb, a count and a duration of at
+ * least one, and a finite position. No disable and no state refuses a debug command; the
+ * panel is not the unit acting. What the world can take, room in the pool, a level below the
+ * cap, an orb level under its cap, no channel running, a status with the id it names, the
+ * handler refuses when the command applies, with the same kind of reason.
  */
 export const validateDebugCommand = (
   command: DebugCommand,
@@ -249,17 +247,8 @@ export const validateDebugCommand = (
     case "begin_channel":
       return isCount(command.ticks) ? "ok" : "invalid_duration";
 
-    case "set_disable_flag": {
-      if (!isDisableId(command.disable)) {
-        return "invalid_disable";
-      }
-
-      if (!isCount(command.ticks)) {
-        return "invalid_duration";
-      }
-
-      return "ok";
-    }
+    case "apply_status":
+      return isCount(command.ticks) ? "ok" : "invalid_duration";
 
     case "debug_noop":
     case "heal":

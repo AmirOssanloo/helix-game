@@ -2,8 +2,10 @@ import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
 import type { Attributes, Stats } from "../definitions/form-def";
+import { ORB_IDS } from "../definitions/orb-id";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
+import { clearDisableFlags, createDisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
 import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
@@ -30,12 +32,17 @@ export type Resources = {
   mana: number;
 };
 
-/** One row of a unit's status table. A `null` definition id is an empty row. */
+/**
+ * One row of a unit's status table. A `null` definition id is an empty row. `orbLevels` is the
+ * applier's three orb levels as they stood when the status landed, in orb order, which is what
+ * every table on the definition is read at for as long as the row lasts.
+ */
 export type StatusEntry = {
   definitionId: string | null;
   endsAtTick: Tick;
   stacks: number;
   sourceId: EntityId | null;
+  orbLevels: number[];
 };
 
 /**
@@ -167,9 +174,10 @@ const createStatusEntry = (): StatusEntry => ({
   endsAtTick: 0,
   stacks: 0,
   sourceId: null,
+  orbLevels: ORB_IDS.map(() => 0),
 });
 
-/** Puts the row back to empty. */
+/** Puts the row back to empty. The level snapshot keeps its last values; the definition id says whether the row is live. */
 export const clearStatusEntry = (entry: StatusEntry): void => {
   entry.definitionId = null;
   entry.endsAtTick = 0;
@@ -262,12 +270,7 @@ const createUnit = (): Unit => {
       attackSpeed: 0,
       magicResistance: 0,
     },
-    disables: {
-      stunned: false,
-      silenced: false,
-      rooted: false,
-      disarmed: false,
-    },
+    disables: createDisableFlags(),
     resources: { health: 0, mana: 0 },
     indestructible: false,
     cooldowns: new Map(),
@@ -322,10 +325,7 @@ const clearUnit = (unit: Unit): void => {
   unit.attributes.agility = 0;
   unit.attributes.intelligence = 0;
   clearStats(unit.stats);
-  unit.disables.stunned = false;
-  unit.disables.silenced = false;
-  unit.disables.rooted = false;
-  unit.disables.disarmed = false;
+  clearDisableFlags(unit.disables);
   unit.resources.health = 0;
   unit.resources.mana = 0;
   unit.indestructible = false;

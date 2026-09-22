@@ -14,6 +14,8 @@ type EventFields = {
   /** An orb index in slot-key order, Q, W, E as 0, 1, 2. */
   orb: number;
   abilityId: string | null;
+  /** The status the event is about. */
+  statusId: string | null;
   /** A slot key, 1 to 6 in the order Q, W, E, R, D, F. */
   slot: number;
   reason: RefusalReason | null;
@@ -38,7 +40,9 @@ export type DomainEvent =
   | CastCommittedEvent
   | CommandRefusedEvent
   | UnitDamagedEvent
-  | UnitDiedEvent;
+  | UnitDiedEvent
+  | StatusAppliedEvent
+  | StatusExpiredEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -64,6 +68,12 @@ export type UnitDamagedEvent = EventFields & { kind: "unit_damaged" };
 /** `unitId`'s health reached zero and the death system took it, once, at the end of the tick. `sourceId` is the unit that landed the last hit, or `null`. */
 export type UnitDiedEvent = EventFields & { kind: "unit_died" };
 
+/** `statusId` landed on `unitId` from `sourceId`, or was refreshed or stacked on it: the row is live and its end tick is the one just written. */
+export type StatusAppliedEvent = EventFields & { kind: "status_applied" };
+
+/** `statusId`'s end tick came and its row on `unitId` was emptied. `sourceId` is the unit that applied it, or `null`. */
+export type StatusExpiredEvent = EventFields & { kind: "status_expired" };
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -78,6 +88,7 @@ export const createDomainEvent = (): EventSlot => ({
   tick: 0,
   orb: -1,
   abilityId: null,
+  statusId: null,
   slot: 0,
   reason: null,
   unitId: null,
@@ -95,6 +106,7 @@ export const copyDomainEvent = (
   target.tick = source.tick;
   target.orb = source.orb;
   target.abilityId = source.abilityId;
+  target.statusId = source.statusId;
   target.slot = source.slot;
   target.reason = source.reason;
   target.unitId = source.unitId;
@@ -109,6 +121,7 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.tick = 0;
   event.orb = -1;
   event.abilityId = null;
+  event.statusId = null;
   event.slot = 0;
   event.reason = null;
   event.unitId = null;

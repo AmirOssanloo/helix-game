@@ -40,7 +40,7 @@ When two people call the same thing different names, the names leak into the cod
 | One rendered picture | **Frame** | Tick |
 | Physical, magical, or pure | **Damage type** | Element, school |
 | A lasting condition on a unit | **Status** | Buff, debuff, modifier, effect (see below) |
-| A status that blocks something: stun, silence, root, disarm | **Disable** | Crowd control, CC |
+| A status that blocks something: stun, silence, root, disarm, lift | **Disable** | Crowd control, CC |
 | What a status does when its unit takes or deals damage, an effect list on the definition | **Damage hook** | Trigger, proc, on-hit |
 | A short-lived visual thing with no rules of its own | **Effect** | Particle, VFX |
 | One of the six things the pipeline knows how to do by name: damage an area, apply a status, spawn a projectile, a zone, or a unit, displace | **Primitive** | Operation, verb, action |

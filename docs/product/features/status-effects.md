@@ -39,7 +39,7 @@ Every status on a unit shows as an icon above it ([HUD](./hud.md)). A disable on
 
 ## The disable matrix
 
-Which status blocks which key, order, and cast state is written as one table: every status against Q, W, E, R, D, F, move, attack-target, attack-move, stop, a cast point in progress, and a targeting cursor open. Each cell is a test. The matrix lives with the status definitions under `src/content/statuses/` and the rules that read it live in the hero's order validation. Until it is written, the table above is the contract.
+Which status blocks which key, order, and cast state is one table with a cell per pair: every status against Q, W, E, R, D, F, move, attack-target, attack-move, stop, a cast point in progress, and a targeting cursor open. Each cell is a test. The matrix is data in two halves: each status definition under `src/content/statuses/` names the flags it raises, and the validator beside the order state machine decides which command each flag refuses. The table above says what the two halves have to add up to.
 
 ## States and edge cases
 

@@ -3,6 +3,7 @@ import { tuningTable } from "@content/public";
 import type { DisableFlags, KitState } from "@domain/public";
 import {
   createAbilityRequest,
+  createDisableFlags,
   createSlotDescriptor,
   createSpellTable,
   createTuningState,
@@ -19,12 +20,7 @@ const TUNING = createTuningState({
   invoke_cd_per_orb_level: 0.3,
 });
 
-const NO_DISABLES: DisableFlags = {
-  stunned: false,
-  silenced: false,
-  rooted: false,
-  disarmed: false,
-};
+const NO_DISABLES: DisableFlags = createDisableFlags();
 
 /** The composer's whole clock at three orb levels: 7.0 s less 0.9 s, at 30 Hz. */
 const INVOKE_CLOCK_AT_THREE_LEVELS = 183;

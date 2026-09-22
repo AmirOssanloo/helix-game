@@ -21,7 +21,7 @@ Every action on the panel that changes the world is a command that goes through 
 | Set orb levels | Sets Quartz, Whorl, and Ember to chosen levels, 0 to 7 |
 | Infinite mana | Casts never spend mana |
 | No cooldowns | Every cooldown reads as ready |
-| Apply status | Puts a chosen disable on the hero for a chosen duration, as a row of its status table |
+| Apply status | Puts a chosen status on the hero for a chosen duration, as a row of its status table |
 | Kill hero | Health to zero, to test death and respawn |
 | Begin channel | Puts the hero into the channeling state for a chosen duration, to test what interrupts a channel |
 
@@ -64,6 +64,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Tick number | The simulation's clock |
 | Last refusal | The reason the last refused command was refused |
 | Last damage | What the last hit landed after mitigation, and its damage type |
+| Last status | The last status to land or end, and the unit it was on |
 | Deaths | How many units have died since the page was loaded |
 
 ## Overlays

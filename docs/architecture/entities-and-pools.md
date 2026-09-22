@@ -56,7 +56,7 @@ Every reference between entities is an id, never an object. A system that holds 
 - **Other entities, by generational id.** A summon's owner. A projectile's target. A zone's caster.
 - **Its own mutable state.** Position — previous and current — facing, order, resources, cooldown clocks, and a status table.
 
-**The status table** is per unit: a small fixed array of entries, each referencing a status definition and holding the tick it ends and its stacks. The definition's stack rule decides what a second application does; the table just holds it.
+**The status table** is per unit: a small fixed array of entries, each referencing a status definition and holding the tick it ends, its stacks, the unit that applied it, and that applier's orb levels, which every table on the definition is read at. The definition's stack rule decides what a second application does; the table just holds it.
 
 ---
 

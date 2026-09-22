@@ -147,10 +147,10 @@ describe("death", () => {
   it("clears the status table", () => {
     const { world, hero } = arrange();
     submit(world, {
-      kind: "set_disable_flag",
+      kind: "apply_status",
       tick: world.view.tick,
       timestamp: world.view.tick,
-      disable: "root",
+      statusId: "root",
       ticks: 100,
     });
     world.tick();

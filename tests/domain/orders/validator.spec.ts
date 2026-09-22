@@ -218,8 +218,46 @@ describe.each(["attack_windup", "ability_cast_point"] as const)(
   },
 );
 
+describe.each(["lifted", "untargetable", "aggroHidden", "displaced"] as const)(
+  "validateCommand while %s",
+  (flag) => {
+    it.each(ACCEPTED_ON_A_FRESH_UNIT)(
+      "accepts %s: the flag is read where it acts, not by the validator",
+      (_name, command) => {
+        const unit = unitIn();
+        unit.disables[flag] = true;
+
+        expect(validateCommand(unit, command)).toBe("ok");
+      },
+    );
+  },
+);
+
+describe("validateCommand while lifted by a status that stuns", () => {
+  it.each(EVERY_COMMAND)(
+    "refuses %s: a lift is a stun with the unit out of reach",
+    (_name, command) => {
+      const unit = unitIn();
+      unit.disables.lifted = true;
+      unit.disables.untargetable = true;
+      unit.disables.stunned = true;
+
+      expect(validateCommand(unit, command)).toBe("stunned");
+    },
+  );
+});
+
 describe("validateCommand on a skill-point spend", () => {
-  it.each(["stunned", "silenced", "rooted", "disarmed"] as const)(
+  it.each([
+    "stunned",
+    "silenced",
+    "rooted",
+    "disarmed",
+    "lifted",
+    "untargetable",
+    "aggroHidden",
+    "displaced",
+  ] as const)(
     "accepts it while %s: a level is not something the unit does",
     (flag) => {
       const unit = unitIn();
@@ -338,11 +376,11 @@ const beginChannel = (ticks: number): DebugCommand => ({
   ticks,
 });
 
-const setDisableFlag = (disable: string, ticks: number): DebugCommand => ({
-  kind: "set_disable_flag",
+const applyStatus = (statusId: string, ticks: number): DebugCommand => ({
+  kind: "apply_status",
   tick: 0,
   timestamp: 0,
-  disable: disable as "stun",
+  statusId,
   ticks,
 });
 
@@ -363,7 +401,8 @@ describe("validateDebugCommand on a well-formed payload", () => {
     ["clear_units", debug("clear_units")],
     ["reset_map", debug("reset_map")],
     ["begin_channel", beginChannel(1)],
-    ["set_disable_flag", setDisableFlag("root", 1)],
+    ["apply_status", applyStatus("root", 1)],
+    ["apply_status naming no known status", applyStatus("sleep", 1)],
   ])("accepts %s", (_name, command) => {
     expect(validateDebugCommand(command)).toBe("ok");
   });
@@ -387,8 +426,7 @@ describe("validateDebugCommand on a malformed payload", () => {
       "invalid_destination",
     ],
     ["a channel of zero ticks", beginChannel(0), "invalid_duration"],
-    ["an unknown disable", setDisableFlag("sleep", 1), "invalid_disable"],
-    ["a disable of zero ticks", setDisableFlag("stun", 0), "invalid_duration"],
+    ["a status of zero ticks", applyStatus("stun", 0), "invalid_duration"],
   ] as const)("refuses %s", (_name, command, reason) => {
     expect(validateDebugCommand(command)).toBe(reason);
   });

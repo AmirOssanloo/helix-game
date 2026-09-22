@@ -16,7 +16,7 @@ const DASH = "-";
 const MS_DECIMALS = 2;
 const FPS_DECIMALS = 0;
 
-/** What the refusal line shows until a command is refused, and the damage line until a hit lands. */
+/** What the refusal line shows until a command is refused, the damage line until a hit lands, and the status line until one does. */
 const NOTHING_YET = "none";
 
 /** Decimals a damage amount is shown to: mitigation leaves fractions, and the tenth is enough to read one. */
@@ -39,7 +39,8 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
  * The readouts group: every measurement the rings hold, as mean and max over the last second
  * for the timings and as the latest sample for the counts, plus the tick number from the view
  * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
- * with what mitigation left of it, and how many units have died. The ring stores samples;
+ * with what mitigation left of it, the last status to land or end and whom it was on, and how
+ * many units have died. The ring stores samples;
  * the statistics are computed here, on each refresh, and nowhere in the simulation. Draw
  * calls show a dash while nothing has counted them.
  */
@@ -59,6 +60,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
   const tick = readoutRow("Tick");
   const refusal = readoutRow("Last refusal");
   const damage = readoutRow("Last damage");
+  const status = readoutRow("Last status");
   const deaths = readoutRow("Deaths");
   const table = element("table", "dev-readouts", [
     tickTime.row,
@@ -75,10 +77,12 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
     tick.row,
     refusal.row,
     damage.row,
+    status.row,
     deaths.row,
   ]);
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
+  let lastStatus = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -91,6 +95,14 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
 
       if (event.kind === "unit_damaged" && event.damageType !== null) {
         lastDamage = `${event.amount.toFixed(DAMAGE_DECIMALS)} ${event.damageType}`;
+      }
+
+      if (event.kind === "status_applied" && event.statusId !== null) {
+        lastStatus = `${event.statusId} on ${String(event.unitId)}`;
+      }
+
+      if (event.kind === "status_expired" && event.statusId !== null) {
+        lastStatus = `${event.statusId} off ${String(event.unitId)}`;
       }
 
       if (event.kind === "unit_died") {
@@ -133,6 +145,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
       tick.value.textContent = String(api.view.tick);
       refusal.value.textContent = lastRefusal;
       damage.value.textContent = lastDamage;
+      status.value.textContent = lastStatus;
       deaths.value.textContent = String(deathCount);
     },
   };

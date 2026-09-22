@@ -18,6 +18,7 @@ import {
   createProjectilePool,
   createSpatialHash,
   createSpellTable,
+  createStatusTable,
   createTuningState,
   createUnitPool,
   createZonePool,
@@ -55,7 +56,8 @@ const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
 
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
- * the hero's form records and the spell table built over it, both switches off, no hero yet,
+ * the hero's form records and the spell and status tables built over it, both switches off,
+ * no hero yet,
  * and the random source at the start of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
@@ -66,6 +68,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     hero: registry.hero,
     forms: createFormRecords(registry.hero, registry.forms, tuning),
     spells: createSpellTable(registry.spells, tuning),
+    statuses: createStatusTable(registry.statuses, tuning),
     tuning,
     debug: { noCooldowns: false, infiniteMana: false },
     random: createRandomState(seed),

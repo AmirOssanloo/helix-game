@@ -65,6 +65,9 @@ const reachWaypoint = (
  * tunables are read in units per tick and radians per tick, converted once when they entered
  * the world.
  *
+ * A unit a push is carrying neither turns nor translates itself: it keeps its order and
+ * resumes walking it when the push ends.
+ *
  * The system also keeps the spatial hash true to where units stand: it rebuilds the hash when
  * the cell size tunable has changed, and after translating it moves every live unit to the
  * cell its position is in, which is a no-op for a unit that stayed in its cell.
@@ -90,6 +93,10 @@ export const movementSystem = (world: World): void => {
     const unit = units.at(index);
 
     if (unit === null || !isUnderway(unit) || !hasDestination(unit)) {
+      continue;
+    }
+
+    if (unit.disables.displaced) {
       continue;
     }
 

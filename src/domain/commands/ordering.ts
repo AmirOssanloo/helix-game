@@ -46,7 +46,7 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "clear_units":
     case "reset_map":
     case "begin_channel":
-    case "set_disable_flag":
+    case "apply_status":
     case "set_tuning":
       return null;
   }

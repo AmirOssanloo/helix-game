@@ -6,7 +6,7 @@ import type {
   FormRecord,
   Unit,
 } from "@domain/public";
-import { applyStatus, startCooldown } from "@domain/public";
+import { applyStatus, createDisableFlags, startCooldown } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -19,9 +19,6 @@ import {
   tickUntil,
 } from "../helpers";
 
-/** The slot key a spec presses: Q, an orb. */
-const Q = 1;
-
 /** The factory form's health and mana at level one with no modifier, and no regeneration to blur a number. */
 const FULL_HEALTH = 300;
 const FULL_MANA = 150;
@@ -30,6 +27,24 @@ const form = makeFormDef.build();
 
 /** A wall standing across x 1000 to 1200 on the map a spawn is aimed at. */
 const WALL = { minX: 1000, minY: -1000, maxX: 1200, maxY: 1000 };
+
+/** Eight statuses that block nothing, to fill a table with without changing what the hero may do. */
+const FILLERS: readonly string[] = [
+  "hoarfrost",
+  "wane",
+  "wane_chill",
+  "glacier_chill",
+  "quicken",
+  "burn",
+  "slow",
+  "knockback",
+];
+
+/** Long enough that nothing a spec ticks reaches the end of a filler. */
+const LONG_TICKS = 1000;
+
+/** What the panel applies a status at: no orb has a level. */
+const NO_ORB_LEVELS: readonly number[] = [];
 
 type Arranged = {
   world: Simulation;
@@ -627,222 +642,37 @@ describe("begin_channel", () => {
   });
 });
 
-describe("set_disable_flag", () => {
-  const move = (world: Simulation): void => {
-    submit(world, {
-      kind: "move",
-      tick: world.view.tick,
-      timestamp: world.view.tick,
-      destination: { x: 500, y: 0 },
-    });
-  };
-
-  const attackTarget = (world: Simulation): void => {
-    submit(world, {
-      kind: "attack_target",
-      tick: world.view.tick,
-      timestamp: world.view.tick,
-      targetId: 7,
-    });
-  };
-
-  const stop = (world: Simulation): void => {
-    submit(world, {
-      kind: "stop",
-      tick: world.view.tick,
-      timestamp: world.view.tick,
-    });
-  };
-
-  const slot = (world: Simulation): void => {
-    submit(world, {
-      kind: "slot",
-      tick: world.view.tick,
-      timestamp: world.view.tick,
-      slot: Q,
-    });
-  };
-
-  it("sets the flag from the end of the tick that consumes it", () => {
+describe("apply_status", () => {
+  it("raises the flags its status sets on the tick that consumes it", () => {
     const { world, hero } = arrange();
 
     debug(
       world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 3 }),
+      stamp(world, { kind: "apply_status", statusId: "stun", ticks: 3 }),
     );
     world.tick();
 
     expect(hero.disables).toEqual({
+      ...createDisableFlags(),
       stunned: true,
-      silenced: false,
-      rooted: false,
-      disarmed: false,
     });
-  });
-
-  it("clears the flag when the duration has run, and a move is taken again", () => {
-    const { world, hero, reader } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 3 }),
-    );
-    world.tick();
-
-    move(world);
-    world.tick();
-    move(world);
-    world.tick();
-    move(world);
-    world.tick();
-
-    expect(reasons(world, reader)).toEqual(["stunned", "stunned", "stunned"]);
-    expect(hero.disables.stunned).toBe(false);
-
-    move(world);
-    world.tick();
-
-    expect(hero.order.kind).toBe("move");
-  });
-
-  it("stun refuses a move, then a slot key, then a stop, each with its reason", () => {
-    const { world, hero, reader } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 50 }),
-    );
-    world.tick();
-
-    move(world);
-    world.tick();
-    slot(world);
-    world.tick();
-    stop(world);
-    world.tick();
-
-    expect(reasons(world, reader)).toEqual(["stunned", "stunned", "stunned"]);
-    expect(hero.order.kind).toBe("none");
-  });
-
-  it("stun clears a move under way at the end of the tick it lands, so the hero stands from then on", () => {
-    const { world, hero } = arrange();
-    move(world);
-    world.tick();
-    world.tick();
-
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 50 }),
-    );
-    world.tick();
-    const x = hero.curr.x;
-    world.tick();
-    world.tick();
-
-    expect(x).toBeGreaterThan(0);
-    expect(hero.order.kind).toBe("none");
-    expect(hero.state).toBe("idle");
-    expect(hero.curr.x).toBe(x);
-  });
-
-  it("silence refuses a slot key and lets a move through", () => {
-    const { world, hero, reader } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "silence", ticks: 50 }),
-    );
-    world.tick();
-
-    slot(world);
-    world.tick();
-    move(world);
-    world.tick();
-
-    expect(reasons(world, reader)).toEqual(["silenced"]);
-    expect(hero.order.kind).toBe("move");
-  });
-
-  it("root refuses a move and lets a slot key through", () => {
-    const { world, form, reader } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "root", ticks: 50 }),
-    );
-    world.tick();
-
-    move(world);
-    world.tick();
-    slot(world);
-    world.tick();
-
-    expect(reasons(world, reader)).toEqual(["rooted"]);
-    expect(form.kit.orbCount).toBe(1);
-  });
-
-  it("root clears a move under way, and the hero does not resume it when the root ends", () => {
-    const { world, hero } = arrange();
-    move(world);
-    world.tick();
-
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "root", ticks: 2 }),
-    );
-    world.tick();
-    const x = hero.curr.x;
-
-    tickUntil(world, () => !hero.disables.rooted, 10);
-    world.tick();
-
-    expect(hero.order.kind).toBe("none");
-    expect(hero.curr.x).toBe(x);
-  });
-
-  it("disarm refuses an attack on a target and lets a move through", () => {
-    const { world, hero, reader } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "disarm", ticks: 50 }),
-    );
-    world.tick();
-
-    attackTarget(world);
-    world.tick();
-    move(world);
-    world.tick();
-
-    expect(reasons(world, reader)).toEqual(["disarmed"]);
-    expect(hero.order.kind).toBe("move");
-  });
-
-  it("a second application refreshes: the later end wins", () => {
-    const { world, hero } = arrange();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 2 }),
-    );
-    world.tick();
-    debug(
-      world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 5 }),
-    );
-    world.tick();
-
-    expect(tickUntil(world, () => !hero.disables.stunned, 20)).toBe(5);
-    expect(hero.statuses.filter((row) => row.definitionId !== null)).toEqual(
-      [],
-    );
   });
 
   it("is refused with a reason when the status table is full", () => {
     const { world, hero, reader } = arrange();
+    const heroId = world.state.run.heroId;
 
-    for (let row = 0; row < hero.statuses.length; row += 1) {
-      applyStatus(hero, `status_${row}`, 1000);
+    if (heroId === null) {
+      throw new Error("The world has a hero");
+    }
+
+    for (const id of FILLERS) {
+      applyStatus(world.state, heroId, id, LONG_TICKS, null, NO_ORB_LEVELS);
     }
 
     debug(
       world,
-      stamp(world, { kind: "set_disable_flag", disable: "stun", ticks: 5 }),
+      stamp(world, { kind: "apply_status", statusId: "stun", ticks: 5 }),
     );
     world.tick();
 
@@ -850,20 +680,16 @@ describe("set_disable_flag", () => {
     expect(hero.disables.stunned).toBe(false);
   });
 
-  it("is refused with a reason for a disable no rule knows", () => {
+  it("is refused with a reason for a status no rule knows", () => {
     const { world, reader } = arrange();
-    const command: DebugCommand = {
-      kind: "set_disable_flag",
-      tick: 0,
-      timestamp: 0,
-      disable: "sleep" as "stun",
-      ticks: 5,
-    };
 
-    debug(world, command);
+    debug(
+      world,
+      stamp(world, { kind: "apply_status", statusId: "sleep", ticks: 5 }),
+    );
     world.tick();
 
-    expect(reasons(world, reader)).toEqual(["invalid_disable"]);
+    expect(reasons(world, reader)).toEqual(["unknown_status"]);
   });
 });
 
@@ -910,7 +736,7 @@ describe("every debug command", () => {
       stamp(world, { kind: "clear_units" }),
       stamp(world, { kind: "reset_map" }),
       stamp(world, { kind: "begin_channel", ticks: 2 }),
-      stamp(world, { kind: "set_disable_flag", disable: "root", ticks: 2 }),
+      stamp(world, { kind: "apply_status", statusId: "root", ticks: 2 }),
       stamp(world, { kind: "kill_hero" }),
     ];
 

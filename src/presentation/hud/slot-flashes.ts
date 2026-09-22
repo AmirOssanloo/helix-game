@@ -27,7 +27,6 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "invalid_destination":
     case "invalid_amount":
     case "invalid_damage_type":
-    case "invalid_disable":
     case "invalid_orb_level":
     case "invalid_count":
     case "invalid_duration":
@@ -46,6 +45,8 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "at_level_cap":
     case "pool_full":
     case "already_channeling":
+    case "unknown_status":
+    case "target_untargetable":
     case "status_table_full":
       return "refused";
   }

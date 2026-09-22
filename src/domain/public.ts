@@ -42,6 +42,7 @@ export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export {
   type AnyCommand,
   type ApplyDamageCommand,
+  type ApplyStatusCommand,
   type AttackMoveCommand,
   type AttackTargetCommand,
   type BeginChannelCommand,
@@ -60,7 +61,6 @@ export {
   type NoopCommand,
   type ResetMapCommand,
   type RestoreManaCommand,
-  type SetDisableFlagCommand,
   type SetOrbLevelsCommand,
   type SetTuningCommand,
   SLOT_COUNT,
@@ -185,6 +185,13 @@ export {
   entryAtLevel,
   type SpellRecord,
 } from "./definitions/spell-state";
+export {
+  amountAtOrbLevel,
+  createStatusTable,
+  type StatusDamageRecord,
+  type StatusModifierRecord,
+  type StatusRecord,
+} from "./definitions/status-state";
 export {
   EMBER_DAMAGE_KEYS,
   type EmberDamageKey,
@@ -367,10 +374,10 @@ export { movementSpeed } from "./movement/speed-stack";
 export { isInsideCone, turnToward } from "./movement/turn";
 export { commandSystem } from "./orders/command.system";
 export {
-  DISABLE_IDS,
+  clearDisableFlags,
+  createDisableFlags,
   type DisableFlags,
-  type DisableId,
-  isDisableId,
+  raiseDisable,
 } from "./orders/disable-flags";
 export type { Order, OrderKind, OrderState } from "./orders/order";
 export {
@@ -436,4 +443,5 @@ export {
   type StatusResult,
   statusSystem,
 } from "./statuses/status.system";
+export { type StatusWrite, writeStatus } from "./statuses/status-table";
 export type { Tick } from "./tick";

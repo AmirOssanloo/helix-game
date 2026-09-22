@@ -26,6 +26,9 @@ const COST = 50;
 /** The cast point and the backswing of the factory's spells: a tenth of a second at 30 Hz. */
 const CAST_POINT_TICKS = 3;
 
+/** Long enough that a stun outlasts a cast point and its backswing. */
+const STUN_TICKS = 30;
+
 const pointSpell = makeSpellDef.build({
   recipe: ["quartz", "whorl", "ember"],
   targeting: "point",
@@ -122,6 +125,16 @@ const stop = (world: Simulation): void => {
     kind: "stop",
     tick: world.view.tick,
     timestamp: world.view.tick,
+  });
+};
+
+const stun = (world: Simulation): void => {
+  submit(world, {
+    kind: "apply_status",
+    tick: world.view.tick,
+    timestamp: world.view.tick,
+    statusId: "stun",
+    ticks: STUN_TICKS,
   });
 };
 
@@ -269,7 +282,7 @@ describe("a command during the cast point", () => {
     castAt(world, pointSpell.id, 300, 0);
     world.tick();
 
-    hero.disables.stunned = true;
+    stun(world);
     ticks(world, CAST_POINT_TICKS + 1);
 
     expect(hero.state).toBe("idle");

@@ -1,8 +1,6 @@
 import {
   DAMAGE_TYPES,
-  DISABLE_IDS,
   isDamageType,
-  isDisableId,
   ORB_IDS,
   readTunable,
 } from "@domain/public";
@@ -42,7 +40,7 @@ export const heroGroup = (api: DevApi): PanelGroup => {
   const orbLevels: NumberField[] = ORB_IDS.map((orb) =>
     numberField(orb, ORB_LEVEL, WHOLE_STEP),
   );
-  const disable = selectField("Disable", DISABLE_IDS);
+  const status = selectField("Status", [...api.view.run.statuses.keys()]);
   const statusSeconds = numberField("Seconds", STATUS_SECONDS, WHOLE_STEP);
   const channelSeconds = numberField("Seconds", CHANNEL_SECONDS, WHOLE_STEP);
   const infiniteMana = checkboxField("Infinite mana", false, (): void => {
@@ -87,12 +85,12 @@ export const heroGroup = (api: DevApi): PanelGroup => {
 
   const applyStatus = (): void => {
     const seconds = readNumber(statusSeconds.input);
-    const id = disable.select.value;
+    const id = status.select.value;
 
-    if (seconds !== null && isDisableId(id)) {
+    if (seconds !== null && id !== "") {
       api.submit({
-        kind: "set_disable_flag",
-        disable: id,
+        kind: "apply_status",
+        statusId: id,
         ticks: ticksOf(api, seconds),
       });
     }
@@ -126,11 +124,7 @@ export const heroGroup = (api: DevApi): PanelGroup => {
         ...orbLevels.map((field) => field.row),
       ]),
       row([infiniteMana.row, noCooldowns.row]),
-      row([
-        button("Apply status", applyStatus),
-        disable.row,
-        statusSeconds.row,
-      ]),
+      row([button("Apply status", applyStatus), status.row, statusSeconds.row]),
       row([
         button("Kill hero", (): void => {
           api.submit({ kind: "kill_hero" });

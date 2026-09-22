@@ -4,6 +4,7 @@ import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
+import type { StatusRecord } from "../definitions/status-state";
 import type { EventSink } from "../events/domain-event";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
@@ -72,6 +73,8 @@ export type RunScope = {
   forms: FormRecord[];
   /** Every spell by id, with its durations in ticks, for the composer and the cast pipeline to read. */
   spells: ReadonlyMap<string, SpellRecord>;
+  /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */
+  statuses: ReadonlyMap<string, StatusRecord>;
   tuning: TuningState;
   debug: DebugFlags;
   random: RandomState;

@@ -21,7 +21,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | Layer | domain, content, simulation, tests |
 | Size | 1.5 |
 | Depends on | P2-S07-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The unit's status table (fixed size, entries with definition id, end tick, stacks, source id). `applyStatus` with the definition's stack rule (refresh resets the end tick, stack adds and resets, ignore drops) and a `status_applied` event; expiry on the end tick with `status_expired`; death clears the table. `statusSystem` early in the tick computing the unit's disable flags (stun, silence, root, disarm, lifted, untargetable, aggro_hidden) from the active entries and installing each status's modifiers into the modifier stack (slow into speed, damage over time into health each tick). The validator reads the flags. Per the status page: stun clears the order and cancels a cast; silence closes nothing in the domain (the mapper closes the cursor on reading the flag); root clears a move and refuses out-of-range casts; disarm blocks attacks; lift is stun plus untargetable; knockback keeps the order and blocks movement while displaced (the displacement itself is T02). Eight definitions under `src/content/statuses/` with stack rules per the page and a placeholder icon frame each. Rooted while lifted: lift wins, root keeps counting. Two stuns: the longer remaining wins.
 
@@ -39,6 +39,8 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new spell, effect, or enemy ability (status definitions).
 
 > **Note, 2026-09-21:** the status definitions are already data. P2-S07-T02 wrote the fourteen the catalogue lists under `src/content/statuses/`, with their flags, modifier tables, damage over time, the Hoarfrost hook, the Updraft expiry list, stack rules, and icon frames, and the content tier validates them. This ticket builds the table, the system, and the flags over them and changes a definition only where the system finds it wrong.
+
+> **Note, 2026-09-22:** four things came out differently and the ticket stands as edited here. The status entry also snapshots the applier's three orb levels, which the `StatusDef` docblock already promised and every modifier and damage table needs to be read at. The `set_disable_flag` debug command became `apply_status` carrying a status id, since a disable is no longer a thing of its own; the panel's control offers every status in run scope, and `DisableId` is gone. The disable flags are the eight `StatusFlag` members, not seven, so knockback's `displaced` has somewhere to live. And the stack spec is `tests/domain/statuses/status-stack.spec.ts`, not `tests/domain/combat/`, because a spec mirrors the folder its subject lives in. The status hooks and the expiry effect lists are not run here: the hook is P2-S10-T01's and the expiry list P2-S11-T01's, and both need the primitives.
 
 ---
 
@@ -120,7 +122,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | --- | --- |
 | Every disable-versus-action test green through real statuses | |
 | Zone pool at capacity behaves | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

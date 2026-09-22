@@ -7,12 +7,13 @@ import type { Unit } from "../entities/unit";
 import { clearStatusEntry, releaseUnit } from "../entities/unit";
 import type { FormRecord, World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { clearDisableFlags } from "../orders/disable-flags";
 import { die, respawn } from "../orders/state-machine";
 
 /** Scratch for the event a death announces, reused for every one. */
 const event = createDomainEvent();
 
-/** Empties the unit's status table, so nothing that was on it outlives it. */
+/** Empties the unit's status table and lowers everything it set, so nothing that was on it outlives it. */
 const clearStatuses = (unit: Unit): void => {
   for (let row = 0; row < unit.statuses.length; row += 1) {
     const entry = unit.statuses[row];
@@ -21,6 +22,8 @@ const clearStatuses = (unit: Unit): void => {
       clearStatusEntry(entry);
     }
   }
+
+  clearDisableFlags(unit.disables);
 };
 
 const announceDied = (world: World, unitId: EntityId): void => {

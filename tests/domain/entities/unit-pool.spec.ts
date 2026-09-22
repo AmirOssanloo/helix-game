@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pool, Unit } from "@domain/public";
 import {
+  createDisableFlags,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   PATH_CAPACITY,
@@ -35,6 +36,7 @@ describe("unit pool", () => {
       endsAtTick: 0,
       stacks: 0,
       sourceId: null,
+      orbLevels: [0, 0, 0],
     });
   });
 
@@ -61,12 +63,7 @@ describe("unit pool", () => {
     const unit = pool.acquire();
 
     expect(unit?.state).toBe("idle");
-    expect(unit?.disables).toEqual({
-      stunned: false,
-      silenced: false,
-      rooted: false,
-      disarmed: false,
-    });
+    expect(unit?.disables).toEqual(createDisableFlags());
   });
 
   it("clears every field on release so the slot reads like a fresh one", () => {

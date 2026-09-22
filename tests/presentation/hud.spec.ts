@@ -391,6 +391,7 @@ describe("refusal flashes", () => {
       tick: arranged.view.tick,
       orb: -1,
       abilityId: null,
+      statusId: null,
       slot,
       reason,
       unitId: null,

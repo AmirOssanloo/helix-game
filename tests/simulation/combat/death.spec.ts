@@ -20,6 +20,12 @@ const CORPSE_TICKS = tuningTable.corpse_delay * tuningTable.sim_hz;
 /** A hit that empties any unit this spec spawns. */
 const LETHAL = 1000;
 
+/** Long enough that nothing this spec ticks reaches the end of a status. */
+const STATUS_TICKS = 100;
+
+/** What the panel applies a status at: no orb has a level. */
+const NO_ORB_LEVELS: readonly number[] = [];
+
 type Arranged = {
   world: Simulation;
   unit: Unit;
@@ -105,7 +111,7 @@ describe("death", () => {
   it("clears the status table", () => {
     const { world, unit, id } = arrange();
 
-    applyStatus(unit, "root", world.view.tick + 100);
+    applyStatus(world.state, id, "root", STATUS_TICKS, null, NO_ORB_LEVELS);
     applyDamage(world.state, id, LETHAL, "pure", null);
     world.tick();
 
