@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { setStraightPath } from "@domain/public";
+import { acquireZone, setStraightPath } from "@domain/public";
 import type { OverlayToggles } from "@presentation/public";
 import { createOverlayToggles, DebugOverlays } from "@presentation/public";
 import type { EntityId, Rect } from "@shared/public";
@@ -30,7 +30,12 @@ const WALL: Rect = { minX: 200, minY: -100, maxX: 300, maxY: 100 };
 const PATH_END_X = 300;
 const PATH_END_Y = 0;
 
+/** Where a zone the spell-areas case puts down stands, and how wide the circular one is. */
+const ZONE_X = 120;
+const ZONE_RADIUS = 80;
+
 const COLLISION_FRAME = "ring_thick";
+const AREA_CIRCLE_FRAME = "ring_thin";
 const LINE_FRAME = "pixel";
 const CELL_FRAME = "square";
 const CELL_OUTLINE_FRAME = "square_outline";
@@ -218,6 +223,36 @@ describe("the debug overlays", () => {
     expect(shown).toHaveLength(1);
     expect(shown[0]?.text).toBe("3");
     expect(shown[0]?.rewrites).toBe(1);
+  });
+
+  it("outline every zone on the ground as the simulation holds it, whatever its shape", () => {
+    const arranged = arrange();
+    const circle = acquireZone(arranged.world.state, ZONE_X, 0, 0);
+    const box = acquireZone(arranged.world.state, 0, ZONE_X, Math.PI / 2);
+    const zones = arranged.world.state.map.zones;
+    const circleZone = circle === null ? null : zones.resolve(circle);
+    const boxZone = box === null ? null : zones.resolve(box);
+
+    if (circleZone === null || boxZone === null) {
+      throw new Error("The zone pool has room for both zones");
+    }
+
+    circleZone.circle.radius = ZONE_RADIUS;
+    boxZone.shape = { kind: "rectangle", length: 256, width: 64 };
+    arranged.toggles.spellAreas = true;
+    arranged.sync();
+
+    const rings = visible(arranged.quads, AREA_CIRCLE_FRAME);
+    const boxes = visible(arranged.quads, CELL_OUTLINE_FRAME);
+
+    expect(rings).toHaveLength(1);
+    expect(rings[0]?.x).toBe(ZONE_X);
+    expect(rings[0]?.scaleX).toBeCloseTo((ZONE_RADIUS * 2) / FRAME_WIDTH);
+    expect(rings[0]?.rotation).toBe(0);
+    expect(boxes).toHaveLength(1);
+    expect(boxes[0]?.scaleX).toBeCloseTo(256 / FRAME_WIDTH);
+    expect(boxes[0]?.scaleY).toBeCloseTo(64 / FRAME_WIDTH);
+    expect(boxes[0]?.rotation).toBe(Math.PI / 2);
   });
 
   it("count a miss instead of growing when an overlay wants more quads than its pool holds", () => {

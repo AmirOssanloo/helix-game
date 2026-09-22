@@ -532,6 +532,51 @@ describe("spawn_units", () => {
   });
 });
 
+describe("spawn_zone", () => {
+  it("puts one circle on the ground that waits out its delay and is released after its life", () => {
+    const { world } = arrange();
+
+    debug(
+      world,
+      stamp(world, {
+        kind: "spawn_zone",
+        position: { x: 300, y: 300 },
+        radius: 200,
+        delayTicks: 2,
+        lifetimeTicks: 3,
+      }),
+    );
+    tickUntil(world, (view) => view.map.zones.count === 1, 4);
+
+    const zone = world.view.map.zones.at(0);
+
+    expect(zone?.curr).toEqual({ x: 300, y: 300 });
+    expect(zone?.activeAtTick).toBe(2);
+    expect(zone?.expiresAtTick).toBe(5);
+
+    tickUntil(world, (view) => view.map.zones.count === 0, 10);
+  });
+
+  it("is refused with a reason for a lifetime of no ticks at all", () => {
+    const { world, reader } = arrange();
+
+    debug(
+      world,
+      stamp(world, {
+        kind: "spawn_zone",
+        position: { x: 0, y: 0 },
+        radius: 100,
+        delayTicks: 0,
+        lifetimeTicks: 0,
+      }),
+    );
+    world.tick();
+
+    expect(world.view.map.zones.count).toBe(0);
+    expect(reasons(world, reader)).toEqual(["invalid_duration"]);
+  });
+});
+
 describe("clear_units", () => {
   it("releases every unit but the hero", () => {
     const { world, hero } = arrange();

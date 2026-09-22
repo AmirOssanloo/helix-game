@@ -90,7 +90,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | Layer | domain, simulation, presentation, tests |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The zone pool's shape finished: caster id, ability id, shape, position and facing, lifetime, a delay before it becomes active, a per-tick rule key, per-tick state slots (a travel vector, a hit list for once-per-unit rules), and a tint. `zoneSystem` after movement: each active zone runs its rule (a named function in `domain/abilities/zones/` keyed like an effect: `damage_each_tick`, `aura_status`, `damage_once_then_expire`, `travel_line`, with more added by the spells that need them), expires on its tick, emits `zone_spawned` and `zone_expired`. The `spawn_zone` primitive. A `zone.view.ts` at the ground band drawing the shape frame scaled, and the spell-areas overlay reading the same data. A `spawn_zone` debug command for the panel.
 
@@ -106,6 +106,22 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · Anything under `src/presentation`.
 
 > **Note, 2026-09-21:** the catalogue replaced the zone rule registry with two effect lists on the `spawn_zone` entry, run once on activation and once per tick with the zone as context, so a zone's rules are primitives with `target: zone` or a named effect and there is one registry of named functions, not two. The `aura_status`, `damage_each_tick`, and `damage_once_then_expire` rules become apply-status and damage-area entries in those lists; the travel is the zone's `motion`. Section 7.1 of `docs/product/specs/spell-catalogue.md` has the fields.
+
+> **Note, 2026-09-22:** seven things came out differently and the ticket stands as edited above.
+>
+> **There is no zone rule registry.** The 2026-09-21 note above is what was built: a zone keeps the two effect lists its entry gives it and the effect runner runs them, so `damage_each_tick`, `aura_status`, `damage_once_then_expire`, and `travel_line` are not functions anywhere. The first three are a damage-area or an apply-status entry with `target: zone`, and the travel is the zone's motion, computed into a per-tick step at spawn.
+>
+> **A zone holds the ability, not an ability id.** Its lists run with the zone as the cast context, and a context names an `AbilityDef`; the definition carries its own id, so a second field for it would be the same fact twice.
+>
+> **A zone's shape is held by reference, with a circle of its own behind it.** A zone from an effect entry points at the entry's shape, which is content and never changes. A zone given a radius — the panel's — points at `circle`, the slot's own, so two zones never share one area. `shapeExtent` moved from the target collection into `domain/movement/shapes.ts`, where the collection and the zone view both read it.
+>
+> **A caster-anchored zone rides the caster.** The catalogue says a zone anchored on the caster moves with it, so the zone carries a `followsCaster` and the system puts it where the caster stands each tick rather than only at spawn.
+>
+> **Every event gained a `zoneId`.** `zone_spawned` and `zone_expired` are about a zone, not a unit, and the ring is one shape. The definition of done asks that a new event have a reader, so the panel's readouts grew a **Last zone** row beside Last status.
+>
+> **The system sits between collision and death.** "After movement" leaves two places; it runs after collision so a rule reads where the tick's pushes and walks left every unit, and before death so damage a zone dealt is counted on the tick it dealt it.
+>
+> **The panel's zone is bare.** `spawn_zone` carries a position, a radius, a delay, and a lifetime, and the zone it makes has no ability and no caster, so it runs nothing. It is its own **Zones** group rather than a row of Units, and it exists to drive the pool, the view, and the spell-areas overlay before a spell casts one.
 
 ---
 
@@ -136,8 +152,8 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | Check | Result |
 | --- | --- |
 | Every disable-versus-action test green through real statuses | |
-| Zone pool at capacity behaves | |
-| Actual days per ticket | T01 0.5 · T02 0.5 · T03 · T04 |
+| Zone pool at capacity behaves | Yes: the sixty-fifth spawn returns nothing, the pool counts the miss, and the effect list runs on |
+| Actual days per ticket | T01 0.5 · T02 0.5 · T03 0.5 · T04 |
 
 ## Risks in this sprint
 

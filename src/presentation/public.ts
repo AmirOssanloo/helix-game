@@ -96,6 +96,12 @@ export {
   type UnitViewPool,
 } from "./views/unit.view";
 export { type View, ViewPool } from "./views/view-pool";
+export {
+  createZoneViewPool,
+  syncZoneViews,
+  ZoneView,
+  type ZoneViewPool,
+} from "./views/zone.view";
 
 /** Reads the world view and writes sprites, once per frame, with the interpolation alpha between ticks. */
 export type ViewSync = (world: WorldView, alpha: number) => void;

@@ -2,12 +2,13 @@ import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { applyDamage } from "../combat/damage";
-import type { DebugCommand } from "../commands/command";
+import type { DebugCommand, SpawnZoneCommand } from "../commands/command";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import { acquireUnit, releaseUnit } from "../entities/unit";
 import type { World } from "../entities/world-state";
+import { acquireZone } from "../entities/zone";
 import { resetMapScope } from "../map/map-scope";
 import { radiusClassOf } from "../map/walkability";
 import { beginChannel } from "../orders/state-machine";
@@ -22,6 +23,13 @@ const landing: Vec2 = { x: 0, y: 0 };
 
 /** The levels a status the panel applies is read at when the hero has no form to read them from. */
 const NO_ORB_LEVELS: readonly number[] = [];
+
+/** A zone the panel spawns is turned nowhere: it is a circle, which reads the same at every facing. */
+const NO_FACING = 0;
+
+/** How a zone with no ability behind it is drawn: the thin ring, in white, since no definition says otherwise. */
+const DEBUG_ZONE_FRAME = "ring_thin";
+const DEBUG_ZONE_TINT = 0xffffff;
 
 /**
  * Puts `count` generic units around `position` in a square grid two hulls apart, each cell
@@ -64,6 +72,38 @@ const spawnUnits = (
 
     assert(id !== null, "A pool with room for the count takes every spawn");
   }
+
+  return null;
+};
+
+/**
+ * Puts one bare zone on the ground where the command names: a circle of its radius that
+ * stands still, draws through its delay, and is released after its lifetime. It carries no
+ * ability and no caster, so the zone system runs nothing for it. Refused, with nothing
+ * spawned, when the zone pool is full.
+ */
+const spawnDebugZone = (
+  world: World,
+  command: SpawnZoneCommand,
+): RefusalReason | null => {
+  const id = acquireZone(
+    world,
+    command.position.x,
+    command.position.y,
+    NO_FACING,
+  );
+  const zone = id === null ? null : world.map.zones.resolve(id);
+
+  if (zone === null) {
+    return "pool_full";
+  }
+
+  zone.circle.radius = command.radius;
+  zone.shape = zone.circle;
+  zone.activeAtTick = world.tick + command.delayTicks;
+  zone.expiresAtTick = zone.activeAtTick + command.lifetimeTicks;
+  zone.frame = DEBUG_ZONE_FRAME;
+  zone.tint = DEBUG_ZONE_TINT;
 
   return null;
 };
@@ -176,6 +216,9 @@ export const applyDebugCommand = (
       resetMapScope(world);
 
       return null;
+
+    case "spawn_zone":
+      return spawnDebugZone(world, command);
 
     case "apply_damage":
     case "drain_mana":

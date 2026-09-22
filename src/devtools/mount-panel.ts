@@ -10,6 +10,7 @@ import { readoutsGroup } from "./readouts-group";
 import { simulationGroup } from "./simulation-group";
 import { tuningGroup } from "./tuning-group";
 import { unitsGroup } from "./units-group";
+import { zonesGroup } from "./zones-group";
 
 /** How often the readouts are retyped while the panel is open: a few times a second. */
 const REFRESH_INTERVAL_MS = 250;
@@ -70,6 +71,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     { key: "tuning", title: "Tuning", group: tuningGroup(api) },
     { key: "simulation", title: "Simulation", group: simulationGroup(api) },
     { key: "units", title: "Units", group: unitsGroup(api, memory, remember) },
+    { key: "zones", title: "Zones", group: zonesGroup(api) },
     {
       key: "overlays",
       title: "Overlays",

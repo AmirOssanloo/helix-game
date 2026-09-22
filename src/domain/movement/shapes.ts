@@ -1,4 +1,5 @@
 import { shortestArc } from "@shared/public";
+import type { ShapeDef } from "../definitions/effect-def";
 
 /**
  * The exact test for the three areas an effect names: a circle by radius, a rectangle by its
@@ -8,7 +9,8 @@ import { shortestArc } from "@shared/public";
  *
  * Pure arithmetic over plain numbers, so a caller tests a candidate the spatial hash proposed
  * without a world and a spec walks the boundaries without one either. The boundary counts as
- * covered in all three, so a unit standing exactly on the edge is hit.
+ * covered in all three, so a unit standing exactly on the edge is hit. Beside them, the one
+ * measure a definition's shape is read for without placing it: how far it reaches.
  */
 
 /** A length or an angle given whole is used from the centre, which is half of it. */
@@ -85,4 +87,25 @@ export const coneCovers = (
   }
 
   return Math.abs(shortestArc(facing, Math.atan2(dy, dx))) <= halfAngle;
+};
+
+/**
+ * How far `shape` reaches from where it is placed: the radius of the smallest circle around
+ * it. It is what a query asks the spatial hash for before the exact test narrows the answer,
+ * and what a view asks to know whether the shape is on screen at all.
+ */
+export const shapeExtent = (shape: ShapeDef): number => {
+  switch (shape.kind) {
+    case "circle":
+      return shape.radius;
+
+    case "rectangle":
+      return (
+        Math.sqrt(shape.length * shape.length + shape.width * shape.width) /
+        HALF
+      );
+
+    case "cone":
+      return shape.length;
+  }
 };

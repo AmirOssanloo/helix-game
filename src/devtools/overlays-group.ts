@@ -15,6 +15,7 @@ const OVERLAYS: readonly Readonly<{
   { key: "pathLines", label: "Path lines" },
   { key: "walkabilityGrid", label: "Walkability grid" },
   { key: "hashCells", label: "Spatial hash cells" },
+  { key: "spellAreas", label: "Spell areas" },
 ];
 
 /**

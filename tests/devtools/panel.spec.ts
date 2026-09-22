@@ -71,6 +71,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     pathLines: false,
     walkabilityGrid: false,
     hashCells: false,
+    spellAreas: false,
   };
 
   const api = createDevApi({

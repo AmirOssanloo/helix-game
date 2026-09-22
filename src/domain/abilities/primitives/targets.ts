@@ -10,6 +10,7 @@ import {
   coneCovers,
   coneHalfAngle,
   rectangleCovers,
+  shapeExtent,
 } from "../../movement/shapes";
 import { createCandidateBuffer } from "../../movement/spatial-hash";
 import type { Cast } from "../cast-context";
@@ -22,9 +23,6 @@ import type { Cast } from "../cast-context";
  * shallow.
  */
 const COLLECTION_DEPTH = 4;
-
-/** A shape's extent is given whole and measured from its centre, which is half of it. */
-const HALF = 2;
 
 /** Per level: the ids the hash proposed, and the ids the exact test kept. */
 const candidates: EntityId[][] = [];
@@ -72,23 +70,6 @@ export const targetAt = (level: number, slot: number): EntityId => {
   assert(id !== undefined, "A slot below a collection's count holds an id");
 
   return id;
-};
-
-/** The radius of the smallest circle around the shape, which is what the hash is asked for. */
-const queryRadiusOf = (shape: ShapeDef): number => {
-  switch (shape.kind) {
-    case "circle":
-      return shape.radius;
-
-    case "rectangle":
-      return (
-        Math.sqrt(shape.length * shape.length + shape.width * shape.width) /
-        HALF
-      );
-
-    case "cone":
-      return shape.length;
-  }
 };
 
 /** Whether the shape, placed at (`centreX`, `centreY`) and turned to `facing`, covers the point. */
@@ -157,7 +138,7 @@ const collectInShape = (
   const found = world.map.spatialHash.queryCircle(
     centreX,
     centreY,
-    queryRadiusOf(shape),
+    shapeExtent(shape),
     proposed,
   );
   let written = 0;
@@ -185,12 +166,6 @@ const collectInShape = (
   return written;
 };
 
-/** Scratch for the circle a zone's own shape is read as, rewritten for every zone collection. */
-const zoneShape: { kind: "circle"; radius: number } = {
-  kind: "circle",
-  radius: 0,
-};
-
 /** Every unit inside the zone running the list, or none when the list is running from no zone. */
 const collectInZone = (
   world: World,
@@ -205,15 +180,13 @@ const collectInZone = (
     return 0;
   }
 
-  zoneShape.radius = zone.radius;
-
   return collectInShape(
     world,
     casterKind,
     level,
-    zoneShape,
-    zone.position.x,
-    zone.position.y,
+    zone.shape,
+    zone.curr.x,
+    zone.curr.y,
     zone.facing,
   );
 };

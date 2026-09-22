@@ -75,6 +75,7 @@ export type OverlayToggles = {
   pathLines: boolean;
   walkabilityGrid: boolean;
   hashCells: boolean;
+  spellAreas: boolean;
 };
 
 /**

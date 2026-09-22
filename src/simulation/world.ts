@@ -128,6 +128,17 @@ const copyPreviousPositions = (world: World): void => {
     projectile.prev.x = projectile.curr.x;
     projectile.prev.y = projectile.curr.y;
   }
+
+  for (let index = 0; index < world.map.zones.end; index += 1) {
+    const zone = world.map.zones.at(index);
+
+    if (zone === null) {
+      continue;
+    }
+
+    zone.prev.x = zone.curr.x;
+    zone.prev.y = zone.curr.y;
+  }
 };
 
 /**

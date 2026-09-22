@@ -23,6 +23,8 @@ type EventFields = {
   unitId: EntityId | null;
   /** The unit that caused it, or `null` where nothing did. */
   sourceId: EntityId | null;
+  /** The zone the event is about. */
+  zoneId: EntityId | null;
   /** Health, after mitigation. */
   amount: number;
   damageType: DamageType | null;
@@ -42,7 +44,9 @@ export type DomainEvent =
   | UnitDamagedEvent
   | UnitDiedEvent
   | StatusAppliedEvent
-  | StatusExpiredEvent;
+  | StatusExpiredEvent
+  | ZoneSpawnedEvent
+  | ZoneExpiredEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -74,6 +78,12 @@ export type StatusAppliedEvent = EventFields & { kind: "status_applied" };
 /** `statusId`'s end tick came and its row on `unitId` was emptied. `sourceId` is the unit that applied it, or `null`. */
 export type StatusExpiredEvent = EventFields & { kind: "status_expired" };
 
+/** `zoneId` is on the ground: its delay has begun, and it is drawn for the whole of it. */
+export type ZoneSpawnedEvent = EventFields & { kind: "zone_spawned" };
+
+/** `zoneId`'s lifetime ran out and its slot was released. Nothing it put on a unit ends with it. */
+export type ZoneExpiredEvent = EventFields & { kind: "zone_expired" };
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -93,6 +103,7 @@ export const createDomainEvent = (): EventSlot => ({
   reason: null,
   unitId: null,
   sourceId: null,
+  zoneId: null,
   amount: 0,
   damageType: null,
 });
@@ -111,6 +122,7 @@ export const copyDomainEvent = (
   target.reason = source.reason;
   target.unitId = source.unitId;
   target.sourceId = source.sourceId;
+  target.zoneId = source.zoneId;
   target.amount = source.amount;
   target.damageType = source.damageType;
 };
@@ -126,6 +138,7 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.reason = null;
   event.unitId = null;
   event.sourceId = null;
+  event.zoneId = null;
   event.amount = 0;
   event.damageType = null;
 };

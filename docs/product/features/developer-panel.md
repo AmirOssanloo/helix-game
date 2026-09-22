@@ -45,6 +45,10 @@ Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.m
 
 A dropdown of every archetype, a tier selector, a group size, and a spawn mode: at the pointer on click, or at a chosen distance from the hero. Plus clear all, which removes every enemy without deaths, and kill all, which kills them with experience. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test.
 
+### Zones
+
+A spawn that puts one bare circle on the ground at a world position, with a radius, a delay before it comes alive, and a lifetime. It has no ability behind it, so it runs no rules; it is there to drive the zone pool, the zone view, and the spell-areas overlay before a spell casts one.
+
 ### The atlas
 
 A button that downloads the generated shape atlas as a PNG, so anyone can see what every frame looks like.
@@ -65,6 +69,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last refusal | The reason the last refused command was refused |
 | Last damage | What the last hit landed after mitigation, and its damage type |
 | Last status | The last status to land or end, and the unit it was on |
+| Last zone | The last zone to go down or expire |
 | Deaths | How many units have died since the page was loaded |
 
 ## Overlays

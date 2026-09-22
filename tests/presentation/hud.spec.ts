@@ -396,6 +396,7 @@ describe("refusal flashes", () => {
       reason,
       unitId: null,
       sourceId: null,
+      zoneId: null,
       amount: 0,
       damageType: null,
     });

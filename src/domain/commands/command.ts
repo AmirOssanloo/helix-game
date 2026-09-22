@@ -139,7 +139,8 @@ export type DebugCommand =
   | ClearUnitsCommand
   | ResetMapCommand
   | BeginChannelCommand
-  | ApplyStatusCommand;
+  | ApplyStatusCommand
+  | SpawnZoneCommand;
 
 /** The debug twin of `noop`: proves the panel's path through the buffer and the log. */
 export type DebugNoopCommand = Readonly<{
@@ -270,6 +271,22 @@ export type ApplyStatusCommand = Readonly<{
 }>;
 
 /**
+ * Puts a bare circular zone on the ground at `position`: one that stands still, draws for
+ * `delayTicks` without touching anything, and is released `lifetimeTicks` after that. It has
+ * no ability and no caster behind it, so it runs no rules; it exists so the zone pool, the
+ * zone view, and the spell-areas overlay can be driven before a spell casts one.
+ */
+export type SpawnZoneCommand = Readonly<{
+  kind: "spawn_zone";
+  tick: Tick;
+  timestamp: number;
+  position: Readonly<Vec2>;
+  radius: number;
+  delayTicks: number;
+  lifetimeTicks: number;
+}>;
+
+/**
  * A developer-panel slider: set the tunable `key` to `value`, in the designer's units the
  * tuning table writes. The tuning state converts it once when the command is applied, and it
  * lands in the input log like every command, so a session with a retune replays. It is neither
@@ -304,6 +321,7 @@ const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
   "reset_map",
   "begin_channel",
   "apply_status",
+  "spawn_zone",
 ]);
 
 /** Whether `command` is a developer-panel intent. */

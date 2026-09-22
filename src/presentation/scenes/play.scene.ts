@@ -1,5 +1,9 @@
 import Phaser from "phaser";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
+import {
+  createCandidateBuffer,
+  UNIT_CAPACITY,
+  ZONE_CAPACITY,
+} from "@domain/public";
 import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
@@ -24,6 +28,8 @@ import {
   syncUnitViews,
   UNIT_VIEW_MARGIN,
 } from "../views/unit.view";
+import type { ZoneViewPool } from "../views/zone.view";
+import { createZoneViewPool, syncZoneViews } from "../views/zone.view";
 
 export const PLAY_SCENE_KEY = "play";
 
@@ -37,6 +43,9 @@ const UNIT_VIEW_COUNT = 320;
 
 /** Obstacle quads: room for a map several times as busy as the arena. */
 const OBSTACLE_VIEW_COUNT = 64;
+
+/** Zone views: the zone pool's whole capacity, since every zone alive can be on screen at once. */
+const ZONE_VIEW_COUNT = ZONE_CAPACITY;
 
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;
@@ -52,6 +61,7 @@ type Stage = {
   preview: TargetingPreview;
   obstacles: ObstacleViews;
   units: UnitViewPool;
+  zones: ZoneViewPool;
   orbs: OrbViews;
   overlays: DebugOverlays;
   /** The map whose obstacles and bounds are bound, so a map load rebinds them once. */
@@ -62,7 +72,7 @@ type Stage = {
  * Owns the world camera, runs the sync each frame, and maps input to commands. `create`
  * makes every pool it will ever hold; `update` hands the frame to the driver, then reads the
  * world view and writes the views: the camera onto the hero, the obstacles and bounds on a
- * map load, the units inside the camera rectangle through the spatial hash, the orbs, the
+ * map load, the zones and the units inside the camera rectangle, the orbs, the
  * targeting preview under the pointer, the debug overlays the toggles ask for, and the view
  * misses into their ring, and drains the event ring with its own cursor.
  */
@@ -127,6 +137,7 @@ export class PlayScene extends Phaser.Scene {
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
       units: createUnitViewPool(UNIT_VIEW_COUNT, makeQuad, frameSizes),
+      zones: createZoneViewPool(ZONE_VIEW_COUNT, makeQuad, frameSizes),
       orbs: createOrbViews(
         orbSlotsOf(this.context.world),
         makeQuad,
@@ -176,12 +187,16 @@ export class PlayScene extends Phaser.Scene {
     }
 
     stage.camera.worldRect(UNIT_VIEW_MARGIN, this.rect);
+    syncZoneViews(stage.zones, world, this.rect, alpha);
     syncUnitViews(stage.units, world, this.rect, alpha, this.candidates);
     stage.orbs.sync(world, alpha);
     this.syncPreview(stage);
     stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
     this.context.rings.viewMisses.write(
-      stage.units.misses + stage.obstacles.misses + stage.overlays.misses,
+      stage.units.misses +
+        stage.zones.misses +
+        stage.obstacles.misses +
+        stage.overlays.misses,
     );
     this.drainEvents();
   }

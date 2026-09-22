@@ -98,3 +98,25 @@ export const fillCast = (
 
   return out;
 };
+
+/**
+ * Writes one zone's context into `out` and returns it: the caster, the ability, and the orb
+ * levels the zone kept from the commit that spawned it, anchored on the zone and turned to
+ * its facing, aimed at no unit. It is what a zone's activation and each-tick lists run with,
+ * so an entry in one with `target: zone` touches every unit inside the zone `zoneId` names.
+ */
+export const fillZoneCast = (
+  out: CastRecord,
+  zoneId: EntityId,
+  casterId: EntityId,
+  ability: AbilityDef,
+  orbLevels: readonly number[],
+  x: number,
+  y: number,
+  facing: number,
+): Cast => {
+  fillCast(out, casterId, ability, orbLevels, x, y, facing, null);
+  out.zoneId = zoneId;
+
+  return out;
+};

@@ -39,8 +39,8 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
  * The readouts group: every measurement the rings hold, as mean and max over the last second
  * for the timings and as the latest sample for the counts, plus the tick number from the view
  * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
- * with what mitigation left of it, the last status to land or end and whom it was on, and how
- * many units have died. The ring stores samples;
+ * with what mitigation left of it, the last status to land or end and whom it was on, the last
+ * zone to go down or expire, and how many units have died. The ring stores samples;
  * the statistics are computed here, on each refresh, and nowhere in the simulation. Draw
  * calls show a dash while nothing has counted them.
  */
@@ -61,6 +61,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
   const refusal = readoutRow("Last refusal");
   const damage = readoutRow("Last damage");
   const status = readoutRow("Last status");
+  const zone = readoutRow("Last zone");
   const deaths = readoutRow("Deaths");
   const table = element("table", "dev-readouts", [
     tickTime.row,
@@ -78,11 +79,13 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
     refusal.row,
     damage.row,
     status.row,
+    zone.row,
     deaths.row,
   ]);
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
   let lastStatus = NOTHING_YET;
+  let lastZone = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -103,6 +106,14 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
 
       if (event.kind === "status_expired" && event.statusId !== null) {
         lastStatus = `${event.statusId} off ${String(event.unitId)}`;
+      }
+
+      if (event.kind === "zone_spawned") {
+        lastZone = `${String(event.zoneId)} down`;
+      }
+
+      if (event.kind === "zone_expired") {
+        lastZone = `${String(event.zoneId)} gone`;
       }
 
       if (event.kind === "unit_died") {
@@ -146,6 +157,7 @@ export const readoutsGroup = (api: DevApi): PanelGroup => {
       refusal.value.textContent = lastRefusal;
       damage.value.textContent = lastDamage;
       status.value.textContent = lastStatus;
+      zone.value.textContent = lastZone;
       deaths.value.textContent = String(deathCount);
     },
   };

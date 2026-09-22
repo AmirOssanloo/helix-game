@@ -17,6 +17,8 @@ export type OverlayToggles = {
   walkabilityGrid: boolean;
   /** Every occupied cell of the spatial hash, with the count of units in it. */
   hashCells: boolean;
+  /** Every zone on the ground, outlined as the simulation tests it rather than as the view draws it. */
+  spellAreas: boolean;
 };
 
 /** Every overlay off, as a fresh session starts. */
@@ -27,4 +29,5 @@ export const createOverlayToggles = (): OverlayToggles => ({
   pathLines: false,
   walkabilityGrid: false,
   hashCells: false,
+  spellAreas: false,
 });

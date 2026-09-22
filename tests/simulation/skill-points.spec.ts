@@ -101,6 +101,7 @@ describe("a skill-point spend through the world", () => {
         statusId: null,
         unitId: null,
         sourceId: null,
+        zoneId: null,
         amount: 0,
         damageType: null,
       },

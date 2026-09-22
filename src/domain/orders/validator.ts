@@ -70,6 +70,10 @@ const isAmount = (amount: number): boolean =>
 const isCount = (count: number): boolean =>
   Number.isInteger(count) && count >= 1;
 
+/** A wait in whole ticks, which may be none at all: what a zone's delay is written in. */
+const isDelay = (ticks: number): boolean =>
+  Number.isInteger(ticks) && ticks >= 0;
+
 /** Whether `levels` holds one non-negative integer per orb; the cap is the hero definition's to refuse when the command applies. */
 const areOrbLevels = (levels: readonly number[]): boolean => {
   if (levels.length !== ORB_COUNT) {
@@ -205,7 +209,7 @@ export const validateCommand = (
 /**
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
  * type the rules know, one non-negative integer level per orb, a count and a duration of at
- * least one, and a finite position. No disable and no state refuses a debug command; the
+ * least one, a delay of none or more, and a finite position. No disable and no state refuses a debug command; the
  * panel is not the unit acting. What the world can take, room in the pool, a level below the
  * cap, an orb level under its cap, no channel running, a status with the id it names, the
  * handler refuses when the command applies, with the same kind of reason.
@@ -249,6 +253,22 @@ export const validateDebugCommand = (
 
     case "apply_status":
       return isCount(command.ticks) ? "ok" : "invalid_duration";
+
+    case "spawn_zone": {
+      if (!isFiniteDestination(command.position)) {
+        return "invalid_destination";
+      }
+
+      if (!isAmount(command.radius)) {
+        return "invalid_amount";
+      }
+
+      if (!isDelay(command.delayTicks) || !isCount(command.lifetimeTicks)) {
+        return "invalid_duration";
+      }
+
+      return "ok";
+    }
 
     case "debug_noop":
     case "heal":

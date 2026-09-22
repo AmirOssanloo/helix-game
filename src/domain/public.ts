@@ -12,6 +12,7 @@ export {
   type CastRecord,
   createCastRecord,
   fillCast,
+  fillZoneCast,
 } from "./abilities/cast-context";
 export { runEffects } from "./abilities/effect-runner";
 export {
@@ -36,6 +37,7 @@ export {
   startCooldown,
 } from "./abilities/cooldowns";
 export { hasMana, spendMana } from "./abilities/mana";
+export { zoneSystem } from "./abilities/zones/zone.system";
 export { spellLevelOf } from "./abilities/spell-level";
 export type { Behaviour } from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
@@ -66,6 +68,7 @@ export {
   SLOT_COUNT,
   type SlotCommand,
   type SpawnUnitsCommand,
+  type SpawnZoneCommand,
   type SpendSkillPointCommand,
   type StopCommand,
   type ToggleInfiniteManaCommand,
@@ -281,7 +284,12 @@ export {
   type TuningState,
   type World,
 } from "./entities/world-state";
-export { createZonePool, type Zone, ZONE_CAPACITY } from "./entities/zone";
+export {
+  acquireZone,
+  createZonePool,
+  type Zone,
+  ZONE_CAPACITY,
+} from "./entities/zone";
 export {
   type CastCommittedEvent,
   type CommandRefusedEvent,
@@ -297,6 +305,8 @@ export {
   type TickCompletedEvent,
   type UnitDamagedEvent,
   type UnitDiedEvent,
+  type ZoneExpiredEvent,
+  type ZoneSpawnedEvent,
 } from "./events/domain-event";
 export {
   addOrb,
@@ -365,6 +375,7 @@ export {
   coneCovers,
   coneHalfAngle,
   rectangleCovers,
+  shapeExtent,
 } from "./movement/shapes";
 export { collisionSystem } from "./movement/collision.system";
 export { movementSystem } from "./movement/movement.system";

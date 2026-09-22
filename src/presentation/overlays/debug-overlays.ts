@@ -1,4 +1,10 @@
-import type { HashCell, Unit, WalkabilityView } from "@domain/public";
+import type {
+  HashCell,
+  ShapeDef,
+  Unit,
+  WalkabilityView,
+  Zone,
+} from "@domain/public";
 import {
   cellCentreX,
   cellCentreY,
@@ -31,6 +37,11 @@ const LINE_FRAME = "pixel";
 const CELL_FRAME = "square";
 const CELL_OUTLINE_FRAME = "square_outline";
 
+/** A zone's area is outlined by the frame its shape kind wants: a ring, an outlined box, or the cone frame. */
+const AREA_CIRCLE_FRAME = "ring_thin";
+const AREA_RECTANGLE_FRAME = "square_outline";
+const AREA_CONE_FRAME = "cone_60";
+
 /** Each overlay in its own colour at low alpha, so several read at once over the units. */
 const COLLISION_TINT = 0x4fc3f7;
 const BOUND_TINT = 0xffd166;
@@ -39,6 +50,7 @@ const CONE_TINT = 0x80ff80;
 const PATH_TINT = 0xff80ff;
 const BLOCKED_TINT = 0xff4040;
 const HASH_TINT = 0x40ff40;
+const AREA_TINT = 0xff8040;
 const LABEL_TINT = 0xffffff;
 const RING_ALPHA = 0.5;
 const LINE_ALPHA = 0.8;
@@ -59,6 +71,9 @@ const COUNT_LABEL_SIZE = 20;
 
 const DIAMETERS_PER_RADIUS = 2;
 
+/** Which of the three areas a zone covers, which is what decides the frame its outline is drawn with. */
+type ShapeKind = ShapeDef["kind"];
+
 /**
  * Pool sizes: presentation numbers. Rings match the unit views on screen; the rest bound how
  * much of an overlay draws at once, and a frame past a pool counts a miss instead of growing.
@@ -67,6 +82,7 @@ const RING_COUNT = 320;
 const PATH_SEGMENT_COUNT = 512;
 const BLOCKED_CELL_COUNT = 1024;
 const HASH_CELL_COUNT = 256;
+const AREA_COUNT = 64;
 
 /** A count label showing nothing yet. */
 const NO_COUNT = -1;
@@ -564,6 +580,119 @@ class HashCells {
 }
 
 /**
+ * Every zone on the ground, outlined as the simulation tests it: the area at the position and
+ * the facing the world holds this tick, not the quad the zone view draws. One run of quads
+ * per shape kind, so a bind never changes a frame, and a kind that runs out counts a miss
+ * like any other overlay.
+ */
+class SpellAreas {
+  private readonly circles: QuadRun;
+
+  private readonly rectangles: QuadRun;
+
+  private readonly cones: QuadRun;
+
+  private readonly circleScale: number;
+
+  private readonly rectangleScale: number;
+
+  private readonly coneScale: number;
+
+  constructor(
+    circles: readonly Quad[],
+    rectangles: readonly Quad[],
+    cones: readonly Quad[],
+    frameSizes: FrameSizes,
+  ) {
+    this.circles = new QuadRun(circles);
+    this.rectangles = new QuadRun(rectangles);
+    this.cones = new QuadRun(cones);
+    this.circleScale = 1 / frameSizes(AREA_CIRCLE_FRAME);
+    this.rectangleScale = 1 / frameSizes(AREA_RECTANGLE_FRAME);
+    this.coneScale = 1 / frameSizes(AREA_CONE_FRAME);
+  }
+
+  get misses(): number {
+    return this.circles.misses + this.rectangles.misses + this.cones.misses;
+  }
+
+  sync(world: WorldView, alpha: number): void {
+    const zones = world.map.zones;
+
+    for (let index = 0; index < zones.end; index += 1) {
+      const zone = zones.at(index);
+
+      if (zone !== null) {
+        this.outline(zone, alpha);
+      }
+    }
+
+    this.finish();
+  }
+
+  hide(): void {
+    this.finish();
+  }
+
+  /** Lays one outline over `zone`: turned to its facing, and as long and as wide as its shape. */
+  private outline(zone: DeepReadonly<Zone>, alpha: number): void {
+    const shape = zone.shape;
+    const isCircle = shape.kind === "circle";
+    const quad = this.runFor(shape.kind).take();
+
+    if (quad === null) {
+      return;
+    }
+
+    const along = isCircle
+      ? shape.radius * DIAMETERS_PER_RADIUS * this.circleScale
+      : shape.length * this.scaleFor(shape.kind);
+
+    quad.x = interpolate(zone.prev.x, zone.curr.x, alpha);
+    quad.y = interpolate(zone.prev.y, zone.curr.y, alpha);
+    quad.rotation = isCircle ? 0 : zone.facing;
+    quad.scaleX = along;
+    quad.scaleY =
+      shape.kind === "rectangle" ? shape.width * this.rectangleScale : along;
+    quad.tint = AREA_TINT;
+    quad.alpha = LINE_ALPHA;
+    quad.visible = true;
+  }
+
+  private runFor(kind: ShapeKind): QuadRun {
+    switch (kind) {
+      case "circle":
+        return this.circles;
+
+      case "rectangle":
+        return this.rectangles;
+
+      case "cone":
+        return this.cones;
+    }
+  }
+
+  private scaleFor(kind: ShapeKind): number {
+    switch (kind) {
+      case "circle":
+        return this.circleScale;
+
+      case "rectangle":
+        return this.rectangleScale;
+
+      case "cone":
+        return this.coneScale;
+    }
+  }
+
+  private finish(): void {
+    this.circles.finish();
+    this.rectangles.finish();
+    this.cones.finish();
+  }
+}
+
+/**
  * The debug overlays the play scene draws over the world, each from its own quads at the
  * debug band and each behind one toggle. An overlay that is on reads the world view and the
  * camera rectangle and writes its quads like any view; one that is off binds nothing and
@@ -582,6 +711,8 @@ export class DebugOverlays {
   private readonly blocked: BlockedCells;
 
   private readonly hash: HashCells;
+
+  private readonly areas: SpellAreas;
 
   private readonly candidates: EntityId[] =
     createCandidateBuffer(UNIT_CAPACITY);
@@ -626,6 +757,12 @@ export class DebugOverlays {
       labels,
       frameSizes(CELL_OUTLINE_FRAME),
     );
+    this.areas = new SpellAreas(
+      makeQuads(AREA_COUNT, AREA_CIRCLE_FRAME, makeQuad),
+      makeQuads(AREA_COUNT, AREA_RECTANGLE_FRAME, makeQuad),
+      makeQuads(AREA_COUNT, AREA_CONE_FRAME, makeQuad),
+      frameSizes,
+    );
   }
 
   /** Frames an overlay wanted more quads than its pool holds, summed over every overlay since creation. */
@@ -635,7 +772,8 @@ export class DebugOverlays {
       this.bound.misses +
       this.paths.misses +
       this.blocked.misses +
-      this.hash.misses
+      this.hash.misses +
+      this.areas.misses
     );
   }
 
@@ -692,6 +830,12 @@ export class DebugOverlays {
       this.hash.sync(world, rect);
     } else {
       this.hash.hide();
+    }
+
+    if (toggles.spellAreas) {
+      this.areas.sync(world, alpha);
+    } else {
+      this.areas.hide();
     }
   }
 }

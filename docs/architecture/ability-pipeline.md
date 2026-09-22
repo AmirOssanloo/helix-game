@@ -54,7 +54,7 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 | Damage area | Applies damage of a type to units in a shape around a point |
 | Apply status | Adds a status to a unit or to units in a shape |
 | Spawn projectile | Acquires a projectile that homes on a unit or travels a direction |
-| Spawn zone | Acquires a zone with a shape, a lifetime, and per-tick rules |
+| Spawn zone | Acquires a zone with a shape, a delay before it bites, a lifetime, and the two lists it runs: once when the delay ends, and every tick after that |
 | Spawn unit | Acquires a summon owned by the caster, with a lifetime |
 | Displace | Moves a unit — a push, or a lift that suspends its order — and puts a status on it for the same ticks |
 
