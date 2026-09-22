@@ -21,7 +21,7 @@ Numbers are not on this page. Each spell owns a definition file under `src/conte
 | EEE | Zenith | Point, delayed | A ground strike: after a delay, pure damage in a small area, split among everything inside. Scales with Ember |
 | EEQ | Emberling | None, self | A summon: one player-owned unit next to the hero that auto-attacks nearby enemies for its lifetime and cannot be ordered. Scales with Ember and Quartz |
 | EEW | Bolide | Point, line | A zone: a meteor lands after a delay and rolls in a line, damaging what it passes and leaving a burn status on them. Scales with Ember and Whorl |
-| QWE | Clarion | Direction, cone | A wave in a cone: damage, knockback, and a disarm status on everything hit. Scales with all three |
+| QWE | Clarion | Direction, cone | A cone from the hero, landing at once: damage, a push away from the hero, and a disarm status on everything hit. Scales with all three |
 
 Effect words — status, zone, summon, buff — are the [vocabulary's](../vocabulary.md). A zone has rules and lives in the world; a status lives on a unit.
 
@@ -32,7 +32,7 @@ Where a spell's role depends on something Helix does not have, it keeps the role
 - **Wane** hides the hero from enemy aggro and drops existing aggro, since there is no fog of war or team vision to hide from. Enemies already touching the hero keep attacking.
 - **Quicken** targets self only. There is no ally to buff.
 - **Emberling** summons are enemy targets, follow the hero when idle, and expire on their timer. They cannot be selected or ordered.
-- **Updraft and Clarion** reach enemies only: Updraft lifts where the unit stands, and Clarion is the spell that pushes.
+- **Updraft and Clarion** reach enemies only: Updraft lifts where the unit stands, and Clarion is the spell that pushes. Clarion's cone lands at once rather than travelling, and its push sends each unit away from the hero rather than along one line, so a unit at the cone's edge is thrown outward.
 
 No spell damages or displaces the hero or a summon. Friendly fire does not exist.
 
@@ -74,6 +74,8 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 | Two spells thrown in the same tick | Applied in key order; the second replaces the first, which had spent nothing. One order at a time, never a queue |
 | Zenith or Siphon delay with no enemy left | The spell resolves on empty ground; mana and cooldown were already spent |
 | Updraft lifts a unit with Hoarfrost | Hoarfrost's duration keeps counting while lifted |
+| Clarion pushes a unit into a wall | The unit stops at the wall's edge and the rest of the push is spent against it |
+| Bolide rolls over a unit it is already burning | The burn is refreshed, so it lasts its full duration from the last tick of contact |
 | Emberling out when the hero dies | The summon expires immediately |
 | Attack-target on a unit that becomes invisible | The order drops to idle |
 | Insufficient mana at key-down | Refused with a HUD flash; the targeting cursor does not open |

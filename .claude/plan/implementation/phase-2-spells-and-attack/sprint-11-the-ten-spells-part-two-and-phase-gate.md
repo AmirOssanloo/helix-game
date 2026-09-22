@@ -48,7 +48,7 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Bolide: point, named effect `meteor_launch` spawning a delayed zone that, on landing, becomes a `travel_line` zone rolling along the cast direction for a distance, dealing magical damage each tick to units in contact and applying a `burn` damage-over-time status, by Ember and Whorl level. Clarion: point (cone), `damage_area` in the cone frame's angle, `displace('push')` along the cone direction, and `apply_status('disarm')`, all by all three levels. Definitions, tests at levels 1 and 7, the push stopping at an obstacle edge.
 
@@ -63,6 +63,8 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
 
 > **Note, 2026-09-21:** per the catalogue Bolide needs no named effect: it is one `spawn_zone` with a delay, a line motion, and an each-tick list of damage area and apply status, so `meteor_launch` and its test are dropped. Clarion is a direction spell. Section 3.9 and 3.10 of `docs/product/specs/spell-catalogue.md`.
+
+> **Note, 2026-09-22:** nothing under `src/domain` changed. Both spells are effect lists over primitives that already exist: Bolide is the delayed travelling zone the catalogue writes, with a per-second damage area and a `burn` reapplied every tick of contact in its each-tick list, and Clarion is a damage area, a push away from the hero, and a disarm, each naming the same cone at the caster. The ticket's layer row said domain because it was written before the 2026-09-21 note dropped `meteor_launch`; the pieces Clarion needed — the cone target, the push through the movement step, and the two statuses — landed in sprint 08. Three things the build met and the ticket did not name. The damage-over-time reaches a unit a tick late, since the status pass runs before the zone pass, so the tick a meteor lands costs only its own share and every tick after it costs both. Clarion is the dearest of the ten and a hero at its first level cannot hold 300 mana, so its spec levels the hero until the pool holds the cost rather than turning on the switch that skips it. And the recorded session's content stamp had to be restamped, since a spell's effect list is part of the registry hash; the session casts no spell, so its records stand as they are.
 
 ---
 
@@ -228,11 +230,11 @@ Docs: the panel section of [devtools and instrumentation](../../../../docs/archi
 
 | Check | Result |
 | --- | --- |
-| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06, which needs a walk of its own |
+| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06, which needs a walk of its own. Bolide and Clarion landed in T02 and need a walk of their own, in a row of their own on the status page |
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 |
+| Actual days per ticket | T01 1.5 · T02 0.5 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 |
 
 ## Risks in this sprint
 
