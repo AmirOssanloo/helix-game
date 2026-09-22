@@ -35,9 +35,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The production build: the developer panel and DevApi are stripped, and the page asks for
-      # its bundle beside itself, so it runs under the repository name without knowing it.
-      - run: pnpm build
+      # The playtest build: the production game, published with the developer panel beside it so
+      # anyone with the link can drive it. The page asks for its bundle beside itself, so it runs
+      # under the repository name without knowing it.
+      - run: pnpm build:playtest
 
       - uses: actions/upload-pages-artifact@v4
         with:

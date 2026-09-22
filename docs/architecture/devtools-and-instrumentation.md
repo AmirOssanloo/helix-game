@@ -17,7 +17,9 @@ A session with the panel open replays exactly, so a bug found while tuning is a 
 
 ## DevApi
 
-`devtools/` exposes one object, `DevApi`, on `window` in development builds. A Vite define strips it from a production build; there is no runtime flag to turn it back on.
+`devtools/` exposes one object, `DevApi`, on `window` wherever the panel is. A Vite define decides that at build time; there is no runtime flag to turn it back on.
+
+**Two defines, because they answer different questions.** `__DEV__` says how the code behaves — an `assert` throws under it — and is true under the dev server and in tests only. `__PANEL__` says whether the panel is in the build. The two part company in the playtest build, which is the production game, with no development path and no assert that throws, published with the panel beside it for people to play with. A production build has neither: no panel, no `DevApi`, and not the pane either is built from.
 
 `DevApi` does five things and nothing else:
 
@@ -33,7 +35,7 @@ window.DevApi = { submit, driver, view, rings, overlays, saveInputLog, loadInput
 
 **The width of the `DebugCommand` union is where the panel's power comes from.** Wanting the panel to do something new means adding a variant and the system code that handles it, which is also what makes the new thing replayable. There is no `world.setFoo()` for the panel to call; [Commands and events](./commands-and-events.md) holds the rule.
 
-The HTML panel itself is outside the canvas and knows nothing about Phaser. It is built from a pane library rather than by hand: a folder per group, and in it a slider, a checkbox, a dropdown, a button, or a read-only line. The pane belongs to the panel and never ships with the game; the build refuses a bundle that holds either.
+The HTML panel itself is outside the canvas and knows nothing about Phaser. It is built from a pane library rather than by hand: a folder per group, and in it a slider, a checkbox, a dropdown, a button, or a read-only line. The pane ships only where the panel does, and the build refuses a production bundle holding either.
 
 ---
 
@@ -109,7 +111,9 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 
 | Rule | Do |
 | --- | --- |
-| `DevApi` | One object on `window` in development builds; stripped by a Vite define in production |
+| `DevApi` | One object on `window` wherever the panel is; stripped by a Vite define in production |
+| The two defines | `__DEV__` says how the code behaves and gates `assert`; `__PANEL__` says whether the panel is in the build |
+| The playtest build | The production game with the panel left in, for people to play with; the build fails if the panel is missing from it |
 | What it does | Submits commands, drives the driver, reads the world view, reads the instrumentation rings, sets the overlay toggles |
 | Panel actions | `DebugCommand` variants and `SetTuning` commands, into the same buffer and log as player input |
 | Pause, single-step, catch-up cap | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |

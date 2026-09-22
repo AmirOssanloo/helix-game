@@ -4,7 +4,9 @@
 
 ## Overview
 
-An HTML panel beside the game canvas, present in development builds only, for anyone testing or tuning: spawn enemies, push the hero's numbers around, change any tunable, toggle overlays, and read the instrumentation. It is a tool, not a surface the player sees.
+An HTML panel beside the game canvas, for anyone testing or tuning: spawn enemies, push the hero's numbers around, change any tunable, toggle overlays, and read the instrumentation. It is a tool, not a surface the player sees.
+
+It is in the development build and in the [playtest build](../vocabulary.md) that is published for people to play with. It is in no production build.
 
 Every action on the panel that changes the world is a command that goes through the same door as a key press, so a session with the panel open replays exactly. There is no back door into the world. The rule is [ADR 0004](../../adr/0004-all-mutation-enters-as-commands.md). Pause, single-step, and the catch-up cap change nothing in the world; they only decide whether the next tick runs, so they are not commands and are not in the log.
 
@@ -103,10 +105,11 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
 | Panel closed | Every readout keeps sampling; only the display stops |
 | Production build | The panel and its API do not exist; the game has no trace of them |
+| Playtest build | The panel is there, on whatever address the build is published to. It is the game as it ships, with the panel beside it |
 
 ## Deferred
 
-- **Production access** or a hidden key combination. The panel is stripped from production builds.
+- **Production access** or a hidden key combination. The panel is stripped from production builds. The playtest build is not an exception to this: it is a separate build that carries the panel openly, not a production build with a way in.
 - **Remote profiling** and uploading logs anywhere. Save and load are local files.
 - **Scripted scenarios** — spawn this, cast that, assert the outcome. Tests do that in Node.
 - **A spell picker** that puts any spell into a slot without invoking it. Testing the kit means using the kit.

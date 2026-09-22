@@ -22,47 +22,74 @@ export const layerAliases = (): Record<string, string> =>
     ]),
   );
 
-/** The pane the developer panel is built from, which belongs to the panel and never ships with the game. */
+/** The pane the developer panel is built from, which ships only where the panel does. */
 const PANE_MODULE = /[\\/]tweakpane[\\/]/;
 
+/** The build that is the production game with the developer panel left in, for people to play with. */
+const PLAYTEST_MODE = "playtest";
+
 /**
- * Fails the build when developer-panel code reaches the bundle. The panel mount writes the sentinel
- * into its host, so the string is in the output exactly when the panel is; the pane the panel builds
- * itself from is checked separately, because a bundler that keeps a module for its side effects
- * keeps it whole and silent, and the panel's own code is gone by then for the sentinel to catch.
+ * Holds a build to what it says it is, in both directions.
+ *
+ * The panel mount writes the sentinel into its host, so the string is in the output exactly when
+ * the panel is: a production build carrying it has leaked the panel, and a playtest build without
+ * it has lost the thing it exists to carry. The pane is checked beside the sentinel because a
+ * bundler that keeps a module for its side effects keeps it whole and silent, and by then the
+ * panel's own code is gone for the sentinel to catch it by.
  */
-const devtoolsStripCheck = (): Plugin => ({
-  name: "helix:devtools-strip-check",
+const devtoolsBuildCheck = (panel: boolean): Plugin => ({
+  name: "helix:devtools-build-check",
   apply: "build",
   generateBundle(_options, bundle): void {
+    let sentinel: string | null = null;
+    let pane: string | null = null;
+
     for (const output of Object.values(bundle)) {
       if (output.type !== "chunk") {
         continue;
       }
 
       if (output.code.includes(DEVTOOLS_SENTINEL)) {
-        this.error(
-          `Developer-panel code reached the production bundle in ${output.fileName}. ` +
-            "Mount the panel only inside the __DEV__ branch of src/app/main.ts.",
-        );
+        sentinel = output.fileName;
       }
 
-      const pane = Object.keys(output.modules).find((id) =>
+      const found = Object.keys(output.modules).find((id) =>
         PANE_MODULE.test(id),
       );
 
-      if (pane !== undefined) {
-        this.error(
-          `The developer panel's pane reached the production bundle in ${output.fileName}, from ${pane}. ` +
-            "It is kept out by build.rollupOptions.treeshake.moduleSideEffects in this file.",
-        );
+      if (found !== undefined) {
+        pane = found;
       }
+    }
+
+    if (!panel && sentinel !== null) {
+      this.error(
+        `Developer-panel code reached the production bundle in ${sentinel}. ` +
+          "Mount the panel only inside the __PANEL__ branch of src/app/main.ts.",
+      );
+    }
+
+    if (!panel && pane !== null) {
+      this.error(
+        `The developer panel's pane reached the production bundle, from ${pane}. ` +
+          "It is kept out by build.rollupOptions.treeshake.moduleSideEffects in this file.",
+      );
+    }
+
+    if (panel && (sentinel === null || pane === null)) {
+      this.error(
+        `The ${PLAYTEST_MODE} build has no developer panel in it: the game is published with the panel ` +
+          "beside it, and without one there is nothing to play with. Check the __PANEL__ define.",
+      );
     }
   },
 });
 
 export default defineConfig(({ mode }) => {
   const development = mode === "development";
+  // Where the panel is part of the build. The playtest build is the production game — no
+  // development path, no assert that throws — published with the panel beside it.
+  const panel = development || mode === PLAYTEST_MODE;
 
   return {
     // A built page asks for its bundle beside itself, so the build runs from any path a static
@@ -71,6 +98,7 @@ export default defineConfig(({ mode }) => {
     base: development ? "/" : "./",
     define: {
       __DEV__: JSON.stringify(development),
+      __PANEL__: JSON.stringify(panel),
     },
     resolve: {
       alias: layerAliases(),
@@ -80,11 +108,11 @@ export default defineConfig(({ mode }) => {
         treeshake: {
           // The pane declares no side effects of its own, so a bundler assumes the worst and keeps
           // it whole even once the only code that builds one is gone. Saying so here is what lets
-          // the production build drop it with the panel, and the strip check above holds us to it.
+          // the production build drop it with the panel, and the check above holds us to it.
           moduleSideEffects: [{ test: PANE_MODULE, sideEffects: false }],
         },
       },
     },
-    plugins: development ? [] : [devtoolsStripCheck()],
+    plugins: [devtoolsBuildCheck(panel)],
   };
 });

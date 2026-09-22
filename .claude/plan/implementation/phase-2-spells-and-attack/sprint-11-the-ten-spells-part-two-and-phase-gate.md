@@ -226,6 +226,63 @@ Docs: the panel section of [devtools and instrumentation](../../../../docs/archi
 
 ---
 
+### P2-S11-T09 — The tick budget measured outside the profiler
+
+| Field | Value |
+| --- | --- |
+| Layer | build, tests, docs |
+| Size | 0.25 |
+| Depends on | none |
+| Status | done |
+
+**Build:** `check:ci` stops measuring the tick budget through a profiler. The coverage pass runs every tier but the stress one; the stress test then runs on its own, uninstrumented, as `pnpm test:budget`. The replay determinism test stays inside the coverage pass and gains a named timeout, because it asserts that two worlds agree and never how fast they got there.
+
+Docs: the commands and gate sections of [development workflow](../../../../docs/workflows/development.md), and the stress-test section of [performance standards](../../../../docs/standards/performance.md).
+
+**Acceptance:**
+- `pnpm check:ci` is green, with the coverage floors on domain and simulation still held.
+- The stress test asserts the same 4 ms budget it always did; the number is not moved to fit the run.
+
+**Tests:**
+- No new spec. The two that were failing are the check: they pass for the right reason now.
+
+**Definition of done:** Every change · A documentation change.
+
+> **Note, 2026-09-22:** unplanned, found when the first CI run in 26 commits went red on `stress.spec.ts` and `replay-determinism.spec.ts`. Neither was a regression. Measured on the maintainer's machine, the stress mean is **2.438 ms** uninstrumented against the 4 ms budget and **8.286 ms** under coverage, and the replay spec takes 1.70 s uninstrumented and 5.67 s instrumented against a 5 s default timeout. Coverage instrumentation was the whole of both failures, and `pnpm check` never saw it because only `check:ci` collects coverage. The budget was not moved; the measurement was. One thing this leaves open: CI has never reported an uninstrumented stress number, so the next push is the first reading from that machine. If it lands near 4 ms, the question of which machine the budget is defined on is a plan question, not a code one.
+
+---
+
+### P2-S11-T10 — The panel in the published build
+
+| Field | Value |
+| --- | --- |
+| Layer | app, build, docs |
+| Size | 0.5 |
+| Depends on | P2-S11-T07, P2-S11-T08 |
+| Status | done |
+
+**Build:** The published build carries the developer panel, so anyone with the link can spawn, tune, and read the instrumentation while the game is being shown to people.
+
+`__DEV__` was doing two jobs — deciding how the code behaves, and deciding whether the panel ships — and they are now two defines. `__DEV__` keeps the first and still gates `assert`. `__PANEL__` takes the second. The playtest build, `vite build --mode playtest`, sets `__PANEL__` alone: the production game, with no development path and no assert that throws, published with the panel beside it. A production build sets neither and carries no panel, no `DevApi`, and no pane.
+
+The build check works in both directions now: it fails a production bundle holding the sentinel or a pane module, and fails a playtest bundle missing either, so neither build can quietly become the other. The Pages workflow builds the playtest flavour.
+
+Docs: [devtools and instrumentation](../../../../docs/architecture/devtools-and-instrumentation.md), [developer panel](../../../../docs/product/features/developer-panel.md), [development workflow](../../../../docs/workflows/development.md), [tech stack](../../../../docs/onboarding/02-tech-stack.md), [running and debugging](../../../../docs/onboarding/03-running-and-debugging.md), and the new term in the [vocabulary](../../../../docs/product/vocabulary.md).
+
+**Acceptance:**
+- The published build plays with the panel beside it, and `DevApi` is on `window`.
+- `pnpm build` still produces a bundle with no panel, no `DevApi`, and no pane, and fails if it would not.
+- `pnpm build:playtest` fails if the panel is missing from it.
+
+**Tests:**
+- No new spec: both directions of the build check are the test, and both were proved by breaking them on purpose.
+
+**Definition of done:** Every change · A documentation change.
+
+> **Note, 2026-09-22:** unplanned, asked for by the maintainer, and it reverses a line the developer panel page carried under **Deferred**: production access. The page now says what is true — the playtest build is a separate build that carries the panel openly, not a production build with a way into it — and the deferred line stands for production. This is a call for this phase: anyone with the link can spawn three hundred units and retune the world, which is the point while the game is shown to people meant to poke at it, and is not the point once it is not. Changing back is the one `pnpm build:playtest` line in the Pages workflow. Both builds were walked in a browser from a subpath: the playtest one plays with every group of the panel live, the production one has an empty hidden host and no `DevApi`.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
@@ -234,7 +291,7 @@ Docs: the panel section of [devtools and instrumentation](../../../../docs/archi
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 0.5 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 |
+| Actual days per ticket | T01 1.5 · T02 0.5 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 · T09 0.25 · T10 0.5 |
 
 ## Risks in this sprint
 

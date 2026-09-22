@@ -8,7 +8,7 @@
 
 ## The developer panel
 
-The panel is a pane beside the canvas, mounted only in development builds. Every control that changes the world sends a `DebugCommand` through the same buffer as the keyboard and mouse, so a panel session records into the input log and replays like any other. Nothing in the panel reaches world state by another route.
+The panel is a pane beside the canvas, mounted in the development build and in the playtest build that is published for people to play with, and in no production build. Every control that changes the world sends a `DebugCommand` through the same buffer as the keyboard and mouse, so a panel session records into the input log and replays like any other. Nothing in the panel reaches world state by another route.
 
 Each group is a folder you can collapse, and what you leave open is remembered. A number is typed into its field and committed by leaving it or pressing enter, or dragged; a slider sends its command when you let go, so one drag is one command and not a hundred.
 

@@ -12,17 +12,21 @@
 pnpm check          # The gate: lint, typecheck, every test tier, build. Never modifies a file
 pnpm check:ci       # What CI runs: the same gate, with coverage floors checked
 pnpm test           # Every test tier in Node — unit, simulation, content, architecture
+pnpm test:budget    # The stress test alone, uninstrumented: the tick budget
 pnpm test:watch     # The same, rerunning on save
 pnpm lint           # ESLint; pnpm lint:fix applies the auto-fixes and Prettier
 pnpm typecheck      # tsc --noEmit, strict
 pnpm dev            # The Vite dev server with hot reload
-pnpm build          # The production build, with DevApi stripped
+pnpm build          # The production build, with the panel and DevApi stripped
+pnpm build:playtest # The playtest build: the same game, with the panel left in
 pnpm bench          # Serves the render benchmark scene under bench/
 ```
 
 **`pnpm check` is the gate.** Run it before every push. It runs lint, typecheck, and build first, then the test tiers, and it never modifies a file; when it reports lint findings, `pnpm lint:fix` applies them, then run `check` again.
 
 CI runs **`pnpm check:ci`**, which is the same gate with coverage floors on the domain and simulation layers. Locally `check` stays uninstrumented because coverage makes the tests slower and you do not need the number on every push. A green `check` locally means a green build.
+
+**The stress test runs outside the coverage pass**, as `pnpm test:budget` after it. It asserts a wall-clock budget, and coverage instrumentation makes the same tick about three times slower, so measured through the profiler it measures the profiler. Every other tier is instrumented and holds its floors. The replay determinism test stays in the coverage pass — it asserts that two worlds agree, never how fast — and carries a timeout long enough to survive being instrumented.
 
 Nothing needs to be up for any of this. No containers, no database. `pnpm test` runs entirely in Node.
 
@@ -68,16 +72,18 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 - **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
 - **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
 - **The stress test** asserts the mean tick under 4 ms with 300 units. It fails when a change makes a system too expensive.
-- **The build** fails if `DevApi`, the developer panel, or the pane the panel is built from leaks into the production bundle.
+- **The build** fails if `DevApi`, the developer panel, or the pane the panel is built from leaks into the production bundle — and the playtest build fails if the panel is missing from it, so neither build can quietly become the other.
 - **The docs link test** fails on a relative link or anchor that does not resolve, so a renamed page or heading cannot leave a dead pointer behind.
 
 ---
 
 ## Publishing the playable build
 
-A push to `main` builds the game and publishes it to GitHub Pages at **https://amirossanloo.github.io/helix-game/**, from `.github/workflows/pages.yml`. It is the production build, so the developer panel and `DevApi` are not in it.
+A push to `main` builds the game and publishes it to GitHub Pages at **https://amirossanloo.github.io/helix-game/**, from `.github/workflows/pages.yml`. It publishes the **playtest build**: the game exactly as it ships — nothing runs a development path and an `assert` does not throw — with the developer panel beside it, so anyone with the link can spawn, tune, and read the instrumentation. `pnpm build` is still the production build and still has no trace of the panel.
 
-The workflow runs `pnpm build` and nothing else; `ci.yml` runs the gate on the same push, in parallel. A red gate does not hold the deploy back, so a push that builds but fails a test still reaches the site — read CI, not the site, for whether a change is good.
+The workflow runs `pnpm build:playtest` and nothing else; `ci.yml` runs the gate on the same push, in parallel. A red gate does not hold the deploy back, so a push that builds but fails a test still reaches the site — read CI, not the site, for whether a change is good.
+
+**The panel on a public address is a deliberate call for this phase, not a permanent one.** Anyone with the link can spawn three hundred units, set every orb to seven, and retune the world. That is the point while the game is being shown to people who are meant to poke at it; when the game is played by people who are not, the workflow builds `pnpm build` instead and the playtest build goes back to being a thing you run locally. Nothing but the one line in the workflow has to change.
 
 The build asks for its bundle beside itself rather than at the server root, which is what lets one build serve from the repository-name path a project page uses. Nothing in the page knows the repository name, so a rename or a custom domain needs no change here.
 

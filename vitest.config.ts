@@ -68,6 +68,7 @@ export default defineConfig({
   // that broke it instead of passing in silence.
   define: {
     __DEV__: "true",
+    __PANEL__: "true",
   },
   resolve: {
     alias: {

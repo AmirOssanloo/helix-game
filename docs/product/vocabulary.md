@@ -58,6 +58,7 @@ When two people call the same thing different names, the names leak into the cod
 | State that lives for the whole session: hero, tunables, seed | **Run scope** | Global state, session |
 | State that lives for one map: enemies, projectiles, zones | **Map scope** | Level state |
 | The HTML panel for spawning, tuning, and instrumentation | **Developer panel** | Debug menu, cheats, admin |
+| The build published for people to play with: the game as it ships, with the developer panel beside it | **Playtest build** | Demo, preview, staging, dev build |
 | Drawn diagnostics over the world | **Overlay** | Gizmo, debug draw |
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |

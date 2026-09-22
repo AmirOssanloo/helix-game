@@ -86,7 +86,7 @@ export const boot: Boot = (): void => {
     }
   });
 
-  if (__DEV__) {
+  if (__PANEL__) {
     const host = document.getElementById(DEVTOOLS_HOST_ID);
 
     if (host === null) {
