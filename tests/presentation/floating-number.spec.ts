@@ -1,65 +1,42 @@
 import { describe, expect, it } from "vitest";
-import type { DomainEvent, Unit } from "@domain/public";
-import { releaseUnit } from "@domain/public";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
   DEPTH_TEXT,
   FLOATING_NUMBER_TICKS,
-  HIT_FLASH_TICKS,
-  HitFlashes,
-  showHit,
+  NO_NUMBER,
 } from "@presentation/public";
-import type { EntityId } from "@shared/public";
-import type { Simulation } from "@simulation/public";
-import {
-  LabelRecorder,
-  makeWorld,
-  spawnHero,
-  spawnUnit,
-  unitIdOf,
-} from "../helpers";
+import { LabelRecorder } from "../helpers";
 
-/** The hero stands here; the dummy it shoots stands well clear of it. */
-const HERO_X = 100;
-const HERO_Y = 100;
-const DUMMY_X = 400;
-const DUMMY_Y = 100;
+/** Where a case's number rises from. */
+const SPAWN_X = 400;
+const SPAWN_Y = 100;
 
-/** How much a case's hit lands for. */
+/** How much a case's hit lands for, and how much a second one adds to it. */
 const HIT_AMOUNT = 37;
+const JOIN_AMOUNT = 5;
 
 /** A fraction of the way between two ticks, so a case reads the rise between them. */
 const HALF_WAY = 0.5;
 
-/** More hits in a second than any set of labels here holds. */
+/** More numbers at once than any set of labels here holds. */
 const BURST = 200;
+
+/** The tick a case's first number starts on, and a later one inside the same life. */
+const START = 0;
+const LATER = 3;
 
 const NO_ALPHA = 0;
 
 type Arranged = {
-  world: Simulation;
-  dummy: Unit;
-  dummyId: EntityId;
   numbers: FloatingNumberViews;
-  flashes: HitFlashes;
   labels: LabelRecorder[];
-  /** One `unit_damaged` on the dummy, as the damage rule writes it, shown at `alpha`. */
-  hit: (amount?: number, alpha?: number) => void;
+  /** One number rising from the same place, at tick `tick`, and the label it took. */
+  spawn: (amount?: number, tick?: number) => number;
 };
 
-/** A world with the hero and a dummy in it, and `size` floating numbers over recording labels. */
+/** `size` floating numbers over recording labels. */
 const arrange = (size: number): Arranged => {
-  const world = makeWorld({ seed: 1 });
-
-  spawnHero(world, { x: HERO_X, y: HERO_Y });
-
-  const dummy = spawnUnit(world, {
-    kind: "enemy",
-    x: DUMMY_X,
-    y: DUMMY_Y,
-  });
-  const dummyId = unitIdOf(world, dummy);
   const labels: LabelRecorder[] = [];
   const numbers = createFloatingNumberViews(size, (labelSize) => {
     const label = new LabelRecorder(labelSize);
@@ -68,89 +45,44 @@ const arrange = (size: number): Arranged => {
 
     return label;
   });
-  const flashes = new HitFlashes();
 
   return {
-    world,
-    dummy,
-    dummyId,
     numbers,
-    flashes,
     labels,
-    hit: (amount = HIT_AMOUNT, alpha = NO_ALPHA): void => {
-      showHit(
-        damageEvent(dummyId, amount, world.view.tick),
-        world.view,
-        alpha,
-        flashes,
-        numbers,
-      );
-    },
+    spawn: (amount = HIT_AMOUNT, tick = START): number =>
+      numbers.spawn(SPAWN_X, SPAWN_Y, amount, tick),
   };
 };
-
-/** A `unit_damaged` as the damage rule writes one: the amount that landed, on the unit it landed on. */
-const damageEvent = (
-  unitId: EntityId,
-  amount: number,
-  tick: number,
-): Readonly<DomainEvent> => ({
-  kind: "unit_damaged",
-  tick,
-  orb: -1,
-  abilityId: null,
-  statusId: null,
-  slot: 0,
-  reason: null,
-  unitId,
-  sourceId: null,
-  zoneId: null,
-  projectileId: null,
-  amount,
-  damageType: "physical",
-});
 
 /** The labels showing something this frame. */
 const visible = (arranged: Arranged): LabelRecorder[] =>
   arranged.labels.filter((label) => label.visible);
 
-describe("the floating numbers over a hit", () => {
-  it("show nothing at all until a hit is drained", () => {
+describe("the floating numbers over the arena", () => {
+  it("show nothing at all until one is spawned", () => {
     const arranged = arrange(4);
 
-    arranged.numbers.sync(arranged.world.view.tick, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA);
 
     expect(visible(arranged)).toHaveLength(0);
     expect(arranged.numbers.rises).toBe(0);
   });
 
-  it("spawn one number reading the amount that landed, above the unit that took it", () => {
+  it("show one number reading the amount it was spawned for, above where it landed", () => {
     const arranged = arrange(4);
 
-    arranged.hit();
-    arranged.numbers.sync(arranged.world.view.tick, NO_ALPHA);
+    arranged.spawn();
+    arranged.numbers.sync(START, NO_ALPHA);
 
     const [number] = visible(arranged);
 
     if (number === undefined) {
-      throw new Error("A hit shows one number");
+      throw new Error("A spawn shows one number");
     }
 
     expect(number.text).toBe(String(HIT_AMOUNT));
-    expect(number.x).toBe(DUMMY_X);
-    expect(number.y).toBeLessThan(DUMMY_Y - arranged.dummy.collisionRadius);
-  });
-
-  it("raise the flash on the unit that took the hit, for the length of a flash", () => {
-    const arranged = arrange(4);
-    const now = arranged.world.view.tick;
-
-    arranged.hit();
-
-    expect(arranged.flashes.isFlashing(arranged.dummyId, now)).toBe(true);
-    expect(
-      arranged.flashes.isFlashing(arranged.dummyId, now + HIT_FLASH_TICKS),
-    ).toBe(false);
+    expect(number.x).toBe(SPAWN_X);
+    expect(number.y).toBeLessThan(SPAWN_Y);
   });
 
   it("put every number at the floating-text band", () => {
@@ -163,27 +95,26 @@ describe("the floating numbers over a hit", () => {
 
   it("rise and fade as the ticks pass, and are gone when the last one has", () => {
     const arranged = arrange(4);
-    const start = arranged.world.view.tick;
 
-    arranged.hit();
-    arranged.numbers.sync(start, NO_ALPHA);
+    arranged.spawn();
+    arranged.numbers.sync(START, NO_ALPHA);
 
     const [number] = visible(arranged);
 
     if (number === undefined) {
-      throw new Error("A hit shows one number");
+      throw new Error("A spawn shows one number");
     }
 
     const top = number.y;
 
     expect(number.alpha).toBe(1);
 
-    arranged.numbers.sync(start + FLOATING_NUMBER_TICKS / 2, NO_ALPHA);
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS / 2, NO_ALPHA);
 
     expect(number.y).toBeLessThan(top);
     expect(number.alpha).toBeCloseTo(HALF_WAY);
 
-    arranged.numbers.sync(start + FLOATING_NUMBER_TICKS, NO_ALPHA);
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA);
 
     expect(number.visible).toBe(false);
     expect(arranged.numbers.rises).toBe(0);
@@ -191,27 +122,26 @@ describe("the floating numbers over a hit", () => {
 
   it("advance by the fraction between two ticks, and hold still while it does not move", () => {
     const arranged = arrange(4);
-    const start = arranged.world.view.tick;
 
-    arranged.hit();
-    arranged.numbers.sync(start, NO_ALPHA);
+    arranged.spawn();
+    arranged.numbers.sync(START, NO_ALPHA);
 
     const [number] = visible(arranged);
 
     if (number === undefined) {
-      throw new Error("A hit shows one number");
+      throw new Error("A spawn shows one number");
     }
 
     const top = number.y;
 
-    arranged.numbers.sync(start, HALF_WAY);
+    arranged.numbers.sync(START, HALF_WAY);
 
     const halfway = number.y;
 
     expect(halfway).toBeLessThan(top);
 
     // A paused driver hands the same tick and the same fraction every frame.
-    arranged.numbers.sync(start, HALF_WAY);
+    arranged.numbers.sync(START, HALF_WAY);
 
     expect(number.y).toBe(halfway);
     expect(number.alpha).toBe(1 - HALF_WAY / FLOATING_NUMBER_TICKS);
@@ -221,11 +151,11 @@ describe("the floating numbers over a hit", () => {
     const size = 8;
     const arranged = arrange(size);
 
-    for (let hit = 0; hit < BURST; hit += 1) {
-      arranged.hit();
+    for (let spawn = 0; spawn < BURST; spawn += 1) {
+      arranged.spawn();
     }
 
-    arranged.numbers.sync(arranged.world.view.tick, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA);
 
     expect(arranged.numbers.size).toBe(size);
     expect(arranged.labels).toHaveLength(size);
@@ -236,8 +166,8 @@ describe("the floating numbers over a hit", () => {
   it("take every number off the screen when the map goes", () => {
     const arranged = arrange(4);
 
-    arranged.hit();
-    arranged.numbers.sync(arranged.world.view.tick, NO_ALPHA);
+    arranged.spawn();
+    arranged.numbers.sync(START, NO_ALPHA);
 
     expect(visible(arranged)).toHaveLength(1);
 
@@ -247,30 +177,124 @@ describe("the floating numbers over a hit", () => {
     expect(arranged.numbers.rises).toBe(0);
   });
 
-  it("show nothing for a hit on a unit the tick already took away", () => {
-    const arranged = arrange(4);
-    const now = arranged.world.view.tick;
+  it("hand back no label at all when the set holds none", () => {
+    const arranged = arrange(0);
 
-    releaseUnit(arranged.world.state, arranged.dummyId);
-    arranged.hit();
-    arranged.numbers.sync(now, NO_ALPHA);
-
-    expect(visible(arranged)).toHaveLength(0);
+    expect(arranged.spawn()).toBe(NO_NUMBER);
     expect(arranged.numbers.rises).toBe(0);
-    expect(arranged.flashes.isFlashing(arranged.dummyId, now)).toBe(false);
+  });
+});
+
+describe("a number another hit joins", () => {
+  it("reads what both hits landed for, and takes no second label", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn();
+
+    expect(
+      arranged.numbers.addTo(
+        label,
+        arranged.numbers.spawnAt(label),
+        JOIN_AMOUNT,
+      ),
+    ).toBe(true);
+
+    arranged.numbers.sync(START, NO_ALPHA);
+
+    expect(visible(arranged)).toHaveLength(1);
+    expect(arranged.labels[label]?.text).toBe(String(HIT_AMOUNT + JOIN_AMOUNT));
+    expect(arranged.numbers.rises).toBe(1);
   });
 
-  it("ignore an event that is about anything but a hit", () => {
+  it("keeps the rise and the fade it began with, rather than starting them again", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn();
+
+    arranged.numbers.sync(START, NO_ALPHA);
+
+    const number = arranged.labels[label];
+
+    if (number === undefined) {
+      throw new Error("A spawn takes a label");
+    }
+
+    const top = number.y;
+
+    arranged.numbers.addTo(label, arranged.numbers.spawnAt(label), JOIN_AMOUNT);
+    arranged.numbers.sync(LATER, NO_ALPHA);
+
+    expect(number.y).toBeLessThan(top);
+    expect(number.alpha).toBeCloseTo(1 - LATER / FLOATING_NUMBER_TICKS);
+  });
+
+  it("adds up what landed and rounds once, rather than rounding each hit", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn(0.4);
+    const spawn = arranged.numbers.spawnAt(label);
+
+    arranged.numbers.addTo(label, spawn, 0.4);
+    arranged.numbers.addTo(label, spawn, 0.4);
+
+    expect(arranged.labels[label]?.text).toBe("1");
+  });
+
+  it("writes the label only when what it reads changes", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn();
+    const number = arranged.labels[label];
+
+    if (number === undefined) {
+      throw new Error("A spawn takes a label");
+    }
+
+    const rewrites = number.rewrites;
+
+    arranged.numbers.addTo(label, arranged.numbers.spawnAt(label), 0);
+
+    expect(number.rewrites).toBe(rewrites);
+  });
+
+  it("refuses a join naming a spawn the set has since recycled", () => {
+    const size = 2;
+    const arranged = arrange(size);
+    const label = arranged.spawn();
+    const spawn = arranged.numbers.spawnAt(label);
+
+    for (let taken = 0; taken < size; taken += 1) {
+      arranged.spawn(JOIN_AMOUNT);
+    }
+
+    expect(arranged.numbers.addTo(label, spawn, JOIN_AMOUNT)).toBe(false);
+    expect(arranged.labels[label]?.text).toBe(String(JOIN_AMOUNT));
+  });
+
+  it("refuses a join on a number that has finished its rise", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn();
+
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA);
+
+    expect(
+      arranged.numbers.addTo(
+        label,
+        arranged.numbers.spawnAt(label),
+        JOIN_AMOUNT,
+      ),
+    ).toBe(false);
+  });
+
+  it("refuses a join on a number the map load took away", () => {
+    const arranged = arrange(4);
+    const label = arranged.spawn();
+    const spawn = arranged.numbers.spawnAt(label);
+
+    arranged.numbers.releaseAll();
+
+    expect(arranged.numbers.addTo(label, spawn, JOIN_AMOUNT)).toBe(false);
+  });
+
+  it("refuses a join on no label at all", () => {
     const arranged = arrange(4);
 
-    showHit(
-      { ...damageEvent(arranged.dummyId, HIT_AMOUNT, 0), kind: "unit_died" },
-      arranged.world.view,
-      NO_ALPHA,
-      arranged.flashes,
-      arranged.numbers,
-    );
-
-    expect(arranged.numbers.rises).toBe(0);
+    expect(arranged.numbers.addTo(NO_NUMBER, 1, JOIN_AMOUNT)).toBe(false);
   });
 });

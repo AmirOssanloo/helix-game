@@ -93,6 +93,7 @@ The HUD is in its own scene and needs no band. Within a band, draw order is pool
 - **A status icon** is a baked icon frame — an outlined square with one glyph, one frame per status — drawn above the unit. A unit's icons are their own view kind: one row of quads per unit at the text band, bound while the unit is on screen and wearing anything, one icon per row of its status table in table order. The row holds no clock; a status is on the table or it is not.
 - **Damage numbers and every HUD number** are `BitmapText` with the atlas font. `Text` is for a static label that changes rarely — a warning banner, a menu — and is never updated inside the sync.
 - **A floating number** is one of a fixed set of those texts at the text band, parked where a hit landed and rising and fading over its whole life. Its rise is the tick count plus the driver's fraction against the tick it was spawned on, so it freezes with a paused simulation and replays the same. Spawning walks the set in order, so more hits at once than the set holds recycles the number whose rise began longest ago and counts it, rather than dropping the newest or making a text mid-play. The set is emptied when a map loads.
+- **A hit inside the window joins the number already rising for that unit** rather than raising a second one beside it: it adds what it landed for to the number and rewrites it where it stands, and the number keeps the rise and the fade its first hit began, so it leaves on that schedule and the hit after it starts a fresh one. Damage taken every tick would otherwise be a number a tick, overlapping into a block and emptying the set on top of that. Which unit has a number rising, where, and since when is one record per slot of the unit pool, the flashes' shape, keyed by the id so a reused slot joins nothing; the set holds the spawn running on each label and refuses a join naming one it has since recycled, faded, or released.
 
 No filters, no post-processing, no masks, no blend modes. Each one breaks the batch.
 
@@ -157,6 +158,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Depth | Fixed bands: ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
 | Hit flash | Fill-mode tint over the whole view, from one record of which units were hit and until which tick; never a clock on a view |
 | Damage numbers | A fixed set of `BitmapText` at the text band, spawned where a hit landed, rising and fading by the tick count and the fraction; the oldest recycled when the set is full, and counted |
+| Joining a number | A hit inside the window adds to the number already rising for that unit and rewrites it in place, keeping the rise it began with; one record per slot of the unit pool, keyed by the id, and a join naming a recycled spawn is refused |
 | Elite outline | A second quad bound to the entity |
 | Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |

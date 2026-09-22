@@ -19,7 +19,7 @@ import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import { createFloatingNumberViews } from "../views/floating-number.view";
-import { HitFlashes, showHit } from "../views/hit-feedback";
+import { HitFlashes, HitNumbers, showHit } from "../views/hit-feedback";
 import type { ObstacleViews } from "../views/obstacle.view";
 import { createObstacleViews } from "../views/obstacle.view";
 import type { OrbViews } from "../views/orb.view";
@@ -90,6 +90,7 @@ type Stage = {
   orbs: OrbViews;
   numbers: FloatingNumberViews;
   flashes: HitFlashes;
+  hitNumbers: HitNumbers;
   overlays: DebugOverlays;
   /** The map whose obstacles and bounds are bound, so a map load rebinds them once. */
   boundMapId: string | null;
@@ -185,6 +186,7 @@ export class PlayScene extends Phaser.Scene {
       ),
       numbers: createFloatingNumberViews(FLOATING_NUMBER_COUNT, makeLabel),
       flashes: new HitFlashes(),
+      hitNumbers: new HitNumbers(),
       overlays: new DebugOverlays(makeQuad, makeLabel, frameSizes),
       boundMapId: null,
     };
@@ -285,7 +287,14 @@ export class PlayScene extends Phaser.Scene {
     );
 
     while (event !== null) {
-      showHit(event, this.context.world, alpha, stage.flashes, stage.numbers);
+      showHit(
+        event,
+        this.context.world,
+        alpha,
+        stage.flashes,
+        stage.hitNumbers,
+        stage.numbers,
+      );
       event = this.context.events.read(this.reader);
     }
   }

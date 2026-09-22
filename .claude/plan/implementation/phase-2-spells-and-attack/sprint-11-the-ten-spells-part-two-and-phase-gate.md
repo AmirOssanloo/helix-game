@@ -112,7 +112,7 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 | Layer | presentation, tests |
 | Size | 0.5 |
 | Depends on | P2-S09-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** The floating-number set learns to add to a number instead of raising a second one. A hit on a unit that already has a number rising, spawned inside a window of ticks, adds its amount to that number and rewrites the text in place; the number keeps the rise and the fade it began with, so it leaves on its own schedule and the next hit after it starts a fresh one. A hit on a unit with no number, or one older than the window, raises a number as now. The window is a named constant beside the hit flash's, in ticks. The bookkeeping is one entry per slot of the unit pool, as the flashes are, keyed by the id so a reused slot inherits nothing.
 
@@ -131,6 +131,8 @@ Numbers are white, so a merged number needs no colour rule yet; the HUD page's d
 **Definition of done:** Every change · Anything under `src/presentation`.
 
 > **Note, 2026-09-22:** unplanned, from the maintainer's arena walk of P2-S11-T01. Damage over time is taken every tick, which section 4 of the catalogue asks for and which makes the total right; the presentation's rule that every hit raises a number was written for discrete hits and turns the drip into thirty numbers a second, overlapping into a block. At the orb cap one burning dummy recycles the whole 64-number set twice a second, so a real hit beside it loses its number early, which is the worse half. Nothing in the domain changes: the arithmetic, the events, and the replays stand. Bolide's `burn` in T02 is the same shape, so this lands before it is walked.
+
+> **Note, 2026-09-22:** the window is a third of a second, ten ticks, so a burning unit reads as three numbers a second. Two pieces the build needed and did not name: the number set had to hand back the label it spawned onto and the spawn running there, because it recycles a label whose rise is still running and a hit must not add to the number that took it; and `tests/presentation/floating-number.spec.ts` held both the set's own rules and what a drained hit does, so the hit cases moved to the `hit-feedback.spec.ts` the ticket names and the set's stayed. The view changed, so the render benchmark is a person's and is a row of its own in `STATUS.md`.
 
 ---
 
@@ -171,7 +173,7 @@ Content: `src/content/spells/updraft.def.ts` names the new key. Docs: section 3.
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 · T06 |
+| Actual days per ticket | T01 1.5 · T02 · T03 · T04 · T05 0.5 · T06 |
 
 ## Risks in this sprint
 

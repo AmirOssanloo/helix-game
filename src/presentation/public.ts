@@ -83,8 +83,15 @@ export {
   FLOATING_NUMBER_SIZE,
   FLOATING_NUMBER_TICKS,
   FloatingNumberViews,
+  NO_NUMBER,
 } from "./views/floating-number.view";
-export { HIT_FLASH_TICKS, HitFlashes, showHit } from "./views/hit-feedback";
+export {
+  HIT_FLASH_TICKS,
+  HIT_NUMBER_MERGE_TICKS,
+  HitFlashes,
+  HitNumbers,
+  showHit,
+} from "./views/hit-feedback";
 export { createObstacleViews, ObstacleViews } from "./views/obstacle.view";
 export { createOrbViews, orbSlotsOf, OrbViews } from "./views/orb.view";
 export {
