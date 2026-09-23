@@ -5,7 +5,10 @@ import {
   DEPTH_TEXT,
   FLOATING_NUMBER_TICKS,
   NO_NUMBER,
+  Projection,
 } from "@presentation/public";
+import type { ScreenPlacement } from "@presentation/public";
+import type { Vec2 } from "@shared/public";
 import { FLAT_PLACEMENT, LabelRecorder } from "../helpers";
 
 /** Where a case's number rises from. */
@@ -35,8 +38,22 @@ type Arranged = {
   spawn: (amount?: number, tick?: number) => number;
 };
 
-/** `size` floating numbers over recording labels. */
-const arrange = (size: number): Arranged => {
+/** Hits across the arena: a corner, the two far edges, and the far corner, each drawn somewhere else on the screen. */
+const ACROSS_THE_ARENA: readonly Vec2[] = [
+  { x: 0, y: 0 },
+  { x: 3000, y: 200 },
+  { x: 200, y: 3000 },
+  { x: 2400, y: 2400 },
+];
+
+/** How far through its life a case reads a number: at the start, part way, and near the end. */
+const THROUGH_THE_RISE: readonly number[] = [0, 7, 22];
+
+/** `size` floating numbers over recording labels, placed by `placement`. */
+const arrange = (
+  size: number,
+  placement: ScreenPlacement = FLAT_PLACEMENT,
+): Arranged => {
   const labels: LabelRecorder[] = [];
   const numbers = createFloatingNumberViews(
     size,
@@ -47,7 +64,7 @@ const arrange = (size: number): Arranged => {
 
       return label;
     },
-    FLAT_PLACEMENT,
+    placement,
   );
 
   return {
@@ -300,5 +317,46 @@ describe("a number another hit joins", () => {
     const arranged = arrange(4);
 
     expect(arranged.numbers.addTo(NO_NUMBER, 1, JOIN_AMOUNT)).toBe(false);
+  });
+});
+
+describe("a number in the isometric view", () => {
+  it("rises straight up the screen from where its hit is drawn, by the same offset at every point of the arena", () => {
+    const projection = new Projection();
+    const drawn: Vec2 = { x: 0, y: 0 };
+    const offsets: number[][] = [];
+
+    for (const point of ACROSS_THE_ARENA) {
+      const arranged = arrange(1, projection);
+      const offsetsHere: number[] = [];
+
+      arranged.numbers.spawn(point.x, point.y, HIT_AMOUNT, START);
+      projection.toScreen(point.x, point.y, drawn);
+
+      for (const ticks of THROUGH_THE_RISE) {
+        arranged.numbers.sync(START + ticks, NO_ALPHA);
+
+        const [number] = visible(arranged);
+
+        if (number === undefined) {
+          throw new Error("A spawn shows one number");
+        }
+
+        // Up the screen, never along a diamond edge: the number keeps the drawn x of its hit.
+        expect(number.x).toBeCloseTo(drawn.x);
+        expect(number.y).toBeLessThan(drawn.y);
+        offsetsHere.push(number.y - drawn.y);
+      }
+
+      offsets.push(offsetsHere);
+    }
+
+    const [first, ...rest] = offsets;
+
+    for (const offsetsHere of rest) {
+      offsetsHere.forEach((offset, index) => {
+        expect(offset).toBeCloseTo(first?.[index] ?? Number.NaN);
+      });
+    }
   });
 });

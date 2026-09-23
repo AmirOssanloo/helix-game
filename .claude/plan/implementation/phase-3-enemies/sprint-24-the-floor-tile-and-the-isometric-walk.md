@@ -23,7 +23,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | P3-S23-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Text and icons stay outside the ground layer, so they read upright and are not squashed: the floating numbers, the status icons over a unit, and every debug label (state labels, cell counts, the readouts an overlay prints). Each is placed at the projection of its world anchor, with its screen offset added after projecting, so "above the unit" means up the screen. The pools and bands are unchanged.
 
@@ -36,6 +36,8 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 - `tests/presentation/floating-number.spec.ts`, `status-icon-view.spec.ts`, and `overlays.spec.ts` extended: a label's position is the projection of its anchor plus its screen offset.
 
 **Definition of done:** Every change · Anything under `src/presentation`.
+
+> Closed 2026-09-23: sprint 23's T01 had already moved the numbers, the icons, and the labels out of the ground layer and onto the projection, so nothing under `src/` changed. The three specs now run the real projection across the arena as well as the flat one.
 
 ---
 
@@ -94,7 +96,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | All ten spells walked in the view by the maintainer | |
 | Render benchmark: fps, render ms, draws, heap, on this branch and before P3-S23-T01 | |
 | The phase 2 gate session replays identically | |
-| Actual days per ticket | T01 · T02 · T03 |
+| Actual days per ticket | T01 0.1 · T02 · T03 |
 
 ## Risks in this sprint
 

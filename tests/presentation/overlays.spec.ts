@@ -6,9 +6,13 @@ import {
   applyDamage,
   setStraightPath,
 } from "@domain/public";
-import type { OverlayToggles } from "@presentation/public";
-import { createOverlayToggles, DebugOverlays } from "@presentation/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { OverlayToggles, ScreenPlacement } from "@presentation/public";
+import {
+  createOverlayToggles,
+  DebugOverlays,
+  Projection,
+} from "@presentation/public";
+import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FixedHash,
@@ -65,6 +69,21 @@ const MAX_TICKS = 900;
 /** A state label's size, which tells it apart from a hash cell's count. */
 const STATE_LABEL_SIZE = 16;
 
+/** Dummies standing around the rectangle, clear of the wall, each drawn somewhere else on the screen. */
+const AROUND_THE_RECT: readonly Vec2[] = [
+  { x: -300, y: -300 },
+  { x: 300, y: -300 },
+  { x: -300, y: 300 },
+  { x: 300, y: 300 },
+];
+
+/** Occupied hash cells around the rectangle, by column and row. */
+const CELLS_AROUND_THE_RECT = [
+  { cellX: 0, cellY: 0, count: 1 },
+  { cellX: -3, cellY: 1, count: 2 },
+  { cellX: 2, cellY: -3, count: 3 },
+];
+
 type Arranged = {
   world: Simulation;
   hero: Unit;
@@ -77,8 +96,8 @@ type Arranged = {
   sync: () => void;
 };
 
-/** The overlays over a world with the hero at the origin and a hash that answers what the test says, every toggle off. */
-const arrange = (): Arranged => {
+/** The overlays, placed by `placement`, over a world with the hero at the origin and a hash that answers what the test says, every toggle off. */
+const arrange = (placement: ScreenPlacement = FLAT_PLACEMENT): Arranged => {
   const world = makeWorld({
     seed: 1,
     map: makeMapDef.build({ obstacles: [WALL] }),
@@ -110,7 +129,7 @@ const arrange = (): Arranged => {
       return label;
     },
     () => FRAME_WIDTH,
-    FLAT_PLACEMENT,
+    placement,
   );
   const toggles = createOverlayToggles();
 
@@ -455,5 +474,82 @@ describe("the debug overlays", () => {
     arranged.sync();
 
     expect(writesOf(arranged.quads)).toBe(0);
+  });
+});
+
+describe("the debug labels in the isometric view", () => {
+  it("stand a state label over where each body is drawn, by the same offset up the screen wherever it stands", () => {
+    const projection = new Projection();
+    const arranged = arrange(projection);
+    const drawn: Vec2 = { x: 0, y: 0 };
+    const dummies = AROUND_THE_RECT.map((at) =>
+      spawnEnemy(arranged.world, {
+        definitionId: "training_dummy",
+        x: at.x,
+        y: at.y,
+      }),
+    );
+
+    arranged.hash.ids = dummies.map((dummy) => unitIdOf(arranged.world, dummy));
+    arranged.toggles.stateLabels = true;
+    arranged.sync();
+
+    const shown = arranged.labels.filter(
+      (label) => label.visible && label.size === STATE_LABEL_SIZE,
+    );
+
+    expect(shown).toHaveLength(dummies.length);
+
+    const rises = dummies.map((dummy, index) => {
+      const label = shown[index];
+
+      if (label === undefined) {
+        throw new Error("Every dummy wears a label");
+      }
+
+      projection.toScreen(dummy.prev.x, dummy.prev.y, drawn);
+      expect(label.x).toBeCloseTo(drawn.x);
+      expect(label.y).toBeLessThan(
+        drawn.y - projection.riseOf(dummy.collisionRadius),
+      );
+
+      return label.y - drawn.y;
+    });
+
+    for (const rise of rises) {
+      expect(rise).toBeCloseTo(rises[0] ?? Number.NaN);
+    }
+  });
+
+  it("put a hash cell's count where the centre of its outline is drawn", () => {
+    const projection = new Projection();
+    const arranged = arrange(projection);
+    const drawn: Vec2 = { x: 0, y: 0 };
+    const size = arranged.hash.cellSize;
+
+    arranged.hash.cells = CELLS_AROUND_THE_RECT;
+    arranged.toggles.hashCells = true;
+    arranged.sync();
+
+    const shown = arranged.labels.filter((label) => label.visible);
+
+    expect(shown).toHaveLength(CELLS_AROUND_THE_RECT.length);
+
+    CELLS_AROUND_THE_RECT.forEach((cell, index) => {
+      const label = shown[index];
+
+      if (label === undefined) {
+        throw new Error("Every occupied cell wears its count");
+      }
+
+      projection.toScreen(
+        (cell.cellX + 0.5) * size,
+        (cell.cellY + 0.5) * size,
+        drawn,
+      );
+      expect(label.text).toBe(String(cell.count));
+      expect(label.x).toBeCloseTo(drawn.x);
+      expect(label.y).toBeCloseTo(drawn.y);
+    });
   });
 });

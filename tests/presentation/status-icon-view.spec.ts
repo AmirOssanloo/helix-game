@@ -7,13 +7,14 @@ import {
   STATUS_TABLE_SIZE,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { StatusIconViewPool } from "@presentation/public";
+import type { ScreenPlacement, StatusIconViewPool } from "@presentation/public";
 import {
   createStatusIconViewPool,
   DEPTH_TEXT,
+  Projection,
   syncStatusIconViews,
 } from "@presentation/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FLAT_PLACEMENT,
@@ -31,6 +32,17 @@ const HERO_X = 100;
 const HERO_Y = 100;
 
 const AROUND_HERO: Rect = { minX: 0, minY: 0, maxX: 300, maxY: 300 };
+
+/** How far around the hero a case standing it elsewhere asks the hash. */
+const AROUND = 200;
+
+/** Where a case stands the hero across the arena, each drawn somewhere else on the screen. */
+const ACROSS_THE_ARENA: readonly Vec2[] = [
+  { x: HERO_X, y: HERO_Y },
+  { x: 2000, y: 300 },
+  { x: 300, y: 2000 },
+  { x: 1600, y: 1600 },
+];
 const FAR_AWAY: Rect = { minX: 3000, minY: 3000, maxX: 3300, maxY: 3300 };
 
 /** How long a status a case applies lasts: two seconds at 30 Hz, long enough to sync a frame under. */
@@ -50,10 +62,14 @@ type Arranged = {
   wear: (statusId: string) => void;
 };
 
-/** A world holding the hero at (100, 100), and a pool of `size` rows of icons over recording quads. */
-const arrange = (size = 1): Arranged => {
+/** A world holding the hero at `at`, (100, 100) unless a case says, and a pool of `size` rows of icons over recording quads placed by `placement`. */
+const arrange = (
+  size = 1,
+  placement: ScreenPlacement = FLAT_PLACEMENT,
+  at: Vec2 = { x: HERO_X, y: HERO_Y },
+): Arranged => {
   const world = makeWorld({ seed: 1 });
-  const hero = spawnHero(world, { x: HERO_X, y: HERO_Y });
+  const hero = spawnHero(world, at);
   const heroId = world.state.run.heroId;
   const quads: QuadRecorder[] = [];
   const candidates = createCandidateBuffer(UNIT_CAPACITY);
@@ -67,7 +83,7 @@ const arrange = (size = 1): Arranged => {
       return quad;
     },
     () => FRAME_WIDTH,
-    FLAT_PLACEMENT,
+    placement,
   );
 
   if (heroId === null) {
@@ -222,5 +238,48 @@ describe("the status icons above a unit", () => {
     expect(arranged.pool.bound).toBe(0);
     expect(arranged.pool.misses).toBe(1);
     expect(arranged.quads).toHaveLength(0);
+  });
+});
+
+describe("the status icons in the isometric view", () => {
+  it("stand side by side over where the body is drawn, level with the screen, by the same offset at every point of the arena", () => {
+    const projection = new Projection();
+    const drawn: Vec2 = { x: 0, y: 0 };
+    const rises: number[] = [];
+
+    for (const at of ACROSS_THE_ARENA) {
+      const arranged = arrange(1, projection, at);
+
+      arranged.wear("stun");
+      arranged.wear("silence");
+      arranged.sync({
+        minX: at.x - AROUND,
+        minY: at.y - AROUND,
+        maxX: at.x + AROUND,
+        maxY: at.y + AROUND,
+      });
+      projection.toScreen(arranged.hero.curr.x, arranged.hero.curr.y, drawn);
+
+      const [first, second] = visible(arranged);
+
+      if (first === undefined || second === undefined) {
+        throw new Error("Two statuses show two icons");
+      }
+
+      // Level with the screen, not along a diamond edge, and centred on the drawn body.
+      expect(first.y).toBe(second.y);
+      expect(second.x).toBeGreaterThan(first.x);
+      expect((first.x + second.x) / 2).toBeCloseTo(drawn.x);
+      expect(first.y).toBeLessThan(
+        drawn.y - projection.riseOf(arranged.hero.collisionRadius),
+      );
+      rises.push(first.y - drawn.y);
+    }
+
+    const [rise, ...rest] = rises;
+
+    for (const other of rest) {
+      expect(other).toBeCloseTo(rise ?? Number.NaN);
+    }
   });
 });
