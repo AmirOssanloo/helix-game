@@ -28,7 +28,7 @@ Settled with the maintainer, 2026-09-23:
 | 44 by 22 | 0.6875 | about 1975 | about 2221 | 176 by 88 |
 | 40 by 20 | 0.625 | about 2172 | about 2443 | 160 by 80 |
 
-The proposed answer is 44 by 22, the one slightly wider than today; [Q27](../backlog/open-questions.md) records it until the walk settles it.
+The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 and chose 40 by 20, recorded in [Q27](../backlog/open-questions.md).
 
 ---
 
@@ -41,7 +41,7 @@ The proposed answer is 44 by 22, the one slightly wider than today; [Q27](../bac
 | Layer | presentation, devtools, tests, docs |
 | Size | 2 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** A projection module under `src/presentation/camera/`: world to screen and screen to world for a scale k, and a world angle to its screen angle, each writing into an `out` argument so nothing allocates per frame. A ground layer in `PlayScene`: two nested containers, the outer scaled by (k√2, k√2 / 2) and the inner turned 45 degrees, so a child placed at a world position lands at its projected one. Every world view lies flat and goes inside it unchanged: obstacles, zones, units and their facing, projectiles, orbs, the targeting preview, and the debug overlays. The camera follows the hero's projected position and clamps to the box around the projected bounds; `worldRect` returns the world box around the four unprojected corners of the view, so culling and view binding still read a world rectangle. The camera lens unprojects, so a click resolves to the same world point it did before. The floor is a 2:1 diamond grid painted by the shape painter into the atlas, one frame per candidate scale, one diamond per walkability cell, drawn in screen space and aligned to the projected world origin; the void outside the bounds is four quads in the ground layer over it. A **View scale** selector on the panel switches between the three candidates live. It is presentation state like the overlay toggles, so it is not a command and is not in the log. ADR 0006 is added as `Proposed` with the three candidates, and the lines that say the view is never isometric (the product overview, the roadmap, the map and camera page) point at it.
 
@@ -58,6 +58,8 @@ The proposed answer is 44 by 22, the one slightly wider than today; [Q27](../bac
 - `tests/presentation/input-mapper.spec.ts` extended: a canvas point resolves through the lens to the unprojected world point.
 
 **Definition of done:** Every change · Anything under `src/presentation` (bench rerun) · A developer-panel control · A new decision record.
+
+> Built 2026-09-23. The maintainer walked the three scales the same day and chose 40 by 20, k = 0.625: it gives the widest view of the arena and the most room to plan a route. The containers held: one world draw, and a projected cell's corners match the projection module's. Three things the ticket did not name. A container draws its children in list order and ignores depth, so the ground layer re-sorts its list by band when a pool first binds a quad. The status icons, damage numbers, hash-cell counts, and state labels stand up off the ground, so they stay out of the ground layer and are placed in screen pixels where their point is drawn. The floor frames need a new atlas shape, `diamond_grid`, in the domain's shape union and the definition schema: a type and a schema entry, no rule. The new frames changed the content version, so the recorded phase 1 session was re-stamped. The floor is its own band, −10, under the ground layer.
 
 > The ground layer is the first use of containers in the game. If Phaser 4.2.1 breaks the batch inside one, or composes the transforms wrongly, stop and hand it to the engineering architect before working around it. The fallback, each view projected by hand with rectangles baked as diamond frames, is about 1.5 days more and is R19.
 
@@ -111,11 +113,11 @@ The proposed answer is 44 by 22, the one slightly wider than today; [Q27](../bac
 
 | Check | Result |
 | --- | --- |
-| The scale the maintainer chose, and the date | |
-| World draw calls with and without the floor | |
-| Render benchmark: fps, render ms, draws, heap, on this branch and on the commit before T01 | |
+| The scale the maintainer chose, and the date | 40 by 20, k = 0.625, 2026-09-23: the widest overview, and the easiest to plan movement on. The floor PNG is 160 by 80 |
+| World draw calls with and without the floor | 1 with the floor, and so 1 without: the floor frames are in the one atlas and join the world's batch, and the ground layer's containers did not break it. Read from the world draw-call ring in Chrome on the Apple M1 laptop, 2026-09-23, at all three scales |
+| Render benchmark: fps, render ms, draws, heap, on this branch and on the commit before T01 | Chrome, Apple M1 laptop, 30 seconds each, 2026-09-23. Before T01, `09dbd91`: 60 fps, 1.0 ms, 1 draw, heap 150.4 to 152.4 MB. With T01: 60 fps, 1.0 ms, 1 draw, heap 104.6 to 104.9 MB. The game's own render time at 44 by 22 read 0.6 ms |
 | No page under `docs/` describes a top-down or zoomable view | |
-| Actual days per ticket | T01 · T02 · T03 |
+| Actual days per ticket | T01 0.5 · T02 · T03 |
 
 ## Risks in this sprint
 

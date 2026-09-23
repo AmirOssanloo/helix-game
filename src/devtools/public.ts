@@ -10,6 +10,7 @@ export {
   type GroundPick,
   type OverlayToggles,
   type PanelCommand,
+  type ViewScale,
 } from "./dev-api";
 export { mountPanel, type PanelHandle, type PanelMount } from "./mount-panel";
 export {

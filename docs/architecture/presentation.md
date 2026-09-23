@@ -65,6 +65,7 @@ Fixed bands, no per-frame sorting:
 
 | Band | Depth |
 | --- | --- |
+| Floor | −10 |
 | Ground effects and zones | 0 |
 | Obstacles | 10 |
 | Units | 20 |
@@ -159,7 +160,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | View pool size | What fits on screen plus a margin; a presentation number |
 | Interpolation | Previous to current entity position by the driver's fraction |
 | The event drain | First of the frame, before the views, so a hit the ticks just landed shows on that frame |
-| Depth | Fixed bands: ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
+| Depth | Fixed bands: floor −10, ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
 | Hit flash | Fill-mode tint over the whole view, from one record of which units were hit and until which tick; never a clock on a view |
 | Damage numbers | A fixed set of `BitmapText` at the text band, spawned where a hit landed, rising and fading by the tick count and the fraction; the oldest recycled when the set is full, and counted |
 | Joining a number | A hit inside the window adds to the number already rising for that unit and rewrites it in place, keeping the rise it began with; one record per slot of the unit pool, keyed by the id, and a join naming a recycled spawn is refused |

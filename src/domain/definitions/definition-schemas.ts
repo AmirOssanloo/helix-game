@@ -188,6 +188,10 @@ const atlasShapeSchema: Schema<AtlasShape> = taggedUnion<"kind", AtlasShape>(
       thickness: nonNegativeSchema,
     }),
     icon: objectOf({ kind: oneOf(["icon"]), glyph: stringSchema }),
+    diamond_grid: objectOf({
+      kind: oneOf(["diamond_grid"]),
+      diamondWidth: countSchema,
+    }),
     glyph: objectOf({ kind: oneOf(["glyph"]), character: stringSchema }),
   },
 );

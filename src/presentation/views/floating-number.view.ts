@@ -1,4 +1,6 @@
 import type { Tick } from "@domain/public";
+import type { Vec2 } from "@shared/public";
+import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_TEXT } from "./depth-bands";
 import type { Label, LabelFactory } from "./quad";
 
@@ -8,10 +10,10 @@ export const FLOATING_NUMBER_TICKS = 30;
 /** How tall a number's glyphs are, in pixels a line. */
 export const FLOATING_NUMBER_SIZE = 28;
 
-/** How far a number rises over the whole of that, in world units. */
+/** How far a number rises up the screen over the whole of that, in pixels. */
 const RISE = 56;
 
-/** How far above the point it was spawned at a number starts, in world units. */
+/** How far above where the point it was spawned at is drawn a number starts, in pixels. */
 const LIFT = 8;
 
 /** Placeholder art: every number white, since a colour per damage type waits for the balance pass. */
@@ -32,7 +34,9 @@ const FIRST_SPAWN = 1;
 
 /**
  * The damage numbers floating over the arena: a fixed set of bitmap texts at the text band,
- * each parked where a hit landed, rising and fading over its whole life. A number holds no
+ * each parked where a hit landed, rising up the screen and fading over its whole life. A
+ * number stands up off the ground, so it keeps the world point it was spawned at and is placed
+ * each frame where that point is drawn. A number holds no
  * clock of its own — its rise is the tick count plus the driver's fraction against the tick
  * it was spawned on, so it freezes with a paused simulation and replays the same.
  *
@@ -50,10 +54,15 @@ const FIRST_SPAWN = 1;
 export class FloatingNumberViews {
   private readonly labels: readonly Label[];
 
+  private readonly placement: ScreenPlacement;
+
+  /** Scratch for where a number's point is drawn this frame. */
+  private readonly drawn: Vec2 = { x: 0, y: 0 };
+
   /** Per label: the tick its rise began on. */
   private readonly startTicks: Tick[];
 
-  /** Per label: where it rises from, which is where the hit landed. */
+  /** Per label: the world point it rises from, which is where the hit landed. */
   private readonly xs: number[];
 
   private readonly ys: number[];
@@ -80,8 +89,9 @@ export class FloatingNumberViews {
 
   private recycleCount = 0;
 
-  constructor(labels: readonly Label[]) {
+  constructor(labels: readonly Label[], placement: ScreenPlacement) {
     this.labels = labels;
+    this.placement = placement;
     this.startTicks = [];
     this.xs = [];
     this.ys = [];
@@ -149,7 +159,7 @@ export class FloatingNumberViews {
     this.write(index, label);
 
     this.xs[index] = x;
-    this.ys[index] = y - LIFT;
+    this.ys[index] = y;
     this.startTicks[index] = tick;
     this.rising[index] = true;
     this.spawns[index] = this.nextSpawn;
@@ -221,8 +231,13 @@ export class FloatingNumberViews {
       // A number spawned from an event the tick had already written starts where it was fired.
       const risen = progress < 0 ? 0 : progress;
 
-      label.x = this.xs[index] ?? 0;
-      label.y = (this.ys[index] ?? 0) - RISE * risen;
+      this.placement.toScreen(
+        this.xs[index] ?? 0,
+        this.ys[index] ?? 0,
+        this.drawn,
+      );
+      label.x = this.drawn.x;
+      label.y = this.drawn.y - LIFT - RISE * risen;
       label.alpha = OPAQUE - risen;
       label.visible = true;
     }
@@ -246,6 +261,7 @@ export class FloatingNumberViews {
 export const createFloatingNumberViews = (
   size: number,
   makeLabel: LabelFactory,
+  placement: ScreenPlacement,
 ): FloatingNumberViews => {
   const labels: Label[] = [];
 
@@ -253,5 +269,5 @@ export const createFloatingNumberViews = (
     labels.push(makeLabel(FLOATING_NUMBER_SIZE));
   }
 
-  return new FloatingNumberViews(labels);
+  return new FloatingNumberViews(labels, placement);
 };

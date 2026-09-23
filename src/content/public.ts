@@ -3,6 +3,8 @@ export {
   atlasFrames,
   CONE_ANGLES,
   coneFrame,
+  FLOOR_DIAMOND_WIDTHS,
+  floorFrame,
   GLYPH_CHARACTERS,
   statusIconFrame,
   WEDGE_STEPS,

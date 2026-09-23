@@ -53,7 +53,7 @@ True top-down, orthographic. Through the first five phases the art is flat-colou
 ## What is deliberately not in it
 
 - **Multiplayer**, in any form. No replication, no prediction layer, ever.
-- **Isometric projection.** The view is orthographic top-down.
+- **Isometric projection.** Proposed to change: [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md) draws the square world as a 2:1 diamond grid.
 - **Hero selection.** One hero, never chosen by the player. The hero may later have forms decided by design, each with its own body, kit, resources, and armory, swapped mid-fight; that is one hero changing shape, not a roster.
 - **Quick-cast and order queues.** Normal cast only, one current order, no shift-queue, no follow, no hold. The [mechanics spec](./specs/character-movement-and-mechanics.md) states each omission so it cannot be re-imported by habit.
 - **Mobile or touch.** Desktop browsers only.

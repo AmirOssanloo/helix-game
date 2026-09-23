@@ -70,6 +70,42 @@ export const wedgeSweep = (
   endAngle: TWELVE_OCLOCK + (TWO_PI * step) / steps,
 });
 
+/** A grid line climbs one pixel for every two across, which is what makes a diamond twice as wide as it is tall. */
+const PIXELS_ACROSS_PER_PIXEL_DOWN = 2;
+
+/** A diamond is half as tall as it is wide. */
+const DIAMOND_ASPECT = 2;
+
+/** `value` wrapped into zero up to `size`, for a line leaving the frame at one edge and coming back at the other. */
+const wrap = (value: number, size: number): number =>
+  ((value % size) + size) % size;
+
+/**
+ * The two families of grid lines, one pixel thick: one falling to the right and one rising,
+ * each a line every diamond height down the frame's left edge, both passing through its
+ * top-left corner. A frame a whole number of diamonds across and down wraps into itself.
+ */
+const paintDiamondGrid = (
+  painter: AtlasPainter,
+  diamondWidth: number,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void => {
+  const diamondHeight = diamondWidth / DIAMOND_ASPECT;
+
+  for (let start = 0; start < height; start += diamondHeight) {
+    for (let across = 0; across < width; across += 1) {
+      const falling = Math.floor(across / PIXELS_ACROSS_PER_PIXEL_DOWN);
+      const rising = Math.ceil(across / PIXELS_ACROSS_PER_PIXEL_DOWN);
+
+      painter.fillRect(x + across, y + wrap(start + falling, height), 1, 1);
+      painter.fillRect(x + across, y + wrap(start - rising, height), 1, 1);
+    }
+  }
+};
+
 const paintShape = (
   painter: AtlasPainter,
   shape: AtlasShape,
@@ -210,6 +246,12 @@ const paintShape = (
       painter.textAlign = "center";
       painter.textBaseline = "middle";
       painter.fillText(shape.glyph, centreX, centreY);
+
+      return;
+    }
+
+    case "diamond_grid": {
+      paintDiamondGrid(painter, shape.diamondWidth, x, y, width, height);
 
       return;
     }

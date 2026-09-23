@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import type { InputMapper } from "./input-mapper";
 import type { CameraLens } from "./input-ports";
+import type { Unprojection } from "./projected-lens";
+import { projectedLens } from "./projected-lens";
 
 const POINTER_DOWN_EVENT = "pointerdown";
 const POINTER_UP_EVENT = "pointerup";
@@ -10,19 +12,18 @@ const KEY_DOWN_EVENT = "keydown";
 const KEY_UP_EVENT = "keyup";
 const BLUR_EVENT = "blur";
 
-/** The camera as a lens: screen to world through its scroll and zoom at the moment of the call. */
+/** The camera as a lens: screen to world through its scroll and zoom, then back through the projection, at the moment of the call. */
 export const cameraLens = (
   camera: Phaser.Cameras.Scene2D.Camera,
+  projection: Unprojection,
 ): CameraLens => {
   const scratch = new Phaser.Math.Vector2();
 
-  return {
-    worldPointAt: (screenX, screenY, out): void => {
-      camera.getWorldPoint(screenX, screenY, scratch);
-      out.x = scratch.x;
-      out.y = scratch.y;
-    },
-  };
+  return projectedLens((screenX, screenY, out): void => {
+    camera.getWorldPoint(screenX, screenY, scratch);
+    out.x = scratch.x;
+    out.y = scratch.y;
+  }, projection);
 };
 
 /**

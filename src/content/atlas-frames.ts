@@ -129,6 +129,29 @@ const statusIcons: readonly AtlasFrameDef[] = Object.entries(
   shape: { kind: "icon", glyph },
 }));
 
+/**
+ * The diamond widths the floor is baked at, one frame per scale the view can be drawn at, in
+ * pixels a walkability cell is drawn across. The view scale picks one of these by width.
+ */
+export const FLOOR_DIAMOND_WIDTHS: readonly number[] = [48, 44, 40];
+
+/** A floor frame is this many diamonds across and down, as the painted floor tile will be. */
+const FLOOR_DIAMONDS = 4;
+
+/** The frame name the floor at `diamondWidth` is drawn with. */
+export const floorFrame = (diamondWidth: number): string =>
+  `floor_${diamondWidth}`;
+
+/** Each floor frame is drawn unscaled, a pixel a pixel, so the grid's lines stay one pixel thick. */
+const floors: readonly AtlasFrameDef[] = FLOOR_DIAMOND_WIDTHS.map(
+  (diamondWidth): AtlasFrameDef => ({
+    name: floorFrame(diamondWidth),
+    width: FLOOR_DIAMONDS * diamondWidth,
+    height: (FLOOR_DIAMONDS * diamondWidth) / 2,
+    shape: { kind: "diamond_grid", diamondWidth },
+  }),
+);
+
 const wedges: readonly AtlasFrameDef[] = Array.from(
   { length: WEDGE_STEPS },
   (_, index): AtlasFrameDef => ({
@@ -153,6 +176,7 @@ export const atlasFrames: AtlasFrameList = [
   ...shapes,
   ...cones,
   ...statusIcons,
+  ...floors,
   ...wedges,
   ...glyphs,
 ];

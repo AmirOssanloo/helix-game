@@ -45,7 +45,7 @@ Loading a map never recreates the hero. Later, walking through an exit keeps the
 
 ## The camera
 
-Locked on the hero, top-down, orthographic. There is no isometric angle and no perspective: a circle is a circle.
+Locked on the hero, top-down, orthographic. [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) proposes drawing the ground as a 2:1 diamond grid over the square world, at one of three scales on the panel's **View scale**; this page is rewritten when a scale is chosen.
 
 - **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen
 - **Clamped** to the map bounds, so the player never sees past a wall

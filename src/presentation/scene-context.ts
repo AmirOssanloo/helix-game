@@ -2,6 +2,7 @@ import type { AnyCommand, Tick } from "@domain/public";
 import type { RingBuffer } from "@shared/public";
 import type { EventRing, WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
+import type { ViewScale } from "./camera/view-scale";
 import type { SlotFlashes } from "./hud/slot-flashes";
 import type { GroundPick } from "./input/ground-pick";
 import type { OverlayToggles } from "./overlays/overlay-toggles";
@@ -39,7 +40,8 @@ export type SceneRings = Readonly<{
  * Everything a scene is given at construction. A scene composes over these and holds nothing
  * else. The flashes are shared by the two scenes: the play scene's mapper writes one for a
  * cursor it would not open, and the HUD writes one for a refused-command event and draws them
- * all. The overlay toggles are shared with the developer panel, which writes them.
+ * all. The overlay toggles and the view scale are shared with the developer panel, which
+ * writes them.
  */
 export type SceneContext = Readonly<{
   atlas: ShapeAtlas;
@@ -49,6 +51,7 @@ export type SceneContext = Readonly<{
   rings: SceneRings;
   flashes: SlotFlashes;
   overlays: Readonly<OverlayToggles>;
+  viewScale: Readonly<ViewScale>;
   /** The panel's request for the next ground click, answered by the play scene's mapper. */
   groundPick: GroundPick;
   report: Reporter;

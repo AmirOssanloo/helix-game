@@ -1,7 +1,8 @@
 import type { StatusRecord, Unit } from "@domain/public";
 import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect } from "@shared/public";
+import type { DeepReadonly, EntityId, Rect, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_TEXT } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
 import { interpolate } from "./quad";
@@ -10,7 +11,7 @@ import { ViewPool } from "./view-pool";
 /** What every icon quad is made with; the row it draws sets the frame its status names. */
 const FALLBACK_FRAME = "icon_stun";
 
-/** An icon is this many world units across, sits this far above the unit's body, and keeps this gap from the next. */
+/** An icon is this many pixels across, sits this far above the top of the unit's body, and keeps this gap from the next. */
 const ICON_SIZE = 18;
 const ICON_MARGIN = 10;
 const ICON_GAP = 3;
@@ -26,7 +27,9 @@ export type StatusRecords = ReadonlyMap<string, DeepReadonly<StatusRecord>>;
 
 /**
  * The icons above one unit: a row of quads at the floating-text band, one per active row of
- * the unit's status table, centred over the body and laid left to right in table order. It
+ * the unit's status table, centred over the body and laid left to right across the screen in
+ * table order. The row stands up off the ground, so it is placed in screen pixels over where the
+ * body is drawn rather than lying on the floor with it. It
  * holds no clock of its own — a status is on the table or it is not, so an icon appears on the
  * frame after the apply and is gone on the frame after the expiry, and a paused simulation
  * leaves the row exactly as it stands.
@@ -36,15 +39,25 @@ export class StatusIconView {
 
   private readonly frameSizes: FrameSizes;
 
+  private readonly placement: ScreenPlacement;
+
+  /** Scratch for where the body is drawn this frame. */
+  private readonly drawn: Vec2 = { x: 0, y: 0 };
+
   /** Per icon: the frame it shows, so `setFrame` runs only when the status under it changes. */
   private readonly shownFrames: (string | null)[];
 
   /** Per icon: the scale its frame's baked width gives, read once per frame change. */
   private readonly scales: number[];
 
-  constructor(icons: readonly Quad[], frameSizes: FrameSizes) {
+  constructor(
+    icons: readonly Quad[],
+    frameSizes: FrameSizes,
+    placement: ScreenPlacement,
+  ) {
     this.icons = icons;
     this.frameSizes = frameSizes;
+    this.placement = placement;
     this.shownFrames = [];
     this.scales = [];
 
@@ -75,10 +88,18 @@ export class StatusIconView {
    */
   sync(unit: DeepReadonly<Unit>, statuses: StatusRecords, alpha: number): void {
     const shown = this.showFrames(unit, statuses);
-    const x = interpolate(unit.prev.x, unit.curr.x, alpha);
+    const drawn = this.drawn;
+
+    this.placement.toScreen(
+      interpolate(unit.prev.x, unit.curr.x, alpha),
+      interpolate(unit.prev.y, unit.curr.y, alpha),
+      drawn,
+    );
+
+    const x = drawn.x;
     const y =
-      interpolate(unit.prev.y, unit.curr.y, alpha) -
-      unit.collisionRadius -
+      drawn.y -
+      this.placement.riseOf(unit.collisionRadius) -
       ICON_MARGIN -
       ICON_SIZE * HALF;
     const spacing = ICON_SIZE + ICON_GAP;
@@ -161,6 +182,7 @@ export const createStatusIconViewPool = (
   size: number,
   makeQuad: QuadFactory,
   frameSizes: FrameSizes,
+  placement: ScreenPlacement,
 ): StatusIconViewPool => {
   const views: StatusIconView[] = [];
 
@@ -171,7 +193,7 @@ export const createStatusIconViewPool = (
       icons.push(makeQuad(FALLBACK_FRAME));
     }
 
-    views.push(new StatusIconView(icons, frameSizes));
+    views.push(new StatusIconView(icons, frameSizes, placement));
   }
 
   return new ViewPool(views, UNIT_CAPACITY);

@@ -20,8 +20,9 @@ import {
   rowOf,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect } from "@shared/public";
+import type { DeepReadonly, EntityId, Rect, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type {
   FrameSizes,
@@ -79,7 +80,7 @@ const FACING_QUAD_COUNT = 3;
 /** The count label's line height, in pixels of the atlas font. */
 const COUNT_LABEL_SIZE = 20;
 
-/** A state label's line height, and how far above the top of the body it sits, in world units. */
+/** A state label's line height, and how far above the top of the body it sits, in pixels. */
 const STATE_LABEL_SIZE = 16;
 const STATE_LABEL_MARGIN = 14;
 
@@ -522,6 +523,11 @@ class HashCells {
 
   private readonly scalePerUnit: number;
 
+  private readonly placement: ScreenPlacement;
+
+  /** Scratch for where a cell's centre is drawn this frame. */
+  private readonly drawn: Vec2 = { x: 0, y: 0 };
+
   private readonly cell: HashCell = createHashCell();
 
   private labelsBound = 0;
@@ -532,9 +538,11 @@ class HashCells {
     quads: readonly Quad[],
     labels: readonly Label[],
     frameWidth: number,
+    placement: ScreenPlacement,
   ) {
     this.run = new QuadRun(quads);
     this.labels = labels;
+    this.placement = placement;
     this.counts = [];
     this.scalePerUnit = 1 / frameWidth;
 
@@ -584,8 +592,9 @@ class HashCells {
       quad.alpha = CELL_ALPHA;
       quad.visible = true;
 
-      label.x = quad.x;
-      label.y = quad.y;
+      this.placement.toScreen(quad.x, quad.y, this.drawn);
+      label.x = this.drawn.x;
+      label.y = this.drawn.y;
       label.tint = LABEL_TINT;
       label.alpha = OPAQUE;
       label.visible = true;
@@ -891,11 +900,17 @@ class UnitRanges {
 
 /**
  * A label above each unit on screen saying where it stands: an enemy whose behaviour runs the
- * shared machine shows its state in it, the hero its order state. A label is rewritten only
- * when the state under it changes, so a steady fight costs no text rebuild.
+ * shared machine shows its state in it, the hero its order state. A label stands up off the
+ * ground, so it is placed in pixels above where the body is drawn. It is rewritten only when
+ * the state under it changes, so a steady fight costs no text rebuild.
  */
 class StateLabels {
   private readonly labels: readonly Label[];
+
+  private readonly placement: ScreenPlacement;
+
+  /** Scratch for where a body is drawn this frame. */
+  private readonly drawn: Vec2 = { x: 0, y: 0 };
 
   /** Per label: the text it shows, so a steady state costs no rewrite. */
   private readonly texts: string[];
@@ -906,8 +921,9 @@ class StateLabels {
 
   private missCount = 0;
 
-  constructor(labels: readonly Label[]) {
+  constructor(labels: readonly Label[], placement: ScreenPlacement) {
     this.labels = labels;
+    this.placement = placement;
     this.texts = [];
 
     for (let index = 0; index < labels.length; index += 1) {
@@ -942,10 +958,15 @@ class StateLabels {
         break;
       }
 
-      label.x = interpolate(unit.prev.x, unit.curr.x, alpha);
+      this.placement.toScreen(
+        interpolate(unit.prev.x, unit.curr.x, alpha),
+        interpolate(unit.prev.y, unit.curr.y, alpha),
+        this.drawn,
+      );
+      label.x = this.drawn.x;
       label.y =
-        interpolate(unit.prev.y, unit.curr.y, alpha) -
-        unit.collisionRadius -
+        this.drawn.y -
+        this.placement.riseOf(unit.collisionRadius) -
         STATE_LABEL_MARGIN;
       label.tint = LABEL_TINT;
       label.alpha = OPAQUE;
@@ -1032,6 +1053,7 @@ export class DebugOverlays {
     makeQuad: QuadFactory,
     makeLabel: LabelFactory,
     frameSizes: FrameSizes,
+    placement: ScreenPlacement,
   ) {
     const labels: Label[] = [];
     const stateLabels: Label[] = [];
@@ -1072,6 +1094,7 @@ export class DebugOverlays {
       makeQuads(HASH_CELL_COUNT, CELL_OUTLINE_FRAME, makeQuad),
       labels,
       frameSizes(CELL_OUTLINE_FRAME),
+      placement,
     );
     this.areas = new SpellAreas(
       makeQuads(AREA_COUNT, AREA_CIRCLE_FRAME, makeQuad),
@@ -1085,7 +1108,7 @@ export class DebugOverlays {
       makeQuads(RING_COUNT, RANGE_FRAME, makeQuad),
       frameSizes(RANGE_FRAME),
     );
-    this.states = new StateLabels(stateLabels);
+    this.states = new StateLabels(stateLabels, placement);
   }
 
   /** Frames an overlay wanted more quads than its pool holds, summed over every overlay since creation. */

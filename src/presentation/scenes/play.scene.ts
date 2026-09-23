@@ -9,6 +9,8 @@ import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
+import { GroundLayer } from "../camera/ground-layer";
+import { Projection } from "../camera/projection";
 import { WorldCamera } from "../camera/world-camera";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
@@ -19,6 +21,8 @@ import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import { createFloatingNumberViews } from "../views/floating-number.view";
+import type { FloorView, VoidViews } from "../views/floor.view";
+import { createFloorView, createVoidViews } from "../views/floor.view";
 import { HitFlashes, HitNumbers, showHit } from "../views/hit-feedback";
 import type { ObstacleViews } from "../views/obstacle.view";
 import { createObstacleViews } from "../views/obstacle.view";
@@ -73,6 +77,12 @@ const PROJECTILE_VIEW_COUNT = 128;
 /** Rows of status icons: how many units on screen wear a status at once in a busy fight. A presentation number. */
 const STATUS_ICON_VIEW_COUNT = 64;
 
+/** Floor tiles: enough to cover the canvas and its margin at the smallest diamond. A presentation number. */
+const FLOOR_TILE_COUNT = 320;
+
+/** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge. */
+const FLOOR_MARGIN = 64;
+
 /** Floating numbers: how many hits a busy fight lands inside one number's rise. Past this the oldest is recycled. */
 const FLOATING_NUMBER_COUNT = 64;
 
@@ -84,10 +94,13 @@ const NOT_BOUND = (): void => {};
 
 /** What `create` makes and `update` drives. `null` until then. */
 type Stage = {
+  ground: GroundLayer;
   camera: WorldCamera;
   lens: CameraLens;
   mapper: InputMapper;
   preview: TargetingPreview;
+  floor: FloorView;
+  voids: VoidViews;
   obstacles: ObstacleViews;
   units: UnitViewPool;
   outlines: OutlineViewPool;
@@ -104,11 +117,15 @@ type Stage = {
 };
 
 /**
- * Owns the world camera, runs the sync each frame, and maps input to commands. `create`
- * makes every pool it will ever hold; `update` hands the frame to the driver, then drains the
- * event ring with its own cursor so a hit the ticks just landed shows on this frame, then
- * reads the world view and writes the views: the camera onto the hero, the obstacles and
- * bounds on a map load, the zones, the units and their flashes, the outlines of the elites and
+ * Owns the world camera, runs the sync each frame, and maps input to commands. The world is
+ * drawn through the projection: what lies on the ground is made inside the ground layer and
+ * written in world coordinates, and what stands up off it, the icons, the numbers, and the
+ * labels, is made in the scene and placed where its point is drawn. `create` makes every pool
+ * it will ever hold; `update` hands the frame to the driver, puts the ground at the view scale
+ * the panel asks for, then drains the event ring with its own cursor so a hit the ticks just
+ * landed shows on this frame, then reads the world view and writes the views: the camera onto
+ * the hero, the obstacles, bounds, and void on a map load or a change of scale, the floor under
+ * the camera, the zones, the units and their flashes, the outlines of the elites and
  * bosses among them, their status icons inside the camera rectangle, the projectiles in
  * flight, the orbs, the numbers rising where hits landed, the targeting preview under the
  * pointer, the debug overlays the toggles ask for, and the view misses into their ring. A
@@ -124,8 +141,13 @@ export class PlayScene extends Phaser.Scene {
 
   private readonly rect: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
+  /** Scratch for the screen rectangle the floor covers this frame. */
+  private readonly screen: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+
   /** Scratch for the world point under the pointer this frame. */
   private readonly pointer: Vec2 = { x: 0, y: 0 };
+
+  private readonly projection = new Projection();
 
   private stage: Stage | null = null;
 
@@ -140,8 +162,18 @@ export class PlayScene extends Phaser.Scene {
   }
 
   create(): void {
-    const camera = new WorldCamera(this.cameras.main);
+    const projection = this.projection;
+
+    projection.setDiamondWidth(this.context.viewScale.diamondWidth);
+
+    const ground = new GroundLayer(this, projection.scale);
+    const camera = new WorldCamera(this.cameras.main, projection);
+    // A quad on the ground is written in world coordinates; one standing up is placed in screen ones.
     const makeQuad: QuadFactory = (frame) =>
+      ground.add(
+        this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame).setVisible(false),
+      );
+    const makeStandingQuad: QuadFactory = (frame) =>
       this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame).setVisible(false);
     // The debug band is the default; a view whose labels belong in another sets its own.
     const makeLabel: LabelFactory = (size) =>
@@ -161,7 +193,7 @@ export class PlayScene extends Phaser.Scene {
         this.context.flashes.flash(slot, reason, this.context.driver.nextTick);
       },
     };
-    const lens = cameraLens(this.cameras.main);
+    const lens = cameraLens(this.cameras.main, projection);
     const mapper = new InputMapper({
       driver: this.context.driver,
       lens,
@@ -171,9 +203,17 @@ export class PlayScene extends Phaser.Scene {
     });
 
     this.stage = {
+      ground,
       camera,
       lens,
       mapper,
+      floor: createFloorView(
+        FLOOR_TILE_COUNT,
+        makeStandingQuad,
+        frameSizes,
+        projection.diamondWidth,
+      ),
+      voids: createVoidViews(makeQuad),
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
       units: createUnitViewPool(
@@ -190,8 +230,9 @@ export class PlayScene extends Phaser.Scene {
       ),
       statusIcons: createStatusIconViewPool(
         STATUS_ICON_VIEW_COUNT,
-        makeQuad,
+        makeStandingQuad,
         frameSizes,
+        projection,
       ),
       projectiles: createProjectileViewPool(
         PROJECTILE_VIEW_COUNT,
@@ -204,10 +245,14 @@ export class PlayScene extends Phaser.Scene {
         makeQuad,
         frameSizes,
       ),
-      numbers: createFloatingNumberViews(FLOATING_NUMBER_COUNT, makeLabel),
+      numbers: createFloatingNumberViews(
+        FLOATING_NUMBER_COUNT,
+        makeLabel,
+        projection,
+      ),
       flashes: new HitFlashes(),
       hitNumbers: new HitNumbers(),
-      overlays: new DebugOverlays(makeQuad, makeLabel, frameSizes),
+      overlays: new DebugOverlays(makeQuad, makeLabel, frameSizes, projection),
       boundMapId: null,
     };
 
@@ -241,15 +286,22 @@ export class PlayScene extends Phaser.Scene {
 
     const world = this.context.world;
     const alpha = this.context.driver.alpha;
+    const rescaled = this.applyViewScale(stage);
 
     followHero(stage.camera, world, alpha);
 
     if (world.map.mapId !== stage.boundMapId) {
       stage.boundMapId = world.map.mapId;
       stage.obstacles.bind(world.map.obstacles);
-      stage.camera.fitBounds(world.map.bounds);
+      stage.voids.bind(world.map.bounds);
       stage.numbers.releaseAll();
+      stage.camera.fitBounds(world.map.bounds);
+    } else if (rescaled) {
+      stage.camera.fitBounds(world.map.bounds);
     }
+
+    stage.camera.screenRect(FLOOR_MARGIN, this.screen);
+    stage.floor.sync(this.screen);
 
     // Before the views, so a hit the ticks just landed is flashing and counted on this frame.
     this.drainEvents(stage, alpha);
@@ -277,6 +329,7 @@ export class PlayScene extends Phaser.Scene {
     stage.mapper.syncCursor();
     this.syncPreview(stage);
     stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
+    stage.ground.keepSorted();
     this.context.rings.viewMisses.write(
       stage.units.misses +
         stage.outlines.misses +
@@ -284,8 +337,28 @@ export class PlayScene extends Phaser.Scene {
         stage.projectiles.misses +
         stage.zones.misses +
         stage.obstacles.misses +
+        stage.floor.misses +
         stage.overlays.misses,
     );
+  }
+
+  /**
+   * Puts the ground, the floor, and the camera at the diamond width the panel asks for, and
+   * says whether it changed, so the camera's bounds are refitted and it snaps onto the hero on
+   * the same frame rather than panning across to where the hero is now drawn.
+   */
+  private applyViewScale(stage: Stage): boolean {
+    const width = this.context.viewScale.diamondWidth;
+
+    if (width === this.projection.diamondWidth) {
+      return false;
+    }
+
+    this.projection.setDiamondWidth(width);
+    stage.ground.setScale(this.projection.scale);
+    stage.floor.setDiamondWidth(width);
+
+    return true;
   }
 
   /** The cursor's ring, shape, and drag line, at the pointer's world point as the camera stands this frame and its canvas point for the drag. */

@@ -17,6 +17,8 @@ export type AtlasShape =
   | Readonly<{ kind: "wedge"; step: number; steps: number }>
   | Readonly<{ kind: "stripes"; thickness: number }>
   | Readonly<{ kind: "icon"; glyph: string }>
+  /** One-pixel lines of a 2:1 diamond grid, diamonds `diamondWidth` pixels across and half that down, through the frame's top-left corner, so frames laid edge to edge continue it. */
+  | Readonly<{ kind: "diamond_grid"; diamondWidth: number }>
   | Readonly<{ kind: "glyph"; character: string }>;
 
 /**

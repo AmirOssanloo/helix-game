@@ -15,6 +15,7 @@ import {
   LabelRecorder,
   makeMapDef,
   makeWorld,
+  FLAT_PLACEMENT,
   makeWorldView,
   QuadRecorder,
   spawnEnemy,
@@ -109,6 +110,7 @@ const arrange = (): Arranged => {
       return label;
     },
     () => FRAME_WIDTH,
+    FLAT_PLACEMENT,
   );
   const toggles = createOverlayToggles();
 

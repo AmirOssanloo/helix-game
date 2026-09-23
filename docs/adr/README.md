@@ -83,6 +83,7 @@ Correcting a small detail in an accepted record is fine — edit it. Changing wh
 | [0003](./0003-layered-single-package-architecture.md) | Domain decides, simulation orchestrates, presentation adapts — in one package | The eight layers, the import rule, and why it is one package and not a workspace |
 | [0004](./0004-all-mutation-enters-as-commands.md) | Every change to world state is a command in one buffer, the developer panel included | Why there is no debug back door, and how a panel session replays |
 | [0005](./0005-content-references-by-string-key.md) | Content references effects and behaviours by string key, never by function | How a spell definition names its behaviour, and why a typo fails at startup |
+| [0006](./0006-isometric-view-over-a-square-world.md) | The view is isometric: a projection in presentation over a square world (proposed) | Why the floor is diamonds while the simulation stays square, and where the scale lives |
 
 ---
 

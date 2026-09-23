@@ -5,9 +5,12 @@ import { acquireUnit, applyStatus } from "@domain/public";
 import type { GroundPick } from "@presentation/public";
 import {
   createGroundPick,
+  DIAMOND_WIDTHS,
   DRAG_THRESHOLD,
   InputMapper,
   LEFT_BUTTON,
+  projectedLens,
+  Projection,
   RIGHT_BUTTON,
 } from "@presentation/public";
 import type { Simulation } from "@simulation/public";
@@ -164,6 +167,44 @@ const standUnit = (
 
   return id;
 };
+
+describe("the lens through the projection", () => {
+  /** Where the click is meant to land, in the world, and where the camera has scrolled to, in scene pixels. */
+  const TARGET = { x: 400, y: 200 };
+  const SCROLL = { x: 100, y: 50 };
+
+  it.each(DIAMOND_WIDTHS)(
+    "resolves a canvas point to the unprojected world point under it at a diamond %i across",
+    (diamondWidth) => {
+      const { world, hero, driver, lens, intents, groundPick } = arrange();
+      const projection = new Projection();
+
+      projection.setDiamondWidth(diamondWidth);
+      // The fixed lens stands in for the camera: canvas plus scroll is the scene point.
+      lens.offset.x = SCROLL.x;
+      lens.offset.y = SCROLL.y;
+
+      const mapper = new InputMapper({
+        driver,
+        lens: projectedLens((screenX, screenY, out): void => {
+          lens.worldPointAt(screenX, screenY, out);
+        }, projection),
+        world: world.view,
+        intents,
+        groundPick,
+      });
+      const drawn = { x: 0, y: 0 };
+
+      projection.toScreen(TARGET.x, TARGET.y, drawn);
+      mapper.pointerDown(RIGHT_BUTTON, drawn.x - SCROLL.x, drawn.y - SCROLL.y);
+      world.tick();
+
+      expect(hero.order.kind).toBe("move");
+      expect(hero.order.destination.x).toBeCloseTo(TARGET.x, 9);
+      expect(hero.order.destination.y).toBeCloseTo(TARGET.y, 9);
+    },
+  );
+});
 
 describe("the pointer", () => {
   it("right click on walkable ground is a move to the world point under the click, resolved as the click arrives", () => {

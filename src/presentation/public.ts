@@ -5,7 +5,16 @@ export {
   ATLAS_TEXTURE_KEY,
   ShapeAtlas,
 } from "./atlas/shape-atlas";
-export { WorldCamera } from "./camera/world-camera";
+export { GroundLayer } from "./camera/ground-layer";
+export {
+  DEFAULT_DIAMOND_WIDTH,
+  DIAMOND_WIDTHS,
+  FLOOR_CELL,
+  Projection,
+  type ScreenPlacement,
+} from "./camera/projection";
+export { createViewScale, type ViewScale } from "./camera/view-scale";
+export { type FollowCamera, WorldCamera } from "./camera/world-camera";
 export {
   AbilitySquareView,
   type SquareInput,
@@ -32,6 +41,11 @@ export {
   SlotFlashes,
 } from "./hud/slot-flashes";
 export { bindSceneInput, cameraLens } from "./input/bind-scene-input";
+export {
+  projectedLens,
+  type ScenePointAt,
+  type Unprojection,
+} from "./input/projected-lens";
 export { InputMapper } from "./input/input-mapper";
 export type { CameraLens, InputIntents, InputPorts } from "./input/input-ports";
 export {
@@ -82,6 +96,7 @@ export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";
 export {
   DEPTH_AIR,
   DEPTH_DEBUG,
+  DEPTH_FLOOR,
   DEPTH_GROUND,
   DEPTH_OBSTACLES,
   DEPTH_PROJECTILES,
@@ -95,6 +110,13 @@ export {
   FloatingNumberViews,
   NO_NUMBER,
 } from "./views/floating-number.view";
+export {
+  createFloorView,
+  createVoidViews,
+  floorFrame,
+  FloorView,
+  VoidViews,
+} from "./views/floor.view";
 export {
   HIT_FLASH_TICKS,
   HIT_NUMBER_MERGE_TICKS,

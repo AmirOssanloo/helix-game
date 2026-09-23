@@ -15,7 +15,13 @@ import {
 } from "@presentation/public";
 import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, QuadRecorder, spawnHero, SYNC_FIELDS } from "../helpers";
+import {
+  FLAT_PLACEMENT,
+  makeWorld,
+  QuadRecorder,
+  spawnHero,
+  SYNC_FIELDS,
+} from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a world size over it. */
 const FRAME_WIDTH = 32;
@@ -61,6 +67,7 @@ const arrange = (size = 1): Arranged => {
       return quad;
     },
     () => FRAME_WIDTH,
+    FLAT_PLACEMENT,
   );
 
   if (heroId === null) {

@@ -13,6 +13,8 @@ import {
   BootScene,
   createGroundPick,
   createOverlayToggles,
+  createViewScale,
+  DIAMOND_WIDTHS,
   HudScene,
   installDrawCallCounter,
   PLAY_SCENE_KEY,
@@ -51,6 +53,8 @@ export const boot: Boot = (): void => {
   const atlas = new ShapeAtlas(atlasFrames);
   // One object, read by the play scene and written by the panel; the two layers each name its fields.
   const overlays = createOverlayToggles();
+  // The same for the scale the ground is drawn at.
+  const viewScale = createViewScale();
   // One request, armed by the panel and answered by the play scene's next ground click.
   const groundPick = createGroundPick();
   const context: SceneContext = {
@@ -61,6 +65,7 @@ export const boot: Boot = (): void => {
     rings: { viewMisses: rings.viewMisses, renderTime: rings.renderTime },
     flashes: new SlotFlashes(),
     overlays,
+    viewScale,
     groundPick,
     report: (message: string): void => {
       console.log(message);
@@ -106,6 +111,8 @@ export const boot: Boot = (): void => {
       events: world.events,
       rings,
       overlays,
+      viewScale,
+      diamondWidths: DIAMOND_WIDTHS,
       groundPick,
       tuningDefaults: tuningTable,
       archetypes: contentRegistry.enemies.map((def): string => def.id),

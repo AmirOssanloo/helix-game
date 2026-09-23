@@ -81,6 +81,17 @@ export type OverlayToggles = {
 };
 
 /**
+ * The scale the play scene draws the ground at, named on this side of the layer line: the same
+ * field the presentation declares, on one object the composition root hands to both. Like a
+ * toggle it is presentation state, not a command; it changes nothing in the world and is not in
+ * the log.
+ */
+export type ViewScale = {
+  /** How many pixels across one walkability cell's diamond is drawn. */
+  diamondWidth: number;
+};
+
+/**
  * The play scene's one-shot request for the next ground click, named on this side of the layer
  * line: the same field the presentation declares, on one object the composition root hands to
  * both. The panel arms it; the next left click on the ground is handed to it and orders nothing.
@@ -93,7 +104,7 @@ export type GroundPick = {
  * The one object the developer panel and a person at the console reach the game through, on
  * `window` in a development build. It submits commands into the same buffer a click lands
  * in, drives the driver, reads the world view and the event ring by reference, reads the
- * instrumentation rings, sets the overlay toggles, and asks the play scene for a ground click. The tuning table's defaults are here
+ * instrumentation rings, sets the overlay toggles and the view scale, and asks the play scene for a ground click. The tuning table's defaults are here
  * so a slider shows its default beside it; the atlas download and the input-log save are
  * here so a person can take both away as files, and the load so a saved session replays.
  */
@@ -104,6 +115,9 @@ export type DevApi = Readonly<{
   events: EventRing;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
+  viewScale: ViewScale;
+  /** Every diamond width the view can be drawn at, in the order the panel lists them. */
+  diamondWidths: readonly number[];
   /** Arms the next ground click: the play scene hands its world point to `onPick` instead of ordering anything with it. Arming again replaces what was waiting. */
   pickGround: (onPick: (x: number, y: number) => void) => void;
   tuningDefaults: TuningDef;
@@ -125,6 +139,8 @@ export type DevApiPorts = Readonly<{
   events: EventRing;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
+  viewScale: ViewScale;
+  diamondWidths: readonly number[];
   groundPick: GroundPick;
   tuningDefaults: TuningDef;
   archetypes: readonly string[];
@@ -172,6 +188,8 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     events: ports.events,
     rings: ports.rings,
     overlays: ports.overlays,
+    viewScale: ports.viewScale,
+    diamondWidths: ports.diamondWidths,
     pickGround: (onPick: (x: number, y: number) => void): void => {
       ports.groundPick.pending = onPick;
     },

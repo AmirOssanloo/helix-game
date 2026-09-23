@@ -6,7 +6,7 @@ import {
   FLOATING_NUMBER_TICKS,
   NO_NUMBER,
 } from "@presentation/public";
-import { LabelRecorder } from "../helpers";
+import { FLAT_PLACEMENT, LabelRecorder } from "../helpers";
 
 /** Where a case's number rises from. */
 const SPAWN_X = 400;
@@ -38,13 +38,17 @@ type Arranged = {
 /** `size` floating numbers over recording labels. */
 const arrange = (size: number): Arranged => {
   const labels: LabelRecorder[] = [];
-  const numbers = createFloatingNumberViews(size, (labelSize) => {
-    const label = new LabelRecorder(labelSize);
+  const numbers = createFloatingNumberViews(
+    size,
+    (labelSize) => {
+      const label = new LabelRecorder(labelSize);
 
-    labels.push(label);
+      labels.push(label);
 
-    return label;
-  });
+      return label;
+    },
+    FLAT_PLACEMENT,
+  );
 
   return {
     numbers,

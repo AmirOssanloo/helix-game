@@ -13,6 +13,7 @@ import {
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  FLAT_PLACEMENT,
   LabelRecorder,
   makeWorld,
   spawnHero,
@@ -61,13 +62,17 @@ const arrange = (): Arranged => {
   const dummy = spawnUnit(world, { kind: "enemy", x: DUMMY_X, y: DUMMY_Y });
   const other = spawnUnit(world, { kind: "enemy", x: OTHER_X, y: OTHER_Y });
   const labels: LabelRecorder[] = [];
-  const numbers = createFloatingNumberViews(LABELS, (labelSize) => {
-    const label = new LabelRecorder(labelSize);
+  const numbers = createFloatingNumberViews(
+    LABELS,
+    (labelSize) => {
+      const label = new LabelRecorder(labelSize);
 
-    labels.push(label);
+      labels.push(label);
 
-    return label;
-  });
+      return label;
+    },
+    FLAT_PLACEMENT,
+  );
   const flashes = new HitFlashes();
   const hitNumbers = new HitNumbers();
 

@@ -1,8 +1,9 @@
 /**
  * The fixed depth bands. A pool sets one on a view when it is made or bound and never per
  * frame, so nothing is sorted by position; within a band, draw order is pool order. The HUD
- * runs in its own scene and needs none.
+ * runs in its own scene and needs none. The floor is under every band.
  */
+export const DEPTH_FLOOR = -10;
 export const DEPTH_GROUND = 0;
 export const DEPTH_OBSTACLES = 10;
 export const DEPTH_UNITS = 20;
