@@ -55,6 +55,7 @@ const clearCast = (unit: Unit): void => {
   unit.cast.position.x = 0;
   unit.cast.position.y = 0;
   unit.cast.targetId = null;
+  unit.cast.direction = null;
 };
 
 /** Forgets the order, its path, and its turn, and leaves the unit idle where it stands, facing where it faced. */
@@ -141,11 +142,13 @@ export const issueAttackMove = (
 };
 
 /**
- * Replaces the current order with a cast of `abilityId` aimed by `targetKind` at (`x`, `y`)
- * and, for a unit target, at `targetId`. The order's destination starts at the aim; the cast
- * rule moves it to a legal approach point when the aim is out of range. The unit turns to
- * face before the cast point. Legal from every state but `dead`; an attack point or a cast
- * point in progress is cancelled, and the cast pending under it is replaced by this one.
+ * Replaces the current order with a cast of `abilityId` aimed by `targetKind` at (`x`, `y`),
+ * for a unit target at `targetId`, and for a vector along `direction`, the bearing of its
+ * drag or `null` for none. The order's destination starts at the aim; the cast rule moves it
+ * to a legal approach point when the aim is out of range, which a point, a unit, and a vector
+ * can be. The unit turns to face before the cast point. Legal from every state but `dead`;
+ * an attack point or a cast point in progress is cancelled, and the cast pending under it is
+ * replaced by this one.
  */
 export const issueCast = (
   unit: Unit,
@@ -154,6 +157,7 @@ export const issueCast = (
   x: number,
   y: number,
   targetId: EntityId | null,
+  direction: number | null,
 ): TransitionResult => {
   if (unit.state === "dead") {
     return "dead";
@@ -169,7 +173,9 @@ export const issueCast = (
   unit.cast.position.x = x;
   unit.cast.position.y = y;
   unit.cast.targetId = targetId;
-  unit.needsPath = targetKind === "point" || targetKind === "unit";
+  unit.cast.direction = direction;
+  unit.needsPath =
+    targetKind === "point" || targetKind === "unit" || targetKind === "vector";
 
   return "ok";
 };

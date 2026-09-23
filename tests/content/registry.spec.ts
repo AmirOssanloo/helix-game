@@ -115,7 +115,6 @@ describe("a broken definition", () => {
               fields: {
                 segments: 3,
                 spacing: 100,
-                distance: 100,
                 zone: {
                   kind: "spawn_zone",
                   shape: { kind: "rectangle", length: 100, width: 50 },
@@ -160,7 +159,6 @@ describe("a broken definition", () => {
               fields: {
                 segments: 3,
                 spacing: 100,
-                distance: 100,
                 zone: {
                   kind: "spawn_zone",
                   shape: { kind: "rectangle", length: 100, width: 50 },
@@ -197,7 +195,6 @@ describe("a broken definition", () => {
               fields: {
                 segments: 3,
                 spacing: 100,
-                distance: 100,
                 zone: {
                   kind: "spawn_zone",
                   shape: { kind: "rectangle", length: 100, width: 50 },

@@ -326,7 +326,7 @@ const checkAbility = (
 ): void => {
   checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
 
-  if (def.preview.kind !== "none") {
+  if (def.preview.kind !== "none" && def.preview.kind !== "line") {
     checkFrame(
       faults,
       file,

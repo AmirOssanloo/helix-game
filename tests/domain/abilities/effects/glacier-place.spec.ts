@@ -8,11 +8,14 @@ import { makeCast, makeWorld, spawnHero } from "../../../helpers";
 /** The effect under test, by the key the registry holds it under. */
 const GLACIER_PLACE = "glacier_place";
 
-/** A quarter turn, which is the angle between the cast direction and the line the segments lie on. */
+/** A quarter turn: the angle between the caster's facing and the row when the cast carries no direction. */
 const ACROSS = Math.PI / 2;
 
 /** How near two positions must be to read as the same: a rounding's worth of world units. */
 const CLOSE_ENOUGH = 1e-9;
+
+/** Where the casts below are anchored: away from the hero, so a row centred on the hero would show. */
+const ANCHOR: Readonly<Vec2> = { x: 500, y: 300 };
 
 /** The segment zone the entries below place: the catalogue's shape, still, with no rules of its own. */
 const SEGMENT: SpawnZoneEffectDef = {
@@ -29,14 +32,10 @@ const SEGMENT: SpawnZoneEffectDef = {
 };
 
 /** One entry naming the effect, with the row it lays out. */
-const entry = (
-  segments: number,
-  spacing: number,
-  distance: number,
-): EffectDef => ({
+const entry = (segments: number, spacing: number): EffectDef => ({
   kind: "named",
   key: GLACIER_PLACE,
-  fields: { segments, spacing, distance, zone: SEGMENT },
+  fields: { segments, spacing, zone: SEGMENT },
 });
 
 /** The hero at the origin, facing `facing`, with nothing else on the ground. */
@@ -48,9 +47,17 @@ const arrange = (facing: number): Simulation => {
   return world;
 };
 
-/** Runs `effects` as the hero's cast, anchored where the hero stands and turned where it faces. */
-const place = (world: Simulation, effects: readonly EffectDef[]): void => {
-  runEffects(world.state, makeCast(world), effects);
+/** Runs `effects` as the hero's cast, anchored on `ANCHOR`, turned where the hero faces, along `direction`. */
+const place = (
+  world: Simulation,
+  effects: readonly EffectDef[],
+  direction: number | null,
+): void => {
+  runEffects(
+    world.state,
+    makeCast(world, { x: ANCHOR.x, y: ANCHOR.y, direction }),
+    effects,
+  );
 };
 
 /** Every zone on the ground, in the order the pool holds them. */
@@ -76,65 +83,96 @@ const positionsOf = (world: Simulation): Readonly<Vec2>[] =>
 const gap = (a: Readonly<Vec2>, b: Readonly<Vec2>): number =>
   Math.hypot(b.x - a.x, b.y - a.y);
 
+/** Expects `placed` to be `count` points `spacing` apart on the line at `angle` through `ANCHOR`, centred on it. */
+const expectRow = (
+  placed: readonly Readonly<Vec2>[],
+  count: number,
+  spacing: number,
+  angle: number,
+): void => {
+  expect(placed).toHaveLength(count);
+
+  for (let index = 0; index < count; index += 1) {
+    const offset = (index - (count - 1) / 2) * spacing;
+
+    expect(placed[index]?.x ?? Number.NaN).toBeCloseTo(
+      ANCHOR.x + Math.cos(angle) * offset,
+    );
+    expect(placed[index]?.y ?? Number.NaN).toBeCloseTo(
+      ANCHOR.y + Math.sin(angle) * offset,
+    );
+  }
+};
+
 describe("the glacier placement", () => {
   it("puts one zone on the ground per segment it is given", () => {
     const world = arrange(0);
 
-    place(world, [entry(7, 160, 200)]);
+    place(world, [entry(7, 160)], 0);
 
     expect(zonesOf(world)).toHaveLength(7);
   });
 
-  it("lays the row across the cast direction, centred on a point in front of the anchor", () => {
+  it("lays the row along the cast's direction, centred on the anchor", () => {
     const world = arrange(0);
 
-    place(world, [entry(3, 160, 200)]);
+    place(world, [entry(3, 160)], 0);
 
     expect(positionsOf(world)).toEqual([
-      { x: 200, y: -160 },
-      { x: 200, y: 0 },
-      { x: 200, y: 160 },
+      { x: ANCHOR.x - 160, y: ANCHOR.y },
+      { x: ANCHOR.x, y: ANCHOR.y },
+      { x: ANCHOR.x + 160, y: ANCHOR.y },
     ]);
   });
+
+  it.each([ACROSS, Math.PI / 4, -2.5])(
+    "turns the row with a direction of %s, whatever the caster faces, keeping its centre and its spacing",
+    (direction) => {
+      const world = arrange(1);
+
+      place(world, [entry(7, 160)], direction);
+
+      expectRow(positionsOf(world), 7, 160, direction);
+    },
+  );
+
+  it.each([0, ACROSS, 2])(
+    "lays the row across a facing of %s when the cast carries no direction, centred on the anchor",
+    (facing) => {
+      const world = arrange(facing);
+
+      place(world, [entry(7, 160)], null);
+
+      expectRow(positionsOf(world), 7, 160, facing + ACROSS);
+    },
+  );
 
   it("leaves the middle of an even row open, the two halves a spacing apart", () => {
     const world = arrange(0);
 
-    place(world, [entry(2, 160, 200)]);
+    place(world, [entry(2, 160)], 0);
 
     expect(positionsOf(world)).toEqual([
-      { x: 200, y: -80 },
-      { x: 200, y: 80 },
+      { x: ANCHOR.x - 80, y: ANCHOR.y },
+      { x: ANCHOR.x + 80, y: ANCHOR.y },
     ]);
+    expect(gap(ANCHOR, positionsOf(world)[0] ?? ANCHOR)).toBe(80);
   });
 
-  it("turns the row with the facing, keeping its distance and its spacing", () => {
-    const world = arrange(ACROSS);
-    const forward = 200;
-    const spacing = 160;
+  it("turns every segment along the row, so its length is the row's width", () => {
+    const along = arrange(0);
+    const across = arrange(0);
 
-    place(world, [entry(3, spacing, forward)]);
+    place(along, [entry(3, 160)], 1);
+    place(across, [entry(3, 160)], null);
 
-    const [first, middle, last] = positionsOf(world);
-
-    expect(middle?.x ?? Number.NaN).toBeCloseTo(0);
-    expect(middle?.y ?? Number.NaN).toBeCloseTo(forward);
-    expect(gap(first ?? { x: 0, y: 0 }, middle ?? { x: 0, y: 0 })).toBeCloseTo(
-      spacing,
-    );
-    expect(gap(middle ?? { x: 0, y: 0 }, last ?? { x: 0, y: 0 })).toBeCloseTo(
-      spacing,
-    );
-  });
-
-  it("turns every segment across the cast direction, so its length is the row's width", () => {
-    const world = arrange(0);
-
-    place(world, [entry(3, 160, 200)]);
-
-    for (const zone of zonesOf(world)) {
-      expect(Math.abs(zone.facing - ACROSS)).toBeLessThan(CLOSE_ENOUGH);
+    for (const zone of zonesOf(along)) {
+      expect(Math.abs(zone.facing - 1)).toBeLessThan(CLOSE_ENOUGH);
       expect(zone.shape).toEqual(SEGMENT.shape);
+    }
+
+    for (const zone of zonesOf(across)) {
+      expect(Math.abs(zone.facing - ACROSS)).toBeLessThan(CLOSE_ENOUGH);
     }
   });
 
@@ -142,7 +180,7 @@ describe("the glacier placement", () => {
     const world = arrange(0);
     const tick = world.view.tick;
 
-    place(world, [entry(3, 160, 200)]);
+    place(world, [entry(3, 160)], 0);
 
     for (const zone of zonesOf(world)) {
       expect(zone.activeAtTick).toBe(tick);
@@ -156,7 +194,7 @@ describe("the glacier placement", () => {
   it("places nothing when it is given no segments", () => {
     const world = arrange(0);
 
-    place(world, [entry(0, 160, 200)]);
+    place(world, [entry(0, 160)], 0);
 
     expect(zonesOf(world)).toHaveLength(0);
   });

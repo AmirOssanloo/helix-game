@@ -46,8 +46,17 @@ export type {
   SlotKeyOutcome,
   TargetingCursor,
 } from "./input/targeting-cursor";
-export { closeCursor, createTargetingCursor } from "./input/targeting-cursor";
-export { RETICLE_SIZE, TargetingPreview } from "./input/targeting-preview";
+export {
+  closeCursor,
+  createTargetingCursor,
+  DRAG_THRESHOLD,
+  isDrag,
+} from "./input/targeting-cursor";
+export {
+  DIRECTION_LINE_WIDTH,
+  RETICLE_SIZE,
+  TargetingPreview,
+} from "./input/targeting-preview";
 export { DebugOverlays } from "./overlays/debug-overlays";
 export {
   createOverlayToggles,

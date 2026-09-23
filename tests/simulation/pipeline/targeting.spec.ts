@@ -43,9 +43,19 @@ const directionSpell = makeSpellDef.build({
   recipe: ["ember", "ember", "ember"],
   targeting: "direction",
 });
+const vectorSpell = makeSpellDef.build({
+  recipe: ["quartz", "quartz", "ember"],
+  targeting: "vector",
+});
 
 const form = makeFormDef.build({
-  abilities: [pointSpell.id, noneSpell.id, unitSpell.id, directionSpell.id],
+  abilities: [
+    pointSpell.id,
+    noneSpell.id,
+    unitSpell.id,
+    directionSpell.id,
+    vectorSpell.id,
+  ],
 });
 
 type Arranged = { world: Simulation; hero: Unit; reader: EventReader };
@@ -60,7 +70,7 @@ const worldHolding = (
     registry: makeRegistry({
       hero: { ...heroDef, forms: [form.id] },
       forms: [form],
-      spells: [pointSpell, noneSpell, unitSpell, directionSpell],
+      spells: [pointSpell, noneSpell, unitSpell, directionSpell, vectorSpell],
     }),
     map: makeMapDef.build({ bounds }),
   });
@@ -338,5 +348,63 @@ describe("a direction ability", () => {
     expect(hero.facing).toBeCloseTo(Math.PI / 2);
     expect(hero.curr).toEqual({ x: 0, y: 0 });
     expect(eventsOfKind(world, reader, "cast_committed")).toHaveLength(1);
+  });
+});
+
+/** Submits the release that throws `vectorSpell`, pressed at `position` and released at `end`. */
+const castVector = (
+  world: Simulation,
+  position: Readonly<{ x: number; y: number }>,
+  end: Readonly<{ x: number; y: number }>,
+): void => {
+  submit(world, {
+    kind: "cast",
+    tick: world.view.tick,
+    timestamp: world.view.tick,
+    abilityId: vectorSpell.id,
+    target: { kind: "vector", position, end },
+  });
+};
+
+describe("a vector ability", () => {
+  it("aims at the point pressed, along the bearing from it to the point released", () => {
+    const { world, hero } = worldHolding([vectorSpell.id, null]);
+    castVector(world, { x: 300, y: 0 }, { x: 300, y: -400 });
+
+    world.tick();
+
+    expect(hero.cast.targetKind).toBe("vector");
+    expect(hero.cast.position).toEqual({ x: 300, y: 0 });
+    expect(hero.cast.direction).toBeCloseTo(-Math.PI / 2);
+  });
+
+  it("carries no direction for a press released where it went down", () => {
+    const { world, hero } = worldHolding([vectorSpell.id, null]);
+    castVector(world, { x: 300, y: 0 }, { x: 300, y: 0 });
+
+    world.tick();
+
+    expect(hero.cast.abilityId).toBe(vectorSpell.id);
+    expect(hero.cast.direction).toBeNull();
+  });
+
+  it("walks toward a press beyond range and casts once inside it, keeping the direction", () => {
+    const { world, hero, reader } = worldHolding([vectorSpell.id, null]);
+    castVector(world, { x: RANGE + 300, y: 0 }, { x: RANGE + 300, y: 300 });
+
+    const walked = tickUntil(
+      world,
+      () => hero.state === "ability_cast_point",
+      100,
+    );
+
+    expect(walked).toBeGreaterThan(1);
+    expect(hero.cast.position).toEqual({ x: RANGE + 300, y: 0 });
+    expect(hero.cast.direction).toBeCloseTo(Math.PI / 2);
+
+    ticks(world, CAST_POINT_TICKS + 1);
+
+    expect(eventsOfKind(world, reader, "cast_committed")).toHaveLength(1);
+    expect(hero.cast.direction).toBeNull();
   });
 });

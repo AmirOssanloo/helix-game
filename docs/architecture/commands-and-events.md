@@ -27,7 +27,7 @@ A command is a plain value: a variant of one union, carrying the tick it applies
 **The input mapper** in `presentation/input/` turns DOM and Phaser events into commands. It knows about keys and pointers; it knows nothing about rules. Three things it must get right:
 
 - **Ability keys are edge-triggered.** A key held across several frames produces one command, on key-down. Key repeat never reaches the buffer.
-- **A pointer pick stores the world position at event time.** The mapper converts screen to world through the camera when the event arrives, not when the tick runs, so a camera move in the same frame cannot retarget the click.
+- **A pointer pick stores the world position at event time.** The mapper converts screen to world through the camera when the event arrives, not when the tick runs, so a camera move in the same frame cannot retarget the click. A command aimed by a press and a drag carries two picks, each resolved at its own event: the press when the button goes down, held by the mapper until the release, and the release when the button comes up. The command is submitted at the release.
 - **Every command carries a tick timestamp.** The mapper stamps it with the tick the command will apply to.
 - **A slot key names a slot, not a mechanic.** Q, W, E, R, D, F become one command variant carrying a slot index from 1 to 6. The active form's kit decides what that index means — an orb, the composer, a prepared spell, or a plain ability — so the mapper and the command union never know which kit the hero is wearing.
 
@@ -100,7 +100,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Command shape | A plain value: one union variant, a tick timestamp, its payload |
 | Ability keys | Edge-triggered on key-down; key repeat never reaches the buffer |
 | Slot keys | One command variant carrying a slot index 1 to 6; the active kit resolves it, the mapper and the union never name a mechanic |
-| Pointer picks | World position resolved at event time, stored on the command |
+| Pointer picks | World position resolved at event time, stored on the command; a press-and-drag aim resolves the press at the button going down and the release at the button coming up, and submits at the release |
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, a skill-point spend sorting as the slot it names, then arrival order |
 | Validation | `domain/orders/` decides per tick from the unit's state and its disable flags, derived by the previous tick's status pass; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a skill-point spend is checked for its slot alone and refused by no disable; a debug command is checked for its shape in `domain/orders/` and refused by its handler in `domain/debug/` over what the world can take; a refusal is dropped and announced as a refused-command event with its reason |
 | Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation in the one order the buffer gave them: a tuning change to run scope, a debug command to its handler, every other to the hero; the last legal order in a tick wins |

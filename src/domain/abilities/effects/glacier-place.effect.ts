@@ -13,17 +13,16 @@ import { createCastRecord, fillCast } from "../cast-context";
 import { spawnZone } from "../primitives/spawn-zone";
 import type { NamedEffect, NamedEffectNesting } from "./index";
 
-/** A quarter turn in radians: the angle between the cast direction and the line the segments lie on. */
+/** A quarter turn in radians: the angle between the caster's facing and the line the segments lie on when the cast carries no direction. */
 const ACROSS = Math.PI / 2;
 
 /** The centre of a row of `count` segments sits between them, which is half a segment less than half the row. */
 const HALF = 2;
 
-/** The fields the entry naming this effect carries: how many segments, how far apart, how far in front, and the zone each one is. */
+/** The fields the entry naming this effect carries: how many segments, how far apart, and the zone each one is. */
 export type GlacierPlaceFields = Readonly<{
   segments: number;
   spacing: number;
-  distance: number;
   zone: SpawnZoneEffectDef;
 }>;
 
@@ -46,7 +45,6 @@ export const glacierPlaceFields: Schema<GlacierPlaceFields> =
   objectOf<GlacierPlaceFields>({
     segments: countSchema,
     spacing: nonNegativeSchema,
-    distance: nonNegativeSchema,
     zone: zoneEntrySchema,
   });
 
@@ -67,11 +65,12 @@ const fieldsOf = (
 const segment = createCastRecord();
 
 /**
- * Glacier's wall: one zone per segment on a line across the cast direction, `distance` in
- * front of the anchor, `spacing` apart and centred on that point, so an odd count puts one
- * segment straight ahead and an even one leaves the middle open. Each segment is turned
- * across the cast direction, which is what makes the entry's length the wall's width and its
- * width the wall's depth.
+ * Glacier's wall: one zone per segment on a line through the anchor, `spacing` apart and
+ * centred on it, so an odd count puts one segment on the anchor and an even one leaves the
+ * middle open. The line is the cast's direction, the bearing of the drag that aimed it; a
+ * cast with none lays it across the caster's facing, which at commit is the line from the
+ * caster to the anchor. Each segment is turned along the line, which is what makes the
+ * entry's length the wall's width and its width the wall's depth.
  *
  * Nothing else about a segment is this function's: the shape, the clock, the lists, and the
  * colour are the entry's, and the zone rule places each one as it places any other. A pool
@@ -82,12 +81,10 @@ export const glacierPlaceEffect: NamedEffect = (
   cast: Cast,
   fields: Readonly<Record<string, unknown>>,
 ): void => {
-  const { segments, spacing, distance, zone } = fieldsOf(fields);
-  const across = cast.facing + ACROSS;
-  const aheadX = cast.anchor.x + Math.cos(cast.facing) * distance;
-  const aheadY = cast.anchor.y + Math.sin(cast.facing) * distance;
-  const acrossX = Math.cos(across);
-  const acrossY = Math.sin(across);
+  const { segments, spacing, zone } = fieldsOf(fields);
+  const line = cast.direction ?? cast.facing + ACROSS;
+  const alongX = Math.cos(line);
+  const alongY = Math.sin(line);
   const first = -((segments - 1) / HALF) * spacing;
 
   for (let index = 0; index < segments; index += 1) {
@@ -100,9 +97,9 @@ export const glacierPlaceEffect: NamedEffect = (
         cast.casterId,
         cast.ability,
         cast.orbLevels,
-        aheadX + acrossX * offset,
-        aheadY + acrossY * offset,
-        across,
+        cast.anchor.x + alongX * offset,
+        cast.anchor.y + alongY * offset,
+        line,
         null,
       ),
       zone,

@@ -297,7 +297,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
       statusId: idSchema,
       direction: oneOf(PUSH_DIRECTIONS),
       distance: levelTableSchema,
-      seconds: nonNegativeSchema,
+      speed: nonNegativeSchema,
     }),
     lift: objectOf({
       kind: oneOf(["displace"]),
@@ -386,6 +386,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
         offset: scalarSchema,
         atlasFrame: stringSchema,
       }),
+      line: objectOf({ kind: oneOf(["line"]) }),
       cone: objectOf({
         kind: oneOf(["cone"]),
         angleDegrees: nonNegativeSchema,

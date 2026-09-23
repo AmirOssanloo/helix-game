@@ -192,11 +192,18 @@ export const validateCommand = (
         return disable;
       }
 
+      const target = command.target;
+
       if (
-        (command.target.kind === "point" ||
-          command.target.kind === "direction") &&
-        !isFiniteDestination(command.target.position)
+        (target.kind === "point" ||
+          target.kind === "direction" ||
+          target.kind === "vector") &&
+        !isFiniteDestination(target.position)
       ) {
+        return "invalid_destination";
+      }
+
+      if (target.kind === "vector" && !isFiniteDestination(target.end)) {
         return "invalid_destination";
       }
 

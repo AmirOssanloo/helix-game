@@ -315,6 +315,62 @@ describe("validateCommand on a destination", () => {
     expect(validateCommand(unitIn(), cast(target))).toBe("invalid_destination");
   });
 
+  it.each([
+    ["x", { x: Number.NaN, y: 0 }],
+    ["y", { x: 0, y: Number.NEGATIVE_INFINITY }],
+  ] as const)(
+    "refuses a vector-targeted cast pressed at a non-finite %s",
+    (_axis, position) => {
+      const target: CastTarget = {
+        kind: "vector",
+        position,
+        end: { x: 100, y: 100 },
+      };
+
+      expect(validateCommand(unitIn(), cast(target))).toBe(
+        "invalid_destination",
+      );
+    },
+  );
+
+  it.each([
+    ["x", { x: Number.POSITIVE_INFINITY, y: 0 }],
+    ["y", { x: 0, y: Number.NaN }],
+  ] as const)(
+    "refuses a vector-targeted cast released at a non-finite %s",
+    (_axis, end) => {
+      const target: CastTarget = {
+        kind: "vector",
+        position: { x: 100, y: 100 },
+        end,
+      };
+
+      expect(validateCommand(unitIn(), cast(target))).toBe(
+        "invalid_destination",
+      );
+    },
+  );
+
+  it("accepts a vector-targeted cast of zero length, which is a press with no drag", () => {
+    const target: CastTarget = {
+      kind: "vector",
+      position: { x: 100, y: 100 },
+      end: { x: 100, y: 100 },
+    };
+
+    expect(validateCommand(unitIn(), cast(target))).toBe("ok");
+  });
+
+  it("accepts a vector-targeted cast with a drag, its end past the map", () => {
+    const target: CastTarget = {
+      kind: "vector",
+      position: { x: 100, y: 100 },
+      end: { x: -90000, y: 90000 },
+    };
+
+    expect(validateCommand(unitIn(), cast(target))).toBe("ok");
+  });
+
   it("accepts a unit-targeted cast, which carries no point", () => {
     expect(validateCommand(unitIn(), cast({ kind: "unit", unitId: 7 }))).toBe(
       "ok",

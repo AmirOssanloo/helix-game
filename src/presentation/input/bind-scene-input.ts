@@ -3,6 +3,8 @@ import type { InputMapper } from "./input-mapper";
 import type { CameraLens } from "./input-ports";
 
 const POINTER_DOWN_EVENT = "pointerdown";
+const POINTER_UP_EVENT = "pointerup";
+const POINTER_UP_OUTSIDE_EVENT = "pointerupoutside";
 const WHEEL_EVENT = "wheel";
 const KEY_DOWN_EVENT = "keydown";
 const KEY_UP_EVENT = "keyup";
@@ -25,8 +27,10 @@ export const cameraLens = (
 
 /**
  * Listens on the scene's input plugins and hands every event to `mapper`. The context menu is
- * disabled so a right click is an order and not a browser menu; a window blur releases every
- * key. Returns the unbind, for the scene's shutdown.
+ * disabled so a right click is an order and not a browser menu; a button coming up is handed
+ * over whether it came up on the canvas or off it, so a held press dragged past the edge
+ * still commits; a window blur releases every key. Returns the unbind, for the scene's
+ * shutdown.
  */
 export const bindSceneInput = (
   scene: Phaser.Scene,
@@ -38,6 +42,9 @@ export const bindSceneInput = (
 
   const onPointerDown = (pointer: Phaser.Input.Pointer): void => {
     mapper.pointerDown(pointer.button, pointer.x, pointer.y);
+  };
+  const onPointerUp = (pointer: Phaser.Input.Pointer): void => {
+    mapper.pointerUp(pointer.button, pointer.x, pointer.y);
   };
   const onWheel = (
     _pointer: Phaser.Input.Pointer,
@@ -62,6 +69,8 @@ export const bindSceneInput = (
   }
 
   input.on(POINTER_DOWN_EVENT, onPointerDown);
+  input.on(POINTER_UP_EVENT, onPointerUp);
+  input.on(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
   input.on(WHEEL_EVENT, onWheel);
   game.events.on(BLUR_EVENT, onBlur);
 
@@ -72,6 +81,8 @@ export const bindSceneInput = (
 
   return (): void => {
     input.off(POINTER_DOWN_EVENT, onPointerDown);
+    input.off(POINTER_UP_EVENT, onPointerUp);
+    input.off(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
     input.off(WHEEL_EVENT, onWheel);
     game.events.off(BLUR_EVENT, onBlur);
 

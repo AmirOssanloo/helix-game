@@ -46,11 +46,14 @@ const PHASER_STUB = fileURLToPath(
 );
 
 /**
- * The stress test measures wall time, so it runs in a group of its own after every other
- * project has finished: a tick timed while other workers hold the cores is not the tick the
- * budget is about. The simulation project excludes the file so it runs once.
+ * The stress tests measure wall time, so they run in a group of their own after every other
+ * project has finished, one file at a time: a tick timed while other workers hold the cores is
+ * not the tick the budget is about. The simulation project excludes the files so each runs once.
  */
-const STRESS_SPEC = "tests/simulation/stress.spec.ts";
+const STRESS_SPECS = [
+  "tests/simulation/stress.spec.ts",
+  "tests/simulation/stress-zones.spec.ts",
+];
 const STRESS_GROUP_ORDER = 1;
 
 /** One project per tier, each inheriting the root aliases and settings. */
@@ -97,13 +100,14 @@ export default defineConfig({
         "simulation",
         "node",
         ["tests/simulation/**/*.spec.ts", "tests/app/**/*.spec.ts"],
-        [STRESS_SPEC],
+        STRESS_SPECS,
       ),
       {
         test: {
           name: "stress",
           environment: "node",
-          include: [STRESS_SPEC],
+          include: STRESS_SPECS,
+          fileParallelism: false,
           sequence: { groupOrder: STRESS_GROUP_ORDER },
         },
       },

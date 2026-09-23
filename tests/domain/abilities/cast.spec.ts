@@ -46,6 +46,14 @@ describe("isInCastRange", () => {
     );
   });
 
+  it("measures a vector from the caster's centre to the point pressed, as a point", () => {
+    const unit = casterAtOrigin();
+    unit.curr.x = -50;
+
+    expect(isInCastRange(unit, record, "vector", RANGE - 50, 0, 0)).toBe(true);
+    expect(isInCastRange(unit, record, "vector", RANGE - 49, 0, 0)).toBe(false);
+  });
+
   it("adds the caster's bound radius and the target's for a unit", () => {
     const unit = casterAtOrigin();
     const reach = RANGE + 24 + 30;

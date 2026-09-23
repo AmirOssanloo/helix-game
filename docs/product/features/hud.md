@@ -32,7 +32,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 
 ## Targeting preview
 
-When a targeted spell's cursor is open: a range ring around the hero at the spell's cast range, and under the pointer the spell's shape, the frame its definition names, drawn translucent. A direction spell's shape sits on the hero and turns toward the pointer instead. The preview turns red outside range; a direction spell is never out of range. It closes on commit, Esc, or S.
+When a targeted spell's cursor is open: a range ring around the hero at the spell's cast range, and under the pointer the spell's shape, the frame its definition names, drawn translucent. A direction spell's shape sits on the hero and turns toward the pointer instead. Glacier has no shape: the ring alone, and once its held press is dragged, a line from the press to the pointer. The preview turns red outside range; a direction spell is never out of range. It closes on commit, Esc, or S.
 
 ## Placeholder art
 

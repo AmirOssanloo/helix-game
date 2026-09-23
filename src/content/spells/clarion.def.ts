@@ -6,7 +6,8 @@ import type { SpellDef } from "@domain/public";
  * damage found is still standing there for the disarm: a push takes hold of a unit at once but
  * carries it over the ticks that follow. The push is away from the hero rather than along one
  * line, so a unit at the cone's edge is thrown outward, and it goes through the movement step, so
- * one pushed into a wall stops at its edge. The cone is written out on each entry, since an entry
+ * one pushed into a wall stops at its edge. The push names a speed, Bolide's roll speed, rather
+ * than a time, so a longer push lasts longer. The cone is written out on each entry, since an entry
  * names its own target and a definition computes nothing. The recipe, the targeting kind, the
  * timings, the tables, and the preview are the spell catalogue's starting values, one entry per
  * orb level from one to seven. Every number is a starting value design retunes here.
@@ -40,9 +41,9 @@ export const clarionDef = {
       direction: "away",
       distance: {
         orb: "whorl",
-        byLevel: [100, 150, 200, 250, 300, 350, 400],
+        byLevel: [200, 300, 400, 500, 600, 700, 800],
       }, // tunable
-      seconds: 0.3, // tunable
+      speed: 300, // tunable
     },
     {
       kind: "apply_status",

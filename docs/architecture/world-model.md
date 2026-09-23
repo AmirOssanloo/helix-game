@@ -17,9 +17,9 @@ An entity is a pooled runtime thing with an id. Every entity that carries rules 
 | --- | --- | --- | --- |
 | Hero unit | `domain/entities` | The one unit the player controls, with its orbs, slots, stats, and status table | Run |
 | Enemy unit | `domain/entities` | A hostile unit driven by an AI behaviour, referencing an enemy definition | Map |
-| Summon unit | `domain/entities` | A unit created by an ability and owned by another unit, with a lifetime | Map |
+| Summon unit | `domain/entities` | A unit created by an ability and owned by another unit, with a lifetime, gone when its owner dies | Map |
 | Projectile | `domain/entities` | A moving thing that hits, homing or linear, referencing the ability that fired it | Map |
-| Zone | `domain/entities` | An ability's presence in the world with rules of its own — it damages, slows, blocks, or carries | Map |
+| Zone | `domain/entities` | An ability's presence on the ground with rules of its own — it damages, slows, lifts, or puts a status on what stands inside it, still or travelling | Map |
 | Effect | `domain/entities` | A short-lived visual with no rules, spawned for the presentation to draw | Map |
 
 Hero, enemy, and summon are one unit pool with a kind tag, not three pools. Movement, collision, statuses, and death treat every unit alike; what differs is who drives it.

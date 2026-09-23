@@ -1,6 +1,6 @@
 import type { EntityId } from "@shared/public";
 import { bearing } from "@shared/public";
-import { ticksOfSeconds } from "../../definitions/duration";
+import { ticksOfSeconds, ticksOfTravel } from "../../definitions/duration";
 import type { DisplaceEffectDef } from "../../definitions/effect-def";
 import { tableAtOrbLevels } from "../../definitions/level-table";
 import type { Unit } from "../../entities/unit";
@@ -64,10 +64,11 @@ const push = (
 /**
  * Moves every unit the entry's target collects, or puts it in the air.
  *
- * A push sends each unit its distance, read at the levels the cast snapshotted, over the
- * entry's seconds: the status the entry names goes on for the same ticks, raising the
- * displaced flag so the unit keeps its order without walking it, and the movement step
- * carries the unit the rest of the way. A push of no ticks moves nobody.
+ * A push sends each unit its distance, read at the levels the cast snapshotted, at the
+ * entry's speed, so it lasts the whole ticks that distance takes at that speed: the status the
+ * entry names goes on for the same ticks, raising the displaced flag so the unit keeps its
+ * order without walking it, and the movement step carries the unit the rest of the way. A
+ * push of no ticks moves nobody.
  *
  * A lift puts the entry's status on each unit for the ticks its table gives. Everything else
  * a lift does is the status's: the flags it sets take the unit's order off it until the lift
@@ -80,18 +81,20 @@ export const displace: Primitive<DisplaceEffectDef> = (
 ): void => {
   const level = takeTargets();
   const count = collectTargets(world, cast, entry.target, level);
-  const ticks = ticksOfSeconds(world.run.tuning, entry.seconds, cast.orbLevels);
+  const distance =
+    entry.mode === "push"
+      ? tableAtOrbLevels(entry.distance, cast.orbLevels)
+      : 0;
+  const ticks =
+    entry.mode === "push"
+      ? ticksOfTravel(world.run.tuning, distance, entry.speed)
+      : ticksOfSeconds(world.run.tuning, entry.seconds, cast.orbLevels);
 
   if (ticks === 0) {
     releaseTargets(level);
 
     return;
   }
-
-  const distance =
-    entry.mode === "push"
-      ? tableAtOrbLevels(entry.distance, cast.orbLevels)
-      : 0;
 
   for (let slot = 0; slot < count; slot += 1) {
     const id: EntityId = targetAt(level, slot);

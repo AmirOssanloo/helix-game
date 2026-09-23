@@ -47,7 +47,8 @@ When two people call the same thing different names, the names leak into the cod
 | A short-lived visual thing with no rules of its own | **Effect** | Particle, VFX |
 | One of the six things the pipeline knows how to do by name: damage an area, apply a status, spawn a projectile, a zone, or a unit, displace | **Primitive** | Operation, verb, action |
 | A bespoke thing a definition names by string key, written as one function in the domain | **Named effect** | Script, custom effect, trigger |
-| What every primitive and named effect runs with: the caster, the ability, the orb levels at commit, an anchor with a facing, the target unit, the zone | **Cast context** | Payload, arguments, parameters |
+| What every primitive and named effect runs with: the caster, the ability, the orb levels at commit, an anchor with a facing, a direction or none, the target unit, the zone | **Cast context** | Payload, arguments, parameters |
+| An aim made of a press point and a drag: where the ability lands and the line it lies along | **Vector** (a targeting kind; not `Vec2`, which is any pair of coordinates in code) | Drag-cast, line target, two-point target |
 | A spell's presence on the ground with rules: a wall, a meteor, a updraft | **Zone** | Area, field, hazard |
 | A moving thing that hits: an arrow, a bolt | **Projectile** | Missile, bullet |
 | A unit the hero or an enemy creates and owns | **Summon** | Pet, minion, add (adds is fine in "boss adds") |

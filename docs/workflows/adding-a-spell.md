@@ -28,7 +28,7 @@ import type { SpellDef } from '@domain/public'
 export const frostLanceDef = {
   id: 'frost_lance',
   recipe: ['quartz', 'quartz', 'whorl'],          // The orb multiset; order is ignored
-  targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction'
+  targeting: 'point',                             // 'none' | 'unit' | 'point' | 'direction' | 'vector'
   castPointSeconds: 0.1,                          // Before the effect fires; the hero must face the target first
   backswingSeconds: 0.2,                          // After the effect fires; a new order cancels it
   cooldownSeconds: [20, 18, 16, 14, 12, 10, 8],   // Indexed by the lowest orb level in the recipe, 1 to 7
@@ -75,7 +75,7 @@ Register the key in `src/domain/abilities/effects/index.ts` with the schema of i
 ['frost_lance_hit', { fields: frostLanceHitFields, run: frostLanceHitEffect }],
 ```
 
-The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, and gets every number from `cast.ability`, its own fields, or the tuning table. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
+The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the direction a vector cast was dragged along if it was, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, and gets every number from `cast.ability`, its own fields, or the tuning table. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
 
 ---
 

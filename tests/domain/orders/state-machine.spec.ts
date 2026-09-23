@@ -89,6 +89,7 @@ const NO_CAST = {
   targetKind: "none",
   position: { x: 0, y: 0 },
   targetId: null,
+  direction: null,
 };
 
 const CAST_POINT_STATES: readonly OrderState[] = [
@@ -164,7 +165,7 @@ describe("issueCast", () => {
     (state) => {
       const unit = unitIn(state);
 
-      expect(issueCast(unit, "spell_1", "point", 3, 4, null)).toBe("ok");
+      expect(issueCast(unit, "spell_1", "point", 3, 4, null, null)).toBe("ok");
       expect(unit.state).toBe("turning");
       expect(unit.order).toEqual({
         kind: "cast",
@@ -176,6 +177,7 @@ describe("issueCast", () => {
         targetKind: "point",
         position: { x: 3, y: 4 },
         targetId: null,
+        direction: null,
       });
     },
   );
@@ -186,7 +188,7 @@ describe("issueCast", () => {
       const unit = unitIn(state);
       pendingCast(unit);
 
-      expect(issueCast(unit, "spell_2", "none", 0, 0, null)).toBe("ok");
+      expect(issueCast(unit, "spell_2", "none", 0, 0, null, null)).toBe("ok");
       expect(unit.state).toBe("turning");
       expect(unit.order.kind).toBe("cast");
       expect(unit.cast.abilityId).toBe("spell_2");
@@ -197,19 +199,19 @@ describe("issueCast", () => {
   it("records the unit a unit-targeted cast aims at on the order and the record", () => {
     const unit = unitIn("idle");
 
-    issueCast(unit, "spell_1", "unit", 3, 4, 9);
+    issueCast(unit, "spell_1", "unit", 3, 4, 9, null);
 
     expect(unit.order.targetId).toBe(9);
     expect(unit.cast.targetId).toBe(9);
     expect(unit.cast.targetKind).toBe("unit");
   });
 
-  it.each(["point", "unit"] as const)(
+  it.each(["point", "unit", "vector"] as const)(
     "asks for a path toward a %s aim, which the cast rule withdraws when the aim is in range",
     (kind) => {
       const unit = unitIn("idle");
 
-      issueCast(unit, "spell_1", kind, 3, 4, kind === "unit" ? 9 : null);
+      issueCast(unit, "spell_1", kind, 3, 4, kind === "unit" ? 9 : null, null);
 
       expect(unit.needsPath).toBe(true);
     },
@@ -220,23 +222,37 @@ describe("issueCast", () => {
     (kind) => {
       const unit = unitIn("idle");
 
-      issueCast(unit, "spell_1", kind, 3, 4, null);
+      issueCast(unit, "spell_1", kind, 3, 4, null, null);
 
       expect(unit.needsPath).toBe(false);
     },
   );
 
+  it("records the line a vector cast lies along, and a stop forgets it with the cast", () => {
+    const unit = unitIn("idle");
+
+    issueCast(unit, "spell_1", "vector", 3, 4, null, Math.PI / 2);
+
+    expect(unit.cast.targetKind).toBe("vector");
+    expect(unit.cast.direction).toBe(Math.PI / 2);
+
+    clearOrder(unit);
+
+    expect(unit.cast).toEqual(NO_CAST);
+  });
+
   it("over a pending cast replaces the aim whole", () => {
     const unit = unitIn("turning", "cast");
     pendingCast(unit);
 
-    issueCast(unit, "spell_2", "direction", 5, 6, null);
+    issueCast(unit, "spell_2", "direction", 5, 6, null, null);
 
     expect(unit.cast).toEqual({
       abilityId: "spell_2",
       targetKind: "direction",
       position: { x: 5, y: 6 },
       targetId: null,
+      direction: null,
     });
   });
 });
@@ -662,7 +678,8 @@ describe("a dead unit", () => {
     ["issueAttackMove", (unit: Unit): string => issueAttackMove(unit, 3, 4)],
     [
       "issueCast",
-      (unit: Unit): string => issueCast(unit, "spell_1", "point", 3, 4, null),
+      (unit: Unit): string =>
+        issueCast(unit, "spell_1", "point", 3, 4, null, null),
     ],
     ["clearOrder", (unit: Unit): string => clearOrder(unit)],
     ["beginCastPoint", (unit: Unit): string => beginCastPoint(unit)],

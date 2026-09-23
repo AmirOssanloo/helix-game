@@ -33,10 +33,10 @@ Every spell carries the same fields, and a field a spell does not use holds its 
 |---|---|
 | Id | The snake_case string every command, event, and log line uses. It never renames |
 | Recipe | The three orbs that compose it. Order is irrelevant; the composer counts |
-| Targeting | None, unit, point, or direction ([section 2.4](#24-the-cast-context)) |
+| Targeting | None, unit, point, direction, or vector ([section 2.4](#24-the-cast-context)) |
 | Cast point | The hold before commit. Cancelled at no cost by a stop, a new order, a stun, or death |
 | Backswing | The hold after commit. A new order cancels it; the cast already landed |
-| Cast range | World units, for unit and point spells. Zero for none and direction |
+| Cast range | World units, for unit, point, and vector spells; a vector's is measured to the press. Zero for none and direction |
 | Cooldown | A table by level, seconds, started at commit |
 | Mana | A table by level, refused at key-down when short |
 | Effects | The list the pipeline runs at commit, in order |
@@ -57,7 +57,7 @@ Seconds, world units, world units per second, degrees, fractions of one for perc
 
 ### 2.4 The cast context
 
-Every effect runs with the same context: the caster, the definition, the three orb levels at commit, an anchor point with a facing, a target unit or none, the world, and the zone that ran it or none. Where the anchor and the target come from depends on what ran the effect.
+Every effect runs with the same context: the caster, the definition, the three orb levels at commit, an anchor point with a facing, a direction or none, a target unit or none, the world, and the zone that ran it or none. Only a vector spell carries a direction. Where the anchor and the target come from depends on what ran the effect.
 
 | Run from | Anchor and facing | Target unit |
 |---|---|---|
@@ -65,10 +65,13 @@ Every effect runs with the same context: the caster, the definition, the three o
 | A unit spell | The target's position; facing from the hero to it | The target |
 | A point spell | The click; facing from the hero to the click | None |
 | A direction spell | The hero; facing toward the click | None |
+| A vector spell | The press; facing exactly from where the hero stands at commit to the press. The direction is the bearing from the press to the release, or none when the release is where the press went down | None |
 | A zone's activation list or each-tick list | The zone's position and facing | Each enemy inside the zone, in turn |
 | A status hook or expiry list | The holder's position | The unit that took the damage, or the holder on expiry |
 
-A direction spell turns the hero toward the click, commits, and is never out of range. A unit or point spell out of range walks toward its target first, as the [ability pipeline](../../architecture/ability-pipeline.md) says.
+A direction spell turns the hero toward the click, commits, and is never out of range. A unit or point spell out of range walks toward its target first, as the [ability pipeline](../../architecture/ability-pipeline.md) says, and so does a vector spell pressed out of range.
+
+A vector spell is aimed with the button held: the player presses on the ground, drags, and releases. The press is where it lands; the drag is the line it lies along. A release less than a small distance on screen from the press is no drag. Esc or a right click while the button is down closes the cursor at no cost.
 
 An effect's `target` says whom it touches: `target` is the context's target unit, `zone` is every unit inside the zone that runs it, and a shape is every unit inside that shape at the anchor. A shape or a zone collects units hostile to the caster only. For the hero that means enemies, never a summon, and never the hero, so friendly fire does not exist. An enemy casting through the same pipeline collects the hero and its summons.
 
@@ -92,7 +95,7 @@ The table is the whole catalogue at a glance; the entries below hold the effect 
 |---|---|---|---|---|---|---|---|---|
 | QQQ | Hoarfrost | Unit | 0.05 | 1000 | 20 → 14 | 100 → 130 | Apply status | none |
 | QQW | Wane | None | 0.05 | 0 | 35 → 23 | 200 → 230 | Apply status, spawn zone | none |
-| QQE | Glacier | Direction | 0.1 | 0 | 25 → 19 | 175 → 205 | Named | `glacier_place` |
+| QQE | Glacier | Vector | 0.1 | 1000 | 25 → 19 | 175 → 205 | Named | `glacier_place` |
 | WWW | Siphon | Point | 0.1 | 950 | 30 → 18 | 125 → 155 | Spawn zone | `siphon_burn` |
 | WWQ | Updraft | Direction | 0.1 | 0 | 30 → 18 | 150 → 180 | Spawn zone | `updraft_catch` |
 | WWE | Quicken | None | 0.05 | 0 | 15 → 9 | 45 → 75 | Apply status | none |
@@ -152,28 +155,28 @@ The hero drops out of enemy aggro and is slowed. Enemies near the hero are slowe
 
 ### 3.3 Glacier — QQE
 
-A line of wall segments placed in front of the hero, across the cast direction. Enemies inside a segment are heavily slowed and burn.
+A line of wall segments centred on the point the player presses, lying along the line the player drags. A press released without a drag lays the wall across the line from the hero to the point. Enemies inside a segment are heavily slowed and burn.
 
 | Field | Value |
 |---|---|
 | Id | `glacier` |
-| Targeting | Direction |
+| Targeting | Vector |
 | Cast point · backswing | 0.1 s · 0.1 s |
-| Cast range | 0 |
+| Cast range | 1000, to the press; a press beyond it walks the hero in |
 | Cooldown | Quartz or Ember, whichever is lower, [25, 24, 23, 22, 21, 20, 19] s |
 | Mana | Same index, [175, 180, 185, 190, 195, 200, 205] |
-| Preview | A rectangle 1120 across and 80 deep, its centre 200 in front of the hero, turning with the pointer; `square_outline` |
+| Preview | A line, which draws no outline of the wall. Before the press and while the press is held without a drag, only the range ring; once the held press is dragged, the ring and a line from the press to the pointer. The ring turns red judged at the press while the button is down |
 | Frame · tint | `square` · `0x6fb7ff` |
 
 **Effects:**
 
-1. Named `glacier_place` — segments 7; spacing 160; distance 200 in front of the anchor. Each segment is a zone: rectangle 160 across the cast direction and 80 along it; anchored at the segment's centre; delay 0; lifetime Quartz [3, 4.5, 6, 7.5, 9, 10.5, 12]; still. Each tick: apply status — target `zone`; status `glacier_chill`; seconds 1.
+1. Named `glacier_place` — segments 7; spacing 160; centred on the anchor, along the cast's direction, or across the facing when it has none. Each segment is a zone: rectangle 160 along the wall and 80 across it; anchored at the segment's centre; delay 0; lifetime Quartz [3, 4.5, 6, 7.5, 9, 10.5, 12]; still. Each tick: apply status — target `zone`; status `glacier_chill`; seconds 1.
 
 **Statuses:** `glacier_chill` slows by Quartz [0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80] and deals magical damage per second Ember [6, 12, 18, 24, 30, 36, 42]. It lasts 1 s after the enemy leaves the segment.
 
-**Why bespoke:** a row of zones laid out from the hero's facing is not one shape. The named effect computes seven anchors and spawns the same zone at each; nothing else about it is special.
+**Why bespoke:** a row of zones laid out along a line is not one shape. The named effect computes seven anchors and spawns the same zone at each; nothing else about it is special.
 
-**Adapted:** the source places its wall from the caster's facing with no click; Helix reads the direction from the click so the player aims it. Segments block nothing, since the walkability grid is static; they slow and burn. A slow below the minimum speed clamps at 100, as the [status page](../features/status-effects.md) says.
+**Adapted:** the source places its wall a fixed distance in front of the caster, across its facing, with no click; Helix lets the player place it with a press and turn it with a drag, and a press with no drag gives the source's orientation where the player pressed. Segments block nothing, since the walkability grid is static; they slow and burn. A slow below the minimum speed clamps at 100, as the [status page](../features/status-effects.md) says.
 
 ### 3.4 Siphon — WWW
 
@@ -337,10 +340,10 @@ A cone from the hero: damage, a push away from the hero, and a disarm on everyth
 **Effects:**
 
 1. Damage area — target: cone 60 degrees, length 900; magical; Quartz [40, 80, 120, 160, 200, 240, 280]; not split.
-2. Displace — target: the same cone; push away from the hero; distance Whorl [100, 150, 200, 250, 300, 350, 400] over 0.3 s.
+2. Displace — target: the same cone; push away from the hero; distance Whorl [200, 300, 400, 500, 600, 700, 800] at 300 units a second, Bolide's roll speed, so the push lasts from two thirds of a second at the first level to eight thirds at the cap.
 3. Apply status — target: the same cone; status `disarm`; seconds Ember [1, 1.5, 2, 2.5, 3, 3.5, 4].
 
-**Statuses:** `disarm`, and `knockback` for the 0.3 s of the push.
+**Statuses:** `disarm`, and `knockback` for as long as the push lasts.
 
 **Edges:** the three entries run in order on the units in the cone on the commit tick; a push moves a unit over the following ticks, so a unit hit by the first entry is still there for the third. A push into an obstacle stops at its edge. Enemies only.
 
@@ -425,7 +428,7 @@ Every entry has a `kind`. A `target` is `target`, `zone`, or a shape from [secti
 | Apply status | `target`; the status id; `seconds`, a number or a table. Applying the same status every tick with a short duration is how a zone's slow lingers after a unit leaves | Hoarfrost, Wane, Glacier, Quicken, Bolide, Clarion, the Hoarfrost hook |
 | Spawn zone | The shape; `anchor`, the context's anchor or the caster, a caster-anchored zone moving with the caster; `delaySeconds` before it activates; `lifetimeSeconds`, a number, a table, or the motion; `motion`, still or a line along the facing with a speed and a distance table; `onActivate`, an effect list run once when the delay ends; `eachTick`, an effect list run every tick while active; the frame and tint it is drawn with | Wane, Glacier through its named effect, Siphon, Updraft, Zenith, Bolide |
 | Spawn unit | The summon definition id; `count`; `offset`, forward and right of the caster's facing; `lifetimeSeconds`, a table; `bonuses`, a list of stat and flat table written as modifier rows on the summon for its life | Emberling |
-| Displace | `target`; `mode`, push or lift; the status it applies for its duration; for push, `direction`, away from the caster or along the facing, `distance`, a table, and `seconds`; for lift, `seconds`, a table. A push moves the unit through the movement step each tick so it stops at an obstacle edge, and names `knockback` as its status. A lift applies its status, which suspends the order, and the order comes back on expiry | Clarion pushes; `updraft_catch` lifts through the same function. Pull has no user and is not built until one exists |
+| Displace | `target`; `mode`, push or lift; the status it applies for its duration; for push, `direction`, away from the caster or along the facing, `distance`, a table, and `speed`, in units a second; for lift, `seconds`, a table. A push lasts the whole ticks its distance at the level cast takes at its speed, converted once where it is applied and never fewer than one; one with no distance or no speed moves nobody. It moves the unit an even step through the movement step each tick so it stops at an obstacle edge, and names `knockback` as its status. A lift applies its status, which suspends the order, and the order comes back on expiry | Clarion pushes; `updraft_catch` lifts through the same function. Pull has no user and is not built until one exists |
 | Spawn projectile | A speed, a radius, homing on the target or not, a maximum range, an on-hit effect list, a frame and tint | No spell. The auto-attack and the summon's attack fire one |
 | Named | A key resolved from `src/domain/abilities/effects/`, and the effect's own fields, declared beside the function and validated by its schema | Glacier, Siphon, Updraft |
 
@@ -437,7 +440,7 @@ Three functions, one file each under `src/domain/abilities/effects/`, each takin
 
 | Key | Fields | Does |
 |---|---|---|
-| `glacier_place` | `segments`, `spacing`, `distance`, and the segment zone as a spawn-zone entry | Computes `segments` anchors on a line across the facing, `distance` in front of the anchor, `spacing` apart and centred, and spawns the zone at each with the facing turned across the cast direction |
+| `glacier_place` | `segments`, `spacing`, and the segment zone as a spawn-zone entry | Computes `segments` anchors on a line through the anchor, `spacing` apart and centred on it, and spawns the zone at each turned along the line. The line is the context's direction, or a quarter turn from its facing when it has none, which at commit is across the line from the hero to the press |
 | `siphon_burn` | `burn`, a table; `damagePerMana` | For each enemy in the zone: takes the lesser of `burn` and the unit's mana, and deals that times `damagePerMana` as magical damage |
 | `updraft_catch` | `liftSeconds`, a table; the lift status id | Runs each tick from the zone: lifts every enemy inside not yet on the hit list and records it, and moves nobody |
 
@@ -457,10 +460,11 @@ What a status definition must be able to say, each with the status that needs it
 
 ### 7.4 Other definition capabilities
 
-- A spell's **preview**: none, a unit reticle, a circle with a radius, a rectangle with a length and width and an offset in front of the hero, or a cone with an angle and length. A rectangle's length may be a table, read at the hero's current level.
+- A spell's **preview**: none, a unit reticle, a circle with a radius, a rectangle with a length and width and an offset in front of the hero, a cone with an angle and length, or a line, which carries nothing and draws no shape, only the drag from a held press to the pointer. A rectangle's length and offset may be a table, read at the hero's current level.
 - **Mana and mana regeneration on every enemy definition**, neutral at zero, so Siphon has something to burn.
 - **A summon definition kind**, enemy-shaped with a follow distance, under `src/content/summons/`, and modifier rows written on a summon at spawn as their own source kind.
-- **A direction targeting kind** with no range, used by Glacier, Updraft, and Clarion.
+- **A direction targeting kind** with no range, used by Updraft and Clarion.
+- **A vector targeting kind**, aimed with a press and a drag, with a range measured to the press, used by Glacier. The cast command carries both points and the context carries the drag's bearing as a direction, or none.
 - **Cooldown and mana indexed by the lowest orb level in the recipe.**
 
 ### 7.5 What the ten do not need

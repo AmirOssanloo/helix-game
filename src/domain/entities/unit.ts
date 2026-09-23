@@ -99,16 +99,18 @@ export type ModifierEntry = {
 
 /**
  * The cast a unit has requested and not yet committed: the ability, what it is aimed at by
- * the ability's targeting kind, and the point or the unit it is aimed at. A `null` ability
- * is no cast. The order carries the approach toward the target; this record carries the
- * aim, so it survives the order being cleared when the cast point begins, and it is gone
- * at commit.
+ * the ability's targeting kind, the point or the unit it is aimed at, and, for a vector, the
+ * line the ability lies along. A `null` ability is no cast. The order carries the approach
+ * toward the target; this record carries the aim, so it survives the order being cleared
+ * when the cast point begins, and it is gone at commit.
  */
 export type CastState = {
   abilityId: string | null;
   targetKind: TargetingKind;
   position: Vec2;
   targetId: EntityId | null;
+  /** The bearing of a vector's drag, in radians; `null` for a vector with no drag and for every other kind. */
+  direction: number | null;
 };
 
 /**
@@ -313,6 +315,7 @@ const createUnit = (): Unit => {
       targetKind: "none",
       position: { x: 0, y: 0 },
       targetId: null,
+      direction: null,
     },
     stageEndsAtTick: 0,
     attackMovePoint: { x: 0, y: 0 },
@@ -369,6 +372,7 @@ const clearUnit = (unit: Unit): void => {
   unit.cast.position.x = 0;
   unit.cast.position.y = 0;
   unit.cast.targetId = null;
+  unit.cast.direction = null;
   unit.stageEndsAtTick = 0;
   unit.attackMovePoint.x = 0;
   unit.attackMovePoint.y = 0;

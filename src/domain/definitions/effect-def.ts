@@ -112,8 +112,9 @@ export type SpawnUnitEffectDef = Readonly<{
 }>;
 
 /**
- * A push moves every unit the target collects a distance over a time through the movement
- * step, so it stops at an obstacle edge. A lift puts its status on each, suspending the
+ * A push moves every unit the target collects a distance at a speed, in world units a second,
+ * through the movement step, so it stops at an obstacle edge; how long it lasts follows from
+ * the distance at the level cast. A lift puts its status on each, suspending the
  * order until the status ends. Both name the status they apply for their duration, since a
  * displacement is a status on the unit and a movement of it together: the status carries the
  * flag that stops the unit moving itself and the icon that says why.
@@ -126,7 +127,7 @@ export type DisplaceEffectDef =
       statusId: string;
       direction: PushDirection;
       distance: LevelTable;
-      seconds: number;
+      speed: number;
     }>
   | Readonly<{
       kind: "displace";

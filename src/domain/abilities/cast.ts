@@ -1,4 +1,4 @@
-import { assert } from "@shared/public";
+import { assert, bearing } from "@shared/public";
 import type { CastTarget } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
 import type { TargetingKind } from "../definitions/ability-def";
@@ -78,8 +78,9 @@ export const holdsAbility = (
 
 /**
  * Whether `unit` may cast `record` from where it stands at an aim of `kind` at (`x`, `y`):
- * a point within the definition's range, centre to point; a unit within the range plus the
- * caster's bound radius and the target's, `targetBound`; a direction or nothing, always.
+ * a point, or the point a vector was pressed at, within the definition's range, centre to
+ * point; a unit within the range plus the caster's bound radius and the target's,
+ * `targetBound`; a direction or nothing, always.
  */
 export const isInCastRange = (
   unit: Readonly<Unit>,
@@ -97,6 +98,7 @@ export const isInCastRange = (
       return true;
 
     case "point":
+    case "vector":
       reach = record.def.range;
 
       break;
@@ -120,7 +122,8 @@ export const isInCastRange = (
  * is not the kind the spell takes or names a unit that is gone, the clock is running, the
  * mana is short, or the unit is rooted with the target out of range. The clock and the mana
  * read the panel's flags, as the composer does. A target in range is cast where the unit
- * stands; one out of range is walked toward first.
+ * stands; one out of range is walked toward first. A vector is aimed at the point pressed,
+ * along the bearing from it to the point released, or along nothing when the two are one.
  */
 export const requestCast = (
   world: World,
@@ -146,12 +149,23 @@ export const requestCast = (
   let y = unit.curr.y;
   let targetId = null;
   let targetBound = 0;
+  let direction = null;
 
   switch (target.kind) {
     case "point":
     case "direction":
       x = target.position.x;
       y = target.position.y;
+
+      break;
+
+    case "vector":
+      x = target.position.x;
+      y = target.position.y;
+      direction =
+        target.end.x === x && target.end.y === y
+          ? null
+          : bearing(target.position, target.end);
 
       break;
 
@@ -196,7 +210,15 @@ export const requestCast = (
     return "out_of_range";
   }
 
-  const result = issueCast(unit, abilityId, target.kind, x, y, targetId);
+  const result = issueCast(
+    unit,
+    abilityId,
+    target.kind,
+    x,
+    y,
+    targetId,
+    direction,
+  );
 
   assert(result === "ok", "A validated cast replaces the current order");
 

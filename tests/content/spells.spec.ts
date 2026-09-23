@@ -66,14 +66,15 @@ const isNonDecreasing = (values: readonly number[]): boolean =>
 /**
  * The preview each targeting kind draws with: a no-target spell commits on the key and shows
  * nothing, a unit spell puts a reticle on whoever is under the pointer, a point spell puts a
- * circle there, and a direction spell lays the ground it would cover on the hero, which is a
- * rectangle or a cone.
+ * circle there, a direction spell lays the ground it would cover on the hero, which is a
+ * rectangle or a cone, and a vector spell draws the drag from the point pressed to the pointer.
  */
 const PREVIEW_KINDS: Readonly<Record<TargetingKind, readonly string[]>> = {
   none: ["none"],
   unit: ["unit"],
   point: ["circle"],
   direction: ["rectangle", "cone"],
+  vector: ["line"],
 };
 
 /** Whether the value is a level table: the one shape a scalar takes when it is not a number. */
@@ -189,7 +190,7 @@ describe("every spell", () => {
   );
 
   it.each(spells.map((spell) => [spell.id, spell] as const))(
-    "%s has the catalogue's cast point and backswing, and a range only when it aims at a unit or a point",
+    "%s has the catalogue's cast point and backswing, and a range only when it aims at a unit, a point, or a vector",
     (_id, spell) => {
       expect(spell.castPointSeconds).toBeGreaterThanOrEqual(CAST_POINT_MIN);
       expect(spell.castPointSeconds).toBeLessThanOrEqual(CAST_POINT_MAX);
@@ -230,6 +231,23 @@ describe("every spell", () => {
         true,
       );
       expect(entryAtLevel(spell.manaCost, level)).toBeGreaterThanOrEqual(0);
+    },
+  );
+
+  it.each(
+    spells.flatMap((spell) =>
+      everyLevel.map((level) => [spell.id, spell, level] as const),
+    ),
+  )(
+    "%s reads a finite number at orb level %i from every table it carries",
+    (_id, spell, level) => {
+      const unreadable = tablesOf(spell, spell.id)
+        .filter(
+          ([, table]) => !Number.isFinite(entryAtLevel(table.byLevel, level)),
+        )
+        .map(([at]) => at);
+
+      expect(unreadable).toEqual([]);
     },
   );
 

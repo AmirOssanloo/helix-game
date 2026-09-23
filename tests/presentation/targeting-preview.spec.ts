@@ -6,6 +6,8 @@ import {
   closeCursor,
   createTargetingCursor,
   DEPTH_GROUND,
+  DIRECTION_LINE_WIDTH,
+  DRAG_THRESHOLD,
   RETICLE_SIZE,
   TargetingPreview,
 } from "@presentation/public";
@@ -29,6 +31,7 @@ const RETICLE_TINT = 0x445566;
 const RECTANGLE_TINT = 0x778899;
 const CONE_TINT = 0xaabbcc;
 const BARE_TINT = 0xddeeff;
+const LINE_TINT = 0x6fb7ff;
 const OUT_OF_RANGE_TINT = 0xff3030;
 
 const HERO_X = 1000;
@@ -39,7 +42,6 @@ const RECTANGLE_WIDTH = 80;
 const RECTANGLE_LENGTHS = [700, 800, 900, 1000, 1100, 1200, 1300];
 const RECTANGLE_OFFSETS = [200, 250, 300, 350, 400, 450, 500];
 const CONE_LENGTH = 450;
-
 /** The Whorl level the rectangle spell's tables are read at, and where its entries sit. */
 const WHORL_LEVEL = 3;
 const WHORL_ENTRY = 2;
@@ -91,12 +93,21 @@ const bareSpell = makeSpellDef.build({
   tint: BARE_TINT,
 });
 
+const lineSpell = makeSpellDef.build({
+  recipe: ["whorl", "whorl", "ember"],
+  targeting: "vector",
+  range: RANGE,
+  preview: { kind: "line" },
+  tint: LINE_TINT,
+});
+
 const spells = [
   circleSpell,
   reticleSpell,
   rectangleSpell,
   coneSpell,
   bareSpell,
+  lineSpell,
 ];
 
 const form = makeFormDef.build({
@@ -110,6 +121,7 @@ type Arranged = {
   preview: TargetingPreview;
   ring: QuadRecorder;
   shape: QuadRecorder;
+  line: QuadRecorder;
 };
 
 /** A preview over a world whose hero stands at (1000, 500), with a cursor open on `abilityId` and its targeting kind. */
@@ -138,11 +150,16 @@ const arrange = (
     },
     () => FRAME_WIDTH,
   );
-  const [ring, shape] = quads;
+  const [ring, shape, line] = quads;
   const cursor = createTargetingCursor();
 
-  if (ring === undefined || shape === undefined) {
-    throw new Error("The preview makes a ring and a shape");
+  if (
+    quads.length !== 3 ||
+    ring === undefined ||
+    shape === undefined ||
+    line === undefined
+  ) {
+    throw new Error("The preview makes a ring, a shape, and a line");
   }
 
   cursor.kind = "slot";
@@ -150,20 +167,23 @@ const arrange = (
   cursor.abilityId = abilityId;
   cursor.targeting = targeting;
 
-  return { world, hero, cursor, preview, ring, shape };
+  return { world, hero, cursor, preview, ring, shape, line };
 };
 
 describe("the targeting preview", () => {
-  it("makes two quads at the ground band and shows nothing while the cursor is closed", () => {
+  it("makes three quads at the ground band and shows nothing while the cursor is closed", () => {
     const arranged = arrange(circleSpell.id, "point");
 
     closeCursor(arranged.cursor);
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
 
     expect(arranged.ring.depth).toBe(DEPTH_GROUND);
     expect(arranged.shape.depth).toBe(DEPTH_GROUND);
+    expect(arranged.line.depth).toBe(DEPTH_GROUND);
+    expect(arranged.line.frame).toBe("square");
     expect(arranged.ring.visible).toBe(false);
     expect(arranged.shape.visible).toBe(false);
+    expect(arranged.line.visible).toBe(false);
     expect(arranged.preview.open).toBe(false);
   });
 
@@ -171,7 +191,15 @@ describe("the targeting preview", () => {
     const arranged = arrange(circleSpell.id, "point");
 
     arranged.hero.curr.x = HERO_X + 60;
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0.5);
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      0,
+      0,
+      0,
+      0,
+      0.5,
+    );
 
     expect(arranged.ring.visible).toBe(true);
     expect(arranged.ring.x).toBe(HERO_X + 30);
@@ -189,6 +217,8 @@ describe("the targeting preview", () => {
       HERO_X + 100,
       HERO_Y,
       0,
+      0,
+      0,
     );
 
     expect(arranged.ring.visible).toBe(false);
@@ -203,6 +233,8 @@ describe("the targeting preview", () => {
       HERO_X + RANGE,
       HERO_Y,
       0,
+      0,
+      0,
     );
 
     expect(arranged.ring.tint).toBe(CIRCLE_TINT);
@@ -213,6 +245,8 @@ describe("the targeting preview", () => {
       arranged.cursor,
       HERO_X + RANGE + 1,
       HERO_Y,
+      0,
+      0,
       0,
     );
 
@@ -228,6 +262,8 @@ describe("the targeting preview", () => {
       arranged.cursor,
       HERO_X + 100,
       HERO_Y - 50,
+      0,
+      0,
       0,
     );
 
@@ -248,6 +284,8 @@ describe("the targeting preview", () => {
       arranged.cursor,
       HERO_X - 200,
       HERO_Y,
+      0,
+      0,
       0,
     );
 
@@ -273,6 +311,8 @@ describe("the targeting preview", () => {
       HERO_X,
       HERO_Y + 300,
       0,
+      0,
+      0,
     );
 
     expect(arranged.shape.frame).toBe("square_outline");
@@ -291,12 +331,22 @@ describe("the targeting preview", () => {
       0,
     ]);
 
-    first.preview.sync(first.world.view, first.cursor, HERO_X + 100, HERO_Y, 0);
+    first.preview.sync(
+      first.world.view,
+      first.cursor,
+      HERO_X + 100,
+      HERO_Y,
+      0,
+      0,
+      0,
+    );
     seventh.preview.sync(
       seventh.world.view,
       seventh.cursor,
       HERO_X + 100,
       HERO_Y,
+      0,
+      0,
       0,
     );
 
@@ -318,6 +368,8 @@ describe("the targeting preview", () => {
       HERO_X,
       HERO_Y + 5000,
       0,
+      0,
+      0,
     );
 
     expect(arranged.shape.frame).toBe("cone_60");
@@ -338,6 +390,8 @@ describe("the targeting preview", () => {
       HERO_X,
       HERO_Y,
       0,
+      0,
+      0,
     );
 
     expect(arranged.ring.visible).toBe(true);
@@ -348,15 +402,15 @@ describe("the targeting preview", () => {
   it("changes the shape's frame only when the spell does", () => {
     const arranged = arrange(circleSpell.id, "point");
 
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
     arranged.shape.forgetWrites();
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 1, 1, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 1, 1, 0, 0, 0);
 
     expect(arranged.shape.writes).not.toContain("setFrame");
 
     arranged.cursor.abilityId = coneSpell.id;
     arranged.cursor.targeting = "direction";
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 1, 1, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 1, 1, 0, 0, 0);
 
     expect(arranged.shape.frame).toBe("cone_60");
   });
@@ -364,13 +418,175 @@ describe("the targeting preview", () => {
   it("closes when the cursor closes", () => {
     const arranged = arrange(circleSpell.id, "point");
 
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
 
     expect(arranged.preview.open).toBe(true);
 
     closeCursor(arranged.cursor);
-    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0);
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
 
     expect(arranged.preview.open).toBe(false);
+  });
+});
+
+/** Holds a press on `arranged`'s cursor at world point (`x`, `y`) and canvas point (`screenX`, `screenY`). */
+const hold = (
+  arranged: Arranged,
+  x: number,
+  y: number,
+  screenX: number,
+  screenY: number,
+): void => {
+  arranged.cursor.held = true;
+  arranged.cursor.press.x = x;
+  arranged.cursor.press.y = y;
+  arranged.cursor.pressScreen.x = screenX;
+  arranged.cursor.pressScreen.y = screenY;
+};
+
+describe("the line preview", () => {
+  const arrangeLine = (): Arranged => arrange(lineSpell.id, "vector");
+
+  it("before the press, shows only the range ring", () => {
+    const arranged = arrangeLine();
+
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X,
+      HERO_Y + 300,
+      50,
+      50,
+      0,
+    );
+
+    expect(arranged.ring.visible).toBe(true);
+    expect(arranged.ring.tint).toBe(LINE_TINT);
+    expect(arranged.shape.visible).toBe(false);
+    expect(arranged.line.visible).toBe(false);
+    expect(arranged.preview.open).toBe(true);
+  });
+
+  it("while held with no drag, shows only the range ring, wherever the pointer drifts", () => {
+    const arranged = arrangeLine();
+
+    hold(arranged, HERO_X + 300, HERO_Y, 50, 50);
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X + 310,
+      HERO_Y + 5,
+      50 + DRAG_THRESHOLD - 1,
+      50,
+      0,
+    );
+
+    expect(arranged.ring.visible).toBe(true);
+    expect(arranged.shape.visible).toBe(false);
+    expect(arranged.line.visible).toBe(false);
+  });
+
+  it("while held and dragged, shows the ring and the drag line from the press to the pointer, and no shape", () => {
+    const arranged = arrangeLine();
+
+    hold(arranged, HERO_X + 300, HERO_Y, 50, 50);
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X + 300,
+      HERO_Y - 400,
+      50,
+      50 - DRAG_THRESHOLD,
+      0,
+    );
+
+    expect(arranged.ring.visible).toBe(true);
+    expect(arranged.shape.visible).toBe(false);
+    expect(arranged.line.visible).toBe(true);
+    expect(arranged.line.x).toBe(HERO_X + 300);
+    expect(arranged.line.y).toBe(HERO_Y - 200);
+    expect(arranged.line.rotation).toBeCloseTo(-Math.PI / 2);
+    expect(arranged.line.scaleX).toBe(400 / FRAME_WIDTH);
+    expect(arranged.line.scaleY).toBe(DIRECTION_LINE_WIDTH / FRAME_WIDTH);
+    expect(arranged.line.tint).toBe(LINE_TINT);
+    expect(arranged.preview.open).toBe(true);
+  });
+
+  it("while held, judges the range at the press and not at the pointer", () => {
+    const beyond = arrangeLine();
+    const within = arrangeLine();
+
+    hold(beyond, HERO_X + RANGE + 1, HERO_Y, 50, 50);
+    beyond.preview.sync(
+      beyond.world.view,
+      beyond.cursor,
+      HERO_X + 10,
+      HERO_Y,
+      500,
+      50,
+      0,
+    );
+    hold(within, HERO_X + RANGE, HERO_Y, 50, 50);
+    within.preview.sync(
+      within.world.view,
+      within.cursor,
+      HERO_X + RANGE * 3,
+      HERO_Y,
+      500,
+      50,
+      0,
+    );
+
+    expect(beyond.ring.tint).toBe(OUT_OF_RANGE_TINT);
+    expect(beyond.line.tint).toBe(LINE_TINT);
+    expect(within.ring.tint).toBe(LINE_TINT);
+    expect(beyond.shape.visible).toBe(false);
+    expect(within.shape.visible).toBe(false);
+  });
+
+  it("hides the drag line when the press is let go", () => {
+    const arranged = arrangeLine();
+
+    hold(arranged, HERO_X + 300, HERO_Y, 50, 50);
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X,
+      HERO_Y,
+      500,
+      500,
+      0,
+    );
+
+    expect(arranged.line.visible).toBe(true);
+
+    closeCursor(arranged.cursor);
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X,
+      HERO_Y,
+      500,
+      500,
+      0,
+    );
+
+    expect(arranged.line.visible).toBe(false);
+    expect(arranged.preview.open).toBe(false);
+  });
+
+  it("hides the shape a spell with one left showing", () => {
+    const arranged = arrange(circleSpell.id, "point");
+
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
+
+    expect(arranged.shape.visible).toBe(true);
+
+    arranged.cursor.abilityId = lineSpell.id;
+    arranged.cursor.targeting = "vector";
+    arranged.preview.sync(arranged.world.view, arranged.cursor, 0, 0, 0, 0, 0);
+
+    expect(arranged.shape.visible).toBe(false);
+    expect(arranged.ring.visible).toBe(true);
   });
 });

@@ -80,13 +80,21 @@ export type SlotCommand = Readonly<{
 /**
  * What a cast is aimed at, by the ability's targeting kind. A point and a direction both
  * carry a world position: the point is where the effect lands, the direction is what the
- * caster faces toward.
+ * caster faces toward. A vector carries two: `position`, the point pressed and resolved as
+ * the button went down, clamped to the map, which is where the effect lands; and `end`, the
+ * point under the pointer as the button came up, unclamped, whose bearing from `position` is
+ * the line the effect lies along. An `end` equal to `position` is a press with no drag.
  */
 export type CastTarget =
   | Readonly<{ kind: "none" }>
   | Readonly<{ kind: "point"; position: Readonly<Vec2> }>
   | Readonly<{ kind: "unit"; unitId: EntityId }>
-  | Readonly<{ kind: "direction"; position: Readonly<Vec2> }>;
+  | Readonly<{ kind: "direction"; position: Readonly<Vec2> }>
+  | Readonly<{
+      kind: "vector";
+      position: Readonly<Vec2>;
+      end: Readonly<Vec2>;
+    }>;
 
 /**
  * The confirming click for a targeted ability, or the key-down for one with no target: cast

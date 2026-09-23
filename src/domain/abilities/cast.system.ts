@@ -191,9 +191,12 @@ const faceTarget = (unit: Unit): boolean => {
 
 /**
  * Writes the context `unit`'s committing cast runs its effects with, from the aim this tick:
- * a point or a unit cast anchors where it is aimed, a no-target or a direction cast on the
- * caster, and every one faces where the caster faces. A no-target cast is aimed at the
- * caster itself, a unit cast at the unit it named, and the other two at no unit.
+ * a point, a unit, or a vector cast anchors where it is aimed, a no-target or a direction
+ * cast on the caster. Every one but a vector faces where the caster faces; a vector faces
+ * the exact bearing from the caster to the point pressed, or where the caster faces when the
+ * point is under it, since the action cone the turn stopped inside would tilt a long line
+ * visibly, and carries the bearing of its drag as its direction. A no-target cast is aimed
+ * at the caster itself, a unit cast at the unit it named, and the others at no unit.
  */
 const contextOf = (
   world: World,
@@ -201,19 +204,25 @@ const contextOf = (
   casterId: EntityId,
   record: SpellRecord,
 ): Cast => {
-  const onTarget =
-    unit.cast.targetKind === "point" || unit.cast.targetKind === "unit";
-
-  return fillCast(
+  const kind = unit.cast.targetKind;
+  const onTarget = kind === "point" || kind === "unit" || kind === "vector";
+  const isUnderCaster = aim.x === unit.curr.x && aim.y === unit.curr.y;
+  const faces =
+    kind === "vector" && !isUnderCaster ? bearing(unit.curr, aim) : unit.facing;
+  const cast = fillCast(
     context,
     casterId,
     record.def,
     orbLevelsOf(world, unit),
     onTarget ? aim.x : unit.curr.x,
     onTarget ? aim.y : unit.curr.y,
-    unit.facing,
-    unit.cast.targetKind === "none" ? casterId : unit.cast.targetId,
+    faces,
+    kind === "none" ? casterId : unit.cast.targetId,
   );
+
+  context.direction = unit.cast.direction;
+
+  return cast;
 };
 
 /**

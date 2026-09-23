@@ -54,6 +54,10 @@ Q Q W ──► three orb commands ──► buffer [Q,Q,W] ──► R ──�
 
 **The click lands off the map.** The mapper clamps to the map bounds before submitting; a point outside walkable ground is still a valid target for a point spell.
 
+**A spell aimed by press and drag.** When the spell in D is vector-targeted, the click is two moments. The button going down sends nothing: the mapper resolves the press to a world point, clamped to the map, and holds it. Such a spell previews no shape: while the button is down the preview is the range ring alone, judged at the press, and once the pointer has moved far enough from the press to count as a drag, the ring and a line from the press to the pointer. The button coming up, on the canvas or off it, resolves the release to a world point and submits one cast command carrying both; a release too near the press to be a drag carries the press twice, which is a vector with no drag. From there the flow is the point spell's: a press beyond the range is walked toward, the hero turns to face it, and the effects run at commit with the press as the anchor and the drag's bearing as the direction. A press with no drag leaves the effect to decide from where the hero stands at commit, which after a walk is not where it stood at the press.
+
+**A right click while the button is down.** The mapper closes the cursor and submits nothing — no cast, and, unlike a right click with the cursor merely open, no move. Escape does the same; S closes it and stops; losing the window's focus closes it, since the release may never arrive.
+
 ---
 
 ## What the flow shows
@@ -92,7 +96,10 @@ Opening the targeting cursor by issuing a stop order "so the cast is ready". The
 | R with a recipe already in D | Nothing |
 | A targeted slot key | Opens the cursor on screen; sends nothing |
 | The click | A cast command with the world point resolved at click time |
+| A vector spell's click | The press is resolved and held, sending nothing; the release sends one cast command with the press and the release, the press twice when there was no drag |
 | Escape | Closes the cursor; sends nothing |
+| A right click while a press is held | Closes the cursor; sends nothing, not even a move |
+| Losing focus while a press is held | Closes the cursor; sends nothing |
 | Validation | Disable flags, cooldown, mana; a refusal drops the command and emits an event |
 | Before the cast point | The hero turns until the bearing is inside the action cone |
 | During the cast point | A stop, a new order, a stun, or death cancels; nothing spent, no clock |

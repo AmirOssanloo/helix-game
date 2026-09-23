@@ -6,8 +6,8 @@ import { makeSpellDef } from "../content/make-spell-def";
 
 /**
  * The context an effect runs with. Everything defaults to the hero casting a bare spell from
- * where it stands, facing where it faces, at nothing and from no zone, with every orb
- * unlearned.
+ * where it stands, facing where it faces, along no direction, at nothing and from no zone,
+ * with every orb unlearned.
  */
 export type MakeCastOptions = Readonly<{
   casterId?: EntityId;
@@ -16,6 +16,7 @@ export type MakeCastOptions = Readonly<{
   x?: number;
   y?: number;
   facing?: number;
+  direction?: number | null;
   targetId?: EntityId | null;
 }>;
 
@@ -29,9 +30,9 @@ export const makeCast = (
 ): Cast => {
   const casterId = options.casterId ?? world.state.run.heroId ?? 0;
   const caster = world.state.map.units.resolve(casterId);
-
-  return fillCast(
-    createCastRecord(),
+  const record = createCastRecord();
+  const cast = fillCast(
+    record,
     casterId,
     options.ability ?? makeSpellDef.build(),
     options.orbLevels ?? [],
@@ -40,4 +41,8 @@ export const makeCast = (
     options.facing ?? caster?.facing ?? 0,
     options.targetId ?? null,
   );
+
+  record.direction = options.direction ?? null;
+
+  return cast;
 };

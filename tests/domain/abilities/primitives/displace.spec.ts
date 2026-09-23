@@ -13,8 +13,8 @@ import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 /** The step rate the world runs at, which is what a duration in seconds becomes ticks under. */
 const TICKS_PER_SECOND = 30;
 
-/** The push every case below gives: a third of a second, so ten ticks, over a round distance. */
-const PUSH_SECONDS = 1 / 3;
+/** The push every case below gives: a round distance at a speed that covers it in a third of a second, so ten ticks. */
+const PUSH_SPEED = 900;
 const PUSH_TICKS = 10;
 const DISTANCE = 300;
 
@@ -35,7 +35,18 @@ const arrange = (): Arranged => {
   return { world, ahead, aside };
 };
 
-/** A push of `DISTANCE` over `PUSH_SECONDS`, applying `knockback` for the same ticks. */
+/** A push of `distance` at `speed`, along the facing, applying `knockback` for its ticks. */
+const travelEntry = (distance: number, speed: number): DisplaceEffectDef => ({
+  kind: "displace",
+  mode: "push",
+  target: CONE,
+  statusId: "knockback",
+  direction: "facing",
+  distance: { orb: "quartz", byLevel: [distance] },
+  speed,
+});
+
+/** A push of `DISTANCE` at `PUSH_SPEED`, applying `knockback` for the same ticks. */
 const pushEntry = (direction: PushDirection): DisplaceEffectDef => ({
   kind: "displace",
   mode: "push",
@@ -43,7 +54,7 @@ const pushEntry = (direction: PushDirection): DisplaceEffectDef => ({
   statusId: "knockback",
   direction,
   distance: { orb: "quartz", byLevel: [DISTANCE] },
-  seconds: PUSH_SECONDS,
+  speed: PUSH_SPEED,
 });
 
 /** A lift of one second, applying the generic `lift` status. */
@@ -60,7 +71,7 @@ const rowOf = (unit: Unit, statusId: string): Unit["statuses"][number] | null =>
   unit.statuses.find((row) => row.definitionId === statusId) ?? null;
 
 describe("the displace primitive pushing", () => {
-  it("takes hold of every unit the shape covers for the ticks its seconds come to", () => {
+  it("takes hold of every unit the shape covers for the ticks its distance takes at its speed", () => {
     const { world, ahead, aside } = arrange();
 
     runPrimitive(world.state, makeCast(world), pushEntry("away"));
@@ -99,7 +110,7 @@ describe("the displace primitive pushing", () => {
     expect(aside.push.step.y).toBeCloseTo(0);
   });
 
-  it("reads its distance table at the levels the cast snapshotted", () => {
+  it("reads its distance table at the levels the cast snapshotted, and lasts as long as that distance takes", () => {
     const { world, ahead } = arrange();
     const scaling: DisplaceEffectDef = {
       kind: "displace",
@@ -108,7 +119,7 @@ describe("the displace primitive pushing", () => {
       statusId: "knockback",
       direction: "facing",
       distance: { orb: "whorl", byLevel: [100, 200, 900] },
-      seconds: PUSH_SECONDS,
+      speed: PUSH_SPEED,
     };
 
     runPrimitive(
@@ -117,7 +128,66 @@ describe("the displace primitive pushing", () => {
       scaling,
     );
 
-    expect(ahead.push.step.x).toBeCloseTo(900 / PUSH_TICKS);
+    expect(ahead.push.ticksLeft).toBe(TICKS_PER_SECOND);
+    expect(ahead.push.step.x).toBeCloseTo(PUSH_SPEED / TICKS_PER_SECOND);
+  });
+
+  it("moves at its speed a tick whatever the distance, the ticks following from the distance", () => {
+    const short = arrange();
+    const long = arrange();
+
+    runPrimitive(
+      short.world.state,
+      makeCast(short.world),
+      travelEntry(100, 300),
+    );
+    runPrimitive(long.world.state, makeCast(long.world), travelEntry(400, 300));
+
+    expect(short.ahead.push.ticksLeft).toBe(10);
+    expect(long.ahead.push.ticksLeft).toBe(40);
+    expect(short.ahead.push.step.x).toBeCloseTo(10);
+    expect(long.ahead.push.step.x).toBeCloseTo(10);
+  });
+
+  it("rounds a travel to whole ticks and covers the distance exactly over them", () => {
+    const { world, ahead } = arrange();
+
+    runPrimitive(world.state, makeCast(world), travelEntry(110, 300));
+
+    expect(ahead.push.ticksLeft).toBe(11);
+    expect(ahead.push.step.x * ahead.push.ticksLeft).toBeCloseTo(110);
+  });
+
+  it("takes at least one tick over a distance shorter than a tick's travel", () => {
+    const { world, ahead } = arrange();
+
+    runPrimitive(world.state, makeCast(world), travelEntry(2, 300));
+
+    expect(ahead.push.ticksLeft).toBe(1);
+    expect(ahead.push.step.x).toBeCloseTo(2);
+  });
+
+  it("moves nobody and applies nothing with no speed or no distance", () => {
+    const stalled = arrange();
+    const nowhere = arrange();
+
+    runPrimitive(
+      stalled.world.state,
+      makeCast(stalled.world),
+      travelEntry(300, 0),
+    );
+    runPrimitive(
+      nowhere.world.state,
+      makeCast(nowhere.world),
+      travelEntry(0, 300),
+    );
+    statusSystem(stalled.world.state);
+    statusSystem(nowhere.world.state);
+
+    expect(stalled.ahead.push.ticksLeft).toBe(0);
+    expect(nowhere.ahead.push.ticksLeft).toBe(0);
+    expect(rowOf(stalled.ahead, "knockback")).toBeNull();
+    expect(rowOf(nowhere.ahead, "knockback")).toBeNull();
   });
 
   it("is ignored by a unit a push already has hold of", () => {

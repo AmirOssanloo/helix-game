@@ -51,7 +51,7 @@ The hero faces before it acts. A move, an attack, or a targeted spell starts onl
 
 ## Normal cast
 
-Every targeted spell takes two steps: press the key, then left click. Pressing D opens a targeting cursor with a range ring and an area or line preview; nothing is spent yet. Left click commits, the hero turns to face the point, the cast point runs, and then mana is spent and the cooldown starts. Esc or S before the click closes the cursor at no cost.
+Every targeted spell takes two steps: press the key, then left click. Pressing D opens a targeting cursor with a range ring and an area preview, or for Glacier the ring alone until its press is dragged; nothing is spent yet. Left click commits, the hero turns to face the point, the cast point runs, and then mana is spent and the cooldown starts. Esc or S before the click closes the cursor at no cost.
 
 There is no quick-cast. Hovering an enemy and tapping D never fires a targeted spell.
 
@@ -91,6 +91,8 @@ Copied from spec section 15, because it is the shortest test of whether the cont
 | Order issued while stunned | Refused; the hero keeps whatever it was doing when stunned. Nothing is queued for after |
 | Skill point spent while stunned or silenced | Allowed. A level is not an action of the hero, so no disable refuses it |
 | Right click while the targeting cursor is open | The click is a move order; the cursor closes at no cost |
+| Right click while the button is held on a spell aimed by press and drag | The cursor closes at no cost, and nothing is ordered: no cast and no move |
+| The window loses focus while the button is held on a spell aimed by press and drag | The cursor closes at no cost |
 | Esc with a move running | The cursor closes; the move continues |
 | D or F pressed on a targeted spell that is on cooldown, unaffordable, or blocked by a disable | The cursor does not open and nothing is sent; the square flashes with the reason |
 | Q, W, E, R, D, or F pressed while the targeting cursor is open | The cursor closes first, then the key applies as it would with no cursor |

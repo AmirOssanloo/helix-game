@@ -40,8 +40,11 @@ A targeted ability whose target is out of range is walked toward first, like an 
 | Point | A world position | On the tick that sees the confirming click |
 | Unit | A unit id | On the tick that sees the confirming click |
 | Direction | A world position the caster faces toward | On the tick that sees the confirming click |
+| Vector | The world position pressed, and the one released | On the tick that sees the release |
 
-**The targeting cursor is presentation state.** Pressing a slot key for a point, unit, or direction ability opens a cursor on screen and sends nothing to the simulation. The click sends the command with the world position resolved at click time. Escape closes the cursor and sends nothing. A cursor being open does not stop a move in progress, because the simulation does not know it is open.
+A vector is aimed with two inputs: the press is where the ability lands and what its range is measured to, like a point, and the bearing from the press to the release is the line the ability lies along. A release where the press went down is a vector with no drag, and carries no line; the effect decides what that means, from what it can see at commit. A press beyond the range is walked toward like a point.
+
+**The targeting cursor is presentation state.** Pressing a slot key for a point, unit, direction, or vector ability opens a cursor on screen and sends nothing to the simulation. The click sends the command with the world position resolved at click time; for a vector, the button going down holds the press, resolved then, and the button coming up sends the command with the release resolved then. Escape closes the cursor and sends nothing, and so does a right click while a press is held. A cursor being open does not stop a move in progress, because the simulation does not know it is open.
 
 ---
 
@@ -60,7 +63,7 @@ An ability definition lists effects. Each is either a **primitive** the pipeline
 
 **Whom an entry touches** is the entry's own field: the cast's target unit, every unit inside the zone running the list, or every unit a shape at the anchor covers. A shape and a zone collect units hostile to the caster only, and neither collects a corpse or a unit a status has made untargetable, so a lifted unit cannot be hit. The collection is complete before the first effect lands, so a hit that kills one unit or moves another does not change whom the entry touches. [Movement, collision, and pathing](./movement-collision-pathing.md) owns the shape tests and the displacement steps.
 
-A primitive is parameterised by the definition and by orb level where the definition says so. Anything the primitives can't express — a wall laid as segments perpendicular to the caster, a zone that carries units along a path — is a named effect: one function in `domain/abilities/effects/`, referenced by key. There is no scripting layer and no expression language; a bespoke behaviour is TypeScript in the domain, tested like any other rule.
+A primitive is parameterised by the definition and by orb level where the definition says so. Anything the primitives can't express — a wall laid as segments along the cast's direction, a zone that carries units along a path — is a named effect: one function in `domain/abilities/effects/`, referenced by key. There is no scripting layer and no expression language; a bespoke behaviour is TypeScript in the domain, tested like any other rule.
 
 **A named effect's fields are content, and may carry an effect entry of their own** — a wall's named effect decides only where each segment stands, and the segment itself is a spawn-zone entry the definition writes in full. The effect declares which of its fields hold entries, and the content tier checks each of them as it checks any entry: against the effect schema, which knows the orb level cap, and then every key, id, and frame inside it.
 
@@ -69,9 +72,9 @@ A primitive is parameterised by the definition and by orb level where the defini
 export const fooBarEffect = (world: World, cast: Cast, fields: FooBarFields): void => { /* … */ }
 ```
 
-**One runner runs every list.** It walks the entries in the order the definition wrote them and hands each to the primitive its kind names or the function its key names, together with the **cast context**: the caster, the ability, the orb levels as they stood at commit, an anchor point with a facing, the unit the effect is aimed at or none, and the zone running it or none. The same runner runs a cast's list at commit, a zone's activation and each-tick lists, a projectile's hit list, and a status's hook and expiry lists, so an effect never learns which of them ran it, and a named effect reads its own fields and nothing else about the definition. The runner refuses nothing: the content tier resolved every key before a world existed.
+**One runner runs every list.** It walks the entries in the order the definition wrote them and hands each to the primitive its kind names or the function its key names, together with the **cast context**: the caster, the ability, the orb levels as they stood at commit, an anchor point with a facing, a direction or none, the unit the effect is aimed at or none, and the zone running it or none. The same runner runs a cast's list at commit, a zone's activation and each-tick lists, a projectile's hit list, and a status's hook and expiry lists, so an effect never learns which of them ran it, and a named effect reads its own fields and nothing else about the definition. The runner refuses nothing: the content tier resolved every key before a world existed.
 
-Where the anchor lands follows the targeting kind — a no-target ability anchors on the caster and is aimed at it, a unit ability on its target, a point ability on the click, a direction ability on the caster — and the orb levels are copied at commit, so one raised afterwards does not change what landed.
+Where the anchor lands follows the targeting kind — a no-target ability anchors on the caster and is aimed at it, a unit ability on its target, a point ability on the click, a direction ability on the caster, a vector ability on the press — and the orb levels are copied at commit, so one raised afterwards does not change what landed. The facing is the caster's, except for a vector, which faces the exact bearing from where the caster stands at commit to the press, since the action cone the turn stops inside would visibly tilt a long line. Only a vector carries a direction: the bearing of its drag, or none for a press with no drag.
 
 ---
 
@@ -160,12 +163,13 @@ A bespoke effect asking how long the player held the key, or where the mouse is 
 | Cooldown starts | At commit, after the cast point; never when a slot receives the ability |
 | A stop, a new order, a stun, or death during the cast point | Cancels the cast; nothing spent, no clock, nothing queued |
 | An order during the backswing | Cancels the backswing, not the cast |
-| Targeting kinds | None, point, unit, direction |
-| Targeted abilities | Commit on the tick that sees the confirming click, with the position resolved at click time |
-| The targeting cursor | Presentation state; the simulation never knows it is open |
+| Targeting kinds | None, point, unit, direction, vector |
+| Targeted abilities | Commit on the tick that sees the confirming click, with the position resolved at click time; a vector on the tick that sees the release, with the press resolved at the press and the release at the release |
+| A vector | Lands on the press, which the range is measured to and a caster walks toward; the bearing from the press to the release is its direction; a release where the press went down carries none |
+| The targeting cursor | Presentation state; the simulation never knows it is open; Escape, or a right click while a vector's press is held, closes it and sends nothing |
 | Effects | A list of primitives and named effects on the definition |
 | The effect runner | One runner for every list; entries run in the order written, each with the cast context |
-| The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, the target unit or none, the zone or none |
+| The cast context | The caster, the ability, the orb levels copied at commit, an anchor with a facing, a direction or none, the target unit or none, the zone or none; a vector's facing is the exact bearing from the caster at commit to the press |
 | Where a list runs from | A cast's commit, a zone's activation and each-tick lists, a projectile's hit list, a status's hook and expiry lists; the effect cannot tell which |
 | Primitives | Damage area, apply status, spawn projectile, spawn zone, spawn unit, displace |
 | A homing entry with no target | Fires nothing; it never falls back to flying the facing |

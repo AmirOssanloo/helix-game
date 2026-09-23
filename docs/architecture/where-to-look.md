@@ -16,6 +16,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which spells exist | `src/content/spells/` — one file per spell |
 | Which enemy abilities exist | `src/content/abilities/` — one file per ability; the same shape as a spell, without an orb recipe |
 | Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype; the tier is a field of each definition |
+| Which summons exist, and how far each keeps from its owner | `src/content/summons/` — one file per summon; the follow distance is a field of each definition |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist | `src/content/maps/` — one file per map |
 | The hero's level cap, experience table, skill points, and the attack every form swings | `src/content/hero.ts` |
@@ -25,6 +26,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |
 | Which primitives the effect runner runs | `src/domain/abilities/primitives/` — the table, keyed by the kind an effect entry names |
+| How a cast moves from request to commit, and what it spends | `src/domain/abilities/` — the cast system, the cast context, the effect runner, and the mana and cooldown rules |
+| How a zone and a projectile move, touch, and expire | `src/domain/abilities/zones/` and `src/domain/abilities/projectiles/` — one system each |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
 | How a unit's behaviour is chosen and run each tick | `src/domain/ai/` — the registry and the pass over it |
 | How a unit auto-attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |

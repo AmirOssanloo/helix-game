@@ -111,7 +111,11 @@ Static map geometry drawn as a tile layer is a view kind like any other when a m
 
 ## Input
 
-`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: two quads at the ground band in `PlayScene`'s world coordinates, the ring at the spell's range around where the hero is drawn this frame, and the shape the definition previews. The definition says which shape and how big: a reticle or a circle sits under the pointer, a rectangle is placed its offset in front of the hero and a cone on the hero, both turned toward the pointer, and a definition that previews nothing draws no shape. A rectangle's length and offset may be level tables, read at the hero's orb levels as the cast would read them. Both quads wear the ability's own tint and turn red once the pointer is past the range; a direction spell never is. It holds the only piece of state that is not in the world: which slot's cursor is open. Each frame it reads the hero's disable flags and closes a cursor the hero may no longer commit — a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash.
+`presentation/input/` owns the keyboard, the pointer, and the targeting cursor. It turns events into commands with the rules in [Commands and events](./commands-and-events.md), and it draws the cursor's range ring and preview from the atlas: three quads at the ground band in `PlayScene`'s world coordinates, made once — the ring at the spell's range around where the hero is drawn this frame, the shape the definition previews, and a drag line. The definition says which shape and how big: a reticle or a circle sits under the pointer, a rectangle is placed its offset in front of the hero and a cone on the hero, both turned toward the pointer, and a line or a definition that previews nothing draws no shape. A line preview is the ring alone until a held press is dragged, and the ring and the drag line after. A rectangle's length and offset may be level tables, read at the hero's orb levels as the cast would read them. The ring and the shape wear the ability's own tint and turn red once the aim is past the range; a direction spell never is. The aim is the pointer, or the press while one is held.
+
+A vector cursor is aimed with the button held. The button going down on it holds the press — its world point and its canvas point — and sends nothing; the button coming up, over the canvas or off it, sends the cast. Whether the pointer has dragged is one test in `presentation/input/`, a distance in logical canvas pixels from the press, asked by the mapper on the release and by the preview every frame, so what the player sees while holding is what the release sends. While the pointer is dragged, the drag line is a stretched copy of a filled frame from the press to the pointer, in the ability's tint.
+
+The cursor is the only piece of state the layer holds that is not in the world: which slot's cursor is open, and a press held on it. Each frame it reads the hero's disable flags and closes a cursor the hero may no longer commit — a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash. While a press is held, Escape, a right click, a slot key, and the window losing focus each close the cursor with nothing sent, and S closes it and stops; the right click is the one time a right click is not a move.
 
 ---
 
@@ -148,7 +152,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | HUD state | Bars and the level read the world view; nothing sums events |
 | Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
 | HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent is a spend-skill-point command naming the slot |
-| Targeting preview | Two quads at the ground band in world coordinates: the range ring on the hero, and the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a definition that previews none. The ability's tint; red past the range |
+| Targeting preview | Three quads at the ground band in world coordinates, made once: the range ring on the hero; the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a line or a definition that previews none; and the drag line from a held press to the pointer while it is dragged. The ability's tint; the ring and the shape red past the range, judged at the press while one is held |
 | Binding | By the camera rectangle through the spatial hash, each frame |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |
@@ -167,8 +171,8 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Canvas | Logical 1920 by 1080, fit and centred, no device-pixel-ratio scaling |
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
-| Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands |
-| An open cursor | Closed each frame when the hero's flags refuse what it would send: a slot cursor on stun or silence, the attack-move cursor on stun |
+| Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands; a vector cursor holds its press on the button going down and sends on the button coming up, on the canvas or off it; one drag test, in logical canvas pixels, serves the mapper and the preview |
+| An open cursor | Closed each frame when the hero's flags refuse what it would send: a slot cursor on stun or silence, the attack-move cursor on stun. A held press is closed with nothing sent by Escape, a right click, a slot key, or losing focus, and by S with a stop |
 
 ---
 

@@ -12,8 +12,8 @@ import {
   tickUntil,
 } from "../../helpers";
 
-/** The push every case below gives: a third of a second, so ten ticks, over a long distance. */
-const PUSH_SECONDS = 1 / 3;
+/** The push every case below gives: a long distance at a speed that covers it in a third of a second, so ten ticks. */
+const PUSH_SPEED = 1800;
 const PUSH_TICKS = 10;
 const DISTANCE = 600;
 
@@ -35,7 +35,7 @@ const pushEntry: DisplaceEffectDef = {
   statusId: "knockback",
   direction: "facing",
   distance: { orb: "quartz", byLevel: [DISTANCE] },
-  seconds: PUSH_SECONDS,
+  speed: PUSH_SPEED,
 };
 
 /** A lift, applying the generic `lift` status. */

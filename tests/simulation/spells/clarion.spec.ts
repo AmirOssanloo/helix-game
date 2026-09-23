@@ -24,9 +24,9 @@ const KNOCKBACK = "knockback";
 const ANGLE_DEGREES = 60;
 const LENGTH = 900;
 
-/** How long the push holds a unit, in seconds and in ticks, at every level. */
-const PUSH_SECONDS = 0.3;
-const PUSH_TICKS = PUSH_SECONDS * tuningTable.sim_hz;
+/** How fast the push carries a unit, in world units a second, and so how far it carries it a tick. */
+const PUSH_SPEED = 300;
+const PUSH_STEP = PUSH_SPEED / tuningTable.sim_hz;
 
 /** The health a dummy stands on: far above what the cone deals it at any level. */
 const DUMMY_HEALTH = 10000;
@@ -61,12 +61,16 @@ const AT_THE_EDGE: Readonly<Vec2> = {
 /** The index of the prepared entry slot D throws. */
 const FIRST_PREPARED = 0;
 
-/** One orb level the spec runs at, with the catalogue's cost, damage, push, and disarm at that level. */
+/**
+ * One orb level the spec runs at, with the catalogue's cost, damage, push, and disarm at that
+ * level, and the ticks the push lasts: its distance at its speed.
+ */
 type Case = Readonly<{
   level: number;
   manaCost: number;
   damage: number;
   distance: number;
+  pushTicks: number;
   disarmSeconds: number;
 }>;
 
@@ -75,7 +79,8 @@ const AT_FIRST: Case = {
   level: 1,
   manaCost: 300,
   damage: 40,
-  distance: 100,
+  distance: 200,
+  pushTicks: 20,
   disarmSeconds: 1,
 };
 
@@ -83,7 +88,8 @@ const AT_THE_CAP: Case = {
   level: 7,
   manaCost: 330,
   damage: 280,
-  distance: 400,
+  distance: 800,
+  pushTicks: 80,
   disarmSeconds: 4,
 };
 
@@ -221,7 +227,7 @@ const firstFromHero = (fixture: Arranged): number =>
   fromHero(fixture)[0] ?? Number.NaN;
 
 describe.each(CASES)("Clarion at orb level $level", (spell: Case) => {
-  const { damage, distance, disarmSeconds } = spell;
+  const { damage, distance, pushTicks, disarmSeconds } = spell;
 
   it("runs all three entries on a dummy inside the cone, and leaves ones wide of it and past its length alone", () => {
     const fixture = arrange(spell, [IN_THE_CONE, WIDE_OF_IT, PAST_ITS_LENGTH]);
@@ -240,7 +246,7 @@ describe.each(CASES)("Clarion at orb level $level", (spell: Case) => {
     const fixture = arrange(spell, [IN_THE_CONE]);
 
     castAndBlow(fixture);
-    tickTimes(fixture.world, PUSH_TICKS + 2);
+    tickTimes(fixture.world, pushTicks + 2);
 
     expect(lost(fixture)).toEqual([damage]);
   });
@@ -249,7 +255,7 @@ describe.each(CASES)("Clarion at orb level $level", (spell: Case) => {
     const fixture = arrange(spell, [IN_THE_CONE]);
 
     castAndBlow(fixture);
-    tickTimes(fixture.world, PUSH_TICKS);
+    tickTimes(fixture.world, pushTicks);
 
     expect(firstFromHero(fixture)).toBeCloseTo(REACH + distance);
     expect(dummyAt(fixture, 0).curr.y).toBeCloseTo(0);
@@ -259,11 +265,39 @@ describe.each(CASES)("Clarion at orb level $level", (spell: Case) => {
     expect(firstFromHero(fixture)).toBeCloseTo(REACH + distance);
   });
 
+  it("carries what it hits a fixed step a tick, for as many ticks as its distance takes at its speed", () => {
+    const fixture = arrange(spell, [IN_THE_CONE]);
+    const dummy = dummyAt(fixture, 0);
+
+    castAndBlow(fixture);
+
+    const held = dummy.push.ticksLeft;
+    const alreadyMoved = firstFromHero(fixture) - REACH;
+    const steps: number[] = [];
+
+    while (pushed(fixture)[0] === true) {
+      const before = firstFromHero(fixture);
+
+      fixture.world.tick();
+      steps.push(firstFromHero(fixture) - before);
+    }
+
+    expect(distance / pushTicks).toBeCloseTo(PUSH_STEP);
+    expect(held + alreadyMoved / PUSH_STEP).toBeCloseTo(pushTicks);
+    expect(steps).toHaveLength(held);
+
+    for (const step of steps) {
+      expect(step).toBeCloseTo(PUSH_STEP);
+    }
+
+    expect(firstFromHero(fixture)).toBeCloseTo(REACH + distance);
+  });
+
   it("throws a dummy off the cone's axis outward along its own line from the hero", () => {
     const fixture = arrange(spell, [AT_THE_EDGE]);
 
     castAndBlow(fixture);
-    tickTimes(fixture.world, PUSH_TICKS);
+    tickTimes(fixture.world, pushTicks);
 
     const thrown = dummyAt(fixture, 0);
 

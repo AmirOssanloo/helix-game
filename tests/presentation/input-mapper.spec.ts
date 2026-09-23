@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
 import { acquireUnit, applyStatus } from "@domain/public";
-import { InputMapper, LEFT_BUTTON, RIGHT_BUTTON } from "@presentation/public";
+import {
+  DRAG_THRESHOLD,
+  InputMapper,
+  LEFT_BUTTON,
+  RIGHT_BUTTON,
+} from "@presentation/public";
 import type { Simulation } from "@simulation/public";
 import {
   CommandRecorder,
@@ -46,10 +51,27 @@ const directionSpell = makeSpellDef.build({
   recipe: ["ember", "ember", "ember"],
   targeting: "direction",
 });
+const vectorSpell = makeSpellDef.build({
+  recipe: ["quartz", "quartz", "ember"],
+  targeting: "vector",
+});
 
 const form = makeFormDef.build({
-  abilities: [pointSpell.id, instantSpell.id, unitSpell.id, directionSpell.id],
+  abilities: [
+    pointSpell.id,
+    instantSpell.id,
+    unitSpell.id,
+    directionSpell.id,
+    vectorSpell.id,
+  ],
 });
+
+/** A cursor's held press as a closed cursor, or an open one with nothing held, reads it. */
+const NOTHING_HELD = {
+  held: false,
+  press: { x: 0, y: 0 },
+  pressScreen: { x: 0, y: 0 },
+};
 
 type Arranged = {
   world: Simulation;
@@ -69,7 +91,13 @@ const arrange = (
     registry: makeRegistry({
       hero: { ...heroDef, forms: [form.id] },
       forms: [form],
-      spells: [pointSpell, instantSpell, unitSpell, directionSpell],
+      spells: [
+        pointSpell,
+        instantSpell,
+        unitSpell,
+        directionSpell,
+        vectorSpell,
+      ],
     }),
     map: makeMapDef.build({
       bounds: {
@@ -293,6 +321,7 @@ describe("the keys", () => {
       slot: D,
       abilityId: pointSpell.id,
       targeting: "point",
+      ...NOTHING_HELD,
     });
   });
 
@@ -307,6 +336,7 @@ describe("the keys", () => {
       slot: F,
       abilityId: unitSpell.id,
       targeting: "unit",
+      ...NOTHING_HELD,
     });
   });
 
@@ -619,5 +649,226 @@ describe("the cursor", () => {
 
     expect(driver.commands).toEqual([]);
     expect(mapper.cursor.slot).toBe(F);
+  });
+});
+
+describe("a vector cursor", () => {
+  /** A mapper whose hero holds the vector spell on D, with D pressed so its cursor is open. */
+  const arrangeOpen = (): Arranged => {
+    const arranged = arrange([vectorSpell.id, null]);
+
+    arranged.mapper.keyDown("KeyD");
+
+    return arranged;
+  };
+
+  /** The cast a release sends for the vector spell, pressed at `position` and released at `end`. */
+  const vectorCast = (
+    position: Readonly<{ x: number; y: number }>,
+    end: Readonly<{ x: number; y: number }>,
+  ) => ({
+    kind: "cast",
+    tick: 0,
+    timestamp: 1,
+    abilityId: vectorSpell.id,
+    target: { kind: "vector", position, end },
+  });
+
+  it("holds the press on the button going down and sends nothing", () => {
+    const { driver, lens, mapper } = arrangeOpen();
+
+    lens.offset.x = 100;
+    mapper.pointerDown(LEFT_BUTTON, 300, 40);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor).toEqual({
+      kind: "slot",
+      slot: D,
+      abilityId: vectorSpell.id,
+      targeting: "vector",
+      held: true,
+      press: { x: 400, y: 40 },
+      pressScreen: { x: 300, y: 40 },
+    });
+  });
+
+  it("press, drag, and release sends the cast from the press to the point under the release, and closes", () => {
+    const { world, hero, driver, lens, mapper } = arrangeOpen();
+
+    lens.offset.x = 100;
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    lens.offset.x = 200;
+    mapper.pointerUp(LEFT_BUTTON, 300, 250);
+    world.tick();
+
+    expect(driver.commands).toEqual([
+      vectorCast({ x: 400, y: 0 }, { x: 500, y: 250 }),
+    ]);
+    expect(mapper.cursor).toEqual({
+      kind: "closed",
+      slot: 0,
+      abilityId: null,
+      targeting: "none",
+      ...NOTHING_HELD,
+    });
+    expect(hero.cast.abilityId).toBe(vectorSpell.id);
+    expect(hero.cast.position).toEqual({ x: 400, y: 0 });
+  });
+
+  it("a release short of the drag threshold sends the press as the end, which is no drag", () => {
+    const { driver, mapper } = arrangeOpen();
+    const short = DRAG_THRESHOLD - 1;
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.pointerUp(LEFT_BUTTON, 300, short);
+
+    expect(driver.commands).toEqual([
+      vectorCast({ x: 300, y: 0 }, { x: 300, y: 0 }),
+    ]);
+  });
+
+  it("a release at the drag threshold is a drag", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.pointerUp(LEFT_BUTTON, 300, DRAG_THRESHOLD);
+
+    expect(driver.commands).toEqual([
+      vectorCast({ x: 300, y: 0 }, { x: 300, y: DRAG_THRESHOLD }),
+    ]);
+  });
+
+  it("clamps the press to the map and leaves the end where the pointer came up, off the canvas included", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 9000, 0);
+    mapper.pointerUp(LEFT_BUTTON, 9000, -9000);
+
+    expect(driver.commands).toEqual([
+      vectorCast({ x: MAP_REACH, y: 0 }, { x: 9000, y: -9000 }),
+    ]);
+  });
+
+  it("accepts a press beyond the spell's range, for the hero to walk into", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 4000, 0);
+    mapper.pointerUp(LEFT_BUTTON, 4000, 0);
+
+    expect(driver.commands).toEqual([
+      vectorCast({ x: 4000, y: 0 }, { x: 4000, y: 0 }),
+    ]);
+  });
+
+  it("a right click while held closes the cursor and sends nothing, not even a move", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.pointerDown(RIGHT_BUTTON, 600, 0);
+    mapper.pointerUp(RIGHT_BUTTON, 600, 0);
+    mapper.pointerUp(LEFT_BUTTON, 600, 0);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(mapper.cursor.held).toBe(false);
+  });
+
+  it("a right click on an open vector cursor with nothing held is a move, as on any cursor", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual(["move"]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("Esc while held closes the cursor, and the release after it sends nothing", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.keyDown("Escape");
+    mapper.pointerUp(LEFT_BUTTON, 300, 200);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("S while held closes the cursor and stops, and the release after it sends nothing", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.keyDown("KeyS");
+    mapper.pointerUp(LEFT_BUTTON, 300, 200);
+
+    expect(driver.commands).toEqual([{ kind: "stop", tick: 0, timestamp: 1 }]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("a slot key while held closes the cursor first, then applies as normal", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.keyDown("KeyQ");
+    mapper.pointerUp(LEFT_BUTTON, 300, 200);
+
+    expect(driver.commands).toEqual([
+      { kind: "slot", tick: 0, timestamp: 1, slot: 1 },
+    ]);
+    expect(mapper.cursor.held).toBe(false);
+  });
+
+  it("losing focus while held cancels the press, and the release after it sends nothing", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.releaseKeys();
+    mapper.pointerUp(LEFT_BUTTON, 300, 200);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("losing focus with the cursor open and nothing held leaves it open", () => {
+    const { mapper } = arrangeOpen();
+
+    mapper.releaseKeys();
+
+    expect(mapper.cursor.kind).toBe("slot");
+  });
+
+  it("a stun landing while held closes the cursor at no cost", () => {
+    const { world, driver, mapper } = arrangeOpen();
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    wear(world, "stun");
+    mapper.syncCursor();
+    mapper.pointerUp(LEFT_BUTTON, 300, 200);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("a release with nothing held does nothing, the cursor open or closed", () => {
+    const { driver, mapper } = arrangeOpen();
+
+    mapper.pointerUp(LEFT_BUTTON, 300, 0);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("slot");
+
+    mapper.keyDown("Escape");
+    mapper.pointerUp(LEFT_BUTTON, 300, 0);
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("a point cursor still commits on the button going down, and its release does nothing more", () => {
+    const { driver, mapper } = arrange();
+
+    mapper.keyDown("KeyD");
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    mapper.pointerUp(LEFT_BUTTON, 300, 0);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual(["cast"]);
   });
 });

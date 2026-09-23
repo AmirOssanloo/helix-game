@@ -20,6 +20,8 @@ import type { TargetingCursor } from "./targeting-cursor";
 import {
   closeCursor,
   createTargetingCursor,
+  holdPress,
+  isDrag,
   openAttackMoveCursor,
   pressSlotKey,
 } from "./targeting-cursor";
@@ -29,6 +31,13 @@ import {
  * it knows no rule. A key is edge-triggered: one command on key-down, nothing while held,
  * armed again on key-up. A pick is resolved through the lens as the event arrives and clamped
  * to the map, so the command carries the point the player saw. The cursor is its only state.
+ *
+ * A vector cursor commits on the release rather than the press: the left button going down
+ * holds the press, and coming up, anywhere on the page, sends the cast with the press and
+ * the point under the pointer as it came up. While the press is held, Esc, a right click, a
+ * slot key, A, a stun or a silence, and the window losing focus each close the cursor with
+ * nothing sent; S closes it and stops. The right click is the one place a right click is not
+ * a move: it cancels the aim and orders nothing.
  *
  * Every command it builds is stamped with the driver's next tick and its clock, and enters
  * the world through the driver, which refuses it while the document is hidden.
@@ -50,6 +59,9 @@ export class InputMapper {
 
   /** Scratch for the world point under the pointer. Copied onto a command, never shared with one. */
   private readonly point: Vec2 = { x: 0, y: 0 };
+
+  /** Scratch for the world point under the pointer as a held press comes up, unclamped. Copied onto a command, never shared with one. */
+  private readonly end: Vec2 = { x: 0, y: 0 };
 
   private readonly candidates: EntityId[];
 
@@ -142,26 +154,76 @@ export class InputMapper {
     }
   }
 
-  /** The window lost focus: every key is up, since its key-up will never arrive. */
+  /**
+   * The window lost focus: every key is up, since its key-up will never arrive, and a held
+   * press is cancelled, since its button-up may not arrive either.
+   */
   releaseKeys(): void {
     for (let index = 0; index < this.held.length; index += 1) {
       this.held[index] = false;
+    }
+
+    if (this.cursor.held) {
+      closeCursor(this.cursor);
     }
   }
 
   /**
    * A button went down at a screen position. Right: a move to the point, an attack on the
-   * enemy under it, or nothing for any other unit; the cursor closes either way. Left: the
-   * cursor's commit, or a selection that has nothing to select yet.
+   * enemy under it, or nothing for any other unit; the cursor closes either way, and while a
+   * press is held the right click only closes it. Left: the cursor's commit, the press of a
+   * vector cursor, or a selection that has nothing to select yet.
    */
   pointerDown(button: number, screenX: number, screenY: number): void {
     this.resolvePoint(screenX, screenY);
 
     if (button === RIGHT_BUTTON) {
-      this.rightClick();
+      if (this.cursor.held) {
+        closeCursor(this.cursor);
+      } else {
+        this.rightClick();
+      }
     } else if (button === LEFT_BUTTON) {
-      this.leftClick();
+      this.leftClick(screenX, screenY);
     }
+  }
+
+  /**
+   * A button came up at a screen position, over the canvas or outside it. The left button
+   * releasing a held press commits the vector cast: the end is the world point under the
+   * pointer now, unclamped, or the press itself when the pointer has not dragged. Any other
+   * release does nothing.
+   */
+  pointerUp(button: number, screenX: number, screenY: number): void {
+    const abilityId = this.cursor.abilityId;
+
+    if (button !== LEFT_BUTTON || !this.cursor.held || abilityId === null) {
+      return;
+    }
+
+    const press = this.cursor.press;
+
+    if (isDrag(this.cursor, screenX, screenY)) {
+      this.lens.worldPointAt(screenX, screenY, this.end);
+    } else {
+      this.end.x = press.x;
+      this.end.y = press.y;
+    }
+
+    const target: CastTarget = {
+      kind: "vector",
+      position: { x: press.x, y: press.y },
+      end: { x: this.end.x, y: this.end.y },
+    };
+
+    closeCursor(this.cursor);
+    this.submit({
+      kind: "cast",
+      tick: this.driver.nextTick,
+      timestamp: this.driver.now(),
+      abilityId,
+      target,
+    });
   }
 
   /** The wheel turned. Up is toward the player, so it zooms in. */
@@ -230,7 +292,7 @@ export class InputMapper {
     });
   }
 
-  private leftClick(): void {
+  private leftClick(screenX: number, screenY: number): void {
     switch (this.cursor.kind) {
       case "closed":
         break;
@@ -246,12 +308,17 @@ export class InputMapper {
         break;
 
       case "slot":
-        this.commitCast();
+        if (this.cursor.targeting === "vector") {
+          holdPress(this.cursor, this.point, screenX, screenY);
+        } else {
+          this.commitCast();
+        }
+
         break;
     }
   }
 
-  /** The confirming click: a point or a direction is always a target; a unit cast waits for a click on a unit. */
+  /** The confirming click: a point or a direction is always a target; a unit cast waits for a click on a unit. A vector commits on its release instead. */
   private commitCast(): void {
     const abilityId = this.cursor.abilityId;
     const target = this.castTarget();
@@ -295,6 +362,7 @@ export class InputMapper {
         return unitId === null ? null : { kind: "unit", unitId };
       }
 
+      case "vector":
       case "none":
         return null;
     }

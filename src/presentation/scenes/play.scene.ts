@@ -266,7 +266,7 @@ export class PlayScene extends Phaser.Scene {
     );
   }
 
-  /** The cursor's ring and shape, at the pointer's world point as the camera stands this frame. */
+  /** The cursor's ring, shape, and drag line, at the pointer's world point as the camera stands this frame and its canvas point for the drag. */
   private syncPreview(stage: Stage): void {
     const pointer = this.input.activePointer;
 
@@ -276,6 +276,8 @@ export class PlayScene extends Phaser.Scene {
       stage.mapper.cursor,
       this.pointer.x,
       this.pointer.y,
+      pointer.x,
+      pointer.y,
       this.context.driver.alpha,
     );
   }

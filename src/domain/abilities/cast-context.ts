@@ -4,12 +4,15 @@ import { ORB_IDS } from "../definitions/orb-id";
 
 /**
  * What every effect runs with, whoever ran it: the caster, the ability, the three orb
- * levels snapshotted when the cast committed, an anchor point with a facing, the unit the
- * effect is aimed at or none, and the zone running it or none. A none spell anchors on the
- * caster and targets it; a unit spell anchors on its target; a point spell anchors on the
- * click; a direction spell anchors on the caster facing the click; a zone's lists anchor on
- * the zone and target each unit inside in turn; a status hook anchors on the holder. The
- * world is handed beside it, so an effect reads nothing else.
+ * levels snapshotted when the cast committed, an anchor point with a facing, a direction or
+ * none, the unit the effect is aimed at or none, and the zone running it or none. A none
+ * spell anchors on the caster and targets it; a unit spell anchors on its target; a point
+ * spell anchors on the click; a direction spell anchors on the caster facing the click; a
+ * vector spell anchors on the point pressed, faces it from where the caster stood at commit,
+ * and carries the bearing of its drag as the direction, or none for a press with no drag; a
+ * zone's lists anchor on the zone and target each unit inside in turn; a status hook anchors
+ * on the holder. Only a vector cast carries a direction. The world is handed beside it, so
+ * an effect reads nothing else.
  */
 export type Cast = Readonly<{
   casterId: EntityId;
@@ -18,6 +21,8 @@ export type Cast = Readonly<{
   orbLevels: readonly number[];
   anchor: Readonly<Vec2>;
   facing: number;
+  /** The line a vector cast lies along, in radians, or `null` for a vector with no drag and for every other cast. */
+  direction: number | null;
   targetId: EntityId | null;
   zoneId: EntityId | null;
 }>;
@@ -33,6 +38,7 @@ export type CastRecord = {
   orbLevels: number[];
   anchor: Vec2;
   facing: number;
+  direction: number | null;
   targetId: EntityId | null;
   zoneId: EntityId | null;
 };
@@ -62,6 +68,7 @@ export const createCastRecord = (): CastRecord => ({
   orbLevels: ORB_IDS.map(() => 0),
   anchor: { x: 0, y: 0 },
   facing: 0,
+  direction: null,
   targetId: null,
   zoneId: null,
 });
@@ -70,8 +77,9 @@ export const createCastRecord = (): CastRecord => ({
  * Writes one cast into `out` and returns it as the context an effect reads: the caster, the
  * ability, the caster's orb levels copied so one raised afterwards does not change what
  * committed, the anchor and the facing the targeting kind gives, and the unit the effects
- * are aimed at. The zone is cleared, since a cast runs from no zone; a zone running a list
- * of its own writes its id over it.
+ * are aimed at. The direction and the zone are cleared, since only a vector cast has a
+ * direction and a cast runs from no zone; a vector's commit writes its direction over the
+ * first, and a zone running a list of its own writes its id over the second.
  */
 export const fillCast = (
   out: CastRecord,
@@ -93,6 +101,7 @@ export const fillCast = (
   out.anchor.x = x;
   out.anchor.y = y;
   out.facing = facing;
+  out.direction = null;
   out.targetId = targetId;
   out.zoneId = null;
 

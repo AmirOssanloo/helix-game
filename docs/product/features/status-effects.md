@@ -18,7 +18,7 @@ Each status kind has a definition file under `src/content/statuses/` holding its
 | Disarm | Cannot attack | Auto-attacks and attack-move acquisition. Spells continue |
 | Slow | Movement speed reduced by a percentage | Nothing; stacks into the speed formula |
 | Damage over time | Loses health every tick for the duration | Nothing |
-| Knockback | Displaced along a direction over a few ticks | Movement while displaced; the order is kept |
+| Knockback | Displaced along a direction at a speed, for as long as the distance takes | Movement while displaced; the order is kept |
 | Lift | Raised into the air, stunned and untargetable, with its order put aside until it lands | Everything, as stun; and the unit cannot be hit |
 
 Stun and lift are **disables**. Silence, root, and disarm are disables of one thing each. Slow and damage over time are not disables.
