@@ -165,7 +165,7 @@ Apply any status to the hero from the panel and watch the blocked keys grey and 
 | --- | --- |
 | Every disable-versus-action test green through real statuses | Yes: the matrix runs under `tests/simulation/statuses/`, and the bar now greys from the same flags — six squares under a silence, six under a stun, none under a disarm |
 | Zone pool at capacity behaves | Yes: the sixty-fifth spawn returns nothing, the pool counts the miss, and the effect list runs on |
-| Render benchmark after the icon frames and the icon views | Waiting on a person: it needs a GPU and is not in CI. The steps and where the numbers go are in the sprint 08 row of [STATUS.md](../STATUS.md#waiting-on-a-person) |
+| Render benchmark after the icon frames and the icon views | Chrome on the Apple M1 laptop, `pnpm bench` as configured, measured 2026-09-23 over 60 s after a 30 s warm-up, each in a fresh tab of a worktree at the commit. Before, `f618c7e`: 60 fps, render 0.5 ms, 1 draw call, 1 texture, heap 57.9 to 68.3 MB. After, `017d114`: 60 fps, render 0.4 ms, 1 draw call, 1 texture, heap 57.0 to 69.7 MB. Inside the render budget both times with a flat heap; the icon frames and the 512 icon quads cost nothing measurable |
 | Actual days per ticket | T01 0.5 · T02 0.5 · T03 0.5 · T04 0.5 |
 
 ## Risks in this sprint

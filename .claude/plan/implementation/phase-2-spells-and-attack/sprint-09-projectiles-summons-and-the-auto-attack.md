@@ -172,7 +172,7 @@ Spawn a training dummy from the panel, right-click it, and watch the hero path i
 | --- | --- |
 | Auto-attack cadence matches the spec's numbers in tests | Yes: the four specs under `tests/simulation/attack/` hold the walk into reach, the 0.4 s attack point, the shot at 900 units a second, the next point timed so the shot lands one base attack time after the last, the attack-move acquire and the walk resumed where it stands, and a disarm that ends a point with nothing fired |
 | Dummy spawns from the registry-driven dropdown | Yes: the Enemies group reads `DevApi.archetypes`, which the composition root fills from the registry, and `spawn_enemies` refuses `unknown_archetype`; `tests/simulation/dev-api.spec.ts` and `tests/content/enemies.spec.ts` cover both |
-| Render benchmark after the hit flash and the floating numbers | Waiting on a person: it needs a GPU and is not in CI. The steps and where the numbers go are in the sprint 09 row of [STATUS.md](../STATUS.md#waiting-on-a-person) |
+| Render benchmark after the hit flash and the floating numbers | Chrome on the Apple M1 laptop, `pnpm bench` as configured, measured 2026-09-23 over 60 s after a 30 s warm-up, each in a fresh tab of a worktree at the commit. Before, `2ef33f7`: 60 fps, render 0.7 ms, 1 draw call, 1 texture, heap 59.4 to 71.0 MB. After, `ad7ba25`: 60 fps, render 0.9 ms, 1 draw call, 1 texture, heap 58.3 to 69.0 MB. Inside the render budget both times with a flat heap. A first run of `2ef33f7` in a tab reloaded from the run before read a heap near 100 MB, flat; a fresh tab read the figure above, so the offset was the reload |
 | Actual days per ticket | T01 1.0 · T02 1.0 · T03 1.5 · T04 0.5 |
 
 ## Risks in this sprint

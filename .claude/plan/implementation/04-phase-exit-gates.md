@@ -2,7 +2,7 @@
 
 **Written:** 2026-09-20 · **For:** whoever closes a phase
 
-The roadmap's "done when" for each phase, turned into rows a person can tick with a named test or a recorded number. A phase closes when every row holds. "Not yet" is an honest answer; "we'll fix it in the next phase" closes nothing.
+The roadmap's "done when" for each phase, turned into rows a person can tick with a named test or a recorded number. A phase closes when every row holds. "Not yet" is an honest answer; "we'll fix it in the next phase" closes nothing. The one exception on record: the reference-laptop half of the bar for phases 1 and 2, which the maintainer deferred to the phase 5 gate on 2026-09-23 for want of the machine, and which that gate carries as a row of its own.
 
 Every gate includes the bar. It is repeated once here so no gate can forget a row.
 
@@ -111,4 +111,5 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | The roster is complete per the enemy catalogue | `ls src/content/enemies/` matches the catalogue |
 | A boss encounter with adds runs within budget alongside 200 enemies | Panel readouts, four browsers |
 | The docs are in sync: world model rows, where-to-look pointers, feature pages, any ADR taken during the phases | The docs-sync ticket's checklist |
+| The reference-laptop rows carried from phases 1 and 2 hold | The three rows under [Deferred](./backlog/deferred.md) that wait on this gate are recorded with numbers: the phase 1 and phase 2 bars and M1's bench |
 | The bar | Every row |
