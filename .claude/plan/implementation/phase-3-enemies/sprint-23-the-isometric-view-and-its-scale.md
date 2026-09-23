@@ -72,7 +72,7 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 | Layer | docs |
 | Size | 1 |
 | Depends on | T01, and the scale named in Q27 |
-| Status | planned |
+| Status | done |
 
 **Build:** ADR 0006, *The view is isometric: a projection in presentation over a square world*, accepted with the chosen k. It says why the simulation stays square, why the placeholder geometry lies flat, why the scale lives in the projection and not the camera, and what tall art would add. ADR 0001 is amended where it changes: the floor frame in the atlas, and whether the floor costs a draw. The pages are rewritten as the target: the product overview and roadmap lose isometric from the non-goals; the map and camera page describes the diamond view and drops "a circle is a circle"; the HUD page's bands keep their no-sorting rule with the new reason; `presentation.md` gains the projection module, the ground layer, and the floor; the presentation coding standard says where a view writes world coordinates and where it projects; where-to-look names the projection module.
 
@@ -83,6 +83,8 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 **Tests:** none beyond `tests/docs-links.spec.ts`.
 
 **Definition of done:** Every change · A new decision record · A documentation page.
+
+> Built 2026-09-23. ADR 0006 is accepted at 40 by 20, k = 0.625, with the unchosen 44 and 48 as an alternative and a fourth reopening condition, a map large enough to want more on screen. ADR 0001 names the floor frame and says it adds no draw. The product overview calls the game isometric and describes the flat geometry on the diamond floor; the roadmap's non-goal line is gone and its later art is isometric. The map and camera page describes the diamond view, the projected clamp, and a click traced back to its cell. The HUD page's no-sorting rule now rests on everything lying flat. `presentation.md` gained a section on the projection, the ground layer, what stands up, and the floor, with five Quick reference rows; the presentation coding standard says where a view writes world coordinates and where it asks the projection; where-to-look gained three rows; the vocabulary gained projection, ground layer, and floor. The definition of done has no row block for a new decision record, so the record was held to the template and the documentation-change rows. Zoom is still described on the map and camera page, `presentation.md`, the controls page, and the mechanics spec, and the panel's **View scale** on the developer panel page: T03 removes both.
 
 ---
 
@@ -116,8 +118,8 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 | The scale the maintainer chose, and the date | 40 by 20, k = 0.625, 2026-09-23: the widest overview, and the easiest to plan movement on. The floor PNG is 160 by 80 |
 | World draw calls with and without the floor | 1 with the floor, and so 1 without: the floor frames are in the one atlas and join the world's batch, and the ground layer's containers did not break it. Read from the world draw-call ring in Chrome on the Apple M1 laptop, 2026-09-23, at all three scales |
 | Render benchmark: fps, render ms, draws, heap, on this branch and on the commit before T01 | Chrome, Apple M1 laptop, 30 seconds each, 2026-09-23. Before T01, `09dbd91`: 60 fps, 1.0 ms, 1 draw, heap 150.4 to 152.4 MB. With T01: 60 fps, 1.0 ms, 1 draw, heap 104.6 to 104.9 MB. The game's own render time at 44 by 22 read 0.6 ms |
-| No page under `docs/` describes a top-down or zoomable view | |
-| Actual days per ticket | T01 0.5 · T02 · T03 |
+| No page under `docs/` describes a top-down or zoomable view | Top-down and orthographic: none, 2026-09-23, after T02. Zoomable: the debug zoom is still on four pages until T03 |
+| Actual days per ticket | T01 0.5 · T02 0.2 · T03 |
 
 ## Risks in this sprint
 

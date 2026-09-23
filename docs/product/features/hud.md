@@ -65,7 +65,7 @@ From the bottom up, so a projectile is never hidden by the ground it flies over:
 6. Floating text and status icons
 7. Overlays
 
-There is no sorting by vertical position; the view is top-down and nothing is tall.
+There is no sorting by vertical position: everything lies flat on the floor and nothing is tall, so nothing can stand in front of what is behind it. Tall sprite art changes that; [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) says what it adds.
 
 ## States and edge cases
 

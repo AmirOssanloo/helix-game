@@ -31,11 +31,30 @@ A scene composes; it holds no rules and no entity state. There is no debug scene
 
 ## The shape atlas
 
-`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every frame is white with alpha. Colour is always a runtime tint.
+`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, the floor's diamond grid, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every frame is white with alpha. Colour is always a runtime tint.
 
 The frame list lives in content, not here: the bake reads it, the views read it, a definition names its frame by it. When drawn art arrives, a file replaces the bake and the list stays.
 
 **No `Shape` game objects and no `Graphics` game objects, anywhere, including debug overlays.** A line is a stretched pixel frame. A ring at a radius is the ring frame scaled. A cone is its baked frame rotated. A cooldown sweep is one of the wedge frames. Rotation, scale, alpha, and tint are free properties of a quad; a `Graphics` object rebuilds geometry every frame and breaks the batch.
+
+---
+
+## The projection and the ground
+
+The view is isometric and the world is not. The world is a square plane and stays one; the presentation draws it through one projection, for a scale `k`:
+
+```text
+screen x = (x − y) · k
+screen y = (x + y) · k / 2
+```
+
+so a square walkability cell is a 2:1 diamond. The projection module under `presentation/camera/` is the one place this is worked out: world to screen, screen to world, a world heading to its screen angle, and the box one rectangle becomes in the other space, each writing into an `out` it is handed. The scale is a presentation constant beside it; the camera stays at zoom 1, so the floor's lines fall on whole pixels. [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md) holds why.
+
+**What lies on the ground is written in world coordinates.** `PlayScene` holds a ground layer of two nested containers, the inner turned an eighth of a turn and the outer scaled by `k√2` across and half that down, so a child placed at a world point is drawn at its projected one. Obstacles, zones, units and their facing, projectiles, orbs, outlines, the targeting preview, and the debug overlays are its children. None of them knows the projection: a disc frame is drawn as an ellipse, a rectangle as a parallelogram, a rotation as its screen angle.
+
+**What stands up off the ground is placed in screen pixels.** Status icons, floating numbers, and text labels stay outside the ground layer and ask the projection where their world point is drawn, so they stay upright and unsquashed. A view that stands above a unit asks how far above its centre the top of that unit's disc is drawn.
+
+**The floor is tiled in screen space.** One atlas frame holds four by four diamonds. The floor view lays copies of it edge to edge over the screen rectangle the camera shows, unscaled, aligned so the projected world origin is a corner of every tile and each diamond sits over one walkability cell. The void outside the map's bounds is four black quads on the ground, over the floor. The floor frame joins the world's batch, so it costs no draw.
 
 ---
 
@@ -46,9 +65,9 @@ A view is the pooled Phaser object that draws one entity. There is one view kind
 Each render frame, after the driver's ticks, the sync:
 
 1. Drains the event ring and reacts: a floating number, a flash, a HUD wedge. It comes first, so a hit the ticks just landed is drawn on the frame that follows them rather than the one after.
-2. Asks the spatial hash for the entities inside the camera's world rectangle, plus a margin.
+2. Asks the spatial hash for the entities inside the camera's world rectangle, plus a margin. The camera shows a screen rectangle; its world rectangle is the box around that rectangle's four corners unprojected.
 3. Binds a view to each — a view already bound stays bound; an entity that entered gets a free view; an entity that left releases its view.
-4. Writes `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible` on each bound view from the entity's state, interpolating position between the entity's previous and current position by the driver's fraction.
+4. Writes `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible` on each bound view from the entity's state, interpolating position between the entity's previous and current position by the driver's fraction. A view on the ground writes the world position; a view that stands up writes the projected one.
 
 A view never creates or destroys a game object during play. A view never reads a game object back to learn where a unit is. The view pool is sized to what fits on screen plus a margin, not to the simulation's capacity, so the pool is a presentation number and a large map costs the screen nothing.
 
@@ -74,7 +93,7 @@ Fixed bands, no per-frame sorting:
 | Floating text | 50 |
 | Debug overlays | 90 |
 
-The HUD is in its own scene and needs no band. Within a band, draw order is pool order.
+The HUD is in its own scene and needs no band. Within a band, draw order is pool order. The floor sits in the scene under the ground layer; everything from the ground band to the debug band inside the ground layer is ordered by the layer's list, because a container draws its children in list order whatever their depth says. The layer keeps its list sorted by band, which sorts only when a pool first binds a quad. Nothing sorts by position: everything on the ground lies flat, so nothing stands in front of what is behind it.
 
 **The HUD draws the active kit, not a fixed layout.** Its six ability squares are filled from slot descriptors the active form's kit writes for the world view — which ability sits in each slot, whether it is an orb, the composer, or a prepared spell, its clock and the whole length of that clock, its cost, its level, and the disable that blocks its key right now — and the orb display appears only while a descriptor is an orb. A prepared spell's colour comes from the spell table by id. `HudScene` never names a spell or a kit; a kit resolver is a port it is handed, so a second kit is a door test.
 
@@ -102,7 +121,7 @@ No filters, no post-processing, no masks, no blend modes. Each one breaks the ba
 
 ## Camera and canvas
 
-The world camera follows the hero with a lerp and clamps to the map bounds. Zoom exists for debugging. The logical canvas is 1920 by 1080, scaled to fit and centred, with no device-pixel-ratio scaling.
+The world camera follows the point the hero is drawn at, with a lerp, and clamps to the screen box around the projected map bounds. A pointer's canvas point goes through the camera's scroll and then the projection back to the world point under it, so a click on a diamond names the square cell it covers. Zoom exists for debugging. The logical canvas is 1920 by 1080, scaled to fit and centred, with no device-pixel-ratio scaling.
 
 The game boots with `Phaser.AUTO`. If the renderer that comes up is Canvas, `BootScene` shows a warning banner; Canvas is unsupported and untested, and no code path depends on it.
 
@@ -147,6 +166,10 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Colour | Always a runtime tint on a white frame |
 | `Shape` and `Graphics` objects | Never, including debug |
 | Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame baked per angle with its apex at the frame's centre, a wedge frame |
+| Projection | One module under `presentation/camera/`: world to screen, screen to world, heading to screen angle, rectangle to box, each into an `out`; the scale is a presentation constant, never the camera's zoom |
+| On the ground | Obstacles, zones, units, projectiles, orbs, outlines, the preview, and debug overlays are children of the ground layer and write world coordinates |
+| Standing up | Status icons, floating numbers, and labels stay outside the ground layer and write the projected point |
+| The floor | One four-by-four diamond frame tiled unscaled in screen space over what the camera shows, aligned to the projected origin; the void is four quads on the ground; no extra draw |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
 | HUD ability squares | Filled from the active kit's slot descriptors: kind, ability, clock and its whole length, cost, level, and the disable blocking it; never a fixed layout; the kit is a resolver port |
 | HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
@@ -154,13 +177,13 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
 | HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent is a spend-skill-point command naming the slot |
 | Targeting preview | Three quads at the ground band in world coordinates, made once: the range ring on the hero; the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a line or a definition that previews none; and the drag line from a held press to the pointer while it is dragged. The ability's tint; the ring and the shape red past the range, judged at the press while one is held |
-| Binding | By the camera rectangle through the spatial hash, each frame |
+| Binding | By the camera's world rectangle, the box around the screen's unprojected corners, through the spatial hash, each frame |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |
 | View pool size | What fits on screen plus a margin; a presentation number |
 | Interpolation | Previous to current entity position by the driver's fraction |
 | The event drain | First of the frame, before the views, so a hit the ticks just landed shows on that frame |
-| Depth | Fixed bands: floor −10, ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90 |
+| Depth | Fixed bands: floor −10, ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90. Inside the ground layer, the list kept sorted by band. Never by position |
 | Hit flash | Fill-mode tint over the whole view, from one record of which units were hit and until which tick; never a clock on a view |
 | Damage numbers | A fixed set of `BitmapText` at the text band, spawned where a hit landed, rising and fading by the tick count and the fraction; the oldest recycled when the set is full, and counted |
 | Joining a number | A hit inside the window adds to the number already rising for that unit and rewrites it in place, keeping the rise it began with; one record per slot of the unit pool, keyed by the id, and a join naming a recycled spawn is refused |
@@ -169,7 +192,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |
 | Filters, post-processing, masks, blend modes | None |
-| Camera | Locked follow with lerp, clamped to map bounds; zoom for debugging |
+| Camera | Locked follow of the hero's projected point with lerp, clamped to the projected bounds' box; a pointer unprojected to the world; zoom for debugging |
 | Canvas | Logical 1920 by 1080, fit and centred, no device-pixel-ratio scaling |
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
@@ -184,4 +207,4 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 - [Presentation coding standards](../standards/presentation-coding.md) — the rules a view body follows
 - [Developer tools and instrumentation](./devtools-and-instrumentation.md) — the debug band and the render-time ring
 - [ADR 0001 — Phaser renderer and quad atlas](../adr/0001-phaser-renderer-and-quad-atlas.md) — why one atlas of quads and no `Graphics`
-- [HUD](../product/features/hud.md) — what `HudScene` shows the player
+- [ADR 0006 — The isometric view](../adr/0006-isometric-view-over-a-square-world.md) — why the projection lives here and the world stays square

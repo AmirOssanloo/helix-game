@@ -4,7 +4,7 @@
 
 ## Overview
 
-A map is the space the hero plays in: its bounds, what can be walked on, the obstacles, and where things spawn. The camera is how the player sees it: locked on the hero, top-down, never free. This page covers both, and the one map that exists, the arena.
+A map is the space the hero plays in: its bounds, what can be walked on, the obstacles, and where things spawn. The camera is how the player sees it: locked on the hero, looking down on a diamond floor, never free. This page covers both, and the one map that exists, the arena.
 
 A map is data. Each map has a definition file under `src/content/maps/`; the arena is `arena.def.ts`. The walkability grid is derived from that file, never hand-edited.
 
@@ -20,7 +20,7 @@ Every map definition holds:
 
 From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid is inflated per unit size so a wide unit never paths through a gap it cannot fit.
 
-One world unit is one pixel at zoom 1.0. The body numbers apply unchanged: the hero is 27 units across, moves 280 units per second, attacks at 600.
+The world is square and every distance is in world units. The body numbers apply unchanged: the hero is 27 units across, moves 280 units per second, attacks at 600. How many pixels a unit covers depends on its direction on screen; [the camera](#the-camera) says how the square world is drawn.
 
 ## The arena
 
@@ -45,12 +45,14 @@ Loading a map never recreates the hero. Later, walking through an exit keeps the
 
 ## The camera
 
-Locked on the hero, top-down, orthographic. [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) proposes drawing the ground as a 2:1 diamond grid over the square world, at one of three scales on the panel's **View scale**; this page is rewritten when a scale is chosen.
+Locked on the hero, looking down on an isometric floor. The square world is drawn as a classic 2:1 diamond grid: each 32-unit walkability cell is one diamond, 40 pixels across and 20 down, so the screen shows about 2172 world units across and 2443 down. Everything lies flat on that floor. The hero's disc is an ellipse twice as wide as it is tall, an obstacle's rectangle is a parallelogram along the diamonds, and a heading due east in the world points down and to the right on screen. A circle on the floor is a circle in the world: ranges, radii, and cones are the numbers the spec gives, drawn squashed.
 
 - **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen
-- **Clamped** to the map bounds, so the player never sees past a wall
+- **Clamped** to the box around the map's diamond, so the corners past the walls are dark void and never more than that
 - **Zoom** on the scroll wheel, for debugging only. Default is 1.0
 - **No panning.** No edge pan, no middle drag, no free camera. The camera is not an order and never issues one
+
+The scale is fixed: the diamond size is part of how the floor is drawn, not a zoom, so the lines of the grid stay one pixel thick. The floor is one tile of four by four diamonds, repeated, under everything on the ground.
 
 The logical canvas is 1920 by 1080, scaled to fit the browser window and letterboxed. Flat shapes look fine stretched; device pixel ratio is ignored until real art arrives.
 
@@ -63,6 +65,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | Hero pushed into a wall by knockback | The displacement stops at the wall edge; the hero is never inside an obstacle |
 | Hero spawned on an occupied spot | Enemies standing on the spawn point are pushed out on the first tick |
 | Zoom past the map bounds | The camera stays clamped; at high zoom-out the letterbox shows outside the walls as background |
+| Click on a floor diamond | A move order to that point in the world; the click is traced back through the diamond view to the square cell under it |
 | Click on an obstacle | A move order to the nearest walkable point on the obstacle's edge |
 | Click outside the map | A move order to the nearest point inside the bounds |
 | Window resized | The canvas rescales to fit; the world does not change |
@@ -84,4 +87,4 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 - [Controls and orders](./controls-and-orders.md) — how a click becomes a point on the map
 - [Movement, collision, and pathing](../../architecture/movement-collision-pathing.md) — the grid, the push-out, and the A* behind this page
 - [Entities and pools](../../architecture/entities-and-pools.md) — run scope and map scope as the simulation sees them
-- [Presentation](../../architecture/presentation.md) — the camera and the letterbox
+- [ADR 0006 — The isometric view](../../adr/0006-isometric-view-over-a-square-world.md) — why the diamonds are drawn over a square world

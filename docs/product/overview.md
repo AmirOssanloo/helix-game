@@ -8,7 +8,7 @@ What Helix is, who it's for, and how it plays.
 
 ## What it is
 
-**Helix is a single-player, browser-based, top-down action RPG built around a combo-casting hero.**
+**Helix is a single-player, browser-based, isometric action RPG built around a combo-casting hero.**
 
 Its structure is the classic loot-driven action RPG: one hero runs through levels, fights packs of monsters, gains experience, levels up, and later finds items, with the camera locked on the hero. Its hero casts through the Skein kit: three orb reagents, an Invoke composer that turns the current three orbs into one of ten spells, and two prepared-spell slots.
 
@@ -46,14 +46,13 @@ The mechanism behind steps 1 to 4 is in the [mechanics spec](./specs/character-m
 
 ## What it looks like
 
-True top-down, orthographic. Through the first five phases the art is flat-colour geometry: the hero is a white circle with a triangle for facing, enemies are coloured squares, projectiles are discs, obstacles are grey rectangles. Real sprite art is a later content swap, not a code change. There is no audio and no save system until then.
+Isometric: the floor is a classic 2:1 diamond grid and the camera looks down on it at one fixed scale, with no zoom. Through the first five phases the art is flat-colour geometry lying on that floor: the hero is a white disc with a triangle for facing, enemies are coloured squares, projectiles are discs, obstacles are grey rectangles, each drawn flat on the floor, so a disc reads as an ellipse. The projection and why the world under it stays square are in [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md). Real sprite art is a later content swap, not a code change. There is no audio and no save system until then.
 
 ---
 
 ## What is deliberately not in it
 
 - **Multiplayer**, in any form. No replication, no prediction layer, ever.
-- **Isometric projection.** Proposed to change: [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md) draws the square world as a 2:1 diamond grid.
 - **Hero selection.** One hero, never chosen by the player. The hero may later have forms decided by design, each with its own body, kit, resources, and armory, swapped mid-fight; that is one hero changing shape, not a roster.
 - **Quick-cast and order queues.** Normal cast only, one current order, no shift-queue, no follow, no hold. The [mechanics spec](./specs/character-movement-and-mechanics.md) states each omission so it cannot be re-imported by habit.
 - **Mobile or touch.** Desktop browsers only.

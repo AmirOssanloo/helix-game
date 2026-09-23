@@ -57,7 +57,10 @@ A view is a pooled Phaser object bound to one entity by id for as long as that e
 
 - **Views write `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible`, and nothing else.** A view that sets a frame or a depth per frame is doing work the pool did at bind.
 - **Interpolate `prev` to `curr` with the alpha the driver supplies.** The world stores both positions; the view never guesses velocity.
-- **Depth is a band constant** from the presentation's band table. Never a computed y-sort: the view is top-down, and a per-frame depth write costs a sort.
+- **A view that lies on the ground writes world coordinates.** Its quads come from the ground layer's factory, and it writes the world position, the world heading, and the world size. It never calls the projection and never bakes a frame as a diamond or an ellipse; the ground layer draws it flat.
+- **A view that stands up writes screen coordinates.** An icon, a number, or a label comes from the scene's own factory, outside the ground layer, and asks the projection where its world point is drawn, into a scratch it owns. It never goes inside the ground layer, where it would be squashed and turned.
+- **The projection is asked, never repeated.** No view, overlay, or input handler writes `x − y` or a half-height of its own; the projection module is the one place the diamond is worked out, and the scale is its constant, never a camera zoom.
+- **Depth is a band constant** from the presentation's band table. Never a computed y-sort: everything on the ground lies flat, so nothing needs to be drawn in front of what is behind it, and a per-frame depth write costs a sort. Inside the ground layer the band is honoured by the layer keeping its list sorted, not by the renderer.
 - **Nothing is created or destroyed during play.** Pools are filled at scene `create`, sized to the screen plus a margin, and bound and unbound as entities enter and leave the camera rectangle. A pool miss during play is a bug, not a signal to grow.
 - **No allocation inside sync.** The same rules as the simulation: index loops, no closures, no literals. [Simulation coding standards](./simulation-coding.md#quick-reference) list the replacements.
 - **A HUD element is not a view.** It is bound to no entity and laid out once; each frame it writes what it shows, a bar's fill by its horizontal scale, a wedge by its frame once per step, and a label's text only when the text changes, since a `BitmapText` rewrite is the one write that builds a string.
@@ -112,8 +115,11 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 | The batch | One texture, normal blend, no filters, no masks, no `Text` updates in sync |
 | A view writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible` |
 | Interpolation | `prev` to `curr` with the driver's alpha |
+| On the ground | Quads from the ground layer's factory; write world position, heading, and size; never call the projection or bake a diamond frame |
+| Standing up | Quads and labels from the scene's factory, outside the ground layer; ask the projection for the screen point, into a scratch |
+| The projection | Asked, never repeated; the scale is its constant, never a camera zoom |
 | A HUD element | Not a view: laid out once; a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
-| Depth | A band constant. Never a computed y-sort |
+| Depth | A band constant. Never a computed y-sort; inside the ground layer, the layer's sorted list honours the band |
 | Game objects during play | None created or destroyed. Pools filled at `create`, sized to the screen, bound by camera rectangle |
 | Allocation in sync | None |
 | Canvas | 1920 by 1080, `Scale.FIT`, no DPR handling, `maxTextures` one |
@@ -125,6 +131,6 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 
 - [Presentation](../architecture/presentation.md) — the scenes, atlas, views, and depth bands these rules apply to
 - [Commands and events](../architecture/commands-and-events.md) — how input leaves this layer and events arrive
-- [Performance standards](./performance.md) — the render budget and the benchmark that checks it
 - [ADR 0001 — Phaser renderer and quad atlas](../adr/0001-phaser-renderer-and-quad-atlas.md) — why quads only
+- [ADR 0006 — The isometric view](../adr/0006-isometric-view-over-a-square-world.md) — why the ground is projected and the world is not
 - [Content authoring standards](./content-authoring.md) — where a new atlas frame is declared

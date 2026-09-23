@@ -64,6 +64,9 @@ When two people call the same thing different names, the names leak into the cod
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |
 | One baked white shape in the atlas | **Atlas frame** | Texture, sprite |
+| The one mapping from a world point to the screen point it is drawn at, a square cell to a 2:1 diamond | **Projection** | Iso transform, camera transform, world-to-screen matrix |
+| The two nested containers that draw everything lying on the ground through the projection | **Ground layer** | World container, iso layer, floor layer |
+| The diamond grid drawn under everything, one diamond per walkability cell | **Floor** | Ground (that is the layer), tilemap, background |
 
 ---
 
