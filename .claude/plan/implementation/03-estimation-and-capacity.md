@@ -33,10 +33,10 @@ Then judgment: anything touching Phaser gets a half-day added for the things the
 | 0 | 8 | 2 | 4.0 |
 | 1 | 20 | 5 | 4.0 |
 | 2 | 20 | 5 | 4.0 |
-| 3 | 16 | 4 | 4.0 |
+| 3 | 22.5 | 6 | 3.75 |
 | 4 | 12 | 3 | 4.0 |
 | 5 | 16 | 4 | 4.0 |
-| **Total** | **92** | **23** | |
+| **Total** | **98.5** | **25** | |
 
 Ninety-two sized days in twenty-three sprints of five days is 115 calendar days, of which 23 are buffer. That is a 25% contingency held inside the sprints rather than as a block at the end, so it is spent where the slip happens and is visible per sprint.
 
@@ -66,6 +66,7 @@ If every one of these doubles, the plan is 29 sprints. If none does, it is 21, b
 - **A second engineer.** The [dependency map](./01-dependency-map.md) shows where work splits. Expect phases 2 and 3 to shorten by about a third, phase 1 by less, and phases 0, 4, and gates not at all. Two engineers also add review and merge cost that this plan does not count.
 - **Less than full allocation.** Sprints stretch proportionally. Do not shrink the sized days; stretch the calendar.
 - **Design decisions taking longer than their tickets.** The spell catalogue (1 day), the enemy catalogue (0.5 day plus 2 days in phase 5), and the disable matrix (0.5 day) are sized as writing tasks. If they become discussions, they become calendar time outside the sprint.
+- **Sprints 23 and 24.** The isometric view was added to phase 3 on 2026-09-23 at 6.5 sized days in two sprints, after the phase 2 close. The totals above include them; the prose above this list still counts the original 92 days in 23 sprints.
 - **Actuals.** Sprint 00 gained an unplanned one-day ticket, T00, before it opened: the entry points and agent configuration the plan assumed were there. The table above keeps the original sizing; the sprint file carries the total of 5. The engineer records the actual days beside each ticket's size when the sprint closes. After sprint 06, compare. If actuals run more than 30% over sized days, re-cut phases 2 to 5 before starting phase 2, not after.
 
 ---

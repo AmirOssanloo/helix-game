@@ -28,6 +28,8 @@ Each row names the thing that could go wrong, the earliest sprint where we find 
 | R16 | One engineer. Illness or a week away moves everything | Any | Calendar, not scope | The plan is in sized tickets with acceptance criteria so a second person or a delegated role can pick one up; nothing is in one head | This folder |
 | R17 | Documentation obligations in the definition of done (world model, where to look, feature pages) are forgotten under pressure | Any | Docs drift from code within a phase | Each phase's last sprint carries a docs-sync ticket; the DoD row is on every ticket that adds a kind or a definition | Each gate sprint |
 | R18 | The Phaser 4.2.1 pin meets a bug we need fixed upstream | Any | A `pnpm patch` or a wait | ADR 0001 names the patch route; the benchmark is rerun after any upgrade, which is a ticket, not a habit | Gate tickets |
+| R19 | The isometric ground layer, two nested containers, breaks the quad batch in Phaser 4.2.1 or composes rotation and non-uniform scale in the wrong order | S23 | About 1.5 days: every view projected by hand, rectangles baked as diamond frames | Found on the first day of the ticket by counting draws and checking a projected cell's corners against the projection module; stop and hand to the engineering architect before working around it | P3-S23-T01 |
+| R20 | The isometric view changes how spells feel with no number moved: a range reads longer across the screen than down it | S24 | Retunes of ranges and pushes the phase 2 walk had approved | The maintainer walks all ten spells in the view; each retune is a ticket of its own so the view and the numbers never change in one commit | P3-S24-T03 |
 
 ---
 

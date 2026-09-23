@@ -94,7 +94,7 @@ implementation/
 ├── phase-0-foundation/                # Sprints 00–01
 ├── phase-1-hero-mechanics/            # Sprints 02–06
 ├── phase-2-spells-and-attack/         # Sprints 07–11
-├── phase-3-enemies/                   # Sprints 12–15
+├── phase-3-enemies/                   # Sprints 12–15, and 23–24 run between 13 and 14
 ├── phase-4-combat-feel-and-tuning/    # Sprints 16–18
 ├── phase-5-full-enemy-roster/         # Sprints 19–22
 └── backlog/

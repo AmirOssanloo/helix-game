@@ -98,6 +98,8 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 
 **Definition of done:** Every change · Anything under `src/presentation` (bench rerun).
 
+> Edited 2026-09-23: sprint 23 removes zoom and fixes the view at the scale Q27 settles, so "the 1920 by 1080 canvas at zoom 1.0" reads as that fixed isometric view, and the camera rectangle is the world box sprint 23's `worldRect` returns.
+
 ---
 
 ## Sprint exit

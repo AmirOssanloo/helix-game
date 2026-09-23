@@ -23,6 +23,10 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 Nothing an agent can do moves these rows. Each one says what to do, where the result goes, and what it unblocks.
 
+- [ ] **Sprint 23: pick the isometric scale.** When [P3-S23-T01](./phase-3-enemies/sprint-23-the-isometric-view-and-its-scale.md) is built, walk the arena at each of the three scales on the panel's **View scale** selector (diamonds of 48 by 24, 44 by 22, and 40 by 20) and name one. Record it in [Q27](./backlog/open-questions.md) and here. It unblocks P3-S23-T02, P3-S23-T03, and the floor tile's size. Sprints 23 and 24 were added on 2026-09-23 and run after sprint 13, before sprint 14.
+
+- [ ] **Sprint 24: the floor tile.** Once the scale is picked, make a seamless PNG of four by four 2:1 diamonds at that scale (192 by 96, 176 by 88, or 160 by 80), with one diamond per 32-unit walkability cell, lines stepping two pixels across for one down, and a dark base so the white hero reads on it. Put it in `assets/`. It unblocks [P3-S24-T02](./phase-3-enemies/sprint-24-the-floor-tile-and-the-isometric-walk.md).
+
 - [x] **Sprint 07: the product owner approves the spell catalogue's shape.** Approved as written by the product owner, 2026-09-21: sections 3, 4, and 7 of `docs/product/specs/spell-catalogue.md`, including the three flagged calls. Recorded in a note under P2-S07-T01 in the sprint 07 file. P2-S07-T02 was built against this shape and stands; T03 to sprint 11 build on it.
 
 - [x] **Sprint 06 exit: the draw-call readout against the WebGL inspector.** Done by the maintainer with Spector.js in Chrome, 2026-09-21: the bench at one draw per frame and the game at two, the world's then the HUD's, both matching the readouts. Recorded in the draw-call row of the sprint 06 [exit table](./phase-1-hero-mechanics/sprint-06-developer-panel-replay-and-phase-gate.md#sprint-exit).

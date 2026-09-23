@@ -74,6 +74,7 @@ Only relevant if a second engineer appears. With one engineer the order above is
 | Domain: movement, collision, pathing, Invoke (S02–S04) | Presentation: atlas, benchmark, views, camera, HUD shell (S02, S05) | Sprint 02 |
 | Pipeline and primitives (S07–S09) | Spell catalogue, spell definitions, previews, atlas frames (S07, S10) | Sprint 07 |
 | AI state machine and behaviours (S12) | Enemy views, overlays, damage numbers at scale (S13, S14) | Sprint 12 |
+| AI, death, and experience (S12, S13) | The isometric view (S23, S24) | Sprint 12 |
 | Enemy abilities (S19) | Roster definitions and catalogue (S21) | Sprint 19 |
 
 A second engineer does not shorten phase 0, phase 4, or any gate sprint.

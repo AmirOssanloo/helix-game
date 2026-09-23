@@ -26,6 +26,7 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | The enemies group's tier selector, kill-all, and spawn at the pointer | Sprint 09 | Sprint 12 | A tier multiplies numbers no archetype has yet, a kill-all grants experience nothing grants, and a spawn at the pointer is presentation work the ticket's layers did not include. The dropdown, the group size, and the two spawn points cover what the dummy is for |
 | The bar on the reference laptop for phase 1: four browsers at 300 units, the 30-second allocation sampler, and the stress test there | Phase 1 gate | The phase 5 gate, sprint 22 | The maintainer has no access to the reference laptop until then, 2026-09-23. The bar holds in Chrome on the Apple M1 laptop, recorded in the sprint 06 gate walk; phase 1 closed on that with this row carried |
 | The bar on the reference laptop for phase 2: four browsers with twenty zones live, the 30-second allocation sampler, and both stress tests there | Phase 2 gate | The phase 5 gate, sprint 22 | The same, 2026-09-23. The bar holds in Chrome on the Apple M1 laptop, recorded in the sprint 11 gate walk; phase 2 closed on that with this row carried |
+| What the isometric view needs once art is tall: sorting by screen position inside the units and obstacles bands, obstacles split per tile so they hide the right things, picking a unit by its sprite, walls that fade near the hero, and sprites drawn in eight or sixteen directions | Sprint 23 | Sprite art, beyond phase 5 | While the art is flat geometry nothing is tall, so the fixed depth bands hold. ADR 0006 names what changes when it is not |
 | Milestone M1's numbers on the reference laptop: `pnpm bench` in Chrome and Safari, as configured and with `?textures=default` | Sprint 02 | The phase 5 gate, sprint 22 | The same, 2026-09-23. The bench holds on the Apple M1 laptop in Chrome in every run recorded since sprint 02 |
 
 ---
@@ -93,4 +94,4 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 
 ## Never
 
-Multiplayer, isometric projection, hero selection, quick-cast, order queues, mobile. The overview and the mechanics spec each state why.
+Multiplayer, hero selection, quick-cast, order queues, mobile. The overview and the mechanics spec each state why.

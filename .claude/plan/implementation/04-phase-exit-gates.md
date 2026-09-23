@@ -84,6 +84,7 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | Spells kill enemies correctly by damage type | `tests/simulation/combat/damage-types.spec.ts` covers physical, magical, pure against each archetype's armour and resistance |
 | Experience levels the hero from 1 to 30 | `tests/simulation/hero/experience.spec.ts` |
 | Damage numbers, hit flashes, status icons, and every overlay on the developer panel page exist | By eye, each toggle |
+| The view is the 2:1 isometric projection at the one chosen scale, with no zoom and the maintainer's floor tile, and the simulation is unchanged by it | By eye; the phase 2 gate session replays identically; `grep -rni zoom src/` |
 | The bar | Every row, at 200 enemies and 100 projectiles |
 
 ---

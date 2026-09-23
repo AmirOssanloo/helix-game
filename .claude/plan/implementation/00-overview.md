@@ -2,7 +2,7 @@
 
 **Written:** 2026-09-20 · **For:** leadership and the engineer running the plan
 
-One engineer, twenty-three one-week sprints, six phases, one playable build at the end of every phase. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
+One engineer, twenty-five one-week sprints, six phases, one playable build at the end of every phase. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
 
 ---
 
@@ -21,12 +21,12 @@ Every phase ends with a build the person at the keyboard can play, tests that ar
 | 0 · Foundation | 00–01 | 2 | A blank Phaser canvas boots, the layers exist, lint and the architecture test enforce the import table, a world ticks in Node with pools, a command buffer, and an event ring |
 | 1 · Hero mechanics, camera, arena | 02–06 | 5 | The hero moves, turns, paths around obstacles, composes orbs, invokes, and throws stubs on the arena with the HUD, the developer panel, replay, the stress test, and the render benchmark all in place |
 | 2 · Spells and attack | 07–11 | 5 | All ten spells and the auto-attack cast against a training dummy with previews, projectiles, zones, summons, statuses, damage numbers, and hit flashes |
-| 3 · Enemies | 12–15 | 4 | Four archetypes spawn in packs from the panel, aggro, chase, attack, leash, die, and give experience; two hundred of them chase the hero within budget |
+| 3 · Enemies | 12–15, 23–24 | 6 | Four archetypes spawn in packs from the panel, aggro, chase, attack, leash, die, and give experience, in a 2:1 isometric view at one fixed scale; two hundred of them chase the hero within budget |
 | 4 · Combat feel and tuning | 16–18 | 3 | Fighting reads clearly, every exposed number retunes from the panel with no code change, and the profile shows headroom on every row of the bar |
 | 5 · Full enemy roster | 19–22 | 4 | A long roster with abilities, elites, bosses, and the disable matrix; a boss encounter runs within budget |
-| **Total** | **23** | **23** | |
+| **Total** | **25** | **25** | |
 
-Twenty-three sprints is about five and a half calendar months for one engineer at full allocation. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
+Twenty-five sprints is about six calendar months for one engineer at full allocation. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
 
 ---
 
@@ -40,7 +40,7 @@ Twenty-three sprints is about five and a half calendar months for one engineer a
 | M3 · First spell lands | end of 10 | Five spells cast against the dummy with damage numbers |
 | M4 · Phase 2 gate | end of 11 | All ten spells, twenty concurrent zones within budget |
 | M5 · First fight | end of 13 | A pack aggroes, chases, is killed, and levels the hero |
-| M6 · Phase 3 gate | end of 15 | Two hundred enemies chasing within budget, in four browsers |
+| M6 · Phase 3 gate | end of 15 | Two hundred enemies chasing within budget, in four browsers, in the isometric view |
 | M7 · Phase 4 gate | end of 18 | A designer retunes a spell with no code change; headroom table recorded |
 | M8 · Phase 5 gate | end of 22 | Boss encounter within budget; disable matrix green; roster complete |
 
@@ -53,11 +53,11 @@ What each phase deliberately does not include, so that nobody adds it by habit. 
 - **Phase 0** builds no gameplay. Not even a moving square.
 - **Phase 1** casts nothing. D and F throw stubs that spend mana, run a cast point, start a cooldown, and log. No effects, no damage.
 - **Phase 2** has no enemy that moves. The training dummy is the only unit that is not the hero or a summon.
-- **Phase 3** ships four archetypes and the dummy. No enemy abilities, no tiers beyond the field existing, no loot.
+- **Phase 3** ships four archetypes and the dummy, and the isometric view with flat geometry. No enemy abilities, no tiers beyond the field existing, no loot, nothing tall to sort.
 - **Phase 4** adds no new content. It tunes what exists and proves headroom.
 - **Phase 5** adds no items, no dungeons, no save, no art, no audio.
 
-Not in any phase: multiplayer, isometric view, hero selection, quick-cast, order queues, mobile.
+Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile.
 
 ---
 
