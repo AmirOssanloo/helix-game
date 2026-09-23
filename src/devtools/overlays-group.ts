@@ -20,16 +20,11 @@ const OVERLAYS: readonly Readonly<{
   { key: "stateLabels", label: "Unit state labels" },
 ];
 
-/** How a diamond width reads in the view scale list: the diamond's width by its height, in pixels. */
-const scaleLabel = (diamondWidth: number): string =>
-  `${diamondWidth} by ${diamondWidth / 2}`;
-
 /**
- * The overlays group: the view scale the ground is drawn at, then one checkbox per overlay,
- * each bound to the object the play scene reads each frame, so a change writes what the next
- * frame draws from. The scale and the toggles are presentation state, not commands; they
- * change nothing in the world and are not in the log. The memory restores last session's
- * choices before the first frame.
+ * The overlays group: one checkbox per overlay, each bound to the object the play scene reads
+ * each frame, so a change writes what the next frame draws from. The toggles are presentation
+ * state, not commands; they change nothing in the world and are not in the log. The memory
+ * restores last session's choices before the first frame.
  */
 export const overlaysGroup = (
   folder: FolderApi,
@@ -37,29 +32,6 @@ export const overlaysGroup = (
   memory: PanelMemory,
   remember: () => void,
 ): PanelGroup => {
-  const options: Record<string, number> = {};
-
-  for (const diamondWidth of api.diamondWidths) {
-    options[scaleLabel(diamondWidth)] = diamondWidth;
-  }
-
-  if (
-    memory.diamondWidth !== null &&
-    api.diamondWidths.includes(memory.diamondWidth)
-  ) {
-    api.viewScale.diamondWidth = memory.diamondWidth;
-  }
-
-  folder
-    .addBinding(api.viewScale, "diamondWidth", {
-      label: "View scale",
-      options,
-    })
-    .on("change", (event): void => {
-      memory.diamondWidth = event.value;
-      remember();
-    });
-
   for (const { key, label } of OVERLAYS) {
     api.overlays[key] = memory.overlays[key] === true;
     folder

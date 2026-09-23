@@ -95,7 +95,7 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 | Layer | presentation, devtools, tests, docs |
 | Size | 0.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The game has one view. The wheel does nothing: the mapper's zoom intent, the `zoom` port, `WorldCamera.zoomBy`, and the zoom limits go. The camera is zoom 1 at the chosen k, a named presentation constant. The two unchosen candidates, their floor frames, and the panel's **View scale** selector go with them. The controls and orders page, the map and camera page, the mechanics spec, and `presentation.md` stop describing zoom.
 
@@ -109,6 +109,8 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 
 **Definition of done:** Every change · Anything under `src/presentation` · A developer-panel control.
 
+> Built 2026-09-23. The projection is fixed at `DIAMOND_WIDTH` 40, `VIEW_SCALE` 0.625, and the camera sets zoom 1 once and never again. The wheel is not bound: the mapper's `wheel`, the `zoom` intent, `WorldCamera.zoomBy` and its limits are gone, and `screenRect` reads the scroll alone. The atlas holds one floor frame, `floor`, 160 by 80. The panel's **View scale**, its memory field, the `ViewScale` object, and the scene's rescale path are gone. Two frames leaving the atlas changed the content version, so the recorded phase 1 session was re-stamped. The input-mapper spec's wheel case now checks that the mapper takes no wheel event and sends nothing. The projection, floor, and sync specs lost their per-candidate loops and test the one scale. In Chrome a wheel turn over the canvas left the view as it was and the input log at zero records. Render benchmark, Apple M1 laptop: 60 fps, 0.9 to 1.1 ms, 1 draw, heap 108 to 112 MB, flat, against T01's 60 fps, 1.0 ms, 1 draw. The developer-panel rows: not applicable, since this removes a control and adds none; the overlay toggles are unchanged.
+
 ---
 
 ## Sprint exit
@@ -118,8 +120,8 @@ The proposed answer was 44 by 22. The maintainer walked all three on 2026-09-23 
 | The scale the maintainer chose, and the date | 40 by 20, k = 0.625, 2026-09-23: the widest overview, and the easiest to plan movement on. The floor PNG is 160 by 80 |
 | World draw calls with and without the floor | 1 with the floor, and so 1 without: the floor frames are in the one atlas and join the world's batch, and the ground layer's containers did not break it. Read from the world draw-call ring in Chrome on the Apple M1 laptop, 2026-09-23, at all three scales |
 | Render benchmark: fps, render ms, draws, heap, on this branch and on the commit before T01 | Chrome, Apple M1 laptop, 30 seconds each, 2026-09-23. Before T01, `09dbd91`: 60 fps, 1.0 ms, 1 draw, heap 150.4 to 152.4 MB. With T01: 60 fps, 1.0 ms, 1 draw, heap 104.6 to 104.9 MB. The game's own render time at 44 by 22 read 0.6 ms |
-| No page under `docs/` describes a top-down or zoomable view | Top-down and orthographic: none, 2026-09-23, after T02. Zoomable: the debug zoom is still on four pages until T03 |
-| Actual days per ticket | T01 0.5 · T02 0.2 · T03 |
+| No page under `docs/` describes a top-down or zoomable view | None, 2026-09-23: top-down and orthographic after T02, zoom after T03. The controls page, the map and camera page, the mechanics spec, and `presentation.md` say the wheel does nothing, and the developer panel page lost **View scale** |
+| Actual days per ticket | T01 0.5 · T02 0.2 · T03 0.2. Sized 3.5, done in 0.9 |
 
 ## Risks in this sprint
 

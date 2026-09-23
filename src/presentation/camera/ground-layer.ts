@@ -32,7 +32,7 @@ export class GroundLayer {
     this.inner.rotation = EIGHTH_TURN;
     this.outer.add(this.inner);
     this.outer.setDepth(DEPTH_GROUND);
-    this.setScale(scale);
+    this.outer.setScale(scale * DIAGONAL, scale * DIAGONAL * SQUASH);
   }
 
   /** Lays `child` on the ground: from now on it is written in world coordinates. */
@@ -40,11 +40,6 @@ export class GroundLayer {
     this.inner.add(child);
 
     return child;
-  }
-
-  /** Draws the ground at `scale` screen pixels per world unit along each diagonal from the next render on. */
-  setScale(scale: number): void {
-    this.outer.setScale(scale * DIAGONAL, scale * DIAGONAL * SQUASH);
   }
 
   /**

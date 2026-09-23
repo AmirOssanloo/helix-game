@@ -5,7 +5,6 @@ import { acquireUnit, applyStatus } from "@domain/public";
 import type { GroundPick } from "@presentation/public";
 import {
   createGroundPick,
-  DIAMOND_WIDTHS,
   DRAG_THRESHOLD,
   InputMapper,
   LEFT_BUTTON,
@@ -173,37 +172,33 @@ describe("the lens through the projection", () => {
   const TARGET = { x: 400, y: 200 };
   const SCROLL = { x: 100, y: 50 };
 
-  it.each(DIAMOND_WIDTHS)(
-    "resolves a canvas point to the unprojected world point under it at a diamond %i across",
-    (diamondWidth) => {
-      const { world, hero, driver, lens, intents, groundPick } = arrange();
-      const projection = new Projection();
+  it("resolves a canvas point to the unprojected world point under it", () => {
+    const { world, hero, driver, lens, intents, groundPick } = arrange();
+    const projection = new Projection();
 
-      projection.setDiamondWidth(diamondWidth);
-      // The fixed lens stands in for the camera: canvas plus scroll is the scene point.
-      lens.offset.x = SCROLL.x;
-      lens.offset.y = SCROLL.y;
+    // The fixed lens stands in for the camera: canvas plus scroll is the scene point.
+    lens.offset.x = SCROLL.x;
+    lens.offset.y = SCROLL.y;
 
-      const mapper = new InputMapper({
-        driver,
-        lens: projectedLens((screenX, screenY, out): void => {
-          lens.worldPointAt(screenX, screenY, out);
-        }, projection),
-        world: world.view,
-        intents,
-        groundPick,
-      });
-      const drawn = { x: 0, y: 0 };
+    const mapper = new InputMapper({
+      driver,
+      lens: projectedLens((screenX, screenY, out): void => {
+        lens.worldPointAt(screenX, screenY, out);
+      }, projection),
+      world: world.view,
+      intents,
+      groundPick,
+    });
+    const drawn = { x: 0, y: 0 };
 
-      projection.toScreen(TARGET.x, TARGET.y, drawn);
-      mapper.pointerDown(RIGHT_BUTTON, drawn.x - SCROLL.x, drawn.y - SCROLL.y);
-      world.tick();
+    projection.toScreen(TARGET.x, TARGET.y, drawn);
+    mapper.pointerDown(RIGHT_BUTTON, drawn.x - SCROLL.x, drawn.y - SCROLL.y);
+    world.tick();
 
-      expect(hero.order.kind).toBe("move");
-      expect(hero.order.destination.x).toBeCloseTo(TARGET.x, 9);
-      expect(hero.order.destination.y).toBeCloseTo(TARGET.y, 9);
-    },
-  );
+    expect(hero.order.kind).toBe("move");
+    expect(hero.order.destination.x).toBeCloseTo(TARGET.x, 9);
+    expect(hero.order.destination.y).toBeCloseTo(TARGET.y, 9);
+  });
 });
 
 describe("the pointer", () => {
@@ -336,15 +331,12 @@ describe("the pointer", () => {
     expect(hero.cast.position).toEqual({ x: 400, y: 0 });
   });
 
-  it("scroll wheel is a zoom intent, in when it turns up and out when it turns down, and never a command", () => {
+  it("a wheel turn is nothing: the mapper takes no wheel event, so it sends no command and reports no intent", () => {
     const { driver, intents, mapper } = arrange();
 
-    mapper.wheel(-100);
-    mapper.wheel(100);
-    mapper.wheel(0);
-
-    expect(intents.zooms).toEqual([1, -1]);
+    expect(Reflect.has(mapper, "wheel")).toBe(false);
     expect(driver.commands).toEqual([]);
+    expect(intents.refusals).toEqual([]);
   });
 
   it("a middle click produces nothing", () => {

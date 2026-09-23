@@ -7,12 +7,11 @@ import { projectedLens } from "./projected-lens";
 const POINTER_DOWN_EVENT = "pointerdown";
 const POINTER_UP_EVENT = "pointerup";
 const POINTER_UP_OUTSIDE_EVENT = "pointerupoutside";
-const WHEEL_EVENT = "wheel";
 const KEY_DOWN_EVENT = "keydown";
 const KEY_UP_EVENT = "keyup";
 const BLUR_EVENT = "blur";
 
-/** The camera as a lens: screen to world through its scroll and zoom, then back through the projection, at the moment of the call. */
+/** The camera as a lens: screen to world through its scroll, then back through the projection, at the moment of the call. */
 export const cameraLens = (
   camera: Phaser.Cameras.Scene2D.Camera,
   projection: Unprojection,
@@ -47,14 +46,6 @@ export const bindSceneInput = (
   const onPointerUp = (pointer: Phaser.Input.Pointer): void => {
     mapper.pointerUp(pointer.button, pointer.x, pointer.y);
   };
-  const onWheel = (
-    _pointer: Phaser.Input.Pointer,
-    _over: readonly Phaser.GameObjects.GameObject[],
-    _deltaX: number,
-    deltaY: number,
-  ): void => {
-    mapper.wheel(deltaY);
-  };
   const onKeyDown = (event: KeyboardEvent): void => {
     mapper.keyDown(event.code);
   };
@@ -72,7 +63,6 @@ export const bindSceneInput = (
   input.on(POINTER_DOWN_EVENT, onPointerDown);
   input.on(POINTER_UP_EVENT, onPointerUp);
   input.on(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
-  input.on(WHEEL_EVENT, onWheel);
   game.events.on(BLUR_EVENT, onBlur);
 
   if (keyboard !== null) {
@@ -84,7 +74,6 @@ export const bindSceneInput = (
     input.off(POINTER_DOWN_EVENT, onPointerDown);
     input.off(POINTER_UP_EVENT, onPointerUp);
     input.off(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
-    input.off(WHEEL_EVENT, onWheel);
     game.events.off(BLUR_EVENT, onBlur);
 
     if (keyboard !== null) {

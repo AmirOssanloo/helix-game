@@ -14,14 +14,11 @@ export type CameraLens = Readonly<{
 }>;
 
 /**
- * What the mapper says that is not a command. A zoom is a camera intent: the camera consumes
- * it and the world never hears of it. A refused slot is a cursor the mapper would not open,
- * for the HUD to flash the square with the reason, since nothing reached the buffer to be
- * refused there.
+ * What the mapper says that is not a command. A refused slot is a cursor the mapper would not
+ * open, for the HUD to flash the square with the reason, since nothing reached the buffer to
+ * be refused there.
  */
 export type InputIntents = Readonly<{
-  /** `+1` to zoom in, `-1` to zoom out. */
-  zoom: (direction: number) => void;
   slotRefused: (slot: number, reason: RefusalReason) => void;
 }>;
 

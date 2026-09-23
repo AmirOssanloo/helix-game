@@ -10,7 +10,7 @@ import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
 import { GroundLayer } from "../camera/ground-layer";
-import { Projection } from "../camera/projection";
+import { Projection, VIEW_SCALE } from "../camera/projection";
 import { WorldCamera } from "../camera/world-camera";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
@@ -77,7 +77,7 @@ const PROJECTILE_VIEW_COUNT = 128;
 /** Rows of status icons: how many units on screen wear a status at once in a busy fight. A presentation number. */
 const STATUS_ICON_VIEW_COUNT = 64;
 
-/** Floor tiles: enough to cover the canvas and its margin at the smallest diamond. A presentation number. */
+/** Floor tiles: enough to cover the canvas and its margin. A presentation number. */
 const FLOOR_TILE_COUNT = 320;
 
 /** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge. */
@@ -121,11 +121,10 @@ type Stage = {
  * drawn through the projection: what lies on the ground is made inside the ground layer and
  * written in world coordinates, and what stands up off it, the icons, the numbers, and the
  * labels, is made in the scene and placed where its point is drawn. `create` makes every pool
- * it will ever hold; `update` hands the frame to the driver, puts the ground at the view scale
- * the panel asks for, then drains the event ring with its own cursor so a hit the ticks just
- * landed shows on this frame, then reads the world view and writes the views: the camera onto
- * the hero, the obstacles, bounds, and void on a map load or a change of scale, the floor under
- * the camera, the zones, the units and their flashes, the outlines of the elites and
+ * it will ever hold; `update` hands the frame to the driver, then drains the event ring with
+ * its own cursor so a hit the ticks just landed shows on this frame, then reads the world view
+ * and writes the views: the camera onto the hero, the obstacles, bounds, and void on a map
+ * load, the floor under the camera, the zones, the units and their flashes, the outlines of the elites and
  * bosses among them, their status icons inside the camera rectangle, the projectiles in
  * flight, the orbs, the numbers rising where hits landed, the targeting preview under the
  * pointer, the debug overlays the toggles ask for, and the view misses into their ring. A
@@ -163,10 +162,7 @@ export class PlayScene extends Phaser.Scene {
 
   create(): void {
     const projection = this.projection;
-
-    projection.setDiamondWidth(this.context.viewScale.diamondWidth);
-
-    const ground = new GroundLayer(this, projection.scale);
+    const ground = new GroundLayer(this, VIEW_SCALE);
     const camera = new WorldCamera(this.cameras.main, projection);
     // A quad on the ground is written in world coordinates; one standing up is placed in screen ones.
     const makeQuad: QuadFactory = (frame) =>
@@ -186,9 +182,6 @@ export class PlayScene extends Phaser.Scene {
       this.context.atlas.frameWidth(frame);
     const definitions = unitDefinitionsOf(this.context.world);
     const intents: InputIntents = {
-      zoom: (direction): void => {
-        camera.zoomBy(direction);
-      },
       slotRefused: (slot, reason): void => {
         this.context.flashes.flash(slot, reason, this.context.driver.nextTick);
       },
@@ -207,12 +200,7 @@ export class PlayScene extends Phaser.Scene {
       camera,
       lens,
       mapper,
-      floor: createFloorView(
-        FLOOR_TILE_COUNT,
-        makeStandingQuad,
-        frameSizes,
-        projection.diamondWidth,
-      ),
+      floor: createFloorView(FLOOR_TILE_COUNT, makeStandingQuad, frameSizes),
       voids: createVoidViews(makeQuad),
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
@@ -286,7 +274,6 @@ export class PlayScene extends Phaser.Scene {
 
     const world = this.context.world;
     const alpha = this.context.driver.alpha;
-    const rescaled = this.applyViewScale(stage);
 
     followHero(stage.camera, world, alpha);
 
@@ -295,8 +282,6 @@ export class PlayScene extends Phaser.Scene {
       stage.obstacles.bind(world.map.obstacles);
       stage.voids.bind(world.map.bounds);
       stage.numbers.releaseAll();
-      stage.camera.fitBounds(world.map.bounds);
-    } else if (rescaled) {
       stage.camera.fitBounds(world.map.bounds);
     }
 
@@ -340,25 +325,6 @@ export class PlayScene extends Phaser.Scene {
         stage.floor.misses +
         stage.overlays.misses,
     );
-  }
-
-  /**
-   * Puts the ground, the floor, and the camera at the diamond width the panel asks for, and
-   * says whether it changed, so the camera's bounds are refitted and it snaps onto the hero on
-   * the same frame rather than panning across to where the hero is now drawn.
-   */
-  private applyViewScale(stage: Stage): boolean {
-    const width = this.context.viewScale.diamondWidth;
-
-    if (width === this.projection.diamondWidth) {
-      return false;
-    }
-
-    this.projection.setDiamondWidth(width);
-    stage.ground.setScale(this.projection.scale);
-    stage.floor.setDiamondWidth(width);
-
-    return true;
   }
 
   /** The cursor's ring, shape, and drag line, at the pointer's world point as the camera stands this frame and its canvas point for the drag. */

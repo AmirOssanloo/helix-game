@@ -2,9 +2,8 @@ import type { Rect } from "@shared/public";
 import { DEPTH_FLOOR } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
 
-/** The frame the floor at `diamondWidth` is drawn with: the content frame list names it the same way. */
-export const floorFrame = (diamondWidth: number): string =>
-  `floor_${diamondWidth}`;
+/** The frame the floor is drawn with: the content frame list names it the same way. */
+export const FLOOR_FRAME = "floor";
 
 /** A floor frame is half as tall as it is wide. */
 const FLOOR_ASPECT = 2;
@@ -34,17 +33,16 @@ const HALF = 0.5;
 export class FloorView {
   private readonly tiles: readonly Quad[];
 
-  private readonly frameSizes: FrameSizes;
+  private readonly tileWidth: number;
 
-  private tileWidth = 0;
-
-  private tileHeight = 0;
+  private readonly tileHeight: number;
 
   private missCount = 0;
 
   constructor(tiles: readonly Quad[], frameSizes: FrameSizes) {
     this.tiles = tiles;
-    this.frameSizes = frameSizes;
+    this.tileWidth = frameSizes(FLOOR_FRAME);
+    this.tileHeight = this.tileWidth / FLOOR_ASPECT;
 
     for (const tile of tiles) {
       tile.setDepth(DEPTH_FLOOR);
@@ -56,18 +54,6 @@ export class FloorView {
   /** Frames the camera showed more floor than the pool covers, since creation. */
   get misses(): number {
     return this.missCount;
-  }
-
-  /** Draws the floor with diamonds `diamondWidth` pixels across from now on. */
-  setDiamondWidth(diamondWidth: number): void {
-    const frame = floorFrame(diamondWidth);
-
-    this.tileWidth = this.frameSizes(frame);
-    this.tileHeight = this.tileWidth / FLOOR_ASPECT;
-
-    for (const tile of this.tiles) {
-      tile.setFrame(frame);
-    }
   }
 
   /** One frame: covers the screen rectangle `shown` with tiles, and hides the rest. */
@@ -171,19 +157,14 @@ export const createFloorView = (
   size: number,
   makeTile: QuadFactory,
   frameSizes: FrameSizes,
-  diamondWidth: number,
 ): FloorView => {
   const tiles: Quad[] = [];
 
   for (let index = 0; index < size; index += 1) {
-    tiles.push(makeTile(floorFrame(diamondWidth)));
+    tiles.push(makeTile(FLOOR_FRAME));
   }
 
-  const floor = new FloorView(tiles, frameSizes);
-
-  floor.setDiamondWidth(diamondWidth);
-
-  return floor;
+  return new FloorView(tiles, frameSizes);
 };
 
 /** The four sides of the void from `makeQuad`, which lays them on the ground, at scene `create`. */

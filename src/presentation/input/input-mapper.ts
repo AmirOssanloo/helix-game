@@ -28,7 +28,7 @@ import {
 } from "./targeting-cursor";
 
 /**
- * Turns key and pointer events into commands and camera intents. It knows keys and buttons;
+ * Turns key and pointer events into commands, and a slot it would not open into an intent. It knows keys and buttons;
  * it knows no rule. A key is edge-triggered: one command on key-down, nothing while held,
  * armed again on key-up. A pick is resolved through the lens as the event arrives and clamped
  * to the map, so the command carries the point the player saw. The cursor is its only state.
@@ -229,15 +229,6 @@ export class InputMapper {
       abilityId,
       target,
     });
-  }
-
-  /** The wheel turned. Up is toward the player, so it zooms in. */
-  wheel(deltaY: number): void {
-    if (deltaY < 0) {
-      this.intents.zoom(1);
-    } else if (deltaY > 0) {
-      this.intents.zoom(-1);
-    }
   }
 
   private pressSlot(slot: number): void {

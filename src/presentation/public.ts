@@ -7,13 +7,12 @@ export {
 } from "./atlas/shape-atlas";
 export { GroundLayer } from "./camera/ground-layer";
 export {
-  DEFAULT_DIAMOND_WIDTH,
-  DIAMOND_WIDTHS,
+  DIAMOND_WIDTH,
   FLOOR_CELL,
   Projection,
   type ScreenPlacement,
+  VIEW_SCALE,
 } from "./camera/projection";
-export { createViewScale, type ViewScale } from "./camera/view-scale";
 export { type FollowCamera, WorldCamera } from "./camera/world-camera";
 export {
   AbilitySquareView,
@@ -113,7 +112,7 @@ export {
 export {
   createFloorView,
   createVoidViews,
-  floorFrame,
+  FLOOR_FRAME,
   FloorView,
   VoidViews,
 } from "./views/floor.view";

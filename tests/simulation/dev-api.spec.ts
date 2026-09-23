@@ -72,8 +72,6 @@ const arrange = (): Arranged => {
     events: world.events,
     rings,
     overlays,
-    viewScale: { diamondWidth: 44 },
-    diamondWidths: [48, 44, 40],
     groundPick,
     tuningDefaults: tuningTable,
     archetypes: contentRegistry.enemies.map((def): string => def.id),

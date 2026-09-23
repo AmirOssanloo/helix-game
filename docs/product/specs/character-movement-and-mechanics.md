@@ -100,7 +100,7 @@ The control surface is an RTS hybrid: the pointer issues spatial orders; the lef
 | Right click | Enemy unit | Replace the current order with attack-target. |
 | Right click | Allied or neutral non-enemy | No follow order. Ignore, or treat as ground-move to that point. Do not start a follow leash. |
 | Middle drag / edge pan | Camera | Camera only. Does not issue unit orders. |
-| Scroll wheel | Camera | Zoom. Not a unit command. |
+| Scroll wheel | Nothing | The view has one scale; there is no zoom. Not a unit command. |
 
 ### 4.2 Keyboard primitives
 

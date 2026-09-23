@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { atlasFrames, FLOOR_DIAMOND_WIDTHS } from "@content/public";
+import { atlasFrames, FLOOR_DIAMOND_WIDTH } from "@content/public";
 import {
   createFloorView,
   createVoidViews,
   DEPTH_FLOOR,
-  DIAMOND_WIDTHS,
-  floorFrame,
+  DIAMOND_WIDTH,
+  FLOOR_FRAME,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
 import { QuadRecorder } from "../helpers";
@@ -28,7 +28,6 @@ const SHOWN: Rect = { minX: -1000, minY: -300, maxX: 920, maxY: 780 };
 
 const arrange = (
   size: number,
-  diamondWidth: number,
 ): { quads: QuadRecorder[]; floor: ReturnType<typeof createFloorView> } => {
   const quads: QuadRecorder[] = [];
   const floor = createFloorView(
@@ -41,94 +40,69 @@ const arrange = (
       return quad;
     },
     frameWidthOf,
-    diamondWidth,
   );
 
   return { quads, floor };
 };
 
-describe("the floor frames", () => {
-  it("are in the frame list at every diamond width the view can be drawn at, four diamonds across and down", () => {
-    expect(FLOOR_DIAMOND_WIDTHS).toEqual(DIAMOND_WIDTHS);
+describe("the floor frame", () => {
+  it("is the one floor in the frame list, at the diamond width the view is drawn at, four diamonds across and down", () => {
+    const floors = atlasFrames.filter(
+      (def) => def.shape.kind === "diamond_grid",
+    );
 
-    for (const diamondWidth of DIAMOND_WIDTHS) {
-      const frame = atlasFrames.find(
-        (def) => def.name === floorFrame(diamondWidth),
-      );
-
-      expect(frame?.width).toBe(DIAMONDS_ACROSS * diamondWidth);
-      expect(frame?.height).toBe((DIAMONDS_ACROSS * diamondWidth) / 2);
-    }
+    expect(FLOOR_DIAMOND_WIDTH).toBe(DIAMOND_WIDTH);
+    expect(floors.map((def) => def.name)).toEqual([FLOOR_FRAME]);
+    expect(floors[0]?.width).toBe(DIAMONDS_ACROSS * DIAMOND_WIDTH);
+    expect(floors[0]?.height).toBe((DIAMONDS_ACROSS * DIAMOND_WIDTH) / 2);
   });
 });
 
-describe.each(DIAMOND_WIDTHS)(
-  "the floor at a diamond %i across",
-  (diamondWidth) => {
-    const tileWidth = DIAMONDS_ACROSS * diamondWidth;
-    const tileHeight = tileWidth / 2;
+describe("the floor", () => {
+  const tileWidth = DIAMONDS_ACROSS * DIAMOND_WIDTH;
+  const tileHeight = tileWidth / 2;
 
-    it("covers the screen rectangle with tiles on the grid through the projected origin, under every band", () => {
-      const { quads, floor } = arrange(400, diamondWidth);
+  it("covers the screen rectangle with tiles on the grid through the projected origin, under every band", () => {
+    const { quads, floor } = arrange(400);
 
-      floor.sync(SHOWN);
-
-      const shown = quads.filter((quad) => quad.visible);
-
-      expect(shown.length).toBeGreaterThan(0);
-      expect(floor.misses).toBe(0);
-
-      for (const quad of quads) {
-        expect(quad.frame).toBe(floorFrame(diamondWidth));
-        expect(quad.depth).toBe(DEPTH_FLOOR);
-      }
-
-      for (const quad of shown) {
-        // A tile is centred, so its top-left corner is half a tile back, on a whole number of tiles.
-        expect((quad.x - tileWidth / 2) / tileWidth).toSatisfy(
-          Number.isInteger,
-        );
-        expect((quad.y - tileHeight / 2) / tileHeight).toSatisfy(
-          Number.isInteger,
-        );
-      }
-
-      const left = Math.min(...shown.map((quad) => quad.x - tileWidth / 2));
-      const right = Math.max(...shown.map((quad) => quad.x + tileWidth / 2));
-      const top = Math.min(...shown.map((quad) => quad.y - tileHeight / 2));
-      const bottom = Math.max(...shown.map((quad) => quad.y + tileHeight / 2));
-
-      expect(left).toBeLessThanOrEqual(SHOWN.minX);
-      expect(right).toBeGreaterThanOrEqual(SHOWN.maxX);
-      expect(top).toBeLessThanOrEqual(SHOWN.minY);
-      expect(bottom).toBeGreaterThanOrEqual(SHOWN.maxY);
-    });
-
-    it("counts a miss and leaves the rest bare when the pool covers less than the camera shows", () => {
-      const { quads, floor } = arrange(3, diamondWidth);
-
-      floor.sync(SHOWN);
-
-      expect(floor.misses).toBe(1);
-      expect(quads.every((quad) => quad.visible)).toBe(true);
-    });
-  },
-);
-
-describe("a change of scale", () => {
-  it("puts every tile on the new frame and lays the floor at the new tile size", () => {
-    const { quads, floor } = arrange(400, 48);
-
-    floor.setDiamondWidth(40);
     floor.sync(SHOWN);
 
+    const shown = quads.filter((quad) => quad.visible);
+
+    expect(shown.length).toBeGreaterThan(0);
+    expect(floor.misses).toBe(0);
+
     for (const quad of quads) {
-      expect(quad.frame).toBe(floorFrame(40));
+      expect(quad.frame).toBe(FLOOR_FRAME);
+      expect(quad.depth).toBe(DEPTH_FLOOR);
     }
 
-    const tile = quads.find((quad) => quad.visible);
+    for (const quad of shown) {
+      // A tile is centred, so its top-left corner is half a tile back, on a whole number of tiles.
+      expect((quad.x - tileWidth / 2) / tileWidth).toSatisfy(Number.isInteger);
+      expect((quad.y - tileHeight / 2) / tileHeight).toSatisfy(
+        Number.isInteger,
+      );
+    }
 
-    expect(((tile?.x ?? 0) - 80) / 160).toSatisfy(Number.isInteger);
+    const left = Math.min(...shown.map((quad) => quad.x - tileWidth / 2));
+    const right = Math.max(...shown.map((quad) => quad.x + tileWidth / 2));
+    const top = Math.min(...shown.map((quad) => quad.y - tileHeight / 2));
+    const bottom = Math.max(...shown.map((quad) => quad.y + tileHeight / 2));
+
+    expect(left).toBeLessThanOrEqual(SHOWN.minX);
+    expect(right).toBeGreaterThanOrEqual(SHOWN.maxX);
+    expect(top).toBeLessThanOrEqual(SHOWN.minY);
+    expect(bottom).toBeGreaterThanOrEqual(SHOWN.maxY);
+  });
+
+  it("counts a miss and leaves the rest bare when the pool covers less than the camera shows", () => {
+    const { quads, floor } = arrange(3);
+
+    floor.sync(SHOWN);
+
+    expect(floor.misses).toBe(1);
+    expect(quads.every((quad) => quad.visible)).toBe(true);
   });
 });
 

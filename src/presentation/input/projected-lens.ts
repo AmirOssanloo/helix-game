@@ -1,7 +1,7 @@
 import type { Vec2 } from "@shared/public";
 import type { CameraLens } from "./input-ports";
 
-/** A canvas point to the scene point under it, through the camera's scroll and zoom at the moment of the call. */
+/** A canvas point to the scene point under it, through the camera's scroll at the moment of the call. */
 export type ScenePointAt = (
   screenX: number,
   screenY: number,
@@ -16,7 +16,7 @@ export type Unprojection = Readonly<{
 /**
  * A lens over a camera that shows the projected world: a canvas point goes through the camera
  * to the scene point under it, then back through the projection to the world point drawn
- * there, so a click resolves to the world point it lands on at whatever scale the view is.
+ * there, so a click resolves to the world point it lands on.
  */
 export const projectedLens = (
   scenePointAt: ScenePointAt,

@@ -1,6 +1,6 @@
 /**
  * What the panel remembers between reloads, in the browser's local storage: which groups
- * are open, which overlays are on, the view scale, and the last spawn settings of each kind. Nothing about the game is
+ * are open, which overlays are on, and the last spawn settings of each kind. Nothing about the game is
  * here; a reload is a fresh world, and a memory that fails to parse is forgotten.
  */
 export type PanelMemory = {
@@ -8,8 +8,6 @@ export type PanelMemory = {
   open: Record<string, boolean>;
   /** Overlay key to whether it is on. */
   overlays: Record<string, boolean>;
-  /** The diamond width the view was last drawn at, or none yet. */
-  diamondWidth: number | null;
   spawn: {
     count: number;
     x: number;
@@ -34,11 +32,10 @@ export type MemoryStore = Readonly<{
   setItem: (key: string, value: string) => void;
 }>;
 
-/** A fresh memory: every group open, every overlay off, the view scale the game starts at, a stress-test sized spawn at the origin, and one enemy a walk in front of the hero. */
+/** A fresh memory: every group open, every overlay off, a stress-test sized spawn at the origin, and one enemy a walk in front of the hero. */
 export const createPanelMemory = (): PanelMemory => ({
   open: {},
   overlays: {},
-  diamondWidth: null,
   spawn: { count: 300, x: 0, y: 0 },
   enemies: {
     archetypeId: "",
@@ -96,13 +93,6 @@ export const readPanelMemory = (store: MemoryStore | null): PanelMemory => {
 
   memory.open = readFlags(parsed["open"]);
   memory.overlays = readFlags(parsed["overlays"]);
-
-  const diamondWidth = parsed["diamondWidth"];
-
-  memory.diamondWidth =
-    typeof diamondWidth === "number" && Number.isFinite(diamondWidth)
-      ? diamondWidth
-      : memory.diamondWidth;
 
   const spawn = parsed["spawn"];
 

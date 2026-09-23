@@ -79,7 +79,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 ## Overlays
 
-**View scale** comes first: the size the ground's diamonds are drawn at, 48 by 24, 44 by 22, or 40 by 20 pixels a walkability cell, switched live with the hero kept where it is. Like a toggle it changes nothing in the world and is not in the log. The rest are toggles, each drawn over the world in its own colour at low alpha.
+Toggles, each drawn over the world in its own colour at low alpha. Like every toggle, turning one on changes nothing in the world and is not in the log.
 
 - Collision discs and bound radii, as two separate circles, because tuning the wrong one is the classic mistake
 - Facing and the action cone
@@ -92,7 +92,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 ## Persistence
 
-The panel remembers its own layout, which overlays are on, the view scale, and the last-used spawn settings in the browser's local storage. Nothing about the game is stored; a reload is a fresh world.
+The panel remembers its own layout, which overlays are on, and the last-used spawn settings in the browser's local storage. Nothing about the game is stored; a reload is a fresh world.
 
 ## States and edge cases
 

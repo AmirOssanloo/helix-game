@@ -48,17 +48,20 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Depends on | P3-S23-T03, the floor PNG in `assets/` |
 | Status | planned |
 
-**Build:** The boot scene loads the floor PNG and paints it into the generated atlas as the floor frame, so the world still draws from one texture and `maxTextures` stays one. The code-painted grid goes. The PNG's size is checked at boot against the chosen scale, four by four diamonds, and a wrong size fails the boot with a message naming the expected size, rather than drawing a floor that drifts off the walkability cells. `presentation.md` and ADR 0001's atlas paragraph name the floor frame and where it comes from.
+**Build:** One art diamond covers four by four walkability cells, 128 world units a side, drawn 160 by 80 pixels at the chosen scale ([Q29](../backlog/open-questions.md)). The PNG is a whole number of art diamonds in each direction, 160 by 80 at the least and at most 960 wide to fit the atlas, and a diamond centred in it touches the midpoints of its edges; its corners are quarters of the neighbouring diamonds. The boot scene loads it and paints it into the generated atlas as the floor frame, so the world still draws from one texture and `maxTextures` stays one. The code-painted grid goes, and with it the floor's tint, so the tile shows in the colours it was painted. The floor view lays tiles half a tile off the projected origin, so each art diamond's corners fall on the corner of a four-by-four block of cells. A PNG that is not a whole number of art diamonds in each direction fails the boot with a message naming the rule, rather than drawing a floor that drifts off the cells. `presentation.md`, ADR 0006's floor paragraph, ADR 0001's atlas paragraph, the map and camera page, and the vocabulary's **Floor** row say an art diamond covers four by four cells and where the frame comes from.
 
 **Acceptance:**
-- The floor is the maintainer's tile, seamless in both directions, with every diamond on a walkability cell.
+- The floor is the maintainer's tile, seamless in both directions, and with the walkability overlay on, every art diamond's edges run along cell edges, four cells to a side.
 - The world draw count is what sprint 23's exit recorded.
-- A PNG of the wrong size stops the boot with the expected size in the message.
+- A PNG that is not a whole number of 160 by 80 art diamonds stops the boot with the rule in the message.
 
 **Tests:**
-- `tests/presentation/shape-atlas.spec.ts` extended: the atlas carries a floor frame of the chosen size; a floor image of another size is refused with the message.
+- `tests/presentation/shape-atlas.spec.ts` extended: the atlas carries the floor frame at the PNG's size; a floor image of another size is refused with the message.
+- `tests/presentation/floor-view.spec.ts` extended: a tile's centre projects back to the centre of a four-by-four block of cells, and its corners to a block's corners.
 
 **Definition of done:** Every change · Anything under `src/presentation` (bench rerun) · A documentation page.
+
+> Edited 2026-09-23: the art diamond covers four by four cells rather than one, chosen by the maintainer as Q29 when the one-cell diamond, 40 by 20, left no room for detail. The scale does not change.
 
 ---
 

@@ -19,7 +19,7 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Left click | Targeting cursor open | Commits the target and starts the cast |
 | Left click | An orb square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
 | Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
-| Scroll wheel | Anywhere | Camera zoom, for debugging only. Not an order |
+| Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
 A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it.
 

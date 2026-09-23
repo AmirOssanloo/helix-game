@@ -3,14 +3,14 @@ import type { Rect, Vec2 } from "@shared/public";
 /** The world's square cell the floor draws one diamond over: the walkability grid's cell. */
 export const FLOOR_CELL = 32;
 
-/** The diamond widths the view can be drawn at, in screen pixels a cell: the candidates the walk chooses between. */
-export const DIAMOND_WIDTHS: readonly number[] = [48, 44, 40];
-
-/** The width the view starts at until the walk names one. */
-export const DEFAULT_DIAMOND_WIDTH = 44;
-
 /** A cell is twice as wide across the screen as it is down it: the classic 2:1 diamond. */
 const DIAMOND_ASPECT = 2;
+
+/** The one scale the game is drawn at: a cell's diamond is this many whole pixels across, and half that down. */
+export const DIAMOND_WIDTH = 40;
+
+/** Screen pixels per world unit along each screen diagonal, at the diamond width. */
+export const VIEW_SCALE = DIAMOND_WIDTH / (DIAMOND_ASPECT * FLOOR_CELL);
 
 const SQRT_HALF = Math.SQRT1_2;
 
@@ -34,29 +34,12 @@ export type ScreenPlacement = Readonly<{
  *   screen x = (x − y) · k,  screen y = (x + y) · k / 2
  *
  * so a square cell of `FLOOR_CELL` world units is a diamond `2 · FLOOR_CELL · k` pixels across
- * and half that down. The scale is set by the diamond width, which the view scale picks, and
- * every method writes into what it is handed so nothing allocates per frame.
+ * and half that down. The scale is fixed and lives here rather than in the camera, so a
+ * diamond is always `DIAMOND_WIDTH` whole pixels. Every method writes into what it is handed so nothing
+ * allocates per frame.
  */
 export class Projection implements ScreenPlacement {
-  private diamond = DEFAULT_DIAMOND_WIDTH;
-
-  private k = DEFAULT_DIAMOND_WIDTH / (DIAMOND_ASPECT * FLOOR_CELL);
-
-  /** The diamond width a cell is drawn at, in screen pixels. */
-  get diamondWidth(): number {
-    return this.diamond;
-  }
-
-  /** Screen pixels per world unit along each screen diagonal. */
-  get scale(): number {
-    return this.k;
-  }
-
-  /** Draws a cell `width` pixels across from now on, and half that down. */
-  setDiamondWidth(width: number): void {
-    this.diamond = width;
-    this.k = width / (DIAMOND_ASPECT * FLOOR_CELL);
-  }
+  private readonly k = VIEW_SCALE;
 
   toScreen(x: number, y: number, out: Vec2): void {
     const k = this.k;

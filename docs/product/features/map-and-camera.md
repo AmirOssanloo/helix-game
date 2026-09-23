@@ -49,10 +49,10 @@ Locked on the hero, looking down on an isometric floor. The square world is draw
 
 - **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen
 - **Clamped** to the box around the map's diamond, so the corners past the walls are dark void and never more than that
-- **Zoom** on the scroll wheel, for debugging only. Default is 1.0
+- **No zoom.** The scroll wheel does nothing. The game has one view
 - **No panning.** No edge pan, no middle drag, no free camera. The camera is not an order and never issues one
 
-The scale is fixed: the diamond size is part of how the floor is drawn, not a zoom, so the lines of the grid stay one pixel thick. The floor is one tile of four by four diamonds, repeated, under everything on the ground.
+The scale is fixed: the diamond size is part of how the floor is drawn, not a camera zoom, so the lines of the grid stay one pixel thick. The floor is one tile of four by four diamonds, repeated, under everything on the ground.
 
 The logical canvas is 1920 by 1080, scaled to fit the browser window and letterboxed. Flat shapes look fine stretched; device pixel ratio is ignored until real art arrives.
 
@@ -64,7 +64,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | --- | --- |
 | Hero pushed into a wall by knockback | The displacement stops at the wall edge; the hero is never inside an obstacle |
 | Hero spawned on an occupied spot | Enemies standing on the spawn point are pushed out on the first tick |
-| Zoom past the map bounds | The camera stays clamped; at high zoom-out the letterbox shows outside the walls as background |
+| Hero near a wall of the map | The camera stays clamped to the box around the map's diamond; past the walls, inside that box, is dark void |
 | Click on a floor diamond | A move order to that point in the world; the click is traced back through the diamond view to the square cell under it |
 | Click on an obstacle | A move order to the nearest walkable point on the obstacle's edge |
 | Click outside the map | A move order to the nearest point inside the bounds |
@@ -76,7 +76,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 - **Procedural dungeons**, acts, and biomes. The map format is designed for generation; the generator does not exist.
 - **Exits, portals, and map transitions.** Run scope and map scope are already separate so this costs no rewrite.
 - **Tile art.** Obstacles are grey rectangles; a tile layer replaces them when art arrives.
-- **Minimap and fog of war.** The arena fits on one screen at low zoom.
+- **Minimap and fog of war.** The arena is small enough to learn by walking it.
 - **A day-night clock** and its speed bonus. The spec keeps the option; the game does not use it.
 
 ---

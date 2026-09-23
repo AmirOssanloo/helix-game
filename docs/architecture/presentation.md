@@ -121,7 +121,7 @@ No filters, no post-processing, no masks, no blend modes. Each one breaks the ba
 
 ## Camera and canvas
 
-The world camera follows the point the hero is drawn at, with a lerp, and clamps to the screen box around the projected map bounds. A pointer's canvas point goes through the camera's scroll and then the projection back to the world point under it, so a click on a diamond names the square cell it covers. Zoom exists for debugging. The logical canvas is 1920 by 1080, scaled to fit and centred, with no device-pixel-ratio scaling.
+The world camera follows the point the hero is drawn at, with a lerp, and clamps to the screen box around the projected map bounds. A pointer's canvas point goes through the camera's scroll and then the projection back to the world point under it, so a click on a diamond names the square cell it covers. The camera never zooms and the wheel is not bound. The logical canvas is 1920 by 1080, scaled to fit and centred, with no device-pixel-ratio scaling.
 
 The game boots with `Phaser.AUTO`. If the renderer that comes up is Canvas, `BootScene` shows a warning banner; Canvas is unsupported and untested, and no code path depends on it.
 
@@ -192,7 +192,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |
 | Filters, post-processing, masks, blend modes | None |
-| Camera | Locked follow of the hero's projected point with lerp, clamped to the projected bounds' box; a pointer unprojected to the world; zoom for debugging |
+| Camera | Locked follow of the hero's projected point with lerp, clamped to the projected bounds' box; a pointer unprojected to the world; no zoom |
 | Canvas | Logical 1920 by 1080, fit and centred, no device-pixel-ratio scaling |
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
