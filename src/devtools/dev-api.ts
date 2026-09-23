@@ -72,10 +72,12 @@ export type OverlayToggles = {
   collisionDiscs: boolean;
   boundRadii: boolean;
   facingCone: boolean;
+  unitRanges: boolean;
   pathLines: boolean;
   walkabilityGrid: boolean;
   hashCells: boolean;
   spellAreas: boolean;
+  stateLabels: boolean;
 };
 
 /**

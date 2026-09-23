@@ -126,8 +126,14 @@ export {
   syncStatusIconViews,
 } from "./views/status-icon.view";
 export {
+  createOutlineViewPool,
   createUnitViewPool,
+  OutlineView,
+  type OutlineViewPool,
+  syncOutlineViews,
   syncUnitViews,
+  type UnitDefinitions,
+  unitDefinitionsOf,
   UNIT_VIEW_MARGIN,
   UnitView,
   type UnitViewPool,

@@ -11,6 +11,8 @@ export type OverlayToggles = {
   boundRadii: boolean;
   /** The hero's heading and the two edges of its action cone. */
   facingCone: boolean;
+  /** The hero's attack range and acquire radius; each enemy's aggro radius around it and leash radius around its spawn point. */
+  unitRanges: boolean;
   /** The waypoints left on every moving unit's path, from where it stands. */
   pathLines: boolean;
   /** Every cell of the walkability grid the hero's radius class may not stand in. */
@@ -19,6 +21,8 @@ export type OverlayToggles = {
   hashCells: boolean;
   /** Every zone on the ground, outlined as the simulation tests it rather than as the view draws it. */
   spellAreas: boolean;
+  /** Each enemy's state in the shared machine above it, and the hero's order state above the hero. */
+  stateLabels: boolean;
 };
 
 /** Every overlay off, as a fresh session starts. */
@@ -26,8 +30,10 @@ export const createOverlayToggles = (): OverlayToggles => ({
   collisionDiscs: false,
   boundRadii: false,
   facingCone: false,
+  unitRanges: false,
   pathLines: false,
   walkabilityGrid: false,
   hashCells: false,
   spellAreas: false,
+  stateLabels: false,
 });

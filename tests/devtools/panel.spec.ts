@@ -71,10 +71,12 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     collisionDiscs: false,
     boundRadii: false,
     facingCone: false,
+    unitRanges: false,
     pathLines: false,
     walkabilityGrid: false,
     hashCells: false,
     spellAreas: false,
+    stateLabels: false,
   };
   const groundPick: GroundPick = { pending: null };
 

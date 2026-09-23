@@ -1,5 +1,7 @@
 import type {
+  AiState,
   HashCell,
+  OrderState,
   ShapeDef,
   Unit,
   WalkabilityView,
@@ -14,6 +16,7 @@ import {
   isCellBlocked,
   radiusClassOf,
   readTunable,
+  resolveBehaviour,
   rowOf,
   UNIT_CAPACITY,
 } from "@domain/public";
@@ -42,6 +45,9 @@ const AREA_CIRCLE_FRAME = "ring_thin";
 const AREA_RECTANGLE_FRAME = "square_outline";
 const AREA_CONE_FRAME = "cone_60";
 
+/** A range is a thin ring, as the targeting cursor's is. */
+const RANGE_FRAME = "ring_thin";
+
 /** Each overlay in its own colour at low alpha, so several read at once over the units. */
 const COLLISION_TINT = 0x4fc3f7;
 const BOUND_TINT = 0xffd166;
@@ -51,6 +57,10 @@ const PATH_TINT = 0xff80ff;
 const BLOCKED_TINT = 0xff4040;
 const HASH_TINT = 0x40ff40;
 const AREA_TINT = 0xff8040;
+const ATTACK_RANGE_TINT = 0xff5050;
+const ACQUIRE_TINT = 0xffa040;
+const AGGRO_TINT = 0xffe040;
+const LEASH_TINT = 0x60a0ff;
 const LABEL_TINT = 0xffffff;
 const RING_ALPHA = 0.5;
 const LINE_ALPHA = 0.8;
@@ -69,6 +79,35 @@ const FACING_QUAD_COUNT = 3;
 /** The count label's line height, in pixels of the atlas font. */
 const COUNT_LABEL_SIZE = 20;
 
+/** A state label's line height, and how far above the top of the body it sits, in world units. */
+const STATE_LABEL_SIZE = 16;
+const STATE_LABEL_MARGIN = 14;
+
+/**
+ * What a state label shows for each state, written once: the font holds uppercase letters and
+ * the hyphen, not lowercase or the underscore, and a table means the sync never builds a string.
+ */
+const AI_STATE_LABELS: Readonly<Record<AiState, string>> = {
+  idle: "IDLE",
+  aggro: "AGGRO",
+  chase: "CHASE",
+  attack: "ATTACK",
+  return: "RETURN",
+  dead: "DEAD",
+};
+
+const ORDER_STATE_LABELS: Readonly<Record<OrderState, string>> = {
+  idle: "IDLE",
+  turning: "TURNING",
+  moving: "MOVING",
+  attack_windup: "ATTACK-WINDUP",
+  attack_backswing: "ATTACK-BACKSWING",
+  ability_cast_point: "CAST-POINT",
+  ability_backswing: "CAST-BACKSWING",
+  channeling: "CHANNELING",
+  dead: "DEAD",
+};
+
 const DIAMETERS_PER_RADIUS = 2;
 
 /** Which of the three areas a zone covers, which is what decides the frame its outline is drawn with. */
@@ -83,9 +122,16 @@ const PATH_SEGMENT_COUNT = 512;
 const BLOCKED_CELL_COUNT = 1024;
 const HASH_CELL_COUNT = 256;
 const AREA_COUNT = 64;
+const STATE_LABEL_COUNT = 256;
+
+/** The hero's two rings: its attack range and its acquire radius. */
+const HERO_RANGE_QUAD_COUNT = 2;
 
 /** A count label showing nothing yet. */
 const NO_COUNT = -1;
+
+/** A state label showing nothing yet. */
+const NO_TEXT = "";
 
 /** Lays `quad`, a stretched pixel, from (`ax`, `ay`) to (`bx`, `by`). */
 const layLine = (
@@ -692,6 +738,267 @@ class SpellAreas {
   }
 }
 
+/** Lays `quad`, a ring frame, at (`x`, `y`) at `radius`. */
+const layRing = (
+  quad: Quad,
+  x: number,
+  y: number,
+  radius: number,
+  scalePerUnit: number,
+  tint: number,
+): void => {
+  quad.x = x;
+  quad.y = y;
+  quad.rotation = 0;
+  quad.scale = radius * DIAMETERS_PER_RADIUS * scalePerUnit;
+  quad.tint = tint;
+  quad.alpha = RING_ALPHA;
+  quad.visible = true;
+};
+
+/**
+ * The ranges the fight is decided by. On the hero, its attack range as far as a target's edge,
+ * the range and its bound radius, and the acquire radius an attack-move searches; on each
+ * enemy on screen with a definition, the aggro radius around where it stands and the leash
+ * radius around its spawn point, which is what the machine measures each from. A radius of
+ * zero, the training dummy's, draws nothing.
+ */
+class UnitRanges {
+  private readonly hero: QuadRun;
+
+  private readonly aggro: QuadRun;
+
+  private readonly leash: QuadRun;
+
+  private readonly scalePerUnit: number;
+
+  constructor(
+    hero: readonly Quad[],
+    aggro: readonly Quad[],
+    leash: readonly Quad[],
+    frameWidth: number,
+  ) {
+    this.hero = new QuadRun(hero);
+    this.aggro = new QuadRun(aggro);
+    this.leash = new QuadRun(leash);
+    this.scalePerUnit = 1 / frameWidth;
+  }
+
+  get misses(): number {
+    return this.hero.misses + this.aggro.misses + this.leash.misses;
+  }
+
+  sync(
+    world: WorldView,
+    candidates: readonly EntityId[],
+    count: number,
+    alpha: number,
+  ): void {
+    for (let index = 0; index < count; index += 1) {
+      const id = candidates[index];
+      const unit = id === undefined ? null : world.map.units.resolve(id);
+
+      if (unit === null) {
+        continue;
+      }
+
+      if (unit.kind === "hero") {
+        this.ringHero(world, unit, alpha);
+      } else if (unit.kind === "enemy") {
+        this.ringEnemy(world, unit, alpha);
+      }
+    }
+
+    this.finish();
+  }
+
+  hide(): void {
+    this.finish();
+  }
+
+  private ringHero(
+    world: WorldView,
+    hero: DeepReadonly<Unit>,
+    alpha: number,
+  ): void {
+    const attack = world.run.heroAttack.def;
+    const x = interpolate(hero.prev.x, hero.curr.x, alpha);
+    const y = interpolate(hero.prev.y, hero.curr.y, alpha);
+
+    this.ring(
+      this.hero,
+      x,
+      y,
+      attack.range + hero.boundRadius,
+      ATTACK_RANGE_TINT,
+    );
+    this.ring(this.hero, x, y, attack.acquireRadius, ACQUIRE_TINT);
+  }
+
+  private ringEnemy(
+    world: WorldView,
+    unit: DeepReadonly<Unit>,
+    alpha: number,
+  ): void {
+    const definitionId = unit.definitionId;
+    const record =
+      definitionId === null ? undefined : world.run.units.get(definitionId);
+
+    if (record === undefined) {
+      return;
+    }
+
+    this.ring(
+      this.aggro,
+      interpolate(unit.prev.x, unit.curr.x, alpha),
+      interpolate(unit.prev.y, unit.curr.y, alpha),
+      record.def.aggroRadius,
+      AGGRO_TINT,
+    );
+    this.ring(
+      this.leash,
+      unit.spawnPoint.x,
+      unit.spawnPoint.y,
+      record.def.leashRadius,
+      LEASH_TINT,
+    );
+  }
+
+  private ring(
+    run: QuadRun,
+    x: number,
+    y: number,
+    radius: number,
+    tint: number,
+  ): void {
+    if (radius <= 0) {
+      return;
+    }
+
+    const quad = run.take();
+
+    if (quad !== null) {
+      layRing(quad, x, y, radius, this.scalePerUnit, tint);
+    }
+  }
+
+  private finish(): void {
+    this.hero.finish();
+    this.aggro.finish();
+    this.leash.finish();
+  }
+}
+
+/**
+ * A label above each unit on screen saying where it stands: an enemy whose behaviour runs the
+ * shared machine shows its state in it, the hero its order state. A label is rewritten only
+ * when the state under it changes, so a steady fight costs no text rebuild.
+ */
+class StateLabels {
+  private readonly labels: readonly Label[];
+
+  /** Per label: the text it shows, so a steady state costs no rewrite. */
+  private readonly texts: string[];
+
+  private bound = 0;
+
+  private lastBound = 0;
+
+  private missCount = 0;
+
+  constructor(labels: readonly Label[]) {
+    this.labels = labels;
+    this.texts = [];
+
+    for (let index = 0; index < labels.length; index += 1) {
+      this.texts.push(NO_TEXT);
+    }
+  }
+
+  get misses(): number {
+    return this.missCount;
+  }
+
+  sync(
+    world: WorldView,
+    candidates: readonly EntityId[],
+    count: number,
+    alpha: number,
+  ): void {
+    for (let index = 0; index < count; index += 1) {
+      const id = candidates[index];
+      const unit = id === undefined ? null : world.map.units.resolve(id);
+      const text = unit === null ? NO_TEXT : labelOf(world, unit);
+
+      if (unit === null || text === NO_TEXT) {
+        continue;
+      }
+
+      const label = this.labels[this.bound];
+
+      if (label === undefined) {
+        this.missCount += 1;
+
+        break;
+      }
+
+      label.x = interpolate(unit.prev.x, unit.curr.x, alpha);
+      label.y =
+        interpolate(unit.prev.y, unit.curr.y, alpha) -
+        unit.collisionRadius -
+        STATE_LABEL_MARGIN;
+      label.tint = LABEL_TINT;
+      label.alpha = OPAQUE;
+      label.visible = true;
+
+      if (this.texts[this.bound] !== text) {
+        this.texts[this.bound] = text;
+        label.setText(text);
+      }
+
+      this.bound += 1;
+    }
+
+    this.finish();
+  }
+
+  hide(): void {
+    this.finish();
+  }
+
+  private finish(): void {
+    for (let index = this.bound; index < this.lastBound; index += 1) {
+      const label = this.labels[index];
+
+      if (label !== undefined) {
+        label.visible = false;
+      }
+    }
+
+    this.lastBound = this.bound;
+    this.bound = 0;
+  }
+}
+
+/** What `unit`'s state label says: the hero's order state, a machine enemy's state, or nothing for anything else. */
+const labelOf = (world: WorldView, unit: DeepReadonly<Unit>): string => {
+  if (unit.kind === "hero") {
+    return ORDER_STATE_LABELS[unit.state];
+  }
+
+  const definitionId = unit.definitionId;
+  const record =
+    unit.kind !== "enemy" || definitionId === null
+      ? undefined
+      : world.run.units.get(definitionId);
+  const behaviour =
+    record === undefined ? null : resolveBehaviour(record.def.behaviour);
+
+  return behaviour !== null && behaviour.kind === "machine"
+    ? AI_STATE_LABELS[unit.ai.state]
+    : NO_TEXT;
+};
+
 /**
  * The debug overlays the play scene draws over the world, each from its own quads at the
  * debug band and each behind one toggle. An overlay that is on reads the world view and the
@@ -714,6 +1021,10 @@ export class DebugOverlays {
 
   private readonly areas: SpellAreas;
 
+  private readonly ranges: UnitRanges;
+
+  private readonly states: StateLabels;
+
   private readonly candidates: EntityId[] =
     createCandidateBuffer(UNIT_CAPACITY);
 
@@ -723,9 +1034,14 @@ export class DebugOverlays {
     frameSizes: FrameSizes,
   ) {
     const labels: Label[] = [];
+    const stateLabels: Label[] = [];
 
     for (let index = 0; index < HASH_CELL_COUNT; index += 1) {
       labels.push(makeLabel(COUNT_LABEL_SIZE));
+    }
+
+    for (let index = 0; index < STATE_LABEL_COUNT; index += 1) {
+      stateLabels.push(makeLabel(STATE_LABEL_SIZE));
     }
 
     this.collision = new UnitRings(
@@ -763,6 +1079,13 @@ export class DebugOverlays {
       makeQuads(AREA_COUNT, AREA_CONE_FRAME, makeQuad),
       frameSizes,
     );
+    this.ranges = new UnitRanges(
+      makeQuads(HERO_RANGE_QUAD_COUNT, RANGE_FRAME, makeQuad),
+      makeQuads(RING_COUNT, RANGE_FRAME, makeQuad),
+      makeQuads(RING_COUNT, RANGE_FRAME, makeQuad),
+      frameSizes(RANGE_FRAME),
+    );
+    this.states = new StateLabels(stateLabels);
   }
 
   /** Frames an overlay wanted more quads than its pool holds, summed over every overlay since creation. */
@@ -773,7 +1096,9 @@ export class DebugOverlays {
       this.paths.misses +
       this.blocked.misses +
       this.hash.misses +
-      this.areas.misses
+      this.areas.misses +
+      this.ranges.misses +
+      this.states.misses
     );
   }
 
@@ -785,7 +1110,11 @@ export class DebugOverlays {
     toggles: Readonly<OverlayToggles>,
   ): void {
     const wantsUnits =
-      toggles.collisionDiscs || toggles.boundRadii || toggles.pathLines;
+      toggles.collisionDiscs ||
+      toggles.boundRadii ||
+      toggles.pathLines ||
+      toggles.unitRanges ||
+      toggles.stateLabels;
     const count = wantsUnits
       ? world.map.spatialHash.queryRectangle(
           rect.minX,
@@ -836,6 +1165,18 @@ export class DebugOverlays {
       this.areas.sync(world, alpha);
     } else {
       this.areas.hide();
+    }
+
+    if (toggles.unitRanges) {
+      this.ranges.sync(world, this.candidates, count, alpha);
+    } else {
+      this.ranges.hide();
+    }
+
+    if (toggles.stateLabels) {
+      this.states.sync(world, this.candidates, count, alpha);
+    } else {
+      this.states.hide();
     }
   }
 }

@@ -12,10 +12,12 @@ const OVERLAYS: readonly Readonly<{
   { key: "collisionDiscs", label: "Collision discs" },
   { key: "boundRadii", label: "Bound radii" },
   { key: "facingCone", label: "Facing and action cone" },
+  { key: "unitRanges", label: "Attack and aggro ranges" },
   { key: "pathLines", label: "Path lines" },
   { key: "walkabilityGrid", label: "Walkability grid" },
   { key: "hashCells", label: "Spatial hash cells" },
   { key: "spellAreas", label: "Spell areas" },
+  { key: "stateLabels", label: "Unit state labels" },
 ];
 
 /**

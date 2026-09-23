@@ -87,9 +87,9 @@ The HUD is in its own scene and needs no band. Within a band, draw order is pool
 
 ## Colour, flashes, and marks
 
-- **Archetype colour** is a tint on the unit's quad.
+- **Archetype colour** is a tint on the unit's quad, and the quad's frame is the one its definition names; both are read once, when the view is bound. The hero, which has no definition, is a white disc.
 - **A hit flash** is a fill-mode tint over the whole of a unit's view, body and marker, then the archetype tint again. One record holds which units were hit and the tick each one's flash stops, beside the views rather than on them, so a view bound halfway through a flash picks it up where it stands and a view released mid-flash loses nothing. The end is a tick, so a flash pauses with the simulation, and the id is kept beside the tick so a unit taking a released unit's slot inherits no flash.
-- **An elite outline** is a second quad from the outline frame, bound to the same entity.
+- **An elite outline** is a quad from the thick outline frame in the archetype's colour, its own view kind with its own pool, bound while an elite or a boss is on screen and released with it. It follows the unit's position each frame at the units band, wider than the body, and a boss's wider than an elite's so its line reads thicker.
 - **A status icon** is a baked icon frame — an outlined square with one glyph, one frame per status — drawn above the unit. A unit's icons are their own view kind: one row of quads per unit at the text band, bound while the unit is on screen and wearing anything, one icon per row of its status table in table order. The row holds no clock; a status is on the table or it is not.
 - **Damage numbers and every HUD number** are `BitmapText` with the atlas font. `Text` is for a static label that changes rarely — a warning banner, a menu — and is never updated inside the sync.
 - **A floating number** is one of a fixed set of those texts at the text band, parked where a hit landed and rising and fading over its whole life. Its rise is the tick count plus the driver's fraction against the tick it was spawned on, so it freezes with a paused simulation and replays the same. Spawning walks the set in order, so more hits at once than the set holds recycles the number whose rise began longest ago and counts it, rather than dropping the newest or making a text mid-play. The set is emptied when a map loads.
@@ -163,7 +163,8 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Hit flash | Fill-mode tint over the whole view, from one record of which units were hit and until which tick; never a clock on a view |
 | Damage numbers | A fixed set of `BitmapText` at the text band, spawned where a hit landed, rising and fading by the tick count and the fraction; the oldest recycled when the set is full, and counted |
 | Joining a number | A hit inside the window adds to the number already rising for that unit and rewrites it in place, keeping the rise it began with; one record per slot of the unit pool, keyed by the id, and a join naming a recycled spawn is refused |
-| Elite outline | A second quad bound to the entity |
+| Colour and frame | The definition's tint and frame, read at bind; the hero a white disc |
+| Elite outline | Its own view kind: a thick outline quad bound while an elite or boss is on screen, a boss's wider |
 | Status icons | Their own view kind bound to the unit: a row of quads at the text band, one per status on its table, the frame the definition names |
 | Numbers | `BitmapText` with the atlas font; `Text` only for rare static labels, never in the sync |
 | Filters, post-processing, masks, blend modes | None |

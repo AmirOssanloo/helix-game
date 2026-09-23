@@ -95,7 +95,7 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | P3-S12-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The unit view reads the definition's frame and tint at bind; a second pool of outline quads bound to units whose tier is elite or boss, thicker for boss, following the unit's position each frame; unit state labels as a `BitmapText` overlay above each enemy showing its AI state and above the hero its order state; the attack-range and acquire-radius overlay on the hero and the aggro and leash radius overlay on enemies, from the debug pool.
 
@@ -110,16 +110,19 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 
 **Definition of done:** Every change · Anything under `src/presentation`.
 
+> Note, 2026-09-23: the unit view is handed the run scope's definitions and reads a unit's frame and tint from its definition at bind; the hero stays a white disc and a body with no definition a square. The outline is its own view kind with a pool of 64, the thick outline frame in the archetype's colour at 1.3 times the body for an elite and 1.6 for a boss, so the boss's line is thicker without a new frame. Two overlays and two toggles are new, **Attack and aggro ranges** and **Unit state labels**. The hero's attack ring is its range plus its bound radius, the reach to a target's edge; the leash ring is centred on the spawn point, which the machine measures it from. The font holds uppercase letters and the hyphen only, so labels read `IDLE`, `CHASE`, `ATTACK-WINDUP`. The dummy is labelled `IDLE`, since its behaviour runs the machine and never leaves Idle. A leash ring of 1500 scales the 512 thin ring nearly six times, past the two the standard allows, as the targeting preview's range ring already does at 1000. The maintainer walked the labels, the rings, and the outlines the same day and approved them; the render benchmark is deferred to the phase 5 gate.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Five grunts to a level up by hand | |
+| Five grunts to a level up by hand | Walked by the maintainer, 2026-09-23: five grunts killed at level 1 levelled the hero |
 | Every enemies-page edge case green by name | Nine of ten, 2026-09-23, in `tests/simulation/enemies/edges.spec.ts`; the tenth, adds at the live cap, is pending until enemy abilities exist |
-| Milestone M5 | |
-| Actual days per ticket | T01 0.3 · T02 0.2 · T03 0.3 · T04 |
+| Milestone M5 | Reached, 2026-09-23: a grunt pack aggroed, chased, was killed, and levelled the hero, walked by the maintainer |
+| Enemy views by hand | Walked by the maintainer, 2026-09-23: the state labels, the range rings, and the elite and boss outlines work as the ticket says. The render benchmark after the new views is deferred by the maintainer until phase 5 is finished, in [Deferred](../backlog/deferred.md) |
+| Actual days per ticket | T01 0.3 · T02 0.2 · T03 0.3 · T04 0.3 |
 
 ## Risks in this sprint
 

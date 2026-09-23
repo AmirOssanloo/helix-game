@@ -36,11 +36,14 @@ import {
   createStatusIconViewPool,
   syncStatusIconViews,
 } from "../views/status-icon.view";
-import type { UnitViewPool } from "../views/unit.view";
+import type { OutlineViewPool, UnitViewPool } from "../views/unit.view";
 import {
+  createOutlineViewPool,
   createUnitViewPool,
+  syncOutlineViews,
   syncUnitViews,
   UNIT_VIEW_MARGIN,
+  unitDefinitionsOf,
 } from "../views/unit.view";
 import type { ZoneViewPool } from "../views/zone.view";
 import { createZoneViewPool, syncZoneViews } from "../views/zone.view";
@@ -54,6 +57,9 @@ const RENDER_EVENT = Phaser.Scenes.Events.RENDER;
 
 /** Unit views: the live cap on screen plus a margin, and what the benchmark drives. A presentation number, not the unit capacity. */
 const UNIT_VIEW_COUNT = 320;
+
+/** Outlines: how many elites and bosses are on screen at once in a busy fight. A presentation number. */
+const OUTLINE_VIEW_COUNT = 64;
 
 /** Obstacle quads: room for a map several times as busy as the arena. */
 const OBSTACLE_VIEW_COUNT = 64;
@@ -84,6 +90,7 @@ type Stage = {
   preview: TargetingPreview;
   obstacles: ObstacleViews;
   units: UnitViewPool;
+  outlines: OutlineViewPool;
   statusIcons: StatusIconViewPool;
   projectiles: ProjectileViewPool;
   zones: ZoneViewPool;
@@ -101,11 +108,11 @@ type Stage = {
  * makes every pool it will ever hold; `update` hands the frame to the driver, then drains the
  * event ring with its own cursor so a hit the ticks just landed shows on this frame, then
  * reads the world view and writes the views: the camera onto the hero, the obstacles and
- * bounds on a map load, the zones, the units and their flashes, their status icons inside the
- * camera rectangle, the projectiles in flight, the orbs, the numbers rising where hits landed,
- * the targeting preview under the pointer, the debug overlays the toggles ask for, and the
- * view misses into their ring. A cursor the hero may no longer commit is closed before the
- * preview reads it.
+ * bounds on a map load, the zones, the units and their flashes, the outlines of the elites and
+ * bosses among them, their status icons inside the camera rectangle, the projectiles in
+ * flight, the orbs, the numbers rising where hits landed, the targeting preview under the
+ * pointer, the debug overlays the toggles ask for, and the view misses into their ring. A
+ * cursor the hero may no longer commit is closed before the preview reads it.
  */
 export class PlayScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -145,6 +152,7 @@ export class PlayScene extends Phaser.Scene {
         .setVisible(false);
     const frameSizes: FrameSizes = (frame) =>
       this.context.atlas.frameWidth(frame);
+    const definitions = unitDefinitionsOf(this.context.world);
     const intents: InputIntents = {
       zoom: (direction): void => {
         camera.zoomBy(direction);
@@ -168,7 +176,18 @@ export class PlayScene extends Phaser.Scene {
       mapper,
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
-      units: createUnitViewPool(UNIT_VIEW_COUNT, makeQuad, frameSizes),
+      units: createUnitViewPool(
+        UNIT_VIEW_COUNT,
+        makeQuad,
+        frameSizes,
+        definitions,
+      ),
+      outlines: createOutlineViewPool(
+        OUTLINE_VIEW_COUNT,
+        makeQuad,
+        frameSizes,
+        definitions,
+      ),
       statusIcons: createStatusIconViewPool(
         STATUS_ICON_VIEW_COUNT,
         makeQuad,
@@ -244,6 +263,7 @@ export class PlayScene extends Phaser.Scene {
       this.candidates,
       stage.flashes,
     );
+    syncOutlineViews(stage.outlines, world, this.rect, alpha, this.candidates);
     syncStatusIconViews(
       stage.statusIcons,
       world,
@@ -259,6 +279,7 @@ export class PlayScene extends Phaser.Scene {
     stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
     this.context.rings.viewMisses.write(
       stage.units.misses +
+        stage.outlines.misses +
         stage.statusIcons.misses +
         stage.projectiles.misses +
         stage.zones.misses +

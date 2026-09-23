@@ -10,6 +10,7 @@ import {
   createUnitViewPool,
   HitFlashes,
   syncUnitViews,
+  unitDefinitionsOf,
 } from "@presentation/public";
 import type { EntityId } from "@shared/public";
 import type { Rect } from "@shared/public";
@@ -59,6 +60,7 @@ const arrange = (size: number): Arranged => {
     size,
     (frame) => new QuadRecorder(frame),
     () => FRAME_WIDTH,
+    unitDefinitionsOf(view),
   );
   const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const flashes = new HitFlashes();

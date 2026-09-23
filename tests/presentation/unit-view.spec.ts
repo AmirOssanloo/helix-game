@@ -6,19 +6,28 @@ import {
   releaseUnit,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { UnitViewPool } from "@presentation/public";
+import type { OutlineViewPool, UnitViewPool } from "@presentation/public";
 import {
+  createOutlineViewPool,
   createUnitViewPool,
   DEPTH_UNITS,
   HIT_FLASH_TICKS,
   HitFlashes,
+  syncOutlineViews,
   syncUnitViews,
   TINT_FILL,
   TINT_MULTIPLY,
+  unitDefinitionsOf,
 } from "@presentation/public";
 import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, QuadRecorder, spawnHero, SYNC_FIELDS } from "../helpers";
+import {
+  makeWorld,
+  QuadRecorder,
+  spawnEnemy,
+  spawnHero,
+  SYNC_FIELDS,
+} from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a diameter over it. */
 const FRAME_WIDTH = 128;
@@ -48,14 +57,18 @@ type Arranged = {
   /** Every quad the pool made, bodies first, then facing markers. */
   quads: QuadRecorder[];
   flashes: HitFlashes;
+  outlines: OutlineViewPool;
+  /** Every quad the outline pool made, in pool order. */
+  outlineQuads: QuadRecorder[];
   sync: (rect: Rect, alpha: number) => void;
 };
 
-/** A world with the hero standing at (100, 100), and a pool of `size` unit views over recording quads. */
+/** A world with the hero standing at (100, 100), a pool of `size` unit views and one of `size` outlines, over recording quads. */
 const arrange = (size: number): Arranged => {
   const world = makeWorld({ seed: 1 });
   const hero = spawnHero(world, { x: HERO_X, y: HERO_Y });
   const quads: QuadRecorder[] = [];
+  const definitions = unitDefinitionsOf(world.view);
   const pool = createUnitViewPool(
     size,
     (frame) => {
@@ -66,6 +79,20 @@ const arrange = (size: number): Arranged => {
       return quad;
     },
     () => FRAME_WIDTH,
+    definitions,
+  );
+  const outlineQuads: QuadRecorder[] = [];
+  const outlines = createOutlineViewPool(
+    size,
+    (frame) => {
+      const quad = new QuadRecorder(frame);
+
+      outlineQuads.push(quad);
+
+      return quad;
+    },
+    () => FRAME_WIDTH,
+    definitions,
   );
   const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const flashes = new HitFlashes();
@@ -82,8 +109,11 @@ const arrange = (size: number): Arranged => {
     pool,
     quads,
     flashes,
+    outlines,
+    outlineQuads,
     sync: (rect, alpha): void => {
       syncUnitViews(pool, world.view, rect, alpha, candidates, flashes);
+      syncOutlineViews(outlines, world.view, rect, alpha, candidates);
     },
   };
 };
@@ -268,5 +298,128 @@ describe("a unit view", () => {
     expect(arranged.pool.misses).toBe(1);
     expect(arranged.pool.size).toBe(1);
     expect(arranged.quads).toHaveLength(size * 2);
+  });
+
+  it("wears the frame and the tint its archetype's definition names, from the bind", () => {
+    const size = 3;
+    const arranged = arrange(size);
+
+    spawnEnemy(arranged.world, {
+      definitionId: "melee_grunt",
+      x: HERO_X + 60,
+      y: HERO_Y,
+    });
+    spawnEnemy(arranged.world, {
+      definitionId: "ranged_archer",
+      x: HERO_X,
+      y: HERO_Y + 60,
+    });
+    arranged.sync(AROUND_HERO, 0);
+
+    const bodies = arranged.quads.slice(0, size).filter((quad) => quad.visible);
+    const grunt = bodies.find((quad) => quad.x === HERO_X + 60);
+    const archer = bodies.find((quad) => quad.y === HERO_Y + 60);
+    const hero = bodies.find((quad) => quad.x === HERO_X && quad.y === HERO_Y);
+
+    expect(grunt?.frame).toBe("square");
+    expect(grunt?.tint).toBe(0xe05a4f);
+    expect(archer?.frame).toBe("square_dot");
+    expect(archer?.tint).toBe(0x5cb85c);
+    expect(hero?.frame).toBe("disc");
+    expect(hero?.tint).toBe(HERO_TINT);
+  });
+});
+
+describe("an elite's and a boss's outline", () => {
+  /** A grunt of `tier` beside the hero, in a world whose pools hold four views each. */
+  const arrangeTier = (
+    tier: Unit["tier"],
+  ): { arranged: Arranged; enemy: Unit } => {
+    const arranged = arrange(4);
+    const enemy = spawnEnemy(arranged.world, {
+      definitionId: "melee_grunt",
+      x: HERO_X + 60,
+      y: HERO_Y,
+    });
+
+    enemy.tier = tier;
+
+    return { arranged, enemy };
+  };
+
+  const shownOutlines = (arranged: Arranged): QuadRecorder[] =>
+    arranged.outlineQuads.filter((quad) => quad.visible);
+
+  it("binds none to a normal unit or to the hero", () => {
+    const { arranged } = arrangeTier("normal");
+
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(arranged.outlines.bound).toBe(0);
+    expect(shownOutlines(arranged)).toHaveLength(0);
+  });
+
+  it("binds one to an elite, in the thick outline frame at the units band in the archetype's colour, wider than the body", () => {
+    const { arranged, enemy } = arrangeTier("elite");
+
+    arranged.sync(AROUND_HERO, 0);
+
+    const [outline] = shownOutlines(arranged);
+
+    expect(arranged.outlines.bound).toBe(1);
+    expect(outline?.frame).toBe("square_outline_thick");
+    expect(outline?.depth).toBe(DEPTH_UNITS);
+    expect(outline?.tint).toBe(0xe05a4f);
+    expect(outline?.x).toBe(enemy.curr.x);
+    expect(outline?.scale).toBeGreaterThan(
+      (enemy.collisionRadius * 2) / FRAME_WIDTH,
+    );
+  });
+
+  it("draws a boss's wider than an elite's, so its line reads thicker", () => {
+    const elite = arrangeTier("elite");
+    const boss = arrangeTier("boss");
+
+    elite.arranged.sync(AROUND_HERO, 0);
+    boss.arranged.sync(AROUND_HERO, 0);
+
+    const [eliteOutline] = shownOutlines(elite.arranged);
+    const [bossOutline] = shownOutlines(boss.arranged);
+
+    expect(bossOutline?.scale).toBeGreaterThan(eliteOutline?.scale ?? 0);
+  });
+
+  it("follows the unit's interpolated position every frame", () => {
+    const { arranged, enemy } = arrangeTier("elite");
+
+    arranged.sync(AROUND_HERO, 0);
+    enemy.curr.x += 40;
+    enemy.curr.y += 20;
+    arranged.sync(AROUND_HERO, HALF_WAY);
+
+    const [outline] = shownOutlines(arranged);
+
+    expect(outline?.x).toBe(enemy.prev.x + 20);
+    expect(outline?.y).toBe(enemy.prev.y + 10);
+  });
+
+  it("releases with the unit when its slot is given back", () => {
+    const { arranged } = arrangeTier("boss");
+    const units = arranged.world.state.map.units;
+
+    arranged.sync(AROUND_HERO, 0);
+
+    const [outline] = shownOutlines(arranged);
+    const enemyId = units.idAt(units.end - 1);
+
+    if (enemyId === null) {
+      throw new Error("The boss holds the last slot");
+    }
+
+    releaseUnit(arranged.world.state, enemyId);
+    arranged.sync(AROUND_HERO, 0);
+
+    expect(arranged.outlines.bound).toBe(0);
+    expect(outline?.visible).toBe(false);
   });
 });

@@ -86,7 +86,7 @@ Each is a toggle and draws over the world in its own colour at low alpha.
 - Attack range and acquire radius on the hero; aggro and leash radius on enemies
 - Path lines, from each moving unit to its destination through its waypoints
 - Spell areas as the simulation sees them, not as the HUD draws them
-- Unit state labels: Idle, Chase, Attack, and the rest, above each enemy
+- Unit state labels: Idle, Chase, Attack, and the rest, above each enemy, and the hero's order state above the hero
 - Spatial hash cells, with the count of units in each
 - The walkability grid
 

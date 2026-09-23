@@ -1,4 +1,4 @@
-import type { Unit, UnitKind } from "@domain/public";
+import type { EnemyDef, EnemyTier, Unit, UnitKind } from "@domain/public";
 import { UNIT_CAPACITY } from "@domain/public";
 import type { DeepReadonly, EntityId, Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
@@ -9,16 +9,14 @@ import { interpolate } from "./quad";
 import { TINT_FILL, TINT_MULTIPLY } from "./tint-modes";
 import { ViewPool } from "./view-pool";
 
-/** The hero and a summon are discs; an enemy is a square. Its archetype's frame replaces the square when definitions carry one. */
+/** The hero is a disc. A unit with a definition wears the frame it names; one without, a body the panel spawned bare, is a square. */
 const HERO_FRAME = "disc";
-const SUMMON_FRAME = "disc";
-const ENEMY_FRAME = "square";
+const BARE_FRAME = "square";
 const FACING_FRAME = "triangle";
 
-/** Placeholder art: the hero white, a summon the same but dimmer, an enemy one colour until its archetype carries one. */
+/** Placeholder art: the hero white, a bare body one colour. A unit with a definition wears the tint it names. */
 const HERO_TINT = 0xffffff;
-const SUMMON_TINT = 0xffffff;
-const ENEMY_TINT = 0xd9534f;
+const BARE_TINT = 0xd9534f;
 const OPAQUE = 1;
 const SUMMON_ALPHA = 0.6;
 
@@ -29,6 +27,11 @@ const FACING_SHARE = 0.6;
 /** A hit takes the whole view one flat colour for a few ticks, marker and all, so a white body reads as hit too. */
 const FLASH_TINT = 0xffffff;
 
+/** An elite's and a boss's outline: the thick outlined square in the archetype's colour, around the body, a boss's the larger so its line is the thicker. */
+const OUTLINE_FRAME = "square_outline_thick";
+const ELITE_OUTLINE_SHARE = 1.3;
+const BOSS_OUTLINE_SHARE = 1.6;
+
 const DIAMETERS_PER_RADIUS = 2;
 
 /**
@@ -37,39 +40,44 @@ const DIAMETERS_PER_RADIUS = 2;
  */
 export const UNIT_VIEW_MARGIN = 64;
 
-const frameOf = (kind: UnitKind): string => {
-  switch (kind) {
-    case "hero":
-      return HERO_FRAME;
+/**
+ * The definition a unit was dressed from, by its id, or `null` when the run scope holds none.
+ * The scene hands the world's; a test may hand its own.
+ */
+export type UnitDefinitions = (
+  definitionId: string,
+) => DeepReadonly<EnemyDef> | null;
 
-    case "summon":
-      return SUMMON_FRAME;
+/** The definitions the world's run scope holds, read at the call so a recreated world is read as it now stands. */
+export const unitDefinitionsOf =
+  (world: WorldView): UnitDefinitions =>
+  (definitionId) => {
+    const record = world.run.units.get(definitionId);
 
-    case "enemy":
-      return ENEMY_FRAME;
-  }
-};
+    return record === undefined ? null : record.def;
+  };
 
-const tintOf = (kind: UnitKind): number => {
-  switch (kind) {
-    case "hero":
-      return HERO_TINT;
+/** The definition `unit` wears, or `null` for the hero and a bare body. */
+const definitionOf = (
+  unit: DeepReadonly<Unit>,
+  definitions: UnitDefinitions,
+): DeepReadonly<EnemyDef> | null =>
+  unit.definitionId === null ? null : definitions(unit.definitionId);
 
-    case "summon":
-      return SUMMON_TINT;
+/** What a unit with no definition is drawn as: the hero's white disc, or a bare body's square. */
+const undressedFrameOf = (kind: UnitKind): string =>
+  kind === "hero" ? HERO_FRAME : BARE_FRAME;
 
-    case "enemy":
-      return ENEMY_TINT;
-  }
-};
+const undressedTintOf = (kind: UnitKind): number =>
+  kind === "hero" ? HERO_TINT : BARE_TINT;
 
 const alphaOf = (kind: UnitKind): number =>
   kind === "summon" ? SUMMON_ALPHA : OPAQUE;
 
 /**
  * One unit on screen: a body quad at the collision radius, and a triangle over it pointing
- * where the unit faces. Binding sets what the entity's kind decides once, its frame, depth,
- * and colour; the sync writes the seven fields from the entity every frame, the position
+ * where the unit faces. Binding sets what the unit's definition decides once, its frame and
+ * colour, with the depth; the hero is a white disc and a body with no definition a square; the sync writes the seven fields from the entity every frame, the position
  * interpolated from the previous tick's by the driver's fraction, so a view bound this
  * frame starts where the unit was and never pops.
  *
@@ -82,31 +90,45 @@ export class UnitView {
 
   private readonly facing: Quad;
 
-  /** Scale per world unit of diameter, one per frame the body can show, so a frame's baked size is read once. */
-  private readonly heroScale: number;
+  private readonly frameSizes: FrameSizes;
 
-  private readonly summonScale: number;
-
-  private readonly enemyScale: number;
+  private readonly definitions: UnitDefinitions;
 
   private readonly facingScale: number;
+
+  /** What the bind chose for the body: the scale per world unit of diameter its frame's baked size gives, its tint, and its opacity. */
+  private bodyScale = 1;
+
+  private bodyTint = HERO_TINT;
+
+  private opacity = OPAQUE;
 
   /** Whether the quads are filling with their tint right now, so the flag is written only when the flash turns. */
   private shownFlash = false;
 
-  constructor(body: Quad, facing: Quad, frameSizes: FrameSizes) {
+  constructor(
+    body: Quad,
+    facing: Quad,
+    frameSizes: FrameSizes,
+    definitions: UnitDefinitions,
+  ) {
     this.body = body;
     this.facing = facing;
-    this.heroScale = 1 / frameSizes(HERO_FRAME);
-    this.summonScale = 1 / frameSizes(SUMMON_FRAME);
-    this.enemyScale = 1 / frameSizes(ENEMY_FRAME);
+    this.frameSizes = frameSizes;
+    this.definitions = definitions;
     this.facingScale = FACING_SHARE / frameSizes(FACING_FRAME);
   }
 
   bind(_id: EntityId, unit: DeepReadonly<Unit>): void {
-    this.body.setFrame(frameOf(unit.kind));
+    const def = definitionOf(unit, this.definitions);
+    const frame = def === null ? undressedFrameOf(unit.kind) : def.atlasFrame;
+
+    this.bodyScale = 1 / this.frameSizes(frame);
+    this.bodyTint = def === null ? undressedTintOf(unit.kind) : def.tint;
+    this.opacity = alphaOf(unit.kind);
+    this.body.setFrame(frame);
     this.body.setDepth(DEPTH_UNITS);
-    this.body.tint = tintOf(unit.kind);
+    this.body.tint = this.bodyTint;
     this.body.setTintMode(TINT_MULTIPLY);
     this.facing.setFrame(FACING_FRAME);
     this.facing.setDepth(DEPTH_UNITS);
@@ -120,14 +142,13 @@ export class UnitView {
     const x = interpolate(unit.prev.x, unit.curr.x, alpha);
     const y = interpolate(unit.prev.y, unit.curr.y, alpha);
     const diameter = unit.collisionRadius * DIAMETERS_PER_RADIUS;
-    const opacity = alphaOf(unit.kind);
 
     this.body.x = x;
     this.body.y = y;
     this.body.rotation = 0;
-    this.body.scale = diameter * this.bodyScaleOf(unit.kind);
-    this.body.tint = flashing ? FLASH_TINT : tintOf(unit.kind);
-    this.body.alpha = opacity;
+    this.body.scale = diameter * this.bodyScale;
+    this.body.tint = flashing ? FLASH_TINT : this.bodyTint;
+    this.body.alpha = this.opacity;
     this.body.visible = true;
 
     this.facing.x = x;
@@ -135,7 +156,7 @@ export class UnitView {
     this.facing.rotation = unit.facing;
     this.facing.scale = diameter * this.facingScale;
     this.facing.tint = flashing ? FLASH_TINT : FACING_TINT;
-    this.facing.alpha = opacity;
+    this.facing.alpha = this.opacity;
     this.facing.visible = true;
 
     if (flashing !== this.shownFlash) {
@@ -151,19 +172,6 @@ export class UnitView {
     this.body.visible = false;
     this.facing.visible = false;
   }
-
-  private bodyScaleOf(kind: UnitKind): number {
-    switch (kind) {
-      case "hero":
-        return this.heroScale;
-
-      case "summon":
-        return this.summonScale;
-
-      case "enemy":
-        return this.enemyScale;
-    }
-  }
 }
 
 export type UnitViewPool = ViewPool<DeepReadonly<Unit>, UnitView>;
@@ -176,6 +184,7 @@ export const createUnitViewPool = (
   size: number,
   makeQuad: QuadFactory,
   frameSizes: FrameSizes,
+  definitions: UnitDefinitions,
 ): UnitViewPool => {
   const bodies: Quad[] = [];
   const views: UnitView[] = [];
@@ -188,7 +197,9 @@ export const createUnitViewPool = (
     const body = bodies[index];
 
     if (body !== undefined) {
-      views.push(new UnitView(body, makeQuad(FACING_FRAME), frameSizes));
+      views.push(
+        new UnitView(body, makeQuad(FACING_FRAME), frameSizes, definitions),
+      );
     }
   }
 
@@ -232,6 +243,138 @@ export const syncUnitViews = (
 
     if (view !== null) {
       view.sync(unit, alpha, flashes.isFlashing(id, world.tick));
+    }
+  }
+
+  pool.releaseUnkept();
+};
+
+/** Whether `tier` is drawn with an outline, and how much wider than the body it is. */
+const outlineShareOf = (tier: EnemyTier): number => {
+  switch (tier) {
+    case "normal":
+      return 0;
+
+    case "elite":
+      return ELITE_OUTLINE_SHARE;
+
+    case "boss":
+      return BOSS_OUTLINE_SHARE;
+  }
+};
+
+/**
+ * The outline around one elite or boss on screen: a quad of the thick outline frame in the
+ * archetype's colour, centred on the body and wider than it by the tier's share, so a boss's
+ * line reads thicker than an elite's. Binding sets the frame, the depth, and the colour once;
+ * the sync follows the unit's interpolated position every frame. A normal unit is never bound
+ * to one.
+ */
+export class OutlineView {
+  private readonly quad: Quad;
+
+  private readonly definitions: UnitDefinitions;
+
+  private readonly scalePerUnit: number;
+
+  private tint = BARE_TINT;
+
+  constructor(
+    quad: Quad,
+    frameSizes: FrameSizes,
+    definitions: UnitDefinitions,
+  ) {
+    this.quad = quad;
+    this.definitions = definitions;
+    this.scalePerUnit = 1 / frameSizes(OUTLINE_FRAME);
+  }
+
+  bind(_id: EntityId, unit: DeepReadonly<Unit>): void {
+    const def = definitionOf(unit, this.definitions);
+
+    this.tint = def === null ? BARE_TINT : def.tint;
+    this.quad.setFrame(OUTLINE_FRAME);
+    this.quad.setDepth(DEPTH_UNITS);
+    this.quad.tint = this.tint;
+    this.quad.setTintMode(TINT_MULTIPLY);
+  }
+
+  sync(unit: DeepReadonly<Unit>, alpha: number): void {
+    const width =
+      unit.collisionRadius * DIAMETERS_PER_RADIUS * outlineShareOf(unit.tier);
+
+    this.quad.x = interpolate(unit.prev.x, unit.curr.x, alpha);
+    this.quad.y = interpolate(unit.prev.y, unit.curr.y, alpha);
+    this.quad.rotation = 0;
+    this.quad.scale = width * this.scalePerUnit;
+    this.quad.tint = this.tint;
+    this.quad.alpha = OPAQUE;
+    this.quad.visible = true;
+  }
+
+  release(): void {
+    this.quad.visible = false;
+  }
+}
+
+export type OutlineViewPool = ViewPool<DeepReadonly<Unit>, OutlineView>;
+
+/**
+ * `size` outline views over quads from `makeQuad`, at scene `create`. Made after the unit
+ * views, so within the units band an outline draws over the bodies it rings.
+ */
+export const createOutlineViewPool = (
+  size: number,
+  makeQuad: QuadFactory,
+  frameSizes: FrameSizes,
+  definitions: UnitDefinitions,
+): OutlineViewPool => {
+  const views: OutlineView[] = [];
+
+  for (let index = 0; index < size; index += 1) {
+    views.push(
+      new OutlineView(makeQuad(OUTLINE_FRAME), frameSizes, definitions),
+    );
+  }
+
+  return new ViewPool(views, UNIT_CAPACITY);
+};
+
+/**
+ * One frame of the outlines: asks the hash for the units inside `rect` and keeps an outline
+ * on each elite and boss among them, releasing the outlines of those that left the rectangle
+ * or the world, so an outline goes when its unit's slot is given back.
+ */
+export const syncOutlineViews = (
+  pool: OutlineViewPool,
+  world: WorldView,
+  rect: Readonly<Rect>,
+  alpha: number,
+  candidates: EntityId[],
+): void => {
+  const units = world.map.units;
+  const count = world.map.spatialHash.queryRectangle(
+    rect.minX,
+    rect.minY,
+    rect.maxX,
+    rect.maxY,
+    candidates,
+  );
+
+  pool.beginFrame();
+
+  for (let index = 0; index < count; index += 1) {
+    const id = candidates[index];
+    const unit = id === undefined ? null : units.resolve(id);
+
+    if (id === undefined || unit === null || unit.tier === "normal") {
+      continue;
+    }
+
+    const view = pool.keep(id, unit);
+
+    if (view !== null) {
+      view.sync(unit, alpha);
     }
   }
 

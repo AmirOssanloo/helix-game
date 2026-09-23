@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { acquireZone, setStraightPath } from "@domain/public";
+import type { Unit } from "@domain/public";
+import {
+  acquireUnit,
+  acquireZone,
+  applyDamage,
+  setStraightPath,
+} from "@domain/public";
 import type { OverlayToggles } from "@presentation/public";
 import { createOverlayToggles, DebugOverlays } from "@presentation/public";
 import type { EntityId, Rect } from "@shared/public";
@@ -11,7 +17,10 @@ import {
   makeWorld,
   makeWorldView,
   QuadRecorder,
+  spawnEnemy,
   spawnHero,
+  tickUntil,
+  unitIdOf,
 } from "../helpers";
 
 /** Every frame the test atlas holds is this wide. */
@@ -39,9 +48,25 @@ const AREA_CIRCLE_FRAME = "ring_thin";
 const LINE_FRAME = "pixel";
 const CELL_FRAME = "square";
 const CELL_OUTLINE_FRAME = "square_outline";
+const RANGE_FRAME = "ring_thin";
+
+/** Where a grunt the ranges cases spawn stands, where its home is moved to, and how far off one the labels case spawns stands. */
+const GRUNT_X = -150;
+const GRUNT_HOME_X = -400;
+const GRUNT_FAR_X = 1000;
+
+/** Far enough past any leash that a grunt whose home moves this far is past its own. */
+const BEYOND_LEASH = 4000;
+
+/** How long a labels case waits for a state before it fails with a count. */
+const MAX_TICKS = 900;
+
+/** A state label's size, which tells it apart from a hash cell's count. */
+const STATE_LABEL_SIZE = 16;
 
 type Arranged = {
   world: Simulation;
+  hero: Unit;
   heroId: EntityId;
   hash: FixedHash;
   overlays: DebugOverlays;
@@ -95,6 +120,7 @@ const arrange = (): Arranged => {
 
   return {
     world,
+    hero,
     heroId,
     hash,
     overlays,
@@ -272,5 +298,160 @@ describe("the debug overlays", () => {
 
     expect(visible(arranged.quads, COLLISION_FRAME)).toHaveLength(320);
     expect(arranged.overlays.misses).toBe(1);
+  });
+
+  it("ring the hero's attack range to a target's edge and its acquire radius, around where it is drawn", () => {
+    const arranged = arrange();
+    const attack = arranged.world.state.run.heroAttack.def;
+
+    arranged.hash.ids = [arranged.heroId];
+    arranged.toggles.unitRanges = true;
+    arranged.sync();
+
+    const rings = visible(arranged.quads, RANGE_FRAME);
+    const diameters = rings.map((ring) => (ring.scale * FRAME_WIDTH) / 2);
+
+    expect(rings).toHaveLength(2);
+    expect(rings.every((ring) => ring.x === 0 && ring.y === 0)).toBe(true);
+    expect(diameters[0]).toBeCloseTo(attack.range + arranged.hero.boundRadius);
+    expect(diameters[1]).toBeCloseTo(attack.acquireRadius);
+  });
+
+  it("ring each enemy's aggro radius around it and its leash radius around its spawn point, and nothing for a zero radius", () => {
+    const arranged = arrange();
+    const grunt = spawnEnemy(arranged.world, {
+      definitionId: "melee_grunt",
+      x: GRUNT_X,
+      y: 0,
+    });
+    const dummy = spawnEnemy(arranged.world, {
+      definitionId: "training_dummy",
+      x: 0,
+      y: GRUNT_X,
+    });
+
+    grunt.spawnPoint.x = GRUNT_HOME_X;
+    arranged.hash.ids = [
+      unitIdOf(arranged.world, grunt),
+      unitIdOf(arranged.world, dummy),
+    ];
+    arranged.toggles.unitRanges = true;
+    arranged.sync();
+
+    const rings = visible(arranged.quads, RANGE_FRAME);
+    const aggro = rings.find((ring) => ring.x === GRUNT_X);
+    const leash = rings.find((ring) => ring.x === GRUNT_HOME_X);
+
+    expect(rings).toHaveLength(2);
+    expect(((aggro?.scale ?? 0) * FRAME_WIDTH) / 2).toBeCloseTo(700);
+    expect(((leash?.scale ?? 0) * FRAME_WIDTH) / 2).toBeCloseTo(1500);
+  });
+
+  it("label an enemy idle, then chase, then attack, then return, as the enemies page's states run", () => {
+    const arranged = arrange();
+    const grunt = spawnEnemy(arranged.world, {
+      definitionId: "melee_grunt",
+      x: -GRUNT_FAR_X,
+      y: 0,
+    });
+    const gruntId = unitIdOf(arranged.world, grunt);
+    const shown: (string | null)[] = [];
+    const record = (): void => {
+      arranged.sync();
+
+      const label = arranged.labels.find(
+        (candidate) =>
+          candidate.visible &&
+          candidate.x === grunt.prev.x &&
+          candidate.size === STATE_LABEL_SIZE,
+      );
+
+      shown.push(label === undefined ? null : label.text);
+    };
+
+    arranged.hash.ids = [gruntId];
+    arranged.toggles.stateLabels = true;
+    record();
+
+    applyDamage(arranged.world.state, gruntId, 1, "pure", arranged.heroId);
+    tickUntil(arranged.world, () => grunt.ai.state === "chase", MAX_TICKS);
+    record();
+    tickUntil(arranged.world, () => grunt.ai.state === "attack", MAX_TICKS);
+    record();
+    grunt.spawnPoint.x = grunt.curr.x + BEYOND_LEASH;
+    tickUntil(arranged.world, () => grunt.ai.state === "return", MAX_TICKS);
+    record();
+
+    expect(shown).toEqual(["IDLE", "CHASE", "ATTACK", "RETURN"]);
+  });
+
+  it("label the hero with its order state, and rewrite a label only when the state under it changes", () => {
+    const arranged = arrange();
+
+    arranged.hash.ids = [arranged.heroId];
+    arranged.toggles.stateLabels = true;
+    arranged.sync();
+    arranged.sync();
+
+    const label = arranged.labels.find(
+      (candidate) => candidate.visible && candidate.size === STATE_LABEL_SIZE,
+    );
+
+    expect(label?.text).toBe("IDLE");
+    expect(label?.rewrites).toBe(1);
+    expect(label?.y).toBeLessThan(-HERO_COLLISION_RADIUS);
+
+    arranged.hero.state = "attack_windup";
+    arranged.sync();
+
+    expect(label?.text).toBe("ATTACK-WINDUP");
+    expect(label?.rewrites).toBe(2);
+  });
+
+  it("label the dummy, which the machine holds in Idle, and nothing over a body with no definition", () => {
+    const arranged = arrange();
+    const dummy = spawnEnemy(arranged.world, {
+      definitionId: "training_dummy",
+      x: GRUNT_X,
+      y: 0,
+    });
+    const bareId = acquireUnit(arranged.world.state, "enemy", 0, GRUNT_X);
+
+    if (bareId === null) {
+      throw new Error("The unit pool has room for a bare body");
+    }
+
+    arranged.hash.ids = [unitIdOf(arranged.world, dummy), bareId];
+    arranged.toggles.stateLabels = true;
+    arranged.sync();
+
+    const shown = arranged.labels.filter((label) => label.visible);
+
+    expect(shown).toHaveLength(1);
+    expect(shown[0]?.x).toBe(GRUNT_X);
+    expect(shown[0]?.text).toBe("IDLE");
+  });
+
+  it("hide the ranges and the labels the frame they go off, and write nothing after", () => {
+    const arranged = arrange();
+
+    arranged.hash.ids = [arranged.heroId];
+    arranged.toggles.unitRanges = true;
+    arranged.toggles.stateLabels = true;
+    arranged.sync();
+    arranged.toggles.unitRanges = false;
+    arranged.toggles.stateLabels = false;
+    arranged.sync();
+
+    expect(visible(arranged.quads, RANGE_FRAME)).toHaveLength(0);
+    expect(arranged.labels.some((label) => label.visible)).toBe(false);
+
+    for (const quad of arranged.quads) {
+      quad.forgetWrites();
+    }
+
+    arranged.sync();
+
+    expect(writesOf(arranged.quads)).toBe(0);
   });
 });
