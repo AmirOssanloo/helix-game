@@ -6,7 +6,10 @@ import type { TuningDef } from "@domain/public";
  * designer's units. Speeds are world units per second, durations are seconds, the action cone
  * is a half-angle in degrees, the turn rate is radians per 0.03 s as the spec publishes it,
  * the respawn delay and the corpse delay are seconds, the armour constant is what one point
- * of armour is worth before the curve flattens it, the three radii, the two cell sizes, and
+ * of armour is worth before the curve flattens it, an enemy at rest wanders the wander radius
+ * around its spawn point once every wander interval, in seconds, a chasing one asks for a
+ * path at most once every re-path interval, in seconds, and a ranged one stands the hold
+ * margin inside its reach, in world units, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
  * counts per tick, and the orb tables hold what one held instance grants at each level:
  * Quartz health regeneration per second, Whorl a fraction of one of movement speed and a
@@ -40,6 +43,10 @@ export const tuningTable = {
   respawn_delay: 3,
   corpse_delay: 1,
   armour_constant: 0.06,
+  wander_radius: 64,
+  wander_interval: 4,
+  chase_repath_interval: 0.5,
+  ranged_hold_margin: 50,
   "radius_class:0": 16,
   "radius_class:1": 27,
   "radius_class:2": 50,

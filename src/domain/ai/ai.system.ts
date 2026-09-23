@@ -1,6 +1,8 @@
+import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resolveBehaviour } from "./behaviours/index";
+import { readMachineTuning, runMachine } from "./machine";
 
 /**
  * Whether the unit is in control of itself this tick. A corpse, a stunned unit, one in the
@@ -14,18 +16,25 @@ const isDriving = (unit: Readonly<Unit>): boolean =>
   !unit.disables.displaced;
 
 /**
- * Runs the behaviour every unit's definition names, once per tick, in pool order. The hero
- * carries no definition and is driven by commands, so the pass passes over it.
+ * Runs the behaviour every unit's definition names, once per tick, in pool order: an enemy's
+ * through the shared state machine, a summon's through its own driver. The hero carries no
+ * definition and is driven by commands, so the pass passes over it.
  *
- * It runs after the cast stages and before pathing, so an order a behaviour issues has its
- * path and its first step on the tick that issued it, and after the status pass, so a
- * behaviour reads the flags this tick's statuses raised rather than the last tick's.
+ * It runs after the cast stages and before the attack rule and pathing, so an order the
+ * machine issues is faced or has its path and its first step on the tick that issued it,
+ * and after the status pass, so a behaviour reads the flags this tick's statuses raised
+ * rather than the last tick's. A hit lands after it, so aggro on damage is read on the next
+ * tick; the pack a unit alerts comes on the tick it noticed, whichever slots the pack holds.
  *
  * A behaviour decides and issues orders; it moves nothing itself. The systems after it carry
  * out what it asked for, exactly as they carry out what the player asked for.
  */
 export const aiSystem = (world: World): void => {
   const units = world.map.units;
+  const hero = resolveHero(world);
+  const heroId = hero === null ? null : world.run.heroId;
+
+  readMachineTuning(world);
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
@@ -39,8 +48,16 @@ export const aiSystem = (world: World): void => {
     const behaviour =
       record === undefined ? null : resolveBehaviour(record.def.behaviour);
 
-    if (behaviour !== null) {
-      behaviour(world, unit);
+    if (record === undefined || behaviour === null) {
+      continue;
     }
+
+    if (behaviour.kind === "driver") {
+      behaviour.drive(world, unit);
+
+      continue;
+    }
+
+    runMachine(world, unit, index, record, behaviour, hero, heroId);
   }
 };

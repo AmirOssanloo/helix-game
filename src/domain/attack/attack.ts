@@ -49,3 +49,10 @@ export const isInAttackRange = (
 
   return dx * dx + dy * dy <= reach * reach;
 };
+
+/**
+ * Whether the attack is swung in melee: one with no projectile speed, which lands where it is
+ * swung. A melee attacker in reach of its target is what the rules call adjacent to it.
+ */
+export const isMelee = (record: AttackRecord): boolean =>
+  record.def.projectileSpeed === 0;

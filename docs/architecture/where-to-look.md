@@ -29,7 +29,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a cast moves from request to commit, and what it spends | `src/domain/abilities/` — the cast system, the cast context, the effect runner, and the mana and cooldown rules |
 | How a zone and a projectile move, touch, and expire | `src/domain/abilities/zones/` and `src/domain/abilities/projectiles/` — one system each |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
-| How a unit's behaviour is chosen and run each tick | `src/domain/ai/` — the registry and the pass over it |
+| How a unit's behaviour is chosen and run each tick, and the states an enemy moves through | `src/domain/ai/` — the registry, the shared state machine, and the pass over it |
 | How a unit auto-attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |

@@ -6,7 +6,7 @@ import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import { issueAttackTarget, issueMove } from "../../orders/state-machine";
 import { resolveDestinationFor } from "../../pathing/destination";
-import type { Behaviour } from "../behaviour";
+import type { DriverBehaviour } from "../behaviour";
 
 /** Scratch for the vector from the owner to the summon, reused for every summon every tick. */
 const fromOwner: Vec2 = { x: 0, y: 0 };
@@ -79,7 +79,7 @@ const acquired = (world: World, unit: Unit): boolean => {
 };
 
 /**
- * The summon's driver: it attacks what is near and follows its owner when nothing is.
+ * One tick of the summon's driver: it attacks what is near and follows its owner when nothing is.
  * Standing idle it takes the nearest enemy inside its acquire radius and attacks it; with
  * nothing to hit it keeps within its definition's follow distance of its owner, holding its
  * ground inside that distance so a hero taking one step does not drag it along, and walking
@@ -90,10 +90,7 @@ const acquired = (world: World, unit: Unit): boolean => {
  * owner that is gone leaves it standing: the death pass takes it on the same tick, and
  * nothing it did in between matters.
  */
-export const summonFollowBehaviour: Behaviour = (
-  world: World,
-  unit: Unit,
-): void => {
+const followOwner = (world: World, unit: Unit): void => {
   const ownerId = unit.ownerId;
   const owner = ownerId === null ? null : world.map.units.resolve(ownerId);
 
@@ -119,4 +116,10 @@ export const summonFollowBehaviour: Behaviour = (
   const result = issueMove(unit, destination.x, destination.y);
 
   assert(result === "ok", "An idle summon takes the walk back to its owner");
+};
+
+/** The summon's driver, run outside the enemy state machine: a summon has an owner to keep by, not a spawn point to leash from. */
+export const summonFollowBehaviour: DriverBehaviour = {
+  kind: "driver",
+  drive: followOwner,
 };

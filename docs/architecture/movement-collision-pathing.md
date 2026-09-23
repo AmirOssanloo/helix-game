@@ -85,7 +85,7 @@ Every question of the form "what is near here" goes through one uniform grid has
 | --- | --- |
 | Insert and remove | Pools, on acquire and release |
 | Move | The movement system, when a unit changes cell |
-| Circle query | Aggro, attack range, area effects, attack-move target search, pack activation |
+| Circle query | Attack range, area effects, attack-move target search, an occupied spawn point, pack activation |
 | Segment query, widened by a radius | Projectile sweeps, line and cone effects |
 | Rectangle query | The presentation, to bind views to what the camera can see |
 

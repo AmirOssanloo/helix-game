@@ -44,7 +44,7 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | content, domain, devtools, tests |
 | Size | 1 |
 | Depends on | T01, P2-S09-T03 |
-| Status | done ||
+| Status | done |
 
 **Build:** `melee-grunt.def.ts`, `fast-runner.def.ts`, `ranged-archer.def.ts`, `tank.def.ts` under `src/content/enemies/`, every field required, with the frames (square, small square, square with a dot, large square) and tints. The `spawn_pack` debug command: archetype, tier, count, position; units placed on the nearest free cells around the point, given one pack id and each its own spawn point, refused past the live cap with a message naming the cap; spawn mode at click or at a distance from the hero. `kill_all` (kills with experience) and `clear_all` (releases without deaths). The panel's Enemies group finished per the developer panel page.
 
@@ -72,9 +72,9 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | domain, simulation, tests |
 | Size | 2 |
 | Depends on | T02, P1-S03-T04 |
-| Status | planned |
+| Status | done |
 
-**Build:** Under `src/domain/ai/`: the six states from the enemies page (Idle, Aggro, Chase, Attack, Return, Dead) as a shared machine on the unit; `aiSystem` before pathing: Idle wanders a few units around its spawn on a tunable cadence and leaves on the hero entering the aggro radius (a hash circle query, ignoring a hero with the `aggro_hidden` flag) or on taking damage; Aggro alerts every unit with the same pack id on the same tick and enters Chase; Chase requests a path to the hero through the budgeted queue, re-pathing on a tunable cadence, and enters Attack in range or Return past the leash radius measured from its own spawn point; Attack faces, runs the attack code from sprint 09 against the hero, returns to Chase when out of range and to Return when the target is lost; Return paths home ignoring the hero, regenerating, and idles on arrival or at the nearest free spot; Dead is entered by the death system. Behaviours under `domain/ai/behaviours/` as keyed functions deciding the target and the desired standing position: `melee_chaser` (close to contact), `ranged_holder` (hold at attack range minus a margin, fire projectiles), `stationary` (never leaves Idle). Wane drops aggro except for units already in Attack range. Leashed mid-attack cancels the attack point; a projectile already fired lands.
+**Build:** Under `src/domain/ai/`: the six states from the enemies page (Idle, Aggro, Chase, Attack, Return, Dead) as a shared machine on the unit; `aiSystem` before pathing: Idle wanders a few units around its spawn on a tunable cadence and leaves on the hero entering the aggro radius (a hash circle query, ignoring a hero with the `aggro_hidden` flag) or on taking damage; Aggro alerts every unit with the same pack id on the same tick and enters Chase; Chase requests a path to the hero through the budgeted queue, re-pathing on a tunable cadence, and enters Attack in range or Return past the leash radius measured from its own spawn point; Attack faces, runs the attack code from sprint 09 against the hero, returns to Chase when out of range and to Return when the target is lost; Return paths home ignoring the hero, regenerating, and idles on arrival or at the nearest free spot; Dead is entered by the death system. Behaviours under `domain/ai/behaviours/` as keyed functions deciding the target and the desired standing position: `melee_chaser` (close to contact), `ranged_holder` (hold at attack range minus a margin, fire projectiles), `stationary` (never leaves Idle). Wane drops aggro except for units already adjacent and attacking: a melee attacker in reach. Leashed mid-attack cancels the attack point; a projectile already fired lands.
 
 **Acceptance:**
 - Aggro on sight, aggro on damage, pack sharing, range holding for the archer, closing for the grunt, leash and return with regeneration, for each of the three behaviours: one test per transition.
@@ -87,6 +87,10 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 - `tests/simulation/ai/corridor.spec.ts` — the queue.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system · A new enemy or behaviour.
+
+> **Edited** 2026-09-23: the build text said Wane spares every unit in Attack range, which spared an archer firing from 500 away. The enemies and spells pages say only an enemy adjacent to the hero keeps attacking; found in the maintainer's walk the same day, and the machine now sends a ranged attacker home and keeps only a melee one in reach.
+
+> **Built** 2026-09-23. The machine is `src/domain/ai/machine.ts`, its record `unit.ai` beside the order state, which it drives through the order state machine and never replaces. A behaviour is now a record: `melee_chaser`, `ranged_holder`, and `stationary` are machine behaviours that say whether they engage, whether they wander, and where they stand; `summon_follow` is a driver outside the machine. Four tunables are new: `wander_radius`, `wander_interval`, `chase_repath_interval`, and `ranged_hold_margin`. Aggro on damage is a flag the damage door raises and the next driving tick reads. Three calls differ from the build text. Aggro on sight measures the distance to the hero rather than querying the hash, since the hero is the one unit an enemy notices; the movement page's hash table is corrected. The wander walks a golden-angle turn around the spawn point instead of drawing from the random source, which lives in the simulation layer where the domain cannot reach it. A chase and a return both ask for their path again every re-path interval even when the point has not moved, which is what gets a pack pushed off its waypoints through the corridor. The return half was found in the maintainer's walk the same day: a leashed pack of grunts and runners jammed for good at the corridor's west mouth, every unit walking to one stale waypoint; `tests/simulation/ai/corridor.spec.ts` holds the case. A dead hero is chased to its spawn point and is not a lost target; an untargetable or gone one is. Return regenerates at the definition's own rates, which is Q28. Enemies still walk at the hero's base speed, so the runner does not yet arrive first: that is T05. The recorded phase 1 session is restamped for the new tuning keys; it spawns no archetype, so nothing it replays changed.
 
 ---
 
@@ -112,13 +116,37 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 
 ---
 
+### P3-S12-T05 — A unit walks and turns at its own definition's rates
+
+| Field | Value |
+| --- | --- |
+| Layer | domain, tests |
+| Size | 0.5 |
+| Depends on | T03 |
+| Status | planned |
+
+**Build:** The movement system and the attack rule's face stage read a unit's movement speed and turn rate from its definition when it has one, and from the tuning table's `base_ms` and `turn_rate_T` for the hero, whose form carries none. The turn rate converts once at world creation into the unit record, as the regeneration does. Modifiers and the speed clamps apply as they do to the hero.
+
+**Acceptance:**
+- A runner and a grunt spawned together and aggroed at the same distance: the runner reaches the hero first.
+- The hero walking away from a grunt gains distance; from a runner it loses it.
+
+**Tests:**
+- `tests/simulation/movement/unit-speed.spec.ts` — speed and turn rate per definition, the hero unchanged.
+
+**Definition of done:** Every change · `src/domain`.
+
+> **Unplanned**, added 2026-09-23 while building T03. The deferred list moved a unit's own speed and turn rate to this sprint, and no ticket here built it; the sprint's playable outcome, the runner arriving first, needs it.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Every transition test green for three behaviours | |
-| Corridor queue by hand with path lines on | |
-| Actual days per ticket | T01 0.3 · T02 0.9 · T03 · T04 |
+| Every transition test green for three behaviours | Green, 2026-09-23: 46 cases in `tests/simulation/ai/transitions.spec.ts` across `melee_chaser`, `ranged_holder`, and `stationary`, with the corridor and the four archetype specs beside them |
+| Corridor queue by hand with path lines on | Walked by the maintainer, 2026-09-23, and approved after two fixes the walk found: a leashed pack jammed at the corridor's mouth until a return re-planned its path on the chase interval, and Wane spared an archer firing from range until only an adjacent melee attacker kept its aggro, walked again and approved |
+| Actual days per ticket | T01 0.3 · T02 0.9 · T03 0.8 · T04 · T05 |
 
 ## Risks in this sprint
 

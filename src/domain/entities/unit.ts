@@ -1,5 +1,7 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
+import type { AiRecord } from "../ai/ai-state";
+import { clearAiRecord, createAiRecord } from "../ai/ai-state";
 import type { TargetingKind } from "../definitions/ability-def";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
@@ -222,6 +224,8 @@ export type Unit = {
   packId: number | null;
   /** Where it was spawned: what it leashes from and walks back to. */
   spawnPoint: Vec2;
+  /** Where the shared enemy state machine has it. Read only for a unit whose behaviour runs the machine. */
+  ai: AiRecord;
   /** The tier it was spawned at. The view draws an elite's and a boss's outline from it; nothing multiplies by it yet. */
   tier: EnemyTier;
   ownerId: EntityId | null;
@@ -362,6 +366,7 @@ const createUnit = (): Unit => {
     activeFormIndex: 0,
     packId: null,
     spawnPoint: { x: 0, y: 0 },
+    ai: createAiRecord(),
     tier: "normal",
     ownerId: null,
     expiresAtTick: null,
@@ -434,6 +439,7 @@ const clearUnit = (unit: Unit): void => {
   unit.packId = null;
   unit.spawnPoint.x = 0;
   unit.spawnPoint.y = 0;
+  clearAiRecord(unit.ai);
   unit.tier = "normal";
   unit.ownerId = null;
   unit.expiresAtTick = null;

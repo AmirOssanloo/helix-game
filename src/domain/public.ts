@@ -46,7 +46,13 @@ export { aiSystem } from "./ai/ai.system";
 export { nearestEnemy } from "./attack/acquire";
 export { attackDamageOf, attackOf, isInAttackRange } from "./attack/attack";
 export { attackSystem } from "./attack/attack.system";
-export type { Behaviour } from "./ai/behaviour";
+export type { AiRecord, AiState } from "./ai/ai-state";
+export type {
+  Behaviour,
+  DriverBehaviour,
+  MachineBehaviour,
+  StandingRule,
+} from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export {
   type AnyCommand,

@@ -61,6 +61,7 @@ export { loadInputLog } from "./world/load-input-log";
 export { makeCast, type MakeCastOptions } from "./world/make-cast";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";
+export { spawnEnemy, type SpawnEnemyOptions } from "./world/spawn-enemy";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { spawnUnit, type SpawnUnitOptions } from "./world/spawn-unit";
 export { submit } from "./world/submit";

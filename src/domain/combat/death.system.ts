@@ -1,6 +1,7 @@
 import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
+import { clearAiRecord, enterDead } from "../ai/ai-state";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
@@ -43,7 +44,8 @@ const hasHealthPool = (unit: Readonly<Unit>): boolean =>
   unit.stats.maxHealth > 0;
 
 /**
- * The unit's health reached zero: whatever it was doing ends, its status table is emptied,
+ * The unit's health reached zero: whatever it was doing ends, the enemy state machine holds
+ * it in Dead, its status table is emptied,
  * the death is announced once, and the tick it is due on is written. The hero respawns on
  * that tick; every other unit is released then.
  */
@@ -56,6 +58,7 @@ const takeDeath = (
   const result = die(unit);
 
   assert(result === "ok", "A living unit whose health reached zero dies");
+  enterDead(unit.ai);
   clearStatuses(unit);
   announceDied(world, id);
   unit.stageEndsAtTick = world.tick + delay;
@@ -77,6 +80,7 @@ const takeRespawn = (
   const result = respawn(hero);
 
   assert(result === "ok", "A dead unit whose delay elapsed respawns");
+  clearAiRecord(hero.ai);
   hero.curr.x = hero.spawnPoint.x;
   hero.curr.y = hero.spawnPoint.y;
   hero.prev.x = hero.spawnPoint.x;

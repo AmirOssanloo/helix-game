@@ -61,20 +61,22 @@ Every field is required. A missing one is a validation failure, not a default, s
 
 ## 3. Add the behaviour, if the existing ones do not fit
 
-Behaviours live under `src/domain/ai/behaviours/`, one per file, and drive the enemy's state machine — Idle, Aggro, Chase, Attack, Return, Dead. `melee_chaser`, `ranged_holder`, and `stationary` exist. A ranged enemy that backs away when the hero closes is new:
+Behaviours live under `src/domain/ai/behaviours/`, one per file. Every enemy runs the same state machine in `src/domain/ai/machine.ts` — Idle, Aggro, Chase, Attack, Return, Dead — and its behaviour says only three things: whether it ever leaves Idle, whether it wanders while there, and where it stands to fight. `melee_chaser` stands on the hero, `ranged_holder` at its attack range less the hold margin, and `stationary` never leaves Idle. A ranged enemy that backs away when the hero closes is new:
 
 ```bash
 touch src/domain/ai/behaviours/ranged-kiter.behaviour.ts
 ```
 
 ```typescript
-export const rangedKiterBehaviour: Behaviour = {
-  chase: (world, unit, target) => { /* … */ },
-  attack: (world, unit, target) => { /* … */ },
+export const rangedKiterBehaviour: MachineBehaviour = {
+  kind: 'machine',
+  engages: true,                        // Leaves Idle on sight or on a hit
+  wanders: true,                        // Walks the wander radius around its spawn point while idle
+  standAt: (unit, target, attack, margin, out) => { /* write the point it wants to stand at into out */ },
 }
 ```
 
-Register the key in `src/domain/ai/behaviours/index.ts`. A behaviour reads the spatial hash for range checks and asks the pathing module for a path; it allocates nothing and gets every number from `unit.def`.
+Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves the point to somewhere the map allows, walks there on the chase re-path interval, and swings through the hero's attack code once the hero is in reach. A standing rule allocates nothing and gets every number from the attack record, the unit, and the margin it is handed. A driver that should not run the machine at all, as a summon's does not, is `kind: 'driver'` with a `drive` function that issues orders.
 
 ---
 

@@ -1,5 +1,6 @@
 import type { EntityId } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
+import { provoke } from "../ai/ai-state";
 import type { Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { World } from "../entities/world-state";
@@ -90,6 +91,8 @@ const announceDamaged = (
  * takes nothing, and two lethal hits in one tick both land, because death is resolved at the
  * end of the tick and not here.
  *
+ * A hit from someone provokes the target, which is how an enemy at rest learns it was hit.
+ *
  * Every instance that lands runs the damage hooks of both units' statuses, after the
  * mitigation and once, so a hook reads the amount the target actually took.
  */
@@ -116,6 +119,7 @@ export const applyDamage = (
   const floor = target.indestructible ? Math.min(resources.health, 1) : 0;
 
   resources.health = Math.max(floor, resources.health - landed);
+  provoke(target.ai, sourceId);
   announceDamaged(world, targetId, sourceId, landed, type);
   runDamageHooks(world, targetId, sourceId);
 
