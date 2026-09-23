@@ -9,6 +9,12 @@ const DIAMOND_ASPECT = 2;
 /** The one scale the game is drawn at: a cell's diamond is this many whole pixels across, and half that down. */
 export const DIAMOND_WIDTH = 40;
 
+/** One art diamond of the floor tile covers this many cells along each side. */
+export const FLOOR_ART_CELLS = 4;
+
+/** An art diamond is this many pixels across, and half that down: four cells' diamonds. */
+export const ART_DIAMOND_WIDTH = FLOOR_ART_CELLS * DIAMOND_WIDTH;
+
 /** Screen pixels per world unit along each screen diagonal, at the diamond width. */
 export const VIEW_SCALE = DIAMOND_WIDTH / (DIAMOND_ASPECT * FLOOR_CELL);
 

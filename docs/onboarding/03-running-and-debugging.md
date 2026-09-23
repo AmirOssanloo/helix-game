@@ -86,7 +86,7 @@ Hiding the tab pauses the clock automatically. Cooldowns freeze, and input that 
 pnpm bench
 ```
 
-This serves the throwaway scene under `bench/`: 300 tinted unit quads moving and rotating every frame with a tenth of them flashing, 100 projectile quads spawning and despawning through the pool at 20 per second, 30 rings, discs, cones, and lines scaling and fading, 6 cooldown wedges changing frame, 50 `BitmapText` numbers changing text and position, 50 static obstacles, and a camera following a moving target at 1920 by 1080 with `Scale.FIT`.
+This serves the throwaway scene under `bench/`: 300 tinted unit quads moving and rotating every frame with a tenth of them flashing, 100 projectile quads spawning and despawning through the pool at 20 per second, 30 rings, discs, cones, and lines scaling and fading, 6 cooldown wedges changing frame, 50 `BitmapText` numbers changing text and position, 50 static obstacles, and a camera following a moving target at 1920 by 1080 with `Scale.FIT`. It draws the way the play scene does: what lies on the ground through the isometric ground layer, over the floor tile, with the numbers standing where their points project.
 
 Open the address it prints, open the browser's performance panel, and record 30 seconds. The readout in the corner shows the frame rate, the mean render time, the most draw calls a frame took, the used heap where the browser exposes it, and the texture units per batch. Run it twice: once as the game is configured, with one texture per batch, and once with `?textures=default` on the address, which lets Phaser pick its multi-texture batch. Then read:
 

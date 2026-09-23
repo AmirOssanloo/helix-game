@@ -19,7 +19,7 @@ How code under `src/presentation/` is written so that the world renders in a han
 
 ## Quads only
 
-Every visible thing is a tinted quad from the one white atlas baked at boot. The reasoning is in [ADR 0001](../adr/0001-phaser-renderer-and-quad-atlas.md); the rules that follow are these.
+Every visible thing is a tinted quad from the one white atlas baked at boot; the floor tile, copied into it in its own colours, is the one frame that is not white. The reasoning is in [ADR 0001](../adr/0001-phaser-renderer-and-quad-atlas.md); the rules that follow are these.
 
 - **`Graphics` and every `Shape` game object are banned**, including `this.add.rectangle`, `this.add.circle`, `this.add.line`, and the rest. Including in debug overlays. A shape rebuilds its geometry every frame and breaks the quad batch.
 - **Colour is a tint, never a second texture.** An archetype colour, a hit flash, a status tint: the `tint` field, with the fill tint mode when the whole quad must go one colour. Colour and mode are two settings: the tint is written every frame, the mode only when it turns.
@@ -41,7 +41,7 @@ One texture, one blend mode, no filters, no masks. Each of these is a batch brea
 
 | Breaks the batch | Because |
 | --- | --- |
-| A second texture | The atlas is the one texture. A loaded image, a `Text` object, a render texture each add one |
+| A second texture | The atlas is the one texture. A loaded image drawn from, a `Text` object, a render texture each add one; a painted tile is copied into the atlas at boot and its image dropped |
 | A blend mode | Every quad is normal blend. Additive glow is a later art decision, not a prototype convenience |
 | A filter or post-processing effect | Ends the batch and starts a pass |
 | A mask | Stencil pass |

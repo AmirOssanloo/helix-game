@@ -48,7 +48,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Layer | presentation, app, tests, docs |
 | Size | 1 |
 | Depends on | P3-S23-T03, the floor PNG in `assets/` |
-| Status | planned |
+| Status | done |
 
 **Build:** One art diamond covers four by four walkability cells, 128 world units a side, drawn 160 by 80 pixels at the chosen scale ([Q29](../backlog/open-questions.md)). The PNG is a whole number of art diamonds in each direction, 160 by 80 at the least and at most 960 wide to fit the atlas, and a diamond centred in it touches the midpoints of its edges; its corners are quarters of the neighbouring diamonds. The boot scene loads it and paints it into the generated atlas as the floor frame, so the world still draws from one texture and `maxTextures` stays one. The code-painted grid goes, and with it the floor's tint, so the tile shows in the colours it was painted. The floor view lays tiles half a tile off the projected origin, so each art diamond's corners fall on the corner of a four-by-four block of cells. A PNG that is not a whole number of art diamonds in each direction fails the boot with a message naming the rule, rather than drawing a floor that drifts off the cells. `presentation.md`, ADR 0006's floor paragraph, ADR 0001's atlas paragraph, the map and camera page, and the vocabulary's **Floor** row say an art diamond covers four by four cells and where the frame comes from.
 
@@ -65,6 +65,10 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 
 > Edited 2026-09-23: the art diamond covers four by four cells rather than one, chosen by the maintainer as Q29 when the one-cell diamond, 40 by 20, left no room for detail. The scale does not change.
 
+> Closed 2026-09-23: the floor frame is a `tile` shape naming the image `floor`; the composition root hands the atlas `assets/floor.png`, the boot scene loads it, and the bake sizes the frame from it, copies it in untinted, and drops the loaded texture. The floor view lays the grid half an art diamond right of the projected origin. The frame list is part of the content version, so the recorded phase 1 session is re-stamped. In Chrome: the tile shows seamless, the world draws in 1 and the frame in 2, as sprint 23 recorded. Bench on this branch: 60 fps, 0.4 ms, 1 draw, 1 texture, heap a flat sawtooth of 116 to 124 MB. The tile has no drawn lines, so the art-diamond edges against cell edges are proven by `floor-view.spec.ts` through the real projection and left to the maintainer's eye. The walk found the walkability overlay's pool short of the isometric view, T04.
+
+> Reopened and fixed the same day: the maintainer saw a thin dark line between tiles while moving. The follow leaves the floor at fractional screen positions, and the filter sampled the transparent gutter at a tile's edge. The bake now continues the tile one pixel past each edge, into half the gutter, with the opposite edge's pixels; in Chrome the seams are gone while the hero walks. Spec in `tests/presentation/shape-atlas.spec.ts`.
+
 ---
 
 ### P3-S24-T03 — All ten spells walked in the isometric view, and the bench
@@ -74,7 +78,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Layer | tests, bench, docs |
 | Size | 1 |
 | Depends on | T01, and T02 if the floor tile has arrived |
-| Status | planned |
+| Status | done |
 
 **Build:** The bench scene draws its quads through the same ground layer and floor, so its figures measure the view the game has. The maintainer walks all ten spells and the auto-attack at the dummy, previews included, and says what feels different now that screen-vertical distances are half their screen-horizontal ones: Clarion's push, Glacier's press and drag, the range rings. A change to a number goes through the panel and, if kept, into a definition in a ticket of its own; this ticket does not retune. The phase 2 gate session in `notes/` is replayed in Node to show the simulation did not move.
 
@@ -87,16 +91,44 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 
 **Definition of done:** Every change · Anything under `src/presentation` (bench rerun).
 
+> 2026-09-23: the bench now draws the way the play scene does. Units, projectiles, effects, obstacles, and the target lie in the ground layer in world coordinates; the floor tile is laid under the camera from a pool of 320; the numbers and wedges stand at the projection of their world points; the world camera follows the target through the projection. The bench and the replay are recorded in the exit table. The maintainer walked all ten spells and the auto-attack in the view and approved them: the spells and the ranges feel right, and nothing changes.
+
+> Closed 2026-09-23.
+
+---
+
+### P3-S24-T04 — The walkability overlay covers what the isometric view shows
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, tests |
+| Size | 0.25 |
+| Depends on | P3-S23-T01 |
+| Status | planned |
+
+**Build:** The blocked-cell overlay binds from a pool of 1024 quads over the camera's world rectangle. Since the view is isometric, that rectangle is the box around the screen's unprojected corners, about twice the area the screen shows, and with the arena's obstacles in it the pool runs out: in Chrome, with **Walkability grid** on at the spawn point, view misses rise every frame and part of an obstacle is left unshaded. Size the pool for the box, or bind only the cells whose diamonds fall on screen, whichever keeps the overlay free of misses without a per-frame cost.
+
+**Acceptance:**
+- With **Walkability grid** on anywhere in the arena, view misses stay flat and every blocked cell on screen is shaded.
+
+**Tests:**
+- `tests/presentation/overlays.spec.ts` extended: the blocked cells under a camera rectangle the size of the isometric view's box over the arena's densest corner bind with no miss.
+
+**Definition of done:** Every change · Anything under `src/presentation`.
+
+> Unplanned, 2026-09-23: found walking P3-S24-T02. It dates from sprint 23's view, not from the floor tile, and is its own ticket so the floor change stays one thing.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| All ten spells walked in the view by the maintainer | |
-| Render benchmark: fps, render ms, draws, heap, on this branch and before P3-S23-T01 | |
-| The phase 2 gate session replays identically | |
-| Actual days per ticket | T01 0.1 · T02 · T03 |
+| All ten spells walked in the view by the maintainer | The maintainer, 2026-09-23: the spells and the ranges feel good; approved, no change asked for |
+| Render benchmark: fps, render ms, draws, heap, on this branch and before P3-S23-T01 | Chrome on the Apple M1, 30 s each, heap sampled every second. This branch, bench through the ground layer and floor: 60 fps, render 0.9 to 1.5 ms, 1 draw, heap a flat sawtooth 111 to 118 MB; with `?textures=default`, 16 texture units: 60 fps, 1.3 ms, 1 draw, heap 132 to 144 MB. `09dbd91`, the commit before P3-S23-T01, top-down: 60 fps, 0.6 to 0.9 ms, 1 draw, heap 192 to 215 MB; with `?textures=default`: 60 fps, 0.9 ms, 1 draw, heap 226 to 250 MB. Render time is up about half a millisecond for the floor's tiles and the two containers, well under the 6 ms bar |
+| The phase 2 gate session replays identically | Yes. `notes/2026-09-23-phase-2-gate-session.json` replayed in Node on this tree and on `09dbd91`, stamped with each tree's content version, since the only content change between them is the atlas frame list: 2020 ticks each, and a SHA-256 of run scope and every unit, projectile, effect, and zone slot at every tick matches, `61f36e1e…` |
+| The floor tile in the arena, by eye | The maintainer, 2026-09-23: approved after the seam fix |
+| Actual days per ticket | T01 0.1 · T02 0.5 · T03 0.3 · T04 |
 
 ## Risks in this sprint
 

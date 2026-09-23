@@ -28,7 +28,7 @@ screen x = (x − y) · k, screen y = (x + y) · k / 2
 
 Everything that lies on the ground, the obstacles, zones, units and their facing, projectiles, orbs, the targeting preview, and the debug overlays, is written in world coordinates inside a ground layer of two nested containers: the inner turned an eighth of a turn, the outer scaled by `k√2` across and half that down. The placeholder geometry lies flat under it: a disc becomes a 2:1 ellipse, a rectangle a parallelogram, a heading its screen angle. What stands up off the ground, the status icons, the damage numbers, and the labels, is placed in screen pixels at the point the projection gives. The camera follows the hero's projected point, clamps to the box around the projected bounds, and a click is unprojected back to the world point under it.
 
-The floor is a diamond-grid frame in the atlas, four by four diamonds, tiled in screen space under the ground layer and aligned so each diamond sits over one walkability cell. The void outside the bounds is covered by four quads on the ground.
+The floor is a tile a person painted, copied into the atlas at boot and tiled in screen space under the ground layer. One art diamond of it, 160 by 80, covers four by four walkability cells, so there is room for detail a 40 by 20 diamond would not hold; the tiles are laid so each art diamond's corners fall on the corners of a four-by-four block of cells. The void outside the bounds is covered by four quads on the ground.
 
 ## Consequences
 
@@ -45,7 +45,7 @@ The floor is a diamond-grid frame in the atlas, four by four diamonds, tiled in 
 - **Standing things are placed by hand.** Anything that stands up is outside the ground layer and asks the projection where its point is drawn, once per frame per view.
 - **The camera sees a rotated rectangle.** The world box the spatial hash is asked for is the box around the screen's four unprojected corners, larger than what is on screen, so views bind for units just off its corners. The pools are sized to allow for it.
 - **A container ignores depth.** It draws its children in list order, so the ground layer keeps its list sorted by band.
-- **No zoom.** With the scale in the projection, a zoomed camera would blur the floor's one-pixel lines. The game has one view.
+- **No zoom.** With the scale in the projection, a zoomed camera would blur the floor art, which is drawn pixel for pixel. The game has one view.
 
 ## Alternatives considered
 
@@ -53,7 +53,7 @@ The floor is a diamond-grid frame in the atlas, four by four diamonds, tiled in 
 
 **Each view projected by hand.** Every view writes projected positions and uses frames baked as diamonds and ellipses. It avoids containers, but costs about a day and a half more and puts the projection in every view. It is the fallback if a Phaser release breaks the batch inside containers.
 
-**The scale in the camera's zoom.** A zoom that is not a whole-pixel fit blurs the one-pixel floor lines. Putting the scale in the projection keeps the camera at zoom 1 and the diamonds on whole pixels.
+**The scale in the camera's zoom.** A zoom that is not a whole-pixel fit blurs the floor art. Putting the scale in the projection keeps the camera at zoom 1 and the diamonds on whole pixels.
 
 **A larger diamond, 44 or 48 pixels.** Both were walked. They show less of the arena, about 1975 and 1810 world units across, and 44 was the proposed answer; 40 won on the overview and on how far ahead a route can be planned.
 

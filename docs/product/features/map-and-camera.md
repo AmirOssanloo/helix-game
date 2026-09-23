@@ -52,7 +52,7 @@ Locked on the hero, looking down on an isometric floor. The square world is draw
 - **No zoom.** The scroll wheel does nothing. The game has one view
 - **No panning.** No edge pan, no middle drag, no free camera. The camera is not an order and never issues one
 
-The scale is fixed: the diamond size is part of how the floor is drawn, not a camera zoom, so the lines of the grid stay one pixel thick. The floor is one tile of four by four diamonds, repeated, under everything on the ground.
+The scale is fixed: the diamond size is part of how the floor is drawn, not a camera zoom, so the floor art stays sharp, pixel for pixel. The floor is one painted tile, repeated, under everything on the ground. Each diamond of its art, 160 pixels across and 80 down, covers four by four walkability cells, and its edges run along cell edges.
 
 The logical canvas is 1920 by 1080, scaled to fit the browser window and letterboxed. Flat shapes look fine stretched; device pixel ratio is ignored until real art arrives.
 

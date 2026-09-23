@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { gameConfig } from "@app/public";
-import { atlasFrames } from "@content/public";
+import { atlasFrames, FLOOR_IMAGE } from "@content/public";
 import { ShapeAtlas } from "@presentation/public";
 import { BenchScene } from "./bench.scene";
 
@@ -10,6 +10,9 @@ import { BenchScene } from "./bench.scene";
  * game is configured, with one texture per batch, and once with `?textures=default` in the
  * address, which drops the `render` block and lets Phaser pick its multi-texture batch.
  */
+
+/** The maintainer's floor tile, which the atlas copies in at boot. */
+const FLOOR_TILE_URL = new URL("../assets/floor.png", import.meta.url).href;
 
 const TEXTURES_QUERY_KEY = "textures";
 const DEFAULT_TEXTURES_VALUE = "default";
@@ -26,5 +29,9 @@ const config: Phaser.Types.Core.GameConfig = usesDefaultTextures(
 
 new Phaser.Game({
   ...config,
-  scene: [new BenchScene(new ShapeAtlas(atlasFrames))],
+  scene: [
+    new BenchScene(
+      new ShapeAtlas(atlasFrames, new Map([[FLOOR_IMAGE, FLOOR_TILE_URL]])),
+    ),
+  ],
 });

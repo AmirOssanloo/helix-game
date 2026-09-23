@@ -135,18 +135,24 @@ const statusIcons: readonly AtlasFrameDef[] = Object.entries(
  */
 export const FLOOR_DIAMOND_WIDTH = 40;
 
-/** A floor frame is this many diamonds across and down, as the painted floor tile will be. */
-const FLOOR_DIAMONDS = 4;
+/** One art diamond of the floor tile covers this many walkability cells along each side. */
+export const FLOOR_ART_CELLS = 4;
 
 /** The frame name the floor is drawn with. */
 export const FLOOR_FRAME = "floor";
 
-/** The floor frame is drawn unscaled, a pixel a pixel, so the grid's lines stay one pixel thick. */
+/** The key the floor tile's image is loaded under; the composition root says where it is. */
+export const FLOOR_IMAGE = "floor";
+
+/**
+ * The maintainer's floor tile, drawn unscaled, a pixel a pixel. Its size here is one art
+ * diamond, 160 by 80; the bake takes the image's own size, a whole number of them.
+ */
 const floor: AtlasFrameDef = {
   name: FLOOR_FRAME,
-  width: FLOOR_DIAMONDS * FLOOR_DIAMOND_WIDTH,
-  height: (FLOOR_DIAMONDS * FLOOR_DIAMOND_WIDTH) / 2,
-  shape: { kind: "diamond_grid", diamondWidth: FLOOR_DIAMOND_WIDTH },
+  width: FLOOR_ART_CELLS * FLOOR_DIAMOND_WIDTH,
+  height: (FLOOR_ART_CELLS * FLOOR_DIAMOND_WIDTH) / 2,
+  shape: { kind: "tile", image: FLOOR_IMAGE },
 };
 
 const wedges: readonly AtlasFrameDef[] = Array.from(

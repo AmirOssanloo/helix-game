@@ -1,6 +1,10 @@
 import type { AtlasFrameDef, AtlasShape } from "@domain/public";
 import { coneHalfAngle } from "@domain/public";
-import type { AtlasLayout, PlacedFrame } from "./atlas-layout";
+import {
+  type AtlasLayout,
+  FRAME_GUTTER,
+  type PlacedFrame,
+} from "./atlas-layout";
 
 /**
  * The part of a 2D canvas context the bake draws with. A real context satisfies it; a test
@@ -11,6 +15,7 @@ export type AtlasPainter = Pick<
   | "arc"
   | "beginPath"
   | "closePath"
+  | "drawImage"
   | "fill"
   | "fillRect"
   | "fillStyle"
@@ -27,7 +32,7 @@ export type AtlasPainter = Pick<
   | "textBaseline"
 >;
 
-/** Every frame is white; colour is a tint at runtime. */
+/** Every frame but a painted tile is white; colour is a tint at runtime. */
 const WHITE = "#ffffff";
 
 const TWO_PI = Math.PI * 2;
@@ -70,38 +75,59 @@ export const wedgeSweep = (
   endAngle: TWELVE_OCLOCK + (TWO_PI * step) / steps,
 });
 
-/** A grid line climbs one pixel for every two across, which is what makes a diamond twice as wide as it is tall. */
-const PIXELS_ACROSS_PER_PIXEL_DOWN = 2;
-
-/** A diamond is half as tall as it is wide. */
-const DIAMOND_ASPECT = 2;
-
-/** `value` wrapped into zero up to `size`, for a line leaving the frame at one edge and coming back at the other. */
-const wrap = (value: number, size: number): number =>
-  ((value % size) + size) % size;
+/** The image loaded under a key, for a tile frame to be copied from. */
+export type AtlasImages = (image: string) => CanvasImageSource;
 
 /**
- * The two families of grid lines, one pixel thick: one falling to the right and one rising,
- * each a line every diamond height down the frame's left edge, both passing through its
- * top-left corner. A frame a whole number of diamonds across and down wraps into itself.
+ * How far a tile is continued past its frame's edge, into half the gutter it shares with its
+ * neighbour, so the neighbour's side stays clear.
  */
-const paintDiamondGrid = (
+export const TILE_BLEED = FRAME_GUTTER / 2;
+
+/**
+ * Continues a seamless tile `bleed` pixels past each edge of its frame with the pixels from the
+ * opposite edge, which are what the next tile laid beside it shows. A quad at a fractional
+ * screen position is sampled between texels at its edge; with the gutter transparent that
+ * sample is a dark seam between tiles, and with the tile continued it is the floor.
+ */
+const bleedTile = (
   painter: AtlasPainter,
-  diamondWidth: number,
+  image: CanvasImageSource,
   x: number,
   y: number,
   width: number,
   height: number,
+  bleed: number,
 ): void => {
-  const diamondHeight = diamondWidth / DIAMOND_ASPECT;
+  const across = [
+    { from: width - bleed, to: x - bleed, size: bleed },
+    { from: 0, to: x, size: width },
+    { from: 0, to: x + width, size: bleed },
+  ];
+  const down = [
+    { from: height - bleed, to: y - bleed, size: bleed },
+    { from: 0, to: y, size: height },
+    { from: 0, to: y + height, size: bleed },
+  ];
 
-  for (let start = 0; start < height; start += diamondHeight) {
-    for (let across = 0; across < width; across += 1) {
-      const falling = Math.floor(across / PIXELS_ACROSS_PER_PIXEL_DOWN);
-      const rising = Math.ceil(across / PIXELS_ACROSS_PER_PIXEL_DOWN);
+  for (const column of across) {
+    for (const row of down) {
+      // The middle of the nine is the tile itself, already copied.
+      if (column.size === width && row.size === height) {
+        continue;
+      }
 
-      painter.fillRect(x + across, y + wrap(start + falling, height), 1, 1);
-      painter.fillRect(x + across, y + wrap(start - rising, height), 1, 1);
+      painter.drawImage(
+        image,
+        column.from,
+        row.from,
+        column.size,
+        row.size,
+        column.to,
+        row.to,
+        column.size,
+        row.size,
+      );
     }
   }
 };
@@ -112,6 +138,7 @@ const paintShape = (
   frame: AtlasFrameDef,
   x: number,
   y: number,
+  images: AtlasImages,
 ): void => {
   const { width, height } = frame;
   const centreX = x + width / 2;
@@ -250,8 +277,12 @@ const paintShape = (
       return;
     }
 
-    case "diamond_grid": {
-      paintDiamondGrid(painter, shape.diamondWidth, x, y, width, height);
+    case "tile": {
+      // Copied pixel for pixel, in the colours it was painted; the frame is the image's size.
+      const image = images(shape.image);
+
+      painter.drawImage(image, x, y);
+      bleedTile(painter, image, x, y, width, height, TILE_BLEED);
 
       return;
     }
@@ -269,22 +300,31 @@ const paintShape = (
   }
 };
 
-/** Draws one placed frame, white, inside its region and nowhere else. */
+/** Draws one placed frame inside its region and nowhere else: white, or a tile copied from `images`. */
 export const paintFrame = (
   painter: AtlasPainter,
   placed: PlacedFrame,
+  images: AtlasImages,
 ): void => {
   painter.fillStyle = WHITE;
   painter.strokeStyle = WHITE;
-  paintShape(painter, placed.frame.shape, placed.frame, placed.x, placed.y);
+  paintShape(
+    painter,
+    placed.frame.shape,
+    placed.frame,
+    placed.x,
+    placed.y,
+    images,
+  );
 };
 
 /** Draws every frame of the layout. */
 export const paintAtlas = (
   painter: AtlasPainter,
   layout: AtlasLayout,
+  images: AtlasImages,
 ): void => {
   for (const placed of layout.frames) {
-    paintFrame(painter, placed);
+    paintFrame(painter, placed, images);
   }
 };

@@ -104,6 +104,46 @@ const packShelves = (
   return { placements, height: cursorY + shelfHeight + gutter };
 };
 
+/** An image's size in pixels, as it loaded. */
+export type ImageSize = Readonly<{ width: number; height: number }>;
+
+/**
+ * Every tile frame of the list at the size of the image it names, looked up by `imageSize`;
+ * every other frame as it is. A tile frame's own size is one repeat, an art diamond, and its
+ * image is refused unless it is a whole number of them in each direction and fits an atlas
+ * `width` wide, since a floor laid from anything else drifts off the cells.
+ */
+export const sizeTileFrames = (
+  frames: AtlasFrameList,
+  imageSize: (image: string) => ImageSize,
+  width: number = ATLAS_WIDTH,
+  gutter: number = FRAME_GUTTER,
+): AtlasFrameList =>
+  frames.map((frame): AtlasFrameDef => {
+    if (frame.shape.kind !== "tile") {
+      return frame;
+    }
+
+    const size = imageSize(frame.shape.image);
+    const across = size.width / frame.width;
+    const down = size.height / frame.height;
+    const widest = Math.floor((width - gutter * 2) / frame.width) * frame.width;
+
+    if (
+      !Number.isInteger(across) ||
+      !Number.isInteger(down) ||
+      across < 1 ||
+      down < 1 ||
+      size.width > widest
+    ) {
+      throw new Error(
+        `The tile image "${frame.shape.image}" for the frame "${frame.name}" is ${size.width} by ${size.height}: it must be a whole number of ${frame.width} by ${frame.height} art diamonds in each direction, and at most ${widest} wide to fit the atlas`,
+      );
+    }
+
+    return { ...frame, width: size.width, height: size.height };
+  });
+
 const isGlyph = (frame: AtlasFrameDef): boolean => frame.shape.kind === "glyph";
 
 const glyphCharacter = (frame: AtlasFrameDef): string =>

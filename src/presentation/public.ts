@@ -7,7 +7,9 @@ export {
 } from "./atlas/shape-atlas";
 export { GroundLayer } from "./camera/ground-layer";
 export {
+  ART_DIAMOND_WIDTH,
   DIAMOND_WIDTH,
+  FLOOR_ART_CELLS,
   FLOOR_CELL,
   Projection,
   type ScreenPlacement,
@@ -114,6 +116,7 @@ export {
   createVoidViews,
   FLOOR_FRAME,
   FloorView,
+  type TileSize,
   VoidViews,
 } from "./views/floor.view";
 export {

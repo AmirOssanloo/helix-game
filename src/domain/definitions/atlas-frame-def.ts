@@ -17,8 +17,13 @@ export type AtlasShape =
   | Readonly<{ kind: "wedge"; step: number; steps: number }>
   | Readonly<{ kind: "stripes"; thickness: number }>
   | Readonly<{ kind: "icon"; glyph: string }>
-  /** One-pixel lines of a 2:1 diamond grid, diamonds `diamondWidth` pixels across and half that down, through the frame's top-left corner, so frames laid edge to edge continue it. */
-  | Readonly<{ kind: "diamond_grid"; diamondWidth: number }>
+  /**
+   * A seamless tile a person painted, loaded at boot under the key `image` and copied in as it is,
+   * in its own colours. The frame's width and height are one repeat of it, a 2:1 art diamond
+   * centred in a box of that size; the image is a whole number of repeats in each direction, and
+   * the frame is baked at the image's size.
+   */
+  | Readonly<{ kind: "tile"; image: string }>
   | Readonly<{ kind: "glyph"; character: string }>;
 
 /**

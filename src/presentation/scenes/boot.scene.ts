@@ -20,7 +20,7 @@ const BANNER_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
 const BANNER_TOP = 24;
 
 /**
- * Bakes the atlas, checks the renderer, and starts the other two scenes. The banner it shows
+ * Loads the floor tile, bakes the atlas, checks the renderer, and starts the other two scenes. The banner it shows
  * under Canvas is the one static `Text` in the game, so this scene stays alive on top of the
  * others to keep it on screen.
  */
@@ -30,6 +30,10 @@ export class BootScene extends Phaser.Scene {
   constructor(context: SceneContext) {
     super({ key: BOOT_SCENE_KEY });
     this.context = context;
+  }
+
+  preload(): void {
+    this.context.atlas.preload(this);
   }
 
   create(): void {

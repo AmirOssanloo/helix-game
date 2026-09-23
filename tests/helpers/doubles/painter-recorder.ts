@@ -13,7 +13,7 @@ export class PainterRecorder implements AtlasPainter {
   textAlign: CanvasTextAlign = "start";
   textBaseline: CanvasTextBaseline = "alphabetic";
 
-  /** How many marks were made: a fill, a stroke, a filled rectangle, a stroked rectangle, or a glyph. */
+  /** How many marks were made: a fill, a stroke, a filled rectangle, a stroked rectangle, a glyph, or a copied image. */
   marks = 0;
 
   /** Every arc asked for, in order. */
@@ -48,6 +48,40 @@ export class PainterRecorder implements AtlasPainter {
     const rule = typeof first === "string" ? first : second;
 
     this.fillRules.push(rule ?? "nonzero");
+    this.marks += 1;
+  }
+
+  /**
+   * Every image copied in, in order: the part of it copied, and where that part went. A copy of
+   * the whole image names the whole image as its part.
+   */
+  readonly images: Array<
+    Readonly<{
+      image: CanvasImageSource;
+      from: Readonly<{ x: number; y: number; width: number; height: number }>;
+      to: Readonly<{ x: number; y: number }>;
+    }>
+  > = [];
+
+  drawImage(image: CanvasImageSource, ...place: number[]): void {
+    const whole = place.length <= 4;
+    const at = (index: number): number => place[index] ?? 0;
+    const width = "width" in image ? Number(image.width) : 0;
+    const height = "height" in image ? Number(image.height) : 0;
+
+    this.images.push(
+      whole
+        ? {
+            image,
+            from: { x: 0, y: 0, width, height },
+            to: { x: at(0), y: at(1) },
+          }
+        : {
+            image,
+            from: { x: at(0), y: at(1), width: at(2), height: at(3) },
+            to: { x: at(4), y: at(5) },
+          },
+    );
     this.marks += 1;
   }
 

@@ -1,15 +1,20 @@
 import type { Rect } from "@shared/public";
+import { ART_DIAMOND_WIDTH } from "../camera/projection";
 import { DEPTH_FLOOR } from "./depth-bands";
-import type { FrameSizes, Quad, QuadFactory } from "./quad";
+import type { Quad, QuadFactory } from "./quad";
 
 /** The frame the floor is drawn with: the content frame list names it the same way. */
 export const FLOOR_FRAME = "floor";
 
-/** A floor frame is half as tall as it is wide. */
-const FLOOR_ASPECT = 2;
+/**
+ * How far right of the projected origin the tiles' grid is laid. A tile's corner is the centre
+ * of an art diamond, and the projected origin is the top corner of one, so the grid starts half
+ * an art diamond across.
+ */
+const TILE_OFFSET_X = ART_DIAMOND_WIDTH / 2;
 
-/** Placeholder art: the grid's lines a dark grey, so a white hero reads on them. */
-const FLOOR_TINT = 0x2a2a2a;
+/** The floor tile's baked size in pixels: its image's, a whole number of art diamonds. */
+export type TileSize = Readonly<{ width: number; height: number }>;
 
 /** The void outside the map is the canvas's own black. */
 const VOID_TINT = 0x000000;
@@ -24,11 +29,12 @@ const VOID_SIDES = 4;
 const HALF = 0.5;
 
 /**
- * The floor: tiles of the diamond grid laid edge to edge in screen space, unscaled, so its
- * lines stay a pixel thick. The projected world origin is a corner of every tile, so each
- * diamond sits over one walkability cell. Each frame the tiles are laid over the rectangle the
- * camera shows, from a pool made at `create`; a camera showing more than the pool covers
- * leaves the rest bare and counts a miss.
+ * The floor: the maintainer's tile laid edge to edge in screen space, unscaled and untinted, so
+ * it shows pixel for pixel in the colours it was painted. The grid is laid half an art diamond
+ * off the projected origin, so each art diamond's corners fall on the corners of a four-by-four
+ * block of walkability cells. Each frame the tiles are laid over the rectangle the camera shows,
+ * from a pool made at `create`; a camera showing more than the pool covers leaves the rest bare
+ * and counts a miss.
  */
 export class FloorView {
   private readonly tiles: readonly Quad[];
@@ -39,14 +45,13 @@ export class FloorView {
 
   private missCount = 0;
 
-  constructor(tiles: readonly Quad[], frameSizes: FrameSizes) {
+  constructor(tiles: readonly Quad[], tileSize: TileSize) {
     this.tiles = tiles;
-    this.tileWidth = frameSizes(FLOOR_FRAME);
-    this.tileHeight = this.tileWidth / FLOOR_ASPECT;
+    this.tileWidth = tileSize.width;
+    this.tileHeight = tileSize.height;
 
     for (const tile of tiles) {
       tile.setDepth(DEPTH_FLOOR);
-      tile.tint = FLOOR_TINT;
       tile.alpha = OPAQUE;
     }
   }
@@ -61,13 +66,14 @@ export class FloorView {
     const tileWidth = this.tileWidth;
     const tileHeight = this.tileHeight;
 
-    if (tileWidth <= 0) {
+    if (tileWidth <= 0 || tileHeight <= 0) {
       return;
     }
 
-    const firstColumn = Math.floor(shown.minX / tileWidth);
+    const firstColumn = Math.floor((shown.minX - TILE_OFFSET_X) / tileWidth);
     const firstRow = Math.floor(shown.minY / tileHeight);
-    const columns = Math.floor(shown.maxX / tileWidth) - firstColumn + 1;
+    const columns =
+      Math.floor((shown.maxX - TILE_OFFSET_X) / tileWidth) - firstColumn + 1;
     const rows = Math.floor(shown.maxY / tileHeight) - firstRow + 1;
     let used = 0;
 
@@ -82,7 +88,7 @@ export class FloorView {
           return;
         }
 
-        tile.x = (firstColumn + column + HALF) * tileWidth;
+        tile.x = (firstColumn + column + HALF) * tileWidth + TILE_OFFSET_X;
         tile.y = (firstRow + row + HALF) * tileHeight;
         tile.visible = true;
         used += 1;
@@ -156,7 +162,7 @@ export class VoidViews {
 export const createFloorView = (
   size: number,
   makeTile: QuadFactory,
-  frameSizes: FrameSizes,
+  tileSize: TileSize,
 ): FloorView => {
   const tiles: Quad[] = [];
 
@@ -164,7 +170,7 @@ export const createFloorView = (
     tiles.push(makeTile(FLOOR_FRAME));
   }
 
-  return new FloorView(tiles, frameSizes);
+  return new FloorView(tiles, tileSize);
 };
 
 /** The four sides of the void from `makeQuad`, which lays them on the ground, at scene `create`. */

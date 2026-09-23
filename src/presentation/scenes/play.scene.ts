@@ -22,7 +22,11 @@ import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import { createFloatingNumberViews } from "../views/floating-number.view";
 import type { FloorView, VoidViews } from "../views/floor.view";
-import { createFloorView, createVoidViews } from "../views/floor.view";
+import {
+  createFloorView,
+  createVoidViews,
+  FLOOR_FRAME,
+} from "../views/floor.view";
 import { HitFlashes, HitNumbers, showHit } from "../views/hit-feedback";
 import type { ObstacleViews } from "../views/obstacle.view";
 import { createObstacleViews } from "../views/obstacle.view";
@@ -200,7 +204,10 @@ export class PlayScene extends Phaser.Scene {
       camera,
       lens,
       mapper,
-      floor: createFloorView(FLOOR_TILE_COUNT, makeStandingQuad, frameSizes),
+      floor: createFloorView(FLOOR_TILE_COUNT, makeStandingQuad, {
+        width: this.context.atlas.frameWidth(FLOOR_FRAME),
+        height: this.context.atlas.frameHeight(FLOOR_FRAME),
+      }),
       voids: createVoidViews(makeQuad),
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),

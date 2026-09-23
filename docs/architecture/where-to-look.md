@@ -57,7 +57,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which scenes exist | `src/presentation/scenes/` — one file per scene |
 | How a world point becomes a screen point, and the scale the ground is drawn at | `src/presentation/camera/projection.ts` — the projection and its scale constant |
 | What is drawn on the ground and what stands up | `src/presentation/scenes/play.scene.ts` — the ground layer's factory and the scene's own, and which pool takes which; the ground layer is `src/presentation/camera/ground-layer.ts` |
-| How the floor is laid | `src/presentation/views/floor.view.ts` — the tiles and the void around the bounds; the floor frame is in the content frame list |
+| How the floor is laid | `src/presentation/views/floor.view.ts` — the tiles and the void around the bounds; the floor frame is in the content frame list, and its image is `assets/floor.png` |
 | The depth bands | The depth constants in `src/presentation/views/` |
 | Which views exist | `src/presentation/views/` — one file per entity kind, plus the feedback a hit raises |
 | How input becomes commands | `src/presentation/input/` |

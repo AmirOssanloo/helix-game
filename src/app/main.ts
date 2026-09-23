@@ -3,6 +3,7 @@ import {
   arenaDef,
   atlasFrames,
   contentRegistry,
+  FLOOR_IMAGE,
   tuningTable,
 } from "@content/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
@@ -27,6 +28,9 @@ import { Session } from "./session";
 
 const DEVTOOLS_HOST_ID = "devtools";
 
+/** The maintainer's floor tile. Vite resolves and fingerprints an address written this way into the build. */
+const FLOOR_TILE_URL = new URL("../../assets/floor.png", import.meta.url).href;
+
 /** A fresh session's seed: the wall clock at boot, in its low 32 bits, which is all the random source reads. The app layer may read the clock; the seed goes into the log so the session replays under it. */
 const drawSessionSeed = (): number => Date.now() >>> 0;
 
@@ -48,7 +52,11 @@ export const boot: Boot = (): void => {
     rings,
     clock: wallClock,
   });
-  const atlas = new ShapeAtlas(atlasFrames);
+  // The maintainer's floor tile, copied into the atlas at boot.
+  const atlas = new ShapeAtlas(
+    atlasFrames,
+    new Map([[FLOOR_IMAGE, FLOOR_TILE_URL]]),
+  );
   // One object, read by the play scene and written by the panel; the two layers each name its fields.
   const overlays = createOverlayToggles();
   // One request, armed by the panel and answered by the play scene's next ground click.

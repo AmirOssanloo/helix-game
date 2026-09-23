@@ -1,8 +1,24 @@
 import Phaser from "phaser";
 import { WEDGE_STEPS } from "@content/public";
 import type { RandomState } from "@domain/public";
-import type { ShapeAtlas } from "@presentation/public";
-import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "@presentation/public";
+import type { FloorView, ShapeAtlas } from "@presentation/public";
+import {
+  ATLAS_FONT_KEY,
+  ATLAS_TEXTURE_KEY,
+  createFloorView,
+  DEPTH_AIR,
+  DEPTH_GROUND,
+  DEPTH_OBSTACLES,
+  DEPTH_PROJECTILES,
+  DEPTH_TEXT,
+  DEPTH_UNITS,
+  FLOOR_FRAME,
+  GroundLayer,
+  Projection,
+  VIEW_SCALE,
+  WorldCamera,
+} from "@presentation/public";
+import type { Rect, Vec2 } from "@shared/public";
 import { createRandomState, nextFloat } from "@simulation/public";
 import { Readout } from "./readout";
 
@@ -33,6 +49,12 @@ import { Readout } from "./readout";
  * cone until a spell bakes one; 6 wedges stepping through every frame of the sheet; 50
  * `BitmapText` numbers retyped and moved; 50 static obstacle quads; and a camera following a
  * hero-sized quad around the middle at 1920 by 1080 with `Scale.FIT`.
+ *
+ * It is drawn the way the play scene draws: what lies on the ground, the units, projectiles,
+ * effects, obstacles, and the target, inside the ground layer in world coordinates; the
+ * maintainer's floor tile laid under the camera from a pool; the numbers and wedges standing
+ * in the scene at the projection of their world points; and the world camera following the
+ * target through the projection.
  */
 
 export const BENCH_SCENE_KEY = "bench";
@@ -43,7 +65,7 @@ const SCATTER_SEED = 1;
 const MS_PER_SECOND = 1000;
 const TWO_PI = Math.PI * 2;
 
-/** The map the camera is clamped to, and the smaller region every object stays inside so nothing leaves the view. */
+/** The map the camera is clamped to, in world units, and the smaller region every object stays inside so nothing leaves the view. */
 const WORLD_WIDTH = 2400;
 const WORLD_HEIGHT = 1500;
 const REGION_WIDTH = 1800;
@@ -51,13 +73,9 @@ const REGION_HEIGHT = 1000;
 const REGION_LEFT = (WORLD_WIDTH - REGION_WIDTH) / 2;
 const REGION_TOP = (WORLD_HEIGHT - REGION_HEIGHT) / 2;
 
-/** The depth bands the game draws in. */
-const DEPTH_GROUND = 0;
-const DEPTH_OBSTACLES = 10;
-const DEPTH_UNITS = 20;
-const DEPTH_PROJECTILES = 30;
-const DEPTH_AIR = 40;
-const DEPTH_TEXT = 50;
+/** Floor tiles, and how far past the canvas they are laid: the play scene's numbers. */
+const FLOOR_TILE_COUNT = 320;
+const FLOOR_MARGIN = 64;
 
 /** Units: one quad each, orbiting a point at its own rate; the first tenth flash white for a moment each second. */
 const UNIT_COUNT = 300;
@@ -128,7 +146,6 @@ const TARGET_DIAMETER = 48;
 const TARGET_ORBIT = 60;
 const TARGET_RATE = 0.4;
 const TARGET_TINT = 0xff66aa;
-const CAMERA_LERP = 0.1;
 
 type Image = Phaser.GameObjects.Image;
 
@@ -210,6 +227,20 @@ export class BenchScene extends Phaser.Scene {
 
   private readonly numbers: NumberText[] = [];
 
+  private readonly projection = new Projection();
+
+  /** Scratch for a world point's screen point. */
+  private readonly point: Vec2 = { x: 0, y: 0 };
+
+  /** Scratch for the screen rectangle the floor covers this frame. */
+  private readonly screen: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+
+  private ground: GroundLayer | null = null;
+
+  private camera: WorldCamera | null = null;
+
+  private floor: FloorView | null = null;
+
   private target: Image | null = null;
 
   private readout: Readout | null = null;
@@ -221,10 +252,25 @@ export class BenchScene extends Phaser.Scene {
     this.atlas = atlas;
   }
 
+  preload(): void {
+    this.atlas.preload(this);
+  }
+
   create(): void {
     this.atlas.bake(this);
-    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
+    const ground = new GroundLayer(this, VIEW_SCALE);
+    const camera = new WorldCamera(this.cameras.main, this.projection);
+
+    this.ground = ground;
+    this.floor = createFloorView(
+      FLOOR_TILE_COUNT,
+      (frame) => this.standingImage(frame).setVisible(false),
+      {
+        width: this.atlas.frameWidth(FLOOR_FRAME),
+        height: this.atlas.frameHeight(FLOOR_FRAME),
+      },
+    );
     this.createObstacles();
     this.createUnits();
     this.createProjectiles();
@@ -232,13 +278,21 @@ export class BenchScene extends Phaser.Scene {
     this.createWedges();
     this.createNumbers();
 
-    const target = this.add
-      .image(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, ATLAS_TEXTURE_KEY, "disc")
+    const target = this.groundImage("disc")
+      .setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2)
       .setDisplaySize(TARGET_DIAMETER, TARGET_DIAMETER)
       .setTint(TARGET_TINT)
       .setDepth(DEPTH_UNITS);
 
-    this.cameras.main.startFollow(target, false, CAMERA_LERP, CAMERA_LERP);
+    camera.follow(target.x, target.y);
+    camera.fitBounds({
+      minX: 0,
+      minY: 0,
+      maxX: WORLD_WIDTH,
+      maxY: WORLD_HEIGHT,
+    });
+    ground.keepSorted();
+    this.camera = camera;
     this.target = target;
     this.readout = new Readout(this);
   }
@@ -247,15 +301,40 @@ export class BenchScene extends Phaser.Scene {
     const seconds = time / MS_PER_SECOND;
 
     this.moveTarget(seconds);
+    this.layFloor();
     this.moveUnits(seconds, time);
     this.moveProjectiles(delta);
     this.animateEffects(seconds);
     this.sweepWedges(time);
     this.retypeNumbers(seconds, time);
 
+    if (this.ground !== null) {
+      this.ground.keepSorted();
+    }
+
     if (this.readout !== null) {
       this.readout.update(delta);
     }
+  }
+
+  /** An image lying on the ground, written in world coordinates. */
+  private groundImage(frame: string): Image {
+    const image = this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame);
+
+    return this.ground === null ? image : this.ground.add(image);
+  }
+
+  /** An image standing in the scene, placed in screen coordinates. */
+  private standingImage(frame: string): Image {
+    return this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame);
+  }
+
+  private layFloor(): void {
+    if (this.camera === null || this.floor === null) {
+      return;
+    }
+
+    this.floor.sync(this.camera.screenRect(FLOOR_MARGIN, this.screen));
   }
 
   private regionX(): number {
@@ -270,8 +349,8 @@ export class BenchScene extends Phaser.Scene {
     for (let index = 0; index < OBSTACLE_COUNT; index += 1) {
       const size = between(this.random, OBSTACLE_SIZE_MIN, OBSTACLE_SIZE_MAX);
 
-      this.add
-        .image(this.regionX(), this.regionY(), ATLAS_TEXTURE_KEY, "square")
+      this.groundImage("square")
+        .setPosition(this.regionX(), this.regionY())
         .setDisplaySize(size, size)
         .setTint(OBSTACLE_TINT)
         .setDepth(DEPTH_OBSTACLES);
@@ -281,8 +360,7 @@ export class BenchScene extends Phaser.Scene {
   private createUnits(): void {
     for (let index = 0; index < UNIT_COUNT; index += 1) {
       const tint = hueToTint(index / UNIT_COUNT);
-      const view = this.add
-        .image(0, 0, ATLAS_TEXTURE_KEY, "disc")
+      const view = this.groundImage("disc")
         .setDisplaySize(UNIT_DIAMETER, UNIT_DIAMETER)
         .setTint(tint)
         .setDepth(DEPTH_UNITS);
@@ -301,8 +379,7 @@ export class BenchScene extends Phaser.Scene {
 
   private createProjectiles(): void {
     for (let index = 0; index < PROJECTILE_POOL_SIZE; index += 1) {
-      const view = this.add
-        .image(0, 0, ATLAS_TEXTURE_KEY, "disc")
+      const view = this.groundImage("disc")
         .setDisplaySize(PROJECTILE_DIAMETER, PROJECTILE_DIAMETER)
         .setTint(PROJECTILE_TINT)
         .setDepth(DEPTH_PROJECTILES)
@@ -323,8 +400,8 @@ export class BenchScene extends Phaser.Scene {
     for (let index = 0; index < EFFECT_COUNT; index += 1) {
       const frame = EFFECT_FRAMES[index % EFFECT_FRAMES.length] ?? LINE_FRAME;
       const isLine = frame === LINE_FRAME;
-      const view = this.add
-        .image(this.regionX(), this.regionY(), ATLAS_TEXTURE_KEY, frame)
+      const view = this.groundImage(frame)
+        .setPosition(this.regionX(), this.regionY())
         .setTint(EFFECT_TINT)
         .setDepth(isLine ? DEPTH_AIR : DEPTH_GROUND);
 
@@ -347,14 +424,10 @@ export class BenchScene extends Phaser.Scene {
     const top = REGION_TOP + WEDGE_SIZE;
 
     for (let index = 0; index < WEDGE_COUNT; index += 1) {
+      this.projection.toScreen(left + index * WEDGE_SPACING, top, this.point);
       this.wedges.push(
-        this.add
-          .image(
-            left + index * WEDGE_SPACING,
-            top,
-            ATLAS_TEXTURE_KEY,
-            "wedge_1",
-          )
+        this.standingImage("wedge_1")
+          .setPosition(this.point.x, this.point.y)
           .setDisplaySize(WEDGE_SIZE, WEDGE_SIZE)
           .setTint(WEDGE_TINT)
           .setDepth(DEPTH_AIR),
@@ -369,7 +442,7 @@ export class BenchScene extends Phaser.Scene {
 
       this.numbers.push({
         view: this.add
-          .bitmapText(x, y, ATLAS_FONT_KEY, "0", NUMBER_FONT_SIZE)
+          .bitmapText(0, 0, ATLAS_FONT_KEY, "0", NUMBER_FONT_SIZE)
           .setDepth(DEPTH_TEXT),
         x,
         y,
@@ -390,6 +463,10 @@ export class BenchScene extends Phaser.Scene {
       WORLD_WIDTH / 2 + Math.cos(angle) * TARGET_ORBIT,
       WORLD_HEIGHT / 2 + Math.sin(angle) * TARGET_ORBIT,
     );
+
+    if (this.camera !== null) {
+      this.camera.follow(this.target.x, this.target.y);
+    }
   }
 
   private moveUnits(seconds: number, timeMs: number): void {
@@ -514,10 +591,12 @@ export class BenchScene extends Phaser.Scene {
     for (const number of this.numbers) {
       const angle = seconds * number.rate;
 
-      number.view.setPosition(
+      this.projection.toScreen(
         number.x + Math.cos(angle) * NUMBER_DRIFT,
         number.y + Math.sin(angle) * NUMBER_DRIFT,
+        this.point,
       );
+      number.view.setPosition(this.point.x, this.point.y);
       number.view.setText(String(Math.floor(timeMs) + number.offset));
     }
   }

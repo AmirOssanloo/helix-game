@@ -9,7 +9,7 @@ The layer that uses Phaser: what it draws, how it draws it cheaply, and how it s
 
 ## The idea in one line
 
-**Everything on screen is a tinted white quad from one atlas, positioned by a pooled view that reads the world and never writes it.**
+**Everything on screen is a tinted white quad from one atlas, positioned by a pooled view that reads the world and never writes it. The floor is the one frame in its own colours.**
 
 One texture means one batch. Pooled views mean no allocation. Reading and never writing means the screen can be wrong without the game being wrong.
 
@@ -21,7 +21,7 @@ Three scenes, each with an explicit job and nothing else:
 
 | Scene | Job |
 | --- | --- |
-| `BootScene` | Bakes the shape atlas and the bitmap font, checks the renderer, starts the other two |
+| `BootScene` | Loads the floor tile, bakes the shape atlas and the bitmap font, checks the renderer, starts the other two |
 | `PlayScene` | Owns the world camera, runs the sync each frame, maps input to commands, and draws the debug band |
 | `HudScene` | Runs in parallel with its own camera, reads the world view, draws bars, orbs, ability squares, and numbers |
 
@@ -31,7 +31,9 @@ A scene composes; it holds no rules and no entity state. There is no debug scene
 
 ## The shape atlas
 
-`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, the floor's diamond grid, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every frame is white with alpha. Colour is always a runtime tint.
+`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every one of those frames is white with alpha, and colour is always a runtime tint.
+
+The floor frame is the exception: a tile a person painted, `assets/floor.png`, which the boot scene loads and the bake copies into the same canvas pixel for pixel, in its own colours, and never tints. Its frame in the content list is one art diamond, 160 by 80, the diamond four by four walkability cells make at the view's scale; the image is a whole number of art diamonds in each direction, at most 960 wide to fit the atlas, and the frame is baked at the image's size. An image of any other size stops the boot with that rule in the message, because a floor laid from it would drift off the cells. The bake also continues the tile one pixel past each edge of its frame, into half the gutter, with the pixels of the opposite edge: the camera's follow leaves the floor at fractional screen positions, and a sample there that reached a transparent gutter would draw a dark seam between tiles. Once copied, the loaded image is dropped, so the world still draws from one texture.
 
 The frame list lives in content, not here: the bake reads it, the views read it, a definition names its frame by it. When drawn art arrives, a file replaces the bake and the list stays.
 
@@ -54,7 +56,7 @@ so a square walkability cell is a 2:1 diamond. The projection module under `pres
 
 **What stands up off the ground is placed in screen pixels.** Status icons, floating numbers, and text labels stay outside the ground layer and ask the projection where their world point is drawn, so they stay upright and unsquashed. A view that stands above a unit asks how far above its centre the top of that unit's disc is drawn.
 
-**The floor is tiled in screen space.** One atlas frame holds four by four diamonds. The floor view lays copies of it edge to edge over the screen rectangle the camera shows, unscaled, aligned so the projected world origin is a corner of every tile and each diamond sits over one walkability cell. The void outside the map's bounds is four black quads on the ground, over the floor. The floor frame joins the world's batch, so it costs no draw.
+**The floor is tiled in screen space.** One atlas frame holds the painted tile. The floor view lays copies of it edge to edge over the screen rectangle the camera shows, unscaled and untinted, half an art diamond to the right of the projected world origin: a tile's corner is then the centre of an art diamond, and each art diamond's corners fall on the corners of a four-by-four block of walkability cells. The void outside the map's bounds is four black quads on the ground, over the floor. The floor frame joins the world's batch, so it costs no draw.
 
 ---
 
@@ -162,14 +164,14 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Phaser | Used here; the composition root imports it only to construct the game |
 | Scenes | `BootScene` bakes and checks; `PlayScene` syncs, cameras, inputs, and draws debug; `HudScene` runs in parallel with its own camera |
 | A scene | Composes; holds no rules and no entity state |
-| The atlas | One white texture baked at boot by `ShapeAtlas`; frame names from the content frame list |
-| Colour | Always a runtime tint on a white frame |
+| The atlas | One texture baked at boot by `ShapeAtlas`; frame names from the content frame list; every frame white but the floor tile, copied in from its image |
+| Colour | Always a runtime tint on a white frame; the floor tile is its own colours, untinted |
 | `Shape` and `Graphics` objects | Never, including debug |
 | Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame baked per angle with its apex at the frame's centre, a wedge frame |
 | Projection | One module under `presentation/camera/`: world to screen, screen to world, heading to screen angle, rectangle to box, each into an `out`; the scale is a presentation constant, never the camera's zoom |
 | On the ground | Obstacles, zones, units, projectiles, orbs, outlines, the preview, and debug overlays are children of the ground layer and write world coordinates |
 | Standing up | Status icons, floating numbers, and labels stay outside the ground layer and write the projected point |
-| The floor | One four-by-four diamond frame tiled unscaled in screen space over what the camera shows, aligned to the projected origin; the void is four quads on the ground; no extra draw |
+| The floor | The painted tile, a whole number of 160 by 80 art diamonds, each over four by four cells; tiled unscaled and untinted in screen space over what the camera shows, half an art diamond right of the projected origin; any other size stops the boot; continued a pixel past its frame into the gutter with its opposite edge, so no seam shows; the void is four quads on the ground; no extra draw |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
 | HUD ability squares | Filled from the active kit's slot descriptors: kind, ability, clock and its whole length, cost, level, and the disable blocking it; never a fixed layout; the kit is a resolver port |
 | HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
