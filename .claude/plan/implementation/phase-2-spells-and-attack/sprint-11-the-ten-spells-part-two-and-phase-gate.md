@@ -75,7 +75,7 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 | Layer | content, tests |
 | Size | 0.5 |
 | Depends on | P2-S09-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Emberling: no-target, self, `spawn_unit` of the `emberling` summon definition beside the hero with a lifetime, attack damage, and health by Ember and Quartz level, behaviour `summon_follow`. A summon definition file under `src/content/summons/` with a small-disc frame in dimmed hero white.
 
@@ -86,6 +86,8 @@ All ten spells against the dummy. Glacier segments, a travelling updraft that li
 - `tests/simulation/spells/emberling.spec.ts`.
 
 **Definition of done:** Every change · A new spell, effect, or enemy ability.
+
+> **Note, 2026-09-23:** content alone, as the ticket's layer row says: `spawn_unit`, the summon's ownership and lifetime, and the `summon_follow` behaviour that acquires before it follows all landed in sprint 09, so the spell is one effect entry over them and the spirit is one definition file. Three things the build met and the ticket did not name. The summon definition holds every field an enemy definition holds, and the catalogue gives the body one radius and none of the projectile's, so the bound radius, the selection radius, the projectile's size, and the colour its shots carry are the definition file's starting values with the rest; the file says which are its own. The registry spec's case for an enemy and a summon sharing an id replaced the whole summon list with its fixture, which from now on leaves the Emberling spell naming a summon that does not exist and raises a second fault, so that case adds to the content's summons as the spell and status cases already do. And the recorded session's content stamp had to be restamped, since a spell's effect list and a new summon are both part of the registry hash; the session casts no spell, so its records stand as they are.
 
 ---
 
@@ -287,11 +289,11 @@ Docs: [devtools and instrumentation](../../../../docs/architecture/devtools-and-
 
 | Check | Result |
 | --- | --- |
-| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06, which needs a walk of its own. Bolide and Clarion landed in T02 and need a walk of their own, in a row of their own on the status page |
+| Every spell of this sprint walked in the arena | Glacier and Updraft walked by the maintainer, 2026-09-22. Glacier behaves as T01 built it; its burn raises a number a tick, which T05 coalesces in the presentation. Updraft's carry was reversed on the walk and is cut in T06, which needs a walk of its own. Bolide and Clarion landed in T02 and need a walk of their own, in a row of their own on the status page. Emberling landed in T03 and needs the same, in a row of its own |
 | Ten spells green at levels 1 and 7; twenty-zone stress test green | |
 | Bench numbers after this phase's views | |
 | Milestone M4 | |
-| Actual days per ticket | T01 1.5 · T02 0.5 · T03 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 · T09 0.25 · T10 0.5 |
+| Actual days per ticket | T01 1.5 · T02 0.5 · T03 0.25 · T04 · T05 0.5 · T06 0.5 · T07 0.5 · T08 1 · T09 0.25 · T10 0.5 |
 
 ## Risks in this sprint
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
-import type { RegistryFault, SpellDef, StatusDef } from "@domain/public";
+import type {
+  RegistryFault,
+  SpellDef,
+  StatusDef,
+  SummonDef,
+} from "@domain/public";
 import { assertRegistryValid, validateRegistry } from "@domain/public";
 import {
   makeEnemyDef,
@@ -24,6 +29,12 @@ const withSpells = (...extra: readonly SpellDef[]): readonly SpellDef[] => [
 /** The content's statuses with `extra` beside them, so every spell that applies one still resolves. */
 const withStatuses = (...extra: readonly StatusDef[]): readonly StatusDef[] => [
   ...contentRegistry.statuses,
+  ...extra,
+];
+
+/** The content's summons with `extra` beside them, so every spell that spawns one still resolves. */
+const withSummons = (...extra: readonly SummonDef[]): readonly SummonDef[] => [
+  ...contentRegistry.summons,
   ...extra,
 ];
 
@@ -419,7 +430,7 @@ describe("a broken definition", () => {
   it("fails on an enemy and a summon sharing an id", () => {
     const registry = makeRegistry({
       enemies: [makeEnemyDef.build({ id: "wisp" })],
-      summons: [makeSummonDef.build({ id: "wisp" })],
+      summons: withSummons(makeSummonDef.build({ id: "wisp" })),
     });
 
     const fault = onlyFault(validateRegistry(registry));
