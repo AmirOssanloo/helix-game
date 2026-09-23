@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { tuningTable } from "@content/public";
+import { meleeGruntDef, tuningTable } from "@content/public";
 import type { DomainEvent, Unit } from "@domain/public";
 import { issueMove, setStraightPath } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
+  makeRegistry,
   makeWorld,
+  spawnEnemy,
   spawnHero,
   spawnUnit,
   submit,
   tickUntil,
+  unitIdOf,
 } from "../../helpers";
 
 /** The spell under test, and the two statuses it puts on the ground, by the ids content registers them under. */
@@ -336,5 +339,99 @@ describe("a Wane the hero may not cast", () => {
     expect(rowOf(hero, WANE)).toBeUndefined();
     expect(world.view.map.zones.count).toBe(0);
     expect(mana(world)).toBeGreaterThanOrEqual(before);
+  });
+});
+
+describe("Wane against a pack that has the hero's scent", () => {
+  /** The pack every grunt below belongs to. */
+  const PACK = 1;
+
+  /** Where the grunts at distance stand: inside the grunt's aggro radius and far outside its reach. */
+  const DISTANT_X = [
+    meleeGruntDef.aggroRadius - 50,
+    meleeGruntDef.aggroRadius - 100,
+  ];
+
+  /** Where the adjacent grunt stands: behind the hero, inside its reach where it stands. */
+  const ADJACENT_X = -140;
+
+  /** How far the grunts at distance have come toward the hero when it casts: well on the way, and still far out of reach. */
+  const CLOSED = 200;
+
+  /** Ticks the case runs after the cast: long enough for the grunts at distance to walk home and the adjacent one to swing again. */
+  const SETTLE = 90;
+
+  /** Long enough for the adjacent grunt to face the hero and begin its first swing. */
+  const PATIENCE = 300;
+
+  /**
+   * The hero at the origin with Wane prepared at the first level, two grunts chasing from
+   * across the room and one already swinging from behind, all in one pack, on the content
+   * registry with no wander.
+   */
+  const arrangePack = () => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({ tuning: { wander_radius: 0 } }),
+    });
+    const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
+    const form = world.state.run.forms[0];
+
+    if (form === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    form.kit.prepared[FIRST_PREPARED] = WANE;
+
+    const spawnGrunt = (x: number): Unit =>
+      spawnEnemy(world, {
+        definitionId: meleeGruntDef.id,
+        x,
+        y: 0,
+        packId: PACK,
+      });
+    const distant = DISTANT_X.map(spawnGrunt);
+    const adjacent = spawnGrunt(ADJACENT_X);
+
+    return { world, hero, heroId: unitIdOf(world, hero), distant, adjacent };
+  };
+
+  it("sends the grunts chasing at distance home to rest, and the adjacent one keeps attacking", () => {
+    const { world, hero, heroId, distant, adjacent } = arrangePack();
+
+    tickUntil(
+      world,
+      () =>
+        adjacent.state === "attack_windup" &&
+        distant.every((unit) => unit.spawnPoint.x - unit.curr.x >= CLOSED),
+      PATIENCE,
+    );
+
+    expect(distant.map((unit) => unit.ai.state)).toEqual(["chase", "chase"]);
+
+    castAndLand(world, hero);
+    world.tick();
+
+    expect(hero.disables.aggroHidden).toBe(true);
+
+    world.tick();
+
+    expect(distant.map((unit) => unit.ai.state)).toEqual(["return", "return"]);
+
+    const reader = createEventReader();
+
+    tickTimes(world, SETTLE);
+
+    const landed = eventsOfKind(world, reader, "unit_damaged").filter(
+      (event) => event.unitId === heroId,
+    );
+
+    // Home, and at rest there with the hero still hidden, rather than turned back.
+    expect(distant.map((unit) => unit.ai.state)).toEqual(["idle", "idle"]);
+    expect([adjacent.ai.state, adjacent.order.targetId]).toEqual([
+      "attack",
+      heroId,
+    ]);
+    expect(landed.length).toBeGreaterThan(0);
   });
 });

@@ -21,7 +21,7 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Layer | domain, simulation, tests |
 | Size | 1 |
 | Depends on | P3-S12-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** The death system grants the dying enemy's experience to the hero regardless of who landed the hit (a summon's kill counts), clears statuses, enters Dead, and releases the slot after the delay; the dummy grants none. `kill_all` grants; `clear_all` does not. Experience thresholds from the level table; each level grants the per-level attributes and one skill point; the cap at 30 stops accumulation. A killed-while-returning enemy dies normally. A projectile in flight when the hero dies still lands and credits the hero.
 
@@ -35,6 +35,8 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 - `tests/simulation/enemies/*.spec.ts` — the two pending standard tests filled in per archetype.
 
 **Definition of done:** Every change · `src/domain`.
+
+> Note, 2026-09-23: the killed-while-returning test found that Return healed an enemy emptied earlier in the same tick, by a burn or a spell, back above zero before the death system ran, so it never died; the hero's regeneration had the same gap. Regeneration now leaves health at zero. The archetype specs' first pending test is named for what the simulation tier can see, the slot and the hash given back, which is what the view is bound from.
 
 ---
 
@@ -113,7 +115,7 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Five grunts to a level up by hand | |
 | Every enemies-page edge case green by name | |
 | Milestone M5 | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

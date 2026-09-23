@@ -10,6 +10,13 @@ const TURN_RATE_STEP_SECONDS = 0.03;
 const DEGREES_PER_HALF_TURN = 180;
 
 /**
+ * A turn rate as the spec publishes it, radians per turn step, in radians per tick. The one
+ * conversion of a turn rate, whether the tuning table's or a unit definition's.
+ */
+export const turnRatePerTick = (value: number, simHz: number): number =>
+  value / (TURN_RATE_STEP_SECONDS * simHz);
+
+/**
  * Why a tuning command was refused. The step rate is fixed at world creation, because every
  * duration already converted and the driver's step both depend on it; an unknown key can only
  * come from a hand-edited log, since the key type refuses it at compile time.
@@ -41,7 +48,7 @@ const toSimulationUnits = (
       return (value * Math.PI) / DEGREES_PER_HALF_TURN;
 
     case "radians_per_turn_step":
-      return value / (TURN_RATE_STEP_SECONDS * simHz);
+      return turnRatePerTick(value, simHz);
 
     case "count":
     case "world_units":

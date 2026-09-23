@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { meleeGruntDef } from "@content/public";
+import { meleeGruntDef, tuningTable } from "@content/public";
 import type { Unit } from "@domain/public";
 import { applyDamage } from "@domain/public";
 import type { Simulation } from "@simulation/public";
@@ -18,6 +18,9 @@ const DEF = meleeGruntDef;
 
 /** The hero's bound radius, which widens every reach at it. */
 const HERO_BOUND = 24;
+
+/** The corpse delay in ticks under the content table's defaults. */
+const CORPSE_TICKS = tuningTable.corpse_delay * tuningTable.sim_hz;
 
 /** The pack every case spawns in. */
 const PACK = 1;
@@ -124,9 +127,47 @@ describe("the melee grunt", () => {
     expect(unit.resources.health).toBeGreaterThan(leashedAt);
   });
 
-  // Owner: the death and experience work in the next sprint. Written when an enemy's death grants experience.
-  it.todo("dies at zero health, unbinds its view, and releases its slot");
+  it("dies at zero health, and gives its slot and its place in the hash back after the corpse delay", () => {
+    const { world, hero } = arrange();
+    const unit = spawnAt(world, DEF.aggroRadius + 2000);
+    const id = unitIdOf(world, unit);
 
-  // Owner: the death and experience work in the next sprint. Written when an enemy's death grants experience.
-  it.todo("grants the hero its experience when it dies");
+    applyDamage(
+      world.state,
+      id,
+      unit.stats.maxHealth * 10,
+      "pure",
+      unitIdOf(world, hero),
+    );
+    world.tick();
+
+    expect(unit.state).toBe("dead");
+
+    for (let tick = 1; tick < CORPSE_TICKS; tick += 1) {
+      world.tick();
+    }
+
+    expect(world.view.map.units.resolve(id)).not.toBeNull();
+
+    world.tick();
+
+    expect(world.view.map.units.resolve(id)).toBeNull();
+    expect(world.view.map.spatialHash.count).toBe(1);
+  });
+
+  it("grants the hero its experience when it dies", () => {
+    const { world, hero } = arrange();
+    const unit = spawnAt(world, DEF.aggroRadius + 2000);
+
+    applyDamage(
+      world.state,
+      unitIdOf(world, unit),
+      unit.stats.maxHealth * 10,
+      "pure",
+      unitIdOf(world, hero),
+    );
+    world.tick();
+
+    expect(hero.progression.experience).toBe(DEF.experience);
+  });
 });

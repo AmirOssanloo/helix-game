@@ -101,7 +101,7 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | domain, tests |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Confirm and test that an enemy in Attack uses `attackSystem` with its definition's attack block: melee with no projectile speed hits at the attack point; ranged fires the homing projectile; damage is physical against the hero's armour; disarm on an enemy blocks it. The Wane aggro-drop test deferred from sprint 10.
 
@@ -114,6 +114,8 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 
 **Definition of done:** Every change · `src/domain`.
 
+> **Built** 2026-09-23. Confirming found the melee half broken: a swing with no projectile speed spawned a projectile of speed zero at the attacker, which never reached the hero, never landed, and was never released, so every grunt, runner, and tank swing held a projectile slot for good. The attack system now lands a melee swing on the target through the damage door, as physical, on the tick its attack point ends, and spawns nothing; a ranged attack fires its projectile as before. Fixed inside this ticket because confirming it was the build. The ability pipeline page and the enemies page say so. The archer's arrow lands thirteen ticks after the shot from 400 away, one step taken on the tick it is fired. A disarm on a grunt or an archer keeps it in Attack with nothing landed or fired. Wane sends two grunts chasing from 200 units down the room home to rest while a third, swinging behind the hero, keeps hitting it.
+
 ---
 
 ### P3-S12-T05 — A unit walks and turns at its own definition's rates
@@ -123,7 +125,7 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | domain, tests |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** The movement system and the attack rule's face stage read a unit's movement speed and turn rate from its definition when it has one, and from the tuning table's `base_ms` and `turn_rate_T` for the hero, whose form carries none. The turn rate converts once at world creation into the unit record, as the regeneration does. Modifiers and the speed clamps apply as they do to the hero.
 
@@ -138,6 +140,8 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 
 > **Unplanned**, added 2026-09-23 while building T03. The deferred list moved a unit's own speed and turn rate to this sprint, and no ticket here built it; the sprint's playable outcome, the runner arriving first, needs it.
 
+> **Built** 2026-09-23. The unit record gains `movementSpeedPerTick` and `turnRatePerTick`, converted beside the regeneration when the world is created; the turn rate goes through the tuning table's one conversion, now exported as `turnRatePerTick`. `src/domain/movement/unit-rates.ts` answers a unit's base speed and turn rate: its definition's, or the tuning table's for the hero and for a body wearing no definition, so a `set_tuning` of `base_ms` or `turn_rate_T` still moves the hero and no archetype. The cast system's face stage reads the same rate as the attack's, which the build text did not name; nothing but the hero casts yet, so nothing it replays changed. The emberling now walks at its own 380. The runner reaches the hero from 600 units ahead of a grunt from the same distance, and the hero walking away gains 40 units a second on a grunt and loses 60 to a runner. A unit test for the conversion sits beside the spec, in `tests/domain/definitions/unit-state.spec.ts`. The movement page and the where-to-look row say so.
+
 ---
 
 ## Sprint exit
@@ -146,7 +150,8 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | --- | --- |
 | Every transition test green for three behaviours | Green, 2026-09-23: 46 cases in `tests/simulation/ai/transitions.spec.ts` across `melee_chaser`, `ranged_holder`, and `stationary`, with the corridor and the four archetype specs beside them |
 | Corridor queue by hand with path lines on | Walked by the maintainer, 2026-09-23, and approved after two fixes the walk found: a leashed pack jammed at the corridor's mouth until a return re-planned its path on the chase interval, and Wane spared an archer firing from range until only an adjacent melee attacker kept its aggro, walked again and approved |
-| Actual days per ticket | T01 0.3 · T02 0.9 · T03 0.8 · T04 · T05 |
+| The runner arrives first, by hand | Walked by the maintainer, 2026-09-23, after P3-S12-T05: a pack of grunts and runners spawned from the panel's Enemies group, and the runners reached the hero first |
+| Actual days per ticket | T01 0.3 · T02 0.9 · T03 0.8 · T04 0.3 · T05 0.3 |
 
 ## Risks in this sprint
 

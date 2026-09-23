@@ -9,6 +9,7 @@ import { arrive, beginMoving } from "../orders/state-machine";
 import { isPathComplete, nextWaypoint, passWaypoint } from "./path";
 import { movementSpeed } from "./speed-stack";
 import { isInsideCone, turnToward } from "./turn";
+import { baseSpeedOf, turnRateOf } from "./unit-rates";
 
 /** Scratch for the vector from a unit to its waypoint, reused for every unit every tick. */
 const toWaypoint: Vec2 = { x: 0, y: 0 };
@@ -103,9 +104,10 @@ const carryPushed = (units: PoolView<Unit>): void => {
  * turn for a path; turn toward the next waypoint along the shortest arc, ramping up over the
  * first ticks of a turn and landing exactly; and only when the bearing is inside the action
  * cone, translate by the lesser of this tick's speed and the distance left, so a unit never
- * overshoots. Speed is the stack over the unit's modifiers, recomputed every tick. The
- * tunables are read in units per tick and radians per tick, converted once when they entered
- * the world.
+ * overshoots. Speed is the stack over the unit's modifiers, recomputed every tick. The base
+ * speed and the turn rate are the unit's definition's, and the tuning table's for the hero and
+ * for a body wearing none. Both are read in units per tick and radians per tick, converted
+ * once when they entered the world.
  *
  * A unit a push is carrying neither turns nor translates itself: it keeps its order and
  * resumes walking it when the push ends. The push itself is the first step of the system, so
@@ -118,10 +120,10 @@ const carryPushed = (units: PoolView<Unit>): void => {
  */
 export const movementSystem = (world: World): void => {
   const tuning = world.run.tuning;
-  const turnStep = readTunable(tuning, "turn_rate_T");
+  const tunedTurnRate = readTunable(tuning, "turn_rate_T");
   const rampTicks = readTunable(tuning, "turn_ramp_ticks");
   const cone = readTunable(tuning, "action_cone_deg");
-  const baseSpeed = readTunable(tuning, "base_ms");
+  const tunedSpeed = readTunable(tuning, "base_ms");
   const minSpeed = readTunable(tuning, "ms_min");
   const maxSpeed = readTunable(tuning, "ms_max");
   const epsilon = readTunable(tuning, "arrival_epsilon");
@@ -167,7 +169,7 @@ export const movementSystem = (world: World): void => {
     unit.facing = turnToward(
       unit.facing,
       toTarget,
-      turnStep,
+      turnRateOf(world, unit, tunedTurnRate),
       rampTicks,
       unit.turnTicks,
     );
@@ -183,7 +185,12 @@ export const movementSystem = (world: World): void => {
       assert(result === "ok", "A turning unit inside the cone begins moving");
     }
 
-    const speed = movementSpeed(baseSpeed, unit.modifiers, minSpeed, maxSpeed);
+    const speed = movementSpeed(
+      baseSpeedOf(world, unit, tunedSpeed),
+      unit.modifiers,
+      minSpeed,
+      maxSpeed,
+    );
     const step = Math.min(speed, remaining);
 
     if (remaining - step <= epsilon) {

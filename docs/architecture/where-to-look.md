@@ -43,10 +43,10 @@ Every other architecture page says how code must be shaped. This one says where 
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file and the validator beside it |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union |
-| How damage lands, what a hit's statuses do about it, and how a unit dies and respawns | `src/domain/combat/` — the damage rule, the damage hooks, and the death system |
+| How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system |
 | How a status is applied, expires, and becomes a disable flag | `src/domain/statuses/` — the status rule and the status system |
 | How attributes become derived values, how a modifier row changes one, how a unit levels and spends skill points, and how resources regenerate | `src/domain/stats/` — the derivation, the modifier pipeline, the level rule, the regeneration rule, and the stats system |
-| How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, the speed stack, the path buffer, and the movement system |
+| How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, each unit's own speed and turn rate, the speed stack, the path buffer, and the movement system |
 | How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the pass loop, and the tie-break |
 | How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
 | How "what is near" is answered, and what a query returns | The spatial hash under `src/domain/movement/` — the operations, the cell capacity, and the candidate order |

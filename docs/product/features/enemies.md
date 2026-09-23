@@ -29,7 +29,7 @@ Every archetype carries the same fields. A field an archetype does not use is se
 - Health, health regeneration, armour, magic resistance
 - Mana, mana regeneration, zero for an archetype that has none, so a spell that burns mana finds a number
 - Movement speed, turn rate, collision radius
-- An attack: damage, range, acquire radius, attack point, backswing, base attack time, and the projectile it fires
+- An attack: damage, range, acquire radius, attack point, backswing, base attack time, and the projectile it fires, or none for a melee attack, which lands at the end of its attack point
 - Aggro radius, leash radius
 - Experience reward
 - Tier: normal, elite, or boss

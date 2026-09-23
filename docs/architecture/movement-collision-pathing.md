@@ -9,7 +9,7 @@ How a unit turns, moves, is kept out of other units and walls, finds a path, and
 
 ## The idea in one line
 
-**Units are solid discs that turn at a fixed rate, move at a constant speed along a path, and get pushed apart after they move.**
+**Units are solid discs that turn at their own fixed rate, move at their own constant speed along a path, and get pushed apart after they move.**
 
 There is no momentum, no acceleration, no bounce. A unit that receives a move order is either turning, moving, or arrived, and each tick does exactly one step of that.
 
@@ -32,13 +32,15 @@ Every unit carries three radii, and they are never collapsed into one:
 A unit facing away from its target does not slide sideways toward it. Each tick the movement system:
 
 1. Computes the bearing to the next path point.
-2. Turns toward it along the shortest arc, by the turn rate times the step, with a short ramp on the first ticks of a turn.
+2. Turns toward it along the shortest arc, by the unit's turn rate times the step, with a short ramp on the first ticks of a turn.
 3. Translates only when the bearing is inside the action cone.
 4. Advances by `min(speed × dt, distance remaining)` along the path, so a unit arrives exactly and never overshoots.
 
 Speed is a stack: a base value, flat and percentage modifiers from statuses and orbs, and a clamp at both ends. The stack is recomputed each tick from the unit's current modifiers; nothing caches it.
 
-Targeted casts and attacks use the same turn: the ability pipeline waits for the bearing to enter the cone before its cast point starts.
+The base speed and the turn rate are the unit's own. A unit spawned from a definition takes both from it, converted into per-tick values once when the world is created, beside its regeneration. The hero's form carries neither, so the hero reads the tuning table's, as does a body wearing no definition; a tuning change to them moves those units and no other. The ramp, the action cone, and the clamps are the tuning table's for every unit.
+
+Targeted casts and attacks use the same turn, at the same rate: the ability pipeline waits for the bearing to enter the cone before its cast point starts.
 
 ---
 
@@ -138,9 +140,10 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | --- | --- |
 | Physics engine | None; movement and collision are plain arithmetic in `domain/movement/` |
 | Three radii | Collision for blocking and pathing, bound for range, selection for clicks; never collapsed |
-| Turning | Shortest arc at the turn rate times the step, with a short ramp; translation only inside the action cone |
+| Turning | Shortest arc at the unit's turn rate times the step, with a short ramp; translation only inside the action cone |
 | Moving | `min(speed × dt, remaining)` along the path; no acceleration, no overshoot |
 | Speed | A stack of base, modifiers, and clamps, recomputed every tick |
+| Base speed and turn rate | The unit's definition's, converted once at world creation; the tuning table's for the hero and a body with no definition. Ramp, cone, and clamps are the table's for all |
 | Targeted casts and attacks | Wait for the bearing to enter the cone before the cast point |
 | Displacement | Even steps over a count of ticks, taken before anything walks and left to the same collision pass, so a push stops at a wall; the unit keeps its order and a status flag is what stops it walking meanwhile; a second displacement on a unit already held is ignored |
 | A lift | Moves nothing itself: its status takes the order off the unit and gives it back on the tick the status ends, from where the unit was dropped, with a new path asked for |

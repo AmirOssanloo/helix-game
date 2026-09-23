@@ -3,13 +3,14 @@ import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { clearAiRecord, enterDead } from "../ai/ai-state";
 import { readTunable } from "../definitions/tuning-state";
-import { activeFormOf } from "../entities/hero";
+import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import { clearStatusEntry, releaseUnit } from "../entities/unit";
 import type { FormRecord, World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags } from "../orders/disable-flags";
 import { die, respawn } from "../orders/state-machine";
+import { grantExperience } from "../stats/levels";
 
 /** Scratch for the event a death announces, reused for every one. */
 const event = createDomainEvent();
@@ -36,6 +37,27 @@ const announceDied = (world: World, unitId: EntityId): void => {
 };
 
 /**
+ * An enemy's death pays its definition's experience to the hero, whoever landed the hit, so a
+ * summon's kill and a projectile landing after the hero fell both count. Each enemy pays its
+ * own; nothing is shared across a pack. The hero is paid dead or alive, and the level rule
+ * stops the experience at the cap.
+ */
+const grantReward = (world: World, unit: Readonly<Unit>): void => {
+  const definitionId = unit.definitionId;
+  const record =
+    unit.kind !== "enemy" || definitionId === null
+      ? undefined
+      : world.run.units.get(definitionId);
+  const hero = resolveHero(world);
+
+  if (record === undefined || hero === null || record.def.experience <= 0) {
+    return;
+  }
+
+  grantExperience(hero.progression, record.def.experience, world.run.hero);
+};
+
+/**
  * Whether the unit has health to lose. The hero and a unit spawned from a definition both
  * carry a maximum; the plain body the panel spawns for the stress test carries none, and
  * what was never alive is never taken for dead.
@@ -45,8 +67,8 @@ const hasHealthPool = (unit: Readonly<Unit>): boolean =>
 
 /**
  * The unit's health reached zero: whatever it was doing ends, the enemy state machine holds
- * it in Dead, its status table is emptied,
- * the death is announced once, and the tick it is due on is written. The hero respawns on
+ * it in Dead, its status table is emptied, an enemy pays its experience to the hero, the
+ * death is announced once, and the tick it is due on is written. The hero respawns on
  * that tick; every other unit is released then.
  */
 const takeDeath = (
@@ -60,6 +82,7 @@ const takeDeath = (
   assert(result === "ok", "A living unit whose health reached zero dies");
   enterDead(unit.ai);
   clearStatuses(unit);
+  grantReward(world, unit);
   announceDied(world, id);
   unit.stageEndsAtTick = world.tick + delay;
 };

@@ -45,4 +45,12 @@ describe("regenerate", () => {
 
     expect(resources).toEqual({ health: 0, mana: 0 });
   });
+
+  it("leaves health at zero, so a unit emptied this tick still dies at its end", () => {
+    const resources: Resources = { health: 0, mana: 10 };
+
+    regenerate(resources, stats());
+
+    expect(resources).toEqual({ health: 0, mana: 10.5 });
+  });
 });

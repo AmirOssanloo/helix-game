@@ -1,6 +1,8 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
+import type { DamageType } from "../combat/damage";
+import { applyDamage } from "../combat/damage";
 import type { AttackRecord } from "../definitions/attack-state";
 import { attackTicks } from "../definitions/attack-state";
 import { readTunable } from "../definitions/tuning-state";
@@ -8,6 +10,7 @@ import { acquireProjectile } from "../entities/projectile";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { isInsideCone, turnToward } from "../movement/turn";
+import { turnRateOf } from "../movement/unit-rates";
 import {
   beginAttackBackswing,
   beginAttackWindup,
@@ -20,17 +23,21 @@ import {
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
 import { nearestEnemy } from "./acquire";
-import { attackDamageOf, attackOf, isInAttackRange } from "./attack";
+import { attackDamageOf, attackOf, isInAttackRange, isMelee } from "./attack";
+
+/** What every attack lands as, melee or ranged. */
+const ATTACK_DAMAGE_TYPE: DamageType = "physical";
 
 /** What the turn-and-face stage reads from the tuning table, filled once per tick. */
 type FacingTuning = {
-  turnStep: number;
+  /** The tuning table's turn rate, which the hero and a body wearing no definition turn at. */
+  tunedTurnRate: number;
   rampTicks: number;
   cone: number;
 };
 
 /** The facing tunables, read once per tick. */
-const facing: FacingTuning = { turnStep: 0, rampTicks: 0, cone: 0 };
+const facing: FacingTuning = { tunedTurnRate: 0, rampTicks: 0, cone: 0 };
 
 /** Scratch for the legal point an approach walks to, reused for every unit. */
 const approachPoint: Vec2 = { x: 0, y: 0 };
@@ -132,7 +139,7 @@ const approach = (
  * bearing is inside the action cone after this tick's turn, which is when the attack point
  * may begin. A target standing on the unit's own centre has no bearing and counts as faced.
  */
-const face = (unit: Unit, target: Readonly<Unit>): boolean => {
+const face = (world: World, unit: Unit, target: Readonly<Unit>): boolean => {
   if (unit.state === "moving" || unit.needsPath || unit.path.count > 0) {
     const result = beginFacing(unit);
 
@@ -147,7 +154,7 @@ const face = (unit: Unit, target: Readonly<Unit>): boolean => {
   unit.facing = turnToward(
     unit.facing,
     toTarget,
-    facing.turnStep,
+    turnRateOf(world, unit, facing.tunedTurnRate),
     facing.rampTicks,
     unit.turnTicks,
   );
@@ -170,11 +177,38 @@ const isReadyToSwing = (
   world.tick + record.pointTicks >= unit.attackReadyAtTick;
 
 /**
- * The shot, on the tick the attack point ends: a homing projectile from where the unit
- * stands, carrying the attack damage read at this moment, and then the backswing and the
- * clock for the next shot. A projectile pool with no room leaves the swing, the backswing,
- * and the clock as they are: a shot that did not spawn is a miss the pool counts, not a
- * refusal the attacker hears about.
+ * A ranged shot: a homing projectile from where the unit stands, carrying the attack damage
+ * read at this moment. A projectile pool with no room fires nothing: a shot that did not
+ * spawn is a miss the pool counts, not a refusal the attacker hears about.
+ */
+const loose = (
+  world: World,
+  unit: Readonly<Unit>,
+  attackerId: EntityId,
+  targetId: EntityId,
+  record: AttackRecord,
+): void => {
+  const id = acquireProjectile(world, unit.curr.x, unit.curr.y, unit.facing);
+  const shot = id === null ? null : world.map.projectiles.resolve(id);
+
+  if (shot === null) {
+    return;
+  }
+
+  shot.casterId = attackerId;
+  shot.targetId = targetId;
+  shot.speed = record.projectileSpeed;
+  shot.radius = record.def.projectileRadius;
+  shot.attackDamage = attackDamageOf(unit, record);
+  shot.frame = record.def.atlasFrame;
+  shot.tint = record.def.tint;
+};
+
+/**
+ * The shot, on the tick the attack point ends, and then the backswing and the clock for the
+ * next shot, whether or not anything landed. A melee attack lands its damage on the target
+ * there and then, through the damage door as physical, and spawns nothing; any other looses a
+ * projectile that lands it later.
  */
 const fire = (
   world: World,
@@ -186,17 +220,16 @@ const fire = (
 
   assert(targetId !== null, "A unit that swung has something to swing at");
 
-  const id = acquireProjectile(world, unit.curr.x, unit.curr.y, unit.facing);
-  const shot = id === null ? null : world.map.projectiles.resolve(id);
-
-  if (shot !== null) {
-    shot.casterId = attackerId;
-    shot.targetId = targetId;
-    shot.speed = record.projectileSpeed;
-    shot.radius = record.def.projectileRadius;
-    shot.attackDamage = attackDamageOf(unit, record);
-    shot.frame = record.def.atlasFrame;
-    shot.tint = record.def.tint;
+  if (isMelee(record)) {
+    applyDamage(
+      world,
+      targetId,
+      attackDamageOf(unit, record),
+      ATTACK_DAMAGE_TYPE,
+      attackerId,
+    );
+  } else {
+    loose(world, unit, attackerId, targetId, record);
   }
 
   const result = beginAttackBackswing(unit);
@@ -269,7 +302,7 @@ const runOrder = (
     return;
   }
 
-  if (!face(unit, target) || !isReadyToSwing(world, unit, record)) {
+  if (!face(world, unit, target) || !isReadyToSwing(world, unit, record)) {
     return;
   }
 
@@ -302,7 +335,7 @@ export const attackSystem = (world: World): void => {
   const epsilon = readTunable(tuning, "arrival_epsilon");
   const units = world.map.units;
 
-  facing.turnStep = readTunable(tuning, "turn_rate_T");
+  facing.tunedTurnRate = readTunable(tuning, "turn_rate_T");
   facing.rampTicks = readTunable(tuning, "turn_ramp_ticks");
   facing.cone = readTunable(tuning, "action_cone_deg");
 

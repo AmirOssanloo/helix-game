@@ -8,6 +8,7 @@ import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { isPathComplete } from "../movement/path";
 import { isInsideCone, turnToward } from "../movement/turn";
+import { turnRateOf } from "../movement/unit-rates";
 import {
   beginCastBackswing,
   beginCastPoint,
@@ -32,7 +33,8 @@ import { hasMana, spendMana } from "./mana";
 
 /** What the turn-and-face stage reads from the tuning table, filled once per tick. */
 type FacingTuning = {
-  turnStep: number;
+  /** The tuning table's turn rate, which the hero and a body wearing no definition turn at. */
+  tunedTurnRate: number;
   rampTicks: number;
   cone: number;
 };
@@ -53,7 +55,7 @@ const context: CastRecord = createCastRecord();
 const event = createDomainEvent();
 
 /** The facing tunables, read once per tick. */
-const facing: FacingTuning = { turnStep: 0, rampTicks: 0, cone: 0 };
+const facing: FacingTuning = { tunedTurnRate: 0, rampTicks: 0, cone: 0 };
 
 /** A unit target that no longer exists, where a bound radius would be. */
 const TARGET_GONE = -1;
@@ -162,7 +164,7 @@ const approachTarget = (world: World, unit: Unit, epsilon: number): void => {
  * is inside the action cone after this tick's turn, which is when the cast point may begin.
  * An aim under the unit's own centre has no bearing and counts as faced.
  */
-const faceTarget = (unit: Unit): boolean => {
+const faceTarget = (world: World, unit: Unit): boolean => {
   if (unit.state === "moving" || unit.needsPath || unit.path.count > 0) {
     const result = beginFacing(unit);
 
@@ -180,7 +182,7 @@ const faceTarget = (unit: Unit): boolean => {
   unit.facing = turnToward(
     unit.facing,
     toTarget,
-    facing.turnStep,
+    turnRateOf(world, unit, facing.tunedTurnRate),
     facing.rampTicks,
     unit.turnTicks,
   );
@@ -292,7 +294,7 @@ export const castSystem = (world: World): void => {
   const epsilon = readTunable(tuning, "arrival_epsilon");
   const units = world.map.units;
 
-  facing.turnStep = readTunable(tuning, "turn_rate_T");
+  facing.tunedTurnRate = readTunable(tuning, "turn_rate_T");
   facing.rampTicks = readTunable(tuning, "turn_ramp_ticks");
   facing.cone = readTunable(tuning, "action_cone_deg");
 
@@ -352,7 +354,7 @@ export const castSystem = (world: World): void => {
         continue;
       }
 
-      if (kind !== "none" && !faceTarget(unit)) {
+      if (kind !== "none" && !faceTarget(world, unit)) {
         continue;
       }
 
