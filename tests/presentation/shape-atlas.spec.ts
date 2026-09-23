@@ -232,6 +232,26 @@ describe("paintFrame over the content frame list", () => {
     ]);
   });
 
+  it("draws a square with a dot as the square and a circle a third of it across, filled even-odd so the circle is a hole", () => {
+    const painter = new PainterRecorder();
+
+    paintFrame(painter, {
+      frame: {
+        name: "square_dot",
+        width: 60,
+        height: 60,
+        shape: { kind: "square_dot", holeFraction: 1 / 3 },
+      },
+      x: 10,
+      y: 20,
+    });
+
+    expect(painter.arcs).toEqual([
+      { x: 40, y: 50, radius: 10, startAngle: 0, endAngle: Math.PI * 2 },
+    ]);
+    expect(painter.fillRules).toEqual(["evenodd"]);
+  });
+
   it("draws a wedge as an arc from the frame's centre over its sweep", () => {
     const painter = new PainterRecorder();
 

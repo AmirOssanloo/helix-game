@@ -97,6 +97,7 @@ const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
     obstacles: map.obstacles,
     spatialHash: createSpatialHash(readTunable(tuning, "hash_cell_size")),
     pathSearch: createPathSearch(cellCount(walkability)),
+    nextPackId: 0,
   };
 };
 

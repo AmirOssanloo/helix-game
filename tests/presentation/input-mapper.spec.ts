@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
 import { acquireUnit, applyStatus } from "@domain/public";
+import type { GroundPick } from "@presentation/public";
 import {
+  createGroundPick,
   DRAG_THRESHOLD,
   InputMapper,
   LEFT_BUTTON,
@@ -80,6 +82,7 @@ type Arranged = {
   lens: FixedLens;
   intents: IntentRecorder;
   mapper: InputMapper;
+  groundPick: GroundPick;
 };
 
 /** A mapper over a world whose hero holds `prepared` in D and F, standing at the origin facing +X with every orb at level one and full mana. */
@@ -122,14 +125,16 @@ const arrange = (
   const driver = new CommandRecorder(world);
   const lens = new FixedLens();
   const intents = new IntentRecorder();
+  const groundPick = createGroundPick();
   const mapper = new InputMapper({
     driver,
     lens,
     world: world.view,
     intents,
+    groundPick,
   });
 
-  return { world, hero, driver, lens, intents, mapper };
+  return { world, hero, driver, lens, intents, mapper, groundPick };
 };
 
 /** Puts `statusId` on the hero and runs the tick whose status pass raises its flags. */
@@ -236,6 +241,33 @@ describe("the pointer", () => {
 
     expect(driver.commands).toEqual([]);
     expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("left click with no cursor open hands its world point to a waiting ground pick once, and orders nothing", () => {
+    const { driver, groundPick, mapper } = arrange();
+    const picked: { x: number; y: number }[] = [];
+
+    groundPick.pending = (x, y): void => {
+      picked.push({ x, y });
+    };
+    mapper.pointerDown(LEFT_BUTTON, 400, 120);
+    mapper.pointerDown(LEFT_BUTTON, 500, 0);
+
+    expect(picked).toEqual([{ x: 400, y: 120 }]);
+    expect(groundPick.pending).toBeNull();
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("left click with a cursor open commits the cursor and leaves a waiting ground pick waiting", () => {
+    const { driver, groundPick, mapper } = arrange();
+    const pick = (): void => {};
+
+    groundPick.pending = pick;
+    mapper.keyDown("KeyD");
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+
+    expect(driver.commands).toHaveLength(1);
+    expect(groundPick.pending).toBe(pick);
   });
 
   it("left click with the cursor open commits the cast at the world point under the click and closes the cursor", () => {

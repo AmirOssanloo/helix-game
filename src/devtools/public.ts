@@ -7,6 +7,7 @@ export {
   type DevSession,
   type DriverControls,
   exposeDevApi,
+  type GroundPick,
   type OverlayToggles,
   type PanelCommand,
 } from "./dev-api";

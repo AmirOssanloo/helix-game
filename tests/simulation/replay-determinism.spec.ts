@@ -203,7 +203,7 @@ const heroOf = (world: Simulation): Unit => {
   return hero;
 };
 
-/** Plays a short session on `world`: a retune, a spawn, two walks, and a death, over `LIVE_TICKS` ticks. */
+/** Plays a short session on `world`: a retune, two spawns, two walks, a kill of the pack, and a death, over `LIVE_TICKS` ticks. */
 const play = (world: Simulation): void => {
   const spawn = arenaDef.spawnPoint;
 
@@ -221,6 +221,15 @@ const play = (world: Simulation): void => {
     tick: 0,
     timestamp: 2,
   });
+  submit(world, {
+    kind: "spawn_pack",
+    archetypeId: "melee_grunt",
+    tier: "elite",
+    count: 6,
+    position: { x: spawn.x - 300, y: spawn.y + 300 },
+    tick: 0,
+    timestamp: 2.5,
+  });
   world.tick();
   submit(world, {
     kind: "move",
@@ -237,6 +246,10 @@ const play = (world: Simulation): void => {
         tick: 90,
         timestamp: 4,
       });
+    }
+
+    if (world.view.tick === 120) {
+      submit(world, { kind: "kill_all", tick: 120, timestamp: 4.5 });
     }
 
     if (world.view.tick === 140) {

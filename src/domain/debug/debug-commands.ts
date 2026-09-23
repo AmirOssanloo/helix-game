@@ -1,21 +1,27 @@
-import type { Vec2 } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { applyDamage } from "../combat/damage";
 import type {
   DebugCommand,
-  SpawnEnemiesCommand,
+  SpawnPackCommand,
   SpawnZoneCommand,
 } from "../commands/command";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
-import { acquireUnit, releaseUnit } from "../entities/unit";
+import {
+  acquireUnit,
+  ENEMY_LIVE_CAP,
+  releaseUnit,
+  UNIT_CAPACITY,
+} from "../entities/unit";
 import { fillFromDefinition, wearDefinition } from "../entities/unit-spawn";
 import type { World } from "../entities/world-state";
 import { acquireZone } from "../entities/zone";
 import { resetMapScope } from "../map/map-scope";
-import { radiusClassOf } from "../map/walkability";
+import { isBlockedAt, radiusClassOf } from "../map/walkability";
+import { createCandidateBuffer } from "../movement/spatial-hash";
 import { beginChannel } from "../orders/state-machine";
 import type { RefusalReason } from "../orders/validator";
 import { resolveDestination } from "../pathing/destination";
@@ -25,6 +31,13 @@ import { applyStatus } from "../statuses/status.system";
 
 /** Scratch for the legal point one spawned unit lands on, reused for every spawn. */
 const landing: Vec2 = { x: 0, y: 0 };
+
+/** Scratch for the cells a pack is placed on, found before any unit is acquired so a pack that does not fit spawns nothing. A pack is never larger than the cap. */
+const packX = new Float64Array(ENEMY_LIVE_CAP);
+const packY = new Float64Array(ENEMY_LIVE_CAP);
+
+/** Scratch for the units near a candidate cell. */
+const nearby: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
 /** The levels a status the panel applies is read at when the hero has no form to read them from. */
 const NO_ORB_LEVELS: readonly number[] = [];
@@ -105,31 +118,176 @@ const spawnUnits = (
     wearNothing,
   );
 
-/**
- * Puts `count` units of the archetype the command names around its position, each wearing
- * that definition's body, numbers, and behaviour, exactly as a map spawn or a summon wears
- * one. Refused when no archetype has the id, and when the pool has no room for all of them.
- */
-const spawnEnemies = (
+/** Enemies spawned from an archetype that hold a slot, corpses included, since a corpse holds its slot until it is released. */
+const countEnemies = (world: World): number => {
+  const units = world.map.units;
+  let count = 0;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit !== null && unit.kind === "enemy" && unit.definitionId !== null) {
+      count += 1;
+    }
+  }
+
+  return count;
+};
+
+/** Whether a disc of `radius` at (`x`, `y`) overlaps a unit already standing in the world. */
+const isOccupied = (
   world: World,
-  command: SpawnEnemiesCommand,
+  x: number,
+  y: number,
+  radius: number,
+): boolean => {
+  const units = world.map.units;
+  const found = world.map.spatialHash.queryCircle(
+    x,
+    y,
+    radius + radius,
+    nearby,
+  );
+
+  for (let index = 0; index < found; index += 1) {
+    const id = nearby[index];
+    const unit = id === undefined ? null : units.resolve(id);
+
+    if (unit === null) {
+      continue;
+    }
+
+    const reach = unit.collisionRadius + radius;
+    const dx = unit.curr.x - x;
+    const dy = unit.curr.y - y;
+
+    if (dx * dx + dy * dy < reach * reach) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+/**
+ * Finds `count` free cells for a pack of bodies of `radius` around `position`, writing them
+ * into the pack scratch, and returns how many it found. The point first resolves to the
+ * nearest legal one; the cells are then taken ring by ring outward from it on a lattice one
+ * body across, so the pack stands shoulder to shoulder. A cell is free when the walkability
+ * grid lets a body of the radius stand on it and it overlaps no unit already there.
+ */
+const findPackCells = (
+  world: World,
+  count: number,
+  position: Readonly<Vec2>,
+  radius: number,
+): number => {
+  const grid = world.map.walkability;
+  const bounds = world.map.bounds;
+  const radiusClass = radiusClassOf(grid, radius);
+  const spacing = radius + radius;
+  const lastRing = Math.ceil(
+    Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / spacing,
+  );
+  let placed = 0;
+
+  resolveDestination(
+    grid,
+    radiusClass,
+    bounds,
+    world.map.obstacles,
+    position.x,
+    position.y,
+    landing,
+  );
+
+  for (let ring = 0; ring <= lastRing && placed < count; ring += 1) {
+    for (let row = -ring; row <= ring && placed < count; row += 1) {
+      // Every cell of the ring: its top and bottom rows whole, and the two ends of each row between.
+      const step = row === -ring || row === ring ? 1 : ring + ring;
+
+      for (
+        let column = -ring;
+        column <= ring && placed < count;
+        column += step
+      ) {
+        const x = landing.x + column * spacing;
+        const y = landing.y + row * spacing;
+
+        if (
+          !isBlockedAt(grid, radiusClass, x, y) &&
+          !isOccupied(world, x, y, radius)
+        ) {
+          packX[placed] = x;
+          packY[placed] = y;
+          placed += 1;
+        }
+      }
+    }
+  }
+
+  return placed;
+};
+
+/**
+ * Puts a pack of the archetype the command names around its position, at its tier: every
+ * unit wears that definition's body, numbers, and behaviour, exactly as a map spawn or a
+ * summon wears one, shares the pack's new id, and stands on a free cell of its own, which is
+ * its spawn point. Refused, with nothing spawned, when no archetype has the id, when the pack
+ * would take the live enemies past the cap, when the pool has no room for it, and when the
+ * map has too few free cells near the point.
+ */
+const spawnPack = (
+  world: World,
+  command: SpawnPackCommand,
 ): RefusalReason | null => {
   const record = world.run.units.get(command.archetypeId);
+  const units = world.map.units;
 
   if (record === undefined) {
     return "unknown_archetype";
   }
 
-  return spawnGrid(
-    world,
-    command.count,
-    command.position,
-    record.def.body.collisionRadius,
-    (unit: Unit): void => {
-      wearDefinition(unit, record);
-      fillFromDefinition(unit, record);
-    },
-  );
+  if (countEnemies(world) + command.count > ENEMY_LIVE_CAP) {
+    return "enemy_cap_reached";
+  }
+
+  if (units.capacity - units.count < command.count) {
+    return "pool_full";
+  }
+
+  if (
+    findPackCells(
+      world,
+      command.count,
+      command.position,
+      record.def.body.collisionRadius,
+    ) < command.count
+  ) {
+    return "no_free_cells";
+  }
+
+  const packId = world.map.nextPackId;
+
+  world.map.nextPackId += 1;
+
+  for (let index = 0; index < command.count; index += 1) {
+    const id = acquireUnit(
+      world,
+      "enemy",
+      packX[index] ?? 0,
+      packY[index] ?? 0,
+    );
+    const unit = id === null ? null : units.resolve(id);
+
+    assert(unit !== null, "A pool with room for the pack takes every member");
+    wearDefinition(unit, record);
+    fillFromDefinition(unit, record);
+    unit.packId = packId;
+    unit.tier = command.tier;
+  }
+
+  return null;
 };
 
 /**
@@ -164,8 +322,31 @@ const spawnDebugZone = (
   return null;
 };
 
+/**
+ * Empties the health of every enemy that can die, so the death system takes each at the end
+ * of the tick exactly as it takes a death from a hit. The training dummy never dies, a corpse
+ * is already dead, and a plain stress body has no health to lose; each is left as it is.
+ */
+const killAll = (world: World): void => {
+  const units = world.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (
+      unit !== null &&
+      unit.kind === "enemy" &&
+      unit.state !== "dead" &&
+      !unit.indestructible &&
+      unit.stats.maxHealth > 0
+    ) {
+      unit.resources.health = 0;
+    }
+  }
+};
+
 /** Releases every unit but the hero: no death, no experience. */
-const clearUnits = (world: World): void => {
+const clearAll = (world: World): void => {
   const units = world.map.units;
   const heroId = world.run.heroId;
 
@@ -233,7 +414,7 @@ const setOrbLevels = (
 };
 
 /**
- * Applies one validated debug command. The switches, the spawn, the clear, and the reset act
+ * Applies one validated debug command. The switches, the spawns, the kill, the clear, and the reset act
  * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
  * not take the command, for the caller to announce, or `null` when it applied. Damage goes
@@ -263,11 +444,16 @@ export const applyDebugCommand = (
     case "spawn_units":
       return spawnUnits(world, command.count, command.position);
 
-    case "spawn_enemies":
-      return spawnEnemies(world, command);
+    case "spawn_pack":
+      return spawnPack(world, command);
 
-    case "clear_units":
-      clearUnits(world);
+    case "kill_all":
+      killAll(world);
+
+      return null;
+
+    case "clear_all":
+      clearAll(world);
 
       return null;
 

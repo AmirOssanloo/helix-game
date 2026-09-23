@@ -3,6 +3,7 @@ import type { RingBuffer } from "@shared/public";
 import type { EventRing, WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
 import type { SlotFlashes } from "./hud/slot-flashes";
+import type { GroundPick } from "./input/ground-pick";
 import type { OverlayToggles } from "./overlays/overlay-toggles";
 
 /**
@@ -48,5 +49,7 @@ export type SceneContext = Readonly<{
   rings: SceneRings;
   flashes: SlotFlashes;
   overlays: Readonly<OverlayToggles>;
+  /** The panel's request for the next ground click, answered by the play scene's mapper. */
+  groundPick: GroundPick;
   report: Reporter;
 }>;

@@ -2,6 +2,7 @@ import type { RefusalReason } from "@domain/public";
 import type { Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CommandDriver } from "../scene-context";
+import type { GroundPick } from "./ground-pick";
 
 /**
  * Screen to world at the moment it is asked. The scene hands the mapper its camera behind
@@ -30,4 +31,5 @@ export type InputPorts = Readonly<{
   lens: CameraLens;
   world: WorldView;
   intents: InputIntents;
+  groundPick: GroundPick;
 }>;

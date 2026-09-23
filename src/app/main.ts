@@ -11,6 +11,7 @@ import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
   BootScene,
+  createGroundPick,
   createOverlayToggles,
   HudScene,
   installDrawCallCounter,
@@ -50,6 +51,8 @@ export const boot: Boot = (): void => {
   const atlas = new ShapeAtlas(atlasFrames);
   // One object, read by the play scene and written by the panel; the two layers each name its fields.
   const overlays = createOverlayToggles();
+  // One request, armed by the panel and answered by the play scene's next ground click.
+  const groundPick = createGroundPick();
   const context: SceneContext = {
     atlas,
     driver,
@@ -58,6 +61,7 @@ export const boot: Boot = (): void => {
     rings: { viewMisses: rings.viewMisses, renderTime: rings.renderTime },
     flashes: new SlotFlashes(),
     overlays,
+    groundPick,
     report: (message: string): void => {
       console.log(message);
     },
@@ -102,6 +106,7 @@ export const boot: Boot = (): void => {
       events: world.events,
       rings,
       overlays,
+      groundPick,
       tuningDefaults: tuningTable,
       archetypes: contentRegistry.enemies.map((def): string => def.id),
       downloadAtlas: (): string => atlas.download(),

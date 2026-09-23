@@ -159,6 +159,7 @@ export class PlayScene extends Phaser.Scene {
       lens,
       world: this.context.world,
       intents,
+      groundPick: this.context.groundPick,
     });
 
     this.stage = {

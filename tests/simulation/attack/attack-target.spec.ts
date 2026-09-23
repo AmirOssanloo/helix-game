@@ -264,7 +264,8 @@ describe("an attack on a target", () => {
     const reader = createEventReader();
 
     submit(world, {
-      kind: "spawn_enemies",
+      kind: "spawn_pack",
+      tier: "normal",
       tick: world.view.tick,
       timestamp: world.view.tick,
       archetypeId: trainingDummyDef.id,
@@ -293,7 +294,7 @@ describe("an attack on a target", () => {
     expect(hero.order.kind).toBe("attack_target");
 
     submit(world, {
-      kind: "clear_units",
+      kind: "clear_all",
       tick: world.view.tick,
       timestamp: world.view.tick,
     });

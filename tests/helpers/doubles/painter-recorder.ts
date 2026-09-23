@@ -41,7 +41,13 @@ export class PainterRecorder implements AtlasPainter {
 
   closePath(): void {}
 
-  fill(): void {
+  /** The fill rule of every fill asked for, in order; `nonzero` when none was named. */
+  readonly fillRules: CanvasFillRule[] = [];
+
+  fill(first?: CanvasFillRule | Path2D, second?: CanvasFillRule): void {
+    const rule = typeof first === "string" ? first : second;
+
+    this.fillRules.push(rule ?? "nonzero");
     this.marks += 1;
   }
 
@@ -56,6 +62,8 @@ export class PainterRecorder implements AtlasPainter {
   lineTo(): void {}
 
   moveTo(): void {}
+
+  rect(): void {}
 
   stroke(): void {
     this.marks += 1;

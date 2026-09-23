@@ -5,10 +5,12 @@ import { contentRegistry, tuningTable } from "@content/public";
 import type {
   DevApi,
   MemoryStore,
+  GroundPick,
   OverlayToggles,
   PanelHandle,
 } from "@devtools/public";
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
+import { ENEMY_LIVE_CAP } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
@@ -45,6 +47,7 @@ type Arranged = {
   world: Simulation;
   driver: FixedStepDriver;
   overlays: OverlayToggles;
+  groundPick: GroundPick;
   host: HTMLElement;
   store: MemoryRecorder;
   handle: PanelHandle;
@@ -73,6 +76,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     hashCells: false,
     spellAreas: false,
   };
+  const groundPick: GroundPick = { pending: null };
 
   const api = createDevApi({
     driver,
@@ -81,6 +85,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     events: world.events,
     rings,
     overlays,
+    groundPick,
     tuningDefaults: tuningTable,
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
@@ -92,7 +97,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
 
   const handle = mountPanel(host, api, store);
 
-  return { api, world, driver, overlays, host, store, handle };
+  return { api, world, driver, overlays, groundPick, host, store, handle };
 };
 
 /**
@@ -268,8 +273,9 @@ describe("the developer panel", () => {
     arranged.world.tick();
 
     expect(arranged.world.log.commandAt(0)).toMatchObject({
-      kind: "spawn_enemies",
+      kind: "spawn_pack",
       archetypeId: dropdown.value,
+      tier: "normal",
       count: 1,
       position: { x: 0, y: 0 },
     });
@@ -285,8 +291,71 @@ describe("the developer panel", () => {
     arranged.world.tick();
 
     expect(arranged.world.log.commandAt(0)).toMatchObject({
-      kind: "spawn_enemies",
+      kind: "spawn_pack",
       position: { x: 500, y: 0 },
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("spawns at the tier its selector names, from the three tiers there are", () => {
+    const arranged = arrange();
+    const tier = selectNamed(arranged.host, "Tier");
+
+    expect([...tier.options].map((option) => option.value)).toEqual([
+      "normal",
+      "elite",
+      "boss",
+    ]);
+
+    tier.value = "elite";
+    tier.dispatchEvent(new Event("change"));
+    buttonNamed(arranged.host, "Spawn at point").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "spawn_pack",
+      tier: "elite",
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("spawns at the next ground click once armed, and not before", () => {
+    const arranged = arrange();
+
+    typeInto(numberFieldNamed(arranged.host, "Group size"), "5");
+    buttonNamed(arranged.host, "Spawn at click").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.count).toBe(0);
+
+    const pending = arranged.groundPick.pending;
+
+    expect(pending).not.toBeNull();
+    pending?.(1200, 800);
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "spawn_pack",
+      count: 5,
+      position: { x: 1200, y: 800 },
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("kills every enemy and clears every enemy from the enemies group", () => {
+    const arranged = arrange();
+
+    buttonNamed(arranged.host, "Kill all").click();
+    arranged.world.tick();
+    buttonNamed(arranged.host, "Clear all").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({ kind: "kill_all" });
+    expect(arranged.world.log.commandAt(1)).toMatchObject({
+      kind: "clear_all",
     });
 
     arranged.handle.unmount();
@@ -382,6 +451,34 @@ describe("the developer panel", () => {
     arranged.handle.refresh();
 
     expect(readoutNamed(arranged.host, "Last refusal")).toBe("invalid_amount");
+
+    arranged.handle.unmount();
+  });
+
+  it("names the cap when a pack is refused for passing it", () => {
+    const arranged = arrange();
+
+    arranged.api.submit({
+      kind: "spawn_pack",
+      archetypeId: "fast_runner",
+      tier: "normal",
+      count: ENEMY_LIVE_CAP,
+      position: { x: 0, y: 0 },
+    });
+    arranged.world.tick();
+    arranged.api.submit({
+      kind: "spawn_pack",
+      archetypeId: "fast_runner",
+      tier: "normal",
+      count: 1,
+      position: { x: 0, y: 0 },
+    });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last refusal")).toBe(
+      `enemy_cap_reached: the cap is ${String(ENEMY_LIVE_CAP)} enemies`,
+    );
 
     arranged.handle.unmount();
   });

@@ -107,7 +107,7 @@ Recorded so that no decision inside the five phases closes them. Each page named
 | Document | What it holds | Arrives with |
 | --- | --- | --- |
 | [Spell catalogue](./specs/spell-catalogue.md) | The ten spells, adapted numbers, effect definitions | Phase 2 |
-| Enemy catalogue | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
+| [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
 
 ---

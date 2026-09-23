@@ -101,7 +101,8 @@ const arrange = (): Arranged => {
   const spawn = arenaDef.spawnPoint;
 
   submit(world, {
-    kind: "spawn_enemies",
+    kind: "spawn_pack",
+    tier: "normal",
     tick: 0,
     timestamp: 0,
     archetypeId: "training_dummy",

@@ -8,6 +8,10 @@ export {
   WEDGE_STEPS,
 } from "./atlas-frames";
 export { enemies } from "./enemies/index";
+export { fastRunnerDef } from "./enemies/fast-runner.def";
+export { meleeGruntDef } from "./enemies/melee-grunt.def";
+export { rangedArcherDef } from "./enemies/ranged-archer.def";
+export { tankDef } from "./enemies/tank.def";
 export { trainingDummyDef } from "./enemies/training-dummy.def";
 export { forms } from "./forms/index";
 export { skeinDef } from "./forms/skein.def";

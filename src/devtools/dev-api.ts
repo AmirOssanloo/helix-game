@@ -79,10 +79,19 @@ export type OverlayToggles = {
 };
 
 /**
+ * The play scene's one-shot request for the next ground click, named on this side of the layer
+ * line: the same field the presentation declares, on one object the composition root hands to
+ * both. The panel arms it; the next left click on the ground is handed to it and orders nothing.
+ */
+export type GroundPick = {
+  pending: ((x: number, y: number) => void) | null;
+};
+
+/**
  * The one object the developer panel and a person at the console reach the game through, on
  * `window` in a development build. It submits commands into the same buffer a click lands
  * in, drives the driver, reads the world view and the event ring by reference, reads the
- * instrumentation rings, and sets the overlay toggles. The tuning table's defaults are here
+ * instrumentation rings, sets the overlay toggles, and asks the play scene for a ground click. The tuning table's defaults are here
  * so a slider shows its default beside it; the atlas download and the input-log save are
  * here so a person can take both away as files, and the load so a saved session replays.
  */
@@ -93,6 +102,8 @@ export type DevApi = Readonly<{
   events: EventRing;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
+  /** Arms the next ground click: the play scene hands its world point to `onPick` instead of ordering anything with it. Arming again replaces what was waiting. */
+  pickGround: (onPick: (x: number, y: number) => void) => void;
   tuningDefaults: TuningDef;
   /** Every archetype the registry holds, by id, in the order content wrote them: what the enemies dropdown lists, without a code change per archetype. */
   archetypes: readonly string[];
@@ -112,6 +123,7 @@ export type DevApiPorts = Readonly<{
   events: EventRing;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
+  groundPick: GroundPick;
   tuningDefaults: TuningDef;
   archetypes: readonly string[];
   downloadAtlas: () => string;
@@ -158,6 +170,9 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     events: ports.events,
     rings: ports.rings,
     overlays: ports.overlays,
+    pickGround: (onPick: (x: number, y: number) => void): void => {
+      ports.groundPick.pending = onPick;
+    },
     tuningDefaults: ports.tuningDefaults,
     archetypes: ports.archetypes,
     saveInputLog: (): string => ports.session.saveInputLog(),

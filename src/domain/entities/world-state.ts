@@ -104,6 +104,8 @@ export type MapScope = {
   spatialHash: SpatialHash;
   /** The working memory of A* over the grid, sized to it at creation and every map load. */
   pathSearch: PathSearch;
+  /** The id the next pack spawned is given. Counts up from zero on every map load, so no two live packs share one. */
+  nextPackId: number;
 };
 
 /**

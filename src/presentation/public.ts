@@ -57,6 +57,7 @@ export {
   RETICLE_SIZE,
   TargetingPreview,
 } from "./input/targeting-preview";
+export { createGroundPick, type GroundPick } from "./input/ground-pick";
 export { DebugOverlays } from "./overlays/debug-overlays";
 export {
   createOverlayToggles,

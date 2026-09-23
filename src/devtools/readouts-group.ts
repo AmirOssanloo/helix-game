@@ -1,5 +1,6 @@
 import type { FolderApi } from "tweakpane";
-import { readTunable } from "@domain/public";
+import type { RefusalReason } from "@domain/public";
+import { ENEMY_LIVE_CAP, readTunable } from "@domain/public";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
@@ -19,6 +20,12 @@ const FPS_DECIMALS = 0;
 
 /** What the refusal line shows until a command is refused, the damage line until a hit lands, and the status, zone, and projectile lines until one of theirs happens. */
 const NOTHING_YET = "none";
+
+/** What the refusal line says for `reason`: the reason itself, with the cap named when the cap is what refused it. */
+const refusalText = (reason: RefusalReason): string =>
+  reason === "enemy_cap_reached"
+    ? `${reason}: the cap is ${String(ENEMY_LIVE_CAP)} enemies`
+    : reason;
 
 /** Decimals a damage amount is shown to: mitigation leaves fractions, and the tenth is enough to read one. */
 const DAMAGE_DECIMALS = 1;
@@ -77,7 +84,7 @@ export const readoutsGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
 
     while (event !== null) {
       if (event.kind === "command_refused" && event.reason !== null) {
-        lastRefusal = event.reason;
+        lastRefusal = refusalText(event.reason);
       }
 
       if (event.kind === "unit_damaged" && event.damageType !== null) {

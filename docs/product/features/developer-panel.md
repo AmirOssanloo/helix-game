@@ -47,7 +47,7 @@ Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.m
 
 ### Enemies
 
-A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The group fills the free cells around the point it names, and a spawn past the live cap is refused. Plus clear all, which removes every enemy without deaths, and kill all, which kills them with experience. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test.
+A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test.
 
 ### Zones
 

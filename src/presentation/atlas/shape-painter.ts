@@ -19,6 +19,7 @@ export type AtlasPainter = Pick<
   | "lineTo"
   | "lineWidth"
   | "moveTo"
+  | "rect"
   | "stroke"
   | "strokeRect"
   | "strokeStyle"
@@ -115,6 +116,23 @@ const paintShape = (
         width - shape.thickness,
         height - shape.thickness,
       );
+
+      return;
+    }
+
+    case "square_dot": {
+      // The square and the circle in one path, filled even-odd, so the circle is left empty.
+      painter.beginPath();
+      painter.rect(x, y, width, height);
+      painter.moveTo(centreX + (width * shape.holeFraction) / 2, centreY);
+      painter.arc(
+        centreX,
+        centreY,
+        (width * shape.holeFraction) / 2,
+        0,
+        TWO_PI,
+      );
+      painter.fill("evenodd");
 
       return;
     }

@@ -8,6 +8,7 @@ import type { EntityId, Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CommandDriver } from "../scene-context";
+import type { GroundPick } from "./ground-pick";
 import type { CameraLens, InputIntents, InputPorts } from "./input-ports";
 import {
   bindingIndexOf,
@@ -54,6 +55,8 @@ export class InputMapper {
 
   private readonly intents: InputIntents;
 
+  private readonly groundPick: GroundPick;
+
   /** One flag per binding, true from key-down to key-up. */
   private readonly held: boolean[];
 
@@ -70,6 +73,7 @@ export class InputMapper {
     this.lens = ports.lens;
     this.world = ports.world;
     this.intents = ports.intents;
+    this.groundPick = ports.groundPick;
     this.cursor = createTargetingCursor();
     this.held = [];
     this.candidates = createCandidateBuffer(UNIT_CAPACITY);
@@ -172,7 +176,8 @@ export class InputMapper {
    * A button went down at a screen position. Right: a move to the point, an attack on the
    * enemy under it, or nothing for any other unit; the cursor closes either way, and while a
    * press is held the right click only closes it. Left: the cursor's commit, the press of a
-   * vector cursor, or a selection that has nothing to select yet.
+   * vector cursor, a ground point the developer panel is waiting for, or a selection that has
+   * nothing to select yet.
    */
   pointerDown(button: number, screenX: number, screenY: number): void {
     this.resolvePoint(screenX, screenY);
@@ -294,8 +299,16 @@ export class InputMapper {
 
   private leftClick(screenX: number, screenY: number): void {
     switch (this.cursor.kind) {
-      case "closed":
+      case "closed": {
+        const pending = this.groundPick.pending;
+
+        if (pending !== null) {
+          this.groundPick.pending = null;
+          pending(this.point.x, this.point.y);
+        }
+
         break;
+      }
 
       case "attack_move":
         closeCursor(this.cursor);

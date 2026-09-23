@@ -7,7 +7,7 @@ import { clearOrder } from "../orders/state-machine";
 /**
  * Empties map scope around the hero: every unit but the hero, every projectile, effect, and
  * zone is released, the hero is carried to its spawn point with its order cleared and its
- * previous position written so nothing interpolates the carry, and the spatial hash is
+ * previous position written so nothing interpolates the carry, pack ids count from zero again, and the spatial hash is
  * rebuilt at the tuned cell size over what is left. Run scope is untouched: the hero keeps
  * its level, its forms, its clocks, and its statuses. A map load sets the hero's spawn point
  * first and calls this; the panel's reset calls it on the loaded map. A dead hero is carried
@@ -29,6 +29,7 @@ export const resetMapScope = (world: World): void => {
   scope.projectiles.releaseAll();
   scope.effects.releaseAll();
   scope.zones.releaseAll();
+  scope.nextPackId = 0;
 
   if (hero !== null) {
     clearOrder(hero);

@@ -577,7 +577,7 @@ describe("spawn_zone", () => {
   });
 });
 
-describe("clear_units", () => {
+describe("clear_all", () => {
   it("releases every unit but the hero", () => {
     const { world, hero } = arrange();
     debug(
@@ -590,7 +590,7 @@ describe("clear_units", () => {
     );
     world.tick();
 
-    debug(world, stamp(world, { kind: "clear_units" }));
+    debug(world, stamp(world, { kind: "clear_all" }));
     world.tick();
 
     expect(world.view.map.units.count).toBe(1);
@@ -778,7 +778,7 @@ describe("every debug command", () => {
       stamp(world, { kind: "toggle_infinite_mana" }),
       stamp(world, { kind: "toggle_no_cooldowns" }),
       stamp(world, { kind: "spawn_units", count: 1, position: { x: 0, y: 0 } }),
-      stamp(world, { kind: "clear_units" }),
+      stamp(world, { kind: "clear_all" }),
       stamp(world, { kind: "reset_map" }),
       stamp(world, { kind: "begin_channel", ticks: 2 }),
       stamp(world, { kind: "apply_status", statusId: "root", ticks: 2 }),

@@ -388,7 +388,8 @@ const debug = (
     | "toggle_infinite_mana"
     | "toggle_no_cooldowns"
     | "kill_hero"
-    | "clear_units"
+    | "kill_all"
+    | "clear_all"
     | "reset_map",
 ): DebugCommand => ({ kind, tick: 0, timestamp: 0 });
 
@@ -425,6 +426,16 @@ const spawnUnits = (count: number, x = 0, y = 0): DebugCommand => ({
   position: { x, y },
 });
 
+const spawnPack = (count: number, tier = "normal", x = 0): DebugCommand => ({
+  kind: "spawn_pack",
+  tick: 0,
+  timestamp: 0,
+  archetypeId: "melee_grunt",
+  tier: tier as "normal",
+  count,
+  position: { x, y: 0 },
+});
+
 const beginChannel = (ticks: number): DebugCommand => ({
   kind: "begin_channel",
   tick: 0,
@@ -454,7 +465,10 @@ describe("validateDebugCommand on a well-formed payload", () => {
     ["toggle_no_cooldowns", debug("toggle_no_cooldowns")],
     ["kill_hero", debug("kill_hero")],
     ["spawn_units", spawnUnits(1)],
-    ["clear_units", debug("clear_units")],
+    ["spawn_pack", spawnPack(5)],
+    ["spawn_pack at the elite tier", spawnPack(5, "elite")],
+    ["kill_all", debug("kill_all")],
+    ["clear_all", debug("clear_all")],
     ["reset_map", debug("reset_map")],
     ["begin_channel", beginChannel(1)],
     ["apply_status", applyStatus("root", 1)],
@@ -479,6 +493,17 @@ describe("validateDebugCommand on a malformed payload", () => {
     [
       "a non-finite spawn position",
       spawnUnits(1, Number.NaN),
+      "invalid_destination",
+    ],
+    ["a pack of zero", spawnPack(0), "invalid_count"],
+    [
+      "a pack at no tier the archetypes know",
+      spawnPack(1, "champion"),
+      "invalid_tier",
+    ],
+    [
+      "a non-finite pack position",
+      spawnPack(1, "normal", Number.NaN),
       "invalid_destination",
     ],
     ["a channel of zero ticks", beginChannel(0), "invalid_duration"],

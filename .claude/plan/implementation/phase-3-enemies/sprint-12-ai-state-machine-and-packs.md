@@ -21,7 +21,7 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | docs |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** `docs/product/specs/enemy-catalogue.md`, the first half of the document the roadmap lists for phases 3 and 5. For the melee grunt, fast runner, ranged archer, tank, and training dummy: every `EnemyDef` field with a starting value and the reasoning in one line (the grunt is slower than the hero so kiting works; the runner is faster so it cannot be kited forever), the behaviour key, the colour, the frame, and the experience reward against the level table so that a pack of five grunts is about one level at level 1. A section for phase 5 left as a heading.
 
@@ -33,6 +33,8 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 
 **Definition of done:** Every change · A documentation change.
 
+> **Approved** by the product owner, 2026-09-23: the starting values stand as written, for testing. The long roster may retune these four when it is written.
+
 ---
 
 ### P3-S12-T02 — Four archetype definitions and pack spawning
@@ -42,20 +44,24 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | Layer | content, domain, devtools, tests |
 | Size | 1 |
 | Depends on | T01, P2-S09-T03 |
-| Status | planned |
+| Status | done ||
 
 **Build:** `melee-grunt.def.ts`, `fast-runner.def.ts`, `ranged-archer.def.ts`, `tank.def.ts` under `src/content/enemies/`, every field required, with the frames (square, small square, square with a dot, large square) and tints. The `spawn_pack` debug command: archetype, tier, count, position; units placed on the nearest free cells around the point, given one pack id and each its own spawn point, refused past the live cap with a message naming the cap; spawn mode at click or at a distance from the hero. `kill_all` (kills with experience) and `clear_all` (releases without deaths). The panel's Enemies group finished per the developer panel page.
 
 **Acceptance:**
 - The dropdown lists the five without a code change (it reads the registry).
 - A pack of twenty on a blocked cell lands on free cells and nothing is inside an obstacle.
-- The 513th unit is refused with the cap named.
+- The 201st enemy is refused with the cap named: `ENEMY_LIVE_CAP`, 200, per Q9. A pack the pool has no room for is still refused as `pool_full`.
+
+> **Edited** 2026-09-23: the acceptance said the 513th unit, the pool's size, but Q9 settled the cap as `ENEMY_LIVE_CAP` at 200 beside the pool, enforced by the one pack spawn, with the stress test's plain bodies outside it.
 
 **Tests:**
 - `tests/content/enemies.spec.ts` — the four validate, every field present.
 - `tests/simulation/spawn-pack.spec.ts` — placement, pack id, cap refusal.
 
 **Definition of done:** Every change · A new enemy or behaviour · A developer-panel control.
+
+> **Built** 2026-09-23. `spawn_enemies` became `spawn_pack` and `clear_units` became `clear_all`, the old names deleted. `melee_chaser` and `ranged_holder` are registered as keys whose behaviour holds where it spawned, so the four definitions validate; T03 gives them their bodies. Spawn at click reached presentation and the composition root: a one-shot ground pick the panel arms and the input mapper answers with the next left click that opens no cursor. The archer's `square_dot` frame is new in the atlas, so the render benchmark is owed; the maintainer deferred it to the phase 5 gate the same day. The Enemies group was walked by the maintainer and approved, 2026-09-23.
 
 ---
 
@@ -112,7 +118,7 @@ Spawn a pack of grunts and runners; walk in; the runner arrives first; both hit 
 | --- | --- |
 | Every transition test green for three behaviours | |
 | Corridor queue by hand with path lines on | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.9 · T03 · T04 |
 
 ## Risks in this sprint
 

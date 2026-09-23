@@ -15,6 +15,7 @@ export type PanelMemory = {
   };
   enemies: {
     archetypeId: string;
+    tier: string;
     count: number;
     x: number;
     y: number;
@@ -36,7 +37,14 @@ export const createPanelMemory = (): PanelMemory => ({
   open: {},
   overlays: {},
   spawn: { count: 300, x: 0, y: 0 },
-  enemies: { archetypeId: "", count: 1, x: 0, y: 0, distance: 600 },
+  enemies: {
+    archetypeId: "",
+    tier: "normal",
+    count: 1,
+    x: 0,
+    y: 0,
+    distance: 600,
+  },
 });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -103,6 +111,9 @@ export const readPanelMemory = (store: MemoryStore | null): PanelMemory => {
       typeof archetypeId === "string"
         ? archetypeId
         : memory.enemies.archetypeId;
+    const tier = enemies["tier"];
+
+    memory.enemies.tier = typeof tier === "string" ? tier : memory.enemies.tier;
     memory.enemies.count = readNumber(enemies["count"], memory.enemies.count);
     memory.enemies.x = readNumber(enemies["x"], memory.enemies.x);
     memory.enemies.y = readNumber(enemies["y"], memory.enemies.y);

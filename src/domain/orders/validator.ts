@@ -1,6 +1,7 @@
 import { isDamageType } from "../combat/damage";
 import type { Command, DebugCommand } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
+import { ENEMY_TIERS } from "../definitions/enemy-def";
 import type { Unit } from "../entities/unit";
 import { ORB_COUNT } from "../entities/world-state";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
@@ -12,7 +13,8 @@ import type { DisableFlags } from "./disable-flags";
  * unit is between death and respawn, where nothing responds. The invalid reasons are boundary
  * checks on a payload no mapper or panel should produce and a replay file might: a slot
  * outside the six keys, a point that is not finite, an amount below zero, a damage type no
- * rule knows, an orb level outside the cap, a count or a duration below one. The
+ * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
+ * archetype spawns at. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -21,8 +23,9 @@ import type { DisableFlags } from "./disable-flags";
  * with the target out of range. The clock and the mana reasons are shared with the composer.
  * Then the level rule's, when a skill point is spent or a level granted: there is none to
  * spend, the slot holds no orb skill, the skill is at its cap, or the level is. The last
- * are the debug commands' at apply: no archetype has the id the spawn names, the pool has
- * no room for the spawn, a channel is already running, or the status rule refused the
+ * are the debug commands' at apply: no archetype has the id the spawn names, the pack would
+ * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
+ * free cells for the pack, a channel is already running, or the status rule refused the
  * application.
  */
 export type RefusalReason =
@@ -38,6 +41,7 @@ export type RefusalReason =
   | "invalid_orb_level"
   | "invalid_count"
   | "invalid_duration"
+  | "invalid_tier"
   | "orb_not_learned"
   | "buffer_not_full"
   | "no_spell_for_recipe"
@@ -46,6 +50,8 @@ export type RefusalReason =
   | "empty_slot"
   | "unknown_ability"
   | "unknown_archetype"
+  | "enemy_cap_reached"
+  | "no_free_cells"
   | "ability_not_held"
   | "invalid_target"
   | "target_not_found"
@@ -246,8 +252,7 @@ export const validateDebugCommand = (
     case "set_orb_levels":
       return areOrbLevels(command.levels) ? "ok" : "invalid_orb_level";
 
-    case "spawn_units":
-    case "spawn_enemies": {
+    case "spawn_units": {
       if (!isCount(command.count)) {
         return "invalid_count";
       }
@@ -257,6 +262,18 @@ export const validateDebugCommand = (
       }
 
       return "ok";
+    }
+
+    case "spawn_pack": {
+      if (!isCount(command.count)) {
+        return "invalid_count";
+      }
+
+      if (!isFiniteDestination(command.position)) {
+        return "invalid_destination";
+      }
+
+      return ENEMY_TIERS.includes(command.tier) ? "ok" : "invalid_tier";
     }
 
     case "begin_channel":
@@ -288,7 +305,8 @@ export const validateDebugCommand = (
     case "toggle_infinite_mana":
     case "toggle_no_cooldowns":
     case "kill_hero":
-    case "clear_units":
+    case "kill_all":
+    case "clear_all":
     case "reset_map":
       return "ok";
   }

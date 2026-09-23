@@ -52,6 +52,12 @@ const shapes: readonly AtlasFrameDef[] = [
     height: 128,
     shape: { kind: "square_outline", thickness: 16 },
   },
+  {
+    name: "square_dot",
+    width: 128,
+    height: 128,
+    shape: { kind: "square_dot", holeFraction: 1 / 3 },
+  },
   { name: "triangle", width: 128, height: 128, shape: { kind: "triangle" } },
   {
     name: "stripes",

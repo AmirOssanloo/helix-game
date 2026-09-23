@@ -6,7 +6,7 @@ import {
   trainingDummyDef,
   tuningTable,
 } from "@content/public";
-import type { DevApi, OverlayToggles } from "@devtools/public";
+import type { DevApi, GroundPick, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
 import type { Unit } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
@@ -61,6 +61,7 @@ const arrange = (): Arranged => {
     hashCells: false,
     spellAreas: false,
   };
+  const groundPick: GroundPick = { pending: null };
 
   const api = createDevApi({
     driver,
@@ -69,6 +70,7 @@ const arrange = (): Arranged => {
     events: world.events,
     rings,
     overlays,
+    groundPick,
     tuningDefaults: tuningTable,
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
@@ -224,7 +226,8 @@ describe("DevApi spawns by archetype", () => {
     const { api, world } = arrange();
 
     api.submit({
-      kind: "spawn_enemies",
+      kind: "spawn_pack",
+      tier: "normal",
       archetypeId: trainingDummyDef.id,
       count: 1,
       position: { x: SPAWN_AT, y: 0 },
@@ -247,7 +250,8 @@ describe("DevApi spawns by archetype", () => {
     const before = world.view.map.units.count;
 
     api.submit({
-      kind: "spawn_enemies",
+      kind: "spawn_pack",
+      tier: "normal",
       archetypeId: "no_such_archetype",
       count: 1,
       position: { x: SPAWN_AT, y: 0 },

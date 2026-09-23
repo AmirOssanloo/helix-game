@@ -34,6 +34,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |
+| The live enemy cap, and the slots kept beside it for summons | The constants beside the unit pool's capacity, at the top of the unit file under `src/domain/entities/` |
 | Which commands the player can issue | The command union in `src/domain/commands/` |
 | Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
 | Which events the tick can emit | The event union in `src/domain/events/` |

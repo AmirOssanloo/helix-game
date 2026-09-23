@@ -6,7 +6,7 @@
 
 Enemies are the units the hero fights. Each enemy is an instance of an archetype — a definition holding its numbers, its behaviour, its abilities, and its tier. Enemies come in packs, aggro together, chase, attack, and leash back. When they die they give experience.
 
-Every archetype owns a definition file under `src/content/enemies/`, one per archetype. Numbers live there, not here.
+Every archetype owns a definition file under `src/content/enemies/`, one per archetype. Numbers live there, not here; the [enemy catalogue](../specs/enemy-catalogue.md) holds each one's starting values and the reasoning behind them.
 
 ## Archetypes
 

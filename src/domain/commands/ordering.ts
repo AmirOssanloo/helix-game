@@ -43,9 +43,10 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "toggle_no_cooldowns":
     case "kill_hero":
     case "spawn_units":
-    case "spawn_enemies":
+    case "spawn_pack":
     case "spawn_zone":
-    case "clear_units":
+    case "kill_all":
+    case "clear_all":
     case "reset_map":
     case "begin_channel":
     case "apply_status":

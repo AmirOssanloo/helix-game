@@ -1,6 +1,7 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
+import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import { readTunable } from "../definitions/tuning-state";
@@ -14,6 +15,23 @@ import type { World } from "./world-state";
 
 /** Hero, enemies, and summons together. */
 export const UNIT_CAPACITY = 512;
+
+/**
+ * The most enemies spawned from an archetype that may be live at once: the budget every
+ * performance number is measured at, not a designer number, so it is no tuning key. A spawn
+ * that would pass it is refused, and every spawn of an archetype goes through the one door
+ * that counts. The plain bodies the stress test spawns wear no definition, run no rule, and
+ * are bounded by the pool alone.
+ */
+export const ENEMY_LIVE_CAP = 200;
+
+/** The slots kept free beside the enemy cap for what the hero summons. */
+export const SUMMON_ALLOWANCE = 32;
+
+assert(
+  ENEMY_LIVE_CAP + 1 + SUMMON_ALLOWANCE <= UNIT_CAPACITY,
+  "The enemy cap, the hero, and the summon allowance fit inside the unit pool",
+);
 
 /** Statuses one unit can hold at once. An application past the table is refused by the status rule. */
 export const STATUS_TABLE_SIZE = 8;
@@ -200,8 +218,12 @@ export type Unit = {
   /** The status table: every lasting condition on the unit, an empty row being a `null` definition id. Cleared by death. */
   statuses: readonly StatusEntry[];
   activeFormIndex: number;
+  /** The pack it was spawned in, whose members aggro together; `null` for a unit spawned alone. */
   packId: number | null;
+  /** Where it was spawned: what it leashes from and walks back to. */
   spawnPoint: Vec2;
+  /** The tier it was spawned at. The view draws an elite's and a boss's outline from it; nothing multiplies by it yet. */
+  tier: EnemyTier;
   ownerId: EntityId | null;
   /** The tick a summon expires on; `null` for a unit that lives until it dies. */
   expiresAtTick: Tick | null;
@@ -340,6 +362,7 @@ const createUnit = (): Unit => {
     activeFormIndex: 0,
     packId: null,
     spawnPoint: { x: 0, y: 0 },
+    tier: "normal",
     ownerId: null,
     expiresAtTick: null,
   };
@@ -411,6 +434,7 @@ const clearUnit = (unit: Unit): void => {
   unit.packId = null;
   unit.spawnPoint.x = 0;
   unit.spawnPoint.y = 0;
+  unit.tier = "normal";
   unit.ownerId = null;
   unit.expiresAtTick = null;
 };

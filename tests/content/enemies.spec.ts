@@ -3,8 +3,15 @@ import {
   atlasFrames,
   contentRegistry,
   enemies,
+  fastRunnerDef,
+  heroDef,
+  meleeGruntDef,
+  rangedArcherDef,
+  tankDef,
   trainingDummyDef,
+  tuningTable,
 } from "@content/public";
+import type { EnemyDef } from "@domain/public";
 import { BEHAVIOUR_KEYS, ID_SHAPE, validateRegistry } from "@domain/public";
 
 /** Every fault the content tier finds in the file `id` is written in. */
@@ -32,6 +39,95 @@ describe("the archetypes", () => {
       expect(frames.has(def.atlasFrame)).toBe(true);
       expect(frames.has(def.attack.atlasFrame)).toBe(true);
     }
+  });
+});
+
+/** Every key of `value` and of every object inside it, as dotted paths, sorted: the shape a definition was written in. */
+const shapeOf = (value: object, prefix = ""): string[] =>
+  Object.entries(value)
+    .flatMap(([key, field]: [string, unknown]): string[] =>
+      typeof field === "object" && field !== null && !Array.isArray(field)
+        ? shapeOf(field, `${prefix}${key}.`)
+        : [`${prefix}${key}`],
+    )
+    .sort();
+
+const ARCHETYPES: readonly EnemyDef[] = [
+  meleeGruntDef,
+  fastRunnerDef,
+  rangedArcherDef,
+  tankDef,
+];
+
+/** The arena corridor's width: a body wider than this cannot pass it. */
+const CORRIDOR_WIDTH = 96;
+
+describe("the four archetypes", () => {
+  it.each(ARCHETYPES.map((def) => [def.id, def] as const))(
+    "%s is in the registry and validates",
+    (_id, def) => {
+      expect(enemies).toContain(def);
+      expect(faultsOf(def.id)).toEqual([]);
+    },
+  );
+
+  it.each(ARCHETYPES.map((def) => [def.id, def] as const))(
+    "%s writes every field the dummy writes, and no other",
+    (_id, def) => {
+      expect(shapeOf(def)).toEqual(shapeOf(trainingDummyDef));
+    },
+  );
+
+  it("each stand on one of the three radius classes pathing plans for", () => {
+    const classes = [
+      tuningTable["radius_class:0"],
+      tuningTable["radius_class:1"],
+      tuningTable["radius_class:2"],
+    ];
+
+    for (const def of ARCHETYPES) {
+      expect(classes).toContain(def.body.collisionRadius);
+    }
+  });
+
+  it("put the grunt below the hero's speed and the runner above it", () => {
+    expect(meleeGruntDef.movementSpeed).toBeLessThan(tuningTable.base_ms);
+    expect(fastRunnerDef.movementSpeed).toBeGreaterThan(tuningTable.base_ms);
+  });
+
+  it("leave the archer short of the hero's range, firing a projectile", () => {
+    expect(rangedArcherDef.attack.range).toBeLessThan(heroDef.attack.range);
+    expect(rangedArcherDef.attack.projectileSpeed).toBeGreaterThan(0);
+    expect(rangedArcherDef.behaviour).toBe("ranged_holder");
+    expect(rangedArcherDef.atlasFrame).toBe("square_dot");
+  });
+
+  it("give the three melee archetypes no projectile and the chasing behaviour", () => {
+    for (const def of [meleeGruntDef, fastRunnerDef, tankDef]) {
+      expect(def.attack.projectileSpeed).toBe(0);
+      expect(def.behaviour).toBe("melee_chaser");
+    }
+  });
+
+  it("close the arena's corridor to the tank and open it to a grunt", () => {
+    expect(tankDef.body.collisionRadius * 2).toBeGreaterThan(CORRIDOR_WIDTH);
+    expect(meleeGruntDef.body.collisionRadius * 2).toBeLessThan(CORRIDOR_WIDTH);
+  });
+
+  it("make five grunts exactly the first level", () => {
+    expect(meleeGruntDef.experience * 5).toBe(heroDef.experienceThresholds[1]);
+  });
+
+  it("are normal, can die, cast nothing yet, and differ in colour", () => {
+    for (const def of ARCHETYPES) {
+      expect(def.tier).toBe("normal");
+      expect(def.indestructible).toBe(false);
+      expect(def.abilities).toEqual([]);
+    }
+
+    expect(new Set(ARCHETYPES.map((def) => def.tint)).size).toBe(
+      ARCHETYPES.length,
+    );
   });
 });
 

@@ -1,5 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import type { DamageType } from "../combat/damage";
+import type { EnemyTier } from "../definitions/enemy-def";
 import type { TuningKey } from "../definitions/tuning-def";
 import type { Tick } from "../tick";
 
@@ -144,8 +145,9 @@ export type DebugCommand =
   | ToggleNoCooldownsCommand
   | KillHeroCommand
   | SpawnUnitsCommand
-  | SpawnEnemiesCommand
-  | ClearUnitsCommand
+  | SpawnPackCommand
+  | KillAllCommand
+  | ClearAllCommand
   | ResetMapCommand
   | BeginChannelCommand
   | ApplyStatusCommand
@@ -240,23 +242,34 @@ export type SpawnUnitsCommand = Readonly<{
 }>;
 
 /**
- * Puts `count` units of the archetype `archetypeId` names into the world around `position`,
- * each wearing that definition's body, numbers, and behaviour. A position on an obstacle or
- * off the map resolves to the nearest legal point, and the group fills the free cells around
- * it. Refused when no archetype has the id and when the pool has no room for all of them.
+ * Puts a pack of `count` units of the archetype `archetypeId` names into the world around
+ * `position`, at `tier`: each wears that definition's body, numbers, and behaviour, all share
+ * one new pack id, and each stands on its own free cell, which is its spawn point. A position
+ * on an obstacle or off the map resolves to the nearest legal point, and the pack fills the
+ * free cells nearest it. Refused, with nothing spawned, when no archetype has the id, when the
+ * pack would take the live enemies past the cap, when the pool has no room, and when the map
+ * has too few free cells.
  */
-export type SpawnEnemiesCommand = Readonly<{
-  kind: "spawn_enemies";
+export type SpawnPackCommand = Readonly<{
+  kind: "spawn_pack";
   tick: Tick;
   timestamp: number;
   archetypeId: string;
+  tier: EnemyTier;
   count: number;
   position: Readonly<Vec2>;
 }>;
 
+/** Empties the health of every enemy that can die, so the death system takes each at the end of the tick as it takes any other death, experience and all. The training dummy never dies and is left standing. */
+export type KillAllCommand = Readonly<{
+  kind: "kill_all";
+  tick: Tick;
+  timestamp: number;
+}>;
+
 /** Releases every unit but the hero, with no deaths and no experience. */
-export type ClearUnitsCommand = Readonly<{
-  kind: "clear_units";
+export type ClearAllCommand = Readonly<{
+  kind: "clear_all";
   tick: Tick;
   timestamp: number;
 }>;
@@ -341,8 +354,9 @@ const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
   "toggle_no_cooldowns",
   "kill_hero",
   "spawn_units",
-  "spawn_enemies",
-  "clear_units",
+  "spawn_pack",
+  "kill_all",
+  "clear_all",
   "reset_map",
   "begin_channel",
   "apply_status",

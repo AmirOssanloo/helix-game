@@ -87,7 +87,7 @@ describe("an attack-move", () => {
     const left = hero.curr.x;
 
     submit(world, {
-      kind: "clear_units",
+      kind: "clear_all",
       tick: world.view.tick,
       timestamp: world.view.tick,
     });

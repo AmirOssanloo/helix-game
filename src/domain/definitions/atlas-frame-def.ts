@@ -8,6 +8,8 @@ export type AtlasShape =
   | Readonly<{ kind: "ring"; thickness: number }>
   | Readonly<{ kind: "square" }>
   | Readonly<{ kind: "square_outline"; thickness: number }>
+  /** A filled square with a round hole at its centre `holeFraction` of its width across, so under one tint the dot reads in whatever colour is behind it. */
+  | Readonly<{ kind: "square_dot"; holeFraction: number }>
   | Readonly<{ kind: "triangle" }>
   /** A filled cone of `angleDegrees` opening either side of the frame's rightward axis, its apex at the frame's centre and its arc at the frame's edge. */
   | Readonly<{ kind: "cone"; angleDegrees: number }>

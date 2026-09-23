@@ -42,7 +42,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 | Any change under `src/domain` or `src/simulation` | [Layers](./architecture/layers-and-dependency-rule.md#quick-reference) · [Simulation loop](./architecture/simulation-loop.md#quick-reference) · [Simulation coding](./standards/simulation-coding.md#quick-reference) |
 | A new per-tick system or rule | [Simulation loop](./architecture/simulation-loop.md#quick-reference) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) · [Commands and events](./architecture/commands-and-events.md#quick-reference) |
 | A new spell, effect, or enemy ability | [Ability pipeline](./architecture/ability-pipeline.md#quick-reference) · [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Adding a spell](./workflows/adding-a-spell.md) · [Spell catalogue](./product/specs/spell-catalogue.md) |
-| A new enemy or behaviour | [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Movement, collision, and pathing](./architecture/movement-collision-pathing.md#quick-reference) · [Adding an enemy](./workflows/adding-an-enemy.md) |
+| A new enemy or behaviour | [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Movement, collision, and pathing](./architecture/movement-collision-pathing.md#quick-reference) · [Adding an enemy](./workflows/adding-an-enemy.md) · [Enemy catalogue](./product/specs/enemy-catalogue.md) |
 | Anything that draws, or reads input | [Presentation](./architecture/presentation.md#quick-reference) · [Presentation coding](./standards/presentation-coding.md#quick-reference) |
 | A developer-panel control or overlay | [Developer tools and instrumentation](./architecture/devtools-and-instrumentation.md#quick-reference) · [Commands and events](./architecture/commands-and-events.md#quick-reference) |
 | Anything on the hot path | [Performance standards](./standards/performance.md#quick-reference) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) |
@@ -63,7 +63,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 
 **Getting set up and shipping** — [onboarding](./onboarding/README.md) · [development workflow](./workflows/development.md) · [definition of done](./workflows/definition-of-done.md) · [adding a spell](./workflows/adding-a-spell.md) · [adding an enemy](./workflows/adding-an-enemy.md)
 
-**Product** — [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md)
+**Product** — [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md) · [enemy catalogue](./product/specs/enemy-catalogue.md)
 
 ---
 

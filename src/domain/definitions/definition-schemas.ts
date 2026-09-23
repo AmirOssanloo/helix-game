@@ -168,6 +168,10 @@ const atlasShapeSchema: Schema<AtlasShape> = taggedUnion<"kind", AtlasShape>(
       kind: oneOf(["square_outline"]),
       thickness: nonNegativeSchema,
     }),
+    square_dot: objectOf({
+      kind: oneOf(["square_dot"]),
+      holeFraction: nonNegativeSchema,
+    }),
     triangle: objectOf({ kind: oneOf(["triangle"]) }),
     cone: objectOf({
       kind: oneOf(["cone"]),
