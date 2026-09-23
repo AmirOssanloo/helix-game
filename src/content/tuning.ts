@@ -9,7 +9,8 @@ import type { TuningDef } from "@domain/public";
  * of armour is worth before the curve flattens it, an enemy at rest wanders the wander radius
  * around its spawn point once every wander interval, in seconds, a chasing one asks for a
  * path at most once every re-path interval, in seconds, and a ranged one stands the hold
- * margin inside its reach, in world units, the three radii, the two cell sizes, and
+ * margin inside its reach, in world units, a dormant pack spawns once the hero is inside
+ * the activation radius of it, in world units, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
  * counts per tick, and the orb tables hold what one held instance grants at each level:
  * Quartz health regeneration per second, Whorl a fraction of one of movement speed and a
@@ -47,6 +48,7 @@ export const tuningTable = {
   wander_interval: 4,
   chase_repath_interval: 0.5,
   ranged_hold_margin: 50,
+  pack_activation_radius: 1600,
   "radius_class:0": 16,
   "radius_class:1": 27,
   "radius_class:2": 50,

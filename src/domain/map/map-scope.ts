@@ -1,3 +1,4 @@
+import { placeMapPacks } from "../ai/packs";
 import { readTunable } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import { releaseUnit } from "../entities/unit";
@@ -7,8 +8,9 @@ import { clearOrder } from "../orders/state-machine";
 /**
  * Empties map scope around the hero: every unit but the hero, every projectile, effect, and
  * zone is released, the hero is carried to its spawn point with its order cleared and its
- * previous position written so nothing interpolates the carry, pack ids count from zero again, and the spatial hash is
- * rebuilt at the tuned cell size over what is left. Run scope is untouched: the hero keeps
+ * previous position written so nothing interpolates the carry, pack ids count from zero again, the spatial hash is
+ * rebuilt at the tuned cell size over what is left, and the map's packs are set back to what
+ * a load makes of them: the live ones placed, the dormant ones waiting as records. Run scope is untouched: the hero keeps
  * its level, its forms, its clocks, and its statuses. A map load sets the hero's spawn point
  * first and calls this; the panel's reset calls it on the loaded map. A dead hero is carried
  * dead and respawns at the spawn point when its delay runs out.
@@ -43,4 +45,5 @@ export const resetMapScope = (world: World): void => {
     readTunable(world.run.tuning, "hash_cell_size"),
     scope.units,
   );
+  placeMapPacks(world);
 };

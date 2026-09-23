@@ -54,6 +54,7 @@ export type {
   StandingRule,
 } from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
+export { createPackRecords, type PackRecord, placeMapPacks } from "./ai/packs";
 export {
   type AnyCommand,
   type ApplyDamageCommand,
@@ -174,7 +175,7 @@ export {
   tableAtOrbLevels,
 } from "./definitions/level-table";
 export { ticksOfSeconds } from "./definitions/duration";
-export type { MapDef, SpawnDef } from "./definitions/map-def";
+export type { MapDef, PackDef } from "./definitions/map-def";
 export { ORB_IDS, type OrbId } from "./definitions/orb-id";
 export type { Registry } from "./definitions/registry";
 export {

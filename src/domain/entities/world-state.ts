@@ -1,4 +1,5 @@
 import type { EntityId, Rect } from "@shared/public";
+import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
 import type { FormDef } from "../definitions/form-def";
@@ -104,6 +105,8 @@ export type MapScope = {
   spatialHash: SpatialHash;
   /** The working memory of A* over the grid, sized to it at creation and every map load. */
   pathSearch: PathSearch;
+  /** One record per pack the loaded map lists, saying which still wait to be placed. */
+  packs: PackRecord[];
   /** The id the next pack spawned is given. Counts up from zero on every map load, so no two live packs share one. */
   nextPackId: number;
 };

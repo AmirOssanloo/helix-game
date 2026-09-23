@@ -101,7 +101,7 @@ describe("the arena", () => {
       maxY: 4000,
     });
     expect(arenaDef.spawnPoint).toEqual({ x: 2000, y: 2000 });
-    expect(arenaDef.spawns).toHaveLength(0);
+    expect(arenaDef.packs).toHaveLength(0);
   });
 
   it("has between eight and twelve obstacles on cell boundaries", () => {

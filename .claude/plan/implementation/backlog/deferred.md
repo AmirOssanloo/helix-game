@@ -17,7 +17,7 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Replay loader and determinism test | Sprint 01 | Sprint 06 | Recording is in sprint 01; replaying proves nothing until there is a session worth replaying |
 | Real enemy definitions for the stress test | Sprint 06 | Sprint 12 | A generic unit with random orders is enough to load movement, push-out, and pathing |
 | Wane's aggro-drop behaviour test | Sprint 10 | Sprint 12 | The flag is set and tested in phase 2; the behaviour that reads it needs the AI module |
-| Enemy summon adds at the live cap | Sprint 16 | Sprint 19 | Stubbed in the death-edge tests; real when summon adds exist |
+| Enemy summon adds at the live cap | Sprint 16 | Sprint 19 | A pending test in `tests/simulation/enemies/edges.spec.ts`; real when summon adds exist |
 | Damage-number crit styling | Sprint 16 | No crit exists | Colour per type is enough for the balance pass |
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
 | The disable matrix's draft | Sprint 18 | Sprint 20 | Only the headings are drafted early so sprint 20 starts on content |

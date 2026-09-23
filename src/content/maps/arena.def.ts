@@ -5,8 +5,9 @@ import type { MapDef } from "@domain/public";
  * enemies in. Ten rectangles of varied size stand in it, and two of them, the pair east of the
  * centre, leave a corridor 96 units wide between them: three cells, open to a small or
  * hero-sized unit and closed to a large one. Every edge sits on a 32-unit cell boundary so the
- * grid reads the rectangles exactly. The hero spawns at the centre, and nothing else spawns
- * on load.
+ * grid reads the rectangles exactly. The hero spawns at the centre, and the map holds no
+ * pack: the panel spawns what a session fights. A pack listed here is written live, not
+ * dormant, since the whole arena is near the hero.
  */
 export const arenaDef = {
   id: "arena",
@@ -34,5 +35,5 @@ export const arenaDef = {
     { minX: 3520, minY: 1920, maxX: 3680, maxY: 2080 },
   ],
   spawnPoint: { x: 2000, y: 2000 },
-  spawns: [],
+  packs: [],
 } as const satisfies MapDef;

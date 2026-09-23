@@ -15,5 +15,5 @@ export const makeMapDef = defineFactory<MapDef>((sequence) => ({
   },
   obstacles: [],
   spawnPoint: { x: 0, y: 0 },
-  spawns: [],
+  packs: [],
 }));

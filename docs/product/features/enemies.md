@@ -81,6 +81,8 @@ An enemy that dies grants its definition's experience reward to the hero, whoeve
 
 On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. On the arena every pack is live from spawn.
 
+A pack spawns once per map load: one the hero kills does not come back when the hero walks near its point again. Resetting the map puts every pack back as it was at load.
+
 ## States and edge cases
 
 | State | What happens |

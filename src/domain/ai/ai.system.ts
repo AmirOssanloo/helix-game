@@ -3,6 +3,7 @@ import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resolveBehaviour } from "./behaviours/index";
 import { readMachineTuning, runMachine } from "./machine";
+import { activatePacks } from "./packs";
 
 /**
  * Whether the unit is in control of itself this tick. A corpse, a stunned unit, one in the
@@ -28,6 +29,11 @@ const isDriving = (unit: Readonly<Unit>): boolean =>
  *
  * A behaviour decides and issues orders; it moves nothing itself. The systems after it carry
  * out what it asked for, exactly as they carry out what the player asked for.
+ *
+ * Last, a dormant pack the hero has come within the activation radius of is placed. It is
+ * placed after the pass, so a pack is in Idle on the tick it appears whatever the hero is
+ * doing, and its first driving tick is the next. The hero's position is where the last tick
+ * left it, since movement runs after this system.
  */
 export const aiSystem = (world: World): void => {
   const units = world.map.units;
@@ -59,5 +65,9 @@ export const aiSystem = (world: World): void => {
     }
 
     runMachine(world, unit, index, record, behaviour, hero, heroId);
+  }
+
+  if (hero !== null) {
+    activatePacks(world, hero);
   }
 };

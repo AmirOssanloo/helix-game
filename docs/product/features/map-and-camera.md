@@ -15,7 +15,8 @@ Every map definition holds:
 - **Bounds** — the playable rectangle, walled on every side
 - **Obstacles** — axis-aligned rectangles the hero and enemies cannot enter
 - **Spawn point** — where the hero appears on load and on respawn
-- **Later:** spawn tables for packs, exits to other maps, and dormant pack data
+- **Packs** — each an archetype, a tier, a count, the point it stands around, and whether it waits dormant until the hero comes near; see [Enemies](./enemies.md#dormant-packs)
+- **Later:** spawn tables for packs and exits to other maps
 
 From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid is inflated per unit size so a wide unit never paths through a gap it cannot fit.
 

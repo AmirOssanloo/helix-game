@@ -50,6 +50,7 @@ export type TuningKey =
   | "wander_interval"
   | "chase_repath_interval"
   | "ranged_hold_margin"
+  | "pack_activation_radius"
   | RadiusClassKey
   | QuartzRegenKey
   | WhorlSpeedKey
@@ -105,6 +106,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   wander_interval: "seconds",
   chase_repath_interval: "seconds",
   ranged_hold_margin: "world_units",
+  pack_activation_radius: "world_units",
   "radius_class:0": "world_units",
   "radius_class:1": "world_units",
   "radius_class:2": "world_units",

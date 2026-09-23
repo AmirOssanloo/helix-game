@@ -47,7 +47,7 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Layer | domain, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Every row of the enemies page's states-and-edge-cases table as a test and, where it fails, a fix: leashed mid-attack, pack partially in radius, spawn point occupied on Return, enemy blocked in a corridor re-paths on its budget, hero respawn with enemies aggroed gives no grace period, enemies pushed off the spawn point on the first tick.
 
@@ -59,6 +59,8 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 
 **Definition of done:** Every change · `src/domain`.
 
+> Note, 2026-09-23: every row held as built, so nothing under `src/` changed. Each row is a `describe` named after it, with the real archetypes. Two rows the build names are not in the enemies page's table and are there too: the hero's respawn with no grace period, from the hero page, and a pack spawned on one point that the first tick pushes apart. The adds-at-the-live-cap row is a pending test until an enemy ability summons adds, as [Deferred](../backlog/deferred.md) says. Leashed mid-attack moves the spawn point to put the unit past its leash, because nothing in phase 3 carries an enemy in its attack point.
+
 ---
 
 ### P3-S13-T03 — Dormant packs as a rule, and attack orders against real enemies
@@ -68,7 +70,7 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `MapDef` spawn data: a list of pack records (archetype, tier, count, position, dormant flag). At `loadMap`, dormant packs are kept as records; `aiSystem` activates a record when the hero comes within a tunable activation radius, spawning the pack in Idle; on the arena every record is live at load. The door is kept open by a test on a bare rectangle map with one dormant record. Attack-target and attack-move against a moving grunt end to end: right-click a grunt, the hero chases and hits; a grunt that becomes untargetable (lifted) drops the order to idle; attack-move through a pack acquires the nearest.
 
@@ -81,6 +83,8 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 - `tests/simulation/attack/against-enemies.spec.ts`.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+> Note, 2026-09-23: a map's `spawns` list of members became `packs`, one record per pack, and the placement the panel's `spawn_pack` did moved into `src/domain/ai/packs.ts` as the one door a pack enters by, so a map pack and a panel pack are placed alike. The activation radius is a new tunable, `pack_activation_radius`, at 1600: past the widest aggro radius, 800, and past the screen's half-diagonal. The AI pass places a waiting pack at its end, so the pack is in Idle on the tick it appears; since movement runs after it, that tick is the first to begin with the hero inside the radius. Three calls the build did not make: a pack is placed once per map load and a killed one stays dead; a live pack the world cannot take at load, past the cap, waits and is placed on the dormant rule; the panel's reset puts every pack back as the load had it. No new command, event, or system: activation is the AI pass's last step, and a pack that cannot be placed yet announces nothing. The attack half held as built, so nothing under `src/` changed for it. The recorded phase 1 session is restamped for the new tunable and the renamed field; it spawns no archetype, and the arena holds no pack.
 
 ---
 
@@ -113,9 +117,9 @@ Kill a pack, watch the experience bar fill and a skill point appear, click W, an
 | Check | Result |
 | --- | --- |
 | Five grunts to a level up by hand | |
-| Every enemies-page edge case green by name | |
+| Every enemies-page edge case green by name | Nine of ten, 2026-09-23, in `tests/simulation/enemies/edges.spec.ts`; the tenth, adds at the live cap, is pending until enemy abilities exist |
 | Milestone M5 | |
-| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.2 · T03 0.3 · T04 |
 
 ## Risks in this sprint
 

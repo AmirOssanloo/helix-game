@@ -1,5 +1,6 @@
 import { resolveNamedEffect } from "../abilities/effects/index";
 import { BEHAVIOUR_KEYS, resolveBehaviour } from "../ai/behaviours/index";
+import { ENEMY_LIVE_CAP } from "../entities/unit";
 import { KIT_KEYS } from "../kits/kit-registry";
 import type { AbilityDef } from "./ability-def";
 import type { LevelledSchemas } from "./definition-schemas";
@@ -578,17 +579,27 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
   }
 
   for (const { file, def } of maps) {
-    for (let index = 0; index < def.spawns.length; index += 1) {
-      const spawn = def.spawns[index];
+    for (let index = 0; index < def.packs.length; index += 1) {
+      const pack = def.packs[index];
 
-      if (spawn !== undefined) {
-        checkReference(
-          faults,
+      if (pack === undefined) {
+        continue;
+      }
+
+      checkReference(
+        faults,
+        file,
+        `packs[${String(index)}].archetypeId`,
+        pack.archetypeId,
+        spaces.enemies,
+      );
+
+      if (pack.count < 1 || pack.count > ENEMY_LIVE_CAP) {
+        faults.push({
           file,
-          `spawns[${String(index)}].archetypeId`,
-          spawn.archetypeId,
-          spaces.enemies,
-        );
+          path: `packs[${String(index)}].count`,
+          message: `expected a pack of 1 to ${String(ENEMY_LIVE_CAP)}, the live enemy cap`,
+        });
       }
     }
   }

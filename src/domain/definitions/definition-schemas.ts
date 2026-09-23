@@ -31,7 +31,7 @@ import type {
 } from "./form-def";
 import type { HeroDef } from "./hero-def";
 import type { LevelTable, Scalar } from "./level-table";
-import type { MapDef, SpawnDef } from "./map-def";
+import type { MapDef, PackDef } from "./map-def";
 import { ORB_IDS } from "./orb-id";
 import type { FieldSchemas, Schema } from "./schema";
 import {
@@ -218,17 +218,19 @@ export const tuningSchema: Schema<TuningDef> = objectOf<TuningDef>(
   ) as FieldSchemas<TuningDef>,
 );
 
-/** One map: its id, bounds, obstacles, spawn point, and spawn list. */
+/** One map: its id, bounds, obstacles, spawn point, and packs. How many a pack may hold is a check the registry makes against the live cap. */
 export const mapSchema: Schema<MapDef> = objectOf<MapDef>({
   id: idSchema,
   bounds: rectSchema,
   obstacles: arrayOf(rectSchema),
   spawnPoint: vec2Schema,
-  spawns: arrayOf(
-    objectOf<SpawnDef>({
+  packs: arrayOf(
+    objectOf<PackDef>({
       archetypeId: idSchema,
+      tier: oneOf(ENEMY_TIERS),
+      count: countSchema,
       position: vec2Schema,
-      packId: countSchema,
+      dormant: booleanSchema,
     }),
   ),
 });

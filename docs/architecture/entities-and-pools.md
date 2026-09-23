@@ -81,6 +81,8 @@ Nothing may assume the hero is recreated per map.
 
 A map definition holds spawn data, not units. A pack is dormant — a record of what to spawn and where — until the hero comes within an activation radius, and only then does the AI system acquire units for it. A large map with many packs costs the tick nothing until the hero is near, and the unit pool bounds the live cost whatever the map's size.
 
+The records are map scope, rebuilt by `loadMap`. A pack not marked dormant is placed by the load itself. A record is placed once; a pack that dies stays dead until the map loads again. A pack the world cannot take, past the live cap or with no room, keeps waiting and is placed on the rule a dormant one is.
+
 ---
 
 ## Anti-patterns
@@ -121,6 +123,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |
 | The hero's definition | Read through the active form every tick; never cached across ticks |
 | Packs | Spawn data until the hero is within the activation radius; then units |
+| A map's pack records | Map scope, rebuilt by `loadMap`; a pack not marked dormant placed by the load; each placed once per load; one the world cannot take keeps waiting |
 
 ---
 

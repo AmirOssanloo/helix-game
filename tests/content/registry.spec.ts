@@ -6,7 +6,11 @@ import type {
   StatusDef,
   SummonDef,
 } from "@domain/public";
-import { assertRegistryValid, validateRegistry } from "@domain/public";
+import {
+  assertRegistryValid,
+  ENEMY_LIVE_CAP,
+  validateRegistry,
+} from "@domain/public";
 import {
   makeEnemyDef,
   makeFormDef,
@@ -436,13 +440,19 @@ describe("a broken definition", () => {
     expect(fault.path).toBe("id");
   });
 
-  it("fails on a map spawn naming an archetype that does not exist", () => {
+  it("fails on a map pack naming an archetype that does not exist", () => {
     const registry = makeRegistry({
       maps: [
         makeMapDef.build({
           id: "pit",
-          spawns: [
-            { archetypeId: "grunt", position: { x: 0, y: 0 }, packId: 0 },
+          packs: [
+            {
+              archetypeId: "grunt",
+              tier: "normal",
+              count: 1,
+              position: { x: 0, y: 0 },
+              dormant: true,
+            },
           ],
         }),
       ],
@@ -451,8 +461,35 @@ describe("a broken definition", () => {
     const fault = onlyFault(validateRegistry(registry));
 
     expect(fault.file).toBe("maps/pit.def.ts");
-    expect(fault.path).toBe("spawns[0].archetypeId");
+    expect(fault.path).toBe("packs[0].archetypeId");
   });
+
+  it.each([0, ENEMY_LIVE_CAP + 1])(
+    "fails on a map pack of %i, outside one to the live cap",
+    (count) => {
+      const registry = makeRegistry({
+        maps: [
+          makeMapDef.build({
+            id: "pit",
+            packs: [
+              {
+                archetypeId: "melee_grunt",
+                tier: "normal",
+                count,
+                position: { x: 0, y: 0 },
+                dormant: true,
+              },
+            ],
+          }),
+        ],
+      });
+
+      const fault = onlyFault(validateRegistry(registry));
+
+      expect(fault.file).toBe("maps/pit.def.ts");
+      expect(fault.path).toBe("packs[0].count");
+    },
+  );
 
   it("fails on a form naming an ability that does not exist", () => {
     const registry = makeRegistry({
