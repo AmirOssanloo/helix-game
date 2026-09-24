@@ -93,7 +93,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | T01, T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Size every view pool to what the 1920 by 1080 canvas at zoom 1.0 can show plus a margin, as named presentation constants; confirm binding releases views for units that leave the rectangle and binds on entry with correct interpolation; spawn two hundred enemies across the arena and verify bound views equal what is on screen, not two hundred; measure sync time under 1 ms with two hundred bound.
 
@@ -108,16 +108,18 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 
 > Edited 2026-09-23: sprint 23 removes zoom and fixes the view at the scale Q27 settles, so "the 1920 by 1080 canvas at zoom 1.0" reads as that fixed isometric view, and the camera rectangle is the world box sprint 23's `worldRect` returns.
 
+> Closed 2026-09-24. The world box is the box around the screen's unprojected corners, about twice what the screen shows, so binding by it alone bound about 140 of 200 enemies spread over the arena where some 70 were on screen. Each unit, outline, status row, and projectile is now kept only when its interpolated position is drawn inside the screen widened by `VIEW_SCREEN_MARGIN` (96 pixels, past the widest body, its boss outline, and its icons), the rule the cell overlays already followed. `CameraFrame` in `src/presentation/camera/camera-frame.ts` holds that widened screen and the world box the hash is asked for; `WorldCamera.worldRect` and `UNIT_VIEW_MARGIN` went with it. Zones still bind by the box, since their pool holds every zone alive. Every pool size is a named constant in `src/presentation/views/view-counts.ts`: units 256 (the 200 on-screen cap, the hero, the summons, and room), status rows 256 (one per unit view, up from 64, since a spell can put a status on everything on screen), projectiles 128 (the 100 cap and room), outlines, obstacles, zones, and floor tiles as they were. `tests/presentation/sync.spec.ts` adds a unit off screen inside the box, 200 enemies over the arena that bind only the on-screen count, a walk across the arena with every visible enemy bound, none bound while visible, and no miss, and a unit bound on entry drawn at its interpolated point. The presentation page's binding and pool-size rows are rewritten. In Chrome on the Apple M1 laptop: 200 training dummies over the arena bind 72 views, the on-screen ones and the hero. All 200 on screen, 201 bound: sync mean 0.77 ms, p95 1.0, worst 1.5 (a timer that steps in 0.1 ms); render mean 1.6 ms, worst 2.9; 1 world draw; 60 fps; no view miss. Bench after: 60 fps, 1.0 ms, 1 draw, heap flat at 97 to 101 MB; the bench draws none of the pools that changed, and before is the sprint 24 figure, 60 fps and 1 draw.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Fifty-enemy fight readable by hand, every overlay checked against the page | |
+| Fifty-enemy fight readable by hand, every overlay checked against the page | Walked by the maintainer, 2026-09-24, and approved: five packs spawned from the panel, fought with all ten spells, every overlay checked against the developer panel page, and a walk across the arena with no enemy appearing from nothing at the screen's edge |
 | Damage-type matrix green | Green, 2026-09-24: forty cells of type against archetype, each a literal, and five live-archetype cases, in `tests/simulation/combat/damage-types.spec.ts` |
-| Sync time with maximum bound views | |
-| Actual days per ticket | T01 0.2 · T02 0.3 · T03 0.2 · T04 |
+| Sync time with maximum bound views | 2026-09-24, Chrome, Apple M1, 201 bound: mean 0.77 ms, p95 1.0, worst 1.5; 1 world draw, 60 fps, no view miss |
+| Actual days per ticket | T01 0.2 · T02 0.3 · T03 0.2 · T04 0.3 |
 
 ## Risks in this sprint
 

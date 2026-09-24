@@ -1,7 +1,8 @@
 import type { StatusRecord, Unit } from "@domain/public";
 import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect, Vec2 } from "@shared/public";
+import type { DeepReadonly, EntityId, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import type { CameraFrame } from "../camera/camera-frame";
 import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_TEXT } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
@@ -213,24 +214,25 @@ const wearsStatus = (unit: DeepReadonly<Unit>): boolean => {
 };
 
 /**
- * One frame of the status icons: asks the hash for the units inside `rect`, keeps a row of
- * icons on each one wearing a status, and releases the rows of the units that lost their last
- * status or left the rectangle. `candidates` is the query buffer the caller preallocated; this
+ * One frame of the status icons: asks the hash for the units inside the frame's world box,
+ * keeps a row of icons on each one drawn inside its screen and wearing a status, and releases
+ * the rows of the units that lost their last status or left the screen. `candidates` is the query buffer the caller preallocated; this
  * pass runs after the unit views, which is why it may share theirs.
  */
 export const syncStatusIconViews = (
   pool: StatusIconViewPool,
   world: WorldView,
-  rect: Readonly<Rect>,
+  frame: CameraFrame,
   alpha: number,
   candidates: EntityId[],
 ): void => {
   const units = world.map.units;
+  const box = frame.world;
   const count = world.map.spatialHash.queryRectangle(
-    rect.minX,
-    rect.minY,
-    rect.maxX,
-    rect.maxY,
+    box.minX,
+    box.minY,
+    box.maxX,
+    box.maxY,
     candidates,
   );
 
@@ -240,7 +242,12 @@ export const syncStatusIconViews = (
     const id = candidates[index];
     const unit = id === undefined ? null : units.resolve(id);
 
-    if (id === undefined || unit === null || !wearsStatus(unit)) {
+    if (
+      id === undefined ||
+      unit === null ||
+      !wearsStatus(unit) ||
+      !frame.showsBetween(unit.prev, unit.curr, alpha)
+    ) {
       continue;
     }
 

@@ -67,11 +67,11 @@ A view is the pooled Phaser object that draws one entity. There is one view kind
 Each render frame, after the driver's ticks, the sync:
 
 1. Drains the event ring and reacts: a floating number, a flash, a HUD wedge. It comes first, so a hit the ticks just landed is drawn on the frame that follows them rather than the one after.
-2. Asks the spatial hash for the entities inside the camera's world rectangle, plus a margin. The camera shows a screen rectangle; its world rectangle is the box around that rectangle's four corners unprojected.
-3. Binds a view to each — a view already bound stays bound; an entity that entered gets a free view; an entity that left releases its view.
+2. Asks the spatial hash for the entities inside the camera's world rectangle. The camera shows a screen rectangle, widened by a margin past the reach of the widest body, its outline, and its icons; its world rectangle is the box around that widened rectangle's four corners unprojected.
+3. Keeps each entity whose interpolated position is drawn inside the widened screen rectangle, and binds a view to it — a view already bound stays bound; an entity that entered gets a free view; an entity that left releases its view. The world rectangle is about twice what the screen shows, so binding by it alone would bind entities in its corners that no pixel of the screen shows. The margin means a view is bound before any part of its entity shows, so nothing pops in. Zones are the exception: their pool holds every zone alive and a zone's shape reaches far past its centre, so they bind by the world rectangle alone.
 4. Writes `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, and `visible` on each bound view from the entity's state, interpolating position between the entity's previous and current position by the driver's fraction. A view on the ground writes the world position; a view that stands up writes the projected one.
 
-A view never creates or destroys a game object during play. A view never reads a game object back to learn where a unit is. The view pool is sized to what fits on screen plus a margin, not to the simulation's capacity, so the pool is a presentation number and a large map costs the screen nothing.
+A view never creates or destroys a game object during play. A view never reads a game object back to learn where a unit is. The view pool is sized to what fits on screen plus a margin, not to the simulation's capacity, so the pool is a presentation number and a large map costs the screen nothing. For units and projectiles what fits on screen is the live cap the performance standards set; every pool's size is a named number in one presentation module.
 
 ```typescript
 // one view kind, one pool, one sync
@@ -179,10 +179,10 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
 | HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent is a spend-skill-point command naming the slot |
 | Targeting preview | Three quads at the ground band in world coordinates, made once: the range ring on the hero; the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a line or a definition that previews none; and the drag line from a held press to the pointer while it is dragged. The ability's tint; the ring and the shape red past the range, judged at the press while one is held |
-| Binding | By the camera's world rectangle, the box around the screen's unprojected corners, through the spatial hash, each frame |
+| Binding | Each frame, the spatial hash asked for the camera's world rectangle, the box around the widened screen's unprojected corners; an entity kept only when its interpolated position is drawn inside the widened screen; zones by the world rectangle alone |
 | Sync writes | `x`, `y`, `rotation`, `scale`, `tint`, `alpha`, `visible`; never reads a game object back |
 | Creating or destroying game objects during play | Never |
-| View pool size | What fits on screen plus a margin; a presentation number |
+| View pool size | What fits on screen plus a margin, the live caps for units and projectiles; a named presentation number, one place for all of them |
 | Interpolation | Previous to current entity position by the driver's fraction |
 | The event drain | First of the frame, before the views, so a hit the ticks just landed shows on that frame |
 | Depth | Fixed bands: floor −10, ground 0, obstacles 10, units 20, projectiles 30, air 40, text 50, debug 90. Inside the ground layer, the list kept sorted by band. Never by position |

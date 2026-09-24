@@ -1,7 +1,8 @@
 import type { Projectile } from "@domain/public";
 import { PROJECTILE_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect } from "@shared/public";
+import type { DeepReadonly, EntityId } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import type { CameraFrame } from "../camera/camera-frame";
 import { DEPTH_PROJECTILES } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
 import { interpolate } from "./quad";
@@ -71,25 +72,15 @@ export const createProjectileViewPool = (
   return new ViewPool(views, PROJECTILE_CAPACITY);
 };
 
-/** Whether the disc `projectile` covers reaches inside `rect` at all. */
-const isProjectileInside = (
-  projectile: DeepReadonly<Projectile>,
-  rect: Readonly<Rect>,
-): boolean =>
-  projectile.curr.x + projectile.radius >= rect.minX &&
-  projectile.curr.x - projectile.radius <= rect.maxX &&
-  projectile.curr.y + projectile.radius >= rect.minY &&
-  projectile.curr.y - projectile.radius <= rect.maxY;
-
 /**
  * One frame of the projectile views: projectiles are not in the spatial hash, so the pool is
- * walked by index, and every projectile whose disc reaches inside `rect` keeps a view and is
- * written. One that landed, expired, or left the rectangle has its view released.
+ * walked by index, and every projectile drawn inside the frame's screen keeps a view and is
+ * written. One that landed, expired, or left the screen has its view released.
  */
 export const syncProjectileViews = (
   pool: ProjectileViewPool,
   world: WorldView,
-  rect: Readonly<Rect>,
+  frame: CameraFrame,
   alpha: number,
 ): void => {
   const projectiles = world.map.projectiles;
@@ -103,7 +94,7 @@ export const syncProjectileViews = (
     if (
       projectile === null ||
       id === null ||
-      !isProjectileInside(projectile, rect)
+      !frame.showsBetween(projectile.prev, projectile.curr, alpha)
     ) {
       continue;
     }

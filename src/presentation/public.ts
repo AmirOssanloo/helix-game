@@ -15,6 +15,7 @@ export {
   type ScreenPlacement,
   VIEW_SCALE,
 } from "./camera/projection";
+export { CameraFrame, VIEW_SCREEN_MARGIN } from "./camera/camera-frame";
 export { type FollowCamera, WorldCamera } from "./camera/world-camera";
 export {
   AbilitySquareView,
@@ -160,10 +161,20 @@ export {
   syncUnitViews,
   type UnitDefinitions,
   unitDefinitionsOf,
-  UNIT_VIEW_MARGIN,
   UnitView,
   type UnitViewPool,
 } from "./views/unit.view";
+export {
+  FLOOR_TILE_COUNT,
+  OBSTACLE_VIEW_COUNT,
+  ON_SCREEN_ENEMIES,
+  ON_SCREEN_PROJECTILES,
+  OUTLINE_VIEW_COUNT,
+  PROJECTILE_VIEW_COUNT,
+  STATUS_ICON_VIEW_COUNT,
+  UNIT_VIEW_COUNT,
+  ZONE_VIEW_COUNT,
+} from "./views/view-counts";
 export { TINT_FILL, TINT_MULTIPLY } from "./views/tint-modes";
 export { type View, ViewPool } from "./views/view-pool";
 export {

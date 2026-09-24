@@ -45,9 +45,6 @@ export class WorldCamera {
   /** Scratch for the screen box the bounds project to. */
   private readonly box: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
-  /** Scratch for the screen rectangle the camera shows. */
-  private readonly shown: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
-
   constructor(camera: FollowCamera, projection: Projection) {
     this.camera = camera;
     this.projection = projection;
@@ -90,19 +87,5 @@ export class WorldCamera {
     out.maxY = camera.scrollY + camera.height + margin;
 
     return out;
-  }
-
-  /** The world box around what the camera shows, widened by `margin` world units on every side, into `out`. */
-  worldRect(margin: number, out: Rect): Rect {
-    const shown = this.screenRect(0, this.shown);
-
-    return this.projection.worldBoxOf(
-      shown.minX,
-      shown.minY,
-      shown.maxX - shown.minX,
-      shown.maxY - shown.minY,
-      margin,
-      out,
-    );
   }
 }

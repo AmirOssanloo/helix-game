@@ -60,6 +60,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How the floor is laid | `src/presentation/views/floor.view.ts` — the tiles and the void around the bounds; the floor frame is in the content frame list, and its image is `assets/floor.png` |
 | The depth bands | The depth constants in `src/presentation/views/` |
 | Which views exist | `src/presentation/views/` — one file per entity kind, plus the feedback a hit raises |
+| How many views of each kind the play scene makes, and the live caps they are sized from | `src/presentation/views/view-counts.ts` |
+| What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
 | The Phaser configuration | `src/app/game-config.ts` |

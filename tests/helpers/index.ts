@@ -45,6 +45,7 @@ export {
 export { CommandRecorder } from "./doubles/command-recorder";
 export { FixedHash } from "./doubles/fixed-hash";
 export { FLAT_PLACEMENT } from "./doubles/flat-placement";
+export { frameAround } from "./doubles/frame-around";
 export { FixedLens } from "./doubles/fixed-lens";
 export {
   IntentRecorder,

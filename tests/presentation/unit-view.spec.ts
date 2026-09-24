@@ -22,6 +22,7 @@ import {
 import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  frameAround,
   makeWorld,
   QuadRecorder,
   spawnEnemy,
@@ -112,8 +113,10 @@ const arrange = (size: number): Arranged => {
     outlines,
     outlineQuads,
     sync: (rect, alpha): void => {
-      syncUnitViews(pool, world.view, rect, alpha, candidates, flashes);
-      syncOutlineViews(outlines, world.view, rect, alpha, candidates);
+      const frame = frameAround(rect);
+
+      syncUnitViews(pool, world.view, frame, alpha, candidates, flashes);
+      syncOutlineViews(outlines, world.view, frame, alpha, candidates);
     },
   };
 };

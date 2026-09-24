@@ -9,7 +9,7 @@ import {
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, QuadRecorder, SYNC_FIELDS } from "../helpers";
+import { frameAround, makeWorld, QuadRecorder, SYNC_FIELDS } from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a world size over it. */
 const FRAME_WIDTH = 128;
@@ -72,7 +72,7 @@ const arrange = (size: number): Arranged => {
     pool,
     quads,
     sync: (rect): void => {
-      syncProjectileViews(pool, world.view, rect, HALF_WAY);
+      syncProjectileViews(pool, world.view, frameAround(rect), HALF_WAY);
     },
   };
 };

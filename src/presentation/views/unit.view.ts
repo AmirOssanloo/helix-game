@@ -1,7 +1,8 @@
 import type { EnemyDef, EnemyTier, Unit, UnitKind } from "@domain/public";
 import { UNIT_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect } from "@shared/public";
+import type { DeepReadonly, EntityId } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import type { CameraFrame } from "../camera/camera-frame";
 import { DEPTH_UNITS } from "./depth-bands";
 import type { HitFlashes } from "./hit-feedback";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
@@ -33,12 +34,6 @@ const ELITE_OUTLINE_SHARE = 1.3;
 const BOSS_OUTLINE_SHARE = 1.6;
 
 const DIAMETERS_PER_RADIUS = 2;
-
-/**
- * How far past the camera rectangle the query reaches, so a unit whose body straddles the
- * edge is bound before its centre is on screen: wider than any body radius content declares.
- */
-export const UNIT_VIEW_MARGIN = 64;
 
 /**
  * The definition a unit was dressed from, by its id, or `null` when the run scope holds none.
@@ -207,25 +202,27 @@ export const createUnitViewPool = (
 };
 
 /**
- * One frame of the unit views: asks the hash for the units inside `rect`, keeps a view on
- * each live one and writes its fields, and releases the views of the units that left.
+ * One frame of the unit views: asks the hash for the units inside the frame's world box, keeps
+ * a view on each live one drawn inside its screen and writes its fields, and releases the
+ * views of the units that left.
  * `candidates` is the query buffer, preallocated to the unit capacity by the caller, and
  * `flashes` is the record of which of them took a hit recently enough to still be white.
  */
 export const syncUnitViews = (
   pool: UnitViewPool,
   world: WorldView,
-  rect: Readonly<Rect>,
+  frame: CameraFrame,
   alpha: number,
   candidates: EntityId[],
   flashes: HitFlashes,
 ): void => {
   const units = world.map.units;
+  const box = frame.world;
   const count = world.map.spatialHash.queryRectangle(
-    rect.minX,
-    rect.minY,
-    rect.maxX,
-    rect.maxY,
+    box.minX,
+    box.minY,
+    box.maxX,
+    box.maxY,
     candidates,
   );
 
@@ -235,7 +232,11 @@ export const syncUnitViews = (
     const id = candidates[index];
     const unit = id === undefined ? null : units.resolve(id);
 
-    if (id === undefined || unit === null) {
+    if (
+      id === undefined ||
+      unit === null ||
+      !frame.showsBetween(unit.prev, unit.curr, alpha)
+    ) {
       continue;
     }
 
@@ -341,23 +342,25 @@ export const createOutlineViewPool = (
 };
 
 /**
- * One frame of the outlines: asks the hash for the units inside `rect` and keeps an outline
- * on each elite and boss among them, releasing the outlines of those that left the rectangle
- * or the world, so an outline goes when its unit's slot is given back.
+ * One frame of the outlines: asks the hash for the units inside the frame's world box and
+ * keeps an outline on each elite and boss among them drawn inside its screen, releasing the
+ * outlines of those that left the screen or the world, so an outline goes when its unit's slot
+ * is given back.
  */
 export const syncOutlineViews = (
   pool: OutlineViewPool,
   world: WorldView,
-  rect: Readonly<Rect>,
+  frame: CameraFrame,
   alpha: number,
   candidates: EntityId[],
 ): void => {
   const units = world.map.units;
+  const box = frame.world;
   const count = world.map.spatialHash.queryRectangle(
-    rect.minX,
-    rect.minY,
-    rect.maxX,
-    rect.maxY,
+    box.minX,
+    box.minY,
+    box.maxX,
+    box.maxY,
     candidates,
   );
 
@@ -367,7 +370,12 @@ export const syncOutlineViews = (
     const id = candidates[index];
     const unit = id === undefined ? null : units.resolve(id);
 
-    if (id === undefined || unit === null || unit.tier === "normal") {
+    if (
+      id === undefined ||
+      unit === null ||
+      unit.tier === "normal" ||
+      !frame.showsBetween(unit.prev, unit.curr, alpha)
+    ) {
       continue;
     }
 

@@ -18,6 +18,7 @@ import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FLAT_PLACEMENT,
+  frameAround,
   makeWorld,
   QuadRecorder,
   spawnEnemy,
@@ -104,7 +105,13 @@ const arrange = (
     quads,
     icons: quads.slice(0, STATUS_TABLE_SIZE),
     sync: (rect = AROUND_HERO): void => {
-      syncStatusIconViews(pool, world.view, rect, HALF_WAY, candidates);
+      syncStatusIconViews(
+        pool,
+        world.view,
+        frameAround(rect),
+        HALF_WAY,
+        candidates,
+      );
     },
     wear: (statusId): void => {
       const result = applyStatus(

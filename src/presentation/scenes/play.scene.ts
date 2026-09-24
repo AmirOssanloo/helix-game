@@ -1,14 +1,11 @@
 import Phaser from "phaser";
 import type { DomainEvent } from "@domain/public";
-import {
-  createCandidateBuffer,
-  UNIT_CAPACITY,
-  ZONE_CAPACITY,
-} from "@domain/public";
+import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
+import { CameraFrame, VIEW_SCREEN_MARGIN } from "../camera/camera-frame";
 import { GroundLayer } from "../camera/ground-layer";
 import { Projection, VIEW_SCALE } from "../camera/projection";
 import { WorldCamera } from "../camera/world-camera";
@@ -53,9 +50,17 @@ import {
   createUnitViewPool,
   syncOutlineViews,
   syncUnitViews,
-  UNIT_VIEW_MARGIN,
   unitDefinitionsOf,
 } from "../views/unit.view";
+import {
+  FLOOR_TILE_COUNT,
+  OBSTACLE_VIEW_COUNT,
+  OUTLINE_VIEW_COUNT,
+  PROJECTILE_VIEW_COUNT,
+  STATUS_ICON_VIEW_COUNT,
+  UNIT_VIEW_COUNT,
+  ZONE_VIEW_COUNT,
+} from "../views/view-counts";
 import type { ZoneViewPool } from "../views/zone.view";
 import { createZoneViewPool, syncZoneViews } from "../views/zone.view";
 
@@ -65,27 +70,6 @@ const SHUTDOWN_EVENT = "shutdown";
 
 /** Fired by the scene once its children have been rendered, so a frame's render time closes here. */
 const RENDER_EVENT = Phaser.Scenes.Events.RENDER;
-
-/** Unit views: the live cap on screen plus a margin, and what the benchmark drives. A presentation number, not the unit capacity. */
-const UNIT_VIEW_COUNT = 320;
-
-/** Outlines: how many elites and bosses are on screen at once in a busy fight. A presentation number. */
-const OUTLINE_VIEW_COUNT = 64;
-
-/** Obstacle quads: room for a map several times as busy as the arena. */
-const OBSTACLE_VIEW_COUNT = 64;
-
-/** Zone views: the zone pool's whole capacity, since every zone alive can be on screen at once. */
-const ZONE_VIEW_COUNT = ZONE_CAPACITY;
-
-/** Projectile views: more than the live projectiles the budget allows, since a fight's are all on screen. A presentation number, not the projectile capacity. */
-const PROJECTILE_VIEW_COUNT = 128;
-
-/** Rows of status icons: how many units on screen wear a status at once in a busy fight. A presentation number. */
-const STATUS_ICON_VIEW_COUNT = 64;
-
-/** Floor tiles: enough to cover the canvas and its margin. A presentation number. */
-const FLOOR_TILE_COUNT = 320;
 
 /** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge; the walkability overlay keeps to the same rectangle. */
 const FLOOR_MARGIN = 64;
@@ -142,7 +126,8 @@ export class PlayScene extends Phaser.Scene {
   private readonly candidates: EntityId[] =
     createCandidateBuffer(UNIT_CAPACITY);
 
-  private readonly rect: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  /** Scratch for the screen rectangle the views bind by this frame. */
+  private readonly shown: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
   /** Scratch for the screen rectangle the floor covers this frame. */
   private readonly screen: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
@@ -151,6 +136,9 @@ export class PlayScene extends Phaser.Scene {
   private readonly pointer: Vec2 = { x: 0, y: 0 };
 
   private readonly projection = new Projection();
+
+  /** What the camera shows this frame, for the views that bind by it. */
+  private readonly frame = new CameraFrame(this.projection);
 
   private stage: Stage | null = null;
 
@@ -297,32 +285,36 @@ export class PlayScene extends Phaser.Scene {
 
     // Before the views, so a hit the ticks just landed is flashing and counted on this frame.
     this.drainEvents(stage, alpha);
-    stage.camera.worldRect(UNIT_VIEW_MARGIN, this.rect);
-    syncZoneViews(stage.zones, world, this.rect, alpha);
+    stage.camera.screenRect(VIEW_SCREEN_MARGIN, this.shown);
+    this.frame.fit(this.shown);
+
+    const frame = this.frame;
+
+    syncZoneViews(stage.zones, world, frame.world, alpha);
     syncUnitViews(
       stage.units,
       world,
-      this.rect,
+      frame,
       alpha,
       this.candidates,
       stage.flashes,
     );
-    syncOutlineViews(stage.outlines, world, this.rect, alpha, this.candidates);
+    syncOutlineViews(stage.outlines, world, frame, alpha, this.candidates);
     syncStatusIconViews(
       stage.statusIcons,
       world,
-      this.rect,
+      frame,
       alpha,
       this.candidates,
     );
-    syncProjectileViews(stage.projectiles, world, this.rect, alpha);
+    syncProjectileViews(stage.projectiles, world, frame, alpha);
     stage.orbs.sync(world, alpha);
     stage.numbers.sync(world.tick, alpha);
     stage.mapper.syncCursor();
     this.syncPreview(stage);
     stage.overlays.sync(
       world,
-      this.rect,
+      frame.world,
       this.screen,
       alpha,
       this.context.overlays,
