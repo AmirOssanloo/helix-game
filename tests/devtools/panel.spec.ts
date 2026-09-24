@@ -391,6 +391,46 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("lists every overlay once, in the order the developer panel page lists them, each writing its own toggle", () => {
+    const arranged = arrange();
+    // The page's Overlays list, top to bottom; its first entry is two checkboxes, since the
+    // collision disc and the bound radius are drawn as two circles.
+    const pageOrder: readonly (readonly [string, keyof OverlayToggles])[] = [
+      ["Collision discs", "collisionDiscs"],
+      ["Bound radii", "boundRadii"],
+      ["Facing and action cone", "facingCone"],
+      ["Attack and aggro ranges", "unitRanges"],
+      ["Path lines", "pathLines"],
+      ["Spell areas", "spellAreas"],
+      ["Unit state labels", "stateLabels"],
+      ["Spatial hash cells", "hashCells"],
+      ["Walkability grid", "walkabilityGrid"],
+    ];
+    const pageLabels = pageOrder.map(([label]) => label);
+    const listed = [...arranged.host.querySelectorAll(ROW_LABEL)]
+      .map((name) => name.textContent)
+      .filter((label) => pageLabels.includes(label));
+
+    expect(listed).toEqual(pageLabels);
+    expect(pageOrder.map(([, key]) => key).sort()).toEqual(
+      Object.keys(arranged.overlays).sort(),
+    );
+
+    for (const [label, key] of pageOrder) {
+      checkboxNamed(arranged.host, label).click();
+
+      expect(
+        Object.entries(arranged.overlays)
+          .filter(([, on]) => on)
+          .map(([name]) => name),
+      ).toEqual([key]);
+
+      checkboxNamed(arranged.host, label).click();
+    }
+
+    arranged.handle.unmount();
+  });
+
   it("writes an overlay checkbox into the toggles the play scene reads, and remembers it", () => {
     const arranged = arrange();
 

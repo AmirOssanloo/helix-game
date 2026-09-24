@@ -4,6 +4,7 @@ import type { Unit } from "@domain/public";
 import {
   acquireUnit,
   acquireZone,
+  PATH_CAPACITY,
   applyDamage,
   cellCentreX,
   cellCentreY,
@@ -74,6 +75,28 @@ const LINE_FRAME = "pixel";
 const CELL_FRAME = "square";
 const CELL_OUTLINE_FRAME = "square_outline";
 const RANGE_FRAME = "ring_thin";
+const AREA_CONE_FRAME = "cone_60";
+
+/** The acceptance bar's fight: fifty enemies walking at once. */
+const MOVER_COUNT = 50;
+
+/** The waypoints a path-lines case walks the hero through, in order. */
+const WAYPOINTS: readonly Vec2[] = [
+  { x: 100, y: 0 },
+  { x: 100, y: 200 },
+  { x: -100, y: 200 },
+];
+
+/** How long a cone zone reaches from its apex, and the tick its delay ends. */
+const CONE_LENGTH = 300;
+const ACTIVE_AT_TICK = 30;
+
+/** Outside the camera rectangle by more than any area the cases put down reaches. */
+const FAR_OUTSIDE = 5000;
+
+/** Faint through a zone's delay, full once it is touching units. */
+const WAITING_AREA_ALPHA = 0.3;
+const ACTIVE_AREA_ALPHA = 0.8;
 
 /** Where a grunt the ranges cases spawn stands, where its home is moved to, and how far off one the labels case spawns stands. */
 const GRUNT_X = -150;
@@ -671,5 +694,197 @@ describe("the debug labels in the isometric view", () => {
     expect(overlays.misses).toBe(0);
     expect(shaded.size).toBeGreaterThan(OLD_BLOCKED_POOL);
     expect(shaded.size).toBeGreaterThanOrEqual(onScreen);
+  });
+});
+
+describe("the path lines, spell areas, and hash counts", () => {
+  it("chain one line per waypoint left, from where the unit stands through each in turn", () => {
+    const arranged = arrange();
+    const path = arranged.hero.path;
+
+    expect(WAYPOINTS.length).toBeLessThanOrEqual(PATH_CAPACITY);
+
+    WAYPOINTS.forEach((waypoint, index) => {
+      const point = path.points[index];
+
+      if (point === undefined) {
+        throw new Error("The path buffer holds every waypoint");
+      }
+
+      point.x = waypoint.x;
+      point.y = waypoint.y;
+    });
+    path.count = WAYPOINTS.length;
+    path.next = 1;
+    arranged.hash.ids = [arranged.heroId];
+    arranged.toggles.pathLines = true;
+    arranged.sync();
+
+    const lines = visible(arranged.quads, LINE_FRAME);
+
+    expect(lines).toHaveLength(WAYPOINTS.length - 1);
+    // From the origin, where the hero stands, to the second waypoint, then on to the third.
+    expect(lines[0]?.x).toBe(50);
+    expect(lines[0]?.y).toBe(100);
+    expect(lines[0]?.scaleX).toBeCloseTo(Math.hypot(100, 200) / FRAME_WIDTH);
+    expect(lines[1]?.x).toBe(0);
+    expect(lines[1]?.y).toBe(200);
+    expect(lines[1]?.rotation).toBeCloseTo(Math.PI);
+    expect(lines[1]?.scaleX).toBeCloseTo(200 / FRAME_WIDTH);
+  });
+
+  it("draw nothing for a unit whose path is walked, and hide its line the frame it arrives", () => {
+    const arranged = arrange();
+
+    arranged.hash.ids = [arranged.heroId];
+    arranged.toggles.pathLines = true;
+    arranged.sync();
+
+    expect(visible(arranged.quads, LINE_FRAME)).toHaveLength(1);
+
+    arranged.hero.path.next = arranged.hero.path.count;
+    arranged.sync();
+
+    expect(visible(arranged.quads, LINE_FRAME)).toHaveLength(0);
+  });
+
+  it("draw a line for each of fifty movers at once with no miss", () => {
+    const arranged = arrange();
+    const ids: EntityId[] = [];
+
+    for (let index = 0; index < MOVER_COUNT; index += 1) {
+      const y = -400 + index * 16;
+      const id = acquireUnit(arranged.world.state, "enemy", -400, y);
+      const unit =
+        id === null ? null : arranged.world.state.map.units.resolve(id);
+
+      if (id === null || unit === null) {
+        throw new Error("The unit pool has room for fifty movers");
+      }
+
+      setStraightPath(unit.path, 400, y);
+      ids.push(id);
+    }
+
+    arranged.hash.ids = ids;
+    arranged.toggles.pathLines = true;
+    arranged.sync();
+
+    expect(visible(arranged.quads, LINE_FRAME)).toHaveLength(MOVER_COUNT);
+    expect(arranged.overlays.misses).toBe(0);
+  });
+
+  it("draw a cone as long as it reaches from its apex, turned to its facing", () => {
+    const arranged = arrange();
+    const id = acquireZone(arranged.world.state, ZONE_X, 0, Math.PI / 4);
+    const zone =
+      id === null ? null : arranged.world.state.map.zones.resolve(id);
+
+    if (zone === null) {
+      throw new Error("The zone pool has room for a cone");
+    }
+
+    zone.shape = { kind: "cone", angleDegrees: 60, length: CONE_LENGTH };
+    arranged.toggles.spellAreas = true;
+    arranged.sync();
+
+    const cones = visible(arranged.quads, AREA_CONE_FRAME);
+
+    // The apex is the frame's centre and the arc its edge, so the frame spans twice the length.
+    expect(cones).toHaveLength(1);
+    expect(cones[0]?.x).toBe(ZONE_X);
+    expect(cones[0]?.scaleX).toBeCloseTo((CONE_LENGTH * 2) / FRAME_WIDTH);
+    expect(cones[0]?.scaleY).toBeCloseTo((CONE_LENGTH * 2) / FRAME_WIDTH);
+    expect(cones[0]?.rotation).toBe(Math.PI / 4);
+  });
+
+  it("draw a zone faint through its delay and full once it touches units", () => {
+    const arranged = arrange();
+    const id = acquireZone(arranged.world.state, ZONE_X, 0, 0);
+    const zone =
+      id === null ? null : arranged.world.state.map.zones.resolve(id);
+
+    if (zone === null) {
+      throw new Error("The zone pool has room for a circle");
+    }
+
+    zone.circle.radius = ZONE_RADIUS;
+    zone.activeAtTick = ACTIVE_AT_TICK;
+    arranged.toggles.spellAreas = true;
+    arranged.sync();
+
+    expect(visible(arranged.quads, AREA_CIRCLE_FRAME)[0]?.alpha).toBe(
+      WAITING_AREA_ALPHA,
+    );
+
+    zone.activeAtTick = 0;
+    arranged.sync();
+
+    expect(visible(arranged.quads, AREA_CIRCLE_FRAME)[0]?.alpha).toBe(
+      ACTIVE_AREA_ALPHA,
+    );
+  });
+
+  it("outline no zone whose area stays outside the camera rectangle", () => {
+    const arranged = arrange();
+    const id = acquireZone(arranged.world.state, FAR_OUTSIDE, 0, 0);
+    const zone =
+      id === null ? null : arranged.world.state.map.zones.resolve(id);
+
+    if (zone === null) {
+      throw new Error("The zone pool has room for a circle");
+    }
+
+    zone.circle.radius = ZONE_RADIUS;
+    arranged.toggles.spellAreas = true;
+    arranged.sync();
+
+    expect(visible(arranged.quads, AREA_CIRCLE_FRAME)).toHaveLength(0);
+    expect(arranged.overlays.misses).toBe(0);
+  });
+
+  it("count no hash cell the screen cannot show, and keep one its edge cuts through", () => {
+    const projection = new Projection();
+    const world = makeWorld({ seed: 1, map: makeMapDef.build({}) });
+
+    spawnHero(world);
+
+    const hash = new FixedHash();
+    const labels: LabelRecorder[] = [];
+    const overlays = new DebugOverlays(
+      (frame) => new QuadRecorder(frame),
+      (size) => {
+        const label = new LabelRecorder(size);
+
+        labels.push(label);
+
+        return label;
+      },
+      () => FRAME_WIDTH,
+      projection,
+    );
+    const toggles = createOverlayToggles();
+    const size = hash.cellSize;
+    const drawn: Vec2 = { x: 0, y: 0 };
+    // A screen box whose right edge runs through the cell at (2, -2): its centre is drawn at
+    // x = 320, past the edge, and its left corner at 240, inside it.
+    const screen: Rect = { minX: -300, minY: -150, maxX: 300, maxY: 150 };
+
+    // (0, 0) sits mid-screen; (2, -2) straddles the right edge; (3, 3) lies inside the camera
+    // rectangle but is drawn far below the screen.
+    hash.cells = [
+      { cellX: 0, cellY: 0, count: 1 },
+      { cellX: 2, cellY: -2, count: 2 },
+      { cellX: 3, cellY: 3, count: 3 },
+    ];
+    toggles.hashCells = true;
+    overlays.sync(makeWorldView(world, hash), CAMERA_RECT, screen, 0, toggles);
+
+    const shown = labels.filter((label) => label.visible);
+
+    expect(shown.map((label) => label.text)).toEqual(["1", "2"]);
+
+    projection.toScreen(2.5 * size, -1.5 * size, drawn);
+    expect(drawn.x).toBeGreaterThan(screen.maxX);
   });
 });

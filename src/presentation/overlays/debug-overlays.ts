@@ -18,6 +18,7 @@ import {
   readTunable,
   resolveBehaviour,
   rowOf,
+  shapeExtent,
   UNIT_CAPACITY,
 } from "@domain/public";
 import type { DeepReadonly, EntityId, Rect, Vec2 } from "@shared/public";
@@ -65,6 +66,8 @@ const LEASH_TINT = 0x60a0ff;
 const LABEL_TINT = 0xffffff;
 const RING_ALPHA = 0.5;
 const LINE_ALPHA = 0.8;
+/** A zone through its delay touches nothing yet, so its outline is drawn fainter until it does. */
+const WAITING_AREA_ALPHA = 0.3;
 const CELL_ALPHA = 0.25;
 const OPAQUE = 1;
 
@@ -543,7 +546,12 @@ class BlockedCells {
   }
 }
 
-/** Every occupied hash cell inside the camera rectangle, outlined, with its count. */
+/**
+ * Every occupied hash cell drawn on screen, outlined, with its count. As with the blocked
+ * cells, the camera rectangle is about twice what the screen shows, so a cell inside it is
+ * drawn only when its centre is drawn inside `screen` widened by half the cell's drawn size,
+ * which keeps a cell the screen's edge cuts through and drops the ones it cannot show.
+ */
 class HashCells {
   private readonly run: QuadRun;
 
@@ -558,6 +566,14 @@ class HashCells {
 
   /** Scratch for where a cell's centre is drawn this frame. */
   private readonly drawn: Vec2 = { x: 0, y: 0 };
+
+  /** Scratch for where two opposite corners of a cell are drawn, for its drawn size. */
+  private readonly cornerA: Vec2 = { x: 0, y: 0 };
+
+  private readonly cornerB: Vec2 = { x: 0, y: 0 };
+
+  /** The screen rectangle widened by half a cell's drawn size, rewritten each frame. */
+  private readonly reach: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
   private readonly cell: HashCell = createHashCell();
 
@@ -586,10 +602,12 @@ class HashCells {
     return this.run.misses;
   }
 
-  sync(world: WorldView, rect: Readonly<Rect>): void {
+  sync(world: WorldView, rect: Readonly<Rect>, screen: Readonly<Rect>): void {
     const hash = world.map.spatialHash;
     const size = hash.cellSize;
     const cell = this.cell;
+    const drawn = this.drawn;
+    const reach = this.widen(screen, size);
 
     for (let index = 0; index < hash.cellSlots; index += 1) {
       if (!hash.readCell(index, cell)) {
@@ -604,6 +622,17 @@ class HashCells {
         minX > rect.maxX ||
         minY + size < rect.minY ||
         minY > rect.maxY
+      ) {
+        continue;
+      }
+
+      this.placement.toScreen(minX + size / 2, minY + size / 2, drawn);
+
+      if (
+        drawn.x < reach.minX ||
+        drawn.x > reach.maxX ||
+        drawn.y < reach.minY ||
+        drawn.y > reach.maxY
       ) {
         continue;
       }
@@ -623,9 +652,8 @@ class HashCells {
       quad.alpha = CELL_ALPHA;
       quad.visible = true;
 
-      this.placement.toScreen(quad.x, quad.y, this.drawn);
-      label.x = this.drawn.x;
-      label.y = this.drawn.y;
+      label.x = drawn.x;
+      label.y = drawn.y;
       label.tint = LABEL_TINT;
       label.alpha = OPAQUE;
       label.visible = true;
@@ -647,6 +675,36 @@ class HashCells {
     this.run.hide();
   }
 
+  /**
+   * `screen` widened on each side by half how wide and how tall a cell of `size` is drawn: a
+   * cell's drawn width is the larger of its two diagonals across the screen, its height the
+   * larger down it, so the same sum holds flat or projected.
+   */
+  private widen(screen: Readonly<Rect>, size: number): Readonly<Rect> {
+    const a = this.cornerA;
+    const b = this.cornerB;
+    const reach = this.reach;
+
+    this.placement.toScreen(size, 0, a);
+    this.placement.toScreen(0, size, b);
+
+    const acrossX = Math.abs(a.x - b.x);
+    const acrossY = Math.abs(a.y - b.y);
+
+    this.placement.toScreen(0, 0, a);
+    this.placement.toScreen(size, size, b);
+
+    const halfWidth = Math.max(acrossX, Math.abs(a.x - b.x)) / 2;
+    const halfHeight = Math.max(acrossY, Math.abs(a.y - b.y)) / 2;
+
+    reach.minX = screen.minX - halfWidth;
+    reach.maxX = screen.maxX + halfWidth;
+    reach.minY = screen.minY - halfHeight;
+    reach.maxY = screen.maxY + halfHeight;
+
+    return reach;
+  }
+
   private finishLabels(): void {
     for (
       let index = this.labelsBound;
@@ -666,10 +724,12 @@ class HashCells {
 }
 
 /**
- * Every zone on the ground, outlined as the simulation tests it: the area at the position and
- * the facing the world holds this tick, not the quad the zone view draws. One run of quads
- * per shape kind, so a bind never changes a frame, and a kind that runs out counts a miss
- * like any other overlay.
+ * Every zone whose area reaches inside the camera rectangle, outlined as the simulation tests
+ * it: the area at the position and the facing the world holds this tick, not the quad the
+ * zone view draws, and fainter through the delay, while it touches nothing. A circle is its
+ * diameter, a rectangle its length along the facing centred on the zone, a cone its length
+ * both ways from the apex at the frame's centre. One run of quads per shape kind, so a bind
+ * never changes a frame, and a kind that runs out counts a miss like any other overlay.
  */
 class SpellAreas {
   private readonly circles: QuadRun;
@@ -702,14 +762,14 @@ class SpellAreas {
     return this.circles.misses + this.rectangles.misses + this.cones.misses;
   }
 
-  sync(world: WorldView, alpha: number): void {
+  sync(world: WorldView, rect: Readonly<Rect>, alpha: number): void {
     const zones = world.map.zones;
 
     for (let index = 0; index < zones.end; index += 1) {
       const zone = zones.at(index);
 
-      if (zone !== null) {
-        this.outline(zone, alpha);
+      if (zone !== null && reachesInto(zone, rect)) {
+        this.outline(zone, alpha, world.tick);
       }
     }
 
@@ -721,27 +781,48 @@ class SpellAreas {
   }
 
   /** Lays one outline over `zone`: turned to its facing, and as long and as wide as its shape. */
-  private outline(zone: DeepReadonly<Zone>, alpha: number): void {
+  private outline(zone: DeepReadonly<Zone>, alpha: number, tick: number): void {
     const shape = zone.shape;
-    const isCircle = shape.kind === "circle";
     const quad = this.runFor(shape.kind).take();
 
     if (quad === null) {
       return;
     }
 
-    const along = isCircle
-      ? shape.radius * DIAMETERS_PER_RADIUS * this.circleScale
-      : shape.length * this.scaleFor(shape.kind);
-
     quad.x = interpolate(zone.prev.x, zone.curr.x, alpha);
     quad.y = interpolate(zone.prev.y, zone.curr.y, alpha);
-    quad.rotation = isCircle ? 0 : zone.facing;
-    quad.scaleX = along;
-    quad.scaleY =
-      shape.kind === "rectangle" ? shape.width * this.rectangleScale : along;
+
+    switch (shape.kind) {
+      case "circle": {
+        const across = shape.radius * DIAMETERS_PER_RADIUS * this.circleScale;
+
+        quad.rotation = 0;
+        quad.scaleX = across;
+        quad.scaleY = across;
+
+        break;
+      }
+
+      case "rectangle":
+        quad.rotation = zone.facing;
+        quad.scaleX = shape.length * this.rectangleScale;
+        quad.scaleY = shape.width * this.rectangleScale;
+
+        break;
+
+      case "cone": {
+        const across = shape.length * DIAMETERS_PER_RADIUS * this.coneScale;
+
+        quad.rotation = zone.facing;
+        quad.scaleX = across;
+        quad.scaleY = across;
+
+        break;
+      }
+    }
+
     quad.tint = AREA_TINT;
-    quad.alpha = LINE_ALPHA;
+    quad.alpha = tick < zone.activeAtTick ? WAITING_AREA_ALPHA : LINE_ALPHA;
     quad.visible = true;
   }
 
@@ -758,25 +839,27 @@ class SpellAreas {
     }
   }
 
-  private scaleFor(kind: ShapeKind): number {
-    switch (kind) {
-      case "circle":
-        return this.circleScale;
-
-      case "rectangle":
-        return this.rectangleScale;
-
-      case "cone":
-        return this.coneScale;
-    }
-  }
-
   private finish(): void {
     this.circles.finish();
     this.rectangles.finish();
     this.cones.finish();
   }
 }
+
+/** Whether the area `zone` covers reaches inside `rect` at all, as the zone view asks it. */
+const reachesInto = (
+  zone: DeepReadonly<Zone>,
+  rect: Readonly<Rect>,
+): boolean => {
+  const reach = shapeExtent(zone.shape);
+
+  return (
+    zone.curr.x + reach >= rect.minX &&
+    zone.curr.x - reach <= rect.maxX &&
+    zone.curr.y + reach >= rect.minY &&
+    zone.curr.y - reach <= rect.maxY
+  );
+};
 
 /** Lays `quad`, a ring frame, at (`x`, `y`) at `radius`. */
 const layRing = (
@@ -1160,8 +1243,8 @@ export class DebugOverlays {
   /**
    * One frame: each overlay that is on reads the world inside `rect` and writes its quads; each
    * that is off hides once and is left alone. `screen` is the screen rectangle, before the
-   * camera's scroll and widened past a cell's drawn half-width, that the walkability overlay
-   * keeps to.
+   * camera's scroll and widened past a cell's drawn half-width, that the two cell overlays
+   * keep to.
    */
   sync(
     world: WorldView,
@@ -1217,13 +1300,13 @@ export class DebugOverlays {
     }
 
     if (toggles.hashCells) {
-      this.hash.sync(world, rect);
+      this.hash.sync(world, rect, screen);
     } else {
       this.hash.hide();
     }
 
     if (toggles.spellAreas) {
-      this.areas.sync(world, alpha);
+      this.areas.sync(world, rect, alpha);
     } else {
       this.areas.hide();
     }

@@ -144,7 +144,7 @@ pnpm test -t "frost-lance"
 pnpm dev
 ```
 
-In the developer panel: **Infinite mana** on, **No cooldowns** on, choose **training_dummy** in the Enemies dropdown and spawn one. Press Q Q W R, then D, click the dummy. You should see the projectile leave the hero, the dummy flash on hit, a damage number rise, and a slow icon above it. Toggle **Spell areas** to see the projectile's hit radius. Record the session and keep the input log if anything looks off; it becomes the bug report.
+In the developer panel: **Infinite mana** on, **No cooldowns** on, choose **training_dummy** in the Enemies dropdown and spawn one. Press Q Q W R, then D, click the dummy. You should see the projectile leave the hero, the dummy flash on hit, a damage number rise, and a slow icon above it. A spell that puts a zone down shows its area under **Spell areas**, as the simulation tests it; a projectile has no area there. Record the session and keep the input log if anything looks off; it becomes the bug report.
 
 ---
 

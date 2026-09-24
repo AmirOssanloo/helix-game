@@ -4,7 +4,7 @@ import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";
 import type { PanelMemory } from "./panel-memory";
 
-/** Every overlay the play scene draws, in the order the panel lists them, each with its label. */
+/** Every overlay the play scene draws, in the order the developer panel page lists them, each with its label. */
 const OVERLAYS: readonly Readonly<{
   key: keyof OverlayToggles;
   label: string;
@@ -14,10 +14,10 @@ const OVERLAYS: readonly Readonly<{
   { key: "facingCone", label: "Facing and action cone" },
   { key: "unitRanges", label: "Attack and aggro ranges" },
   { key: "pathLines", label: "Path lines" },
-  { key: "walkabilityGrid", label: "Walkability grid" },
-  { key: "hashCells", label: "Spatial hash cells" },
   { key: "spellAreas", label: "Spell areas" },
   { key: "stateLabels", label: "Unit state labels" },
+  { key: "hashCells", label: "Spatial hash cells" },
+  { key: "walkabilityGrid", label: "Walkability grid" },
 ];
 
 /**

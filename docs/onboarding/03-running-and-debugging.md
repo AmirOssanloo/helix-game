@@ -48,9 +48,9 @@ Each overlay is a toggle. They draw from their own quad pool at depth 90, above 
 - **Collision discs** — the solid body of every unit, radius 27 for the hero. Two discs overlapping after a tick is a push-out bug.
 - **Bound radii** — the range buffer added to attack and cast range. Shows why an attack lands from further than the number suggests.
 - **Facing and action cone** — the hero's heading and the 11.5 degree cone. The hero translates only when the target bearing is inside it.
-- **Attack and aggro ranges** — an enemy's acquire radius and attack reach; the hero's attack range.
+- **Attack and aggro ranges** — the hero's attack range to a target's edge and its acquire radius; each enemy's aggro radius around it and leash radius around its spawn point.
 - **Path lines** — the polyline each moving unit follows, after smoothing.
-- **Spell areas** — the live radius, segment, or cone of every zone.
+- **Spell areas** — the circle, rectangle, or cone of every zone on screen, as the simulation tests it, faint through the zone's delay.
 - **Unit state labels** — the order state of the hero and the AI state of every enemy, as text above the unit.
 - **Spatial hash cells** — the 128-unit grid, each occupied cell outlined with the count of units in it.
 - **Walkability grid** — every cell the hero's radius class may not stand in, shaded.

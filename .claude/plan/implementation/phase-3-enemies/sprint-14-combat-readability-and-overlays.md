@@ -45,7 +45,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | P3-S13-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** The spell-areas overlay draws every live zone's shape as the simulation holds it (not the HUD's preview); the path-lines overlay draws each moving unit's remaining waypoints as stretched pixel frames; the spatial hash overlay shades occupied cells and prints the count per cell. Every overlay on the developer panel page now exists; the page is checked row by row.
 
@@ -57,6 +57,8 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 - `tests/presentation/overlays.spec.ts` extended per overlay.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A developer-panel control.
+
+> Closed 2026-09-24. All three overlays were already drawn; the work was checking each against the page, which found two bugs. Spell areas drew a cone at half its length, since the cone frame's apex is its centre; it now spans twice the length, as the zone view does. Areas are also culled to the camera rectangle and drawn faint through a zone's delay. Hash cells ignored the rule that a cell overlay keeps to the widened screen, so the rectangle's off-screen half used up the pool; each cell is now kept only when its centre is drawn inside the screen widened by half the cell's drawn size. The panel listed the overlays in a different order from the page; it now follows the page, and `tests/devtools/panel.spec.ts` checks the order, one checkbox per toggle. The onboarding page's ranges bullet and the add-a-spell runbook's line on **Spell areas**, which promised a projectile's radius, were both wrong and are corrected. In Chrome on the Apple M1 laptop, with fifty grunts chasing and path lines on: 1 world draw (2 with the HUD), render 1.5 ms mean and 2.4 ms worst, 60 fps, no view miss. With every overlay on: 1 world draw, 4.2 ms worst. The cone overlay still uses the one baked 60-degree frame, which is the only cone angle content has.
 
 ---
 
@@ -111,7 +113,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Fifty-enemy fight readable by hand, every overlay checked against the page | |
 | Damage-type matrix green | |
 | Sync time with maximum bound views | |
-| Actual days per ticket | T01 0.2 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.2 · T02 0.3 · T03 · T04 |
 
 ## Risks in this sprint
 
