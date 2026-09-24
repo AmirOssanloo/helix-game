@@ -16,13 +16,26 @@ export type ReplayOptions = Readonly<{
 /**
  * Why `file` cannot replay against `registry` on `map`, or `null` when it can. A log is
  * valid only against the definitions it was recorded with, so the message names both
- * versions for a person to check out the right one.
+ * versions for a person to check out the right one. A log that spans a content reload is
+ * refused whatever the registry: a replay starts every number at one version, where the
+ * recording ran part of the session on another, so no registry reproduces it.
  */
 export const checkReplayable = (
   file: InputLogFile,
   registry: Registry,
   map: MapDef,
 ): ReplayRefusal | null => {
+  if (file.contentReloads.length > 0) {
+    const versions = [file.contentVersion, ...file.contentReloads].join(
+      " and then ",
+    );
+
+    return {
+      reason: "content_version",
+      message: `The log spans a content reload: it was recorded on content version ${versions}; a replay is only valid within one content version`,
+    };
+  }
+
   const current = contentVersionOf(registry);
 
   if (file.contentVersion !== current) {

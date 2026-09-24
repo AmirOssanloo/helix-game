@@ -263,7 +263,7 @@ const play = (world: Simulation): void => {
 /** The file a save of `world` produces, parsed back. */
 const saved = (world: Simulation): InputLogFile => {
   const file = parseInputLogFile(
-    serializeInputLog(world.view, world.log, contentVersionOf(registry)),
+    serializeInputLog(world.view, world.log, contentVersionOf(registry), []),
   );
 
   if (isReplayRefusal(file)) {

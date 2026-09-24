@@ -124,7 +124,7 @@ export type DevApi = Readonly<{
   archetypes: readonly string[];
   /** What the last content reload came to: taken, refused with its faults, or waiting on a page load. */
   content: Readonly<ContentStatus>;
-  /** The session so far as one JSON document: the seed, the content version, the map, the ticks run, and every consumed command with its tick. */
+  /** The session so far as one JSON document: the seed, the content version, the versions a content reload moved it to, the map, the ticks run, and every consumed command with its tick. */
   saveInputLog: () => string;
   /** Replays a saved log from its first tick on a world recreated under its seed, or returns the message saying why it cannot run. */
   loadInputLog: (text: string) => string | null;

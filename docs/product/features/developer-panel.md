@@ -107,6 +107,7 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | Tunable changed mid-cast | The running cast keeps the old value; the next cast reads the new one |
 | Pause with the targeting cursor open | The cursor stays open; the click commits when unpaused |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
+| Load a log saved after a content hot-reload changed a number | Refused with a message naming every version the log spans; recreating the session starts a log that replays |
 | Panel closed | Every readout keeps sampling; only the display stops |
 | Production build | The panel and its API do not exist; the game has no trace of them |
 | Playtest build | The panel is there, on whatever address the build is published to. It is the game as it ships, with the panel beside it |

@@ -121,7 +121,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | What it does | Submits commands, drives the driver, reads the world view, reads the instrumentation rings, sets the overlay toggles |
 | Panel actions | `DebugCommand` variants and `SetTuning` commands, into the same buffer and log as player input |
 | Pause, single-step, catch-up cap | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
-| Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log from another content version is refused with a message naming both |
+| Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log from another content version, or one spanning a content reload, is refused with a message naming the versions |
 | A content reload | Reported on the simulation group's content line: taken, refused with its faults, or reloading the page; a reload that is taken builds the panel again over the new defaults |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |
 | Reading state | The `Readonly` world view, by reference, throttled per render frame |

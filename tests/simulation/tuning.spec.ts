@@ -357,6 +357,7 @@ describe("set_tuning on a definition key", () => {
         recorder.view,
         recorder.log,
         contentVersionOf(registry),
+        [],
       ),
     );
 

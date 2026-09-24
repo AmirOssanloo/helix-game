@@ -71,7 +71,7 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | Layer | simulation, tests |
 | Size | 0.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The content version stamp covers every definition's converted numbers; a hot-reload that changes it marks the current input log as spanning two versions, and saving it produces a log the loader refuses with both versions named. A log recorded entirely within one version replays.
 
@@ -83,6 +83,8 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 - `tests/simulation/replay-format.spec.ts` extended.
 
 **Definition of done:** Every change · `src/simulation`.
+
+**Note, 2026-09-24: a log that spans a content reload names every version it ran on and is refused.** The stamp already hashed every definition as written, and every converted number is a function of those and the step rate in the tuning table, so it covers every converted number; a new case in the replay-format spec moves each of the 611 definition numbers by one and sees the stamp move every time. The input log file keeps `contentVersion`, now the version the world was created under, and gains `contentReloads`, the version each reload the session took moved it to, in order. The session tracks both: a reload that moves the stamp appends to the list, and a recreate or a load begins a new log on one version and empties it. `checkReplayable` refuses a log with any reload before it looks at the registry, since a replay starts every number at one version and no registry reproduces a session that ran on two, with the message "The log spans a content reload: it was recorded on content version A and then B; …". A reload that comes back to the version it began on is still refused, and one that changes no number marks nothing. These readings are decided provisionally in [Q37](../backlog/open-questions.md). The two stored replays gain `"contentReloads":[]` and still replay. The content-and-registries, simulation-loop, devtools-and-instrumentation, developer-panel, and running-and-debugging pages are updated. `tests/simulation/replay-format.spec.ts` gains seven cases: the stamp over every definition number, the new field refused when it is not a list, a spanning log refused by `checkReplayable` even on the registry it ended on, and through the session a save with no content change replaying to the same units, tuning, and random state; a save after a grunt's health was reloaded refused with both versions named, by `beginReplay` too, and replaying again after a recreate; two reloads named in order; and a reload that changed nothing marking nothing. `pnpm check` and `pnpm test:budget` green. The refusal walked by hand in a browser is deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -113,7 +115,7 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | --- | --- |
 | Three random keys retuned from the panel with no code change | |
 | Hot reload and version refusal by hand | |
-| Actual days per ticket | T01 0.5 · T02 0.3 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 0.3 · T03 0.2 · T04 |
 
 ## Risks in this sprint
 

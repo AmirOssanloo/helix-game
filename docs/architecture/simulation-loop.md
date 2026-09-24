@@ -122,7 +122,7 @@ A system holding a module-level variable — a cached list, a counter — that i
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |
 | Determinism contract | Same seed and input log give the same state, same machine, same build |
 | Input log | Every consumed command with its tick, including debug and tuning commands |
-| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version, the map, and the ticks run, and one from another content version is refused |
+| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version the world was created under and each one a content reload moved it to, the map, and the ticks run, and one from another content version or spanning a reload is refused |
 | Interpolation | The driver hands the presentation the fraction into the next step; the world stores previous and current positions |
 | Measuring the tick | The driver, around each `tick`, into the instrumentation ring |
 

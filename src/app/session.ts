@@ -57,6 +57,12 @@ export class Session implements Steppable {
 
   private version: string;
 
+  /** The stamp the current world was created under, which a saved log begins on. */
+  private createdVersion: string;
+
+  /** The stamp each content reload taken since the current world was created moved it to, in order. */
+  private readonly reloads: string[] = [];
+
   private readonly map: MapDef;
 
   private replay: Replay | null = null;
@@ -69,6 +75,7 @@ export class Session implements Steppable {
     this.map = options.map;
     this.world = createSessionWorld(options);
     this.version = contentVersionOf(options.registry);
+    this.createdVersion = this.version;
   }
 
   /** The stamp of the registry the world runs on, written into every saved log. */
@@ -127,13 +134,22 @@ export class Session implements Steppable {
     this.replay = null;
     this.pendingRetunes.clear();
     restartSessionWorld(this.world, seed);
+    this.beginVersion();
+  }
+
+  /** The world was made again under the registry it has now, so its log begins on that registry's stamp alone. */
+  private beginVersion(): void {
+    this.createdVersion = this.version;
+    this.reloads.length = 0;
   }
 
   /**
    * Takes `next`, a validated registry, when it changes nothing but numbers: a recreate, a load,
    * and the stamp of a saved log read it from here on, and each number it changes that no
    * tuning command has moved goes in as a `set_tuning` command stamped by `stamps`, so the
-   * running world changes by command and the log sees it. The command goes to the world, not
+   * running world changes by command and the log sees it. A stamp it moves is written into
+   * the saved log beside the one the world was created under, so the log is refused as
+   * spanning two versions until the next recreate or load. The command goes to the world, not
    * the driver, so a hidden tab holds it in the buffer rather than dropping it as it drops
    * input. When `next` changes anything else, nothing is taken. Never called during a replay.
    */
@@ -149,8 +165,14 @@ export class Session implements Steppable {
       return { change, refused: 0 };
     }
 
+    const version = contentVersionOf(next);
+
+    if (version !== this.version) {
+      this.reloads.push(version);
+    }
+
     this.registry = next;
-    this.version = contentVersionOf(next);
+    this.version = version;
     this.world.adoptRegistry(next);
 
     let refused = 0;
@@ -174,9 +196,14 @@ export class Session implements Steppable {
     return { change, refused };
   }
 
-  /** The session so far as one JSON document. */
+  /** The session so far as one JSON document: stamped with the version its world was created under, and every version a reload moved it to since. */
   saveInputLog(): string {
-    return serializeInputLog(this.world.view, this.world.log, this.version);
+    return serializeInputLog(
+      this.world.view,
+      this.world.log,
+      this.createdVersion,
+      this.reloads,
+    );
   }
 
   /**
@@ -198,6 +225,7 @@ export class Session implements Steppable {
 
     restartSessionWorld(this.world, file.seed);
     this.pendingRetunes.clear();
+    this.beginVersion();
     this.replay = new Replay(this.world, file);
 
     return null;

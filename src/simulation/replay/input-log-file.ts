@@ -10,13 +10,16 @@ export type InputLogRecord = Readonly<{
 
 /**
  * What the developer panel's save button writes and a replay reads back: the seed the world
- * was created under, the content version stamp of the registry it ran on, the map it ran
- * on, how many ticks it ran, and every consumed command in the order the ticks took them.
- * The file is the record a bug report ships with, and a replay needs nothing else.
+ * was created under, the content version stamp of the registry it was created on, the stamp
+ * each content reload taken while it ran moved it to, the map it ran on, how many ticks it
+ * ran, and every consumed command in the order the ticks took them. The file is the record a
+ * bug report ships with, and a replay needs nothing else. A log with any reload in it spans
+ * two versions and never replays.
  */
 export type InputLogFile = Readonly<{
   seed: number;
   contentVersion: string;
+  contentReloads: readonly string[];
   mapId: string;
   ticks: number;
   records: readonly InputLogRecord[];
@@ -24,8 +27,8 @@ export type InputLogFile = Readonly<{
 
 /**
  * Why a log cannot replay: the text is not a log, the content version is not the one the
- * registry has, or the map is not the one the world runs on. The message is for a person and
- * names what differs.
+ * registry has or the log spans a content reload, or the map is not the one the world runs
+ * on. The message is for a person and names what differs.
  */
 export type ReplayRefusal = Readonly<{
   reason: "malformed" | "content_version" | "map";
@@ -37,11 +40,15 @@ export const isReplayRefusal = (
   value: InputLogFile | ReplayRefusal,
 ): value is ReplayRefusal => "reason" in value;
 
-/** The file for the world behind `view` and its `log` under `contentVersion`, as one JSON document. Called on a save, never per tick. */
+/**
+ * The file for the world behind `view` and its `log`, created under `contentVersion` and
+ * moved by `contentReloads` since, as one JSON document. Called on a save, never per tick.
+ */
 export const serializeInputLog = (
   view: WorldView,
   log: InputLog,
   contentVersion: string,
+  contentReloads: readonly string[],
 ): string => {
   const records: InputLogRecord[] = [];
 
@@ -57,6 +64,7 @@ export const serializeInputLog = (
   const file: InputLogFile = {
     seed: view.run.random.seed,
     contentVersion,
+    contentReloads,
     mapId: view.map.mapId,
     ticks: view.tick,
     records,
@@ -72,6 +80,9 @@ const malformed = (message: string): ReplayRefusal => ({
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isVersionList = (value: unknown): value is readonly string[] =>
+  Array.isArray(value) && value.every((entry) => typeof entry === "string");
 
 const isTick = (value: unknown): value is Tick =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;
@@ -111,7 +122,7 @@ const parseRecord = (
 
 /**
  * The log `text` holds, or the reason it holds none: the text must be a JSON object with an
- * integer seed, a content version, a map id, a tick count, and records in tick order, each
+ * integer seed, a content version, the list of versions reloads moved it to, a map id, a tick count, and records in tick order, each
  * a tick before the count and a command with the shape every command shares. What a command
  * means is the validator's to judge when a tick consumes it, exactly as for a live one.
  */
@@ -132,6 +143,7 @@ export const parseInputLogFile = (
 
   const seed = parsed["seed"];
   const contentVersion = parsed["contentVersion"];
+  const contentReloads = parsed["contentReloads"];
   const mapId = parsed["mapId"];
   const ticks = parsed["ticks"];
   const records = parsed["records"];
@@ -142,6 +154,10 @@ export const parseInputLogFile = (
 
   if (typeof contentVersion !== "string") {
     return malformed("the content version is missing");
+  }
+
+  if (!isVersionList(contentReloads)) {
+    return malformed("the content reloads are not a list of versions");
   }
 
   if (typeof mapId !== "string") {
@@ -180,5 +196,12 @@ export const parseInputLogFile = (
     parsedRecords.push(record);
   }
 
-  return { seed, contentVersion, mapId, ticks, records: parsedRecords };
+  return {
+    seed,
+    contentVersion,
+    contentReloads,
+    mapId,
+    ticks,
+    records: parsedRecords,
+  };
 };

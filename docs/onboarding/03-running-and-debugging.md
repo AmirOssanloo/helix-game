@@ -64,7 +64,7 @@ The simulation is a function of a seed and the commands it receives, so any sess
 1. Note the **Seed** shown in the Simulation group. Recording is always on; every session is a log from its first tick.
 2. Play. Every keyboard, mouse, and panel command goes into the input log with its tick.
 3. Click **Save input log**. You get a JSON file: the seed, the content registry version, and the ordered commands.
-4. Reload the page, click **Load input log**, pick the file. The world resets to the seed and consumes the commands tick by tick. What you saw happens again, at the same ticks. A log saved on another content version is refused, and the status line names both versions.
+4. Reload the page, click **Load input log**, pick the file. The world resets to the seed and consumes the commands tick by tick. What you saw happens again, at the same ticks. A log saved on another content version is refused, and the status line names both versions. So is a log saved after a content edit was hot-reloaded into the session, since it ran on two versions; recreate the session after the edit and record again.
 
 Use **Pause** and **Single-step** during a replay to stop at the tick that went wrong and read the overlays.
 
