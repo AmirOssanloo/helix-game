@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { keepInsideRect, pushOutOfRect, separateDiscs } from "@domain/public";
+import {
+  keepInsideRect,
+  pushOutOfRect,
+  separateDiscs,
+  separateFromHeld,
+} from "@domain/public";
 import type { Rect, Vec2 } from "@shared/public";
 
 const HULL = 27;
@@ -85,6 +90,37 @@ describe("separateDiscs", () => {
 
     expect(distance(a, b)).toBeCloseTo(54);
     expect(a.y).not.toBe(5);
+  });
+});
+
+describe("separateFromHeld", () => {
+  it("moves the grounded disc the whole overlap and leaves the held one where it is", () => {
+    const moving = at(40, 0);
+    const held = at(0, 0);
+
+    const overlapped = separateFromHeld(moving, HULL, held, HULL, 0);
+
+    expect(overlapped).toBe(true);
+    expect(held).toEqual({ x: 0, y: 0 });
+    expect(moving).toEqual({ x: 54, y: 0 });
+  });
+
+  it("leaves a pair that does not overlap alone", () => {
+    const moving = at(60, 0);
+    const held = at(0, 0);
+
+    expect(separateFromHeld(moving, HULL, held, HULL, 0)).toBe(false);
+    expect(moving).toEqual({ x: 60, y: 0 });
+  });
+
+  it("moves a disc on the held one's point out by the whole reach, along the tie seed's direction", () => {
+    const moving = at(5, 5);
+    const held = at(5, 5);
+
+    separateFromHeld(moving, HULL, held, HULL, 0);
+
+    expect(held).toEqual({ x: 5, y: 5 });
+    expect(distance(moving, held)).toBeCloseTo(HULL + HULL);
   });
 });
 

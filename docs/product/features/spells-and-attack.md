@@ -69,6 +69,8 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 | State | What happens |
 | --- | --- |
 | Target dies during the cast point of a unit-target spell | The cast is cancelled at no cost |
+| Unit-target spell thrown at a lifted unit | Refused, untargetable; nothing is spent |
+| Target lifted while the hero walks to it or during the cast point | The cast is cancelled at no cost, as for a target that dies |
 | Target leaves cast range during the cast point | The cast completes; range is checked when the cast point begins, not when it ends and the spell commits |
 | Target out of range when the spell is thrown | The hero paths toward the target and casts on arrival, like an attack. S cancels |
 | Cast while rooted | Allowed for spells in range. Out-of-range targets are refused, since the hero cannot walk |

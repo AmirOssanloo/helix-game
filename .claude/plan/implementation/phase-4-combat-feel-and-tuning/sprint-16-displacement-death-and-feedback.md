@@ -21,7 +21,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Layer | domain, tests |
 | Size | 1 |
 | Depends on | P3-S15-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Tests and fixes for: knockback into an obstacle stops at the edge; knockback keeps the order and resumes it; lift suspends the order and restores it on drop; rooted while lifted drops where the updraft leaves and root keeps counting; a lifted unit cannot be hit, targeted, or acquired; the hero knocked into a wall (a debug displacement or a phase 5 charge stub); displacement against another unit pushes both by the collision rule; two displacements in one tick apply in order.
 
@@ -32,6 +32,8 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 - `tests/simulation/feel/displacement.spec.ts`.
 
 **Definition of done:** Every change · `src/domain`.
+
+**Note, 2026-09-24: seventeen cases, four fixes, and one reading decided provisionally.** `tests/simulation/feel/displacement.spec.ts` names each case after its row on the status, spells, or map page. Eleven cases held already: a push into a wall stops at the edge, the order is kept through a push and through a lift, a root keeps counting under a lift, a lifted unit is out of every area and every acquire, and two pushes in one tick leave the first holding. Four did not, and each is fixed in `src/domain`. First, a push still carried a lifted unit, so a push and a lift in the same tick moved it 600 units in the air. Now a push on a lifted unit counts its ticks off without moving it. Second, a walker shoved a lifted unit off its spot in the collision pass. A lifted unit is now a disc nothing moves, and the grounded unit takes the whole overlap (`separateFromHeld`, unit-tested in `tests/domain/movement/collision.spec.ts`). Third, Hoarfrost thrown at a lifted unit walked, cast, and spent its mana. The request stage now refuses a target that is `target_untargetable`. Fourth, a target lifted during the approach or the cast point now cancels the cast at no cost, as one that dies does. The docs are silent on these, so they are written into the status, spells, movement, and pipeline pages and recorded as [Q32](../backlog/open-questions.md), provisional. Letting walkers pass under a lifted unit was tried first. It let the corridor-200 crowd flood through where the lifted hero hung, and pressed one pair to 0.80 of its summed radii, past the 0.75 bar, so the held disc stands. `tests/simulation/corridor-200.spec.ts` now measures overlap only between units on the ground. Its session is 1260 ticks, up from 1200, because with the hero held in place the last grunt gets home near tick 1230; before the change it arrived just under 1200. The worst press stays 0.68 and the walk home 0.71. The hero knocked into a wall uses a push aimed at the hero through `runPrimitive`, which stands in for phase 5's charge. No new debug command was added. `pnpm check` and `pnpm test:budget` green.
 
 ---
 
@@ -104,7 +106,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Check | Result |
 | --- | --- |
 | Every displacement and death row green by name | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.4 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

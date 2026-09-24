@@ -54,6 +54,10 @@ Which status blocks which key, order, and cast state is one table with a cell pe
 | Lifted with a move running | The move is put aside, not cleared: the unit takes it up again where it lands and walks there from the drop |
 | Rooted during a move | The move is cleared; the hero stands until root expires and does not resume |
 | Knocked back into an obstacle | The displacement stops at the obstacle edge |
+| Knocked back while lifted, or lifted while knocked back | Lift wins: the unit moves nowhere in the air and comes down on the spot it was lifted from; the rest of the push is spent in the air |
+| A unit walks into a lifted unit | The lifted unit is not moved; the walker is pushed round it |
+| Pushed into another unit | Both are pushed apart by the collision rule, half the overlap each |
+| Two pushes in the same tick | The first one applied takes hold; the second is ignored |
 | Slowed below the minimum speed | Speed clamps at the spec's minimum of 100 |
 | Two stuns at once | Refresh: the longer remaining duration wins |
 | Status on a dying unit | Cleared with the death |

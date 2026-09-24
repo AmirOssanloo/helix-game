@@ -30,6 +30,7 @@ import {
 } from "./cooldowns";
 import { runEffects } from "./effect-runner";
 import { hasMana, spendMana } from "./mana";
+import { isReachable } from "./primitives/targets";
 
 /** What the turn-and-face stage reads from the tuning table, filled once per tick. */
 type FacingTuning = {
@@ -57,7 +58,7 @@ const event = createDomainEvent();
 /** The facing tunables, read once per tick. */
 const facing: FacingTuning = { tunedTurnRate: 0, rampTicks: 0, cone: 0 };
 
-/** A unit target that no longer exists, where a bound radius would be. */
+/** A unit target that no longer exists or is out of reach, where a bound radius would be. */
 const TARGET_GONE = -1;
 
 const announceCommitted = (world: World, abilityId: string): void => {
@@ -76,7 +77,9 @@ const isApproaching = (unit: Readonly<Unit>): boolean =>
 /**
  * Writes where `unit`'s cast is aimed this tick into `out`: a unit target's current position,
  * else the point the request stored. Returns the target's bound radius, zero for a point, or
- * `TARGET_GONE` when the unit the cast names no longer exists.
+ * `TARGET_GONE` when the unit the cast names no longer exists, is dead, or is untargetable,
+ * as a lifted unit is: a cast is never walked toward, faced at, or committed on a unit
+ * nothing may land on.
  */
 const aimOf = (world: World, unit: Readonly<Unit>, out: Vec2): number => {
   if (unit.cast.targetKind === "unit") {
@@ -85,7 +88,7 @@ const aimOf = (world: World, unit: Readonly<Unit>, out: Vec2): number => {
         ? null
         : world.map.units.resolve(unit.cast.targetId);
 
-    if (target === null) {
+    if (target === null || !isReachable(target)) {
       return TARGET_GONE;
     }
 
@@ -278,7 +281,8 @@ const commit = (
  * Runs the stages of every cast under way, one unit at a time: the approach while the aim is
  * out of range, the turn to face once it is in range, the cast point once the bearing is
  * inside the action cone, the commit on the tick the cast point ends, and the backswing
- * until its tick, and a channel until its tick. A stun, a unit target that is gone, or an
+ * until its tick, and a channel until its tick. A stun, a unit target that is gone or out of
+ * reach, or an
  * approach that ends short of range cancels the cast with nothing spent; a stop or a new
  * order does the same through the state machine before this system runs. The cast point and
  * the backswing are counted in ticks from the record; a cast point of zero ticks commits on

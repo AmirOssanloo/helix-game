@@ -19,8 +19,11 @@ const registry = makeRegistry();
 /** The tick the lift lands on: the last tick of the press, with the corridor as full as it gets. */
 const PRESS_END_TICK = 600;
 
-/** Ticks the session runs: the press, and the walk home after it. */
-const SESSION_TICKS = 1200;
+/**
+ * Ticks the session runs: the press, and the walk home after it. The last of the two hundred
+ * squeezes home past the ones already standing at theirs a little before tick 1240.
+ */
+const SESSION_TICKS = 1260;
 
 /** Ten grunt packs and ten runner packs, the enemy live cap between them. */
 const PACK_COUNT = 20;
@@ -75,14 +78,17 @@ type Disc = Readonly<{
   radius: number;
 }>;
 
-/** Every live unit's disc, in pool order. */
-const discsOf = (view: WorldView): Disc[] => {
+/**
+ * Every live unit's disc, in pool order; with `grounded`, only the units on the ground. A
+ * unit in the air is in no collision pair, so what walks under the lifted hero is no overlap.
+ */
+const discsOf = (view: WorldView, grounded = false): Disc[] => {
   const discs: Disc[] = [];
 
   for (let index = 0; index < view.map.units.end; index += 1) {
     const unit = view.map.units.at(index);
 
-    if (unit !== null) {
+    if (unit !== null && !(grounded && unit.disables.lifted)) {
       discs.push({
         x: unit.curr.x,
         y: unit.curr.y,
@@ -130,9 +136,9 @@ const deepestInWall = (view: WorldView): number => {
   return deepest;
 };
 
-/** How far the most overlapping pair is inside the sum of its collision radii, over that sum; zero when none overlaps. */
+/** How far the most overlapping pair on the ground is inside the sum of its collision radii, over that sum; zero when none overlaps. */
 const largestOverlapShare = (view: WorldView): number => {
-  const discs = discsOf(view);
+  const discs = discsOf(view, true);
   let largest = 0;
 
   for (let first = 0; first < discs.length; first += 1) {
@@ -154,9 +160,9 @@ const largestOverlapShare = (view: WorldView): number => {
   return largest;
 };
 
-/** How far the most overlapping pair is inside the sum of its collision radii; zero when none overlaps. */
+/** How far the most overlapping pair on the ground is inside the sum of its collision radii; zero when none overlaps. */
 const largestOverlap = (view: WorldView): number => {
-  const discs = discsOf(view);
+  const discs = discsOf(view, true);
   let largest = 0;
 
   for (let first = 0; first < discs.length; first += 1) {

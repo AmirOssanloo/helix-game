@@ -119,8 +119,9 @@ export const isInCastRange = (
  * The request stage over `unit`: a cast of `abilityId` at `target` is checked and, when it
  * passes, replaces the unit's order. Refused, with the reason for the caller to announce and
  * nothing changed, when no spell has the id, no slot of the unit's kit holds it, the target
- * is not the kind the spell takes or names a unit that is gone, the clock is running, the
- * mana is short, or the unit is rooted with the target out of range. The clock and the mana
+ * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
+ * unit is, the clock is running, the mana is short, or the unit is rooted with the target out
+ * of range. The clock and the mana
  * read the panel's flags, as the composer does. A target in range is cast where the unit
  * stands; one out of range is walked toward first. A vector is aimed at the point pressed,
  * along the bearing from it to the point released, or along nothing when the two are one.
@@ -174,6 +175,10 @@ export const requestCast = (
 
       if (aimed === null) {
         return "target_not_found";
+      }
+
+      if (aimed.disables.untargetable) {
+        return "target_untargetable";
       }
 
       x = aimed.curr.x;

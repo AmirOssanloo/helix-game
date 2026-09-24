@@ -52,6 +52,8 @@ The unit keeps its order throughout. What stops it walking its own order meanwhi
 
 A lift is the other half of the same idea and moves nothing by itself: its status takes the unit's order off it for as long as the unit is in the air and gives the order back on the tick the status ends, from wherever the unit was dropped. The unit asks for a new path from there, since the one it was walking started somewhere else.
 
+Nothing else moves a unit in the air either. A push that took hold of it counts its ticks off where it hangs without carrying it, so a push and a lift landing in the same tick leave the unit on the spot it was lifted from, and the rest of the push is spent in the air. The collision pass holds it too, as below.
+
 ---
 
 ## Areas
@@ -64,7 +66,7 @@ An effect that touches everything in a shape asks the hash for the units inside 
 
 After every unit has moved, the collision system separates overlaps. It is positional: it moves discs apart and changes no speed.
 
-- **Unit against unit:** two discs closer than the sum of their collision radii are pushed apart along the line between their centres, each by half the overlap.
+- **Unit against unit:** two discs closer than the sum of their collision radii are pushed apart along the line between their centres, each by half the overlap. A unit in the air is still a disc but one nothing moves: the unit on the ground takes the whole overlap, and two units in the air leave each other where they hang.
 - **Unit against obstacle:** a disc overlapping an axis-aligned rectangle is pushed out until it touches: by the nearest edge when its centre is inside, straight away from the nearest point of the rectangle when its centre is outside.
 - **Passes:** the system repeats a capped number of times, the cap a tunable, so a pile-up settles; it does not iterate to convergence. Every pass takes half of what overlap remains, so a pile converges on touching over a few ticks rather than snapping apart in one.
 - **Order:** pairs in pool order, each pair once, the lower id first; a pair on the same point separates along a direction fixed by the pair, so a replay repeats it. Every push moves the unit in the spatial hash at once, so the next query in the same pass sees it.
@@ -147,8 +149,9 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Targeted casts and attacks | Wait for the bearing to enter the cone before the cast point |
 | Displacement | Even steps over a count of ticks, taken before anything walks and left to the same collision pass, so a push stops at a wall; the unit keeps its order and a status flag is what stops it walking meanwhile; a second displacement on a unit already held is ignored |
 | A lift | Moves nothing itself: its status takes the order off the unit and gives it back on the tick the status ends, from where the unit was dropped, with a new path asked for |
+| A unit in the air | Moved by nothing: a push on it counts its ticks off without carrying it, and in a colliding pair the unit on the ground takes the whole overlap; two in the air leave each other alone |
 | Area shapes | Circle, rotated rectangle, and cone, each a pure test in `domain/movement/`; candidates from the hash's circle query, then the exact test on the unit's centre; the boundary is inside |
-| Unit blocking | Positional push-out along the centre line, half each, a capped number of passes the tunable sets, no speed change |
+| Unit blocking | Positional push-out along the centre line, half each, a capped number of passes the tunable sets, no speed change; all of it on the grounded unit when the other is in the air |
 | Obstacle blocking | Push out of the axis-aligned rectangle until touching: by the nearest edge from inside, away from the nearest point from outside; and back inside the bounds, which are walls |
 | Push order | Pool order, each pair once, lower id first; a coincident pair along a direction fixed by the pair; the hash updated on every push |
 | Enemies and each other | Push, never steer |

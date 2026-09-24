@@ -72,7 +72,9 @@ const reachWaypoint = (
 /**
  * Moves every unit a push has hold of by this tick's step of it and counts the tick off. A
  * unit whose ticks run out is let go where the step and the collision pass after it left it.
- * A push does not survive death: a corpse is not carried.
+ * A push does not survive death: a corpse is not carried. A unit in the air is not carried
+ * either, since a lift moves nothing: its ticks count off where it hangs, so a push it took in
+ * the tick it was lifted is spent in the air and it comes down where it was lifted from.
  */
 const carryPushed = (units: PoolView<Unit>): void => {
   for (let index = 0; index < units.end; index += 1) {
@@ -88,8 +90,11 @@ const carryPushed = (units: PoolView<Unit>): void => {
       continue;
     }
 
-    unit.curr.x += unit.push.step.x;
-    unit.curr.y += unit.push.step.y;
+    if (!unit.disables.lifted) {
+      unit.curr.x += unit.push.step.x;
+      unit.curr.y += unit.push.step.y;
+    }
+
     unit.push.ticksLeft -= 1;
 
     if (unit.push.ticksLeft === 0) {

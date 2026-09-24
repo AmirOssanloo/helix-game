@@ -401,6 +401,7 @@ export {
   keepInsideRect,
   pushOutOfRect,
   separateDiscs,
+  separateFromHeld,
 } from "./movement/collision";
 export {
   circleCovers,

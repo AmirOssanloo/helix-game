@@ -8,19 +8,17 @@ import type { Rect, Vec2 } from "@shared/public";
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
 /**
- * Moves two discs apart when they overlap: along the line between their centres, each by half
- * the overlap, so afterwards they just touch. Neither disc's speed or facing is involved; this
- * is a positional correction. Two discs on the same point have no centre line, so they separate
- * along a direction `tieSeed` fixes, which keeps a replay exact and a pile spreading.
- *
- * Returns whether the discs overlapped.
+ * Moves two discs apart when they overlap, along the line between their centres, `a` by
+ * `shareA` of the overlap and `b` by the rest, so afterwards they just touch. Two discs on the
+ * same point have no centre line, so they separate along a direction `tieSeed` fixes.
  */
-export const separateDiscs = (
+const separate = (
   a: Vec2,
   radiusA: number,
   b: Vec2,
   radiusB: number,
   tieSeed: number,
+  shareA: number,
 ): boolean => {
   const minimum = radiusA + radiusB;
   const dx = b.x - a.x;
@@ -43,15 +41,48 @@ export const separateDiscs = (
     overlap = minimum - distance;
   }
 
-  const push = overlap / 2;
+  const pushA = overlap * shareA;
+  const pushB = overlap - pushA;
 
-  a.x -= directionX * push;
-  a.y -= directionY * push;
-  b.x += directionX * push;
-  b.y += directionY * push;
+  a.x -= directionX * pushA;
+  a.y -= directionY * pushA;
+  b.x += directionX * pushB;
+  b.y += directionY * pushB;
 
   return true;
 };
+
+/**
+ * Moves two discs apart when they overlap: along the line between their centres, each by half
+ * the overlap, so afterwards they just touch. Neither disc's speed or facing is involved; this
+ * is a positional correction. Two discs on the same point have no centre line, so they separate
+ * along a direction `tieSeed` fixes, which keeps a replay exact and a pile spreading.
+ *
+ * Returns whether the discs overlapped.
+ */
+export const separateDiscs = (
+  a: Vec2,
+  radiusA: number,
+  b: Vec2,
+  radiusB: number,
+  tieSeed: number,
+): boolean => separate(a, radiusA, b, radiusB, tieSeed, 0.5);
+
+/**
+ * Moves the disc `moving` out of the disc `held` when they overlap, by the whole overlap along
+ * the line between their centres, and leaves `held` where it is: a unit in the air is a disc
+ * nothing moves. A pair on one point separates along the direction `tieSeed` fixes, as
+ * `separateDiscs` does.
+ *
+ * Returns whether the discs overlapped.
+ */
+export const separateFromHeld = (
+  moving: Vec2,
+  radiusMoving: number,
+  held: Vec2,
+  radiusHeld: number,
+  tieSeed: number,
+): boolean => separate(moving, radiusMoving, held, radiusHeld, tieSeed, 1);
 
 /** Whether the point lies on or inside the rectangle. A point on an edge counts as inside, since it has no nearest outside point. */
 const isInside = (x: number, y: number, rect: Readonly<Rect>): boolean =>
