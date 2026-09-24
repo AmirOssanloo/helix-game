@@ -23,6 +23,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
 | Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
+| Which definition numbers are tunable, their keys, and the unit each is read in | `definitionFields` over the registry, in `src/domain/definitions/definition-keys.ts`; content's exact key union is in `src/content/content-tuning-key.ts` |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect; the file name is the key |
 | Which primitives the effect runner runs | `src/domain/abilities/primitives/` — the table, keyed by the kind an effect entry names |

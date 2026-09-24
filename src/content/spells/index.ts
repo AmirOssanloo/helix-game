@@ -11,7 +11,7 @@ import { waneDef } from "./wane.def";
 import { zenithDef } from "./zenith.def";
 
 /** Every spell, in the order the content tier validates them. A spell not listed here does not exist. */
-export const spells: readonly SpellDef[] = [
+export const spells = [
   hoarfrostDef,
   waneDef,
   glacierDef,
@@ -22,4 +22,4 @@ export const spells: readonly SpellDef[] = [
   emberlingDef,
   bolideDef,
   clarionDef,
-];
+] as const satisfies readonly SpellDef[];

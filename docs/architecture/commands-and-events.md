@@ -105,7 +105,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Validation | `domain/orders/` decides per tick from the unit's state and its disable flags, derived by the previous tick's status pass; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a skill-point spend is checked for its slot alone and refused by no disable; a debug command is checked for its shape in `domain/orders/` and refused by its handler in `domain/debug/` over what the world can take; a refusal is dropped and announced as a refused-command event with its reason |
 | Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation in the one order the buffer gave them: a tuning change to run scope, a debug command to its handler, every other to the hero; the last legal order in a tick wins |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
-| Tuning changes | A `SetTuning` command carrying a key of the tuning table and a value in the designer's units, recorded in the input log, converted once when applied |
+| Tuning changes | A `SetTuning` command carrying a key of the tuning table or a definition key, `def:<kind>:<id>:<field path>[:<index>]`, and a value in the designer's units, recorded in the input log, converted once when applied |
 | A mutating method on the world | Never |
 | Events | Plain values in a preallocated ring; no emitter, no listeners, no closures |
 | Draining events | Once per render frame by the presentation, with its own cursor; the panel keeps its own |

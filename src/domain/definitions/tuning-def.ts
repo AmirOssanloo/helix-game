@@ -71,9 +71,12 @@ export type TuningDef = Readonly<Record<TuningKey, number>>;
  * copied into a world and when a tuning command changes it: a per-second rate becomes a
  * per-tick rate, seconds become whole ticks, degrees become radians, and the turn rate's
  * radians per spec step become radians per tick. Every other unit is read as written,
- * pixels included: a pixel is a length on the screen, which only presentation reads.
+ * pixels included: a pixel is a length on the screen, which only presentation reads. A
+ * definition field is read as written when its name names no unit: a damage, a range, an
+ * attack speed.
  */
 export type TuningUnit =
+  | "as_written"
   | "count"
   | "world_units"
   | "units_per_second"

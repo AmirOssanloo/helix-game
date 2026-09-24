@@ -1,7 +1,7 @@
 import { assert } from "@shared/public";
 import type { SetTuningCommand } from "../commands/command";
 import type { TuningState } from "../entities/world-state";
-import type { TuningDef, TuningKey } from "./tuning-def";
+import type { TuningDef, TuningKey, TuningUnit } from "./tuning-def";
 import { TUNING_KEYS, TUNING_UNITS } from "./tuning-def";
 
 /** The spec publishes a turn rate in radians per this many seconds, not per tick. */
@@ -28,16 +28,17 @@ export type TuningRefusal =
 export type TuningValidation = "ok" | TuningRefusal;
 
 /**
- * `value` in the units a system reads: per-tick rates, whole ticks, and radians. This is the
- * one conversion, run once per key when a world is created and once per tuning command when it
- * is applied, so no system ever multiplies by the tick rate.
+ * `value`, written in `unit`, in the units a system reads: per-tick rates, whole ticks, and
+ * radians. This is the one conversion, run once per key when a world is created and once per
+ * tuning command when it is applied, for a tuning table entry and a definition field alike,
+ * so no system ever multiplies by the tick rate.
  */
-const toSimulationUnits = (
-  key: TuningKey,
+export const convertTunable = (
+  unit: TuningUnit,
   value: number,
   simHz: number,
 ): number => {
-  switch (TUNING_UNITS[key]) {
+  switch (unit) {
     case "units_per_second":
       return value / simHz;
 
@@ -50,6 +51,7 @@ const toSimulationUnits = (
     case "radians_per_turn_step":
       return turnRatePerTick(value, simHz);
 
+    case "as_written":
     case "count":
     case "world_units":
     case "ticks":
@@ -59,6 +61,12 @@ const toSimulationUnits = (
       return value;
   }
 };
+
+const toSimulationUnits = (
+  key: TuningKey,
+  value: number,
+  simHz: number,
+): number => convertTunable(TUNING_UNITS[key], value, simHz);
 
 /** Run scope's tuning state from the table: every key, converted into simulation units. Allocated once, here. */
 export const createTuningState = (def: TuningDef): TuningState => {

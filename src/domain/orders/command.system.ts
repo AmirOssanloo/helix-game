@@ -5,6 +5,8 @@ import type { Command, DebugCommand } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
+import { isDefinitionKey } from "../definitions/definition-keys";
+import { setDefinitionTunable } from "../definitions/definition-tuning";
 import { setTunable, validateTuning } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
@@ -157,7 +159,11 @@ export const commandSystem = (world: World): void => {
 
     if (command.kind === "set_tuning") {
       if (validateTuning(world.run.tuning, command) === "ok") {
-        setTunable(world.run.tuning, command.key, command.value);
+        if (isDefinitionKey(command.key)) {
+          setDefinitionTunable(world.run, command.key, command.value);
+        } else {
+          setTunable(world.run.tuning, command.key, command.value);
+        }
       }
 
       continue;

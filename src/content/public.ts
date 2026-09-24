@@ -11,6 +11,11 @@ export {
   statusIconFrame,
   WEDGE_STEPS,
 } from "./atlas-frames";
+export type {
+  ContentDefinitionKey,
+  ContentTuningCommand,
+  ContentTuningKey,
+} from "./content-tuning-key";
 export { enemies } from "./enemies/index";
 export { fastRunnerDef } from "./enemies/fast-runner.def";
 export { meleeGruntDef } from "./enemies/melee-grunt.def";

@@ -15,7 +15,7 @@ import { waneChillDef } from "./wane-chill.def";
 import { waneDef } from "./wane.def";
 
 /** Every status, in the order the content tier validates them. A status not listed here does not exist. */
-export const statuses: readonly StatusDef[] = [
+export const statuses = [
   hoarfrostDef,
   stunDef,
   waneDef,
@@ -30,4 +30,4 @@ export const statuses: readonly StatusDef[] = [
   rootDef,
   slowDef,
   liftDef,
-];
+] as const satisfies readonly StatusDef[];

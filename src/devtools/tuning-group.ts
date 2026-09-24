@@ -26,6 +26,7 @@ const isWhole = (key: TuningKey): boolean => {
     case "hertz":
       return true;
 
+    case "as_written":
     case "world_units":
     case "units_per_second":
     case "seconds":

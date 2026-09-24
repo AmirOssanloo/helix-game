@@ -1,5 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import { Pane } from "tweakpane";
+import { definitionsGroup } from "./definitions-group";
 import type { DevApi } from "./dev-api";
 import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
 import { enemiesGroup } from "./enemies-group";
@@ -74,6 +75,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
   const groups: readonly PanelGroup[] = [
     heroGroup(folder("hero", "Hero"), api),
     tuningGroup(folder("tuning", "Tuning"), api),
+    definitionsGroup(folder("definitions", "Definitions"), api),
     simulationGroup(folder("simulation", "Simulation"), api),
     unitsGroup(folder("units", "Units"), api, memory, remember),
     enemiesGroup(folder("enemies", "Enemies"), api, memory, remember),

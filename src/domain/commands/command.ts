@@ -1,5 +1,6 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import type { DamageType } from "../combat/damage";
+import type { DefinitionKey } from "../definitions/definition-keys";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { TuningKey } from "../definitions/tuning-def";
 import type { Tick } from "../tick";
@@ -325,7 +326,9 @@ export type SpawnZoneCommand = Readonly<{
 
 /**
  * A developer-panel slider: set the tunable `key` to `value`, in the designer's units the
- * tuning table writes. The tuning state converts it once when the command is applied, and it
+ * tuning table or the definition writes. `key` is an entry of the tuning table or a
+ * definition number's key, `def:<kind>:<id>:<field path>[:<index>]`. The tuning state
+ * converts it once when the command is applied, and it
  * lands in the input log like every command, so a session with a retune replays. It is neither
  * a player command nor a debug command: it changes run scope, not the hero, and needs no hero
  * to apply.
@@ -334,7 +337,7 @@ export type SetTuningCommand = Readonly<{
   kind: "set_tuning";
   tick: Tick;
   timestamp: number;
-  key: TuningKey;
+  key: TuningKey | DefinitionKey;
   value: number;
 }>;
 

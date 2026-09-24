@@ -21,7 +21,8 @@ export type UnitRecord = Readonly<{
   followDistance: number;
 }>;
 
-const createUnitRecord = (
+/** `def` as run scope holds it at `simHz`: the one conversion for an archetype or a summon, run when a world is created and when a tuning command changes one of its numbers. */
+export const createUnitRecord = (
   def: EnemyDef,
   followDistance: number,
   simHz: number,
@@ -46,7 +47,7 @@ export const createUnitTable = (
   enemies: readonly EnemyDef[],
   summons: readonly SummonDef[],
   tuning: ReadonlyMap<string, number>,
-): ReadonlyMap<string, UnitRecord> => {
+): Map<string, UnitRecord> => {
   const table = new Map<string, UnitRecord>();
   const simHz = readTunable(tuning, "sim_hz");
 

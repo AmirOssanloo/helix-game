@@ -2,6 +2,7 @@ import type { EntityId, Rect } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
+import type { DefinitionSlot } from "../definitions/definition-tuning";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
 import { ORB_IDS } from "../definitions/orb-id";
@@ -54,7 +55,11 @@ export type FormRecord = {
   armory: null;
 };
 
-/** Tuning key to current value: the tuning table copied at world creation, changed by command. */
+/**
+ * Tuning key to current value in simulation units: the tuning table and every definition
+ * number, copied at world creation, changed by command. It takes every key at creation and
+ * never grows.
+ */
 export type TuningState = Map<string, number>;
 
 /**
@@ -70,19 +75,25 @@ export type DebugFlags = {
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
   heroId: EntityId | null;
-  /** The hero definition as content wrote it: which forms it has and how it levels. */
+  /** The world's copy of the hero definition: which forms it has and how it levels. */
   hero: HeroDef;
   /** The hero's attack with its seconds read for the tick, which the attack rule reads for whichever form is active. */
   heroAttack: AttackRecord;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
   /** Every spell by id, with its durations in ticks, for the composer and the cast pipeline to read. */
-  spells: ReadonlyMap<string, SpellRecord>;
+  spells: Map<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */
-  statuses: ReadonlyMap<string, StatusRecord>;
+  statuses: Map<string, StatusRecord>;
   /** Every archetype and every summon by id, with its rates read for the tick, for a spawn to dress a unit from. The live units are map scope's. */
-  units: ReadonlyMap<string, UnitRecord>;
+  units: Map<string, UnitRecord>;
   tuning: TuningState;
+  /**
+   * Every definition number's key, to where it lives in the world's own copy of its
+   * definition. Every record above is read from those copies, and a tuning command on a
+   * definition key writes the copy and rebuilds the record, so the registry is never written.
+   */
+  definitionSlots: ReadonlyMap<string, DefinitionSlot>;
   debug: DebugFlags;
   random: RandomState;
 };

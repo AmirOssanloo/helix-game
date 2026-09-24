@@ -7,7 +7,7 @@ import {
   tuningTable,
 } from "@content/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
-import { assertRegistryValid } from "@domain/public";
+import { assertRegistryValid, definitionFields } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -116,6 +116,7 @@ export const boot: Boot = (): void => {
       overlays,
       groundPick,
       tuningDefaults: tuningTable,
+      definitionDefaults: definitionFields(contentRegistry),
       archetypes: contentRegistry.enemies.map((def): string => def.id),
       downloadAtlas: (): string => atlas.download(),
     });

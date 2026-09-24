@@ -43,7 +43,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 
-The tuning table is the one definition that becomes state: the world copies it at creation so a tuning command can change a value mid-session and the change lands in the input log.
+The tuning table becomes state: the world copies it at creation so a tuning command can change a value mid-session and the change lands in the input log. Every definition a world reads a number from is copied the same way, into run scope, and its records are built from the copy, so a tuning command on a definition key changes the next cast or spawn and never the registry.
 
 ---
 

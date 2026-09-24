@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
-import {
-  atlasFrames,
-  contentRegistry,
-  statuses,
-  statusIconFrame,
-} from "@content/public";
+import { atlasFrames, contentRegistry, statusIconFrame } from "@content/public";
 import { ID_SHAPE, validateRegistry } from "@domain/public";
+
+/** The statuses as the registry holds them, typed as any status rather than as the literal each file writes. */
+const { statuses } = contentRegistry;
 
 /** The eight status kinds the status page names plus the six spell-specific definitions the catalogue adds. */
 const STATUS_COUNT = 14;

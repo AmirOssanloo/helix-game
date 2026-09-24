@@ -119,6 +119,24 @@ export {
   BASE_ATTACK_SPEED,
   createAttackRecord,
 } from "./definitions/attack-state";
+export {
+  type DefinitionField,
+  definitionFieldUnit,
+  definitionFields,
+  type DefinitionKey,
+  definitionKeyOf,
+  type DefinitionKeysOf,
+  type DefinitionKind,
+  HERO_DEFINITION_ID,
+  isDefinitionKey,
+  type TunableDefinitions,
+} from "./definitions/definition-keys";
+export {
+  copyTunableDefinitions,
+  createDefinitionSlots,
+  type DefinitionSlot,
+  setDefinitionTunable,
+} from "./definitions/definition-tuning";
 export type {
   AtlasFrameDef,
   AtlasFrameList,
@@ -243,6 +261,7 @@ export {
   type WhorlSpeedKey,
 } from "./definitions/tuning-def";
 export {
+  convertTunable,
   createTuningState,
   readTunable,
   setTunable,

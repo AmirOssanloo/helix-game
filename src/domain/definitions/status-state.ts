@@ -133,6 +133,18 @@ const createHookRecord = (
   };
 };
 
+/** `def` as run scope holds it at `simHz`: the one conversion for a status, run when a world is created and when a tuning command changes one of its numbers. */
+export const createStatusRecord = (
+  def: StatusDef,
+  simHz: number,
+): StatusRecord => ({
+  def,
+  modifiers: createModifierRecords(def),
+  damageOverTime: createDamageRecord(def, simHz),
+  onDamageTaken: createHookRecord(def.onDamageTaken, simHz),
+  onDamageDealt: createHookRecord(def.onDamageDealt, simHz),
+});
+
 /**
  * Run scope's status table from the registry: every status by id, each with its tables read
  * for the tick rather than the second, for the status rule to write onto a unit and the status
@@ -142,7 +154,7 @@ const createHookRecord = (
 export const createStatusTable = (
   statuses: readonly StatusDef[],
   tuning: ReadonlyMap<string, number>,
-): ReadonlyMap<string, StatusRecord> => {
+): Map<string, StatusRecord> => {
   const table = new Map<string, StatusRecord>();
   const simHz = readTunable(tuning, "sim_hz");
 
@@ -150,13 +162,7 @@ export const createStatusTable = (
     const def = statuses[index];
 
     if (def !== undefined) {
-      table.set(def.id, {
-        def,
-        modifiers: createModifierRecords(def),
-        damageOverTime: createDamageRecord(def, simHz),
-        onDamageTaken: createHookRecord(def.onDamageTaken, simHz),
-        onDamageDealt: createHookRecord(def.onDamageDealt, simHz),
-      });
+      table.set(def.id, createStatusRecord(def, simHz));
     }
   }
 

@@ -6,10 +6,10 @@ import { tankDef } from "./tank.def";
 import { trainingDummyDef } from "./training-dummy.def";
 
 /** Every archetype, in the order the content tier validates them and the panel lists them. An archetype not listed here does not exist. */
-export const enemies: readonly EnemyDef[] = [
+export const enemies = [
   meleeGruntDef,
   fastRunnerDef,
   rangedArcherDef,
   tankDef,
   trainingDummyDef,
-];
+] as const satisfies readonly EnemyDef[];

@@ -1,6 +1,7 @@
 import type {
   AnyCommand,
   DebugCommand,
+  DefinitionField,
   SetTuningCommand,
   Tick,
   TuningDef,
@@ -93,8 +94,8 @@ export type GroundPick = {
  * The one object the developer panel and a person at the console reach the game through, on
  * `window` in a development build. It submits commands into the same buffer a click lands
  * in, drives the driver, reads the world view and the event ring by reference, reads the
- * instrumentation rings, sets the overlay toggles, and asks the play scene for a ground click. The tuning table's defaults are here
- * so a slider shows its default beside it; the atlas download and the input-log save are
+ * instrumentation rings, sets the overlay toggles, and asks the play scene for a ground click. The tuning table's defaults and
+ * every definition number are here so a slider shows its default beside it; the atlas download and the input-log save are
  * here so a person can take both away as files, and the load so a saved session replays.
  */
 export type DevApi = Readonly<{
@@ -107,6 +108,8 @@ export type DevApi = Readonly<{
   /** Arms the next ground click: the play scene hands its world point to `onPick` instead of ordering anything with it. Arming again replaces what was waiting. */
   pickGround: (onPick: (x: number, y: number) => void) => void;
   tuningDefaults: TuningDef;
+  /** Every number of every definition the registry holds, with its key and its value in the designer's units: what the definitions group makes a slider from. */
+  definitionDefaults: readonly DefinitionField[];
   /** Every archetype the registry holds, by id, in the order content wrote them: what the enemies dropdown lists, without a code change per archetype. */
   archetypes: readonly string[];
   /** The session so far as one JSON document: the seed, the content version, the map, the ticks run, and every consumed command with its tick. */
@@ -127,6 +130,7 @@ export type DevApiPorts = Readonly<{
   overlays: OverlayToggles;
   groundPick: GroundPick;
   tuningDefaults: TuningDef;
+  definitionDefaults: readonly DefinitionField[];
   archetypes: readonly string[];
   downloadAtlas: () => string;
 }>;
@@ -176,6 +180,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
       ports.groundPick.pending = onPick;
     },
     tuningDefaults: ports.tuningDefaults,
+    definitionDefaults: ports.definitionDefaults,
     archetypes: ports.archetypes,
     saveInputLog: (): string => ports.session.saveInputLog(),
     loadInputLog: (text: string): string | null =>

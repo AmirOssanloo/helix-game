@@ -9,7 +9,7 @@ import {
 import type { DevApi, GroundPick, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
 import type { TuningKey, Unit } from "@domain/public";
-import { readTunable } from "@domain/public";
+import { definitionFields, readTunable } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
@@ -75,6 +75,7 @@ const arrange = (): Arranged => {
     overlays,
     groundPick,
     tuningDefaults: tuningTable,
+    definitionDefaults: definitionFields(contentRegistry),
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
   });

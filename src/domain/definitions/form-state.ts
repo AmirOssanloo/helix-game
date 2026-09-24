@@ -8,10 +8,14 @@ import { readTunable } from "./tuning-state";
 
 /**
  * `def` with every per-second rate divided into a per-tick one. This is the one conversion
- * for a form, run once per form when a world is created, so no system ever divides by the
- * tick rate. Everything else is read as written.
+ * for a form, run once per form when a world is created and again when a tuning command
+ * changes one of its numbers, so no system ever divides by the tick rate. Everything else is
+ * read as written.
  */
-const toSimulationUnits = (def: FormDef, simHz: number): FormDef => ({
+export const formInSimulationUnits = (
+  def: FormDef,
+  simHz: number,
+): FormDef => ({
   ...def,
   conversions: {
     ...def.conversions,
@@ -50,7 +54,7 @@ const createFormRecord = (
   def: FormDef,
   tuning: ReadonlyMap<string, number>,
 ): FormRecord => {
-  const converted = toSimulationUnits(def, readTunable(tuning, "sim_hz"));
+  const converted = formInSimulationUnits(def, readTunable(tuning, "sim_hz"));
   const full = fullAtLevelOne(converted);
   const orbLevels: number[] = [];
   const orbs: number[] = [];

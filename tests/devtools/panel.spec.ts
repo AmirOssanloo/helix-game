@@ -10,7 +10,7 @@ import type {
   PanelHandle,
 } from "@devtools/public";
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
-import { ENEMY_LIVE_CAP } from "@domain/public";
+import { definitionFields, ENEMY_LIVE_CAP } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
@@ -89,6 +89,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     overlays,
     groundPick,
     tuningDefaults: tuningTable,
+    definitionDefaults: definitionFields(contentRegistry),
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     downloadAtlas: (): string => "data:image/png;base64,",
   });
@@ -155,6 +156,9 @@ const numberFieldNamed = (
 
   throw new Error(`The control "${label}" is not a number field`);
 };
+
+/** The text box of a control that takes a number or a string: a search is typed into one like a number is. */
+const numberFieldOrTextNamed = numberFieldNamed;
 
 const selectNamed = (host: HTMLElement, label: string): HTMLSelectElement => {
   const select = rowNamed(host, label).querySelector("select");
@@ -230,6 +234,79 @@ describe("the developer panel", () => {
     expect(Number(numberFieldNamed(arranged.host, "base_ms").value)).toBe(
       tuningTable.base_ms,
     );
+
+    arranged.handle.unmount();
+  });
+
+  it("makes no definition slider until a person opens its folder or searches for it", () => {
+    const arranged = arrange();
+
+    expect(() =>
+      rowNamed(arranged.host, "cooldownSeconds level 1 (20)"),
+    ).toThrow();
+
+    arranged.handle.unmount();
+  });
+
+  it("finds a definition number by its key and turns its slider into a tuning command in the designer's units", () => {
+    const arranged = arrange();
+
+    typeInto(
+      numberFieldOrTextNamed(arranged.host, "search"),
+      "def:spell:hoarfrost:cooldownSeconds:0",
+    );
+    typeInto(
+      numberFieldNamed(arranged.host, "cooldownSeconds level 1 (20)"),
+      "2",
+    );
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "set_tuning",
+      key: "def:spell:hoarfrost:cooldownSeconds:0",
+      value: 2,
+    });
+    expect(
+      arranged.world.view.run.tuning.get(
+        "def:spell:hoarfrost:cooldownSeconds:0",
+      ),
+    ).toBe(60);
+
+    arranged.handle.unmount();
+  });
+
+  it("opens only the definitions a search matches", () => {
+    const arranged = arrange();
+
+    typeInto(
+      numberFieldOrTextNamed(arranged.host, "search"),
+      "def:enemy:melee_grunt:health",
+    );
+
+    expect(numberFieldNamed(arranged.host, "health (400)").value).toBe("400");
+    expect(() => rowNamed(arranged.host, "health (220)")).toThrow();
+
+    arranged.handle.unmount();
+  });
+
+  it("puts every definition number a person moved back with the reset", () => {
+    const arranged = arrange();
+
+    typeInto(
+      numberFieldOrTextNamed(arranged.host, "search"),
+      "def:enemy:melee_grunt:health",
+    );
+    typeInto(numberFieldNamed(arranged.host, "health (400)"), "900");
+    buttonNamed(arranged.host, "Reset definitions").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.count).toBe(2);
+    expect(arranged.world.log.commandAt(1)).toMatchObject({
+      kind: "set_tuning",
+      key: "def:enemy:melee_grunt:health",
+      value: 400,
+    });
+    expect(numberFieldNamed(arranged.host, "health (400)").value).toBe("400");
 
     arranged.handle.unmount();
   });

@@ -11,7 +11,9 @@ import type {
 } from "@domain/public";
 import {
   cellCount,
+  copyTunableDefinitions,
   createAttackRecord,
+  createDefinitionSlots,
   createDomainEvent,
   createEffectPool,
   createFormRecords,
@@ -60,25 +62,29 @@ const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
 
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
- * the hero's form records, its attack read for the tick, and the spell, status, and unit
- * tables built over it, both switches off, no hero yet, and the random source at the start
- * of the seed's sequence.
+ * the world's own copy of every definition it may retune with each number under its key in
+ * the tuning state, the hero's form records, its attack read for the tick, and the spell,
+ * status, and unit tables built over the copies, both switches off, no hero yet, and the
+ * random source at the start of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
   const tuning = createTuningState(registry.tuning);
+  const copies = copyTunableDefinitions(registry);
+  const definitionSlots = createDefinitionSlots(copies, tuning);
 
   return {
     heroId: null,
-    hero: registry.hero,
+    hero: copies.hero,
     heroAttack: createAttackRecord(
-      registry.hero.attack,
+      copies.hero.attack,
       readTunable(tuning, "sim_hz"),
     ),
-    forms: createFormRecords(registry.hero, registry.forms, tuning),
-    spells: createSpellTable(registry.spells, tuning),
-    statuses: createStatusTable(registry.statuses, tuning),
-    units: createUnitTable(registry.enemies, registry.summons, tuning),
+    forms: createFormRecords(copies.hero, copies.forms, tuning),
+    spells: createSpellTable(copies.spells, tuning),
+    statuses: createStatusTable(copies.statuses, tuning),
+    units: createUnitTable(copies.enemies, copies.summons, tuning),
     tuning,
+    definitionSlots,
     debug: { noCooldowns: false, infiniteMana: false },
     random: createRandomState(seed),
   };

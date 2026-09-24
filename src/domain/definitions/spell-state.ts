@@ -19,7 +19,11 @@ export type SpellRecord = Readonly<{
 const toTicks = (seconds: number, simHz: number): number =>
   Math.round(seconds * simHz);
 
-const createSpellRecord = (def: SpellDef, simHz: number): SpellRecord => {
+/** `def` as run scope holds it at `simHz`: the one conversion for a spell, run when a world is created and when a tuning command changes one of its numbers. */
+export const createSpellRecord = (
+  def: SpellDef,
+  simHz: number,
+): SpellRecord => {
   const cooldownTicks: number[] = [];
 
   for (let index = 0; index < def.cooldownSeconds.length; index += 1) {
@@ -47,7 +51,7 @@ const createSpellRecord = (def: SpellDef, simHz: number): SpellRecord => {
 export const createSpellTable = (
   spells: readonly SpellDef[],
   tuning: ReadonlyMap<string, number>,
-): ReadonlyMap<string, SpellRecord> => {
+): Map<string, SpellRecord> => {
   const table = new Map<string, SpellRecord>();
   const simHz = readTunable(tuning, "sim_hz");
 
