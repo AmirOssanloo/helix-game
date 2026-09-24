@@ -21,8 +21,7 @@ export const nearestEnemy = (
   radius: number,
 ): EntityId | null => {
   const found = world.map.spatialHash.queryCircle(
-    unit.curr.x,
-    unit.curr.y,
+    unit.curr,
     radius,
     candidates,
   );

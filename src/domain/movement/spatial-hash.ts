@@ -52,7 +52,9 @@ export const createHashCell = (): HashCell => ({
  * The read side of the hash: what a view of the world exposes. `SpatialHash` satisfies it, so
  * a `Readonly` world view can name the hash without exposing `insert`, `remove`, and `move`.
  * Every query writes candidate ids into `out`, from index zero, and returns how many; the
- * caller does the exact test.
+ * caller does the exact test. The circle and the segment, which the systems ask for every
+ * unit and every projectile each tick, take points as objects rather than coordinates, for
+ * the reason `move` gives.
  */
 export type SpatialHashView = Readonly<{
   cellSize: number;
@@ -63,16 +65,13 @@ export type SpatialHashView = Readonly<{
   /** Writes the cell at `index` into `out` and returns `true`, or returns `false` for a free cell, so an overlay walks every occupied cell without allocating. */
   readCell: (index: number, out: HashCell) => boolean;
   queryCircle: (
-    x: number,
-    y: number,
+    centre: Readonly<Vec2>,
     radius: number,
     out: EntityId[],
   ) => number;
   querySegment: (
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number,
+    from: Readonly<Vec2>,
+    to: Readonly<Vec2>,
     radius: number,
     out: EntityId[],
   ) => number;
@@ -270,13 +269,19 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /**
-   * Puts `id` in the cell that holds its position now. Nothing changes while it stays in its
+   * Puts `id` in the cell that holds `position` now. Nothing changes while it stays in its
    * cell. A unit the hash does not hold, or holds under a stale id from the same slot, is
    * indexed afresh, so a sweep over every live unit leaves the hash exact.
+   *
+   * It takes the position a unit keeps rather than its two coordinates: the systems call it
+   * for every unit and every push each tick, and a fractional number handed to a call the
+   * engine does not inline is boxed into a new heap object on the way in.
    */
-  move(id: EntityId, x: number, y: number): void {
+  move(id: EntityId, position: Readonly<Vec2>): void {
     const unit = unpackIndex(id);
     const cell = this.cellOfUnit[unit];
+    const x = position.x;
+    const y = position.y;
 
     if (this.idOfUnit[unit] === id && cell !== undefined && cell !== NO_CELL) {
       if (this.cellKeys[cell] === packKey(this.cellOf(x), this.cellOf(y))) {
@@ -330,7 +335,9 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** The ids in every cell the circle touches, including a cell it only clips at a corner. */
-  queryCircle(x: number, y: number, radius: number, out: EntityId[]): number {
+  queryCircle(centre: Readonly<Vec2>, radius: number, out: EntityId[]): number {
+    const x = centre.x;
+    const y = centre.y;
     const minColumn = this.cellOf(x - radius);
     const maxColumn = this.cellOf(x + radius);
     const minRow = this.cellOf(y - radius);
@@ -350,17 +357,19 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /**
-   * The ids in every cell within `radius` of the segment from a to b: the cells the segment
-   * crosses, widened by the cells a disc of that radius on it could reach into.
+   * The ids in every cell within `radius` of the segment from `from` to `to`: the cells the
+   * segment crosses, widened by the cells a disc of that radius on it could reach into.
    */
   querySegment(
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number,
+    from: Readonly<Vec2>,
+    to: Readonly<Vec2>,
     radius: number,
     out: EntityId[],
   ): number {
+    const ax = from.x;
+    const ay = from.y;
+    const bx = to.x;
+    const by = to.y;
     const margin = Math.ceil(radius / this.size);
     const minColumn = this.cellOf(Math.min(ax, bx));
     const maxColumn = this.cellOf(Math.max(ax, bx));

@@ -400,8 +400,7 @@ const isBlockedAtHome = (world: World, unit: Readonly<Unit>): boolean => {
   }
 
   const found = world.map.spatialHash.queryCircle(
-    unit.spawnPoint.x,
-    unit.spawnPoint.y,
+    unit.spawnPoint,
     reach,
     candidates,
   );

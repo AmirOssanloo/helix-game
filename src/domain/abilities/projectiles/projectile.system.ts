@@ -119,10 +119,8 @@ const sweepAhead = (world: World, projectile: Readonly<Projectile>): void => {
   const reach =
     projectile.radius + readTunable(world.run.tuning, "collision_radius");
   const found = world.map.spatialHash.querySegment(
-    projectile.prev.x,
-    projectile.prev.y,
-    projectile.curr.x,
-    projectile.curr.y,
+    projectile.prev,
+    projectile.curr,
     reach,
     candidates,
   );

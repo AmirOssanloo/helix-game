@@ -41,6 +41,7 @@ const cooldownTicks = toTicks(fooDef.cooldownSeconds)
 | Spread, `map`, `filter`, `reduce` on the hot path | An index loop over the pool |
 | A new vector per operation | The scratch vectors from `shared/`, reset before use |
 | String concatenation for a key | Integer cell coordinates packed into one number |
+| Two coordinates passed to a call made per unit per tick | The point object the coordinates already live in. The engine boxes a fractional number handed to a call it does not inline, one heap object per argument per call |
 | Anything that lives longer than the tick | Acquired from its pool, released back to it |
 
 Allocation at world creation and map load is fine. That is where pools fill. The pool-miss counter in the instrumentation rings reads zero after warm-up, and [Performance standards](./performance.md#quick-reference) say what to do when it doesn't.
@@ -131,7 +132,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | Randomness and time | The world's seeded source and the tick count. `Math.random`, `Date.now`, `performance.now` are lint failures |
 | Asynchrony | None. A tick runs to completion |
 | Durations | Integer ticks, converted from seconds once at definition load. A system never multiplies by the tick rate |
-| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch vectors from `shared/`; pools for anything that outlives the tick |
+| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch vectors from `shared/`; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |
 | Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
 | A rule | A pure function over plain state, testable without a world |

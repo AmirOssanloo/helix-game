@@ -119,7 +119,7 @@ const tickTimes = (world: Simulation, ticks: number): void => {
 const carryAway = (world: Simulation, unit: Unit, id: EntityId): void => {
   unit.curr.x = OUTSIDE_X;
   unit.prev.x = OUTSIDE_X;
-  world.state.map.spatialHash.move(id, unit.curr.x, unit.curr.y);
+  world.state.map.spatialHash.move(id, unit.curr);
 };
 
 /** Whether `unit` holds the aura's status this tick. */

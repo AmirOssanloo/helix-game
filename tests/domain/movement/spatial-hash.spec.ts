@@ -28,7 +28,7 @@ const circle = (
 ): EntityId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
-  return collect(out, hash.queryCircle(x, y, radius, out));
+  return collect(out, hash.queryCircle({ x, y }, radius, out));
 };
 
 const segment = (
@@ -41,7 +41,10 @@ const segment = (
 ): EntityId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
-  return collect(out, hash.querySegment(ax, ay, bx, by, radius, out));
+  return collect(
+    out,
+    hash.querySegment({ x: ax, y: ay }, { x: bx, y: by }, radius, out),
+  );
 };
 
 const rectangle = (
@@ -96,7 +99,7 @@ describe("SpatialHash", () => {
     const hash = createSpatialHash(CELL);
     hash.insert(id(1), 50, 50);
 
-    hash.move(id(1), 250, 50);
+    hash.move(id(1), { x: 250, y: 50 });
 
     expect(circle(hash, 250, 50, 10)).toEqual([id(1)]);
     expect(circle(hash, 50, 50, 10)).toEqual([]);
@@ -124,7 +127,7 @@ describe("SpatialHash", () => {
       hash.insert(id(9), 20, 20);
       hash.insert(id(4), 30, 30);
       hash.insert(id(6), 120, 20);
-      hash.move(id(9), 130, 30);
+      hash.move(id(9), { x: 130, y: 30 });
       hash.insert(id(8), 40, 40);
     }
 
@@ -215,13 +218,13 @@ describe("SpatialHash", () => {
     fillOriginCell(hash);
     hash.insert(id(CELL_CAPACITY), 150, 10);
 
-    hash.move(id(CELL_CAPACITY), 20, 20);
+    hash.move(id(CELL_CAPACITY), { x: 20, y: 20 });
 
     expect(hash.count).toBe(CELL_CAPACITY);
     expect(hash.misses).toBe(1);
     expect(circle(hash, 150, 10, 1)).toEqual([]);
 
-    hash.move(id(CELL_CAPACITY), 150, 10);
+    hash.move(id(CELL_CAPACITY), { x: 150, y: 10 });
 
     expect(circle(hash, 150, 10, 1)).toEqual([id(CELL_CAPACITY)]);
   });

@@ -77,6 +77,7 @@ The collector pauses when the heap fills, and at sixty frames a second a pause i
 | An object or array literal per entity | A preallocated field, a scratch slot, a pool |
 | String concatenation for a key | Integers packed into one number |
 | A new vector per operation | The scratch vectors from `shared/` |
+| A fractional number passed to a call the engine does not inline | The object the number lives in, for a call made per unit per tick |
 | A `Map` or `Set` built per tick | A preallocated array or the spatial hash |
 | A per-frame `Text` update | `BitmapText` |
 
@@ -127,7 +128,7 @@ The stress test fails, so the tick budget becomes 5 ms. The budget is the produc
 | Render benchmark | `bench/`, manual, rerun after every Phaser upgrade and any atlas, view, or scene change |
 | Stress test | 300 units in Node, in CI, asserting the tick budget; uninstrumented, outside the coverage pass |
 | Batch breaks | Second texture, blend mode, filter, mask, `Text` update in sync — each counted, none in the world scene |
-| Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections — each with its replacement above |
+| Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections, fractional numbers passed per unit to a call not inlined — each with its replacement above |
 | Re-pathing | Budgeted per tick, the budget a tunable |
 | Off-screen packs | Dormant spawn data until an activation radius |
 | Typed arrays | Only when the profile shows the object layout over budget |

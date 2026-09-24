@@ -55,8 +55,7 @@ export const collisionSystem = (world: World): void => {
       }
 
       const found = hash.queryCircle(
-        unit.curr.x,
-        unit.curr.y,
+        unit.curr,
         unit.collisionRadius + widest,
         candidates,
       );
@@ -83,8 +82,8 @@ export const collisionSystem = (world: World): void => {
         );
 
         if (pushed) {
-          hash.move(id, unit.curr.x, unit.curr.y);
-          hash.move(otherId, other.curr.x, other.curr.y);
+          hash.move(id, unit.curr);
+          hash.move(otherId, other.curr);
         }
       }
     }
@@ -115,7 +114,7 @@ export const collisionSystem = (world: World): void => {
       }
 
       if (pushed) {
-        hash.move(id, unit.curr.x, unit.curr.y);
+        hash.move(id, unit.curr);
       }
     }
   }

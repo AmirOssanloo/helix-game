@@ -1,4 +1,4 @@
-import type { EntityId } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { isHostile } from "../../combat/sides";
 import type { EffectTargetDef, ShapeDef } from "../../definitions/effect-def";
@@ -117,17 +117,16 @@ export const isReachable = (unit: Readonly<Unit>): boolean =>
   unit.state !== "dead" && !unit.disables.untargetable;
 
 /**
- * Every unit the shape at (`centreX`, `centreY`) covers that is hostile to the caster and
- * reachable. The hash proposes candidates in cell then slot order and the exact test keeps
- * or drops each, so a replay collects the same units in the same order.
+ * Every unit the shape at `centre` covers that is hostile to the caster and reachable. The
+ * hash proposes candidates in cell then slot order and the exact test keeps or drops each,
+ * so a replay collects the same units in the same order.
  */
 const collectInShape = (
   world: World,
   casterKind: Unit["kind"] | null,
   level: number,
   shape: ShapeDef,
-  centreX: number,
-  centreY: number,
+  centre: Readonly<Vec2>,
   facing: number,
 ): number => {
   const proposed = candidates[level];
@@ -139,8 +138,7 @@ const collectInShape = (
   );
 
   const found = world.map.spatialHash.queryCircle(
-    centreX,
-    centreY,
+    centre,
     shapeExtent(shape),
     proposed,
   );
@@ -159,7 +157,7 @@ const collectInShape = (
     }
 
     if (
-      shapeCovers(shape, centreX, centreY, facing, unit.curr.x, unit.curr.y)
+      shapeCovers(shape, centre.x, centre.y, facing, unit.curr.x, unit.curr.y)
     ) {
       out[written] = id;
       written += 1;
@@ -188,8 +186,7 @@ const collectInZone = (
     casterKind,
     level,
     zone.shape,
-    zone.curr.x,
-    zone.curr.y,
+    zone.curr,
     zone.facing,
   );
 };
@@ -244,8 +241,7 @@ export const collectTargets = (
     casterKind,
     level,
     target,
-    cast.anchor.x,
-    cast.anchor.y,
+    cast.anchor,
     cast.facing,
   );
 };

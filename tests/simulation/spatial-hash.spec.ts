@@ -24,7 +24,7 @@ const near = (
   radius: number,
 ): EntityId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
-  const count = world.view.map.spatialHash.queryCircle(x, y, radius, out);
+  const count = world.view.map.spatialHash.queryCircle({ x, y }, radius, out);
 
   return out.slice(0, count);
 };

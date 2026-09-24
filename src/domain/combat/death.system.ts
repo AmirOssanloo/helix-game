@@ -111,7 +111,7 @@ const takeRespawn = (
   form.resources.health = hero.stats.maxHealth;
   form.resources.mana = hero.stats.maxMana;
   hero.cooldowns.clear();
-  world.map.spatialHash.move(id, hero.curr.x, hero.curr.y);
+  world.map.spatialHash.move(id, hero.curr);
 };
 
 /** The tick a dead unit was due on: the hero stands up again, and every other unit gives its slot back. */

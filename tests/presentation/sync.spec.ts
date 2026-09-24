@@ -415,7 +415,7 @@ describe("two hundred enemies over the arena", () => {
     unit.prev.y = ENTERING_FROM.y;
     unit.curr.x = ENTERING_FROM.x + ENTERING_STEP;
     unit.curr.y = ENTERING_FROM.y;
-    arena.world.state.map.spatialHash.move(id, unit.curr.x, unit.curr.y);
+    arena.world.state.map.spatialHash.move(id, unit.curr);
     arena.syncOn(WALK_FROM.x, WALK_FROM.y, QUARTER);
 
     expect(arena.pool.viewOf(id)).toBeNull();

@@ -21,7 +21,7 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Layer | domain, simulation, presentation |
 | Size | 2 |
 | Depends on | P3-S14-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** Spawn two hundred grunts and runners, walk, and record thirty seconds in the browser's performance panel and the allocation sampler. Read the rings. Tune before rewriting: the re-path budget and cadence, the push-out pass cap, the hash cell size, the aggro query cadence. Fix allocations found by the sampler. Only if the profile shows the object layout itself over budget, stop and raise R2 with numbers; do not start a typed-array rewrite inside this ticket.
 
@@ -32,6 +32,18 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 **Tests:** none new; the stress test next ticket is the proof.
 
 **Definition of done:** Every change · `src/domain` (hot-path numbers row) · Anything under `src/presentation`.
+
+**Note, 2026-09-24: the profile, what it found, and what changed.** Two hundred enemies, ten packs of grunts and ten of runners, spawned 600 units around a hero who walks a seven-point loop through the corridor and is healed every tick so the fight never ends. A hundred linear projectiles are kept in flight from the hero each tick. Every system is timed on its own. The harness is not committed: the ticket adds no test, and T02 turns the scenario into the stress spec. Machine: the Apple M1 laptop under a load average of 13 to 50 from other work, so single-tick maxima below are noisy and means are the steadier figure.
+
+- **Measure the bundle, not the test transform.** Under vitest the same scenario read 1.9 to 8.6 ms mean. The module transform turns every cross-module call into a getter, and those getters were a fifth of the CPU profile. Built with Vite as the game is and run in plain Node, the same V8 as Chrome, it reads 0.53 to 0.92 ms mean. Every number below is the bundle's.
+- **The object layout is not over budget, so R2 does not bite.** Mean tick 0.5 ms at two hundred chasing and a hundred projectiles; collision 0.27 ms, projectiles 0.13, pathing 0.02, movement 0.03 of it. No typed-array rewrite is raised.
+- **The allocation sampler found the tick allocating about 100 KB a tick in steady state, after warm-up (ticks 1200 to 2700, every hot function TurboFan-compiled).** Collision 70 KB, movement 15 KB, projectiles 9.6 KB. The source was not literals. It was fractional coordinates handed to spatial-hash calls the engine does not inline: `move(id, x, y)` for every push and every unit, `queryCircle(x, y, …)` for every unit every pass, and `querySegment(ax, ay, bx, by, …)` for every projectile. V8 boxes each such argument into a new heap number. Taking out the pair-loop `move` calls alone took collision from 70 to 20 KB, and taking out the query took it to zero.
+- **The fix: the hash takes points as the objects they live in.** `move(id, position)`, `queryCircle(centre, radius, out)`, and `querySegment(from, to, radius, out)`. Every caller already held a point object except pack placement and the unit pick, which fill a module scratch point. After, per tick: collision 70 KB to under 1.7 KB, which is within the ±0.6 KB the measurement's own calibration moves; movement 15 to 8.5 KB; projectiles 9.6 to 3 KB; everything else under 0.7 KB. The rule is written into the simulation coding and performance standards.
+- **What is left, and why it stays.** Movement's 8.5 KB is fractional arguments to its pure rules, `turnToward`, `isInsideCone`, and `movementSpeed`, each taking plain numbers so it is testable with three arguments. Reshaping them to take the unit would trade the rule shape the standard asks for against a scavenge every forty-odd seconds. The heap stays flat; only young-generation garbage is made. Decided provisionally in [Q30](../backlog/open-questions.md).
+- **Tick maxima, interleaved runs under the same load, four each.** Before: 2.3, 11.5, 27.3, and 35.8 ms max, p99 1.2 to 5.5 ms. After: 1.7, 1.8, 2.5, and 3.0 ms max, p99 1.0 to 1.7 ms. The large maxima before were scavenges landing inside a tick. Scavenges over ticks 900 to 2700 went from 33 to 15, and the 15 left are the harness's own garbage (the timing array, the cast contexts, the heal command), made outside the tick.
+- **The knobs, tuned before rewriting: none moved.** One run of two each, mean and max: default 0.57 to 0.60 mean; `hash_cell_size` 64 gave 0.38 and 256 gave 0.58; `push_out_passes` 2 gave 0.32 and 4 gave 0.48; `repath_budget` 4 gave 0.28 and 16 gave 0.41 to 0.48; `chase_repath_interval` 0.25 s gave 0.36. Pathing never passed 2.1 ms max at any setting, so R4 does not bite either. Every setting is inside the budget with the default at an eighth of it, and each one changes the fight as well as the cost, so the choice stays with the balance pass.
+- **Pool misses zero** for units and projectiles at the end of every run.
+- **In Chrome: waiting on a person.** Sync, render, draw calls, the frame rate, and the thirty seconds in the performance panel need a GPU browser. The DevTools Chrome on this machine was held by another session. The maintainer deferred every benchmark until phase 5 is done (2026-09-24), so it is an open box under "Waiting on a person" in STATUS.md. The tick acceptance row holds in V8 headless: the mean is 0.5 ms and the worst tick 3.0 ms under load. The sync row stands on P3-S14-T04's 0.77 ms mean with 201 bound.
 
 ---
 
@@ -103,7 +115,7 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Readouts per browser at 200 enemies and 100 projectiles | |
 | Stress test mean tick | |
 | Milestone M6 | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

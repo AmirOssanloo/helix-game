@@ -208,7 +208,7 @@ export const movementSystem = (world: World): void => {
     const id = units.idAt(index);
 
     if (unit !== null && id !== null) {
-      hash.move(id, unit.curr.x, unit.curr.y);
+      hash.move(id, unit.curr);
     }
   }
 };

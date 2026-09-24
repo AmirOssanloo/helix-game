@@ -183,7 +183,11 @@ const PROPOSED = createCandidateBuffer(UNIT_CAPACITY);
 
 /** Whether the hash proposes `id` for a query at (`x`, 0), which is what a shape asks it before the exact test. */
 const proposedAt = ({ world }: Arranged, x: number, id: EntityId): boolean => {
-  const found = world.state.map.spatialHash.queryCircle(x, 0, 1, PROPOSED);
+  const found = world.state.map.spatialHash.queryCircle(
+    { x, y: 0 },
+    1,
+    PROPOSED,
+  );
 
   return PROPOSED.slice(0, found).includes(id);
 };

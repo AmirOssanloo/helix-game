@@ -1,5 +1,5 @@
 import type { HashCell, SpatialHashView } from "@domain/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { EntityId, Rect, Vec2 } from "@shared/public";
 
 /**
  * A hash for a sync test: answers every query with the ids it was given, wherever they are,
@@ -46,8 +46,7 @@ export class FixedHash implements SpatialHashView {
   }
 
   queryCircle(
-    _x: number,
-    _y: number,
+    _centre: Readonly<Vec2>,
     _radius: number,
     out: EntityId[],
   ): number {
@@ -55,10 +54,8 @@ export class FixedHash implements SpatialHashView {
   }
 
   querySegment(
-    _ax: number,
-    _ay: number,
-    _bx: number,
-    _by: number,
+    _from: Readonly<Vec2>,
+    _to: Readonly<Vec2>,
     _radius: number,
     out: EntityId[],
   ): number {

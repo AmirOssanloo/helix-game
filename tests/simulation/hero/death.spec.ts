@@ -335,7 +335,11 @@ describe("respawn", () => {
     tickUntil(world, () => hero.state === "idle", 200);
 
     const found = createCandidateBuffer(UNIT_CAPACITY);
-    const count = world.state.map.spatialHash.queryCircle(400, 300, 1, found);
+    const count = world.state.map.spatialHash.queryCircle(
+      { x: 400, y: 300 },
+      1,
+      found,
+    );
 
     expect(count).toBe(1);
     expect(found[0]).toBe(world.view.run.heroId);

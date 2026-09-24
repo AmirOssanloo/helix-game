@@ -1,4 +1,4 @@
-import type { EntityId } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 
 /**
@@ -6,6 +6,9 @@ import type { WorldView } from "@simulation/public";
  * declares, so a unit whose selection disc covers the point is always among the candidates.
  */
 const PICK_QUERY_RADIUS = 128;
+
+/** Scratch for the point the hash is asked around. */
+const clicked: Vec2 = { x: 0, y: 0 };
 
 /**
  * The unit under a world point: the nearest one whose selection disc contains it, or `null`
@@ -18,9 +21,11 @@ export const pickUnit = (
   y: number,
   candidates: EntityId[],
 ): EntityId | null => {
+  clicked.x = x;
+  clicked.y = y;
+
   const count = world.map.spatialHash.queryCircle(
-    x,
-    y,
+    clicked,
     PICK_QUERY_RADIUS,
     candidates,
   );

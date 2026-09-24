@@ -36,6 +36,9 @@ const packY = new Float64Array(ENEMY_LIVE_CAP);
 /** Scratch for the units near a candidate cell. */
 const nearby: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
+/** Scratch for the candidate cell the hash is asked around. */
+const probe: Vec2 = { x: 0, y: 0 };
+
 /** Enemies spawned from an archetype that hold a slot, corpses included, since a corpse holds its slot until it is released. */
 const countEnemies = (world: World): number => {
   const units = world.map.units;
@@ -60,9 +63,11 @@ const isOccupied = (
   radius: number,
 ): boolean => {
   const units = world.map.units;
+  probe.x = x;
+  probe.y = y;
+
   const found = world.map.spatialHash.queryCircle(
-    x,
-    y,
+    probe,
     radius + radius,
     nearby,
   );
