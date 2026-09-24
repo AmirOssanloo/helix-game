@@ -85,9 +85,10 @@ export class InputMapper {
 
   /**
    * One frame, before the preview is drawn: an open cursor the hero may no longer commit is
-   * closed. A slot cursor goes when a stun or a silence lands, since both refuse the cast the
-   * click would send; the attack-move cursor goes on a stun alone, because silence leaves
-   * movement and attacks to the hero. Nothing flashes: the player asked for nothing yet.
+   * closed. Every cursor goes when the hero dies, since a dead hero takes no order. A slot
+   * cursor goes when a stun or a silence lands, since both refuse the cast the click would
+   * send; the attack-move cursor goes on a stun alone, because silence leaves movement and
+   * attacks to the hero. Nothing flashes: the player asked for nothing yet.
    */
   syncCursor(): void {
     if (this.cursor.kind === "closed") {
@@ -102,9 +103,10 @@ export class InputMapper {
     }
 
     const blocked =
-      this.cursor.kind === "attack_move"
+      hero.state === "dead" ||
+      (this.cursor.kind === "attack_move"
         ? hero.disables.stunned
-        : abilityDisable(hero.disables) !== null;
+        : abilityDisable(hero.disables) !== null);
 
     if (blocked) {
       closeCursor(this.cursor);

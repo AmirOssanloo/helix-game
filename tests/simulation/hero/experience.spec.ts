@@ -8,15 +8,17 @@ import {
   trainingDummyDef,
   tuningTable,
 } from "@content/public";
-import type { DebugCommand, Unit } from "@domain/public";
+import type { DebugCommand, DomainEvent, Unit } from "@domain/public";
 import {
   acquireUnit,
   applyDamage,
   experienceProgress,
   fillFromDefinition,
+  grantExperience,
   wearDefinition,
 } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { EventReader, Simulation } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
 import {
   makeEnemyDef,
   makeRegistry,
@@ -43,6 +45,26 @@ const ROW = 8;
 /** Long enough for any walk or shot below. */
 const PATIENCE = 1500;
 
+/** The slot keys Quartz and Whorl sit on. */
+const Q = 1;
+const W = 2;
+
+/** The respawn delay in ticks under the content table's defaults. */
+const RESPAWN_TICKS = tuningTable.respawn_delay * tuningTable.sim_hz;
+
+/**
+ * The total experience each level from 1 to 30 has reached, written out rather than read from
+ * content, so a retune of the table is a change a spec sees.
+ */
+const LEVEL_CURVE: readonly number[] = [
+  0, 230, 600, 1080, 1660, 2260, 2980, 3730, 4620, 5550, 6520, 7530, 8580, 9805,
+  11055, 12330, 13630, 14955, 16455, 18045, 19645, 21495, 23595, 25945, 28545,
+  32045, 36545, 42045, 48545, 56045,
+];
+
+/** The level the curve stops at. */
+const CAP = 30;
+
 type Arranged = Readonly<{ world: Simulation; hero: Unit }>;
 
 /** The content registry on an open map with the hero at the origin, and no wander to move anyone off their marks. */
@@ -59,7 +81,10 @@ const arrange = (): Arranged => {
 };
 
 /** A payload-free debug command, consumed by one tick. */
-const run = (world: Simulation, kind: "kill_all" | "clear_all"): void => {
+const run = (
+  world: Simulation,
+  kind: "kill_all" | "clear_all" | "level_up" | "kill_hero",
+): void => {
   submit(world, {
     kind,
     tick: world.view.tick,
@@ -138,6 +163,224 @@ const thresholdOf = (level: number): number => {
   return threshold;
 };
 
+/** Spends a skill point on the orb `slot` holds, as the HUD's click does, and runs the tick. */
+const spend = (world: Simulation, slot: number): void => {
+  submit(world, {
+    kind: "spend_skill_point",
+    tick: world.view.tick,
+    timestamp: world.view.tick,
+    slot,
+  });
+  world.tick();
+};
+
+/** The panel's Set orb levels, and the tick that consumes it. */
+const setOrbLevels = (world: Simulation, levels: readonly number[]): void => {
+  submit(world, {
+    kind: "set_orb_levels",
+    tick: world.view.tick,
+    timestamp: world.view.tick,
+    levels,
+  } as DebugCommand);
+  world.tick();
+};
+
+/** The active form's orb levels, Q, W, E in order. */
+const orbLevelsOf = (world: Simulation): number[] => {
+  const record = world.view.run.forms[0];
+
+  if (record === undefined) {
+    throw new Error("The hero has a form");
+  }
+
+  return [...record.kit.orbLevels];
+};
+
+/** The reason of every refusal the reader has not seen, advancing it past everything. */
+const refusals = (world: Simulation, reader: EventReader): string[] => {
+  const found: string[] = [];
+  let event: DomainEvent | null = world.events.read(reader);
+
+  while (event !== null) {
+    if (event.kind === "command_refused") {
+      found.push(String(event.reason));
+    }
+
+    event = world.events.read(reader);
+  }
+
+  return found;
+};
+
+/** Levels the hero to the cap with the panel's Level up, one level a tick. */
+const levelToCap = (world: Simulation, hero: Unit): void => {
+  while (hero.progression.level < heroDef.maxLevel) {
+    run(world, "level_up");
+  }
+};
+
+describe("the level curve", () => {
+  it("is the source game's table, 1 to 30, threshold for threshold", () => {
+    expect(heroDef.maxLevel).toBe(CAP);
+    expect(heroDef.experienceThresholds).toEqual(LEVEL_CURVE);
+  });
+
+  it("walks 1 to 30: one short of each threshold holds the level below, the threshold reaches it, with its skill point and its attributes", () => {
+    const { world, hero } = arrange();
+
+    for (let level = 2; level <= CAP; level += 1) {
+      const threshold = LEVEL_CURVE[level - 1] ?? 0;
+
+      grantExperience(
+        hero.progression,
+        threshold - 1 - hero.progression.experience,
+        world.state.run.hero,
+      );
+
+      expect(hero.progression.level).toBe(level - 1);
+
+      grantExperience(hero.progression, 1, world.state.run.hero);
+      world.tick();
+
+      expect(hero.progression.level).toBe(level);
+      expect(hero.progression.experience).toBe(threshold);
+      expect(hero.progression.skillPoints).toBe(
+        heroDef.startingSkillPoints + (level - 1) * heroDef.skillPointsPerLevel,
+      );
+      expect(hero.attributes.strength).toBeCloseTo(
+        skeinDef.attributes.strength +
+          (level - 1) * skeinDef.attributeGains.strength,
+      );
+    }
+  });
+
+  it("is climbed one level a press by the panel's Level up, each landing on its threshold", () => {
+    const { world, hero } = arrange();
+
+    for (let level = 2; level <= CAP; level += 1) {
+      run(world, "level_up");
+
+      expect(hero.progression.level).toBe(level);
+      expect(hero.progression.experience).toBe(LEVEL_CURVE[level - 1]);
+    }
+  });
+});
+
+describe("a skill point", () => {
+  it("granted by the panel's Level up is spent on the orb the slot holds, as the HUD's click spends it", () => {
+    const { world, hero } = arrange();
+
+    hero.progression.skillPoints = 0;
+    run(world, "level_up");
+
+    expect(hero.progression.skillPoints).toBe(heroDef.skillPointsPerLevel);
+
+    spend(world, W);
+
+    expect(orbLevelsOf(world)).toEqual([0, 1, 0]);
+    expect(hero.progression.skillPoints).toBe(0);
+  });
+
+  it("is untouched by the panel's Set orb levels, which assigns levels without spending", () => {
+    const { world, hero } = arrange();
+    const points = hero.progression.skillPoints;
+
+    setOrbLevels(world, [3, 2, 1]);
+
+    expect(orbLevelsOf(world)).toEqual([3, 2, 1]);
+    expect(hero.progression.skillPoints).toBe(points);
+
+    spend(world, Q);
+
+    expect(orbLevelsOf(world)).toEqual([4, 2, 1]);
+  });
+
+  it("Skill point unspent: kept until spent, across later levels, a death, and a respawn", () => {
+    const { world, hero } = arrange();
+    const start = heroDef.startingSkillPoints;
+
+    run(world, "level_up");
+    run(world, "level_up");
+
+    expect(hero.progression.skillPoints).toBe(
+      start + 2 * heroDef.skillPointsPerLevel,
+    );
+
+    run(world, "kill_hero");
+
+    for (let tick = 0; tick < RESPAWN_TICKS + 1; tick += 1) {
+      world.tick();
+    }
+
+    expect(hero.state).not.toBe("dead");
+    expect(hero.progression.skillPoints).toBe(
+      start + 2 * heroDef.skillPointsPerLevel,
+    );
+
+    spend(world, Q);
+
+    expect(hero.progression.skillPoints).toBe(
+      start + 2 * heroDef.skillPointsPerLevel - 1,
+    );
+  });
+});
+
+describe("the level cap", () => {
+  it("refuses the panel's Level up at 30 and changes nothing", () => {
+    const { world, hero } = arrange();
+    const reader = createEventReader();
+
+    levelToCap(world, hero);
+    refusals(world, reader);
+
+    const before = { ...hero.progression };
+
+    run(world, "level_up");
+
+    expect(hero.progression).toEqual(before);
+    expect(refusals(world, reader)).toEqual(["at_level_cap"]);
+  });
+
+  it("keeps a point unspent at 30, and it still spends", () => {
+    const { world, hero } = arrange();
+
+    levelToCap(world, hero);
+
+    const points = hero.progression.skillPoints;
+
+    expect(points).toBe(
+      heroDef.startingSkillPoints + (CAP - 1) * heroDef.skillPointsPerLevel,
+    );
+
+    killRow(world, TROVE.id, ROW);
+
+    expect(hero.progression.skillPoints).toBe(points);
+
+    spend(world, Q);
+
+    expect(hero.progression.skillPoints).toBe(points - 1);
+    expect(orbLevelsOf(world)[0]).toBe(1);
+  });
+
+  it("reached from one below by kills worth more than the gap, lands on the cap's threshold and not past it", () => {
+    const { world, hero } = arrange();
+
+    while (hero.progression.level < CAP - 1) {
+      run(world, "level_up");
+    }
+
+    const points = hero.progression.skillPoints;
+
+    killRow(world, TROVE.id, ROW);
+
+    expect(hero.progression.level).toBe(CAP);
+    expect(hero.progression.experience).toBe(LEVEL_CURVE[CAP - 1]);
+    expect(hero.progression.skillPoints).toBe(
+      points + heroDef.skillPointsPerLevel,
+    );
+  });
+});
+
 describe("the hero's experience", () => {
   it("reaches level 2 from five grunts killed at level 1, with a skill point and the level's attributes", () => {
     const { world, hero } = arrange();
@@ -176,7 +419,7 @@ describe("the hero's experience", () => {
     );
   });
 
-  it("stays at 30 with a full bar when more experience comes", () => {
+  it("Level cap reached: experience stops accumulating; the XP bar shows full and stops", () => {
     const { world, hero } = arrange();
 
     while (hero.progression.level < heroDef.maxLevel) {

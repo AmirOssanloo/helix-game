@@ -606,6 +606,29 @@ describe("the cursor", () => {
     },
   );
 
+  it.each(["KeyD", "KeyA"])(
+    "closes the cursor %s opened on the frame the hero dies, at no cost",
+    (code) => {
+      const { world, driver, intents, mapper } = arrange();
+
+      mapper.keyDown(code);
+
+      expect(mapper.cursor.kind).not.toBe("closed");
+
+      world.submit({
+        kind: "kill_hero",
+        tick: world.view.tick,
+        timestamp: world.view.tick,
+      });
+      world.tick();
+      mapper.syncCursor();
+
+      expect(mapper.cursor.kind).toBe("closed");
+      expect(driver.commands).toEqual([]);
+      expect(intents.refusals).toEqual([]);
+    },
+  );
+
   it("leaves an open cursor alone while nothing blocks the hero", () => {
     const { mapper } = arrange();
 

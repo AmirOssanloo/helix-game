@@ -401,6 +401,36 @@ describe("spending a skill point", () => {
     ]);
   });
 
+  it("a level from the panel raises the marker, a click spends the point through the world, and the marker goes", () => {
+    const arranged = arrange();
+
+    arranged.hero.progression.skillPoints = 0;
+    arranged.hud.sync(arranged.view);
+
+    const [marker] = quadsOf(arranged, "disc");
+
+    expect(marker?.visible).toBe(false);
+
+    submit(arranged.world, {
+      kind: "level_up",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(marker?.visible).toBe(true);
+    expect(labelsShowing(arranged, "2").length).toBeGreaterThan(0);
+
+    arranged.hud.click(squareCentreX(Q), SQUARES_CENTRE_Y, LEFT, arranged.view);
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.view.run.forms[0]?.kit.orbLevels[0]).toBe(2);
+    expect(arranged.hero.progression.skillPoints).toBe(0);
+    expect(marker?.visible).toBe(false);
+  });
+
   it("a left click on an orb square with no point unspent submits nothing", () => {
     const arranged = arrange();
 

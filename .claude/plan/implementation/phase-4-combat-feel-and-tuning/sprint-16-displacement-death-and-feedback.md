@@ -88,10 +88,10 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 
 | Field | Value |
 | --- | --- |
-| Layer | tests, domain |
+| Layer | tests, domain, presentation |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** A level-curve test walking 1 to 30 against the table with literal thresholds; the skill-point marker and spend from both the HUD and the panel; the level-cap edge; every hero-page death row as a named test in the style of the mechanics spec's acceptance tests; replay tests for any bug found in the phase 3 gate not yet covered.
 
@@ -101,7 +101,11 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 **Tests:**
 - `tests/simulation/hero/experience.spec.ts` extended; `tests/simulation/hero/death.spec.ts` extended; replay specs as needed.
 
-**Definition of done:** Every change · `src/domain`.
+**Definition of done:** Every change · `src/domain` · Anything under `src/presentation`.
+
+> Edited 2026-09-24: presentation added to the layer and the definition of done, because the hero page's "targeting closes" on death failed as a named test and its fix is in the input mapper.
+
+**Note, 2026-09-24: the curve walked with literal thresholds, the states table named, and one fix.** `tests/simulation/hero/experience.spec.ts` writes the thirty thresholds out as literals and checks the content table against them. It then walks 1 to 30, holding one experience short of each threshold at the level below and reaching it at the threshold, with its skill point and its strength. The panel's Level up climbs the same curve a level a press. A point from Level up spends on the orb the slot names, as the HUD's click does. Set orb levels assigns without touching the points. At 30, Level up is refused as `at_level_cap` and changes nothing, a point unspent is kept and still spends, and kills worth more than the last gap land on the cap's threshold. The states table on the hero page is covered by name. "Level cap reached" and "Skill point unspent" are in the experience spec. "Zero mana and R pressed" and "Regeneration while at full" are in `tests/simulation/hero/death.spec.ts`. The three death rows were named in `tests/simulation/feel/death.spec.ts` by T02 and are not repeated. The death paragraph gains the one claim no case held: death costs nothing, with experience, level, and points unspent the same through the death and the respawn. "Targeting closes" did not hold. A slot or attack-move cursor opened before the death stayed open on a dead hero. The input mapper's per-frame check now closes every cursor when the hero is dead, at no cost and with no flash, like a stun. It is tested in `tests/presentation/input-mapper.spec.ts`, and the presentation page states it. The HUD half of the skill point is in `tests/presentation/hud.spec.ts`: a level from the panel raises the marker, a click spends the point through the world, and the marker goes. The phase 3 gate found no bug, so no replay spec was added. `src/domain` did not change, so its rows are not applicable. The input mapper is not a view and the atlas did not change, so the render benchmark row is not applicable. `pnpm check` and `pnpm test:budget` green.
 
 ---
 
@@ -109,8 +113,8 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 
 | Check | Result |
 | --- | --- |
-| Every displacement and death row green by name | |
-| Actual days per ticket | T01 0.4 · T02 0.4 · T03 0.3 · T04 |
+| Every displacement and death row green by name | Yes. Seventeen displacement cases in `tests/simulation/feel/displacement.spec.ts` (T01). Twelve death rows and two lift cases in `tests/simulation/feel/death.spec.ts`, with the enemy summon at the cap an `it.todo` until an enemy ability summons (T02). The hero page's states table and death paragraph by name in `tests/simulation/hero/` (T04). By-eye checks of T01 to T03 are deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, as open boxes in STATUS.md |
+| Actual days per ticket | T01 0.4 · T02 0.4 · T03 0.3 · T04 0.3. Sized 4, done in 1.4 |
 
 ## Risks in this sprint
 

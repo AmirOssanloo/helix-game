@@ -21,6 +21,8 @@ import {
 
 const Q = 1;
 const W = 2;
+const E = 3;
+const R = 4;
 
 /** The respawn delay in ticks under the content table's defaults. */
 const RESPAWN_TICKS = tuningTable.respawn_delay * tuningTable.sim_hz;
@@ -297,6 +299,22 @@ describe("respawn", () => {
     expect(hero.progression.level).toBe(5);
   });
 
+  it("costs nothing: the experience, the level, and the skill points unspent are what they were", () => {
+    const { world, hero } = arrange();
+    hero.progression.level = 5;
+    hero.progression.experience = heroDef.experienceThresholds[4] ?? 0;
+    hero.progression.skillPoints = 2;
+    const before = { ...hero.progression };
+    kill(world);
+    world.tick();
+
+    expect(hero.progression).toEqual(before);
+
+    tickUntil(world, () => hero.state === "idle", 200);
+
+    expect(hero.progression).toEqual(before);
+  });
+
   it("takes orders again", () => {
     const { world, hero } = arrange();
     kill(world);
@@ -343,5 +361,48 @@ describe("respawn", () => {
 
     expect(count).toBe(1);
     expect(found[0]).toBe(world.view.run.heroId);
+  });
+});
+
+/**
+ * The rows of the states table on the hero page that are not about experience or a death.
+ * The three death rows are named in the feel spec for death, and the level cap and the
+ * unspent skill point in the experience spec.
+ */
+describe("the hero's states", () => {
+  it("Zero mana and R pressed: Invoke is refused at key-down; nothing is spent, the orb buffer is untouched", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
+    const form = world.state.run.forms[0];
+    const reader = createEventReader();
+
+    if (form === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    pressSlot(world, Q);
+    pressSlot(world, W);
+    pressSlot(world, E);
+    world.tick();
+    form.resources.mana = 0;
+    pressSlot(world, R);
+    world.tick();
+
+    expect(reasons(world, reader)).toEqual(["not_enough_mana"]);
+    expect(form.kit.prepared).toEqual([null, null]);
+    expect(heldOrbs(form)).toEqual([0, 1, 2]);
+    expect(form.resources.mana).toBeLessThan(1);
+    expect(hero.cooldowns.has("invoke")).toBe(false);
+  });
+
+  it("Regeneration while at full: nothing; values clamp at maximum", () => {
+    const { world, hero, form } = arrange();
+
+    for (let tick = 0; tick < 30; tick += 1) {
+      world.tick();
+    }
+
+    expect(form.resources.health).toBe(hero.stats.maxHealth);
+    expect(form.resources.mana).toBe(hero.stats.maxMana);
   });
 });
