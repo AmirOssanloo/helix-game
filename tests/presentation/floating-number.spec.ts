@@ -3,6 +3,8 @@ import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
   DEPTH_TEXT,
+  FLOATING_NUMBER_COUNT,
+  FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_TICKS,
   NO_NUMBER,
   Projection,
@@ -203,6 +205,56 @@ describe("the floating numbers over the arena", () => {
 
     expect(arranged.spawn()).toBe(NO_NUMBER);
     expect(arranged.numbers.rises).toBe(0);
+  });
+});
+
+describe("the numbers at the bar's busiest fight", () => {
+  /** The bar's hits spread evenly over one second of ticks, each on a spot of its own, one sync a tick. */
+  const landTheBar = (arranged: Arranged): Set<number> => {
+    const seen = new Set<number>();
+    let landed = 0;
+
+    for (let tick = START; tick < START + FLOATING_NUMBER_TICKS; tick += 1) {
+      const due = Math.round(
+        (FLOATING_NUMBER_HITS_A_SECOND * (tick - START + 1)) /
+          FLOATING_NUMBER_TICKS,
+      );
+
+      for (; landed < due; landed += 1) {
+        const label = arranged.numbers.spawn(landed, SPAWN_Y, HIT_AMOUNT, tick);
+
+        seen.add(arranged.numbers.spawnAt(label));
+      }
+
+      arranged.numbers.sync(tick, NO_ALPHA);
+    }
+
+    return seen;
+  };
+
+  it("show every one of a second's hits at once, with none recycled and no label made", () => {
+    const arranged = arrange(FLOATING_NUMBER_COUNT);
+    const spawns = landTheBar(arranged);
+
+    expect(spawns.size).toBe(FLOATING_NUMBER_HITS_A_SECOND);
+    expect(arranged.numbers.rises).toBe(FLOATING_NUMBER_HITS_A_SECOND);
+    expect(visible(arranged)).toHaveLength(FLOATING_NUMBER_HITS_A_SECOND);
+    expect(arranged.numbers.recycles).toBe(0);
+    expect(arranged.labels).toHaveLength(FLOATING_NUMBER_COUNT);
+  });
+
+  it("count every number a smaller set had to take back, rather than dropping it or growing", () => {
+    const size = FLOATING_NUMBER_HITS_A_SECOND / 2;
+    const arranged = arrange(size);
+
+    landTheBar(arranged);
+
+    // Every hit took a label: the ones past the set's size took a rise still running, and said so.
+    expect(arranged.numbers.recycles).toBe(
+      FLOATING_NUMBER_HITS_A_SECOND - size,
+    );
+    expect(arranged.numbers.rises).toBe(size);
+    expect(arranged.labels).toHaveLength(size);
   });
 });
 

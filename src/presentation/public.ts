@@ -106,6 +106,8 @@ export {
 } from "./views/depth-bands";
 export {
   createFloatingNumberViews,
+  FLOATING_NUMBER_COUNT,
+  FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_SIZE,
   FLOATING_NUMBER_TICKS,
   FloatingNumberViews,

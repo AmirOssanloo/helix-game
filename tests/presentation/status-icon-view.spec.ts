@@ -20,8 +20,10 @@ import {
   FLAT_PLACEMENT,
   makeWorld,
   QuadRecorder,
+  spawnEnemy,
   spawnHero,
   SYNC_FIELDS,
+  unitIdOf,
 } from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a world size over it. */
@@ -44,6 +46,10 @@ const ACROSS_THE_ARENA: readonly Vec2[] = [
   { x: 1600, y: 1600 },
 ];
 const FAR_AWAY: Rect = { minX: 3000, minY: 3000, maxX: 3300, maxY: 3300 };
+
+/** Where a grunt a case spawns stands, inside the camera rectangle and clear of the hero. */
+const GRUNT_X = 220;
+const GRUNT_Y = 180;
 
 /** How long a status a case applies lasts: two seconds at 30 Hz, long enough to sync a frame under. */
 const STATUS_TICKS = 60;
@@ -159,6 +165,48 @@ describe("the status icons above a unit", () => {
     expect(first.y).toBeLessThan(HERO_Y - arranged.hero.collisionRadius);
     expect(first.y).toBe(second.y);
     expect(first.scale).toBeGreaterThan(0);
+  });
+
+  it("stack a grunt's slow and burn side by side, level, clear of each other, and centred over it", () => {
+    const arranged = arrange();
+    const grunt = spawnEnemy(arranged.world, {
+      definitionId: "melee_grunt",
+      x: GRUNT_X,
+      y: GRUNT_Y,
+    });
+    const gruntId = unitIdOf(arranged.world, grunt);
+
+    for (const statusId of ["slow", "burn"]) {
+      expect(
+        applyStatus(
+          arranged.world.state,
+          gruntId,
+          statusId,
+          STATUS_TICKS,
+          arranged.heroId,
+          [1, 1, 1],
+        ),
+      ).toBe("ok");
+    }
+
+    arranged.sync();
+
+    const shown = visible(arranged);
+    const [first, second] = shown;
+
+    if (first === undefined || second === undefined) {
+      throw new Error("Two statuses show two icons");
+    }
+
+    expect(shown.map((quad) => quad.frame)).toEqual([
+      statusIconFrame("slow"),
+      statusIconFrame("burn"),
+    ]);
+    expect(first.y).toBe(second.y);
+    // One icon is its scale times the frame's width across; the next starts past it.
+    expect(second.x - first.x).toBeGreaterThan(first.scale * FRAME_WIDTH);
+    expect((first.x + second.x) / 2).toBeCloseTo(grunt.curr.x);
+    expect(first.y).toBeLessThan(GRUNT_Y - grunt.collisionRadius);
   });
 
   it("put every icon at the floating-text band", () => {

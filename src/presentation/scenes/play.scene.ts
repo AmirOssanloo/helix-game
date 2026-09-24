@@ -20,7 +20,10 @@ import { DebugOverlays } from "../overlays/debug-overlays";
 import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
-import { createFloatingNumberViews } from "../views/floating-number.view";
+import {
+  createFloatingNumberViews,
+  FLOATING_NUMBER_COUNT,
+} from "../views/floating-number.view";
 import type { FloorView, VoidViews } from "../views/floor.view";
 import {
   createFloorView,
@@ -86,9 +89,6 @@ const FLOOR_TILE_COUNT = 320;
 
 /** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge; the walkability overlay keeps to the same rectangle. */
 const FLOOR_MARGIN = 64;
-
-/** Floating numbers: how many hits a busy fight lands inside one number's rise. Past this the oldest is recycled. */
-const FLOATING_NUMBER_COUNT = 64;
 
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;

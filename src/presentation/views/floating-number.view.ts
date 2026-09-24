@@ -7,6 +7,20 @@ import type { Label, LabelFactory } from "./quad";
 /** How long a number rises before it is gone, in ticks: one second at thirty ticks a second. */
 export const FLOATING_NUMBER_TICKS = 30;
 
+/** The busiest fight the numbers are sized for: this many hits landing inside one second, each on a unit of its own. */
+export const FLOATING_NUMBER_HITS_A_SECOND = 200;
+
+/** Room past the bar, so a fight a little busier than it still recycles nothing. */
+const FLOATING_NUMBER_MARGIN = 56;
+
+/**
+ * How many numbers the set holds: every hit the bar lands inside one number's rise, each raising
+ * its own, plus the margin. A number rises for a second, so that is the bar's hits a second.
+ * Past this the oldest is recycled and counted. A presentation number, tuned here.
+ */
+export const FLOATING_NUMBER_COUNT =
+  FLOATING_NUMBER_HITS_A_SECOND + FLOATING_NUMBER_MARGIN;
+
 /** How tall a number's glyphs are, in pixels a line. */
 export const FLOATING_NUMBER_SIZE = 28;
 

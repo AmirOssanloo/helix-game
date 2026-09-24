@@ -4,6 +4,9 @@ import { acquireUnit, releaseUnit } from "@domain/public";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
+  FLOATING_NUMBER_COUNT,
+  FLOATING_NUMBER_HITS_A_SECOND,
+  FLOATING_NUMBER_TICKS,
   HIT_FLASH_TICKS,
   HIT_NUMBER_MERGE_TICKS,
   HitFlashes,
@@ -53,8 +56,8 @@ type Arranged = {
   hit: (unitId: EntityId, amount: number, tick: number) => void;
 };
 
-/** A world with the hero and two dummies in it, and the feedback a drained hit writes to. */
-const arrange = (): Arranged => {
+/** A world with the hero and two dummies in it, and the feedback a drained hit writes to, over `labelCount` labels. */
+const arrange = (labelCount = LABELS): Arranged => {
   const world = makeWorld({ seed: 1 });
 
   spawnHero(world, { x: HERO_X, y: HERO_Y });
@@ -63,7 +66,7 @@ const arrange = (): Arranged => {
   const other = spawnUnit(world, { kind: "enemy", x: OTHER_X, y: OTHER_Y });
   const labels: LabelRecorder[] = [];
   const numbers = createFloatingNumberViews(
-    LABELS,
+    labelCount,
     (labelSize) => {
       const label = new LabelRecorder(labelSize);
 
@@ -150,6 +153,16 @@ describe("what a drained hit shows", () => {
     expect(arranged.flashes.isFlashing(arranged.dummyId, HIT_FLASH_TICKS)).toBe(
       false,
     );
+  });
+
+  it("keeps the flash beside the views and writes nothing on the unit", () => {
+    const arranged = arrange();
+    const before = structuredClone(arranged.dummy);
+
+    arranged.hit(arranged.dummyId, HIT_AMOUNT, 0);
+
+    expect(arranged.flashes.isFlashing(arranged.dummyId, 0)).toBe(true);
+    expect(arranged.dummy).toEqual(before);
   });
 
   it("shows nothing for a hit on a unit the tick already took away", () => {
@@ -326,5 +339,54 @@ describe("the numbers a unit taking damage every tick shows", () => {
       String(HIT_AMOUNT),
       String(DRIP),
     ]);
+  });
+});
+
+describe("a second of the bar's busiest fight", () => {
+  it("flashes every unit hit and shows a number for every hit, with none dropped or recycled", () => {
+    const arranged = arrange(FLOATING_NUMBER_COUNT);
+    const ids: EntityId[] = [];
+
+    for (let crowd = 0; crowd < FLOATING_NUMBER_HITS_A_SECOND; crowd += 1) {
+      const id = acquireUnit(
+        arranged.world.state,
+        "enemy",
+        OTHER_X + (crowd % 20) * 40,
+        OTHER_Y + Math.floor(crowd / 20) * 40,
+      );
+
+      if (id === null) {
+        throw new Error("The unit pool has room for the crowd");
+      }
+
+      ids.push(id);
+    }
+
+    // The bar's hits spread over one second of ticks, each on a unit of its own, drained a tick at a time.
+    let landed = 0;
+
+    for (let tick = 0; tick < FLOATING_NUMBER_TICKS; tick += 1) {
+      const due = Math.round(
+        (FLOATING_NUMBER_HITS_A_SECOND * (tick + 1)) / FLOATING_NUMBER_TICKS,
+      );
+
+      for (; landed < due; landed += 1) {
+        const id = ids[landed];
+
+        if (id === undefined) {
+          throw new Error("A unit for every hit");
+        }
+
+        arranged.hit(id, HIT_AMOUNT, tick);
+
+        expect(arranged.flashes.isFlashing(id, tick)).toBe(true);
+      }
+
+      arranged.numbers.sync(tick, NO_ALPHA);
+    }
+
+    expect(visible(arranged)).toHaveLength(FLOATING_NUMBER_HITS_A_SECOND);
+    expect(arranged.numbers.recycles).toBe(0);
+    expect(arranged.labels).toHaveLength(FLOATING_NUMBER_COUNT);
   });
 });

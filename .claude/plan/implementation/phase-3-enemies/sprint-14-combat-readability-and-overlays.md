@@ -21,7 +21,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Layer | presentation, tests |
 | Size | 1 |
 | Depends on | P3-S13-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** The floating-number pool sized for the bar's scenario (a tunable count) with the recycle-oldest rule proven under two hundred hits per second; the flash reads a per-unit "flashed on tick" field written by the damage event's handler in presentation state, never on the entity; status icons stack horizontally above a unit with several statuses; the floating orbs and hero facing triangle checked against the HUD page's around-the-hero list.
 
@@ -33,6 +33,8 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 - `tests/presentation/floating-number.spec.ts` extended; `status-icon-view.spec.ts` extended for stacking.
 
 **Definition of done:** Every change · Anything under `src/presentation`.
+
+> Closed 2026-09-24. Most of the build was already there: the flash was a per-slot record in presentation state and the icons already sat side by side. What changed is the number set, sized from the bar as `FLOATING_NUMBER_COUNT` in `floating-number.view.ts` (200 hits a second plus a margin of 56, so 256, up from 64), and the tests that prove the bar. The orbs and the facing triangle match the HUD page's around-the-hero list; the orbs had no spec, so `tests/presentation/orb-view.spec.ts` was added to back the check. The render benchmark was not rerun: the bench draws no numbers and no view's sync changed, and T04 reruns it with the play scene's pools resized.
 
 ---
 
@@ -109,7 +111,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Fifty-enemy fight readable by hand, every overlay checked against the page | |
 | Damage-type matrix green | |
 | Sync time with maximum bound views | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.2 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 
