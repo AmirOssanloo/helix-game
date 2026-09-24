@@ -8,6 +8,7 @@ import type {
 import {
   createSlotDescriptor,
   experienceProgress,
+  readTunable,
   SLOT_COUNT,
 } from "@domain/public";
 import type { WorldView } from "@simulation/public";
@@ -59,6 +60,10 @@ export type HudPorts = Readonly<{
   orbSlots: number;
 }>;
 
+/** How long a refusal flash shows, in ticks, as the world view's tuning state holds it now. */
+export const refusalFlashTicks = (world: WorldView): number =>
+  readTunable(world.run.tuning, "refusal_flash_duration");
+
 /** The DOM button of a left click, the one that spends a point. */
 const LEFT_BUTTON = 0;
 
@@ -96,6 +101,7 @@ export class Hud {
     spellTint: number | null;
     tick: Tick;
     flash: SquareInput["flash"];
+    sweepSteps: number;
   };
 
   constructor(ports: HudPorts) {
@@ -155,6 +161,7 @@ export class Hud {
       spellTint: null,
       tick: 0,
       flash: "none",
+      sweepSteps: ports.wedgeSteps,
     };
     this.health.place(BARS_CENTRE_X, HEALTH_BAR_CENTRE_Y);
     this.mana.place(BARS_CENTRE_X, MANA_BAR_CENTRE_Y);
@@ -198,6 +205,11 @@ export class Hud {
 
     let hasOrbs = false;
 
+    this.input.sweepSteps = readTunable(
+      world.run.tuning,
+      "cooldown_wedge_steps",
+    );
+
     for (let slot = 1; slot <= SLOT_COUNT; slot += 1) {
       const descriptor = this.descriptors[slot];
       const square = this.squares[slot - 1];
@@ -239,20 +251,33 @@ export class Hud {
     }
   }
 
-  /** Reacts to one event: a refused slot key, cast, or spend flashes its square. */
-  react(event: Readonly<DomainEvent>): void {
+  /**
+   * Reacts to one event: a refused slot key, cast, or spend flashes its square, for as long as
+   * the world view's tuning state says a refusal flash shows.
+   */
+  react(event: Readonly<DomainEvent>, world: WorldView): void {
     if (event.kind !== "command_refused" || event.reason === null) {
       return;
     }
 
     if (event.slot !== 0) {
-      this.flashes.flash(event.slot, event.reason, event.tick);
+      this.flashes.flash(
+        event.slot,
+        event.reason,
+        event.tick,
+        refusalFlashTicks(world),
+      );
     }
   }
 
   /** A refused cursor the mapper reports: the same flash, from the mapper's tick. */
-  slotRefused(slot: number, reason: RefusalReason): void {
-    this.flashes.flash(slot, reason, this.driver.nextTick);
+  slotRefused(slot: number, reason: RefusalReason, world: WorldView): void {
+    this.flashes.flash(
+      slot,
+      reason,
+      this.driver.nextTick,
+      refusalFlashTicks(world),
+    );
   }
 
   /**

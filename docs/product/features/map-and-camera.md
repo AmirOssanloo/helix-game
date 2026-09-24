@@ -47,7 +47,7 @@ Loading a map never recreates the hero. Later, walking through an exit keeps the
 
 Locked on the hero, looking down on an isometric floor. The square world is drawn as a classic 2:1 diamond grid: each 32-unit walkability cell is one diamond, 40 pixels across and 20 down, so the screen shows about 2172 world units across and 2443 down. Everything lies flat on that floor. The hero's disc is an ellipse twice as wide as it is tall, an obstacle's rectangle is a parallelogram along the diamonds, and a heading due east in the world points down and to the right on screen. A circle on the floor is a circle in the world: ranges, radii, and cones are the numbers the spec gives, drawn squashed.
 
-- **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen
+- **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen. The lag is a tunable: the fraction of the distance to the hero the camera closes each frame
 - **Clamped** to the box around the map's diamond, so the corners past the walls are dark void and never more than that
 - **No zoom.** The scroll wheel does nothing. The game has one view
 - **No panning.** No edge pan, no middle drag, no free camera. The camera is not an order and never issues one

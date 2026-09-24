@@ -20,10 +20,16 @@ export { type FollowCamera, WorldCamera } from "./camera/world-camera";
 export {
   AbilitySquareView,
   type SquareInput,
+  wedgeFrameFor,
   wedgeStepFor,
 } from "./hud/ability-square.view";
 export { BarView } from "./hud/bar.view";
-export { Hud, type HudPorts, type KitResolver } from "./hud/hud";
+export {
+  Hud,
+  type HudPorts,
+  type KitResolver,
+  refusalFlashTicks,
+} from "./hud/hud";
 export {
   BAR_RECT,
   containsPoint,
@@ -36,12 +42,7 @@ export {
 export { LevelView } from "./hud/level.view";
 export { OrbSquaresView } from "./hud/orb-squares.view";
 export { ORB_TINTS, orbTint } from "./hud/palette";
-export {
-  FLASH_TICKS,
-  type FlashKind,
-  flashKindOf,
-  SlotFlashes,
-} from "./hud/slot-flashes";
+export { type FlashKind, flashKindOf, SlotFlashes } from "./hud/slot-flashes";
 export { bindSceneInput, cameraLens } from "./input/bind-scene-input";
 export {
   projectedLens,
@@ -111,7 +112,6 @@ export {
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_SIZE,
-  FLOATING_NUMBER_TICKS,
   FloatingNumberViews,
   NO_NUMBER,
 } from "./views/floating-number.view";
@@ -124,7 +124,6 @@ export {
   VoidViews,
 } from "./views/floor.view";
 export {
-  HIT_FLASH_TICKS,
   HIT_NUMBER_MERGE_TICKS,
   HitFlashes,
   HitNumbers,

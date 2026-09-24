@@ -82,7 +82,7 @@ export class HudScene extends Phaser.Scene {
     let event = this.context.events.read(this.reader);
 
     while (event !== null) {
-      hud.react(event);
+      hud.react(event, this.context.world);
       event = this.context.events.read(this.reader);
     }
   }

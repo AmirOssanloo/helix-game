@@ -11,7 +11,6 @@ import {
   createOutlineViewPool,
   createUnitViewPool,
   DEPTH_UNITS,
-  HIT_FLASH_TICKS,
   HitFlashes,
   syncOutlineViews,
   syncUnitViews,
@@ -22,6 +21,7 @@ import {
 import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  FEEDBACK_TIMINGS,
   frameAround,
   makeWorld,
   QuadRecorder,
@@ -29,6 +29,9 @@ import {
   spawnHero,
   SYNC_FIELDS,
 } from "../helpers";
+
+/** How long a hit flash shows, as a fresh world's tuning table sets it. */
+const HIT_FLASH_TICKS = FEEDBACK_TIMINGS.hitFlashTicks;
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a diameter over it. */
 const FRAME_WIDTH = 128;
@@ -220,7 +223,11 @@ describe("a unit view", () => {
     expect(marker.tint).toBe(FACING_TINT);
     expect(body.tintMode).toBe(TINT_MULTIPLY);
 
-    arranged.flashes.flash(arranged.heroId, arranged.world.view.tick);
+    arranged.flashes.flash(
+      arranged.heroId,
+      arranged.world.view.tick,
+      HIT_FLASH_TICKS,
+    );
     arranged.sync(AROUND_HERO, 0);
 
     expect(body.tint).toBe(FLASH_TINT);
@@ -245,7 +252,11 @@ describe("a unit view", () => {
     const arranged = arrange(size);
     const { body } = firstView(arranged, size);
 
-    arranged.flashes.flash(arranged.heroId, arranged.world.view.tick);
+    arranged.flashes.flash(
+      arranged.heroId,
+      arranged.world.view.tick,
+      HIT_FLASH_TICKS,
+    );
     arranged.sync(AROUND_HERO, 0);
     body.forgetWrites();
     arranged.sync(AROUND_HERO, 0);
@@ -268,7 +279,7 @@ describe("a unit view", () => {
       throw new Error("The unit pool has room for an enemy");
     }
 
-    arranged.flashes.flash(enemyId, now);
+    arranged.flashes.flash(enemyId, now, HIT_FLASH_TICKS);
 
     expect(arranged.flashes.isFlashing(enemyId, now)).toBe(true);
 

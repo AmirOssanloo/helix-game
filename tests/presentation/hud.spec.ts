@@ -10,7 +10,6 @@ import type {
 import { applyStatus, resolveKit } from "@domain/public";
 import type { KitResolver } from "@presentation/public";
 import {
-  FLASH_TICKS,
   Hud,
   ORB_TINTS,
   SlotFlashes,
@@ -20,6 +19,7 @@ import {
 import type { Simulation, WorldView } from "@simulation/public";
 import {
   CommandRecorder,
+  FEEDBACK_TIMINGS,
   LabelRecorder,
   makeFormDef,
   makeRegistry,
@@ -27,6 +27,7 @@ import {
   makeWorld,
   QuadRecorder,
   spawnHero,
+  submit,
 } from "../helpers";
 
 /** Every frame the test atlas holds is this wide. */
@@ -57,6 +58,17 @@ const CLOCK_END_TICK = 300;
 
 /** The factory's cooldown: ten seconds at 30 Hz, so a clock ending at 300 read at tick 0 is full. */
 const CLOCK_TICKS = 300;
+
+/** How long a refusal flash shows, as a fresh world's tuning table sets it. */
+const FLASH_TICKS = FEEDBACK_TIMINGS.refusalFlashTicks;
+
+/** A refusal flash tuned to a whole second, three times its default. */
+const TUNED_FLASH_SECONDS = 1;
+const TUNED_FLASH_TICKS = 30;
+
+/** A wedge tuned to sweep in four steps, and the tick its clock has three fifths left, where four steps and sixty-four draw different frames. */
+const TUNED_WEDGE_STEPS = 4;
+const THREE_FIFTHS_LEFT_TICK = 120;
 
 const preparedSpell = makeSpellDef.build({
   recipe: ["quartz", "whorl", "ember"],
@@ -228,6 +240,34 @@ describe("the six ability squares", () => {
     arranged.hud.sync(arranged.view);
 
     expect(quadsOf(arranged, `wedge_${WEDGE_STEPS / 2}`)).toHaveLength(1);
+  });
+
+  it("sweep a tuned wedge in the tuning table's steps, read through the world view", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "set_tuning",
+      tick: 0,
+      timestamp: 1,
+      key: "cooldown_wedge_steps",
+      value: TUNED_WEDGE_STEPS,
+    });
+    arranged.hero.cooldowns.set(preparedSpell.id, CLOCK_END_TICK);
+
+    for (let tick = 0; tick < THREE_FIFTHS_LEFT_TICK; tick += 1) {
+      arranged.world.tick();
+    }
+
+    arranged.hud.sync(arranged.view);
+
+    // Three fifths left is step three of four, drawn with the sheet's frame 48 of 64.
+    const shown = arranged.quads.filter(
+      (quad) => quad.frame.startsWith("wedge_") && quad.visible,
+    );
+
+    expect(shown.map((quad) => quad.frame)).toEqual([
+      `wedge_${(WEDGE_STEPS * 3) / TUNED_WEDGE_STEPS}`,
+    ]);
   });
 
   it("grey all six while a silence is on the hero, and dim what each square shows", () => {
@@ -443,21 +483,24 @@ describe("refusal flashes", () => {
   };
 
   const refuse = (arranged: Arranged, slot: number, reason: RefusalReason) => {
-    arranged.hud.react({
-      kind: "command_refused",
-      tick: arranged.view.tick,
-      orb: -1,
-      abilityId: null,
-      statusId: null,
-      slot,
-      reason,
-      unitId: null,
-      sourceId: null,
-      zoneId: null,
-      projectileId: null,
-      amount: 0,
-      damageType: null,
-    });
+    arranged.hud.react(
+      {
+        kind: "command_refused",
+        tick: arranged.view.tick,
+        orb: -1,
+        abilityId: null,
+        statusId: null,
+        slot,
+        reason,
+        unitId: null,
+        sourceId: null,
+        zoneId: null,
+        projectileId: null,
+        amount: 0,
+        damageType: null,
+      },
+      arranged.view,
+    );
   };
 
   it("a refused R for mana flashes the R square red", () => {
@@ -510,10 +553,40 @@ describe("refusal flashes", () => {
     expect(flashQuadOf(arranged, R).visible).toBe(false);
   });
 
+  it("a tuned refusal flash shows for the tuned length from the next refusal", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "set_tuning",
+      tick: 0,
+      timestamp: 1,
+      key: "refusal_flash_duration",
+      value: TUNED_FLASH_SECONDS,
+    });
+    arranged.world.tick();
+    refuse(arranged, R, "not_enough_mana");
+
+    for (let tick = 0; tick < FLASH_TICKS; tick += 1) {
+      arranged.world.tick();
+    }
+
+    arranged.hud.sync(arranged.view);
+
+    expect(flashQuadOf(arranged, R).visible).toBe(true);
+
+    for (let tick = FLASH_TICKS; tick < TUNED_FLASH_TICKS; tick += 1) {
+      arranged.world.tick();
+    }
+
+    arranged.hud.sync(arranged.view);
+
+    expect(flashQuadOf(arranged, R).visible).toBe(false);
+  });
+
   it("a cursor the mapper would not open flashes the same square through the shared record", () => {
     const arranged = arrange();
 
-    arranged.flashes.flash(D, "on_cooldown", arranged.view.tick);
+    arranged.flashes.flash(D, "on_cooldown", arranged.view.tick, FLASH_TICKS);
     arranged.hud.sync(arranged.view);
 
     expect(flashQuadOf(arranged, D).visible).toBe(true);

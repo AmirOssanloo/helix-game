@@ -4,9 +4,6 @@ import { SLOT_COUNT } from "@domain/public";
 /** What a square flashes for: mana is red, a clock grey, a disable or death striped, and any other refusal a plain white blink. */
 export type FlashKind = "none" | "mana" | "cooldown" | "disable" | "refused";
 
-/** How long a flash shows, in ticks: a third of a second at thirty ticks a second. */
-export const FLASH_TICKS = 10;
-
 /** The kind of flash `reason` earns. */
 export const flashKindOf = (reason: RefusalReason): FlashKind => {
   switch (reason) {
@@ -60,7 +57,9 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
  * The refusal flash on each of the six squares: what it shows and the tick it stops. Two
  * writers share one record: the play scene's input mapper, for a cursor it would not open,
  * which never reaches the buffer to be refused there, and the HUD, for a refused-command
- * event. The end is a tick, not a frame count, so a flash pauses with the simulation.
+ * event. The end is a tick, not a frame count, so a flash pauses with the simulation. How
+ * long it shows comes with the flash, from the tuning table, so one already showing keeps the
+ * length it began with and a tuning change shows from the next refusal.
  */
 export class SlotFlashes {
   private readonly kinds: FlashKind[] = [];
@@ -74,14 +73,19 @@ export class SlotFlashes {
     }
   }
 
-  /** Starts a flash on `slot` for `reason` at tick `now`. A slot outside the six is ignored. */
-  flash(slot: number, reason: RefusalReason, now: Tick): void {
+  /** Starts a flash on `slot` for `reason` at tick `now`, showing for `durationTicks`. A slot outside the six is ignored. */
+  flash(
+    slot: number,
+    reason: RefusalReason,
+    now: Tick,
+    durationTicks: number,
+  ): void {
     if (!Number.isInteger(slot) || slot < 1 || slot > SLOT_COUNT) {
       return;
     }
 
     this.kinds[slot] = flashKindOf(reason);
-    this.untilTicks[slot] = now + FLASH_TICKS;
+    this.untilTicks[slot] = now + durationTicks;
   }
 
   /** What `slot` flashes at tick `now`, or `none`. */

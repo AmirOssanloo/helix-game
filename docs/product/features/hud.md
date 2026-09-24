@@ -25,7 +25,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 ## Around the hero
 
 - **Floating orbs.** The three orb instances orbit the hero, matching the bar's order, so the player reads the buffer without looking down.
-- **Hit flash.** A unit that takes damage goes white for a moment, body and facing marker together. Like every flash it ends on a tick, so it holds while the simulation is paused.
+- **Hit flash.** A unit that takes damage goes white for a moment, body and facing marker together. Like every flash it ends on a tick, so it holds while the simulation is paused. How long it shows, like every feedback timing on this page, is a tunable the developer panel moves.
 - **Status icons.** A row of small icons above a unit, one per status on it — stun, slow, silence, and the rest — each an outlined square with its own glyph, so two statuses read apart at a glance. An icon is there while the status is and shows no duration.
 - **Damage numbers.** A hit raises a number above the unit it landed on that rises and fades over a second. It shows the amount that landed after mitigation, even where the health it removed was less. Further hits of the same type on that unit inside a short window add to that number instead of raising their own, so damage taken every tick reads as one number a window worth what the window cost; the number keeps the rise it began with, and the hit after it starts a fresh one. Each number takes the colour of its damage type — physical red, magical blue, pure gold — so the window is one per unit per type: a burn and an auto-attack on the same unit rise as two numbers, each in its own colour.
 - **Facing.** The hero's triangle points where the hero faces, which is what the turn rate acts on.

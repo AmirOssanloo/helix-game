@@ -4,9 +4,6 @@ import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_TEXT } from "./depth-bands";
 import type { Label, LabelFactory } from "./quad";
 
-/** How long a number rises before it is gone, in ticks: one second at thirty ticks a second. */
-export const FLOATING_NUMBER_TICKS = 30;
-
 /** The busiest fight the numbers are sized for: this many hits landing inside one second, each on a unit of its own. */
 export const FLOATING_NUMBER_HITS_A_SECOND = 200;
 
@@ -15,17 +12,15 @@ const FLOATING_NUMBER_MARGIN = 56;
 
 /**
  * How many numbers the set holds: every hit the bar lands inside one number's rise, each raising
- * its own, plus the margin. A number rises for a second, so that is the bar's hits a second.
- * Past this the oldest is recycled and counted. A presentation number, tuned here.
+ * its own, plus the margin. A number rises for the fade duration the tuning table sets, a second
+ * by default, so that is the bar's hits a second. A rise tuned longer than that recycles the
+ * oldest sooner, and counts it. A presentation number, tuned here.
  */
 export const FLOATING_NUMBER_COUNT =
   FLOATING_NUMBER_HITS_A_SECOND + FLOATING_NUMBER_MARGIN;
 
 /** How tall a number's glyphs are, in pixels a line. */
 export const FLOATING_NUMBER_SIZE = 28;
-
-/** How far a number rises up the screen over the whole of that, in pixels. */
-const RISE = 56;
 
 /** How far above where the point it was spawned at is drawn a number starts, in pixels. */
 const LIFT = 8;
@@ -46,6 +41,9 @@ const OPAQUE = 1;
 /** The slot a number was spawned into before any was, so a fresh set shows nothing. */
 const NOT_SPAWNED = 0;
 
+/** The shortest life a number is given, in ticks, so a fade tuned to nothing still divides by something. */
+const MIN_LIFE_TICKS = 1;
+
 /** The label a set of no labels hands back: there is nothing to write on and nothing to join. */
 export const NO_NUMBER = -1;
 
@@ -61,7 +59,9 @@ const FIRST_SPAWN = 1;
  * number stands up off the ground, so it keeps the world point it was spawned at and is placed
  * each frame where that point is drawn. A number holds no
  * clock of its own — its rise is the tick count plus the driver's fraction against the tick
- * it was spawned on, so it freezes with a paused simulation and replays the same.
+ * it was spawned on, so it freezes with a paused simulation and replays the same. How long it
+ * lives is fixed when it is spawned, from the fade duration the tuning table holds then; how
+ * far it rises is read each frame, so both follow a tuning change from the next hit on.
  *
  * Spawning walks the set in order, so the label it comes back to is always the one whose rise
  * began longest ago: more hits at once than the set holds recycles the oldest number early and
@@ -84,6 +84,9 @@ export class FloatingNumberViews {
 
   /** Per label: the tick its rise began on. */
   private readonly startTicks: Tick[];
+
+  /** Per label: how many ticks it rises and fades over, fixed when it was spawned. */
+  private readonly lifeTicks: number[];
 
   /** Per label: the world point it rises from, which is where the hit landed. */
   private readonly xs: number[];
@@ -116,6 +119,7 @@ export class FloatingNumberViews {
     this.labels = labels;
     this.placement = placement;
     this.startTicks = [];
+    this.lifeTicks = [];
     this.xs = [];
     this.ys = [];
     this.shownTexts = [];
@@ -128,6 +132,7 @@ export class FloatingNumberViews {
       label.alpha = OPAQUE;
       label.visible = false;
       this.startTicks.push(NOT_SPAWNED);
+      this.lifeTicks.push(MIN_LIFE_TICKS);
       this.xs.push(0);
       this.ys.push(0);
       this.shownTexts.push(null);
@@ -162,8 +167,8 @@ export class FloatingNumberViews {
 
   /**
    * Starts a number reading `amount`, rounded, in the colour of `damageType`, rising from
-   * (`x`, `y`) at tick `tick`, and hands back the label it took, for an `addTo` later. A set of
-   * no labels shows nothing, counts nothing, and hands back `NO_NUMBER`.
+   * (`x`, `y`) at tick `tick` for `lifeTicks` ticks, and hands back the label it took, for an
+   * `addTo` later. A set of no labels shows nothing, counts nothing, and hands back `NO_NUMBER`.
    */
   spawn(
     x: number,
@@ -171,6 +176,7 @@ export class FloatingNumberViews {
     amount: number,
     damageType: DamageType,
     tick: Tick,
+    lifeTicks: number,
   ): number {
     const index = this.cursor;
     const label = this.labels[index];
@@ -190,6 +196,7 @@ export class FloatingNumberViews {
     this.xs[index] = x;
     this.ys[index] = y;
     this.startTicks[index] = tick;
+    this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
     this.rising[index] = true;
     this.spawns[index] = this.nextSpawn;
     this.nextSpawn += 1;
@@ -236,8 +243,11 @@ export class FloatingNumberViews {
     }
   }
 
-  /** One frame: lifts and fades every number by how far through its life it is, and takes off the ones that finished. */
-  sync(tick: Tick, alpha: number): void {
+  /**
+   * One frame: lifts every number by `rise` pixels over its whole life and fades it by how far
+   * through that life it is, and takes off the ones that finished.
+   */
+  sync(tick: Tick, alpha: number, rise: number): void {
     const now = tick + alpha;
 
     for (let index = 0; index < this.labels.length; index += 1) {
@@ -248,7 +258,7 @@ export class FloatingNumberViews {
       }
 
       const elapsed = now - (this.startTicks[index] ?? now);
-      const progress = elapsed / FLOATING_NUMBER_TICKS;
+      const progress = elapsed / (this.lifeTicks[index] ?? MIN_LIFE_TICKS);
 
       if (progress >= 1) {
         this.rising[index] = false;
@@ -266,7 +276,7 @@ export class FloatingNumberViews {
         this.drawn,
       );
       label.x = this.drawn.x;
-      label.y = this.drawn.y - LIFT - RISE * risen;
+      label.y = this.drawn.y - LIFT - rise * risen;
       label.alpha = OPAQUE - risen;
       label.visible = true;
     }

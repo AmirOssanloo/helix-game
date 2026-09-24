@@ -8,7 +8,8 @@ import {
 } from "@content/public";
 import type { DevApi, GroundPick, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
-import type { Unit } from "@domain/public";
+import type { TuningKey, Unit } from "@domain/public";
+import { readTunable } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
@@ -147,6 +148,38 @@ describe("DevApi.submit", () => {
       tick: 0,
       timestamp: 1,
     });
+  });
+
+  describe("a feedback timing moved on its slider", () => {
+    /** Each feedback tunable, a value away from its default in the designer's units, and what the world holds for it in the units presentation reads. */
+    const FEEDBACK_CHANGES: readonly (readonly [TuningKey, number, number])[] =
+      [
+        ["hit_flash_duration", 0.5, 15],
+        ["refusal_flash_duration", 1, 30],
+        ["damage_number_rise", 120, 120],
+        ["damage_number_fade_duration", 2, 60],
+        ["cooldown_wedge_steps", 8, 8],
+        ["camera_follow_lerp", 0.25, 0.25],
+      ];
+
+    it.each(FEEDBACK_CHANGES)(
+      "lands %s in the log and in the world view's tuning state",
+      (key, value, converted) => {
+        const { api, world } = arrange();
+
+        api.submit({ kind: "set_tuning", key, value });
+        world.tick();
+
+        expect(world.log.commandAt(0)).toEqual({
+          kind: "set_tuning",
+          key,
+          value,
+          tick: 0,
+          timestamp: 1,
+        });
+        expect(readTunable(world.view.run.tuning, key)).toBe(converted);
+      },
+    );
   });
 
   it("changes the world only through the tick that consumes the command", () => {

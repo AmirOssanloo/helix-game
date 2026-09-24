@@ -55,6 +55,7 @@ const toSimulationUnits = (
     case "ticks":
     case "fraction":
     case "hertz":
+    case "pixels":
       return value;
   }
 };

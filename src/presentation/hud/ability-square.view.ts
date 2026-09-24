@@ -1,5 +1,6 @@
 import type { SlotDescriptor, Tick } from "@domain/public";
 import { ORB_IDS } from "@domain/public";
+import { clamp } from "@shared/public";
 import type { FrameSizes, Label, Quad, QuadFactory } from "../views/quad";
 import { SQUARE_SIZE } from "./hud-layout";
 import {
@@ -52,6 +53,25 @@ const HALF = 0.5;
 export const wedgeStepFor = (fraction: number, steps: number): number =>
   Math.min(steps, Math.max(1, Math.ceil(fraction * steps)));
 
+/**
+ * The wedge frame, one to `sheetSteps`, for `fraction` of the clock left when the sweep moves
+ * in `sweepSteps` steps: the sweep's step, drawn with the sheet's frame nearest to it. A sweep
+ * of the sheet's own count is the sheet frame by frame; fewer steps is a coarser sweep, and a
+ * count outside one to the sheet's is held inside it.
+ */
+export const wedgeFrameFor = (
+  fraction: number,
+  sweepSteps: number,
+  sheetSteps: number,
+): number => {
+  const steps = clamp(Math.floor(sweepSteps), 1, sheetSteps);
+
+  return Math.max(
+    1,
+    Math.round((wedgeStepFor(fraction, steps) * sheetSteps) / steps),
+  );
+};
+
 /** What the square shows: read from a descriptor and the spell table each frame. */
 export type SquareInput = Readonly<{
   descriptor: Readonly<SlotDescriptor>;
@@ -59,6 +79,8 @@ export type SquareInput = Readonly<{
   spellTint: number | null;
   tick: Tick;
   flash: FlashKind;
+  /** How many steps the wedge sweeps in, from the tuning table: at most the sheet's, which is the smoothest. */
+  sweepSteps: number;
 }>;
 
 /**
@@ -172,7 +194,7 @@ export class AbilitySquareView {
   }
 
   sync(input: SquareInput): void {
-    const { descriptor, tick, flash } = input;
+    const { descriptor, tick, flash, sweepSteps } = input;
     const empty = descriptor.abilityId === null;
     const greyed = descriptor.blockedBy !== null;
     const alpha = greyed ? GREYED_ALPHA : OPAQUE;
@@ -185,7 +207,7 @@ export class AbilitySquareView {
     this.fill.alpha = alpha;
     this.keyLabel.visible = !empty;
     this.keyLabel.alpha = alpha;
-    this.syncWedge(descriptor, tick);
+    this.syncWedge(descriptor, tick, sweepSteps);
     this.syncFlash(flash);
     this.syncCost(descriptor, alpha);
     this.syncLevel(descriptor, alpha);
@@ -221,7 +243,11 @@ export class AbilitySquareView {
     }
   }
 
-  private syncWedge(descriptor: Readonly<SlotDescriptor>, tick: Tick): void {
+  private syncWedge(
+    descriptor: Readonly<SlotDescriptor>,
+    tick: Tick,
+    sweepSteps: number,
+  ): void {
     const remaining = descriptor.readyAtTick - tick;
 
     if (remaining <= 0 || descriptor.clockTicks <= 0) {
@@ -230,8 +256,9 @@ export class AbilitySquareView {
       return;
     }
 
-    const step = wedgeStepFor(
+    const step = wedgeFrameFor(
       Math.min(1, remaining / descriptor.clockTicks),
+      sweepSteps,
       this.wedgeSteps,
     );
 

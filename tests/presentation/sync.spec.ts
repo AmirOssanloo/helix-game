@@ -20,6 +20,7 @@ import {
 import type { EntityId, Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  FEEDBACK_TIMINGS,
   FixedHash,
   frameAround,
   makeMapDef,
@@ -211,6 +212,7 @@ const cameraOn = (centre: { x: number; y: number }): FollowCamera => ({
   width: CANVAS_WIDTH,
   height: CANVAS_HEIGHT,
   setZoom: (): void => {},
+  setLerp: (): void => {},
   startFollow: (): void => {},
   setBounds: (): void => {},
   centerOn: (): void => {},
@@ -290,7 +292,11 @@ const arrangeArena = (): Arena => {
     syncOn: (x, y, alpha): void => {
       projection.toScreen(x, y, centre);
 
-      const camera = new WorldCamera(cameraOn(centre), projection);
+      const camera = new WorldCamera(
+        cameraOn(centre),
+        projection,
+        FEEDBACK_TIMINGS.cameraLerp,
+      );
 
       camera.screenRect(0, shown);
       camera.screenRect(VIEW_SCREEN_MARGIN, widened);

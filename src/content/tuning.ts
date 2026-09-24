@@ -15,6 +15,11 @@ import type { TuningDef } from "@domain/public";
  * counts per tick, and the orb tables hold what one held instance grants at each level:
  * Quartz health regeneration per second, Whorl a fraction of one of movement speed and a
  * fraction of one off every cooldown that starts while it is held, Ember attack damage.
+ * The feedback timings are read by presentation alone, through the world like the rest: how
+ * long a hit flash and a refusal flash show, in seconds, how far a damage number rises, in
+ * screen pixels, and over how many seconds it rises and fades, how many steps a cooldown
+ * wedge sweeps in, at most the wedge sheet's, and the fraction of the distance to the hero
+ * the camera closes each frame.
  * The world converts the table into per-tick rates,
  * ticks, and radians once at creation, and a `set_tuning` command changes a value
  * mid-session in these same units. A system reads a tunable through the world, never through
@@ -49,6 +54,12 @@ export const tuningTable = {
   chase_repath_interval: 0.5,
   ranged_hold_margin: 50,
   pack_activation_radius: 1600,
+  hit_flash_duration: 0.133,
+  refusal_flash_duration: 0.333,
+  damage_number_rise: 56,
+  damage_number_fade_duration: 1,
+  cooldown_wedge_steps: 64,
+  camera_follow_lerp: 0.1,
   "radius_class:0": 16,
   "radius_class:1": 27,
   "radius_class:2": 50,

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { WEDGE_STEPS } from "@content/public";
+import { tuningTable, WEDGE_STEPS } from "@content/public";
 import type { RandomState } from "@domain/public";
 import type { FloorView, ShapeAtlas } from "@presentation/public";
 import {
@@ -260,7 +260,11 @@ export class BenchScene extends Phaser.Scene {
     this.atlas.bake(this);
 
     const ground = new GroundLayer(this, VIEW_SCALE);
-    const camera = new WorldCamera(this.cameras.main, this.projection);
+    const camera = new WorldCamera(
+      this.cameras.main,
+      this.projection,
+      tuningTable.camera_follow_lerp,
+    );
 
     this.ground = ground;
     this.floor = createFloorView(

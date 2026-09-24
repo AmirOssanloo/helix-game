@@ -8,13 +8,16 @@ import {
   DEPTH_TEXT,
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
-  FLOATING_NUMBER_TICKS,
   NO_NUMBER,
   Projection,
 } from "@presentation/public";
 import type { ScreenPlacement } from "@presentation/public";
 import type { Vec2 } from "@shared/public";
-import { FLAT_PLACEMENT, LabelRecorder } from "../helpers";
+import { FEEDBACK_TIMINGS, FLAT_PLACEMENT, LabelRecorder } from "../helpers";
+
+/** How long a number lives and how far it rises, as a fresh world's tuning table sets them. */
+const FLOATING_NUMBER_TICKS = FEEDBACK_TIMINGS.numberLifeTicks;
+const RISE = FEEDBACK_TIMINGS.numberRise;
 
 /** Where a case's number rises from. */
 const SPAWN_X = 400;
@@ -79,7 +82,15 @@ const arrange = (
       amount = HIT_AMOUNT,
       tick = START,
       damageType: DamageType = "physical",
-    ): number => numbers.spawn(SPAWN_X, SPAWN_Y, amount, damageType, tick),
+    ): number =>
+      numbers.spawn(
+        SPAWN_X,
+        SPAWN_Y,
+        amount,
+        damageType,
+        tick,
+        FLOATING_NUMBER_TICKS,
+      ),
   };
 };
 
@@ -115,7 +126,7 @@ describe("the floating numbers over the arena", () => {
   it("show nothing at all until one is spawned", () => {
     const arranged = arrange(4);
 
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     expect(visible(arranged)).toHaveLength(0);
     expect(arranged.numbers.rises).toBe(0);
@@ -125,7 +136,7 @@ describe("the floating numbers over the arena", () => {
     const arranged = arrange(4);
 
     arranged.spawn();
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     const [number] = visible(arranged);
 
@@ -150,7 +161,7 @@ describe("the floating numbers over the arena", () => {
     const arranged = arrange(4);
 
     arranged.spawn();
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     const [number] = visible(arranged);
 
@@ -162,12 +173,12 @@ describe("the floating numbers over the arena", () => {
 
     expect(number.alpha).toBe(1);
 
-    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS / 2, NO_ALPHA);
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS / 2, NO_ALPHA, RISE);
 
     expect(number.y).toBeLessThan(top);
     expect(number.alpha).toBeCloseTo(HALF_WAY);
 
-    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA);
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA, RISE);
 
     expect(number.visible).toBe(false);
     expect(arranged.numbers.rises).toBe(0);
@@ -177,7 +188,7 @@ describe("the floating numbers over the arena", () => {
     const arranged = arrange(4);
 
     arranged.spawn();
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     const [number] = visible(arranged);
 
@@ -187,14 +198,14 @@ describe("the floating numbers over the arena", () => {
 
     const top = number.y;
 
-    arranged.numbers.sync(START, HALF_WAY);
+    arranged.numbers.sync(START, HALF_WAY, RISE);
 
     const halfway = number.y;
 
     expect(halfway).toBeLessThan(top);
 
     // A paused driver hands the same tick and the same fraction every frame.
-    arranged.numbers.sync(START, HALF_WAY);
+    arranged.numbers.sync(START, HALF_WAY, RISE);
 
     expect(number.y).toBe(halfway);
     expect(number.alpha).toBe(1 - HALF_WAY / FLOATING_NUMBER_TICKS);
@@ -208,7 +219,7 @@ describe("the floating numbers over the arena", () => {
       arranged.spawn();
     }
 
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     expect(arranged.numbers.size).toBe(size);
     expect(arranged.labels).toHaveLength(size);
@@ -220,7 +231,7 @@ describe("the floating numbers over the arena", () => {
     const arranged = arrange(4);
 
     arranged.spawn();
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     expect(visible(arranged)).toHaveLength(1);
 
@@ -257,12 +268,13 @@ describe("the numbers at the bar's busiest fight", () => {
           HIT_AMOUNT,
           "physical",
           tick,
+          FLOATING_NUMBER_TICKS,
         );
 
         seen.add(arranged.numbers.spawnAt(label));
       }
 
-      arranged.numbers.sync(tick, NO_ALPHA);
+      arranged.numbers.sync(tick, NO_ALPHA, RISE);
     }
 
     return seen;
@@ -307,7 +319,7 @@ describe("a number another hit joins", () => {
       ),
     ).toBe(true);
 
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     expect(visible(arranged)).toHaveLength(1);
     expect(arranged.labels[label]?.text).toBe(String(HIT_AMOUNT + JOIN_AMOUNT));
@@ -318,7 +330,7 @@ describe("a number another hit joins", () => {
     const arranged = arrange(4);
     const label = arranged.spawn();
 
-    arranged.numbers.sync(START, NO_ALPHA);
+    arranged.numbers.sync(START, NO_ALPHA, RISE);
 
     const number = arranged.labels[label];
 
@@ -329,7 +341,7 @@ describe("a number another hit joins", () => {
     const top = number.y;
 
     arranged.numbers.addTo(label, arranged.numbers.spawnAt(label), JOIN_AMOUNT);
-    arranged.numbers.sync(LATER, NO_ALPHA);
+    arranged.numbers.sync(LATER, NO_ALPHA, RISE);
 
     expect(number.y).toBeLessThan(top);
     expect(number.alpha).toBeCloseTo(1 - LATER / FLOATING_NUMBER_TICKS);
@@ -380,7 +392,7 @@ describe("a number another hit joins", () => {
     const arranged = arrange(4);
     const label = arranged.spawn();
 
-    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA);
+    arranged.numbers.sync(START + FLOATING_NUMBER_TICKS, NO_ALPHA, RISE);
 
     expect(
       arranged.numbers.addTo(
@@ -418,11 +430,18 @@ describe("a number in the isometric view", () => {
       const arranged = arrange(1, projection);
       const offsetsHere: number[] = [];
 
-      arranged.numbers.spawn(point.x, point.y, HIT_AMOUNT, "magical", START);
+      arranged.numbers.spawn(
+        point.x,
+        point.y,
+        HIT_AMOUNT,
+        "magical",
+        START,
+        FLOATING_NUMBER_TICKS,
+      );
       projection.toScreen(point.x, point.y, drawn);
 
       for (const ticks of THROUGH_THE_RISE) {
-        arranged.numbers.sync(START + ticks, NO_ALPHA);
+        arranged.numbers.sync(START + ticks, NO_ALPHA, RISE);
 
         const [number] = visible(arranged);
 

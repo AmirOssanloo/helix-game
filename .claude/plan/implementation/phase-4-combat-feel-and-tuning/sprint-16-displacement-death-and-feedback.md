@@ -68,7 +68,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Layer | content, presentation, devtools, tests |
 | Size | 0.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Flash duration, number rise distance and fade duration, refusal flash duration, wedge sweep smoothing, and the camera lerp as tunables in the tuning table with panel sliders. Presentation reads them through the world view's tuning state, so a change is in the log.
 
@@ -79,6 +79,8 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 - `tests/simulation/dev-api.spec.ts` extended.
 
 **Definition of done:** Every change · A developer-panel control · Anything under `src/presentation`.
+
+**Note, 2026-09-24: six feedback timings in the tuning table, read through the world view.** The tuning table gains `hit_flash_duration` 0.133 s, `refusal_flash_duration` 0.333 s, `damage_number_rise` 56 pixels, `damage_number_fade_duration` 1 s, `cooldown_wedge_steps` 64, and `camera_follow_lerp` 0.1. Each default is the constant it replaces, so nothing on screen changes until a slider moves. A new `pixels` unit is read as written. The tuning group makes a slider for each one with no change of its own, and a move is a `set_tuning` in the log like any other. Presentation reads them from `world.run.tuning` and never from the content module. The hit flash and the number's life are read as the hit is shown. The refusal flash is read as the refusal is flashed, by the HUD and the mapper. The rise, the wedge's steps, and the lerp are read each frame. A flash or a number already showing keeps the length it began with. The constants `HIT_FLASH_TICKS`, `FLASH_TICKS`, `FLOATING_NUMBER_TICKS`, the rise, and `FOLLOW_LERP` are gone. "Wedge sweep smoothing" is read as the number of steps the sweep moves in, held to the 64-frame sheet (`wedgeFrameFor`). That reading, the key names, and when a change applies are decided provisionally in [Q34](../backlog/open-questions.md). The content version changes with the table, so the two stored replays are re-stamped. Both still replay identically, because nothing in the simulation reads the new keys. The presentation, developer panel, HUD, and map pages are updated. Tests: `tests/simulation/dev-api.spec.ts` gains a case per key, checking the log and the converted value in the world view. `tests/presentation/hud.spec.ts` gains a tuned refusal flash and a tuned wedge. `tests/presentation/hit-feedback.spec.ts` gains a tuned hit flash and a tuned number life. `tests/presentation/world-camera.spec.ts` is new, for the lerp. Specs read the defaults through `FEEDBACK_TIMINGS` in the helpers. `pnpm check` and `pnpm test:budget` green. The slider walk by eye and the render benchmark after the view change are deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -108,7 +110,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Check | Result |
 | --- | --- |
 | Every displacement and death row green by name | |
-| Actual days per ticket | T01 0.4 · T02 0.4 · T03 · T04 |
+| Actual days per ticket | T01 0.4 · T02 0.4 · T03 0.3 · T04 |
 
 ## Risks in this sprint
 

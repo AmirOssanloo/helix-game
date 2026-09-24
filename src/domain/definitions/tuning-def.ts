@@ -51,6 +51,12 @@ export type TuningKey =
   | "chase_repath_interval"
   | "ranged_hold_margin"
   | "pack_activation_radius"
+  | "hit_flash_duration"
+  | "refusal_flash_duration"
+  | "damage_number_rise"
+  | "damage_number_fade_duration"
+  | "cooldown_wedge_steps"
+  | "camera_follow_lerp"
   | RadiusClassKey
   | QuartzRegenKey
   | WhorlSpeedKey
@@ -64,7 +70,8 @@ export type TuningDef = Readonly<Record<TuningKey, number>>;
  * The designer's unit of a tunable. It decides how a value is converted when the table is
  * copied into a world and when a tuning command changes it: a per-second rate becomes a
  * per-tick rate, seconds become whole ticks, degrees become radians, and the turn rate's
- * radians per spec step become radians per tick. Every other unit is read as written.
+ * radians per spec step become radians per tick. Every other unit is read as written,
+ * pixels included: a pixel is a length on the screen, which only presentation reads.
  */
 export type TuningUnit =
   | "count"
@@ -75,7 +82,8 @@ export type TuningUnit =
   | "degrees"
   | "radians_per_turn_step"
   | "fraction"
-  | "hertz";
+  | "hertz"
+  | "pixels";
 
 /** The unit of every tunable, which is the schema of the table. */
 export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
@@ -107,6 +115,12 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   chase_repath_interval: "seconds",
   ranged_hold_margin: "world_units",
   pack_activation_radius: "world_units",
+  hit_flash_duration: "seconds",
+  refusal_flash_duration: "seconds",
+  damage_number_rise: "pixels",
+  damage_number_fade_duration: "seconds",
+  cooldown_wedge_steps: "count",
+  camera_follow_lerp: "fraction",
   "radius_class:0": "world_units",
   "radius_class:1": "world_units",
   "radius_class:2": "world_units",

@@ -7,8 +7,6 @@ import {
   DAMAGE_NUMBER_TINTS,
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
-  FLOATING_NUMBER_TICKS,
-  HIT_FLASH_TICKS,
   HIT_NUMBER_MERGE_TICKS,
   HitFlashes,
   HitNumbers,
@@ -17,11 +15,13 @@ import {
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  FEEDBACK_TIMINGS,
   FLAT_PLACEMENT,
   LabelRecorder,
   makeWorld,
   spawnHero,
   spawnUnit,
+  submit,
   unitIdOf,
 } from "../helpers";
 
@@ -43,6 +43,17 @@ const DRIP = 3;
 const LABELS = 8;
 
 const NO_ALPHA = 0;
+
+/** How long a flash shows, how long a number lives, and how far it rises, as a fresh world's tuning table sets them. */
+const HIT_FLASH_TICKS = FEEDBACK_TIMINGS.hitFlashTicks;
+const FLOATING_NUMBER_TICKS = FEEDBACK_TIMINGS.numberLifeTicks;
+const RISE = FEEDBACK_TIMINGS.numberRise;
+
+/** A hit flash tuned to a whole second, and a number's life tuned to two, in seconds and in ticks. */
+const TUNED_FLASH_SECONDS = 1;
+const TUNED_FLASH_TICKS = 30;
+const TUNED_LIFE_SECONDS = 2;
+const TUNED_LIFE_TICKS = 60;
 
 type Arranged = {
   world: Simulation;
@@ -143,7 +154,7 @@ describe("what a drained hit shows", () => {
     const arranged = arrange();
 
     arranged.hit(arranged.dummyId, HIT_AMOUNT, 0);
-    arranged.numbers.sync(0, NO_ALPHA);
+    arranged.numbers.sync(0, NO_ALPHA, RISE);
 
     const [number] = visible(arranged);
 
@@ -167,6 +178,55 @@ describe("what a drained hit shows", () => {
     );
   });
 
+  it("raises a tuned flash for the tuned length from the next hit, read through the world view", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "set_tuning",
+      tick: 0,
+      timestamp: 1,
+      key: "hit_flash_duration",
+      value: TUNED_FLASH_SECONDS,
+    });
+    arranged.world.tick();
+    arranged.hit(arranged.dummyId, HIT_AMOUNT, 1);
+
+    expect(
+      arranged.flashes.isFlashing(arranged.dummyId, HIT_FLASH_TICKS + 1),
+    ).toBe(true);
+    expect(
+      arranged.flashes.isFlashing(arranged.dummyId, TUNED_FLASH_TICKS),
+    ).toBe(true);
+    expect(
+      arranged.flashes.isFlashing(arranged.dummyId, TUNED_FLASH_TICKS + 1),
+    ).toBe(false);
+  });
+
+  it("raises a number that lives and rises as the tuning table says when it is raised", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "set_tuning",
+      tick: 0,
+      timestamp: 1,
+      key: "damage_number_fade_duration",
+      value: TUNED_LIFE_SECONDS,
+    });
+    arranged.world.tick();
+    arranged.hit(arranged.dummyId, HIT_AMOUNT, 1);
+    arranged.numbers.sync(1 + FLOATING_NUMBER_TICKS, NO_ALPHA, RISE);
+
+    const [number] = visible(arranged);
+
+    expect(number?.alpha).toBeCloseTo(
+      1 - FLOATING_NUMBER_TICKS / TUNED_LIFE_TICKS,
+    );
+
+    arranged.numbers.sync(1 + TUNED_LIFE_TICKS, NO_ALPHA, RISE);
+
+    expect(visible(arranged)).toHaveLength(0);
+  });
+
   it("keeps the flash beside the views and writes nothing on the unit", () => {
     const arranged = arrange();
     const before = structuredClone(arranged.dummy);
@@ -182,7 +242,7 @@ describe("what a drained hit shows", () => {
 
     releaseUnit(arranged.world.state, arranged.dummyId);
     arranged.hit(arranged.dummyId, HIT_AMOUNT, 0);
-    arranged.numbers.sync(0, NO_ALPHA);
+    arranged.numbers.sync(0, NO_ALPHA, RISE);
 
     expect(visible(arranged)).toHaveLength(0);
     expect(arranged.numbers.rises).toBe(0);
@@ -216,7 +276,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
       arranged.hit(arranged.dummyId, DRIP, tick);
     }
 
-    arranged.numbers.sync(HIT_NUMBER_MERGE_TICKS, NO_ALPHA);
+    arranged.numbers.sync(HIT_NUMBER_MERGE_TICKS, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -230,7 +290,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
 
     arranged.hit(arranged.dummyId, DRIP, 0);
     arranged.hit(arranged.dummyId, DRIP, HIT_NUMBER_MERGE_TICKS);
-    arranged.numbers.sync(HIT_NUMBER_MERGE_TICKS, NO_ALPHA);
+    arranged.numbers.sync(HIT_NUMBER_MERGE_TICKS, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -245,7 +305,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     const arranged = arrange();
 
     arranged.hit(arranged.dummyId, DRIP, 0);
-    arranged.numbers.sync(0, NO_ALPHA);
+    arranged.numbers.sync(0, NO_ALPHA, RISE);
 
     const [number] = visible(arranged);
 
@@ -256,7 +316,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     const top = number.y;
 
     arranged.hit(arranged.dummyId, DRIP, 1);
-    arranged.numbers.sync(1, NO_ALPHA);
+    arranged.numbers.sync(1, NO_ALPHA, RISE);
 
     expect(number.text).toBe(String(DRIP * 2));
     expect(number.y).toBeLessThan(top);
@@ -268,7 +328,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
 
     arranged.hit(arranged.dummyId, HIT_AMOUNT, 0);
     arranged.hit(arranged.otherId, DRIP, 0);
-    arranged.numbers.sync(0, NO_ALPHA);
+    arranged.numbers.sync(0, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -286,7 +346,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     arranged.hit(arranged.dummyId, DRIP, 0, "magical");
     arranged.hit(arranged.dummyId, HIT_AMOUNT, 1, "physical");
     arranged.hit(arranged.dummyId, DRIP, 2, "magical");
-    arranged.numbers.sync(2, NO_ALPHA);
+    arranged.numbers.sync(2, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -305,7 +365,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     }
 
     arranged.hit(arranged.otherId, HIT_AMOUNT, burning);
-    arranged.numbers.sync(burning, NO_ALPHA);
+    arranged.numbers.sync(burning, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -337,7 +397,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     }
 
     arranged.hit(arranged.dummyId, DRIP, 1);
-    arranged.numbers.sync(1, NO_ALPHA);
+    arranged.numbers.sync(1, NO_ALPHA, RISE);
 
     const dripping = visible(arranged).filter(
       (label) => label.text === String(DRIP),
@@ -360,7 +420,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
     }
 
     arranged.hit(heirId, DRIP, 1);
-    arranged.numbers.sync(1, NO_ALPHA);
+    arranged.numbers.sync(1, NO_ALPHA, RISE);
 
     const shown = visible(arranged);
 
@@ -413,7 +473,7 @@ describe("a second of the bar's busiest fight", () => {
         expect(arranged.flashes.isFlashing(id, tick)).toBe(true);
       }
 
-      arranged.numbers.sync(tick, NO_ALPHA);
+      arranged.numbers.sync(tick, NO_ALPHA, RISE);
     }
 
     expect(visible(arranged)).toHaveLength(FLOATING_NUMBER_HITS_A_SECOND);

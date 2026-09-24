@@ -32,6 +32,7 @@ const isWhole = (key: TuningKey): boolean => {
     case "degrees":
     case "radians_per_turn_step":
     case "fraction":
+    case "pixels":
       return false;
   }
 };

@@ -1,14 +1,11 @@
 import type { DamageType, DomainEvent, Tick } from "@domain/public";
-import { DAMAGE_TYPES, UNIT_CAPACITY } from "@domain/public";
+import { DAMAGE_TYPES, readTunable, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import { unpackIndex } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { FloatingNumberViews } from "./floating-number.view";
 import { NO_NUMBER } from "./floating-number.view";
 import { interpolate } from "./quad";
-
-/** How long a hit flash shows, in ticks: a seventh of a second at thirty ticks a second. */
-export const HIT_FLASH_TICKS = 4;
 
 /**
  * How long after a number starts rising a further hit on the same unit joins it rather than
@@ -33,9 +30,11 @@ const NO_SPAWN = 0;
  * frame, so the flash lives beside the views rather than on them, and a view bound halfway
  * through a flash picks it up where it stands.
  *
- * The end is a tick, not a frame count, so a flash pauses with the simulation. The id is kept
- * beside the tick because a slot is reused: a unit that took the slot of one that was hit does
- * not inherit its flash.
+ * The end is a tick, not a frame count, so a flash pauses with the simulation. How long it is
+ * comes with the hit, from the tuning table, so a flash already showing keeps the length it
+ * began with and a tuning change shows from the next hit. The id is kept beside the tick
+ * because a slot is reused: a unit that took the slot of one that was hit does not inherit its
+ * flash.
  */
 export class HitFlashes {
   private readonly ids: number[] = [];
@@ -49,8 +48,8 @@ export class HitFlashes {
     }
   }
 
-  /** Starts a flash on `id` at tick `now`. An id outside the pool is ignored. */
-  flash(id: EntityId, now: Tick): void {
+  /** Starts a flash on `id` at tick `now`, showing for `durationTicks`. An id outside the pool is ignored. */
+  flash(id: EntityId, now: Tick, durationTicks: number): void {
     const slot = unpackIndex(id);
 
     if (slot < 0 || slot >= this.ids.length) {
@@ -58,7 +57,7 @@ export class HitFlashes {
     }
 
     this.ids[slot] = id;
-    this.untilTicks[slot] = now + HIT_FLASH_TICKS;
+    this.untilTicks[slot] = now + durationTicks;
   }
 
   /** Whether `id` is flashing at tick `now`. */
@@ -115,8 +114,8 @@ export class HitNumbers {
   /**
    * Shows `amount` of `damageType` on `id` at (`x`, `y`) on tick `now`: added to the number of
    * that type already rising for it where one began inside the window and the set still has
-   * it, and raised as a number of its own where it did not. An id outside the pool always
-   * raises its own, since there is nowhere to remember it.
+   * it, and raised as a number of its own, living `lifeTicks`, where it did not. An id outside
+   * the pool always raises its own, since there is nowhere to remember it.
    */
   show(
     id: EntityId,
@@ -125,12 +124,13 @@ export class HitNumbers {
     amount: number,
     damageType: DamageType,
     now: Tick,
+    lifeTicks: number,
     numbers: FloatingNumberViews,
   ): void {
     const slot = unpackIndex(id);
 
     if (slot < 0 || slot >= UNIT_CAPACITY) {
-      numbers.spawn(x, y, amount, damageType, now);
+      numbers.spawn(x, y, amount, damageType, now, lifeTicks);
 
       return;
     }
@@ -148,7 +148,7 @@ export class HitNumbers {
       return;
     }
 
-    const label = numbers.spawn(x, y, amount, damageType, now);
+    const label = numbers.spawn(x, y, amount, damageType, now, lifeTicks);
 
     this.ids[entry] = label === NO_NUMBER ? NONE : id;
     this.labels[entry] = label;
@@ -174,7 +174,9 @@ export class HitNumbers {
  * number of its own or added to the one of the same type already rising for that unit. The
  * number is shown at the unit as it is drawn this frame, lifted clear of its body, and reads
  * the amount that landed after mitigation, which is the number the event carries even where
- * the health it removed was less. Every other kind is
+ * the health it removed was less. How long the flash shows and how long the number lives are
+ * read from the world view's tuning state as the event is shown, so a tuning change is seen
+ * from the next hit and is in the input log like any other. Every other kind is
  * nothing to look at here; the HUD reads the ones about the squares.
  *
  * A unit already gone when the event is read — released inside the same tick — flashes nothing
@@ -202,7 +204,11 @@ export const showHit = (
     return;
   }
 
-  flashes.flash(event.unitId, event.tick);
+  flashes.flash(
+    event.unitId,
+    event.tick,
+    readTunable(world.run.tuning, "hit_flash_duration"),
+  );
   hitNumbers.show(
     event.unitId,
     interpolate(unit.prev.x, unit.curr.x, alpha),
@@ -210,6 +216,7 @@ export const showHit = (
     event.amount,
     event.damageType,
     event.tick,
+    readTunable(world.run.tuning, "damage_number_fade_duration"),
     numbers,
   );
 };

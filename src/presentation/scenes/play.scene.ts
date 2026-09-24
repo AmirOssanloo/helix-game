@@ -1,6 +1,10 @@
 import Phaser from "phaser";
 import type { DomainEvent } from "@domain/public";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
+import {
+  createCandidateBuffer,
+  readTunable,
+  UNIT_CAPACITY,
+} from "@domain/public";
 import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { EventReader, WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
@@ -9,6 +13,7 @@ import { CameraFrame, VIEW_SCREEN_MARGIN } from "../camera/camera-frame";
 import { GroundLayer } from "../camera/ground-layer";
 import { Projection, VIEW_SCALE } from "../camera/projection";
 import { WorldCamera } from "../camera/world-camera";
+import { refusalFlashTicks } from "../hud/hud";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
 import type { CameraLens, InputIntents } from "../input/input-ports";
@@ -155,7 +160,11 @@ export class PlayScene extends Phaser.Scene {
   create(): void {
     const projection = this.projection;
     const ground = new GroundLayer(this, VIEW_SCALE);
-    const camera = new WorldCamera(this.cameras.main, projection);
+    const camera = new WorldCamera(
+      this.cameras.main,
+      projection,
+      readTunable(this.context.world.run.tuning, "camera_follow_lerp"),
+    );
     // A quad on the ground is written in world coordinates; one standing up is placed in screen ones.
     const makeQuad: QuadFactory = (frame) =>
       ground.add(
@@ -175,7 +184,12 @@ export class PlayScene extends Phaser.Scene {
     const definitions = unitDefinitionsOf(this.context.world);
     const intents: InputIntents = {
       slotRefused: (slot, reason): void => {
-        this.context.flashes.flash(slot, reason, this.context.driver.nextTick);
+        this.context.flashes.flash(
+          slot,
+          reason,
+          this.context.driver.nextTick,
+          refusalFlashTicks(this.context.world),
+        );
       },
     };
     const lens = cameraLens(this.cameras.main, projection);
@@ -270,6 +284,7 @@ export class PlayScene extends Phaser.Scene {
     const world = this.context.world;
     const alpha = this.context.driver.alpha;
 
+    stage.camera.setLerp(readTunable(world.run.tuning, "camera_follow_lerp"));
     followHero(stage.camera, world, alpha);
 
     if (world.map.mapId !== stage.boundMapId) {
@@ -309,7 +324,11 @@ export class PlayScene extends Phaser.Scene {
     );
     syncProjectileViews(stage.projectiles, world, frame, alpha);
     stage.orbs.sync(world, alpha);
-    stage.numbers.sync(world.tick, alpha);
+    stage.numbers.sync(
+      world.tick,
+      alpha,
+      readTunable(world.run.tuning, "damage_number_rise"),
+    );
     stage.mapper.syncCursor();
     this.syncPreview(stage);
     stage.overlays.sync(
