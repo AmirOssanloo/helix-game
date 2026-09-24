@@ -120,7 +120,7 @@ type ShapeKind = ShapeDef["kind"];
  */
 const RING_COUNT = 320;
 const PATH_SEGMENT_COUNT = 512;
-const BLOCKED_CELL_COUNT = 1024;
+const BLOCKED_CELL_COUNT = 2048;
 const HASH_CELL_COUNT = 256;
 const AREA_COUNT = 64;
 const STATE_LABEL_COUNT = 256;
@@ -443,22 +443,36 @@ class PathLines {
   }
 }
 
-/** Every blocked cell of the hero's radius class inside the camera rectangle, shaded. */
+/**
+ * Every blocked cell of the hero's radius class drawn on screen, shaded. The camera rectangle
+ * is the box around the screen's unprojected corners, about twice what the screen shows, so a
+ * blocked cell inside it is shaded only when its centre is drawn inside `screen`.
+ */
 class BlockedCells {
   private readonly run: QuadRun;
 
   private readonly scalePerUnit: number;
 
-  constructor(quads: readonly Quad[], frameWidth: number) {
+  private readonly placement: ScreenPlacement;
+
+  /** Scratch for where a cell's centre is drawn this frame. */
+  private readonly drawn: Vec2 = { x: 0, y: 0 };
+
+  constructor(
+    quads: readonly Quad[],
+    frameWidth: number,
+    placement: ScreenPlacement,
+  ) {
     this.run = new QuadRun(quads);
     this.scalePerUnit = 1 / frameWidth;
+    this.placement = placement;
   }
 
   get misses(): number {
     return this.run.misses;
   }
 
-  sync(world: WorldView, rect: Readonly<Rect>): void {
+  sync(world: WorldView, rect: Readonly<Rect>, screen: Readonly<Rect>): void {
     const heroId = world.run.heroId;
     const hero = heroId === null ? null : world.map.units.resolve(heroId);
 
@@ -467,6 +481,7 @@ class BlockedCells {
         world.map.walkability,
         radiusClassOf(world.map.walkability, hero.collisionRadius),
         rect,
+        screen,
       );
     }
 
@@ -481,7 +496,9 @@ class BlockedCells {
     grid: WalkabilityView,
     radiusClass: number,
     rect: Readonly<Rect>,
+    screen: Readonly<Rect>,
   ): void {
+    const drawn = this.drawn;
     const minColumn = Math.max(0, columnOf(grid, rect.minX));
     const maxColumn = Math.min(grid.columns - 1, columnOf(grid, rect.maxX));
     const minRow = Math.max(0, rowOf(grid, rect.minY));
@@ -494,14 +511,28 @@ class BlockedCells {
           continue;
         }
 
+        const x = cellCentreX(grid, column);
+        const y = cellCentreY(grid, row);
+
+        this.placement.toScreen(x, y, drawn);
+
+        if (
+          drawn.x < screen.minX ||
+          drawn.x > screen.maxX ||
+          drawn.y < screen.minY ||
+          drawn.y > screen.maxY
+        ) {
+          continue;
+        }
+
         const quad = this.run.take();
 
         if (quad === null) {
           return;
         }
 
-        quad.x = cellCentreX(grid, column);
-        quad.y = cellCentreY(grid, row);
+        quad.x = x;
+        quad.y = y;
         quad.rotation = 0;
         quad.scale = scale;
         quad.tint = BLOCKED_TINT;
@@ -1089,6 +1120,7 @@ export class DebugOverlays {
     this.blocked = new BlockedCells(
       makeQuads(BLOCKED_CELL_COUNT, CELL_FRAME, makeQuad),
       frameSizes(CELL_FRAME),
+      placement,
     );
     this.hash = new HashCells(
       makeQuads(HASH_CELL_COUNT, CELL_OUTLINE_FRAME, makeQuad),
@@ -1125,10 +1157,16 @@ export class DebugOverlays {
     );
   }
 
-  /** One frame: each overlay that is on reads the world inside `rect` and writes its quads; each that is off hides once and is left alone. */
+  /**
+   * One frame: each overlay that is on reads the world inside `rect` and writes its quads; each
+   * that is off hides once and is left alone. `screen` is the screen rectangle, before the
+   * camera's scroll and widened past a cell's drawn half-width, that the walkability overlay
+   * keeps to.
+   */
   sync(
     world: WorldView,
     rect: Readonly<Rect>,
+    screen: Readonly<Rect>,
     alpha: number,
     toggles: Readonly<OverlayToggles>,
   ): void {
@@ -1173,7 +1211,7 @@ export class DebugOverlays {
     }
 
     if (toggles.walkabilityGrid) {
-      this.blocked.sync(world, rect);
+      this.blocked.sync(world, rect, screen);
     } else {
       this.blocked.hide();
     }

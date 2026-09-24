@@ -104,7 +104,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Layer | presentation, tests |
 | Size | 0.25 |
 | Depends on | P3-S23-T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** The blocked-cell overlay binds from a pool of 1024 quads over the camera's world rectangle. Since the view is isometric, that rectangle is the box around the screen's unprojected corners, about twice the area the screen shows, and with the arena's obstacles in it the pool runs out: in Chrome, with **Walkability grid** on at the spawn point, view misses rise every frame and part of an obstacle is left unshaded. Size the pool for the box, or bind only the cells whose diamonds fall on screen, whichever keeps the overlay free of misses without a per-frame cost.
 
@@ -118,6 +118,8 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 
 > Unplanned, 2026-09-23: found walking P3-S24-T02. It dates from sprint 23's view, not from the floor tile, and is its own ticket so the floor change stays one thing.
 
+> Closed 2026-09-23: the overlay still reads the blocked cells from the camera's world box, and now shades one only when its centre is drawn inside the screen rectangle the floor is laid over, 64 pixels past the canvas. Across every camera position over the arena, the box holds up to 2743 blocked cells of the hero's radius class and the screen at most 1531, by the corridor and the east post, so the pool is 2048. The per-cell cost is one projection of a blocked cell's centre, nothing allocated. In Chrome at the spawn point with **Walkability grid** on, view misses stay at 0 and every obstacle on screen is shaded to the screen's edge. The developer tools page says the cell overlays keep to the screen.
+
 ---
 
 ## Sprint exit
@@ -128,7 +130,7 @@ The arena as it will stay: the maintainer's floor, numbers and icons standing ov
 | Render benchmark: fps, render ms, draws, heap, on this branch and before P3-S23-T01 | Chrome on the Apple M1, 30 s each, heap sampled every second. This branch, bench through the ground layer and floor: 60 fps, render 0.9 to 1.5 ms, 1 draw, heap a flat sawtooth 111 to 118 MB; with `?textures=default`, 16 texture units: 60 fps, 1.3 ms, 1 draw, heap 132 to 144 MB. `09dbd91`, the commit before P3-S23-T01, top-down: 60 fps, 0.6 to 0.9 ms, 1 draw, heap 192 to 215 MB; with `?textures=default`: 60 fps, 0.9 ms, 1 draw, heap 226 to 250 MB. Render time is up about half a millisecond for the floor's tiles and the two containers, well under the 6 ms bar |
 | The phase 2 gate session replays identically | Yes. `notes/2026-09-23-phase-2-gate-session.json` replayed in Node on this tree and on `09dbd91`, stamped with each tree's content version, since the only content change between them is the atlas frame list: 2020 ticks each, and a SHA-256 of run scope and every unit, projectile, effect, and zone slot at every tick matches, `61f36e1e…` |
 | The floor tile in the arena, by eye | The maintainer, 2026-09-23: approved after the seam fix |
-| Actual days per ticket | T01 0.1 · T02 0.5 · T03 0.3 · T04 |
+| Actual days per ticket | T01 0.1 · T02 0.5 · T03 0.3 · T04 0.2. Sized 3.25 with T04, done in 1.1 |
 
 ## Risks in this sprint
 

@@ -79,6 +79,8 @@ The rings are on from the first line of code, in every build, because the cost o
 
 Overlays — collision discs, bound radii, the facing triangle and action cone, attack and aggro ranges, path segments, spell shapes, unit state labels — are drawn by `PlayScene` from a dedicated pool of quads at depth 90, plus `BitmapText` for labels. Each overlay has a toggle; an overlay that is off binds no quads. They obey every rule a view obeys: atlas frames only, no `Graphics`, no allocation during play.
 
+An overlay that shades cells keeps to what the screen shows, not the camera's world rectangle. That rectangle is the box around the screen's unprojected corners, about twice the area on screen, so the walkability overlay shades a blocked cell only when its centre is drawn inside the screen rectangle, widened past a cell's half-width.
+
 ---
 
 ## The atlas download
@@ -132,6 +134,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Rings in production | Always on; only the panel is stripped |
 | Overlays | Quads from a dedicated pool at depth 90 in `PlayScene`, plus `BitmapText`; one toggle each, on `DevApi`, presentation state and never a command |
 | Overlay rules | The same as views: atlas frames only, no `Graphics`, no allocation during play |
+| Cell overlays | Bound from the camera's world rectangle, drawn only where a cell's centre falls inside the widened screen rectangle |
 | Atlas download | A `DevApi` hook returning the baked atlas as a PNG |
 
 ---

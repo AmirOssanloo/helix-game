@@ -84,7 +84,7 @@ const STATUS_ICON_VIEW_COUNT = 64;
 /** Floor tiles: enough to cover the canvas and its margin. A presentation number. */
 const FLOOR_TILE_COUNT = 320;
 
-/** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge. */
+/** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge; the walkability overlay keeps to the same rectangle. */
 const FLOOR_MARGIN = 64;
 
 /** Floating numbers: how many hits a busy fight lands inside one number's rise. Past this the oldest is recycled. */
@@ -320,7 +320,13 @@ export class PlayScene extends Phaser.Scene {
     stage.numbers.sync(world.tick, alpha);
     stage.mapper.syncCursor();
     this.syncPreview(stage);
-    stage.overlays.sync(world, this.rect, alpha, this.context.overlays);
+    stage.overlays.sync(
+      world,
+      this.rect,
+      this.screen,
+      alpha,
+      this.context.overlays,
+    );
     stage.ground.keepSorted();
     this.context.rings.viewMisses.write(
       stage.units.misses +
