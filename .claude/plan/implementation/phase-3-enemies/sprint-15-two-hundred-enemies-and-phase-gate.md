@@ -54,7 +54,7 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Layer | tests |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Extend `tests/simulation/stress.spec.ts`: two hundred enemies with real AI chasing the hero across the arena with one hundred projectiles in flight for a fixed number of ticks, mean tick under 4 ms; the 300-unit random-orders case stays as a second test. Both in CI.
 
@@ -64,6 +64,13 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 **Tests:** as above.
 
 **Definition of done:** Every change.
+
+**Note, 2026-09-24: the case, its mean, and what the mean measures.** The second case in `tests/simulation/stress.spec.ts` spawns ten grunt packs and ten runner packs of ten on a ring 1100 units round the centre, past every aggro radius, and strikes each enemy once from the hero so all two hundred set off across the arena with their real AI. The hero walks a 600-unit square round the centre, turning for the next corner on arrival or after a second, since the crowd slows it to a push; it is healed every tick. A hundred linear shots from the hero's facing are kept in flight, and their hit runs the damage path for no damage so the live cap stays full. 180 ticks of warm-up, 300 measured. Besides the mean it asserts that all two hundred are in Chase or Attack on every measured tick, the hero is alive, and no pool missed. The first shape tried, T01's ring of 600, engulfed the hero at once, the crowd pushed it north without it ever walking its loop, and packs leashed home; spawning further out and keeping the loop inside the grunts' leash fixed both.
+
+- **The mean, on the Apple M1 laptop, quiet, five runs:** chase 1.89 to 1.98 ms, worst tick 3.0 to 3.8; the 300-unit case beside it 1.75 to 1.98 ms. Both under 4.
+- **What the mean measures.** The same scenario built with Vite and run in Node, as T01 measured, reads 0.33 to 0.36 ms mean with the development asserts on and 0.28 without. The test's figure is about five times the game's, the cost of the Vitest module runner T01 found; the test is a conservative bar, not the game's number.
+- **Under load it fails, and so does the 300-unit case.** With two other repositories' test suites and a virtual machine holding the laptop, load average 30 to 50 and the kernel throttling, both cases read 6 to 17 ms mean with 100 to 275 ms single ticks. This is the wall-clock bar the performance standard chose, unchanged; the stress group already runs alone and last for that reason.
+- **CI and the reference laptop.** Nothing is pushed from this ticket, so CI's figure comes with the next push; the last CI run took the 300-unit case in 991 ms against about 1100 here, so CI is not the slower machine. The reference-laptop half is the maintainer's deferral to the phase 5 gate. Both are open under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -113,9 +120,9 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Check | Result |
 | --- | --- |
 | Readouts per browser at 200 enemies and 100 projectiles | |
-| Stress test mean tick | |
+| Stress test mean tick | 1.89 to 1.98 ms at 200 chasing and 100 projectiles, 1.75 to 1.98 ms at 300 on random orders, under Vitest on the Apple M1 laptop, quiet; 0.33 ms as a bundle. CI and the reference laptop wait on a person |
 | Milestone M6 | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 0.2 · T03 · T04 |
 
 ## Risks in this sprint
 
