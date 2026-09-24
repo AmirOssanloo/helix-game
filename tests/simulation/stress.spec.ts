@@ -94,8 +94,13 @@ const PACK_RING = 1100;
 /** The live projectiles the performance standard's live cap names. */
 const PROJECTILE_COUNT = 100;
 
-/** Ticks run before measuring the chase: long enough for the runners to reach the hero and the shots to fill. */
-const CHASE_WARM_UP_TICKS = 180;
+/**
+ * Ticks run before measuring the chase: long enough for the runners to reach the hero and the
+ * shots to fill, and no longer. The crowd shoves the hero off its loop as the fight goes on,
+ * and some fifteen seconds in it has carried the hero far enough south that a grunt from the
+ * north passes its leash; the measuring ends before that.
+ */
+const CHASE_WARM_UP_TICKS = 120;
 
 /** The square the hero walks round the centre, one corner after the other, clear of every obstacle. */
 const HERO_LOOP: readonly Readonly<Vec2>[] = [

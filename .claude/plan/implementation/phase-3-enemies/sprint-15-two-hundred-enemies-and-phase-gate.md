@@ -103,7 +103,7 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Layer | domain, tests |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Reserved for R3: the corridor with two hundred chasers is the first real pile-up. If push-out jitters, tunnels, or fails to settle within the pass cap, this is the time to fix the separation order or the cap. If nothing is wrong, the half day goes to the gate.
 
@@ -117,6 +117,16 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 
 > **Note, 2026-09-24:** T03 walked the gate and left the phase open for this ticket, the sprint's last: closing it also closes sprint 15, the phase, and M6, fills the sized-versus-actual and largest-miss rows of the [phase README](./README.md#exit-record), and moves STATUS.md to phase 4.
 
+**Note, 2026-09-24: R3 bit, mildly, and the cap moved from three passes to four.** The session is `tests/simulation/replays/corridor-200.json`, 1200 ticks and 174 commands, every one a kind the panel sends. The hero walks into the corridor and holds it at (3000, 2000), ordered back every half second and healed every ten ticks. Ten grunt packs and ten runner packs of ten spawn west of the corridor within sight and chase it in. At tick 600 the hero is lifted out of reach, and all two hundred walk home back through the corridor. The spec is `tests/simulation/corridor-200.spec.ts`.
+
+- **Walls hold.** Pressing in and walking home, no disc sat deeper than 2.3e-13 in an obstacle or past the bounds on any tick, at three passes or four. Nothing tunnels through a wall.
+- **Pairs did not hold at three passes.** Under the press, walkers renew the overlap every tick, and the passes leave some of it. At three passes, the worst pair over the session was 0.99 of its summed radii: two runners hugging the corridor's north wall, pressed onto one point at tick 180. The next worst ticks read 0.87 and 0.82. The worst of a median tick was 0.21.
+- **The separation order does not fix it.** Measured on the same commands. Sweeping pairs in alternate directions on alternate passes, sorting the sweep by distance to the hero, and pushing out of walls inside the pair loop each changed the worst pair by a few hundredths. Walls inside the pair loop settled a frozen corridor pile a quarter faster. None was kept, and the code is unchanged.
+- **The cap does.** At four passes the worst pair over the session is 0.68, the p99 tick 0.58, and the median 0.17. At five the worst is 0.59, at six 0.54, and at eight 0.37. Another seed, and a hero that does not hold, read the same within a few hundredths. Four is the smallest cap that stops a press putting two discs on one point. Under Vitest the corridor session's tick went from 1.74 to 2.07 ms mean. The stress spec's chase case reads 1.85 to 2.25 ms, against 1.89 to 1.98 at three passes, and the 300-unit case is unchanged. `push_out_passes` defaults to 4 in the tuning table. The phase 1 session is re-stamped for the new content version, and the coding standard's example comment says four.
+- **Settling.** Frozen at the press's end with walking stopped, the pile needs 30 ticks of passes to fall under a world unit and 65 to reach touching, and no pass puts a disc in a wall. The slowest part is a column of grunts in the corridor: a hull 54 wide in a corridor 96 wide zig-zags against both walls, and every push loses its sideways half to them. The spec holds these to 45 and 90 ticks.
+- **The crowd shoves the hero.** Push-out is even, so two hundred walking into the hero carry it: from (3000, 2000) to (3864, 2622) in fifteen seconds, despite the hold orders, with 25 grunts dragged past their leash by the press's end. At four passes the stress spec's crowd carried its hero far enough to leash two grunts at tick 456. That spec's chase warm-up is now 120 ticks, not 180, which is still time for the runners to arrive and the shots to fill, so measuring ends before the leash. Whether a crowd should shove the hero, and whether a standing unit should take less of a push than a walking one, is a change to the push rule, not a tuning. It is decided provisionally as unchanged in [Q31](../backlog/open-questions.md), awaiting the maintainer.
+- **The spec's seven cases.** Every enemy sets off, with a column of 15 or more in the corridor at the press's end. No disc goes into a wall on any tick. No pair is pressed past 0.75 of its summed radii, which three passes fail. The frozen pile goes under a world unit within 45 ticks and to touching within 90. It settles in place, with no disc pushed into a wall and none carried a hull. Two replays agree on every position at every tick. All two hundred are home and idle by the end.
+
 ---
 
 ## Sprint exit
@@ -125,8 +135,9 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | --- | --- |
 | Readouts per browser at 200 enemies and 100 projectiles | Waiting on a person: Chrome, Firefox, Safari, and Edge on the reference laptop, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24. Headless in V8, the tick at 0.5 ms mean and 3.0 ms worst under load (T01); sync at 0.77 ms mean with 201 bound (P3-S14-T04) |
 | Stress test mean tick | 1.89 to 1.98 ms at 200 chasing and 100 projectiles, 1.75 to 1.98 ms at 300 on random orders, under Vitest on the Apple M1 laptop, quiet; 0.33 ms as a bundle. CI and the reference laptop wait on a person |
-| Milestone M6 | |
-| Actual days per ticket | T01 0.5 · T02 0.2 · T03 0.4 · T04 |
+| Milestone M6 | Reached 2026-09-24 on the rows an agent can verify: two hundred chasing within budget headless, in the isometric view, with the phase 3 gate walked. The four browsers are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, an open box in STATUS.md and a row of [Deferred](../backlog/deferred.md) |
+| Corridor pile-up at two hundred | `tests/simulation/corridor-200.spec.ts` green. Walls never entered. Worst pair 0.68 of its summed radii at four passes, against 0.99 at three. The frozen pile goes under a world unit in 30 ticks and to touching in 65 (T04) |
+| Actual days per ticket | T01 0.5 · T02 0.2 · T03 0.4 · T04 0.3. Sized 4, done in 1.4 |
 
 ### Phase 3 gate walk
 

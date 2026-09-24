@@ -102,7 +102,7 @@ Inheritance is reserved for a genuine is-a relationship a framework demands — 
 **Explain why, never what.** The code says what it does. A comment repeating it is a second thing to keep true, and it's the one that rots.
 
 ```typescript
-// Three passes settle a pile-up of twenty discs; more only moves the jitter around.
+// Four passes, not three: three let a crowd in a corridor press two discs onto one point.
 ```
 
 Comments worth writing: a non-obvious constraint, a deliberate choice that looks wrong at a glance, a workaround, a warning about something the next person would break, the source of a number taken from the reference game.

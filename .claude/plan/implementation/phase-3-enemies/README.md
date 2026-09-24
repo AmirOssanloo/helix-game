@@ -37,10 +37,16 @@ Spawn five grunts on the far side of the arena, walk in, watch the labels flip t
 
 ## Exit record
 
+Closed 2026-09-24 on the rows an agent can verify. The browser half of two rows is deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24: four browsers on the reference laptop, and the bench.
+
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | Walked 2026-09-24; the evidence per row is in the [sprint 15 gate walk](./sprint-15-two-hundred-enemies-and-phase-gate.md#phase-3-gate-walk). Six of eight rows hold. The two-hundred row and the bar hold headless; their browser half, four browsers on the reference laptop, and the bench are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, and are a row of [Deferred](../backlog/deferred.md). The phase closes with P3-S15-T04, the sprint's last ticket | the engineer running the plan |
+| Gate rows | Walked 2026-09-24; the evidence per row is in the [sprint 15 gate walk](./sprint-15-two-hundred-enemies-and-phase-gate.md#phase-3-gate-walk). Six of eight rows hold. The two-hundred row and the bar hold headless; their browser half, four browsers on the reference laptop, and the bench are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, and are a row of [Deferred](../backlog/deferred.md). Closed 2026-09-24 with P3-S15-T04, the sprint's last ticket, which also added the corridor pile-up at two hundred: no disc ever in a wall, and the worst pair 0.68 of its summed radii after the push-out cap moved from three passes to four | the engineer running the plan |
 | Readouts at 200 enemies, per browser | Waiting on a person, deferred as above. Headless in V8: tick 0.5 ms mean, 3.0 ms worst under load, pool misses zero; sync 0.77 ms mean with 201 bound | the engineer running the plan |
-| Stress test mean tick at 200 enemies and 100 projectiles | 1.89 to 1.98 ms under Vitest on the Apple M1 laptop, quiet, five runs; 0.33 ms as a bundle. The 300-unit case beside it 1.75 to 1.98 ms. CI and the reference laptop wait on a person | the engineer running the plan |
-| Sized versus actual | Filled by P3-S15-T04 when it closes the sprint. So far: sprint 12 2.6 days, 13 1.1, 23 0.9, 24 1.1, 14 1.0, and sprint 15 1.1 across T01 to T03 | |
-| Largest miss | | |
+| Stress test mean tick at 200 enemies and 100 projectiles | 1.89 to 1.98 ms under Vitest on the Apple M1 laptop, quiet, five runs; 0.33 ms as a bundle. The 300-unit case beside it 1.75 to 1.98 ms. After P3-S15-T04 moved the push-out cap from three passes to four, the chase case reads 1.85 to 2.25 ms under Vitest, three runs. CI and the reference laptop wait on a person | the engineer running the plan |
+| Sized versus actual | Sized 23.25 days: 22.5 planned and 0.75 unplanned (P3-S12-T05 0.5, P3-S24-T04 0.25). Actual 8.1: sprint 12 took 2.6 against 4.5, sprint 13 1.1 against 4, sprint 23 0.9 against 3.5, sprint 24 1.1 against 3.25, sprint 14 1.0 against 4, and sprint 15 1.4 against 4. Ratio 0.35. Across phases 1 to 3, 46.8 actual against 70.1 sized, 0.67, well under the 1.3 that would re-cut phases 4 and 5 | the engineer running the plan |
+| Largest miss | No ticket went over its size. The widest were a day and a half under: P3-S15-T01, the profile at two hundred, sized 2 against R2 and R4 and done in 0.5 because neither bit; and P3-S23-T01, the three scales, sized 2 and done in 0.5. The widest sprint gap is sprint 14, sized 4 and done in 1.0. Of the three risks the phase was sized against, R2 and R4 did not bite. R3 bit mildly and took a tuning, not the sprint's buffer. The days the phase did not use are estimate, not scope: the only unplanned work was 0.75 days | the engineer running the plan |
+
+| Phase | Sized | Actual | Ratio | Largest miss |
+| --- | --- | --- | --- | --- |
+| 3 | 23.25 | 8.1 | 0.35 | Sprint 14: sized 4, actual 1.0 |
