@@ -163,6 +163,10 @@ const put = (
 const endsAt = (unit: Readonly<Unit>, statusId: string): number =>
   unit.statuses.find((row) => row.definitionId === statusId)?.endsAtTick ?? 0;
 
+/** The mana of the hero's form, where the hero's resources live. */
+const manaOf = (world: Simulation): number =>
+  world.view.run.forms[0]?.resources.mana ?? Number.NaN;
+
 /** Ticks `world` `count` times. */
 const tickTimes = (world: Simulation, count: number): void => {
   for (let tick = 0; tick < count; tick += 1) {
@@ -355,7 +359,7 @@ describe("status effects and spells: a lifted unit cannot be hit, targeted, or a
     world.tick();
     refusals(world, reader);
 
-    const mana = hero.resources.mana;
+    const mana = manaOf(world);
 
     submit(world, {
       kind: "cast",
@@ -368,7 +372,7 @@ describe("status effects and spells: a lifted unit cannot be hit, targeted, or a
 
     expect(refusals(world, reader)).toEqual(["target_untargetable"]);
     expect(hero.order.kind).toBe("none");
-    expect(hero.resources.mana).toBe(mana);
+    expect(manaOf(world)).toBe(mana);
   });
 
   it("Target lifted while the hero walks to it or during the cast point: the cast is cancelled at no cost", () => {
@@ -384,7 +388,7 @@ describe("status effects and spells: a lifted unit cannot be hit, targeted, or a
     enemy.prev.x = 1400;
     world.state.map.spatialHash.move(unitIdOf(world, enemy), enemy.curr);
 
-    const mana = hero.resources.mana;
+    const mana = manaOf(world);
 
     submit(world, {
       kind: "cast",
@@ -401,7 +405,7 @@ describe("status effects and spells: a lifted unit cannot be hit, targeted, or a
     tickTimes(world, LIFT_TICKS - 2);
 
     expect(hero.order.kind).toBe("none");
-    expect(hero.resources.mana).toBe(mana);
+    expect(manaOf(world)).toBe(mana);
     expect(endsAt(enemy, HOARFROST)).toBe(0);
   });
 });

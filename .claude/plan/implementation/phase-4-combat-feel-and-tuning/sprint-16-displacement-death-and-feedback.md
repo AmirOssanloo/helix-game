@@ -44,7 +44,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Layer | domain, presentation, tests |
 | Size | 1.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Tests and fixes for every death row on the hero, enemies, spells, and status pages: hero dies with enemies chasing; respawn on an occupied spot; killed during a cast point; killed with a projectile in flight; summon out when the hero dies; status on a dying unit; enemy killed while returning; enemy summon adds at the cap (stubbed until phase 5); dummy at lethal. Damage numbers take a colour per type from a small tunable table; crit styling stays deferred.
 
@@ -56,6 +56,8 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 - `tests/simulation/feel/death.spec.ts`; `tests/presentation/floating-number.spec.ts` extended for colour.
 
 **Definition of done:** Every change · `src/domain` · Anything under `src/presentation`.
+
+**Note, 2026-09-24: twelve death rows, all holding already, and numbers coloured by type.** `tests/simulation/feel/death.spec.ts` names each death row on the hero, enemies, spells and attack, status, and map pages. Two more cases cover the sprint's "die mid-Updraft": a lifted unit that a burn kills in the air, and the hero dying with a unit in the air. The enemy summon at the live cap is an `it.todo` until an enemy ability summons adds. Every case held on the code as it stood, so `src/domain` did not change and the domain rows of the definition of done do not apply. The spec reads the hero's mana from its form, since `hero.resources` is not where the hero's resources live. The two mana checks in the displacement spec read `hero.resources` and could not fail, so they now read the form too, and they still hold. Damage numbers now take a colour per type from `DAMAGE_NUMBER_TINTS` beside the floating-number set: physical red, magical blue, pure gold. The merge window is one per unit per damage type, as the HUD page foresaw, so a burn and an auto-attack on one unit rise as two numbers. The colours and where the table lives are decided provisionally in [Q33](../backlog/open-questions.md). The HUD, spells, and presentation pages are updated, and crit styling stays deferred on the HUD page. Tests: `tests/presentation/floating-number.spec.ts` gains four colour cases, one of which checks that no two tints are alike and none is the white of the hit flash, and `tests/presentation/hit-feedback.spec.ts` gains a case for a hit of another type inside the window. `pnpm check` and `pnpm test:budget` green. The look by eye and the render benchmark after the view change are deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -106,7 +108,7 @@ Blast a pack into a wall and nothing clips. Die mid-Updraft and nothing breaks. 
 | Check | Result |
 | --- | --- |
 | Every displacement and death row green by name | |
-| Actual days per ticket | T01 0.4 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.4 · T02 0.4 · T03 · T04 |
 
 ## Risks in this sprint
 

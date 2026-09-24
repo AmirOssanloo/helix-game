@@ -107,6 +107,7 @@ export {
 } from "./views/depth-bands";
 export {
   createFloatingNumberViews,
+  DAMAGE_NUMBER_TINTS,
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_SIZE,

@@ -62,7 +62,7 @@ Projectiles are homing: once fired, an attack projectile follows its target and 
 | Magical | Magic resistance | Hoarfrost, Glacier, Siphon, Updraft, Bolide, Clarion |
 | Pure | Nothing | Zenith |
 
-The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage numbers are white for now and take a colour per type later ([HUD](./hud.md)).
+The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage numbers take the colour of their type: physical red, magical blue, pure gold ([HUD](./hud.md)).
 
 ## States and edge cases
 

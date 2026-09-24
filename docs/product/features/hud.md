@@ -27,7 +27,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 - **Floating orbs.** The three orb instances orbit the hero, matching the bar's order, so the player reads the buffer without looking down.
 - **Hit flash.** A unit that takes damage goes white for a moment, body and facing marker together. Like every flash it ends on a tick, so it holds while the simulation is paused.
 - **Status icons.** A row of small icons above a unit, one per status on it — stun, slow, silence, and the rest — each an outlined square with its own glyph, so two statuses read apart at a glance. An icon is there while the status is and shows no duration.
-- **Damage numbers.** A hit raises a number above the unit it landed on that rises and fades over a second. It shows the amount that landed after mitigation, even where the health it removed was less. Further hits on that unit inside a short window add to that number instead of raising their own, so damage taken every tick reads as one number a window worth what the window cost; the number keeps the rise it began with, and the hit after it starts a fresh one. White for now; a colour per damage type when the balance pass needs it, and that is what would make the window one per unit per type rather than one for all.
+- **Damage numbers.** A hit raises a number above the unit it landed on that rises and fades over a second. It shows the amount that landed after mitigation, even where the health it removed was less. Further hits of the same type on that unit inside a short window add to that number instead of raising their own, so damage taken every tick reads as one number a window worth what the window cost; the number keeps the rise it began with, and the hit after it starts a fresh one. Each number takes the colour of its damage type — physical red, magical blue, pure gold — so the window is one per unit per type: a burn and an auto-attack on the same unit rise as two numbers, each in its own colour.
 - **Facing.** The hero's triangle points where the hero faces, which is what the turn rate acts on.
 
 ## Targeting preview
@@ -49,7 +49,7 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Spell areas and zones | Outlined circles, rings, rotated rectangles, cones | The spell's colour, translucent |
 | Targeting preview | Ring and outline | White, red when out of range |
 | Obstacles and walls | Rectangles | Grey |
-| Damage numbers | Bitmap text | White |
+| Damage numbers | Bitmap text | Physical red, magical blue, pure gold |
 | Status icons | Small squares with a glyph | One per status |
 | Overlays | The same shapes at low alpha | One per overlay |
 
@@ -89,7 +89,7 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 - **Item slots, inventory, and equipment.** No items exist.
 - **Tooltips** on hover for spells and statuses.
 - **Sound cues.** No audio.
-- **Damage number colours** by type and crit styling. White until the balance pass needs more.
+- **Crit styling** for damage numbers. Nothing crits yet.
 - **Animated art.** Shapes only until the sprite atlas arrives.
 
 ---

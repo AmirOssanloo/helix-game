@@ -1,5 +1,5 @@
-import type { DomainEvent, Tick } from "@domain/public";
-import { UNIT_CAPACITY } from "@domain/public";
+import type { DamageType, DomainEvent, Tick } from "@domain/public";
+import { DAMAGE_TYPES, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import { unpackIndex } from "@shared/public";
 import type { WorldView } from "@simulation/public";
@@ -70,19 +70,29 @@ export class HitFlashes {
   }
 }
 
+/** How many damage types there are, so each unit keeps one number per type. */
+const TYPE_COUNT = DAMAGE_TYPES.length;
+
+/** Where each damage type's entry sits among a unit's, in the order the domain lists them. */
+const TYPE_OFFSETS: Readonly<Record<DamageType, number>> = {
+  physical: DAMAGE_TYPES.indexOf("physical"),
+  magical: DAMAGE_TYPES.indexOf("magical"),
+  pure: DAMAGE_TYPES.indexOf("pure"),
+};
+
 /**
- * Which unit has a number rising and which of the set's labels it is on: one entry per slot of
- * the unit pool, holding the id it was raised for, the label, the spawn running there, and the
- * tick the rise began. A hit landing while that rise is inside the window joins the number
- * instead of raising a second one, so damage taken every tick reads as one number a window
- * worth what the window cost rather than a number a tick.
+ * Which unit has a number rising in which colour, and which of the set's labels it is on: one
+ * entry per slot of the unit pool per damage type, holding the id it was raised for, the
+ * label, the spawn running there, and the tick the rise began. A hit landing while that rise
+ * is inside the window joins the number of its own type instead of raising a second one, so
+ * damage taken every tick reads as one number a window worth what the window cost rather than
+ * a number a tick, and a hit of another type raises its own number in its own colour.
  *
  * The id is kept beside the label because a slot is reused: a unit that took the slot of one
  * that was hit joins nothing. The spawn is kept because the set recycles a label whose rise is
  * still running once every label is busy, and a hit must not add to the number that took it.
  *
- * The window is one length for every unit and every kind of damage, which is all white numbers
- * need. A colour per damage type is what would make it one window per unit per type.
+ * The window is one length for every unit and every type.
  */
 export class HitNumbers {
   private readonly ids: number[] = [];
@@ -94,7 +104,7 @@ export class HitNumbers {
   private readonly startTicks: Tick[] = [];
 
   constructor() {
-    for (let slot = 0; slot < UNIT_CAPACITY; slot += 1) {
+    for (let entry = 0; entry < UNIT_CAPACITY * TYPE_COUNT; entry += 1) {
       this.ids.push(NONE);
       this.labels.push(NO_NUMBER);
       this.spawns.push(NO_SPAWN);
@@ -103,52 +113,55 @@ export class HitNumbers {
   }
 
   /**
-   * Shows `amount` on `id` at (`x`, `y`) on tick `now`: added to the number already rising for
-   * it where one began inside the window and the set still has it, and raised as a number of
-   * its own where it did not. An id outside the pool always raises its own, since there is
-   * nowhere to remember it.
+   * Shows `amount` of `damageType` on `id` at (`x`, `y`) on tick `now`: added to the number of
+   * that type already rising for it where one began inside the window and the set still has
+   * it, and raised as a number of its own where it did not. An id outside the pool always
+   * raises its own, since there is nowhere to remember it.
    */
   show(
     id: EntityId,
     x: number,
     y: number,
     amount: number,
+    damageType: DamageType,
     now: Tick,
     numbers: FloatingNumberViews,
   ): void {
     const slot = unpackIndex(id);
 
-    if (slot < 0 || slot >= this.ids.length) {
-      numbers.spawn(x, y, amount, now);
+    if (slot < 0 || slot >= UNIT_CAPACITY) {
+      numbers.spawn(x, y, amount, damageType, now);
 
       return;
     }
 
+    const entry = slot * TYPE_COUNT + TYPE_OFFSETS[damageType];
+
     if (
-      this.joins(slot, id, now) &&
+      this.joins(entry, id, now) &&
       numbers.addTo(
-        this.labels[slot] ?? NO_NUMBER,
-        this.spawns[slot] ?? NO_SPAWN,
+        this.labels[entry] ?? NO_NUMBER,
+        this.spawns[entry] ?? NO_SPAWN,
         amount,
       )
     ) {
       return;
     }
 
-    const label = numbers.spawn(x, y, amount, now);
+    const label = numbers.spawn(x, y, amount, damageType, now);
 
-    this.ids[slot] = label === NO_NUMBER ? NONE : id;
-    this.labels[slot] = label;
-    this.spawns[slot] = numbers.spawnAt(label);
-    this.startTicks[slot] = now;
+    this.ids[entry] = label === NO_NUMBER ? NONE : id;
+    this.labels[entry] = label;
+    this.spawns[entry] = numbers.spawnAt(label);
+    this.startTicks[entry] = now;
   }
 
-  /** Whether the number remembered for `slot` is still `id`'s and still inside the window at `now`. */
-  private joins(slot: number, id: EntityId, now: Tick): boolean {
-    const started = this.startTicks[slot];
+  /** Whether the number remembered at `entry` is still `id`'s and still inside the window at `now`. */
+  private joins(entry: number, id: EntityId, now: Tick): boolean {
+    const started = this.startTicks[entry];
 
     return (
-      this.ids[slot] === id &&
+      this.ids[entry] === id &&
       started !== undefined &&
       now - started < HIT_NUMBER_MERGE_TICKS
     );
@@ -157,10 +170,11 @@ export class HitNumbers {
 
 /**
  * What one drained event does to the screen: a hit raises the flash on the unit that took it
- * and shows what it was worth where it landed, either as a number of its own or added to the
- * one already rising for that unit. The number is shown at the unit as it is drawn this frame,
- * lifted clear of its body, and reads the amount that landed after mitigation, which is the
- * number the event carries even where the health it removed was less. Every other kind is
+ * and shows what it was worth where it landed, in the colour of its damage type, either as a
+ * number of its own or added to the one of the same type already rising for that unit. The
+ * number is shown at the unit as it is drawn this frame, lifted clear of its body, and reads
+ * the amount that landed after mitigation, which is the number the event carries even where
+ * the health it removed was less. Every other kind is
  * nothing to look at here; the HUD reads the ones about the squares.
  *
  * A unit already gone when the event is read — released inside the same tick — flashes nothing
@@ -174,7 +188,11 @@ export const showHit = (
   hitNumbers: HitNumbers,
   numbers: FloatingNumberViews,
 ): void => {
-  if (event.kind !== "unit_damaged" || event.unitId === null) {
+  if (
+    event.kind !== "unit_damaged" ||
+    event.unitId === null ||
+    event.damageType === null
+  ) {
     return;
   }
 
@@ -190,6 +208,7 @@ export const showHit = (
     interpolate(unit.prev.x, unit.curr.x, alpha),
     interpolate(unit.prev.y, unit.curr.y, alpha) - unit.collisionRadius,
     event.amount,
+    event.damageType,
     event.tick,
     numbers,
   );

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import type { DamageType } from "@domain/public";
+import { DAMAGE_TYPES } from "@domain/public";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
+  DAMAGE_NUMBER_TINTS,
   DEPTH_TEXT,
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
@@ -36,8 +39,8 @@ const NO_ALPHA = 0;
 type Arranged = {
   numbers: FloatingNumberViews;
   labels: LabelRecorder[];
-  /** One number rising from the same place, at tick `tick`, and the label it took. */
-  spawn: (amount?: number, tick?: number) => number;
+  /** One number of `damageType` rising from the same place, at tick `tick`, and the label it took. */
+  spawn: (amount?: number, tick?: number, damageType?: DamageType) => number;
 };
 
 /** Hits across the arena: a corner, the two far edges, and the far corner, each drawn somewhere else on the screen. */
@@ -72,9 +75,36 @@ const arrange = (
   return {
     numbers,
     labels,
-    spawn: (amount = HIT_AMOUNT, tick = START): number =>
-      numbers.spawn(SPAWN_X, SPAWN_Y, amount, tick),
+    spawn: (
+      amount = HIT_AMOUNT,
+      tick = START,
+      damageType: DamageType = "physical",
+    ): number => numbers.spawn(SPAWN_X, SPAWN_Y, amount, damageType, tick),
   };
+};
+
+/** The white of the glyphs untinted, which is also the hit flash's colour. */
+const WHITE = 0xffffff;
+
+/** How far apart two tints must sit, summed over the three channels, to read apart at a glance. */
+const DISTINCT = 0x80;
+
+/** The three channels of a tint. */
+const channels = (tint: number): number[] => [
+  (tint >> 16) & 0xff,
+  (tint >> 8) & 0xff,
+  tint & 0xff,
+];
+
+/** The distance between two tints, summed over the channels. */
+const tintDistance = (a: number, b: number): number => {
+  const left = channels(a);
+  const right = channels(b);
+
+  return left.reduce(
+    (sum, value, index) => sum + Math.abs(value - (right[index] ?? 0)),
+    0,
+  );
 };
 
 /** The labels showing something this frame. */
@@ -221,7 +251,13 @@ describe("the numbers at the bar's busiest fight", () => {
       );
 
       for (; landed < due; landed += 1) {
-        const label = arranged.numbers.spawn(landed, SPAWN_Y, HIT_AMOUNT, tick);
+        const label = arranged.numbers.spawn(
+          landed,
+          SPAWN_Y,
+          HIT_AMOUNT,
+          "physical",
+          tick,
+        );
 
         seen.add(arranged.numbers.spawnAt(label));
       }
@@ -382,7 +418,7 @@ describe("a number in the isometric view", () => {
       const arranged = arrange(1, projection);
       const offsetsHere: number[] = [];
 
-      arranged.numbers.spawn(point.x, point.y, HIT_AMOUNT, START);
+      arranged.numbers.spawn(point.x, point.y, HIT_AMOUNT, "magical", START);
       projection.toScreen(point.x, point.y, drawn);
 
       for (const ticks of THROUGH_THE_RISE) {
@@ -410,5 +446,54 @@ describe("a number in the isometric view", () => {
         expect(offset).toBeCloseTo(first?.[index] ?? Number.NaN);
       });
     }
+  });
+});
+
+describe("a number's colour", () => {
+  it("is the colour its damage type has in the table, for each of physical, magical, and pure", () => {
+    const arranged = arrange(DAMAGE_TYPES.length);
+
+    const shown = DAMAGE_TYPES.map((damageType) => {
+      const label =
+        arranged.labels[arranged.spawn(HIT_AMOUNT, START, damageType)];
+
+      return label?.tint;
+    });
+
+    expect(shown).toEqual(
+      DAMAGE_TYPES.map((damageType) => DAMAGE_NUMBER_TINTS[damageType]),
+    );
+  });
+
+  it("tells the three types apart: no two alike, and none the white a hit flashes", () => {
+    const tints = DAMAGE_TYPES.map(
+      (damageType) => DAMAGE_NUMBER_TINTS[damageType],
+    );
+
+    tints.forEach((tint, index) => {
+      expect(tintDistance(tint, WHITE)).toBeGreaterThanOrEqual(DISTINCT);
+
+      for (const other of tints.slice(index + 1)) {
+        expect(tintDistance(tint, other)).toBeGreaterThanOrEqual(DISTINCT);
+      }
+    });
+  });
+
+  it("is rewritten when a recycled label takes a number of another type", () => {
+    const arranged = arrange(1);
+
+    arranged.spawn(HIT_AMOUNT, START, "magical");
+    arranged.spawn(HIT_AMOUNT, LATER, "pure");
+
+    expect(arranged.labels[0]?.tint).toBe(DAMAGE_NUMBER_TINTS.pure);
+  });
+
+  it("stays the colour the number began in when a hit joins it", () => {
+    const arranged = arrange(2);
+    const label = arranged.spawn(HIT_AMOUNT, START, "pure");
+
+    arranged.numbers.addTo(label, arranged.numbers.spawnAt(label), JOIN_AMOUNT);
+
+    expect(arranged.labels[label]?.tint).toBe(DAMAGE_NUMBER_TINTS.pure);
   });
 });

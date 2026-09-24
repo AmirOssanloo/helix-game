@@ -1,4 +1,4 @@
-import type { Tick } from "@domain/public";
+import type { DamageType, Tick } from "@domain/public";
 import type { Vec2 } from "@shared/public";
 import type { ScreenPlacement } from "../camera/projection";
 import { DEPTH_TEXT } from "./depth-bands";
@@ -30,8 +30,16 @@ const RISE = 56;
 /** How far above where the point it was spawned at is drawn a number starts, in pixels. */
 const LIFT = 8;
 
-/** Placeholder art: every number white, since a colour per damage type waits for the balance pass. */
-const NUMBER_TINT = 0xffffff;
+/**
+ * The colour of a number by the type of the damage it stands for, so physical, magical, and
+ * pure read apart at a glance: physical a warm red, magical a cold blue, pure a gold. A tint
+ * on the white glyphs, like every colour on the screen. A presentation number, tuned here.
+ */
+export const DAMAGE_NUMBER_TINTS: Readonly<Record<DamageType, number>> = {
+  physical: 0xff4d4d,
+  magical: 0x4fc3f7,
+  pure: 0xffd54f,
+};
 
 const OPAQUE = 1;
 
@@ -48,7 +56,8 @@ const FIRST_SPAWN = 1;
 
 /**
  * The damage numbers floating over the arena: a fixed set of bitmap texts at the text band,
- * each parked where a hit landed, rising up the screen and fading over its whole life. A
+ * each parked where a hit landed, in the colour of its damage type, rising up the screen and
+ * fading over its whole life. A
  * number stands up off the ground, so it keeps the world point it was spawned at and is placed
  * each frame where that point is drawn. A number holds no
  * clock of its own — its rise is the tick count plus the driver's fraction against the tick
@@ -116,7 +125,6 @@ export class FloatingNumberViews {
 
     for (const label of labels) {
       label.setDepth(DEPTH_TEXT);
-      label.tint = NUMBER_TINT;
       label.alpha = OPAQUE;
       label.visible = false;
       this.startTicks.push(NOT_SPAWNED);
@@ -153,11 +161,17 @@ export class FloatingNumberViews {
   }
 
   /**
-   * Starts a number reading `amount`, rounded, rising from (`x`, `y`) at tick `tick`, and hands
-   * back the label it took, for an `addTo` later. A set of no labels shows nothing, counts
-   * nothing, and hands back `NO_NUMBER`.
+   * Starts a number reading `amount`, rounded, in the colour of `damageType`, rising from
+   * (`x`, `y`) at tick `tick`, and hands back the label it took, for an `addTo` later. A set of
+   * no labels shows nothing, counts nothing, and hands back `NO_NUMBER`.
    */
-  spawn(x: number, y: number, amount: number, tick: Tick): number {
+  spawn(
+    x: number,
+    y: number,
+    amount: number,
+    damageType: DamageType,
+    tick: Tick,
+  ): number {
     const index = this.cursor;
     const label = this.labels[index];
 
@@ -172,6 +186,7 @@ export class FloatingNumberViews {
     this.amounts[index] = amount;
     this.write(index, label);
 
+    label.tint = DAMAGE_NUMBER_TINTS[damageType];
     this.xs[index] = x;
     this.ys[index] = y;
     this.startTicks[index] = tick;
@@ -271,7 +286,7 @@ export class FloatingNumberViews {
   }
 }
 
-/** `size` floating numbers over labels from `makeLabel`, banded and tinted once, at scene `create`. */
+/** `size` floating numbers over labels from `makeLabel`, banded once, at scene `create`; each is tinted when it is spawned. */
 export const createFloatingNumberViews = (
   size: number,
   makeLabel: LabelFactory,

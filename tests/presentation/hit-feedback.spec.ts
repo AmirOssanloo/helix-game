@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { DomainEvent, Unit } from "@domain/public";
+import type { DamageType, DomainEvent, Unit } from "@domain/public";
 import { acquireUnit, releaseUnit } from "@domain/public";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
+  DAMAGE_NUMBER_TINTS,
   FLOATING_NUMBER_COUNT,
   FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_TICKS,
@@ -52,8 +53,13 @@ type Arranged = {
   flashes: HitFlashes;
   hitNumbers: HitNumbers;
   labels: LabelRecorder[];
-  /** One `unit_damaged` on `unitId`, as the damage rule writes it, drained on tick `tick`. */
-  hit: (unitId: EntityId, amount: number, tick: number) => void;
+  /** One `unit_damaged` of `damageType` on `unitId`, as the damage rule writes it, drained on tick `tick`. */
+  hit: (
+    unitId: EntityId,
+    amount: number,
+    tick: number,
+    damageType?: DamageType,
+  ) => void;
 };
 
 /** A world with the hero and two dummies in it, and the feedback a drained hit writes to, over `labelCount` labels. */
@@ -88,9 +94,14 @@ const arrange = (labelCount = LABELS): Arranged => {
     flashes,
     hitNumbers,
     labels,
-    hit: (unitId: EntityId, amount: number, tick: number): void => {
+    hit: (
+      unitId: EntityId,
+      amount: number,
+      tick: number,
+      damageType: DamageType = "physical",
+    ): void => {
       showHit(
-        damageEvent(unitId, amount, tick),
+        damageEvent(unitId, amount, tick, damageType),
         world.view,
         NO_ALPHA,
         flashes,
@@ -106,6 +117,7 @@ const damageEvent = (
   unitId: EntityId,
   amount: number,
   tick: number,
+  damageType: DamageType,
 ): Readonly<DomainEvent> => ({
   kind: "unit_damaged",
   tick,
@@ -119,7 +131,7 @@ const damageEvent = (
   zoneId: null,
   projectileId: null,
   amount,
-  damageType: "physical",
+  damageType,
 });
 
 /** The labels showing something this frame. */
@@ -181,7 +193,10 @@ describe("what a drained hit shows", () => {
     const arranged = arrange();
 
     showHit(
-      { ...damageEvent(arranged.dummyId, HIT_AMOUNT, 0), kind: "unit_died" },
+      {
+        ...damageEvent(arranged.dummyId, HIT_AMOUNT, 0, "physical"),
+        kind: "unit_died",
+      },
       arranged.world.view,
       NO_ALPHA,
       arranged.flashes,
@@ -263,6 +278,22 @@ describe("the numbers a unit taking damage every tick shows", () => {
       String(DRIP),
     ]);
     expect(shown.map((label) => label.x)).toEqual([DUMMY_X, OTHER_X]);
+  });
+
+  it("give a hit of another type inside the window a number of its own, in its own colour", () => {
+    const arranged = arrange();
+
+    arranged.hit(arranged.dummyId, DRIP, 0, "magical");
+    arranged.hit(arranged.dummyId, HIT_AMOUNT, 1, "physical");
+    arranged.hit(arranged.dummyId, DRIP, 2, "magical");
+    arranged.numbers.sync(2, NO_ALPHA);
+
+    const shown = visible(arranged);
+
+    expect(shown.map((label) => [label.text, label.tint])).toEqual([
+      [String(DRIP * 2), DAMAGE_NUMBER_TINTS.magical],
+      [String(HIT_AMOUNT), DAMAGE_NUMBER_TINTS.physical],
+    ]);
   });
 
   it("no longer empty the set, so a hit landing beside a burn keeps its own number", () => {
