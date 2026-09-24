@@ -15,7 +15,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | --- | --- |
 | Which spells exist | `src/content/spells/` — one file per spell |
 | Which enemy abilities exist | `src/content/abilities/` — one file per ability; the same shape as a spell, without an orb recipe |
-| Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype; the tier is a field of each definition |
+| Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype. A unit's tier is chosen where it spawns: the pack record of the map definition under `src/domain/definitions/`, or the panel's spawn command |
 | Which summons exist, and how far each keeps from its owner | `src/content/summons/` — one file per summon; the follow distance is a field of each definition |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist | `src/content/maps/` — one file per map |
@@ -31,6 +31,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour; the file name is the key |
 | How a unit's behaviour is chosen and run each tick, and the states an enemy moves through | `src/domain/ai/` — the registry, the shared state machine, and the pass over it |
 | How a pack is placed, from the panel or a map, and when a dormant one wakes | `src/domain/ai/packs.ts` — the one door a pack enters by, and the activation rule the AI pass ends with |
+| The walkability grid a unit is placed and paths on, and what a map load resets | `src/domain/map/` — the grid and its radius classes, and the map-scope reset |
 | How a unit auto-attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
@@ -68,8 +69,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the developer panel can do | The `DevApi` under `src/devtools/` — its methods are the list |
 | Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay |
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
-| Which lint rules enforce the layer table | The layer allow-list in `eslint.config.js` at the repository root |
-| Which lint rules ban the clock and unseeded random | The restricted-globals block for `src/domain` and `src/simulation` in `eslint.config.js` |
+| Which lint rules enforce the layer table | The layer allow-list in `eslint/matrix.js`, applied per layer by the files under `eslint/layers/` |
+| Which lint rules ban the clock and unseeded random | `eslint/rules/no-ambient-time-in-simulation.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/` |
 | Which rules the architecture test enforces | `tests/architecture.spec.ts` |
 | Which files the documentation link test walks | `tests/docs-links.spec.ts` — the folder list at the top of the file |
 | Which acceptance tests mirror the mechanics spec | `tests/simulation/` — one spec per section of the spec, named after it |

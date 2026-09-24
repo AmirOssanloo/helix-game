@@ -81,7 +81,7 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 | Layer | tests, docs |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Run the two-hundred scenario in Chrome, Firefox, Safari, and Edge on the reference laptop and record every readout per browser. Rerun the bench. Record a session with two hundred spawned from the panel and a fight, and replay it. Walk every row of the [phase 3 gate](../04-phase-exit-gates.md#phase-3-gate). Docs sync: world model, where-to-look, the enemies page against what shipped. Replay tests for gate bugs. Exit record and sized-versus-actual in the phase README.
 
@@ -91,6 +91,8 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 **Tests:** any replay test from a gate bug.
 
 **Definition of done:** Every change · A documentation change.
+
+> **Note, 2026-09-24:** the gate was walked and its evidence is in the [phase 3 gate walk](#phase-3-gate-walk). Six of eight rows hold on this machine. The other two, two hundred live in four browsers and the bar at the cap, hold headless and wait on a person for the browser half: the four browsers, the bench, and the reference laptop are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, as open boxes in STATUS.md and rows of [Deferred](../backlog/deferred.md). The session was recorded in Node, not from the panel in a browser, for the same reason: every command in it is one the panel sends, and it is kept as [a dated note](../notes/2026-09-24-phase-3-gate-session.json). No gate bug was found, so no replay test was born from one. The phase does not close here: T04 is the sprint's last ticket, and it closes the sprint, the phase, and M6, filling the sized-versus-actual and largest-miss rows of the phase README.
 
 ---
 
@@ -113,16 +115,35 @@ Two hundred squares converge on the hero, the corridor fills, the tick readout s
 
 **Definition of done:** Every change · `src/domain`.
 
+> **Note, 2026-09-24:** T03 walked the gate and left the phase open for this ticket, the sprint's last: closing it also closes sprint 15, the phase, and M6, fills the sized-versus-actual and largest-miss rows of the [phase README](./README.md#exit-record), and moves STATUS.md to phase 4.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Readouts per browser at 200 enemies and 100 projectiles | |
+| Readouts per browser at 200 enemies and 100 projectiles | Waiting on a person: Chrome, Firefox, Safari, and Edge on the reference laptop, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24. Headless in V8, the tick at 0.5 ms mean and 3.0 ms worst under load (T01); sync at 0.77 ms mean with 201 bound (P3-S14-T04) |
 | Stress test mean tick | 1.89 to 1.98 ms at 200 chasing and 100 projectiles, 1.75 to 1.98 ms at 300 on random orders, under Vitest on the Apple M1 laptop, quiet; 0.33 ms as a bundle. CI and the reference laptop wait on a person |
 | Milestone M6 | |
-| Actual days per ticket | T01 0.5 · T02 0.2 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 0.2 · T03 0.4 · T04 |
+
+### Phase 3 gate walk
+
+Walked 2026-09-24 on the Apple M1 laptop, headless, by the engineer running the plan. Every row of the [phase 3 gate](../04-phase-exit-gates.md#phase-3-gate), in its order. Browser readouts, the bench, and the reference laptop are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24.
+
+| Row | Holds | Evidence |
+| --- | --- | --- |
+| Four archetypes plus the dummy exist as definitions and appear in the panel dropdown with no code change | Yes | `ls src/content/enemies/`: `melee-grunt`, `fast-runner`, `ranged-archer`, `tank`, and `training-dummy`, each a `.def.ts`, and the index. `tests/devtools/panel.spec.ts` builds the dropdown's options from the registry's enemy list and spawns the archetype it names. Walked by the maintainer in the Enemies group, 2026-09-23 |
+| Each archetype passes the six standard enemy tests | Yes | `pnpm test tests/simulation/enemies/`: six files, green. Each archetype spec has aggro on sight with its whole pack, aggro on a hit from outside the radius with its whole pack, closing to contact or holding at range and swinging, leash home with regeneration, death with the slot and the hash place given back, and experience to the hero; `edges.spec.ts` and `attacks.spec.ts` beside them |
+| 200 live enemies chase and attack the hero within budget | Headless, yes; in four browsers, waiting on a person | `tests/simulation/stress.spec.ts` holds two hundred with their real AI chasing and a hundred projectiles, every one in Chase or Attack on every measured tick, 1.89 to 1.98 ms mean under Vitest (T02) and 0.33 ms as a bundle. The recorded session below ran two hundred live for sixty seconds of ticks. The four browsers on the reference laptop are an open box in STATUS.md and a row of [Deferred](../backlog/deferred.md) |
+| Spells kill enemies correctly by damage type | Yes | `tests/simulation/combat/damage-types.spec.ts` green: physical, magical, and pure against each archetype's armour and resistance, forty literal cells, and five cases against live archetypes |
+| Experience levels the hero from 1 to 30 | Yes | `tests/simulation/hero/experience.spec.ts` green, "climbs from 1 to 30 on kills, one skill point a level" among its eleven |
+| Damage numbers, hit flashes, status icons, and every overlay on the developer panel page exist | Yes | By eye, each toggle: walked by the maintainer with fifty enemies and all ten spells, 2026-09-24, recorded in the sprint 14 [exit table](./sprint-14-combat-readability-and-overlays.md#sprint-exit) |
+| The view is the 2:1 isometric projection at the one chosen scale, with no zoom and the maintainer's floor tile, and the simulation is unchanged by it | Yes | By eye, approved by the maintainer, sprint 24. `notes/2026-09-23-phase-2-gate-session.json`, stamped with the tree's content version, replayed in Node on this tree and on `09dbd91`, the last commit before the view: 2020 ticks each, and the chain of SHA-256 digests of run scope and every unit, projectile, effect, and zone slot at every tick is the same, `0047e92f…`, as is the last tick's, `17a73706…`. `grep -rni zoom src/` finds only the camera's fixed zoom of one and the comments saying it never changes |
+| The bar | Headless, yes; per browser, waiting on a person | In V8, at two hundred chasing and a hundred projectiles: tick 0.5 ms mean and 3.0 ms worst under load, the tick's steady-state allocation down from about 100 KB to 13 KB, pool misses zero (T01); sync at 0.77 ms mean with 201 bound (P3-S14-T04). `pnpm check` green. Frame rate, render, draw calls, and heap per browser need a GPU browser on the reference laptop, deferred with the row above |
+
+**The recorded session.** [`notes/2026-09-24-phase-3-gate-session.json`](../notes/2026-09-24-phase-3-gate-session.json), seed 20260924, 3600 ticks, 574 commands, every one a kind the panel or the player sends. Orbs set to 7, both switches on, the hero levelled to 30, ten grunt packs and ten runner packs of ten on a ring 700 units round the spawn point; the hero attack-moves round a square and throws Zenith and Bolide every half second, and is healed every ten ticks; a pack of ten is spawned into every gap of ten or more every five seconds, 360 enemies in all. 118 casts committed, 163 enemies died, and the live count ran between 84 and 200. Replayed into two fresh worlds, the chain of per-tick digests agrees, `4d3e4e9b…`, and each replay's last tick is byte for byte the recording world's. It was recorded in Node, not from the browser panel, because the browser runs are deferred.
 
 ## Risks in this sprint
 

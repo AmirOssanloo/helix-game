@@ -20,7 +20,7 @@ The first set is small and covers the four things a spell has to deal with: some
 | Tank | High health, high armour, slow | Large square |
 | Training dummy | Never moves, never attacks, never dies. Takes and shows damage | Square with an outline |
 
-Each archetype has a colour on the [HUD page's art table](./hud.md#placeholder-art), and elites take a thicker outline.
+Each archetype has a colour, its tint in the [enemy catalogue](../specs/enemy-catalogue.md#3-the-archetypes), and elites take a thicker outline.
 
 ## What a definition holds
 
@@ -43,9 +43,9 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 | State | What the enemy does | Leaves when |
 | --- | --- | --- |
 | Idle | Stands at its spawn point, or wanders a few units around it | The hero enters its aggro radius, or it takes damage |
-| Aggro | Turns toward the hero and alerts its pack | Immediately, into Chase |
-| Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, into Return |
-| Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, into Chase; or target lost, into Return |
+| Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
+| Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero untargetable or hidden from aggro, into Return |
+| Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, or the hero dead, into Chase; or target lost, hidden, or past its leash radius, into Return |
 | Return | Paths back to its spawn point, ignoring the hero, regenerating | Arrives, into Idle |
 | Dead | Gives experience, clears statuses, releases its slot after a short delay | Never |
 
@@ -79,7 +79,7 @@ An enemy that dies grants its definition's experience reward to the hero, whoeve
 
 ## Dormant packs
 
-On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. On the arena every pack is live from spawn.
+On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
 
 A pack spawns once per map load: one the hero kills does not come back when the hero walks near its point again. Resetting the map puts every pack back as it was at load.
 

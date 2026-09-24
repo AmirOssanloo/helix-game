@@ -39,8 +39,8 @@ Spawn five grunts on the far side of the arena, walk in, watch the labels flip t
 
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | | |
-| Readouts at 200 enemies, per browser | | |
-| Stress test mean tick at 200 enemies and 100 projectiles | | |
-| Sized versus actual | | |
+| Gate rows | Walked 2026-09-24; the evidence per row is in the [sprint 15 gate walk](./sprint-15-two-hundred-enemies-and-phase-gate.md#phase-3-gate-walk). Six of eight rows hold. The two-hundred row and the bar hold headless; their browser half, four browsers on the reference laptop, and the bench are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, and are a row of [Deferred](../backlog/deferred.md). The phase closes with P3-S15-T04, the sprint's last ticket | the engineer running the plan |
+| Readouts at 200 enemies, per browser | Waiting on a person, deferred as above. Headless in V8: tick 0.5 ms mean, 3.0 ms worst under load, pool misses zero; sync 0.77 ms mean with 201 bound | the engineer running the plan |
+| Stress test mean tick at 200 enemies and 100 projectiles | 1.89 to 1.98 ms under Vitest on the Apple M1 laptop, quiet, five runs; 0.33 ms as a bundle. The 300-unit case beside it 1.75 to 1.98 ms. CI and the reference laptop wait on a person | the engineer running the plan |
+| Sized versus actual | Filled by P3-S15-T04 when it closes the sprint. So far: sprint 12 2.6 days, 13 1.1, 23 0.9, 24 1.1, 14 1.0, and sprint 15 1.1 across T01 to T03 | |
 | Largest miss | | |
