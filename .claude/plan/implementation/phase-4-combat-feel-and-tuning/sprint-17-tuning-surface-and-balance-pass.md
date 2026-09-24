@@ -95,7 +95,7 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | Layer | content, tests, docs |
 | Size | 1.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Three recorded sessions with the panel: hero stats against a pack of each archetype at levels 1, 10, and 20; every spell against packs at orb levels 1, 4, and 7; archetype stats so that the grunt is kited, the runner is not, the archer punishes standing still, the tank takes a combo. Each session's findings written into the definitions and the catalogues, with the input logs kept under `tests/simulation/replays/balance-*.json` and a spec that replays each. Numbers that changed cite "balance pass 1" beside the patch citation.
 
@@ -107,15 +107,17 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 
 **Definition of done:** Every change · A documentation change.
 
+**Note, 2026-09-25: three sessions recorded, all four archetype goals hold, and one number moved: the archer's mana, 200 to 550.** The sessions are `tests/simulation/replays/balance-hero.json`, `balance-spells.json`, and `balance-archetypes.json`, 10088, 9873, and 5680 ticks. Each was played by a script that sends only what the panel and a player send, so each loads in the panel like a saved session; the script is not kept, as the corridor session's was not. The hero session stands a hero that only attacks against a pack of five of each archetype at levels 1, 10, and 20: the attack does not grow with level, so it clears only runners, from level 10, and a tank pack kills the hero at every level. The spells session throws every spell once at a grunt pack, and Siphon at an archer pack too, at orb levels 1, 4, and 7 under infinite mana and no cooldowns: every damaging spell rises with the level, none kills a grunt alone at 1, and Siphon at archers stopped rising at Whorl 2, since the archer held 200 mana. The archetypes session holds the four goals: a level-1 hero kiting one grunt round a circle 800 across kills it in 68 s unhit; one runner catches the same walk and lands ten hits in 20 s; one archer takes 9.1 health a second from a hero standing and trading and 4.4 from one walking away; at orb level 7 no spell alone takes half a tank's health, and Updraft, Zenith, Bolide, and Clarion in turn kill it. The one number a measurement contradicted a catalogue reason for moved: `ranged_archer` mana to 550, Siphon's largest burn, marked `// tunable; balance pass 1`. The grunt's speed, the attack's lack of growth, Zenith's split, and Glacier at level 1 are left and named for the maintainer. These readings are decided provisionally in [Q38](../backlog/open-questions.md). The enemy catalogue gains the archer's mana, a measured reason on each goal, and a section of what the numbers do in a fight; the spell catalogue gains a section of what each spell does to a pack; the content-authoring and testing standards gain the pass citation and the re-record rule. The two older stored replays are re-stamped with the new content version and still replay. Tests: `tests/simulation/replays/balance.spec.ts` replays the three logs and checks each fight's outcome, Siphon's, Updraft's, and Clarion's damage against their tables, and the four goals. `tests/content/catalogues.spec.ts` is new, and holds both catalogues' tables to the definitions, which is how "the catalogues match the definitions" is checked. `pnpm check` and `pnpm test:budget` green. The product owner playing the result is deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, under "Waiting on a person" in STATUS.md.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Three random keys retuned from the panel with no code change | |
-| Hot reload and version refusal by hand | |
-| Actual days per ticket | T01 0.5 · T02 0.3 · T03 0.2 · T04 |
+| Three random keys retuned from the panel with no code change | By test: `tests/simulation/tuning.spec.ts` and `tests/devtools/panel.spec.ts` change a hero stat, a spell table entry, and an archetype stat on the next use and log each (T01). By hand from the panel: deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, as an open box in STATUS.md |
+| Hot reload and version refusal by hand | By test: `tests/app/content-reload.spec.ts` (T02) and `tests/simulation/replay-format.spec.ts` (T03). By hand in a browser: deferred until phase 5 is done, by the same instruction, as two open boxes in STATUS.md |
+| Actual days per ticket | T01 0.5 · T02 0.3 · T03 0.2 · T04 0.4. Sized 4, done in 1.4 |
 
 ## Risks in this sprint
 

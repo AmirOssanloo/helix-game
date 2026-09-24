@@ -19,7 +19,7 @@
 
 This page fixes the first four archetypes and the training dummy as data before any of the four is built: every field of an enemy definition, a starting value for each, and one line saying why the value is where it is. The definitions under `src/content/enemies/` are written from it.
 
-Every number is a starting value. The definition file owns it once the file exists, and the file wins when this page disagrees: one file per archetype under `src/content/enemies/`, the file name the id. The tuning surface changes any of them at no code cost. What this page owns is the reasoning: which archetype is faster than the hero and which is slower, which one out-ranges which, and what a pack is worth in experience.
+Every number is a starting value. The definition file owns it once the file exists, and the file wins when this page disagrees: one file per archetype under `src/content/enemies/`, the file name the id. The tuning surface changes any of them at no code cost. What this page owns is the reasoning: which archetype is faster than the hero and which is slower, which one out-ranges which, and what a pack is worth in experience. A reason measured in a recorded session cites it, as "balance pass 1", and [section 5](#5-what-the-numbers-do-in-a-fight) holds what those sessions measured.
 
 ---
 
@@ -86,7 +86,7 @@ The baseline. Slow, medium health, walks up and hits.
 | Health · regeneration | 400 · 1 | Eleven of the hero's attacks after armour, or a level-1 Zenith and eight, so a grunt dies to a rotation, not to one spell |
 | Mana · regeneration | 0 · 0 | It casts nothing |
 | Armour · magic resistance | 2 · 0 | The hero's armour, near enough, so physical damage lands about as it does on the hero; spells land in full |
-| Movement speed · turn rate | 240 · 0.5 | Slower than the hero's 280, so the hero gains 40 units a second walking away and kiting works |
+| Movement speed · turn rate | 240 · 0.5 | Slower than the hero's 280, so the hero gains 40 units a second walking away and kiting works: a level-1 hero walking a wide circle is never reached, and one that shoots only when the gap is 300 kills a grunt without being hit, in about seventy seconds (balance pass 1) |
 | Collision · bound · selection radius | 27 · 24 · 32 | The hero's body, so a grunt fits the arena's 96-unit corridor one at a time and a pack queues through it |
 | Attack damage · range | 20 · 100 | 17.5 after the hero's armour; five grunts on the hero kill it in about eight seconds, long enough to react, short enough to matter |
 | Acquire radius | 700 | The aggro radius, so what it notices it goes for |
@@ -109,7 +109,7 @@ Low health, fast, reaches the hero before the grunt does.
 | Health · regeneration | 220 · 0.5 | Six of the hero's attacks, the fewest of the four, so a runner that arrives first dies first |
 | Mana · regeneration | 0 · 0 | It casts nothing |
 | Armour · magic resistance | 0 · 0 | Nothing to slow its death; its speed is its defence |
-| Movement speed · turn rate | 340 · 0.8 | Faster than the hero by 60 a second, so it cannot be kited forever and has to be stopped; it turns quickest |
+| Movement speed · turn rate | 340 · 0.8 | Faster than the hero by 60 a second, so it cannot be kited forever and has to be stopped: a hero walking the same circle that sheds a grunt is caught and hit ten times in twenty seconds (balance pass 1). It turns quickest |
 | Collision · bound · selection radius | 16 · 14 · 20 | The smallest radius class: it can pass a grunt in the corridor and is drawn as the small square |
 | Attack damage · range | 10 · 100 | 8.8 after armour; a nuisance alone, dangerous only with the pack behind it |
 | Acquire radius | 800 | The aggro radius |
@@ -130,11 +130,11 @@ Stays at range and fires a projectile.
 |---|---|---|
 | Id | `ranged_archer` | |
 | Health · regeneration | 300 · 0.5 | Eight of the hero's attacks: between the runner and the grunt, because it is harder to reach |
-| Mana · regeneration | 200 · 1 | It casts nothing, but a mana pool gives Siphon something to take from a real enemy |
+| Mana · regeneration | 550 · 1 | It casts nothing, but a mana pool gives Siphon something to take from a real enemy. As deep as Siphon's largest burn, so every level of its table takes more: at 200, Whorl 3 to 7 burned no more than Whorl 2 from the one archetype that carries mana (balance pass 1) |
 | Armour · magic resistance | 1 · 0 | Light |
 | Movement speed · turn rate | 260 · 0.6 | Slower than the hero, faster than the grunt, so it keeps its distance from a grunt's pace but not from the hero's; the hero's turn rate |
 | Collision · bound · selection radius | 27 · 24 · 32 | The hero's body |
-| Attack damage · range | 20 · 500 | 17.5 after armour. A hundred short of the hero's 600, so the hero out-ranges an archer standing still and wins the trade by stepping back |
+| Attack damage · range | 20 · 500 | 17.5 after armour. A hundred short of the hero's 600, so the hero out-ranges an archer standing still and wins the trade by stepping back. It punishes standing still: a level-1 hero that stands and trades takes about nine health a second from one archer, and one that walks away takes under half that, its arrows landing only when it stops within range (balance pass 1) |
 | Acquire radius | 800 | The aggro radius |
 | Attack point · backswing · base attack time | 0.5 s · 0.5 s · 1.8 s | Slower than the hero's attack, so its arrows can be counted |
 | Projectile speed · radius | 900 · 10 | The hero's projectile speed, a homing arrow a little smaller than the hero's |
@@ -152,7 +152,7 @@ High health, high armour, slow. Something that does not die quickly.
 | Field | Value | Why |
 |---|---|---|
 | Id | `tank` | |
-| Health · regeneration | 1200 · 3 | Three grunts' health; forty-three of the hero's attacks after armour, so it is a target for spells, not for the attack |
+| Health · regeneration | 1200 · 3 | Three grunts' health; forty-three of the hero's attacks after armour, so it is a target for spells, not for the attack. It takes a combo: at orb level 7 no spell alone takes half of it, and Updraft, Zenith, Bolide, and Clarion thrown in turn take all of it (balance pass 1) |
 | Mana · regeneration | 0 · 0 | It casts nothing |
 | Armour · magic resistance | 8 · 0.25 | Armour takes 32 % off physical damage, magic resistance a quarter off magical, and pure damage lands in full, so the damage types read apart on it |
 | Movement speed · turn rate | 200 · 0.3 | The slowest: easy to walk away from, and turning half a circle takes it a third of a second |
@@ -204,7 +204,35 @@ A grunt is the unit of account: 46, a fifth of the first level. The others are p
 
 ---
 
-## 5. Atlas frames
+## 5. What the numbers do in a fight
+
+What the definitions above do against the hero, measured in three sessions recorded with the developer panel and kept as input logs under `tests/simulation/replays/balance-*.json`, which `tests/simulation/replays/balance.spec.ts` replays and checks. A log is valid only on the content version it was recorded on, so a change to any definition number means recording the three again and moving this section with them.
+
+**The hero session.** The hero stands and attacks, with no spell, against a pack of five of each archetype, at levels 1, 10, and 20. The attack does not grow with level: the hero's level buys health, mana, armour, and attack speed, and its damage grows through the orbs. So a pack of five is a fight for spells at every level, and the attack alone clears only runners, from level 10.
+
+| Pack of five | Level 1 | Level 10 | Level 20 |
+|---|---|---|---|
+| Grunts | Hero falls; none killed | Hero falls; one killed | Hero stands; three killed in 45 s |
+| Runners | Hero falls; one killed | All five killed | All five killed |
+| Archers | Hero falls; one killed | Hero falls; three killed | Hero stands; four killed in 45 s |
+| Tanks | Hero falls; none killed | Hero falls; none killed | Hero falls; none killed |
+
+**The archetypes session.** One of each against a level-1 hero on open ground, and a tank against a hero with every orb at 7.
+
+| Archetype | What the hero does | What happens |
+|---|---|---|
+| Grunt | Walks a circle 800 across away from it, and shoots when the gap is 300 | Killed in about 68 s; the hero is never hit. The grunt is kited |
+| Runner | Walks the same circle for 20 s | It catches the hero and lands ten hits. The runner is not kited |
+| Archer | Stands and trades | Killed in about 12 s, the hero taking about nine health a second |
+| Archer | Walks the same circle for 20 s | About four health a second: under half. The archer punishes standing still |
+| Tank | Throws Updraft, Zenith, Bolide, and Clarion in turn, at 7 | Dead within 7 s of the first, having taken all of its 1200 |
+| Tank | Throws one of Updraft, Zenith, Bolide, Clarion, or Glacier, at 7 | Standing; the most any one takes is Zenith's 475. The tank takes a combo |
+
+The spells session is the [spell catalogue's](./spell-catalogue.md#8-what-the-spells-do-to-a-pack).
+
+---
+
+## 6. Atlas frames
 
 Frames the archetypes draw with. Every name is in the frame list under `src/content/atlas-frames.ts` or is added to it by the definitions that need it.
 
@@ -218,7 +246,7 @@ Frames the archetypes draw with. Every name is in the frame list under `src/cont
 
 ---
 
-## 6. The long roster
+## 7. The long roster
 
 The archetypes beyond these four: composed from the behaviours above and the enemy abilities the [enemies page](../features/enemies.md#enemy-abilities) lists, each with its role, its numbers, its frame and colour, the tiers it may spawn at, and the abilities an elite or a boss of it adds. Until this section holds an entry, the four above and the dummy are the whole roster.
 

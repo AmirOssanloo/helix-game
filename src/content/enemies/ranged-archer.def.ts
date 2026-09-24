@@ -3,14 +3,15 @@ import type { EnemyDef } from "@domain/public";
 /**
  * The ranged archer: it holds at its attack range and fires a homing arrow at the hero's
  * projectile speed, a hundred short of the hero's own range so the hero wins the trade by
- * stepping back. It casts nothing, but carries a mana pool so a burn has something to take
- * from a real enemy. Every number is a starting value design retunes here.
+ * stepping back. It casts nothing, but carries a mana pool as deep as Siphon's largest burn, so
+ * every level of the burn's table has something to take from a real enemy. Every number is a
+ * starting value design retunes here.
  */
 export const rangedArcherDef = {
   id: "ranged_archer",
   health: 300, // tunable
   healthRegen: 0.5, // tunable
-  mana: 200, // tunable
+  mana: 550, // tunable; balance pass 1
   manaRegen: 1, // tunable
   armour: 1, // tunable
   magicResistance: 0,

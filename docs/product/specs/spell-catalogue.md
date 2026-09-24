@@ -199,7 +199,7 @@ A zone that charges, then burns mana from every enemy inside and deals damage fo
 
 **Statuses:** none.
 
-**Adapted:** the source returns some of the burned mana to the caster; Helix does not. An enemy with no mana takes no damage. Every enemy definition carries mana and mana regeneration so there is something to burn, and the training dummy has some. On empty ground the zone resolves on nothing; mana and cooldown were spent at commit.
+**Adapted:** the source returns some of the burned mana to the caster; Helix does not. An enemy with no mana takes no damage. Every enemy definition carries mana and mana regeneration so there is something to burn, and the training dummy has some. Of the archetypes only the archer carries any, as deep as the largest burn, so every level of the table takes more from it. On empty ground the zone resolves on nothing; mana and cooldown were spent at commit.
 
 ### 3.5 Updraft — WWQ
 
@@ -470,6 +470,30 @@ What a status definition must be able to say, each with the status that needs it
 ### 7.5 What the ten do not need
 
 A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a status that stacks, a zone that runs an effect once per unit on contact other than through `updraft_catch`, and any number a system holds. Each waits for the first ability that needs it.
+
+---
+
+## 8. What the spells do to a pack
+
+What the entries above do to a pack of five grunts, the baseline archetype, measured in a session recorded with the developer panel and kept as an input log, `tests/simulation/replays/balance-spells.json`, which `tests/simulation/replays/balance.spec.ts` replays and checks. A log is valid only on the content version it was recorded on, so a change to any number here means recording it again and moving this section with it. The enemy catalogue holds [the other two sessions](./enemy-catalogue.md#5-what-the-numbers-do-in-a-fight).
+
+Each spell is thrown once, at every orb level 1, 4, and 7 with the hero at level 3, 12, and 21, under the panel's infinite mana and no cooldowns, at the pack's centre a second and a half after it engaged the hero. The table is the damage the pack took in the eight seconds after the throw, of its 2000 health. For Hoarfrost, Emberling, and Quicken the hero attacks through the eight seconds, the frosted grunt for Hoarfrost, so the number holds the attack; for the rest the hero stands and does nothing else.
+
+| Spell | Orb 1 | Orb 4 | Orb 7 | Reads |
+|---|---|---|---|---|
+| Hoarfrost, with the attack | 241 | 353 | 543 | Kills one grunt at 7 |
+| Glacier | 61 | 443 | 773 | Weak at 1, where a segment lasts 3 s and burns 6 a second |
+| Siphon | 0 | 0 | 0 | A grunt carries no mana |
+| Siphon, at five archers | 250 | 813 | 1375 | The whole burn at every level: 50, 162.5, and 275 each |
+| Updraft | 350 | 800 | 1250 | The drop on every one of the five |
+| Zenith | 100 | 287 | 475 | Its split leaves it the least against a pack; one grunt in the circle takes it all |
+| Bolide | 303 | 757 | 1211 | The meteor lands on the pack, rolls through it, and leaves the burn |
+| Clarion | 200 | 800 | 1400 | The blast on every one of the five, and the most of any at 4 and 7 |
+| Emberling, with the attack | 375 | 632 | 964 | Kills one grunt at 4 and two at 7 |
+| Quicken, with the attack | 356 | 729 | 1181 | Kills one grunt at 4 and two at 7 |
+| Wane | 0 | 0 | 0 | It hides and slows; it deals nothing |
+
+Every damaging spell deals more at each level than at the one before, and none alone kills a grunt at orb level 1. The hero never falls, healed by the panel each second.
 
 ---
 

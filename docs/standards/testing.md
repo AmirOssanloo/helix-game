@@ -126,6 +126,8 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 | Recorded log | `loadInputLog(name)` | A replay test, from `tests/simulation/replays/` |
 | World view stub | `makeWorldView(overrides)` | A presentation test needs something to sync from |
 
+**A recorded log is valid only on the content version it was recorded on.** A change to a definition number moves the version, and every stored log goes with it in the same change: re-stamped with the new version where its spec asserts something the number does not decide, and recorded again where the spec asserts what the numbers do, as a balance pass's logs do.
+
 A helper **arranges**; it never simulates. It does not branch on its parameters, carry state between calls, or re-implement a production rule. `tickUntil` has a maximum and fails loudly when it reaches it.
 
 **Every helper lives under `tests/helpers/`, one folder per kind, and a spec imports from the barrel** `tests/helpers/index.ts` and nowhere deeper. Lint enforces the barrel. Inside, the folders are the index:
@@ -180,6 +182,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Always tested | Every acceptance test, determinism, every refusal, every disable against every blocked action, every transition, anything that failed once |
 | Never tested | The same rule at two tiers; call order and counts; Phaser; reference numbers; wiring |
 | A bug fix | Ships with its reproducing input log as a replay test |
+| Recorded logs | Valid on one content version; a number change re-stamps them, or records again those that assert what the numbers do |
 | Shape | One outcome per test; names read as requirements; arrange, act, assert; no logic; literal expected values |
 | Time and randomness | From the world's seed and `tick`. No clock, no fake timers, no sleep |
 | Worlds | Small: a factory-made registry of the definitions the test needs |
