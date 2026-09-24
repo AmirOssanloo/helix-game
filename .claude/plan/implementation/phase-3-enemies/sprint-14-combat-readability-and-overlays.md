@@ -69,7 +69,7 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Layer | tests |
 | Size | 1 |
 | Depends on | P3-S12-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `tests/simulation/combat/damage-types.spec.ts`: physical (auto-attack, emberling), magical (each magical spell), and pure (Zenith) against each archetype's armour and magic resistance, with literal expected values from the catalogue; the tank survives what kills the runner; Updraft and Blast displace a pack; Glacier slows a pack; the spirit fights a grunt.
 
@@ -79,6 +79,10 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 **Tests:** as above.
 
 **Definition of done:** Every change.
+
+> Edited 2026-09-24: "Blast" is Clarion, the one spell that pushes; no spell is called Blast. Siphon is added to the magical sources, since it is a magical spell the build line's "each" covers.
+
+> Closed 2026-09-24. `tests/simulation/combat/damage-types.spec.ts` lands ten sources on each of the four archetypes, forty cells, each with a literal from the catalogues at orb level 1. The sources are the hero's attack and the spirit's (physical); Bolide's roll and its burn, Clarion, Hoarfrost's hook, Updraft's drop, Glacier's chill, and Siphon (magical); and Zenith (pure). Every source goes through a real cast or attack order, with the panel's infinite mana and no cooldowns on. In the matrix each archetype keeps its own health, armour, and resistance but is driven by `stationary`, so it stands on its mark. A rate is read back as its amount a second. Siphon lands 50 on the archer and nothing on the rest, since the archer is the one archetype with mana. Five cases run the archetypes as they ship. Clarion at the cap kills a runner and leaves the tank beside it standing, 210 landed. Updraft lifts every grunt in a pack of three. Clarion pushes every grunt in its cone away. Glacier slows every grunt that chases through the wall to 192. The spirit lands 19.64 a shot on a grunt that has aggroed. No source code changed. `pnpm check` green.
 
 ---
 
@@ -111,9 +115,9 @@ Fifty enemies, all ten spells, every overlay, and the screen still tells you wha
 | Check | Result |
 | --- | --- |
 | Fifty-enemy fight readable by hand, every overlay checked against the page | |
-| Damage-type matrix green | |
+| Damage-type matrix green | Green, 2026-09-24: forty cells of type against archetype, each a literal, and five live-archetype cases, in `tests/simulation/combat/damage-types.spec.ts` |
 | Sync time with maximum bound views | |
-| Actual days per ticket | T01 0.2 · T02 0.3 · T03 · T04 |
+| Actual days per ticket | T01 0.2 · T02 0.3 · T03 0.2 · T04 |
 
 ## Risks in this sprint
 
