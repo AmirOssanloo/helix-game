@@ -120,6 +120,11 @@ export {
   createAttackRecord,
 } from "./definitions/attack-state";
 export {
+  type ContentChange,
+  contentChangeOf,
+  type Retune,
+} from "./definitions/content-change";
+export {
   type DefinitionField,
   definitionFieldUnit,
   definitionFields,

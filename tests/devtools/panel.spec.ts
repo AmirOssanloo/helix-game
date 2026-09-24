@@ -91,6 +91,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     tuningDefaults: tuningTable,
     definitionDefaults: definitionFields(contentRegistry),
     archetypes: contentRegistry.enemies.map((def): string => def.id),
+    contentStatus: { message: "" },
     downloadAtlas: (): string => "data:image/png;base64,",
   });
   const host = document.createElement("aside");

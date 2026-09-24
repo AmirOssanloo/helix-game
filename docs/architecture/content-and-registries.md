@@ -81,6 +81,8 @@ A tuning command carries its value in the designer's units, the same seconds or 
 
 Every numeric field of every definition a world reads a number from — the hero, forms, spells, abilities, statuses, enemies, summons — is a tunable too, keyed `def:<kind>:<id>:<field path>`, with `:<index>` after a table entry. A colour is not. At world creation the world copies each of those definitions, builds its records from the copies, and puts every number of the copies into the tuning state under its key, converted. A tuning command on a definition key writes the world's copy, updates the tuning state, and rebuilds the one record read from that definition, so the next cast or spawn reads the new number and a unit already spawned keeps what it was dressed with. The copy is taken per world, so a retune never reaches the registry, another world, or a restart. The unit a field is converted from is read from its name, as the coding standard names fields: `fooSeconds` is seconds, a regeneration or a speed a body or a shot moves at is per second, the turn rate is radians per turn step, `fooDegrees` is degrees, and anything else is read as written. Content derives the exact union of its definition keys from its own constants, so a key naming a field, an id, or a table entry that does not exist is a compile error wherever content's key type is used; the domain's command type checks only the `def:<kind>:` shape, and the world refuses a key it does not hold.
 
+Under the dev server the content hot-reloads. The composition root is the one hot-module boundary, and it accepts `content/public.ts`, so an edit under `content/` reaches it and nothing else does; an edit anywhere else reloads the page, because a world cannot be patched mid-tick. The new registry is validated first, and one that fails is refused with every fault named in the panel while the game runs on the registry it had. A registry that changes anything but numbers the tuning surface reaches, or the step rate, reloads the page. Otherwise the session takes it, so a recreate, a replay check, and a saved log's stamp read it from then on, and every number it changes becomes a tuning command for the next tick, in the log like a slider's. A number a tuning command has moved from its old default is the person's and is kept. A replay runs on the content it was recorded against, so nothing is taken while one runs.
+
 ---
 
 ## Atlas frames
@@ -124,6 +126,7 @@ A system writing a stack count back into the status definition. The next unit th
 | A definition number | A tunable keyed `def:<kind>:<id>:<field path>[:<index>]`; the world copies the definition at creation, and a tuning command writes the copy and rebuilds its record for the next use |
 | A tuning value in a command | Designer units, converted once by the registry when the command is applied; systems read ticks and radians |
 | Atlas frames | One list in `content/atlas-frames.ts`, read by the bake and the views |
+| Content hot-reload | The composition root accepts `content/public.ts`; a registry that validates and changes only numbers is taken, its changes submitted as tuning commands, a number the panel moved kept; one that fails validation is refused in the panel; any other change reloads the page |
 | Mutating a definition | Never, except a tuning command on the world's own copy; state lives on the entity |
 
 ---

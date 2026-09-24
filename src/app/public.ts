@@ -1,10 +1,10 @@
+export { type ContentReload, reloadContent } from "./content-reload";
 export {
   type Clock,
   FixedStepDriver,
   type FixedStepDriverOptions,
   MAX_TICKS_PER_FRAME,
-  STEP_MS,
-  TICK_RATE,
+  stepMsOf,
   wallClock,
 } from "./fixed-step-driver";
 export {
@@ -17,7 +17,12 @@ export {
   rendererType,
 } from "./game-config";
 
-export { Session, type SessionOptions } from "./session";
+export {
+  type CommandStamps,
+  Session,
+  type SessionOptions,
+  type SessionRetune,
+} from "./session";
 
 /** Starts the game: builds the world, the renderer, and the fixed-step driver, and wires them together. */
 export type Boot = () => void;

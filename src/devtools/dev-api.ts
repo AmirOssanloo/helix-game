@@ -91,6 +91,16 @@ export type GroundPick = {
 };
 
 /**
+ * The last content reload as a person reads it, named on this side of the layer line: the
+ * composition root writes the line when the content files change under the dev server, and the
+ * panel shows it. Empty until a reload happens. It is a report, not a control; nothing the
+ * panel does writes it.
+ */
+export type ContentStatus = {
+  message: string;
+};
+
+/**
  * The one object the developer panel and a person at the console reach the game through, on
  * `window` in a development build. It submits commands into the same buffer a click lands
  * in, drives the driver, reads the world view and the event ring by reference, reads the
@@ -112,6 +122,8 @@ export type DevApi = Readonly<{
   definitionDefaults: readonly DefinitionField[];
   /** Every archetype the registry holds, by id, in the order content wrote them: what the enemies dropdown lists, without a code change per archetype. */
   archetypes: readonly string[];
+  /** What the last content reload came to: taken, refused with its faults, or waiting on a page load. */
+  content: Readonly<ContentStatus>;
   /** The session so far as one JSON document: the seed, the content version, the map, the ticks run, and every consumed command with its tick. */
   saveInputLog: () => string;
   /** Replays a saved log from its first tick on a world recreated under its seed, or returns the message saying why it cannot run. */
@@ -132,6 +144,7 @@ export type DevApiPorts = Readonly<{
   tuningDefaults: TuningDef;
   definitionDefaults: readonly DefinitionField[];
   archetypes: readonly string[];
+  contentStatus: ContentStatus;
   downloadAtlas: () => string;
 }>;
 
@@ -182,6 +195,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     tuningDefaults: ports.tuningDefaults,
     definitionDefaults: ports.definitionDefaults,
     archetypes: ports.archetypes,
+    content: ports.contentStatus,
     saveInputLog: (): string => ports.session.saveInputLog(),
     loadInputLog: (text: string): string | null =>
       ports.session.loadInputLog(text),

@@ -37,6 +37,8 @@ window.DevApi = { submit, driver, view, rings, overlays, saveInputLog, loadInput
 
 The HTML panel itself is outside the canvas and knows nothing about Phaser. It is built from a pane library rather than by hand: a folder per group, and in it a slider, a checkbox, a dropdown, a button, or a read-only line. The pane ships only where the panel does, and the build refuses a production bundle holding either.
 
+The simulation group carries one line the panel only reads: what the last content reload came to, taken, refused with every fault named, or reloading the page. The composition root writes it; [Content and registries](./content-and-registries.md) has the reload. A slider shows its default beside it, so a reload that is taken builds the panel again over the new defaults.
+
 ---
 
 ## What a control is
@@ -120,6 +122,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Panel actions | `DebugCommand` variants and `SetTuning` commands, into the same buffer and log as player input |
 | Pause, single-step, catch-up cap | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
 | Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log from another content version is refused with a message naming both |
+| A content reload | Reported on the simulation group's content line: taken, refused with its faults, or reloading the page; a reload that is taken builds the panel again over the new defaults |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |
 | Reading state | The `Readonly` world view, by reference, throttled per render frame |
 | The panel | A pane outside the canvas; imports nothing from Phaser, and neither it nor the pane is in a production bundle |

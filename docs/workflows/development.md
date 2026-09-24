@@ -103,7 +103,7 @@ Every command on this page is under `scripts` in the root `package.json`. That f
 ## While you work
 
 - **Prettier runs on save** if your editor is set up, and in the commit hook regardless.
-- **Content hot-reloads.** Editing a definition under `src/content/` swaps the registry in the running world without a page reload. Editing anything under `src/domain/` or `src/simulation/` reloads the page, because the world cannot be patched mid-tick.
+- **Content hot-reloads.** Editing a number in a definition under `src/content/` swaps the registry in the running world without a page reload: the next spawn or cast reads the new number, and a number you moved in the panel keeps your value. A definition that fails validation is refused, with the faults on the panel's content line, and the game runs on. Any other edit under `src/content/` reloads the page, and so does anything under `src/domain/` or `src/simulation/`, because the world cannot be patched mid-tick.
 - **The commit hook** runs `pnpm lint` and `pnpm typecheck` on staged files. It does not run tests; that is what `pnpm check` before a push is for.
 
 ---

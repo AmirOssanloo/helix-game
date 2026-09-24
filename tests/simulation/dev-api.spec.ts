@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, Session, STEP_MS } from "@app/public";
+import { FixedStepDriver, Session, stepMsOf } from "@app/public";
 import {
   contentRegistry,
   trainingDummyDef,
@@ -17,6 +17,8 @@ import { contentVersionOf, createEventReader } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;
+
+const STEP_MS = stepMsOf(tuningTable.sim_hz);
 
 /** A clock counting one per read, so an arrival stamp is a number a spec can predict. */
 const countingClock = (): Clock => {
@@ -77,6 +79,7 @@ const arrange = (): Arranged => {
     tuningDefaults: tuningTable,
     definitionDefaults: definitionFields(contentRegistry),
     archetypes: contentRegistry.enemies.map((def): string => def.id),
+    contentStatus: { message: "" },
     downloadAtlas: (): string => "data:image/png;base64,",
   });
 

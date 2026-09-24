@@ -1,4 +1,5 @@
 export {
+  type ContentStatus,
   createDevApi,
   DEV_API_NAME,
   type DevApi,

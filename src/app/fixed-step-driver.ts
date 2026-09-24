@@ -1,15 +1,16 @@
-import { tuningTable } from "@content/public";
 import type { AnyCommand, Tick } from "@domain/public";
+import { readTunable } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import type { Steppable } from "@simulation/public";
 
-/** Ticks per second, from the tuning table so the driver and every converted duration agree. The world's one unit of time is a count of these. */
-export const TICK_RATE = tuningTable.sim_hz;
-
 const MS_PER_SECOND = 1000;
 
-/** The constant step, in wall milliseconds. Never a frame delta. */
-export const STEP_MS = MS_PER_SECOND / TICK_RATE;
+/**
+ * The constant step, in wall milliseconds, of a world ticking `simHz` times a second. Never a
+ * frame delta. The driver reads the rate from the world it steps, so the driver and every
+ * duration the world converted agree, and no command can change it.
+ */
+export const stepMsOf = (simHz: number): number => MS_PER_SECOND / simHz;
 
 /** The catch-up cap a driver starts with: ticks one render frame may run before the remaining time is dropped rather than queued. */
 export const MAX_TICKS_PER_FRAME = 3;
@@ -52,6 +53,8 @@ export class FixedStepDriver {
 
   private readonly clock: Clock;
 
+  private readonly stepMs: number;
+
   private accumulatorMs = 0;
 
   private fraction = 0;
@@ -68,6 +71,9 @@ export class FixedStepDriver {
     this.world = options.world;
     this.rings = options.rings;
     this.clock = options.clock;
+    this.stepMs = stepMsOf(
+      readTunable(options.world.view.run.tuning, "sim_hz"),
+    );
   }
 
   /** How far the accumulator is into the next step, in [0, 1). The presentation interpolates by it. */
@@ -168,9 +174,9 @@ export class FixedStepDriver {
 
     let steps = 0;
 
-    while (this.accumulatorMs >= STEP_MS && steps < this.cap) {
+    while (this.accumulatorMs >= this.stepMs && steps < this.cap) {
       this.runTick();
-      this.accumulatorMs -= STEP_MS;
+      this.accumulatorMs -= this.stepMs;
       steps += 1;
     }
 
@@ -178,7 +184,7 @@ export class FixedStepDriver {
       this.accumulatorMs = 0;
     }
 
-    this.fraction = this.accumulatorMs / STEP_MS;
+    this.fraction = this.accumulatorMs / this.stepMs;
   }
 
   private runTick(): void {

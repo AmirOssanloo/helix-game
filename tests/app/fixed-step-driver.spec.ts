@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, MAX_TICKS_PER_FRAME, STEP_MS } from "@app/public";
+import { FixedStepDriver, MAX_TICKS_PER_FRAME, stepMsOf } from "@app/public";
 import type { AnyCommand } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld } from "../helpers";
+import { makeRegistry, makeWorld } from "../helpers";
 
 const SEED = 7;
+
+const STEP_MS = stepMsOf(makeRegistry().tuning.sim_hz);
 
 /** A clock that reads back a fixed sequence, one value per `now`, then holds the last. */
 const sequenceClock = (readings: readonly number[]): Clock => {
@@ -219,5 +221,21 @@ describe("FixedStepDriver", () => {
     expect(driver.setCatchUpCap(0)).toBe(false);
     expect(driver.setCatchUpCap(1.5)).toBe(false);
     expect(driver.catchUpCap).toBe(MAX_TICKS_PER_FRAME);
+  });
+
+  it("steps at the rate of the world it drives", () => {
+    const world = makeWorld({
+      seed: SEED,
+      registry: makeRegistry({ tuning: { sim_hz: 60 } }),
+    });
+    const driver = new FixedStepDriver({
+      world,
+      rings: createRings(),
+      clock: sequenceClock([0]),
+    });
+
+    driver.onFrame(stepMsOf(60) * 2);
+
+    expect(world.view.tick).toBe(2);
   });
 });

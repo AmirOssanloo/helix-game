@@ -1,4 +1,11 @@
-import type { AnyCommand, MapDef, Registry } from "@domain/public";
+import type {
+  AnyCommand,
+  ContentChange,
+  MapDef,
+  Registry,
+  Tick,
+} from "@domain/public";
+import { contentChangeOf } from "@domain/public";
 import type {
   EventRing,
   InputLog,
@@ -24,6 +31,18 @@ export type SessionOptions = Readonly<{
   map: MapDef;
 }>;
 
+/** The stamps a command built now carries: the driver's, so a reload's commands sort among a click's. */
+export type CommandStamps = Readonly<{
+  nextTick: Tick;
+  now: () => number;
+}>;
+
+/** What a retune came to: what the new registry changes, and how many of its retunes the command buffer had no room for. */
+export type SessionRetune = Readonly<{
+  change: ContentChange;
+  refused: number;
+}>;
+
 /**
  * The one world of a running game and the replay that may be feeding it. The driver steps
  * the session; the scenes and the panel hold the world's view, ring, and log, which keep
@@ -34,20 +53,27 @@ export type SessionOptions = Readonly<{
 export class Session implements Steppable {
   readonly world: Simulation;
 
-  /** The stamp of the registry the world runs on, written into every saved log. */
-  readonly contentVersion: string;
+  private registry: Registry;
 
-  private readonly registry: Registry;
+  private version: string;
 
   private readonly map: MapDef;
 
   private replay: Replay | null = null;
 
+  /** Keys a retune submitted a command for that no tick has applied yet: each holds the registry's default once it does. */
+  private readonly pendingRetunes = new Set<string>();
+
   constructor(options: SessionOptions) {
     this.registry = options.registry;
     this.map = options.map;
     this.world = createSessionWorld(options);
-    this.contentVersion = contentVersionOf(options.registry);
+    this.version = contentVersionOf(options.registry);
+  }
+
+  /** The stamp of the registry the world runs on, written into every saved log. */
+  get contentVersion(): string {
+    return this.version;
   }
 
   get view(): WorldView {
@@ -81,6 +107,8 @@ export class Session implements Steppable {
 
   /** One tick of the replay while one runs, of the world otherwise. A replay that has fed its last tick is let go. */
   tick(): void {
+    this.pendingRetunes.clear();
+
     if (this.replay === null) {
       this.world.tick();
 
@@ -97,16 +125,58 @@ export class Session implements Steppable {
   /** A fresh session under `seed`, any replay dropped. */
   recreate(seed: number): void {
     this.replay = null;
+    this.pendingRetunes.clear();
     restartSessionWorld(this.world, seed);
+  }
+
+  /**
+   * Takes `next`, a validated registry, when it changes nothing but numbers: a recreate, a load,
+   * and the stamp of a saved log read it from here on, and each number it changes that no
+   * tuning command has moved goes in as a `set_tuning` command stamped by `stamps`, so the
+   * running world changes by command and the log sees it. The command goes to the world, not
+   * the driver, so a hidden tab holds it in the buffer rather than dropping it as it drops
+   * input. When `next` changes anything else, nothing is taken. Never called during a replay.
+   */
+  retune(next: Registry, stamps: CommandStamps): SessionRetune {
+    const change = contentChangeOf(
+      this.registry,
+      next,
+      this.world.view.run.tuning,
+      this.pendingRetunes,
+    );
+
+    if (change.kind === "reshaped") {
+      return { change, refused: 0 };
+    }
+
+    this.registry = next;
+    this.version = contentVersionOf(next);
+    this.world.adoptRegistry(next);
+
+    let refused = 0;
+
+    for (const retune of change.retunes) {
+      const submitted = this.world.submit({
+        kind: "set_tuning",
+        key: retune.key,
+        value: retune.value,
+        tick: stamps.nextTick,
+        timestamp: stamps.now(),
+      });
+
+      if (submitted) {
+        this.pendingRetunes.add(retune.key);
+      } else {
+        refused += 1;
+      }
+    }
+
+    return { change, refused };
   }
 
   /** The session so far as one JSON document. */
   saveInputLog(): string {
-    return serializeInputLog(
-      this.world.view,
-      this.world.log,
-      this.contentVersion,
-    );
+    return serializeInputLog(this.world.view, this.world.log, this.version);
   }
 
   /**
@@ -127,6 +197,7 @@ export class Session implements Steppable {
     }
 
     restartSessionWorld(this.world, file.seed);
+    this.pendingRetunes.clear();
     this.replay = new Replay(this.world, file);
 
     return null;

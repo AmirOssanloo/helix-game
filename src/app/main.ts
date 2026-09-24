@@ -1,12 +1,14 @@
+/// <reference types="vite/client" />
 import Phaser from "phaser";
 import {
   arenaDef,
   atlasFrames,
   contentRegistry,
   FLOOR_IMAGE,
-  tuningTable,
 } from "@content/public";
+import type { ContentStatus, PanelHandle } from "@devtools/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
+import type { Registry } from "@domain/public";
 import { assertRegistryValid, definitionFields } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
@@ -21,6 +23,7 @@ import {
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
+import { reloadContent } from "./content-reload";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
 import type { Boot } from "./public";
@@ -98,6 +101,11 @@ export const boot: Boot = (): void => {
     }
   });
 
+  // What the last content reload came to, written below and shown by the panel.
+  const contentStatus: ContentStatus = { message: "" };
+  // Builds the panel over `registry`'s defaults again; set once the panel is mounted.
+  let remountPanel: ((registry: Registry) => void) | null = null;
+
   if (__PANEL__) {
     const host = document.getElementById(DEVTOOLS_HOST_ID);
 
@@ -107,22 +115,61 @@ export const boot: Boot = (): void => {
       );
     }
 
-    const api = createDevApi({
-      driver,
-      session,
-      view: world.view,
-      events: world.events,
-      rings,
-      overlays,
-      groundPick,
-      tuningDefaults: tuningTable,
-      definitionDefaults: definitionFields(contentRegistry),
-      archetypes: contentRegistry.enemies.map((def): string => def.id),
-      downloadAtlas: (): string => atlas.download(),
-    });
+    const mount = (registry: Registry): PanelHandle => {
+      const api = createDevApi({
+        driver,
+        session,
+        view: world.view,
+        events: world.events,
+        rings,
+        overlays,
+        groundPick,
+        tuningDefaults: registry.tuning,
+        definitionDefaults: definitionFields(registry),
+        archetypes: registry.enemies.map((def): string => def.id),
+        contentStatus,
+        downloadAtlas: (): string => atlas.download(),
+      });
 
-    exposeDevApi(window, api);
-    mountPanel(host, api, window.localStorage);
+      exposeDevApi(window, api);
+
+      return mountPanel(host, api, window.localStorage);
+    };
+    let panel = mount(contentRegistry);
+
+    // A slider shows its default beside it, so a reload that changed a default builds the panel again over the new ones.
+    remountPanel = (registry: Registry): void => {
+      panel.unmount();
+      panel = mount(registry);
+    };
+  }
+
+  // Under the dev server, an edit under src/content/ stops here rather than reloading the page.
+  // The callback runs between frames, so between ticks: the session takes the new registry and
+  // its changed numbers go in as tuning commands for the next tick, or it is refused and the
+  // game runs on. Every other module has no boundary, so an edit under src/domain/ or
+  // src/simulation/ reloads the page, since a world cannot be patched mid-tick.
+  if (import.meta.hot) {
+    import.meta.hot.accept("@content/public", (next): void => {
+      const registry = next?.["contentRegistry"] as Registry | undefined;
+
+      if (registry === undefined) {
+        window.location.reload();
+
+        return;
+      }
+
+      const reload = reloadContent(session, driver, registry);
+
+      contentStatus.message = reload.message;
+      console.log(reload.message);
+
+      if (reload.outcome === "reload_page") {
+        window.location.reload();
+      } else if (reload.outcome === "taken" && remountPanel !== null) {
+        remountPanel(registry);
+      }
+    });
   }
 };
 

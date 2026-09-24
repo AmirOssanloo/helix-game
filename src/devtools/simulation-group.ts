@@ -18,15 +18,19 @@ const RESUME_LABEL = "Resume";
 const logFilename = (seed: number, tick: number): string =>
   `helix-input-log-${String(seed)}-${String(tick)}.json`;
 
+/** Lines the content readout shows before it scrolls. */
+const CONTENT_ROWS = 4;
+
 /** The files the load control offers a person. */
 const LOG_FILE_TYPES = ".json,application/json";
 
 /**
  * The simulation group: the three driver operations, which change nothing in the world and are
  * not in the log; the seed, shown so a person can name the session and editable to recreate the
- * world under another; the input log save and load; the atlas download; and the map reset,
- * which is a command like any other. A load that cannot run says why in the status line; one
- * that can says what it is replaying.
+ * world under another; the input log save and load; the atlas download; the map reset,
+ * which is a command like any other; and the line saying what the last content reload came
+ * to. A load that cannot run says why in the status line; one that can says what it is
+ * replaying.
  *
  * The cap and the seed are read back from the driver on each refresh, so a value it refused and
  * a seed a replay changed are both shown as they are. Each compares what it is handed against
@@ -109,11 +113,25 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
   });
 
   const status = readout(folder, "Status");
+  // A refused reload names every fault, a line each, so the content line has room for a few.
+  const content = { message: api.content.message };
+  const contentLine = folder.addBinding(content, "message", {
+    interval: 0,
+    label: "Content",
+    multiline: true,
+    readonly: true,
+    rows: CONTENT_ROWS,
+  });
 
   return {
     refresh: (): void => {
       pause.title = api.driver.paused ? RESUME_LABEL : PAUSE_LABEL;
       status.show(report.status);
+
+      if (content.message !== api.content.message) {
+        content.message = api.content.message;
+        contentLine.refresh();
+      }
 
       // A loaded log changes the seed under a person's feet; the field follows unless they are typing in it.
       if (!seed.element.contains(document.activeElement)) {

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { FixedStepDriver, TICK_RATE } from "@app/public";
+import { FixedStepDriver } from "@app/public";
 import { acquireUnit, movementSpeed, readTunable } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import { shortestArc } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, spawnHero, submit } from "../helpers";
+import { makeRegistry, makeWorld, spawnHero, submit } from "../helpers";
+
+/** Ticks per second, as the world converts every duration. */
+const TICK_RATE = makeRegistry().tuning.sim_hz;
 
 const MS_PER_SECOND = 1000;
 

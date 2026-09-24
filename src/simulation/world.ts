@@ -178,7 +178,8 @@ export class Simulation {
   /** The map the world was created on, which a restart returns it to. A map load changes the loaded map, never this. */
   readonly mapDef: MapDef;
 
-  private readonly registry: Registry;
+  /** What a restart builds run scope from: the registry the world was created from, or the last one it adopted. */
+  private registry: Registry;
 
   private readonly buffer: CommandBuffer;
 
@@ -324,6 +325,16 @@ export class Simulation {
     this.buffer.clear();
     this.events.clear();
     this.log.clear();
+  }
+
+  /**
+   * Takes `registry` as what the next restart builds run scope from. Nothing a tick reads
+   * changes: a running world's numbers change only by tuning command. A development reload of
+   * the content calls it once the new registry is validated and its changed numbers are
+   * submitted as those commands, so a recreate after it starts from what the files now say.
+   */
+  adoptRegistry(registry: Registry): void {
+    this.registry = registry;
   }
 
   /** Releases every pool and forgets every waiting command, event, and log record. The world refuses submits afterwards. */

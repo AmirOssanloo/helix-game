@@ -48,7 +48,7 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | Layer | app, content, tooling |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** A Vite hot-module boundary on `src/content/index.ts`: on a change under `src/content/`, rebuild and revalidate the registry and swap it into the running world's tuning defaults for keys not currently overridden by a `set_tuning` command, between ticks; changes under `src/domain/` or `src/simulation/` reload the page. A registry that fails validation on reload keeps the old one and shows the error in the panel.
 
@@ -59,6 +59,8 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 **Tests:** none; manual.
 
 **Definition of done:** Every change.
+
+**Note, 2026-09-24: an edit to a content number reaches the running world as a tuning command; anything else reloads the page.** The boundary is `src/app/main.ts` accepting `@content/public`, the door the composition root imports content through, which re-exports `content/index.ts`: the ticket's "boundary on `src/content/index.ts`" read as that door. The fixed-step driver no longer imports content, and reads its step from the world it drives (`stepMsOf`), so a content edit reaches only that boundary. A Vite dev server probe showed a change to `melee-grunt.def.ts` or `tuning.ts` sent as an update to `main.ts`, and a change under `src/domain/`, `src/simulation/`, or to the driver sent as a full reload. `reloadContent` in `src/app/content-reload.ts` validates the new registry and, on a fault, keeps the old one and names every fault on a new Content line in the panel's Simulation group. While a replay runs it refuses. `contentChangeOf` in `src/domain/definitions/content-change.ts` calls anything but a changed tunable number a reshape, which reloads the page. Otherwise `Session.retune` takes the registry, so a recreate, a replay check, and the saved stamp read it, and it submits a `set_tuning` per changed number the world still holds at the old default. The commands are in the log, as ADR 0004 asks of every tunable change. A number moved in the panel is kept and named. A retune still waiting for its tick counts as at the default, so two saves inside one tick, or while paused or hidden, both land. A reload that is taken builds the panel again over the new defaults. These readings are decided provisionally in [Q36](../backlog/open-questions.md). The content-and-registries, devtools, and development pages are updated. The ticket lists no tests. It gains `tests/domain/definitions/content-change.spec.ts` (seven cases) and `tests/app/content-reload.spec.ts` (six: the grunt's health edit on the next spawn, by a logged command in the same world; a typo'd behaviour key refused with the fault named and the old content kept; a reshape taking nothing; a panel-tuned number kept; a second save before the first ticked, then a recreate and the saved stamp; a replay refusing). `tests/app/fixed-step-driver.spec.ts` gains the driver stepping at its world's rate. `pnpm check` and `pnpm test:budget` green. The two manual acceptance rows, walked in a browser, are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -111,7 +113,7 @@ Drag Hoarfrost's level-3 stun duration, throw it, and see the difference. Edit t
 | --- | --- |
 | Three random keys retuned from the panel with no code change | |
 | Hot reload and version refusal by hand | |
-| Actual days per ticket | T01 0.5 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.5 · T02 0.3 · T03 · T04 |
 
 ## Risks in this sprint
 
