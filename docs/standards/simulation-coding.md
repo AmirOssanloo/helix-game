@@ -41,7 +41,7 @@ const cooldownTicks = toTicks(fooDef.cooldownSeconds)
 | Spread, `map`, `filter`, `reduce` on the hot path | An index loop over the pool |
 | A new vector per operation | The scratch vectors from `shared/`, reset before use |
 | String concatenation for a key | Integer cell coordinates packed into one number |
-| Two coordinates passed to a call made per unit per tick | The point object the coordinates already live in. The engine boxes a fractional number handed to a call it does not inline, one heap object per argument per call |
+| A fractional number passed to, or returned from, a call made per unit per tick | The object the number lives in: the point for two coordinates, a scratch record the callee reads and writes for an amount, as the damage door takes one. The engine boxes a fractional number that crosses a call it does not inline, one heap object per argument or result per call |
 | Anything that lives longer than the tick | Acquired from its pool, released back to it |
 
 Allocation at world creation and map load is fine. That is where pools fill. The pool-miss counter in the instrumentation rings reads zero after warm-up, and [Performance standards](./performance.md#quick-reference) say what to do when it doesn't.

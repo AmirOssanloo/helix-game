@@ -1,7 +1,8 @@
 import type { EntityId } from "@shared/public";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
-import { applyDamage } from "../combat/damage";
+import type { DamageRecord } from "../combat/damage";
+import { dealDamage } from "../combat/damage";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
@@ -30,6 +31,9 @@ const event = createDomainEvent();
 
 /** Scratch for the context an expiry list runs with, reused for every one of every tick. */
 const context = createCastRecord();
+
+/** Scratch for the share of a damage over time dealt this tick, reused for every row of every unit. */
+const share: DamageRecord = { amount: 0, landed: 0 };
 
 /**
  * The rows one unit's pass found ended, kept as the three things an expiry list needs after
@@ -159,13 +163,8 @@ const takeDamageOverTime = (
     return;
   }
 
-  applyDamage(
-    world,
-    unitId,
-    amountAtOrbLevel(damage, entry.orbLevels) * entry.stacks,
-    damage.damageType,
-    entry.sourceId,
-  );
+  share.amount = amountAtOrbLevel(damage, entry.orbLevels) * entry.stacks;
+  dealDamage(world, unitId, share, damage.damageType, entry.sourceId);
 };
 
 /** Keeps what the ended row's list needs, in the scratch slot `found`, before the row is emptied. */
