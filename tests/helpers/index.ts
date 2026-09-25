@@ -42,6 +42,7 @@ export { makeFormDef } from "./content/make-form-def";
 export { makeMapDef } from "./content/make-map-def";
 export { makeSpellDef } from "./content/make-spell-def";
 export { makeStatusDef } from "./content/make-status-def";
+export { SEAL, SEAL_ROW, SEALED_MATRIX, SEALED_STATUSES } from "./content/seal";
 export {
   makeRegistry,
   type MakeRegistryOptions,

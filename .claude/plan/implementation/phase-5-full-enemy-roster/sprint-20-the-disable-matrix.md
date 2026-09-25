@@ -86,7 +86,7 @@ Edited in place, 2026-09-25: the validator takes the matrix as a third argument,
 | Layer | presentation, tests |
 | Size | 0.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** The HUD greys each square from a per-slot blocked flag the world view derives from the matrix, not from a hard-coded list per status; the mapper closes the cursor on any status whose cursor cell says closed.
 
@@ -97,6 +97,8 @@ Edited in place, 2026-09-25: the validator takes the matrix as a third argument,
 - `tests/presentation/hud.spec.ts` extended with a fixture status.
 
 **Definition of done:** Every change · Anything under `src/presentation`.
+
+**Closed, 2026-09-25.** T02 already moved the code: the kit's slot descriptor names a per-slot `blockedBy` from `slotRefusal` over the matrix, the HUD greys a square from it, and the mapper's `syncCursor` closes a cursor from `isClosed` over the matrix's cursor cells; nothing under `src/presentation` names a status, and the one switch left, the flash kind in `slot-flashes.ts`, reads the fixed set of refusal reasons, not statuses. This ticket adds the proof: `tests/helpers/content/seal.ts` holds a made-up status, the seal, and a matrix that is the content's with one row added for it, refusing only D and F and closing the targeting cursor. `tests/presentation/hud.spec.ts` validates that registry clean and greys D and F alone under the seal, and `tests/presentation/input-mapper.spec.ts` closes an open slot cursor under it and keeps the attack-move cursor, both with no change under `src/presentation`. No view or atlas changed, so the render benchmark is not rerun. `pnpm check` green, 3169 tests. Under coverage, `tests/simulation/corridor-200.spec.ts` times out at 5 seconds on some runs, at HEAD without this change as well; the gate runs it without coverage and it passes.
 
 ---
 
@@ -126,7 +128,7 @@ Edited in place, 2026-09-25: the validator takes the matrix as a third argument,
 | Check | Result |
 | --- | --- |
 | One green test per matrix cell | |
-| Actual days per ticket | T01 0.3 · T02 0.5 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.5 · T03 0.1 · T04 |
 
 ## Risks in this sprint
 

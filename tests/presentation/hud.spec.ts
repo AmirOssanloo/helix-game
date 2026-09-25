@@ -7,7 +7,7 @@ import type {
   SlotDescriptor,
   Unit,
 } from "@domain/public";
-import { applyStatus, resolveKit } from "@domain/public";
+import { applyStatus, resolveKit, validateRegistry } from "@domain/public";
 import type { KitResolver } from "@presentation/public";
 import {
   Hud,
@@ -23,9 +23,13 @@ import {
   LabelRecorder,
   makeFormDef,
   makeRegistry,
+  type MakeRegistryOptions,
   makeSpellDef,
   makeWorld,
   QuadRecorder,
+  SEAL,
+  SEALED_MATRIX,
+  SEALED_STATUSES,
   spawnHero,
   submit,
 } from "../helpers";
@@ -89,15 +93,23 @@ type Arranged = {
   view: WorldView;
 };
 
+/** The HUD's registry: the content's, with the hero's form swapped for `form`, and whatever `options` adds. */
+const registryWith = (options: MakeRegistryOptions = {}) =>
+  makeRegistry({
+    hero: { ...heroDef, forms: [form.id] },
+    forms: [form],
+    spells: [preparedSpell],
+    ...options,
+  });
+
 /** A HUD over a world whose hero holds `preparedSpell` in D, every orb at level one, one skill point unspent. */
-const arrange = (kits: KitResolver = resolveKit): Arranged => {
+const arrange = (
+  kits: KitResolver = resolveKit,
+  options: MakeRegistryOptions = {},
+): Arranged => {
   const world = makeWorld({
     seed: 1,
-    registry: makeRegistry({
-      hero: { ...heroDef, forms: [form.id] },
-      forms: [form],
-      spells: [preparedSpell],
-    }),
+    registry: registryWith(options),
   });
   const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
   const record = world.state.run.forms[0];
@@ -305,6 +317,21 @@ describe("the six ability squares", () => {
     const keyLabels = arranged.labels.filter((label) => label.text === "Q");
 
     expect(keyLabels[0]?.alpha).toBe(1);
+  });
+
+  it("grey D and F alone for a status the matrix gives only those two keys, with nothing in presentation naming it", () => {
+    const options = { statuses: SEALED_STATUSES, disableMatrix: SEALED_MATRIX };
+
+    expect(validateRegistry(registryWith(options))).toEqual([]);
+
+    const arranged = arrange(resolveKit, options);
+
+    wear(arranged, SEAL.id);
+    arranged.hud.sync(arranged.view);
+
+    expect(greyedSlots(arranged)).toEqual([D, F]);
+    expect(arranged.hud.descriptorOf(D)?.blockedBy).toBe("silenced");
+    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBeNull();
   });
 
   it("rewrite a label only when its number changes", () => {

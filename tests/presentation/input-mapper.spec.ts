@@ -20,8 +20,12 @@ import {
   makeFormDef,
   makeMapDef,
   makeRegistry,
+  type MakeRegistryOptions,
   makeSpellDef,
   makeWorld,
+  SEAL,
+  SEALED_MATRIX,
+  SEALED_STATUSES,
   spawnHero,
 } from "../helpers";
 
@@ -87,13 +91,15 @@ type Arranged = {
   groundPick: GroundPick;
 };
 
-/** A mapper over a world whose hero holds `prepared` in D and F, standing at the origin facing +X with every orb at level one and full mana. */
+/** A mapper over a world whose hero holds `prepared` in D and F, standing at the origin facing +X with every orb at level one and full mana, over a registry with whatever `options` adds. */
 const arrange = (
   prepared: readonly (string | null)[] = [pointSpell.id, unitSpell.id],
+  options: MakeRegistryOptions = {},
 ): Arranged => {
   const world = makeWorld({
     seed: 1,
     registry: makeRegistry({
+      ...options,
       hero: { ...heroDef, forms: [form.id] },
       forms: [form],
       spells: [
@@ -636,6 +642,24 @@ describe("the cursor", () => {
     mapper.syncCursor();
 
     expect(mapper.cursor.kind).toBe("slot");
+  });
+
+  it("closes an open slot cursor for a status whose cursor cell says closed, and keeps the attack-move cursor it says continues on", () => {
+    const { world, mapper } = arrange([pointSpell.id, unitSpell.id], {
+      statuses: SEALED_STATUSES,
+      disableMatrix: SEALED_MATRIX,
+    });
+
+    mapper.keyDown("KeyD");
+    wear(world, SEAL.id);
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("closed");
+
+    mapper.keyDown("KeyA");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("attack_move");
   });
 
   it("keeps the attack-move cursor through a silence and closes it on a stun", () => {
