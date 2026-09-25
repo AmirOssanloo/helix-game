@@ -13,6 +13,7 @@ import { issueCast } from "../orders/state-machine";
 import type { RefusalReason } from "../orders/validator";
 import { isCooldownReady } from "./cooldowns";
 import { hasMana } from "./mana";
+import { spawnsFit } from "./primitives/spawn-unit";
 import { spellLevelOf } from "./spell-level";
 
 /** The orb levels of a unit that levels none. */
@@ -136,8 +137,8 @@ export const isInCastRange = (
  * passes, replaces the unit's order. Refused, with the reason for the caller to announce and
  * nothing changed, when no spell or ability has the id, the unit does not hold it, the target
  * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
- * unit is, the clock is running, the mana is short, or the unit is rooted with the target out
- * of range. The clock and the mana
+ * unit is, the clock is running, the mana is short, the enemies it would spawn would take the
+ * live cap past its limit, or the unit is rooted with the target out of range. The clock and the mana
  * read the panel's flags, as the composer does. A target in range is cast where the unit
  * stands; one out of range is walked toward first. A vector is aimed at the point pressed,
  * along the bearing from it to the point released, or along nothing when the two are one.
@@ -222,6 +223,10 @@ export const requestCast = (
 
   if (!hasMana(resourcesOf(world, unit), cost, world.run.debug)) {
     return "not_enough_mana";
+  }
+
+  if (!spawnsFit(world, record.def)) {
+    return "enemy_cap_reached";
   }
 
   if (

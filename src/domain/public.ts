@@ -325,6 +325,7 @@ export {
   type Unit,
   UNIT_CAPACITY,
   ENEMY_LIVE_CAP,
+  countLiveEnemies,
   type UnitKind,
 } from "./entities/unit";
 export { fillFromDefinition, wearDefinition } from "./entities/unit-spawn";

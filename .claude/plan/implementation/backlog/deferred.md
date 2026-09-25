@@ -1,6 +1,6 @@
 # Deferred
 
-**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close · **Kept current by:** whoever cuts something
+**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S19-T04 · **Kept current by:** whoever cuts something
 
 Everything the plan deliberately leaves out, with the phase it was cut from and the door it waits behind. A missing capability that is a decision reads differently from one that is an oversight; this page is what makes the difference visible.
 
@@ -12,7 +12,6 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 
 | Item | Cut from | Waits on | Why |
 | --- | --- | --- | --- |
-| Enemy summon adds at the live cap | Sprint 16 | Sprint 19 | A pending test in `tests/simulation/enemies/edges.spec.ts`; real when summon adds exist |
 | Damage-number crit styling | Sprint 16 | No crit exists | Colour per type is enough for the balance pass |
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
 | The bar on the reference laptop for phase 1: four browsers at 300 units, the 30-second allocation sampler, and the stress test there | Phase 1 gate | The phase 5 gate, sprint 22 | The maintainer has no access to the reference laptop until then, 2026-09-23. The bar holds in Chrome on the Apple M1 laptop, recorded in the sprint 06 gate walk; phase 1 closed on that with this row carried |
@@ -38,6 +37,7 @@ A row of the table above moves here when the sprint it waited on builds it, with
 | Real enemy definitions for the stress test | Sprint 06 | Sprint 12; the stress test spawns grunt and runner packs |
 | Wane's aggro-drop behaviour test | Sprint 10 | Sprint 12; `tests/simulation/ai/transitions.spec.ts` reads `aggro_hidden` |
 | The disable matrix's draft | Sprint 18 | P4-S18-T04: the row and column headings are in the P5-S20-T01 ticket; the cells are that ticket's |
+| Enemy summon adds at the live cap | Sprint 16 | P5-S19-T04: the pending case in `tests/simulation/enemies/edges.spec.ts` is real, and `tests/simulation/abilities/summon-adds.spec.ts` covers the refusal at request and at commit |
 | A unit's own movement speed and turn rate | Sprint 09 | P3-S12-T05 |
 | A melee attack | Sprint 09 | Sprint 12; `src/domain/attack/attack.ts` lands an attack with no projectile at the end of its attack point |
 

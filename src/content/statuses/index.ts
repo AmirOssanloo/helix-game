@@ -1,6 +1,7 @@
 import type { StatusDef } from "@domain/public";
 import { bashDef } from "./bash.def";
 import { burnDef } from "./burn.def";
+import { chargeDef } from "./charge.def";
 import { disarmDef } from "./disarm.def";
 import { frostAttackDef } from "./frost-attack.def";
 import { glacierChillDef } from "./glacier-chill.def";
@@ -36,4 +37,5 @@ export const statuses = [
   bashDef,
   frostAttackDef,
   selfHealDef,
+  chargeDef,
 ] as const satisfies readonly StatusDef[];

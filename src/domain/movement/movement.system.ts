@@ -115,7 +115,9 @@ const carryPushed = (units: PoolView<Unit>): void => {
  * once when they entered the world.
  *
  * A unit a push is carrying neither turns nor translates itself: it keeps its order and
- * resumes walking it when the push ends. The push itself is the first step of the system, so
+ * resumes walking it when the push ends. The displaced flag says so, and so does the push
+ * itself, since a push that lands during a tick, from a commit, has its status's flag raised
+ * only by the next tick's status pass. The push itself is the first step of the system, so
  * a displaced unit moves by the same arithmetic as a walking one and is left to the collision
  * pass the same way, which is what stops a knockback inside a wall.
  *
@@ -149,7 +151,7 @@ export const movementSystem = (world: World): void => {
       continue;
     }
 
-    if (unit.disables.displaced) {
+    if (unit.disables.displaced || unit.push.ticksLeft > 0) {
       continue;
     }
 

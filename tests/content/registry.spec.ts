@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
 import type {
+  AbilityDef,
+  EffectDef,
+  EnemyDef,
   RegistryFault,
   SpellDef,
   StatusDef,
@@ -13,6 +16,7 @@ import {
   validateRegistry,
 } from "@domain/public";
 import {
+  makeAbilityDef,
   makeEnemyDef,
   makeFormDef,
   makeMapDef,
@@ -34,6 +38,27 @@ const withSpells = (...extra: readonly SpellDef[]): readonly SpellDef[] => [
 /** The content's statuses with `extra` beside them, so every spell that applies one still resolves. */
 const withStatuses = (...extra: readonly StatusDef[]): readonly StatusDef[] => [
   ...contentRegistry.statuses,
+  ...extra,
+];
+
+/** The content's enemy abilities with `extra` beside them. */
+const withAbilities = (
+  ...extra: readonly AbilityDef[]
+): readonly AbilityDef[] => [...contentRegistry.abilities, ...extra];
+
+/** A spawn-unit entry naming the content's grunt, an archetype. */
+const spawnGrunt: EffectDef = {
+  kind: "spawn_unit",
+  unitId: "melee_grunt",
+  count: 1,
+  offset: { forward: 60, right: 0 },
+  lifetimeSeconds: { orb: "quartz", byLevel: [1, 1, 1, 1, 1, 1, 1] },
+  bonuses: [],
+};
+
+/** The content's archetypes with `extra` beside them, so every ability that spawns one still resolves. */
+const withEnemies = (...extra: readonly EnemyDef[]): readonly EnemyDef[] => [
+  ...contentRegistry.enemies,
   ...extra,
 ];
 
@@ -389,6 +414,47 @@ describe("a broken definition", () => {
     expect(fault.path).toBe("effects[0].rate");
   });
 
+  it("passes an archetype a spawn-unit entry names in a cast's own list", () => {
+    const registry = makeRegistry({
+      abilities: withAbilities(
+        makeAbilityDef.build({
+          id: "call_grunts",
+          effects: [spawnGrunt],
+        }),
+      ),
+    });
+
+    expect(validateRegistry(registry)).toEqual([]);
+  });
+
+  it("fails on an archetype a spawn-unit entry names inside a nested list, where no request counts it against the live cap", () => {
+    const registry = makeRegistry({
+      abilities: withAbilities(
+        makeAbilityDef.build({
+          id: "grunt_bomb",
+          effects: [
+            {
+              kind: "spawn_projectile",
+              origin: "caster",
+              speed: 900,
+              radius: 10,
+              homing: false,
+              maxRange: 600,
+              onHit: [spawnGrunt],
+              atlasFrame: "disc",
+              tint: 0xffffff,
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("effects[0].onHit[0].unitId");
+    expect(fault.message).toContain("live cap");
+  });
+
   it("fails on a summon id a spawn-unit entry names that does not exist", () => {
     const registry = makeRegistry({
       spells: withSpells(
@@ -397,7 +463,7 @@ describe("a broken definition", () => {
           effects: [
             {
               kind: "spawn_unit",
-              summonId: "frost_wisp",
+              unitId: "frost_wisp",
               count: 1,
               offset: { forward: 0, right: 80 },
               lifetimeSeconds: {
@@ -413,13 +479,15 @@ describe("a broken definition", () => {
 
     const fault = onlyFault(validateRegistry(registry));
 
-    expect(fault.path).toBe("effects[0].summonId");
+    expect(fault.path).toBe("effects[0].unitId");
     expect(fault.message).toContain("frost_wisp");
   });
 
   it("fails on a behaviour key that resolves to nothing", () => {
     const registry = makeRegistry({
-      enemies: [makeEnemyDef.build({ id: "grunt", behaviour: "stationery" })],
+      enemies: withEnemies(
+        makeEnemyDef.build({ id: "grunt", behaviour: "stationery" }),
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));
@@ -431,7 +499,7 @@ describe("a broken definition", () => {
 
   it("fails on an enemy and a summon sharing an id", () => {
     const registry = makeRegistry({
-      enemies: [makeEnemyDef.build({ id: "wisp" })],
+      enemies: withEnemies(makeEnemyDef.build({ id: "wisp" })),
       summons: withSummons(makeSummonDef.build({ id: "wisp" })),
     });
 
@@ -511,7 +579,9 @@ describe("a broken definition", () => {
   it("fails on an archetype carrying a status that does not exist", () => {
     const registry = makeRegistry({
       statuses: withStatuses(),
-      enemies: [makeEnemyDef.build({ id: "basher", statuses: ["bassh"] })],
+      enemies: withEnemies(
+        makeEnemyDef.build({ id: "basher", statuses: ["bassh"] }),
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));
@@ -523,9 +593,9 @@ describe("a broken definition", () => {
   it("fails on an archetype carrying the same status twice", () => {
     const registry = makeRegistry({
       statuses: withStatuses(),
-      enemies: [
+      enemies: withEnemies(
         makeEnemyDef.build({ id: "basher", statuses: ["bash", "bash"] }),
-      ],
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));
@@ -537,12 +607,12 @@ describe("a broken definition", () => {
   it("fails on an archetype carrying more statuses than its table keeps for them", () => {
     const registry = makeRegistry({
       statuses: withStatuses(),
-      enemies: [
+      enemies: withEnemies(
         makeEnemyDef.build({
           id: "basher",
           statuses: ["bash", "frost_attack", "burn"],
         }),
-      ],
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));
@@ -554,7 +624,9 @@ describe("a broken definition", () => {
   it("fails on an archetype carrying a status that raises a flag, which would hold it for life", () => {
     const registry = makeRegistry({
       statuses: withStatuses(),
-      enemies: [makeEnemyDef.build({ id: "basher", statuses: ["stun"] })],
+      enemies: withEnemies(
+        makeEnemyDef.build({ id: "basher", statuses: ["stun"] }),
+      ),
     });
 
     const fault = onlyFault(validateRegistry(registry));

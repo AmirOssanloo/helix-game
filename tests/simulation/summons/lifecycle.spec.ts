@@ -61,7 +61,7 @@ const OFFSET = { forward: 0, right: 80 };
 /** A spawn-unit entry for `count` emberlings, with the health bonus when `bonus` says so. */
 const entry = (count: number, bonus: boolean): SpawnUnitEffectDef => ({
   kind: "spawn_unit",
-  summonId: EMBERLING.id,
+  unitId: EMBERLING.id,
   count,
   offset: OFFSET,
   lifetimeSeconds: { orb: "quartz", byLevel: [LIFETIME_SECONDS] },
@@ -154,7 +154,7 @@ describe("a summon's lifecycle", () => {
   it("holds the statuses its definition carries from the tick it spawns, applied by itself, until it goes", () => {
     const { world } = arrange();
 
-    cast(world, { ...entry(1, false), summonId: BARBED.id });
+    cast(world, { ...entry(1, false), unitId: BARBED.id });
 
     const { unit, id } = summonOf(world);
     const row = unit.statuses.find((entry) => entry.definitionId === BARB.id);

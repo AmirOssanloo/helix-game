@@ -92,7 +92,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Layer | content, domain, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `summon_adds` as `spawn_unit` of a small enemy definition with the caster as owner, refused this cast with no cooldown spent when the live cap is reached; the adds join the caster's pack. `charge` as a named effect `charge_to` that displaces the caster itself toward the target at speed for a distance, through the movement translate step so walls stop it, then attacks.
 
@@ -106,14 +106,16 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 
 **Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
 
+> **Note, 2026-09-25: the adds are enemies, and a push now stops its unit walking on the tick it lands.** `spawn_unit` acquired every unit as a summon, on the hero's side, so a spawned unit's kind now follows its definition: an archetype spawns an enemy in the caster's pack that counts against the live cap, and ends with its owner or lifetime by the summons' rule; the entry's `summonId` is `unitId`. The cap is checked on what the cast's own list spawns, at request and at commit, and the content tier refuses an archetype in a nested list. The small definition is a new archetype, `imp`, worth no experience. A charge committed mid-tick walked its caster one step before its status's flag was raised, so the movement step also leaves alone a unit a push has hold of; no replay number moved. Decided with the engineering architect; Q42. The arena walk waits on a person.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Nine abilities green; pipeline diff clean of caster-kind branches | |
-| Actual days per ticket | T01 0.3 · T02 0.4 · T03 0.4 · T04 |
+| Nine abilities green; pipeline diff clean of caster-kind branches | Green, 2026-09-25: the nine specs under `tests/simulation/abilities/` pass, `bash`, `frost-attack`, `silence-curse`, `root-net`, `arrow`, `slam`, `self-heal`, `summon-adds`, and `charge`, with `tests/domain/abilities/effects/charge-to.spec.ts`. `git diff 5e15106 -- src/domain/abilities` adds no branch on the caster's kind: the two kind reads added are the spawned definition's, in `spawn-unit.ts`. The arena walk of all nine waits on a person, deferred until phase 5 is done |
+| Actual days per ticket | T01 0.3 · T02 0.4 · T03 0.4 · T04 0.5. Sized 4, done in 1.6 |
 
 ## Risks in this sprint
 

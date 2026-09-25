@@ -1,6 +1,7 @@
 import type { Schema } from "../../definitions/schema";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
+import { chargeToEffect, chargeToFields } from "./charge-to.effect";
 import {
   glacierPlaceEffect,
   glacierPlaceFields,
@@ -68,6 +69,10 @@ const effects: ReadonlyMap<string, NamedEffectEntry> = new Map<
   [
     "siphon_burn",
     { fields: siphonBurnFields, nested: NO_NESTING, run: siphonBurnEffect },
+  ],
+  [
+    "charge_to",
+    { fields: chargeToFields, nested: NO_NESTING, run: chargeToEffect },
   ],
   [
     "updraft_catch",

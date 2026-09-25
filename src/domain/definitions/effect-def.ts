@@ -118,7 +118,7 @@ export type SpawnZoneEffectDef = Readonly<{
 /** Summons owned by the caster, placed forward and to the right of its facing, living for a while, with bonuses written on each. */
 export type SpawnUnitEffectDef = Readonly<{
   kind: "spawn_unit";
-  summonId: string;
+  unitId: string;
   count: number;
   offset: Readonly<{ forward: number; right: number }>;
   lifetimeSeconds: LevelTable;

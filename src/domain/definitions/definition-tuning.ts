@@ -136,7 +136,10 @@ const rebuildRecord = (
       return;
 
     case "enemy":
-      run.units.set(slot.id, createUnitRecord(slot.def as EnemyDef, 0, simHz));
+      run.units.set(
+        slot.id,
+        createUnitRecord(slot.def as EnemyDef, "enemy", 0, simHz),
+      );
 
       return;
 
@@ -145,6 +148,7 @@ const rebuildRecord = (
         slot.id,
         createUnitRecord(
           slot.def as SummonDef,
+          "summon",
           (slot.def as SummonDef).followDistance,
           simHz,
         ),

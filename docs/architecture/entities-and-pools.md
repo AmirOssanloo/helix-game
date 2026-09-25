@@ -34,7 +34,7 @@ export const releaseFoo = (world: World, id: FooId): void => { /* clear, push th
 
 **A full pool returns `null`, never grows.** The caller decides what that means — a spawn that does not happen, a projectile that is not fired — and the instrumentation counts the miss so a designer sees a map that is over capacity before a player does. [Performance standards](../standards/performance.md#quick-reference) hold the budget.
 
-**Entities are plain objects.** Fields are set at acquire and read by systems. There is no class hierarchy: a hero, an enemy, and a summon are one unit shape with a kind tag and a definition id. Behaviour comes from systems and from the definition's keys, never from a subclass. Typed arrays replace the object layout only when a profile of a real map shows the tick over budget, and that is a decision, not a habit.
+**Entities are plain objects.** Fields are set at acquire and read by systems. There is no class hierarchy: a hero, an enemy, and a summon are one unit shape with a kind tag and a definition id. Behaviour comes from systems and from the definition's keys, never from a subclass. A unit an ability spawns takes the kind its definition names, a summon for a summon definition and an enemy for an archetype, never its caster's. Typed arrays replace the object layout only when a profile of a real map shows the tick over budget, and that is a decision, not a habit.
 
 ---
 
@@ -109,7 +109,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | A pool | An array of one plain object shape plus a free list, declared in its kind's file under `domain/entities/` |
 | Capacities | Units 512, projectiles 512, effects 256; zones declare their own |
 | A full pool | Returns `null`; the caller decides; the instrumentation counts the miss |
-| Entity shape | Plain object, kind tag, definition id; no class hierarchy |
+| Entity shape | Plain object, kind tag, definition id; no class hierarchy; a unit an ability spawns takes the kind its definition names |
 | Typed arrays | Only after a profile shows the tick over budget |
 | Ids | A number packing index and generation; released slots bump the generation |
 | References between entities | By generational id, resolved every tick; never by object |

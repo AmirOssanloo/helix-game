@@ -4,7 +4,12 @@ import type { EnemyTier } from "../definitions/enemy-def";
 import type { PackDef } from "../definitions/map-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
-import { acquireUnit, ENEMY_LIVE_CAP, UNIT_CAPACITY } from "../entities/unit";
+import {
+  acquireUnit,
+  countLiveEnemies,
+  ENEMY_LIVE_CAP,
+  UNIT_CAPACITY,
+} from "../entities/unit";
 import { fillFromDefinition, wearDefinition } from "../entities/unit-spawn";
 import type { World } from "../entities/world-state";
 import { isBlockedAt, radiusClassOf } from "../map/walkability";
@@ -39,22 +44,6 @@ const nearby: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
 /** Scratch for the candidate cell the hash is asked around. */
 const probe: Vec2 = { x: 0, y: 0 };
-
-/** Enemies spawned from an archetype that hold a slot, corpses included, since a corpse holds its slot until it is released. */
-const countEnemies = (world: World): number => {
-  const units = world.map.units;
-  let count = 0;
-
-  for (let index = 0; index < units.end; index += 1) {
-    const unit = units.at(index);
-
-    if (unit !== null && unit.kind === "enemy" && unit.definitionId !== null) {
-      count += 1;
-    }
-  }
-
-  return count;
-};
 
 /** Whether a disc of `radius` at (`x`, `y`) overlaps a unit already standing in the world. */
 const isOccupied = (
@@ -176,7 +165,7 @@ export const placePack = (
     return "unknown_archetype";
   }
 
-  if (countEnemies(world) + count > ENEMY_LIVE_CAP) {
+  if (countLiveEnemies(world) + count > ENEMY_LIVE_CAP) {
     return "enemy_cap_reached";
   }
 

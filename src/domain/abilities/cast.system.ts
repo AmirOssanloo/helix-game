@@ -30,6 +30,7 @@ import {
 } from "./cooldowns";
 import { runEffects } from "./effect-runner";
 import { hasMana, spendMana } from "./mana";
+import { spawnsFit } from "./primitives/spawn-unit";
 import { isReachable } from "./primitives/targets";
 
 /** What the turn-and-face stage reads from the tuning table, filled once per tick. */
@@ -234,8 +235,9 @@ const contextOf = (
  * The commit stage, on the tick the cast point ends: the mana is spent, the clock starts for
  * the definition's cooldown at the unit's current level with the percentage the unit holds
  * at this moment baked in, the effect list runs in order with the cast as its context, the
- * commit is announced, and the backswing begins. Mana that left since the request cancels
- * instead, with nothing spent.
+ * commit is announced, and the backswing begins. Mana that left since the request, or a live
+ * cap that no longer has room for the enemies the list spawns, cancels instead, with nothing
+ * spent and no clock started.
  */
 const commit = (
   world: World,
@@ -248,7 +250,7 @@ const commit = (
   const resources = resourcesOf(world, unit);
   const cost = entryAtLevel(record.def.manaCost, level);
 
-  if (!hasMana(resources, cost, flags)) {
+  if (!hasMana(resources, cost, flags) || !spawnsFit(world, record.def)) {
     cancel(unit);
 
     return;

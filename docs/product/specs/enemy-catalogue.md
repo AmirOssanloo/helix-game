@@ -74,8 +74,9 @@ The table is the whole catalogue at a glance; the entries below hold every field
 | Ranged archer | `ranged_archer` | 300 | 1 | 260 | 27 | 20 at 500 every 1.8 s | 800 · 1500 | 50 | `ranged_holder` | `square_dot` · `0x5cb85c` |
 | Tank | `tank` | 1200 | 8 | 200 | 50 | 36 melee every 2.0 s | 600 · 1200 | 120 | `melee_chaser` | `square` · `0xa9743b` |
 | Training dummy | `training_dummy` | 1000 | 0 | 0 | 27 | none | 0 · 0 | 0 | `stationary` | `square_outline` · `0xffffff` |
+| Imp | `imp` | 120 | 0 | 300 | 16 | 8 melee every 1.0 s | 800 · 2000 | 0 | `melee_chaser` | `square` · `0x9b6fd1` |
 
-The grunt and the tank share the `square` frame with the runner and read apart by size: the square is drawn at the collision radius, so the runner's is small, the grunt's is the hero's size, and the tank's is large.
+The grunt, the tank, and the imp share the `square` frame with the runner and read apart by size and colour: the square is drawn at the collision radius, so the runner's is small, the grunt's is the hero's size, and the tank's is large.
 
 ### 3.1 Melee grunt
 
@@ -188,6 +189,31 @@ Never moves, never attacks, never dies. Takes and shows damage.
 | Abilities · behaviour | none · `stationary` | Never leaves Idle |
 | Frame · tint | `square_outline` · `0xffffff` | An outlined square in white, apart from every archetype's filled one |
 
+### 3.6 Imp
+
+The add a summoner brings. Never placed in a pack of its own; it joins its summoner's.
+
+| Field | Value | Why |
+|---|---|---|
+| Id | `imp` | |
+| Health · regeneration | 120 · 0 | Two of the hero's attacks after armour, so a pair of adds is a nuisance cleared in a breath, not a second pack |
+| Mana · regeneration | 0 · 0 | It casts nothing |
+| Armour · magic resistance | 0 · 0 | Nothing to slow its death |
+| Movement speed · turn rate | 300 · 0.8 | A little faster than the hero, so the adds reach it before their summoner does and are not simply walked away from |
+| Collision · bound · selection radius | 16 · 14 · 20 | The smallest radius class, the runner's body, so two fit beside their summoner in the corridor |
+| Attack damage · range | 8 · 100 | Lighter than a runner's; the harm is in the number of bodies, not in any one |
+| Acquire radius | 800 | The aggro radius |
+| Attack point · backswing · base attack time | 0.3 s · 0.3 s · 1.0 s | The runner's quick, light hits |
+| Projectile speed · radius | 0 · 0 | Melee |
+| Projectile frame · tint | `disc` · `0x9b6fd1` | Unused; the neutral frame and its own colour |
+| Aggro · leash radius | 800 · 2000 | It notices a hero its summoner is already fighting, and follows as far as a runner does |
+| Experience | 0 | A summoner brings adds on a clock, so an add that granted experience would make a summoner a farm |
+| Indestructible · tier | false · normal | It spawns at the normal tier whatever its summoner's |
+| Abilities · behaviour | none · `melee_chaser` | Closes to contact |
+| Frame · tint | `square` · `0x9b6fd1` | The square, drawn small at its radius, in violet, apart from the runner's yellow |
+
+It lives for the lifetime the summoning ability gives and leaves on the tick its summoner dies, with no corpse and nothing granted; one killed first dies as any enemy does. It counts against the live cap, so a summon that would pass the cap is refused whole.
+
 ---
 
 ## 4. Experience against the level table
@@ -239,7 +265,7 @@ Frames the archetypes draw with. Every name is in the frame list under `src/cont
 
 | Frame | Used by | Exists |
 |---|---|---|
-| `square` | The grunt, the runner, the tank | Yes |
+| `square` | The grunt, the runner, the tank, the imp | Yes |
 | `square_outline` | The training dummy | Yes |
 | `square_outline_thick` | The outline every elite and boss is drawn with over its body | Yes |
 | `square_dot` | The archer | New: a square with a round hole at its centre a third of its width across, so the dot reads in the floor's colour under the square's one tint |

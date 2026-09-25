@@ -20,7 +20,7 @@ export const emberlingDef = {
   effects: [
     {
       kind: "spawn_unit",
-      summonId: "emberling",
+      unitId: "emberling",
       count: 1,
       offset: { forward: 0, right: 80 }, // tunable
       lifetimeSeconds: {

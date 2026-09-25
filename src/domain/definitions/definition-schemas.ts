@@ -389,7 +389,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
       }),
       spawn_unit: objectOf<SpawnUnitEffectDef>({
         kind: oneOf(["spawn_unit"]),
-        summonId: idSchema,
+        unitId: idSchema,
         count: countSchema,
         offset: objectOf({ forward: numberSchema, right: numberSchema }),
         lifetimeSeconds: levelTableSchema,

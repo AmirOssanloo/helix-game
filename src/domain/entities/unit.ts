@@ -488,6 +488,26 @@ export const acquireUnit = (
   return id;
 };
 
+/**
+ * Enemies spawned from an archetype that hold a slot, corpses included, since a corpse holds
+ * its slot until it is released: what the live cap is counted against, by a pack and by a
+ * cast that spawns enemies alike.
+ */
+export const countLiveEnemies = (world: World): number => {
+  const units = world.map.units;
+  let count = 0;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit !== null && unit.kind === "enemy" && unit.definitionId !== null) {
+      count += 1;
+    }
+  }
+
+  return count;
+};
+
 /** The one way a unit leaves the world: out of the spatial hash, then back to the pool. A stale id changes nothing. */
 export const releaseUnit = (world: World, id: EntityId): void => {
   world.map.spatialHash.remove(id);

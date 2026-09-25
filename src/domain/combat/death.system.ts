@@ -130,9 +130,9 @@ const endDeath = (world: World, unit: Unit, id: EntityId): void => {
 };
 
 /**
- * Whether the summon's time is up: its lifetime has run out, or the owner it belongs to is
+ * Whether the dependant's time is up: its lifetime has run out, or the owner it belongs to is
  * dead or gone. An owner that died this tick was taken by the pass above, so owner and
- * dependants always resolve together and a summon never outlives its owner by a tick.
+ * dependants always resolve together and a dependant never outlives its owner by a tick.
  */
 const hasExpired = (world: World, unit: Readonly<Unit>): boolean => {
   const expiresAtTick = unit.expiresAtTick;
@@ -153,19 +153,24 @@ const hasExpired = (world: World, unit: Readonly<Unit>): boolean => {
 };
 
 /**
- * Releases every summon whose time is up, after the tick's deaths are resolved. An expiry is
- * not a death: the slot goes back at once with no corpse to stand over, nothing is announced,
- * and nothing is credited, so no experience is granted for a summon that simply ran out. What
+ * Releases every dependant whose time is up, after the tick's deaths are resolved: any unit an
+ * ability spawned, which holds an owner and a lifetime whatever its kind, so a hero's summon
+ * and an enemy's adds end by the one rule. An expiry is not a death: the slot goes back at once with no corpse to stand over, nothing is announced,
+ * and nothing is credited, so no experience is granted for a dependant that simply ran out. What
  * it put on other units stays on them, as a caster's leaving never lifts what it cast.
  */
-const expireSummons = (world: World): void => {
+const expireDependants = (world: World): void => {
   const units = world.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
     const id = units.idAt(index);
 
-    if (unit === null || id === null || unit.kind !== "summon") {
+    if (
+      unit === null ||
+      id === null ||
+      (unit.ownerId === null && unit.expiresAtTick === null)
+    ) {
       continue;
     }
 
@@ -218,5 +223,5 @@ export const deathSystem = (world: World): void => {
     }
   }
 
-  expireSummons(world);
+  expireDependants(world);
 };

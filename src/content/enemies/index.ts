@@ -1,5 +1,6 @@
 import type { EnemyDef } from "@domain/public";
 import { fastRunnerDef } from "./fast-runner.def";
+import { impDef } from "./imp.def";
 import { meleeGruntDef } from "./melee-grunt.def";
 import { rangedArcherDef } from "./ranged-archer.def";
 import { tankDef } from "./tank.def";
@@ -12,4 +13,5 @@ export const enemies = [
   rangedArcherDef,
   tankDef,
   trainingDummyDef,
+  impDef,
 ] as const satisfies readonly EnemyDef[];

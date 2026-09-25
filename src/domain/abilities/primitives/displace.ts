@@ -46,7 +46,7 @@ export const lift = (
  * spent against it. A unit a push already has hold of ignores a second one, as the status
  * beside it does.
  */
-const push = (
+export const push = (
   unit: Unit,
   direction: number,
   distance: number,

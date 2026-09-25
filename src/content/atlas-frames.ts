@@ -101,6 +101,7 @@ const cones: readonly AtlasFrameDef[] = CONE_ANGLES.map(
 const STATUS_ICON_GLYPHS: Readonly<Record<string, string>> = {
   bash: "A",
   burn: "B",
+  charge: "V",
   disarm: "D",
   frost_attack: "F",
   glacier_chill: "G",

@@ -144,6 +144,27 @@ describe("a push through the movement step", () => {
     expect(enemy.order.kind).toBe("move");
     expect(enemy.curr.x).toBeGreaterThan(carried);
   });
+  it("does not walk the unit on the tick a push lands, before its status has raised the flag", () => {
+    const { world, enemy } = arrange();
+    walk(enemy);
+    tickUntil(world, () => enemy.state === "moving", PUSH_TICKS);
+
+    const before = enemy.curr.x;
+
+    enemy.push.step.x = -5;
+    enemy.push.step.y = 0;
+    enemy.push.ticksLeft = 2;
+    world.tick();
+
+    expect(enemy.disables.displaced).toBe(false);
+    expect(enemy.curr.x).toBeCloseTo(before - 5, 6);
+    expect(enemy.order.kind).toBe("move");
+
+    world.tick();
+    world.tick();
+
+    expect(enemy.curr.x).toBeGreaterThan(before - 10);
+  });
 });
 
 describe("a lift through the status pass", () => {

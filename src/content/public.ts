@@ -1,9 +1,11 @@
 export { abilities } from "./abilities/index";
 export { arrowDef } from "./abilities/arrow.def";
+export { chargeDef } from "./abilities/charge.def";
 export { rootNetDef } from "./abilities/root-net.def";
 export { selfHealDef } from "./abilities/self-heal.def";
 export { silenceCurseDef } from "./abilities/silence-curse.def";
 export { slamDef } from "./abilities/slam.def";
+export { summonAddsDef } from "./abilities/summon-adds.def";
 export {
   atlasFrames,
   CONE_ANGLES,
@@ -23,6 +25,7 @@ export type {
 } from "./content-tuning-key";
 export { enemies } from "./enemies/index";
 export { fastRunnerDef } from "./enemies/fast-runner.def";
+export { impDef } from "./enemies/imp.def";
 export { meleeGruntDef } from "./enemies/melee-grunt.def";
 export { rangedArcherDef } from "./enemies/ranged-archer.def";
 export { tankDef } from "./enemies/tank.def";

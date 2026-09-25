@@ -54,7 +54,7 @@ const LIFETIME_SECONDS = 600;
 
 const spawnEntry: SpawnUnitEffectDef = {
   kind: "spawn_unit",
-  summonId: EMBERLING.id,
+  unitId: EMBERLING.id,
   count: 1,
   offset: OFFSET,
   lifetimeSeconds: { orb: "quartz", byLevel: [LIFETIME_SECONDS] },

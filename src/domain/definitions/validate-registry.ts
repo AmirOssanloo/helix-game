@@ -46,9 +46,19 @@ type IdSpaces = Readonly<{
   statuses: IdSpace;
   summons: IdSpace;
   enemies: IdSpace;
+  /** Every summon and every archetype: what a spawn-unit entry in a cast's own list may name. */
+  units: IdSpace;
   forms: IdSpace;
   frames: IdSpace;
 }>;
+
+/**
+ * Where an effect list sits: a cast's own list, run once at commit; a zone's each-tick list;
+ * or any other list nested inside something, which runs later and more than once. A per-second
+ * rate is legal only in the second, and a spawn of an archetype only in the first, since that
+ * is the one list the cast pipeline counts against the live enemy cap before it commits.
+ */
+type EffectPlace = "cast" | "each_tick" | "nested";
 
 /** The content file a definition of kind `folder` with `id` lives in. */
 const fileOf = (folder: string, id: unknown, index: number): string =>
@@ -207,7 +217,8 @@ const checkFrame = (
 /**
  * Checks one effect and everything inside it: a named key resolves, its fields pass the
  * effect's own schema, and every effect entry those fields carry is checked as an entry of
- * its own; every status and summon id exists; every frame is in the list; and a per-second
+ * its own; every status id exists, and every unit id a spawn names, which is a summon or,
+ * in a cast's own list alone, an archetype; every frame is in the list; and a per-second
  * damage rate appears only in a zone's each-tick list.
  */
 const checkEffect = (
@@ -217,11 +228,11 @@ const checkEffect = (
   effect: EffectDef,
   spaces: IdSpaces,
   effectSchema: Schema<EffectDef>,
-  eachTick: boolean,
+  place: EffectPlace,
 ): void => {
   switch (effect.kind) {
     case "damage_area":
-      if (effect.rate === "per_second" && !eachTick) {
+      if (effect.rate === "per_second" && place !== "each_tick") {
         faults.push({
           file,
           path: `${at}.rate`,
@@ -251,7 +262,7 @@ const checkEffect = (
         effect.onHit,
         spaces,
         effectSchema,
-        false,
+        "nested",
       );
 
       break;
@@ -265,7 +276,7 @@ const checkEffect = (
         effect.onActivate,
         spaces,
         effectSchema,
-        false,
+        "nested",
       );
       checkEffects(
         faults,
@@ -274,18 +285,28 @@ const checkEffect = (
         effect.eachTick,
         spaces,
         effectSchema,
-        true,
+        "each_tick",
       );
 
       break;
 
     case "spawn_unit":
+      if (place !== "cast" && spaces.enemies.ids.has(effect.unitId)) {
+        faults.push({
+          file,
+          path: `${at}.unitId`,
+          message: `"${effect.unitId}" is an enemy, spawned only from a cast's own effect list, where the live cap is checked`,
+        });
+
+        break;
+      }
+
       checkReference(
         faults,
         file,
-        `${at}.summonId`,
-        effect.summonId,
-        spaces.summons,
+        `${at}.unitId`,
+        effect.unitId,
+        place === "cast" ? spaces.units : spaces.summons,
       );
 
       break;
@@ -334,7 +355,7 @@ const checkEffect = (
             nested.entry,
             spaces,
             effectSchema,
-            false,
+            "nested",
           );
         } else {
           report(faults, file, inner);
@@ -354,7 +375,7 @@ const checkEffects = (
   effects: readonly EffectDef[],
   spaces: IdSpaces,
   effectSchema: Schema<EffectDef>,
-  eachTick: boolean,
+  place: EffectPlace,
 ): void => {
   for (let index = 0; index < effects.length; index += 1) {
     const effect = effects[index];
@@ -367,7 +388,7 @@ const checkEffects = (
         effect,
         spaces,
         effectSchema,
-        eachTick,
+        place,
       );
     }
   }
@@ -399,7 +420,7 @@ const checkAbility = (
     def.effects,
     spaces,
     effectSchema,
-    false,
+    "cast",
   );
 };
 
@@ -420,7 +441,7 @@ const checkStatus = (
       def.onDamageTaken.effects,
       spaces,
       effectSchema,
-      false,
+      "nested",
     );
   }
 
@@ -432,7 +453,7 @@ const checkStatus = (
       def.onDamageDealt.effects,
       spaces,
       effectSchema,
-      false,
+      "nested",
     );
   }
 
@@ -443,7 +464,7 @@ const checkStatus = (
     def.onExpiry,
     spaces,
     effectSchema,
-    false,
+    "nested",
   );
 };
 
@@ -607,6 +628,10 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
     enemies: {
       kind: "enemy",
       ids: new Set(enemies.map((entry) => entry.def.id)),
+    },
+    units: {
+      kind: "summon or enemy",
+      ids: new Set([...summons, ...enemies].map((entry) => entry.def.id)),
     },
     forms: { kind: "form", ids: new Set(forms.map((entry) => entry.def.id)) },
     frames: {

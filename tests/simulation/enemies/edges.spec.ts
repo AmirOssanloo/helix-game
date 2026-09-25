@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   arenaDef,
+  contentRegistry,
   meleeGruntDef,
   rangedArcherDef,
+  summonAddsDef,
   summons,
   tankDef,
   trainingDummyDef,
@@ -12,13 +14,16 @@ import type { AnyCommand, DomainEvent, Unit } from "@domain/public";
 import {
   acquireUnit,
   applyDamage,
+  ENEMY_LIVE_CAP,
   fillFromDefinition,
+  remainingCooldownTicks,
   wearDefinition,
 } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
+  makeEnemyDef,
   makeRegistry,
   makeWorld,
   spawnEnemy,
@@ -301,8 +306,47 @@ describe("Summon owner dies", () => {
 });
 
 describe("Enemy summons adds when the live cap is reached", () => {
-  // Owner: the enemy abilities work. Written when an enemy ability summons adds; no archetype casts one yet.
-  it.todo("refuses the cast and spends no cooldown");
+  it("refuses the cast and spends no cooldown", () => {
+    const summoner = makeEnemyDef.build({
+      id: "summoner",
+      behaviour: "melee_chaser",
+      aggroRadius: 800,
+      leashRadius: 2000,
+      abilities: [{ id: summonAddsDef.id, condition: { kind: "always" } }],
+    });
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        enemies: [...contentRegistry.enemies, summoner],
+        tuning: { wander_radius: 0 },
+      }),
+    });
+
+    spawnHero(world);
+
+    const caster = spawnAt(world, summoner.id, 300);
+
+    for (let index = 1; index < ENEMY_LIVE_CAP; index += 1) {
+      spawnEnemy(world, {
+        definitionId: trainingDummyDef.id,
+        x: -4000 + (index % 20) * 100,
+        y: 4000 - Math.floor(index / 20) * 100,
+      });
+    }
+
+    for (let tick = 0; tick < SETTLE; tick += 1) {
+      world.tick();
+    }
+
+    expect(caster.cast.abilityId).toBeNull();
+    expect(
+      remainingCooldownTicks(
+        caster.cooldowns,
+        summonAddsDef.id,
+        world.state.tick,
+      ),
+    ).toBe(0);
+  });
 });
 
 describe("Dummy takes lethal damage", () => {
