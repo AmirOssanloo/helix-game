@@ -10,7 +10,11 @@ import type {
   PanelHandle,
 } from "@devtools/public";
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
-import { definitionFields, ENEMY_LIVE_CAP } from "@domain/public";
+import {
+  createDomainEvent,
+  definitionFields,
+  ENEMY_LIVE_CAP,
+} from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
@@ -106,11 +110,12 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
 
 /**
  * A control is found by the label beside it, the one name the panel and its page share. The
- * two class names below are the pane's own and are the only place this spec knows them, so a
+ * class names below are the pane's own and are the only place this spec knows them, so a
  * pane upgrade that renames a row fails here and nowhere else.
  */
 const ROW = ".tp-lblv";
 const ROW_LABEL = ".tp-lblv_l";
+const PANE_TITLE = ".tp-rotv_b";
 
 const buttonNamed = (host: HTMLElement, label: string): HTMLButtonElement => {
   for (const button of host.querySelectorAll("button")) {
@@ -618,6 +623,37 @@ describe("the developer panel", () => {
 
     expect(readoutNamed(arranged.host, "Last damage")).toBe("60.0 pure");
     expect(readoutNamed(arranged.host, "Deaths")).toBe("1");
+
+    arranged.handle.unmount();
+  });
+
+  it("counts none of the events that passed while it was folded as lost when it opens again", () => {
+    const arranged = arrange();
+    const events = arranged.world.events;
+    const toggle = arranged.host.querySelector(PANE_TITLE);
+
+    if (!(toggle instanceof HTMLButtonElement)) {
+      throw new Error("The panel has a title button that folds it");
+    }
+
+    toggle.click();
+
+    for (let written = 0; written <= events.capacity; written += 1) {
+      events.write(createDomainEvent());
+    }
+
+    toggle.click();
+    arranged.handle.refresh();
+
+    expect(events.overwrites).toBe(0);
+
+    for (let written = 0; written <= events.capacity; written += 1) {
+      events.write(createDomainEvent());
+    }
+
+    arranged.handle.refresh();
+
+    expect(events.overwrites).toBe(1);
 
     arranged.handle.unmount();
   });

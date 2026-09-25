@@ -2,27 +2,40 @@ import type { DomainEvent, EventSlot } from "@domain/public";
 import { copyDomainEvent, createDomainEvent } from "@domain/public";
 import { assert } from "@shared/public";
 
-/** Events the ring keeps before the oldest is overwritten. A render frame drains at most three ticks' worth. */
-export const EVENT_RING_CAPACITY = 1024;
+/**
+ * Events the ring keeps before the oldest is overwritten. The heaviest tick at the live cap,
+ * every enemy chasing through twenty zones with a hundred shots in flight, announces some 430
+ * events; this holds nineteen such ticks, so the open panel, which reads about every eight,
+ * can slip a whole refresh behind a busy frame and lose nothing. The stress test holds it to that.
+ */
+export const EVENT_RING_CAPACITY = 8192;
 
 /**
- * Where one reader is in the ring: the sequence number of the next event it has not read. The
- * presentation and the developer panel each keep one, so neither consumes the other's events.
+ * Where one reader is in the ring: the sequence number of the next event it has not read, and
+ * the run of writes that number belongs to. The presentation and the developer panel each keep
+ * one, so neither consumes the other's events.
  */
 export type EventReader = {
   cursor: number;
+  generation: number;
 };
 
 /** A reader at the start of the ring. It sees every event still in the ring on its first read. */
-export const createEventReader = (): EventReader => ({ cursor: 0 });
+export const createEventReader = (): EventReader => ({
+  cursor: 0,
+  generation: 0,
+});
 
 /**
  * The events a tick announced, in a preallocated ring. Systems copy an event into the next
- * slot; nothing is constructed per event. Once full, a write overwrites the oldest entry and
- * counts it, so a reader that falls behind loses events visibly rather than silently.
+ * slot; nothing is constructed per event. Once full, a write overwrites the oldest entry, and
+ * a reader that falls behind loses events visibly rather than silently: the ring counts every
+ * event a reader finds overwritten before it read it.
  *
- * Every event has a sequence number, its position in the run of writes since creation. The
- * ring holds the last `capacity` of them; `cursor` is the next one to be written.
+ * Every event has a sequence number, its position in the run of writes since creation or the
+ * last clear. The ring holds the last `capacity` of them; `cursor` is the next one to be
+ * written. A clear starts a new run, and a reader from an earlier run starts the new one at
+ * its beginning.
  */
 export class EventRing {
   readonly capacity: number;
@@ -31,7 +44,9 @@ export class EventRing {
 
   private writeCursor = 0;
 
-  private overwriteCount = 0;
+  private run = 0;
+
+  private lostCount = 0;
 
   constructor(capacity: number = EVENT_RING_CAPACITY) {
     if (!Number.isInteger(capacity) || capacity < 1) {
@@ -58,17 +73,17 @@ export class EventRing {
       : 0;
   }
 
-  /** Events lost to a full ring, since creation. The instrumentation reads it. */
+  /**
+   * Events a reader found overwritten before it read them, summed over readers, since creation
+   * or the last clear. An event every reader has read is overwritten without being counted.
+   * The instrumentation reads it.
+   */
   get overwrites(): number {
-    return this.overwriteCount;
+    return this.lostCount;
   }
 
   /** Copies `event` into the next slot, over the oldest event when the ring is full. */
   write(event: Readonly<DomainEvent>): void {
-    if (this.writeCursor >= this.capacity) {
-      this.overwriteCount += 1;
-    }
-
     copyDomainEvent(this.slotAt(this.writeCursor % this.capacity), event);
     this.writeCursor += 1;
   }
@@ -88,17 +103,25 @@ export class EventRing {
 
   /** Events written since `reader` last read, counting only the ones still in the ring. */
   pending(reader: EventReader): number {
-    const from = reader.cursor > this.oldest ? reader.cursor : this.oldest;
+    const cursor = reader.generation === this.run ? reader.cursor : 0;
+    const from = cursor > this.oldest ? cursor : this.oldest;
 
     return this.writeCursor - from;
   }
 
   /**
    * The next event `reader` has not seen, advancing it, or `null` when it is caught up. A
-   * reader that fell behind the ring resumes at the oldest event still held.
+   * reader that fell behind the ring resumes at the oldest event still held, and what it
+   * missed is counted.
    */
   read(reader: EventReader): Readonly<DomainEvent> | null {
+    if (reader.generation !== this.run) {
+      reader.generation = this.run;
+      reader.cursor = 0;
+    }
+
     if (reader.cursor < this.oldest) {
+      this.lostCount += this.oldest - reader.cursor;
       reader.cursor = this.oldest;
     }
 
@@ -113,10 +136,21 @@ export class EventRing {
     return event;
   }
 
-  /** Forgets every event and the overwrite count. The slots stay allocated. */
+  /**
+   * Moves `reader` past every event written so far, reading none and counting none. For a
+   * reader that stopped reading on purpose, such as a panel that was folded, and starts again
+   * from now.
+   */
+  skip(reader: EventReader): void {
+    reader.generation = this.run;
+    reader.cursor = this.writeCursor;
+  }
+
+  /** Forgets every event and the overwrite count, and starts a new run. The slots stay allocated. */
   clear(): void {
     this.writeCursor = 0;
-    this.overwriteCount = 0;
+    this.lostCount = 0;
+    this.run += 1;
   }
 
   private slotAt(index: number): EventSlot {

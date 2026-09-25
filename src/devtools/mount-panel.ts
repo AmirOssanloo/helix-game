@@ -1,5 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import { Pane } from "tweakpane";
+import { createEventReader } from "@simulation/public";
 import { definitionsGroup } from "./definitions-group";
 import type { DevApi } from "./dev-api";
 import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
@@ -48,7 +49,8 @@ export type PanelMount = (
 /**
  * Builds the panel inside `host`: one folder per group, the readouts retyped a few times a
  * second while the panel is open and left alone while it is closed, the rings sampling either
- * way. What the panel remembers goes to `store`; nothing about the game does.
+ * way. The readouts' event reader skips to the newest event whenever the panel opens, so what
+ * passed while it was closed is not counted as lost. What the panel remembers goes to `store`; nothing about the game does.
  */
 export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
   const memory = readPanelMemory(store);
@@ -72,6 +74,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
 
     return added;
   };
+  const reader = createEventReader();
   const groups: readonly PanelGroup[] = [
     heroGroup(folder("hero", "Hero"), api),
     tuningGroup(folder("tuning", "Tuning"), api),
@@ -81,7 +84,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     enemiesGroup(folder("enemies", "Enemies"), api, memory, remember),
     zonesGroup(folder("zones", "Zones"), api),
     overlaysGroup(folder("overlays", "Overlays"), api, memory, remember),
-    readoutsGroup(folder("readouts", "Readouts"), api),
+    readoutsGroup(folder("readouts", "Readouts"), api, reader),
   ];
   const refresh = (): void => {
     for (const group of groups) {
@@ -97,6 +100,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     }
 
     if (open) {
+      api.events.skip(reader);
       refresh();
       timer = setInterval(refresh, REFRESH_INTERVAL_MS);
     }

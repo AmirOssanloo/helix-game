@@ -3,7 +3,6 @@ import type { RefusalReason } from "@domain/public";
 import { ENEMY_LIVE_CAP, readTunable } from "@domain/public";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
-import { createEventReader } from "@simulation/public";
 import { readout } from "./bindings";
 import type { DevApi } from "./dev-api";
 import type { PanelGroup } from "./panel-group";
@@ -46,14 +45,17 @@ const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
 /**
  * The readouts group: every measurement the rings hold, as mean and max over the last second
  * for the timings and as the latest sample for the counts, plus the tick number from the view
- * and, from the event ring read with the panel's own cursor, the last refusal, the last hit
+ * and, from the event ring read with `reader`, the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, and how many units have
  * died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
  * in the simulation. Draw calls show a dash while nothing has counted them.
  */
-export const readoutsGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
-  const reader: EventReader = createEventReader();
+export const readoutsGroup = (
+  folder: FolderApi,
+  api: DevApi,
+  reader: EventReader,
+): PanelGroup => {
   const tickTime = readout(folder, "Tick ms mean / max");
   const renderTime = readout(folder, "Render ms mean / max");
   const frameRate = readout(folder, "Frame rate");

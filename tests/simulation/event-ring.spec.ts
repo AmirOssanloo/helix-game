@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DomainEvent } from "@domain/public";
 import { createDomainEvent } from "@domain/public";
+import type { EventReader } from "@simulation/public";
 import {
   createEventReader,
   EVENT_RING_CAPACITY,
@@ -15,7 +16,7 @@ const tickCompleted = (tick: number): DomainEvent => ({
 });
 
 /** Every event the reader has not seen, in order, advancing it past them. */
-const drain = (ring: EventRing, reader: { cursor: number }): number[] => {
+const drain = (ring: EventRing, reader: EventReader): number[] => {
   const ticks: number[] = [];
   let event = ring.read(reader);
 
@@ -55,7 +56,7 @@ describe("EventRing", () => {
     expect(ring.at(0)).not.toBe(event);
   });
 
-  it("overwrites the oldest event at capacity and counts the overwrite", () => {
+  it("overwrites the oldest event at capacity", () => {
     const ring = new EventRing(CAPACITY);
     ring.write(tickCompleted(1));
     ring.write(tickCompleted(2));
@@ -63,7 +64,6 @@ describe("EventRing", () => {
 
     ring.write(tickCompleted(4));
 
-    expect(ring.overwrites).toBe(1);
     expect(ring.oldest).toBe(1);
     expect(ring.at(0)).toBeNull();
     expect(ring.at(1)).toMatchObject({ kind: "tick_completed", tick: 2 });
@@ -112,12 +112,75 @@ describe("EventRing", () => {
     expect(drain(ring, reader)).toEqual([3, 4, 5]);
   });
 
+  it("counts every event a reader found overwritten before it read it, once per reader", () => {
+    const ring = new EventRing(CAPACITY);
+    const presentation = createEventReader();
+    const panel = createEventReader();
+
+    for (let tick = 1; tick <= 5; tick += 1) {
+      ring.write(tickCompleted(tick));
+    }
+
+    drain(ring, presentation);
+    drain(ring, panel);
+
+    expect(ring.overwrites).toBe(4);
+  });
+
+  it("counts nothing for an overwritten event every reader had read", () => {
+    const ring = new EventRing(CAPACITY);
+    const reader = createEventReader();
+
+    for (let tick = 1; tick <= 10; tick += 1) {
+      ring.write(tickCompleted(tick));
+      drain(ring, reader);
+    }
+
+    expect(ring.oldest).toBe(7);
+    expect(ring.overwrites).toBe(0);
+  });
+
+  it("moves a skipped reader past every event so far without counting what it passed", () => {
+    const ring = new EventRing(CAPACITY);
+    const reader = createEventReader();
+
+    for (let tick = 1; tick <= 5; tick += 1) {
+      ring.write(tickCompleted(tick));
+    }
+
+    ring.skip(reader);
+    ring.write(tickCompleted(6));
+
+    expect(ring.pending(reader)).toBe(1);
+    expect(drain(ring, reader)).toEqual([6]);
+    expect(ring.overwrites).toBe(0);
+  });
+
+  it("starts a reader from before a clear at the first event written after it", () => {
+    const ring = new EventRing(CAPACITY);
+    const reader = createEventReader();
+    ring.write(tickCompleted(1));
+    ring.write(tickCompleted(2));
+    ring.write(tickCompleted(3));
+    drain(ring, reader);
+
+    ring.clear();
+    ring.write(tickCompleted(7));
+
+    expect(ring.pending(reader)).toBe(1);
+    expect(drain(ring, reader)).toEqual([7]);
+    expect(ring.overwrites).toBe(0);
+  });
+
   it("forgets every event and the overwrite count on clear", () => {
     const ring = new EventRing(CAPACITY);
     ring.write(tickCompleted(1));
     ring.write(tickCompleted(2));
     ring.write(tickCompleted(3));
     ring.write(tickCompleted(4));
+    drain(ring, createEventReader());
+
+    expect(ring.overwrites).toBe(1);
 
     ring.clear();
 

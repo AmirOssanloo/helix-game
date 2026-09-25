@@ -58,9 +58,9 @@ The command system beside the validator runs first in the system order. It walks
 
 An event is a plain value announcing something that happened inside a tick: a unit was damaged, a unit died, a spell was invoked, a projectile spawned, an orb was added.
 
-**The event ring is preallocated.** Systems write into the next free slot; nothing is constructed per event. There is no emitter, no listener registration, no closure. A full ring overwrites the oldest entry, and the instrumentation counts the overwrite so it is visible.
+**The event ring is preallocated.** Systems write into the next free slot; nothing is constructed per event. There is no emitter, no listener registration, no closure. A full ring overwrites the oldest entry. An event overwritten before a reader read it is counted when that reader next reads, so a reader that falls behind loses events visibly; an event every reader has read is overwritten without a count. The ring is sized so neither reader loses one at the live cap, and the stress test holds it to that.
 
-**The presentation drains the ring once per render frame**, after the driver has run its ticks. It reads every event since its last read, reacts — spawn a floating number, flash a view, bump a HUD wedge — and moves its cursor. The developer panel reads the same ring with its own cursor.
+**The presentation drains the ring once per render frame**, after the driver has run its ticks. It reads every event since its last read, reacts — spawn a floating number, flash a view, bump a HUD wedge — and moves its cursor. The developer panel reads the same ring with its own cursor, which it moves past everything written while it was folded each time it opens. A restart clears the ring, and a reader from before it starts at the new run's first event.
 
 Events are for reactions, not for state. A view that needs to know a unit's health reads the world view; it does not sum damage events.
 
@@ -109,7 +109,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | A mutating method on the world | Never |
 | Events | Plain values in a preallocated ring; no emitter, no listeners, no closures |
 | Draining events | Once per render frame by the presentation, with its own cursor; the panel keeps its own |
-| A full ring | Overwrites the oldest entry and counts the overwrite |
+| A full ring | Overwrites the oldest entry; counts each event a reader finds overwritten before it read it, and none at the live cap |
 | State versus moments | Read the world view for state; use events for reactions |
 | The world view | A `Readonly` type over live pools, read by reference during sync, never written, never copied |
 

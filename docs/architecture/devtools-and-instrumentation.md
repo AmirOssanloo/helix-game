@@ -66,7 +66,7 @@ The panel refreshes a few times a second while it is open, and stops while it is
 | Live entity counts, per tick | The world, at the end of `tick` |
 | Pool misses, cumulative | Each pool, on a `null` acquire |
 | View misses, cumulative | `PlayScene`, once per frame, from each view pool's refused binds |
-| Event ring overwrites, cumulative | The event ring |
+| Event ring overwrites, cumulative: events a reader lost to a full ring | The event ring |
 | Frame rate | The driver |
 
 A ring is a fixed array and a cursor. Writing a sample never allocates. The panel reads a ring and computes mean and max over the window it shows; the ring stores samples, not statistics.

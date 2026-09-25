@@ -73,13 +73,14 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Draw calls | Per frame, the total and the world's share without the HUD, against the budget of 5 for the world. A dash under the Canvas renderer |
 | Live counts | Units, projectiles, zones, effects, views |
 | Pool misses | How many times a pool was asked for more than it holds |
+| Event overwrites | How many events a reader of the event ring lost because the ring overwrote them first. Zero at the live cap; a panel that was folded skips what passed meanwhile instead of counting it |
 | Tick number | The simulation's clock |
 | Last refusal | The reason the last refused command was refused |
 | Last damage | What the last hit landed after mitigation, and its damage type |
 | Last status | The last status to land or end, and the unit it was on |
 | Last zone | The last zone to go down or expire |
 | Last projectile | The last projectile to land, and whom it landed on, or to expire |
-| Deaths | How many units have died since the page was loaded |
+| Deaths | How many units have died while the panel was open |
 
 ## Overlays
 
