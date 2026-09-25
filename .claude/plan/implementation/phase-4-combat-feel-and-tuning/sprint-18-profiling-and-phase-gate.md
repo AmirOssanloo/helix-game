@@ -74,6 +74,8 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 - **Unplanned: T05.** A reader kept its cursor across a restart, found in the same method; see T05.
 - **Definition of done.** Every change: `pnpm check` green, 162 files and 2861 tests with the stress group; no optional property, non-null assertion, or ticket reference added; the ring's rule is updated where pages state it, in commands and events, developer tools and instrumentation, and the developer panel page. No hot-path number moved: the ring's read is outside the tick, and its write lost a branch.
 
+> **Note, 2026-09-25:** the ring's margin above was sized on a heaviest tick of 430 events. The phase 4 gate's measurement found 714 when a hundred shots land in one tick, which 8192 slots hold for only eleven ticks, so a panel a whole refresh behind lost events. P4-S18-T06 raised the ring to 16384.
+
 ---
 
 ### P4-S18-T03 — The phase 4 gate and the headroom table
@@ -83,7 +85,7 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 | Layer | docs, tests |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Walk every row of the [phase 4 gate](../04-phase-exit-gates.md#phase-4-gate): the designer retune demonstration with three random keys, the bench, the stress test, replay, hot reload, version refusal. Write the headroom table into the phase README, with a second simulation-tick row at 100 enemies so the per-enemy slope is known (Q9). Docs sync: feature pages against what shipped, where-to-look pointers run, the tuning key format written into the developer panel page and the content-and-registries page. Replay tests for gate bugs. Exit record and sized-versus-actual.
 
@@ -93,6 +95,12 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 **Tests:** any replay test from a gate bug.
 
 **Definition of done:** Every change · A documentation change.
+
+**Note, 2026-09-25: the gate walked, the headroom table written, one gate bug.** The evidence per row is in the [phase 4 gate walk](#phase-4-gate-walk), and the table is in the [phase README](./README.md#headroom-table), with the tick measured at 200 and at 100 enemies: worst 2.33 ms and 3.11 ms on their highest quiet readings, 1.38 and 1.02 at the median, a slope of 0.0036 ms an enemy on the worst tick and 0.0024 on the mean. No margin is negative. Frame rate, sync, render, draw calls, the allocation sampler over sync, and the bench need a GPU browser and wait on a person, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24.
+
+- **The gate bug.** The measurement found the heaviest tick at 714 events, not the 430 the ring was sized on, and with the panel draining every sixteen ticks, the margin T02 promised, 1664 events were lost at 8192 slots. P4-S18-T06 raised the ring; nothing is lost at either drain rate now. The stress test's own scenario does not reach 714 in a tick, so the evidence is the harness's runs, recorded under T06. No replay test comes from it: a lost event changes nothing in the world, and the ring's spec covers counting what a reader lost.
+- **Docs sync.** The tuning key format, `def:<kind>:<id>:<field path>[:<index>]`, is owned by the content-and-registries page, with the unit read from the last property name, and shown with real keys on the developer panel page; coding standards now links it. The developer panel page was behind what shipped in four places and now lists the Abilities folder, every tuning table entry as a slider, the Content line, and the four hot-reload edge cases. The other eight feature pages agree with the code. Every where-to-look pointer returns something; the page gained rows for the input log, the event ring, and content hot-reload.
+- **Definition of done.** Every change: `pnpm check` green, 162 files and 2862 tests with two todo, after a first run failed four timing cases under a load of 30 from another project's test run and passed once it fell; no optional property, non-null assertion, or ticket reference added. A documentation change: the pages follow the documentation standards, the placeholder legend in the architecture page and real names on the feature page, and the link test passes.
 
 ---
 
@@ -141,13 +149,52 @@ Unplanned, found while T02 changed how the event ring counts a reader that falls
 
 ---
 
+### P4-S18-T06 — The event ring holds the heaviest tick at the cap
+
+| Field | Value |
+| --- | --- |
+| Layer | simulation |
+| Size | 0.05 |
+| Depends on | T02 |
+| Status | done |
+
+Unplanned, found while T03 measured the headroom table.
+
+**Build:** The heaviest tick at the cap announces 714 events when a hundred shots land together: 100 `projectile_spawned`, 100 `projectile_hit`, about 333 `unit_damaged`, and about 101 `status_applied`. T02 sized the ring on 430, so 8192 slots held eleven such ticks, and a panel a whole refresh behind, reading every sixteen ticks, lost 1664 events in a run. `EVENT_RING_CAPACITY` is 16384, twenty-two such ticks.
+
+**Acceptance:**
+- No event lost at the cap with the panel reading every eight or every sixteen ticks; the tick unchanged.
+
+**Tests:** none new; `tests/simulation/event-ring.spec.ts` reads the constant, and the stress test's overwrite assertion stands.
+
+**Definition of done:** Every change.
+
+**Note, 2026-09-25.** Done with T03 in one change. T01's harness at the cap, 1800 measured ticks after 1200 of warm-up, the presentation reading every three ticks: with the panel every sixteen, five runs, overwrites 0 and at most 9183 waiting, 7201 slots free; every eight, two runs, 0 and 5022. Pool misses 0. Tick mean 0.51 and 0.52 ms and worst 1.05 and 1.26 on the quiet runs, against 0.514 and 1.38 at 8192. The ring's slots are 139 bytes each, measured with full collections: 1.08 MB at 8192 and 2.17 MB at 16384, allocated once at start. No page states the number; the constant's comment does.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Headroom table complete, per browser | |
+| Headroom table complete, per browser | Headless, yes: every row an agent can measure has a margin in the [phase README](./README.md#headroom-table), none negative, the tick at 200 and at 100 enemies (T03). Per browser, waiting on a person: frame rate, sync, render, draw calls, the sampler over sync, and Safari's WebGL on the reference laptop, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24 |
 | Milestone M7 | |
-| Actual days per ticket | T01 0.4 · T02 0.3 · T03 · T04 · T05 0.05 (unplanned) |
+| Actual days per ticket | T01 0.4 · T02 0.3 · T03 0.4 · T04 · T05 0.05 (unplanned) · T06 0.05 (unplanned) |
+
+### Phase 4 gate walk
+
+Walked 2026-09-25 on the Apple M1 laptop, headless, by the engineer running the plan. Every row of the [phase 4 gate](../04-phase-exit-gates.md#phase-4-gate), in its order. What needs a person, by hand or in a GPU browser, is deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24.
+
+| Row | Holds | Evidence |
+| --- | --- | --- |
+| A designer retunes any exposed number without a code change | By command, yes; from the panel by hand, waiting on a person | Three keys drawn from the 611 of `definitionFields` over the registry by mulberry32 seeded 20260925, one per group: `def:hero:hero:experienceThresholds:21`, `def:spell:siphon:effects.0.onActivate.0.fields.burn.byLevel:6`, and `def:enemy:tank:mana`. The hero group's draw landed on an experience threshold, a number of the hero definition rather than a stat in the narrow sense. In a session world on the arena, the three `set_tuning` commands went in at tick 2: the threshold from 21495 to 20000, and twenty-one level ups land the hero on level 22 at 20000 experience; a tank spawned before the change keeps 0 mana and the next one spawned has 600; Siphon's burn at orb level 7 from 550 to 300, and the next cast takes the tuned tank from 600 to 300. The input log holds all three as entries 3 to 5. `tests/simulation/tuning.spec.ts` (15) and `tests/devtools/panel.spec.ts` (26) green. By hand from the panel is the sprint 17 box in STATUS.md |
+| The profile shows headroom on every row of the bar | Headless, yes; per browser, waiting on a person | The [headroom table](./README.md#headroom-table): the tick at 200 enemies 2.33 ms worst, 1.67 ms of margin, and at 100 enemies for the slope. One gate bug found in it, the ring's margin, fixed as T06 |
+| Hit feedback, knockback, displacement, death handling, experience flow each have their edge-case tests | Yes, by content; two of the five sit outside the folder the row names | `tests/simulation/feel/displacement.spec.ts` (17, knockback among them) and `tests/simulation/feel/death.spec.ts` (13 and a todo, the enemy summon at the cap). Hit feedback in `tests/presentation/hit-feedback.spec.ts` (16) and `tests/presentation/floating-number.spec.ts` (23), since it is presentation; knockback also in `tests/simulation/statuses/knockback.spec.ts` (4); the experience flow in `tests/simulation/hero/experience.spec.ts` (20). 137 green. The sprint 16 exit names the same places |
+| A balance pass was run and its input logs are kept | Yes | `tests/simulation/replays/balance-hero.json`, `balance-spells.json`, and `balance-archetypes.json` exist; `tests/simulation/replays/balance.spec.ts` replays each, 3 of 3 green |
+| Content hot-reload works for a definition edit, and a replay against a changed content version is refused with a message | By test, yes; by hand, waiting on a person | `tests/app/content-reload.spec.ts` (6), `tests/domain/definitions/content-change.spec.ts` (7), and `tests/simulation/replay-format.spec.ts`, 34 green: an edited health reaches the next grunt by a logged command, a typo is refused, a reshape asks for a page reload, a tuned number is kept, a reload during a replay is refused, and a log from another content version is refused naming both. By hand in a browser are the sprint 17 boxes in STATUS.md |
+| The bar | Headless, yes; per browser, waiting on a person | Every row with its margin in the headroom table. Determinism: `vitest run -t replay` green, 10 files and 22 tests, and the session below replays identically. `pnpm check` green. Frame rate, sync, render, draw calls, the heap in a browser, and the bench wait on a person |
+
+**The recorded session.** [`notes/2026-09-25-phase-4-gate-session.json`](../notes/2026-09-25-phase-4-gate-session.json), seed 20260925, content version `ace34657`, 3600 ticks, 821 commands, every one a kind the panel or the player sends: 359 heals, 224 casts, 173 pack spawns, 29 level ups, 20 attack moves, 8 slot presses, the orb levels, the two switches, and five `set_tuning` among the fight, grunt health 900 at tick 600, Zenith's level-7 amount 600 at 1200, `base_ms` 340 at 1800, the hero's attack damage 90 at 2400, and the runner's speed 420 at 3000. Twenty packs of ten on a ring 700 units round the spawn point, refilled every 150 ticks; the hero at level 30 attack-moves a square and throws Zenith and Bolide in turn. 1730 enemies spawned, and the live count ran between 47 and 200. Replayed into two fresh worlds, the chain of per-tick SHA-256 digests agrees, `74ed52ca…`, and the last tick is byte for byte the recording's, `3672e2a6…`. It was recorded in Node, not from the panel in a browser, for the reason above.
 
 ## Risks in this sprint
 

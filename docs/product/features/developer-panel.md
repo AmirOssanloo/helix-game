@@ -29,13 +29,15 @@ Every action on the panel that changes the world is a command that goes through 
 
 ### Tunables
 
-Every parameter the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes is a slider showing its value: base movement speed, turn rate, turn ramp ticks, action cone, collision radius, bound radius, simulation rate, orb capacity, prepared slots, Invoke cooldown base and per-level reduction, Invoke mana, Whorl speed and cooldown reduction per instance, and the respawn delay. The feedback timings are sliders beside them: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
+Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; and the enemies' wander, re-path, hold, and pack-activation numbers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
 
 **Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
 ### Definitions
 
-Every number of every hero, form, spell, status, enemy, and summon definition is a slider, generated from the registry, so a new definition's numbers appear without a code change. They are grouped in a folder per kind and one per definition, and a search box at the top opens every definition whose keys contain what is typed, showing only the matching sliders. A slider is labelled with its field path, "level n" for an entry of a level table, and its default in brackets, in the units the definition file writes: seconds, degrees, per second. A change reaches the next cast or the next spawn; a unit already standing keeps what it was spawned with. Colours are not sliders. **Reset definitions** puts every definition slider a person moved back, one command each.
+Every number of every hero, form, spell, enemy ability, status, enemy, and summon definition is a slider, generated from the registry, so a new definition's numbers appear without a code change. They are grouped in a folder per kind and one per definition, and a search box at the top opens every definition whose keys contain what is typed, showing only the matching sliders. A slider is labelled with its field path, "level n" for an entry of a level table, and its default in brackets, in the units the definition file writes: seconds, degrees, per second. A change reaches the next cast or the next spawn; a unit already standing keeps what it was spawned with. Colours are not sliders. **Reset definitions** puts every definition slider a person moved back, one command each.
+
+Each slider carries a tuning key, the name its command and the input log use for the number, and the search box matches it. `def:spell:hoarfrost:cooldownSeconds:2` is Hoarfrost's cooldown at level 3, labelled `cooldownSeconds level 3 (18)` in the Hoarfrost folder; `def:spell:hoarfrost:effects.0.seconds.byLevel:2` is how long the status it applies lasts at Quartz 3; `def:enemy:melee_grunt:health` is the grunt's health; `def:hero:hero:attack.damage` is the damage of the hero's attack. So typing `hoarfrost:cooldown` opens the seven cooldown sliders and nothing else. The format is owned by [Content and registries](../../architecture/content-and-registries.md#tunables).
 
 ### The simulation
 
@@ -48,6 +50,7 @@ Every number of every hero, form, spell, status, enemy, and summon definition is
 | Save input log | Downloads the session's seed and commands |
 | Load input log | Replays a saved log from the start |
 | Reset map | Reloads the current map; the hero keeps run scope |
+| Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
 
 ### Enemies
 
@@ -107,6 +110,10 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | Spawn past the live cap | Refused with a message naming the cap |
 | Tunable changed mid-cast | The running cast keeps the old value; the next cast reads the new one |
 | Pause with the targeting cursor open | The cursor stays open; the click commits when unpaused |
+| A content file edited under the development server, changing only numbers | Taken without a reload: each changed number arrives as a tuning command on the next tick, in the log like a slider's; a number a person moved from its old default keeps theirs |
+| A content file edited so it fails validation | Refused with every fault named; the game runs on the content it had |
+| A content file edited to change anything but numbers | The page reloads, to a fresh world |
+| A content file edited while a log replays | Refused until the replay ends; a replay runs on the content it was recorded against |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
 | Load a log saved after a content hot-reload changed a number | Refused with a message naming every version the log spans; recreating the session starts a log that replays |
 | Panel closed | Every readout keeps sampling; only the display stops |

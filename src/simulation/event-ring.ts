@@ -4,11 +4,11 @@ import { assert } from "@shared/public";
 
 /**
  * Events the ring keeps before the oldest is overwritten. The heaviest tick at the live cap,
- * every enemy chasing through twenty zones with a hundred shots in flight, announces some 430
- * events; this holds nineteen such ticks, so the open panel, which reads about every eight,
+ * every enemy chasing through twenty zones with a hundred shots landing at once, announces some
+ * 714 events; this holds twenty-two such ticks, so the open panel, which reads about every eight,
  * can slip a whole refresh behind a busy frame and lose nothing. The stress test holds it to that.
  */
-export const EVENT_RING_CAPACITY = 8192;
+export const EVENT_RING_CAPACITY = 16384;
 
 /**
  * Where one reader is in the ring: the sequence number of the next event it has not read, and

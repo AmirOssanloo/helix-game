@@ -42,7 +42,7 @@ A file with no suffix is a plain module — a pool, a state machine, a helper. T
 | Properties, including definition fields | camel | `fooBarSeconds`, `atlasFrame` |
 | Ids, effect keys, and behaviour keys: string values | snake | `'foo_bar'`, `'foo_bar_hit'` |
 
-Snake case for string values is deliberate: an id or a key is data, not code. It lives in the registry, the input log, and a developer-panel label, and it never changes once shipped. A property on a definition is code: the compiler checks it and a rename is a refactor, so it takes camelCase like every other property. A tuning key is built from both and each segment keeps its own case, `def:foo:foo_bar:bar.bazSeconds`, so the path is the property name verbatim and a rename fails to compile.
+Snake case for string values is deliberate: an id or a key is data, not code. It lives in the registry, the input log, and a developer-panel label, and it never changes once shipped. A property on a definition is code: the compiler checks it and a rename is a refactor, so it takes camelCase like every other property. A tuning key is built from both and each segment keeps its own case, `def:foo:foo_bar:bar.bazSeconds`, so the path is the property name verbatim and a rename fails to compile. [Content and registries](../architecture/content-and-registries.md#tunables) owns the key's format.
 
 **Named exports everywhere.** A default export can be imported under any name, so a rename stops being a compile error.
 
