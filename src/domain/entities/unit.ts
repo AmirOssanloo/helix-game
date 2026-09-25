@@ -226,7 +226,7 @@ export type Unit = {
   spawnPoint: Vec2;
   /** Where the shared enemy state machine has it. Read only for a unit whose behaviour runs the machine. */
   ai: AiRecord;
-  /** The tier it was spawned at. The view draws an elite's and a boss's outline from it; nothing multiplies by it yet. */
+  /** The tier it was spawned at: the selection rule reads the tier's abilities from it and the view draws an elite's and a boss's outline from it. Its health was multiplied at spawn. */
   tier: EnemyTier;
   ownerId: EntityId | null;
   /** The tick a summon expires on; `null` for a unit that lives until it dies. */

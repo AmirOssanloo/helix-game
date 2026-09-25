@@ -203,7 +203,7 @@ const heroOf = (world: Simulation): Unit => {
   return hero;
 };
 
-/** Plays a short session on `world`: a retune, two spawns, two walks, a kill of the pack, and a death, over `LIVE_TICKS` ticks. */
+/** Plays a short session on `world`: two retunes, three spawns, an elite pack and a boss among them, two walks, a kill of the pack, and a death, over `LIVE_TICKS` ticks. */
 const play = (world: Simulation): void => {
   const spawn = arenaDef.spawnPoint;
 
@@ -229,6 +229,22 @@ const play = (world: Simulation): void => {
     position: { x: spawn.x - 300, y: spawn.y + 300 },
     tick: 0,
     timestamp: 2.5,
+  });
+  submit(world, {
+    kind: "set_tuning",
+    key: "boss_health_multiplier",
+    value: 6,
+    tick: 0,
+    timestamp: 2.6,
+  });
+  submit(world, {
+    kind: "spawn_pack",
+    archetypeId: "melee_grunt",
+    tier: "boss",
+    count: 1,
+    position: { x: spawn.x + 300, y: spawn.y - 300 },
+    tick: 0,
+    timestamp: 2.7,
   });
   world.tick();
   submit(world, {

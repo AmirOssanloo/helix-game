@@ -41,6 +41,8 @@ export const trainingDummyDef = {
   indestructible: true,
   tier: "normal",
   abilities: [],
+  eliteAbility: null,
+  bossAbilities: [],
   statuses: [],
   behaviour: "stationary",
   atlasFrame: "square_outline",

@@ -24,6 +24,9 @@ import type { Primitive } from "./index";
 /** A bonus contributes a flat amount and no fraction: the orbs add to the definition's number, they do not scale it. */
 const NO_FRACTION = 0;
 
+/** A spawned unit takes the normal tier whatever its caster's, so its health is its definition's. */
+const NORMAL_HEALTH = 1;
+
 /** Writes each of `bonuses` on the summon as a modifier row of its own kind, read at the levels the cast committed with. */
 const writeBonuses = (
   unit: Unit,
@@ -85,7 +88,7 @@ const spawnOne = (
   summon.expiresAtTick = world.tick + lifetimeTicks;
   wearDefinition(summon, record);
   writeBonuses(summon, entry.bonuses, cast.orbLevels);
-  fillFromDefinition(summon, record);
+  fillFromDefinition(summon, record, NORMAL_HEALTH);
   applyLifetimeStatuses(world, id, record);
 
   return true;

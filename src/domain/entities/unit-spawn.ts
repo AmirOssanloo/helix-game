@@ -19,19 +19,28 @@ export const wearDefinition = (unit: Unit, record: UnitRecord): void => {
 };
 
 /**
- * Writes the seven derived values from `record` through the unit's modifier table and fills
+ * Writes the seven derived values from `record` through the unit's modifier table, the
+ * definition's health first multiplied by `healthMultiplier`, which is what a tier asks, and fills
  * its health and mana to the maximums just derived. Called once, after every modifier row
  * the spawn writes is on the table: the stats system derives the hero from its active form
  * every tick, and a unit spawned from a definition carries what this wrote, so a row added
  * here is in the values and a row added later is read where it is read live — the speed
  * stack, the attack rule — rather than from these.
  */
-export const fillFromDefinition = (unit: Unit, record: UnitRecord): void => {
+export const fillFromDefinition = (
+  unit: Unit,
+  record: UnitRecord,
+  healthMultiplier: number,
+): void => {
   const def = record.def;
   const stats = unit.stats;
   const modifiers = unit.modifiers;
 
-  stats.maxHealth = modifiedValue(def.health, modifiers, "max_health");
+  stats.maxHealth = modifiedValue(
+    def.health * healthMultiplier,
+    modifiers,
+    "max_health",
+  );
   stats.healthRegen = modifiedValue(
     record.healthRegenPerTick,
     modifiers,

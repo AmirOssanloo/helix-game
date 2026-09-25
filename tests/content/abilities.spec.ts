@@ -102,6 +102,7 @@ describe("an enemy ability", () => {
   it("is refused with a recipe, which only the hero's spells carry", () => {
     const registry = makeRegistry({
       abilities: [
+        ...contentRegistry.abilities,
         { ...FROST_VOLLEY, recipe: ["quartz", "quartz", "quartz"] } as never,
       ],
     });
@@ -114,7 +115,10 @@ describe("an enemy ability", () => {
 
   it("is refused with a table shorter than the orb cap, as a spell is", () => {
     const registry = makeRegistry({
-      abilities: [{ ...FROST_VOLLEY, cooldownSeconds: [6, 6] }],
+      abilities: [
+        ...contentRegistry.abilities,
+        { ...FROST_VOLLEY, cooldownSeconds: [6, 6] },
+      ],
     });
 
     const fault = onlyFault(validateRegistry(registry));

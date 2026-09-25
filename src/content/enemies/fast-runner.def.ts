@@ -39,6 +39,8 @@ export const fastRunnerDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  eliteAbility: null,
+  bossAbilities: [],
   statuses: [],
   behaviour: "melee_chaser",
   atlasFrame: "square",

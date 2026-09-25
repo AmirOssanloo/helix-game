@@ -46,6 +46,7 @@ Every archetype carries the same fields, the ones the [enemies page](../features
 | Indestructible | Whether damage leaves it at one health. Only the dummy |
 | Tier | Normal for every archetype here. Elite and boss are what a spawn asks for, and multiply as the [enemies page](../features/enemies.md#tiers) says |
 | Abilities · behaviour | Ability ids, each with the condition it is chosen under, empty for every archetype here; the behaviour by key |
+| Elite ability · boss abilities | The one ability an elite casts after its list, and the ones a boss casts after it, each with its condition; none for every archetype here but the grunt |
 | Statuses | Status ids the archetype carries from spawn until it dies, such as a bash; empty for every archetype here |
 | Frame · tint | The atlas frame the body is drawn with, and its colour. The attack's projectile carries the same tint |
 
@@ -99,6 +100,8 @@ The baseline. Slow, medium health, walks up and hits.
 | Experience | 46 | Five grunts are 230, exactly level 1 to level 2 |
 | Indestructible · tier | false · normal | |
 | Abilities · behaviour | none · `melee_chaser` | Closes to contact |
+| Elite ability | `slam` with the hero within 250 | The slam's own radius, so an elite grunt slams only what it would strike; the one tell a plain grunt lacks |
+| Boss abilities | `self_heal` below half its health · `slam` with the hero within 250 · `charge` always | The heal first, so a hurt boss mends before it presses; the slam next, beside the hero; the charge last, so a boss the hero walks away from closes the gap |
 | Frame · tint | `square` · `0xe05a4f` | A plain square in red |
 
 ### 3.2 Fast runner

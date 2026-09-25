@@ -97,6 +97,7 @@ export const isCasting = (unit: Readonly<Unit>): boolean =>
 
 /**
  * The selection rule, run in Chase and Attack: the first ability the unit's definition lists
+ * at its tier
  * whose condition holds, whose clock has run out, whose targeting kind the machine can aim at
  * `target`, and which reaches it from where the unit stands is requested through the cast
  * pipeline, exactly as the hero's cast is. Returns whether a cast was taken, which replaces the unit's order; when
@@ -118,7 +119,7 @@ export const selectAbility = (
     return false;
   }
 
-  const entries = record.def.abilities;
+  const entries = record.abilitiesByTier[unit.tier];
 
   for (let index = 0; index < entries.length; index += 1) {
     const entry = entries[index];

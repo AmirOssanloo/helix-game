@@ -10,7 +10,8 @@ import type { TuningDef } from "@domain/public";
  * around its spawn point once every wander interval, in seconds, a chasing one asks for a
  * path at most once every re-path interval, in seconds, and a ranged one stands the hold
  * margin inside its reach, in world units, a dormant pack spawns once the hero is inside
- * the activation radius of it, in world units, the three radii, the two cell sizes, and
+ * the activation radius of it, in world units, an elite's and a boss's health are the
+ * definition's times the tier's multiplier, read at spawn, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
  * counts per tick, and the orb tables hold what one held instance grants at each level:
  * Quartz health regeneration per second, Whorl a fraction of one of movement speed and a
@@ -54,6 +55,8 @@ export const tuningTable = {
   chase_repath_interval: 0.5,
   ranged_hold_margin: 50,
   pack_activation_radius: 1600,
+  elite_health_multiplier: 3,
+  boss_health_multiplier: 10,
   hit_flash_duration: 0.133,
   refusal_flash_duration: 0.333,
   damage_number_rise: 56,

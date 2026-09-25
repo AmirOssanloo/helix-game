@@ -146,7 +146,7 @@ const spawnSummon = (world: Simulation, hero: Unit): Unit => {
   }
 
   wearDefinition(unit, record);
-  fillFromDefinition(unit, record);
+  fillFromDefinition(unit, record, 1);
   unit.ownerId = unitIdOf(world, hero);
 
   return unit;

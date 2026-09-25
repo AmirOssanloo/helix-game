@@ -48,8 +48,8 @@ export const castLevelOf = (
 
 /**
  * Whether `abilityId` is `unit`'s to cast: a slot key of its active form's kit throws it, or,
- * for a unit with no form, the definition it wears lists it. A unit with neither holds
- * nothing.
+ * for a unit with no form, the definition it wears lists it at the unit's tier. A unit with
+ * neither holds nothing.
  */
 export const holdsAbility = (
   world: World,
@@ -67,7 +67,7 @@ export const holdsAbility = (
       return false;
     }
 
-    const entries = record.def.abilities;
+    const entries = record.abilitiesByTier[unit.tier];
 
     for (let index = 0; index < entries.length; index += 1) {
       if (entries[index]?.id === abilityId) {

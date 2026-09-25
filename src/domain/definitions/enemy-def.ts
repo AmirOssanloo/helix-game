@@ -1,7 +1,11 @@
 import type { AttackDef } from "./attack-def";
 import type { BodyDef } from "./form-def";
 
-/** How an archetype's numbers are multiplied and how it is drawn: plain, three times the health with a thicker outline, or ten times with the thickest. */
+/**
+ * What a spawn asks an archetype to be: plain; an elite, with its health multiplied by the
+ * elite tunable, its one elite ability after its own list, and a thick outline; or a boss,
+ * with the boss tunable's multiple, its boss abilities after its own list, and the thickest.
+ */
 export type EnemyTier = "normal" | "elite" | "boss";
 
 /** Every tier, for content validation to check a definition against. */
@@ -54,6 +58,10 @@ export type EnemyDef = Readonly<{
   tier: EnemyTier;
   /** What it may cast, in the order the selection rule tries them. */
   abilities: readonly EnemyAbilityEntryDef[];
+  /** The one ability a unit of it spawned as an elite may cast after its own list, or none. */
+  eliteAbility: EnemyAbilityEntryDef | null;
+  /** The abilities a unit of it spawned as a boss may cast after its own list, in the order the selection rule tries them. */
+  bossAbilities: readonly EnemyAbilityEntryDef[];
   /**
    * The statuses a unit of it holds from spawn until it dies, by id: what it does on every
    * hit it deals or takes, such as a bash. At most two, and none raises a flag.

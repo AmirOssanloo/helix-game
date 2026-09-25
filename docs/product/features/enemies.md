@@ -34,6 +34,7 @@ Every archetype carries the same fields. A field an archetype does not use is se
 - Experience reward
 - Tier: normal, elite, or boss
 - An ability list, by name, each with the condition it is chosen under — always, below a fraction of the enemy's health, or with the hero within a distance — which may be empty
+- The one ability an elite casts after that list, which may be none, and the abilities a boss casts after it, which may be empty
 - A list of the statuses it carries for its life, by name, which may be empty: at most two, none of them a disable
 - A behaviour, by name
 
@@ -61,10 +62,10 @@ Enemies path with the same grid A* the hero uses and push each other apart rathe
 | Tier | Health | Abilities | Look |
 | --- | --- | --- | --- |
 | Normal | The definition's | The definition's list | Plain square |
-| Elite | 3 times the definition's | One extra ability | Thicker outline |
-| Boss | 10 times the definition's | Several abilities | Largest square, thickest outline |
+| Elite | 3 times the definition's | The definition's list, then its one elite ability | Thicker outline |
+| Boss | 10 times the definition's | The definition's list, then its boss abilities | Largest square, thickest outline |
 
-A tier multiplies; it does not change the rules. A boss is stunned by Hoarfrost like a grunt is.
+A tier multiplies; it does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The two multipliers are tunables, read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was. The tier's abilities come after the definition's own in the order the selection rule tries them.
 
 ## Enemy abilities
 

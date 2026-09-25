@@ -21,7 +21,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Layer | domain, content, presentation, devtools, tests |
 | Size | 0.5 |
 | Depends on | P5-S20-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Tier multipliers as tunables: elite health ×3 with one extra ability from a per-archetype `eliteAbility` field; boss ×10 with a `bossAbilities` list; outline frames per tier; the panel's tier selector applies at spawn. A boss is stunned like a grunt; no immunity.
 
@@ -32,6 +32,8 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 - `tests/simulation/enemies/tiers.spec.ts`.
 
 **Definition of done:** Every change · `src/domain` · A new enemy or behaviour · A developer-panel control.
+
+> **Note, 2026-09-25:** the outline per tier and the panel's tier selector were already built, by the outline view kind and the enemies group, with their tests in `tests/presentation/unit-view.spec.ts` and `tests/devtools/panel.spec.ts`, so this ticket changed neither. What it built: the `elite_health_multiplier` and `boss_health_multiplier` tunables, read at spawn; `eliteAbility` and `bossAbilities` on every unit definition, validated by the registry and joined after the definition's own list per tier on the unit record, which the selection rule and the cast pipeline read by the unit's tier; and the grunt's picks. The readings the ticket left open are Q45, decided provisionally.
 
 ---
 
@@ -107,7 +109,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Check | Result |
 | --- | --- |
 | Roster complete and green; boss encounter readouts | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

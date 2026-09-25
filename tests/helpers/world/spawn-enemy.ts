@@ -38,7 +38,7 @@ export const spawnEnemy = (
   }
 
   wearDefinition(unit, record);
-  fillFromDefinition(unit, record);
+  fillFromDefinition(unit, record, 1);
   unit.packId = options.packId ?? null;
   applyLifetimeStatuses(world.state, id, record);
 

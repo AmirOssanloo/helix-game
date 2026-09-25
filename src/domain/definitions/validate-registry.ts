@@ -518,6 +518,31 @@ const checkCarriedStatuses = (
   }
 };
 
+/** Every entry of one of a definition's ability lists at `field`. A single elite ability reports at the field itself rather than at an index. */
+const checkAbilityList = (
+  faults: RegistryFault[],
+  file: string,
+  field: string,
+  entries: readonly EnemyAbilityEntryDef[],
+  spaces: IdSpaces,
+): void => {
+  const single = field === "eliteAbility";
+
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
+
+    if (entry !== undefined) {
+      checkAbilityEntry(
+        faults,
+        file,
+        single ? field : `${field}[${String(index)}]`,
+        entry,
+        spaces,
+      );
+    }
+  }
+};
+
 const checkUnitDef = (
   faults: RegistryFault[],
   file: string,
@@ -536,20 +561,13 @@ const checkUnitDef = (
     });
   }
 
-  for (let index = 0; index < def.abilities.length; index += 1) {
-    const entry = def.abilities[index];
+  checkAbilityList(faults, file, "abilities", def.abilities, spaces);
 
-    if (entry !== undefined) {
-      checkAbilityEntry(
-        faults,
-        file,
-        `abilities[${String(index)}]`,
-        entry,
-        spaces,
-      );
-    }
+  if (def.eliteAbility !== null) {
+    checkAbilityList(faults, file, "eliteAbility", [def.eliteAbility], spaces);
   }
 
+  checkAbilityList(faults, file, "bossAbilities", def.bossAbilities, spaces);
   checkCarriedStatuses(faults, file, def, spaces, statuses);
 };
 

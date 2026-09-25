@@ -32,6 +32,23 @@ export type PackRecord = {
 export const createPackRecords = (packs: readonly PackDef[]): PackRecord[] =>
   packs.map((def) => ({ def, waiting: true }));
 
+/**
+ * What `tier` multiplies an archetype's health by: nothing for a normal unit, and the elite or
+ * the boss tunable otherwise. Read at spawn, so a retune reaches the units spawned after it.
+ */
+const healthMultiplierOf = (world: World, tier: EnemyTier): number => {
+  switch (tier) {
+    case "normal":
+      return 1;
+
+    case "elite":
+      return readTunable(world.run.tuning, "elite_health_multiplier");
+
+    case "boss":
+      return readTunable(world.run.tuning, "boss_health_multiplier");
+  }
+};
+
 /** Scratch for the point the pack's centre resolves to. */
 const landing: Vec2 = { x: 0, y: 0 };
 
@@ -145,7 +162,7 @@ const findPackCells = (
 /**
  * Puts a pack of `count` of the archetype `archetypeId` names around `position`, at `tier`:
  * every unit wears that definition's body, numbers, and behaviour, exactly as a summon wears
- * one, shares the pack's new id, stands on a free cell of its own, which is its spawn point,
+ * one, with its health multiplied as the tier asks and the tier's abilities after its own, shares the pack's new id, stands on a free cell of its own, which is its spawn point,
  * and starts in Idle. The one door a pack enters by, from the panel or from a map. Refused,
  * with nothing spawned, when no archetype has the id, when the pack would take the live
  * enemies past the cap, when the pool has no room for it, and when the map has too few free
@@ -181,6 +198,7 @@ export const placePack = (
   }
 
   const packId = world.map.nextPackId;
+  const healthMultiplier = healthMultiplierOf(world, tier);
 
   world.map.nextPackId += 1;
 
@@ -198,9 +216,9 @@ export const placePack = (
       "A pool with room for the pack takes every member",
     );
     wearDefinition(unit, record);
-    fillFromDefinition(unit, record);
-    unit.packId = packId;
     unit.tier = tier;
+    fillFromDefinition(unit, record, healthMultiplier);
+    unit.packId = packId;
     applyLifetimeStatuses(world, id, record);
   }
 

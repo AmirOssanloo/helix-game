@@ -1,6 +1,11 @@
 import type { AttackRecord } from "./attack-state";
 import { createAttackRecord } from "./attack-state";
-import type { EnemyDef, SummonDef } from "./enemy-def";
+import type {
+  EnemyAbilityEntryDef,
+  EnemyDef,
+  EnemyTier,
+  SummonDef,
+} from "./enemy-def";
 import { readTunable, turnRatePerTick } from "./tuning-state";
 
 /**
@@ -14,7 +19,9 @@ export type SpawnKind = "enemy" | "summon";
  * One archetype or summon as run scope holds it: the definition as content wrote it, the
  * kind a spawn of it acquires, its regeneration in health and mana per tick, its movement speed in units per tick and its turn
  * rate in radians per tick, its attack read for the tick, and the distance a summon keeps
- * from its owner, zero for a definition nothing owns. This is the one
+ * from its owner, zero for a definition nothing owns, and the abilities a unit of it may cast
+ * at each tier: its own list, then its elite ability for an elite, or its boss abilities for a
+ * boss. This is the one
  * conversion for a unit definition, run once per definition when a world is created, so no
  * spawn ever multiplies by the tick rate.
  */
@@ -27,7 +34,20 @@ export type UnitRecord = Readonly<{
   turnRatePerTick: number;
   attack: AttackRecord;
   followDistance: number;
+  abilitiesByTier: Readonly<Record<EnemyTier, readonly EnemyAbilityEntryDef[]>>;
 }>;
+
+/** The abilities a unit of `def` may cast at each tier, joined once so the selection rule walks one list. */
+const abilitiesByTierOf = (
+  def: EnemyDef,
+): Readonly<Record<EnemyTier, readonly EnemyAbilityEntryDef[]>> => ({
+  normal: def.abilities,
+  elite:
+    def.eliteAbility === null
+      ? def.abilities
+      : [...def.abilities, def.eliteAbility],
+  boss: [...def.abilities, ...def.bossAbilities],
+});
 
 /** `def` as run scope holds it at `simHz`: the one conversion for an archetype or a summon, run when a world is created and when a tuning command changes one of its numbers. */
 export const createUnitRecord = (
@@ -44,6 +64,7 @@ export const createUnitRecord = (
   turnRatePerTick: turnRatePerTick(def.turnRate, simHz),
   attack: createAttackRecord(def.attack, simHz),
   followDistance,
+  abilitiesByTier: abilitiesByTierOf(def),
 });
 
 /**

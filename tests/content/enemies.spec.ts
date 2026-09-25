@@ -13,6 +13,7 @@ import {
 } from "@content/public";
 import type { EnemyDef } from "@domain/public";
 import { BEHAVIOUR_KEYS, ID_SHAPE, validateRegistry } from "@domain/public";
+import { makeEnemyDef, makeRegistry } from "../helpers";
 
 /** Every fault the content tier finds in the file `id` is written in. */
 const faultsOf = (id: string) =>
@@ -42,11 +43,17 @@ describe("the archetypes", () => {
   });
 });
 
+/** The fields that hold an object or `null`, which a shape reads as one field whichever it holds. */
+const NULLABLE_FIELDS: readonly string[] = ["eliteAbility"];
+
 /** Every key of `value` and of every object inside it, as dotted paths, sorted: the shape a definition was written in. */
 const shapeOf = (value: object, prefix = ""): string[] =>
   Object.entries(value)
     .flatMap(([key, field]: [string, unknown]): string[] =>
-      typeof field === "object" && field !== null && !Array.isArray(field)
+      typeof field === "object" &&
+      field !== null &&
+      !Array.isArray(field) &&
+      !NULLABLE_FIELDS.includes(key)
         ? shapeOf(field, `${prefix}${key}.`)
         : [`${prefix}${key}`],
     )
@@ -158,5 +165,55 @@ describe("the training dummy", () => {
     expect(trainingDummyDef.indestructible).toBe(true);
     expect(trainingDummyDef.health).toBeGreaterThan(0);
     expect(trainingDummyDef.atlasFrame).toBe("square_outline");
+  });
+});
+
+describe("the tier abilities", () => {
+  /** The paths of every fault the content tier finds in a registry holding `def` beside the content's. */
+  const faultPaths = (def: EnemyDef): string[] =>
+    validateRegistry(makeRegistry({ enemies: [...enemies, def] }))
+      .filter((fault) => fault.file === "enemies/tiered.def.ts")
+      .map((fault) => fault.path);
+
+  it("give the grunt a slam as an elite, and a self-heal, a slam, and a charge as a boss", () => {
+    expect(meleeGruntDef.eliteAbility?.id).toBe("slam");
+    expect(meleeGruntDef.bossAbilities.map((entry) => entry.id)).toEqual([
+      "self_heal",
+      "slam",
+      "charge",
+    ]);
+    expect(faultsOf(meleeGruntDef.id)).toEqual([]);
+  });
+
+  it("leave every other archetype nothing at either tier yet", () => {
+    for (const def of enemies.filter((other) => other !== meleeGruntDef)) {
+      expect(def.eliteAbility).toBeNull();
+      expect(def.bossAbilities).toEqual([]);
+    }
+  });
+
+  it("refuse an elite ability naming no ability, at the field itself", () => {
+    const def = makeEnemyDef.build({
+      id: "tiered",
+      eliteAbility: { id: "no_such_ability", condition: { kind: "always" } },
+    });
+
+    expect(faultPaths(def)).toEqual(["eliteAbility.id"]);
+  });
+
+  it("refuse a boss ability naming no ability, or with a condition that cannot be met, at its index", () => {
+    const def = makeEnemyDef.build({
+      id: "tiered",
+      bossAbilities: [
+        { id: "slam", condition: { kind: "always" } },
+        { id: "no_such_ability", condition: { kind: "always" } },
+        { id: "self_heal", condition: { kind: "health_below", fraction: 1 } },
+      ],
+    });
+
+    expect(faultPaths(def)).toEqual([
+      "bossAbilities[1].id",
+      "bossAbilities[2].condition.fraction",
+    ]);
   });
 });

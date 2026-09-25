@@ -43,6 +43,8 @@ export const emberlingDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  eliteAbility: null,
+  bossAbilities: [],
   statuses: [],
   behaviour: "summon_follow",
   followDistance: 250, // tunable

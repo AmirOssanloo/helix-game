@@ -513,6 +513,8 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
     indestructible: booleanSchema,
     tier: oneOf(ENEMY_TIERS),
     abilities: arrayOf(enemyAbilityEntrySchema),
+    eliteAbility: nullable(enemyAbilityEntrySchema),
+    bossAbilities: arrayOf(enemyAbilityEntrySchema),
     statuses: arrayOf(idSchema),
     behaviour: idSchema,
     atlasFrame: stringSchema,

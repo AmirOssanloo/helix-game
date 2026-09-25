@@ -4,7 +4,9 @@ import type { EnemyDef } from "@domain/public";
  * The melee grunt: the baseline enemy, slower than the hero so walking away from it works, the
  * hero's size so a pack of them queues through the arena's corridor one at a time, and worth a
  * fifth of the first level so five of them are one. It closes to contact and hits at the end of
- * its attack point, with no projectile. Every number is a starting value design retunes here.
+ * its attack point, with no projectile. An elite slams once the hero is inside the slam's
+ * circle; a boss also heals itself below half its health, slams, and charges the hero.
+ * Every number is a starting value design retunes here.
  */
 export const meleeGruntDef = {
   id: "melee_grunt",
@@ -39,6 +41,15 @@ export const meleeGruntDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  eliteAbility: {
+    id: "slam",
+    condition: { kind: "target_within", distance: 250 }, // tunable
+  },
+  bossAbilities: [
+    { id: "self_heal", condition: { kind: "health_below", fraction: 0.5 } }, // tunable
+    { id: "slam", condition: { kind: "target_within", distance: 250 } }, // tunable
+    { id: "charge", condition: { kind: "always" } },
+  ],
   statuses: [],
   behaviour: "melee_chaser",
   atlasFrame: "square",
