@@ -109,7 +109,7 @@ Edited in place, 2026-09-25: the validator takes the matrix as a third argument,
 | Layer | tests, domain |
 | Size | 1 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** Every row of the status page's states table as a named test through real enemy abilities from sprint 19: stunned during and after a cast point, silenced with the cursor open, silenced mid-move, rooted while lifted, rooted mid-move, knocked into an obstacle, slowed below minimum, two stuns, status on a dying unit, status on an untargetable unit. Fixes where the tests find them.
 
@@ -121,14 +121,18 @@ Edited in place, 2026-09-25: the validator takes the matrix as a third argument,
 
 **Definition of done:** Every change · `src/domain`.
 
+Edited in place, 2026-09-25: the spec covers all seventeen rows of the status page's states table, not only the eleven the build names, since the acceptance asks for every row; the six added are the skill point, a lift with a move running, a push and a lift together, a walk into a lifted unit, a push into another unit, and two pushes in one tick.
+
+**Closed, 2026-09-25.** `tests/simulation/statuses/matrix-edges.spec.ts` has one `describe` per row of the states table, named by the row, and 23 tests under them. Each status comes from a sprint 19 ability where one causes it: the bash, landed by hand from an enemy that carries it, stuns inside the hero's cast point and inside its backswing, closes both cursors, and stacks with a second bash and with a longer stun; the curse silences with the spell cursor open, a move running, a skill point unspent, and before a death; the net roots mid-move and before a lift; the slam pushes into a wall, into another unit, into a lift, and two at once; the frost attack's slow clamps at the minimum under a base speed retuned low. Lift has no enemy ability, so the generic `lift` and `updraft_lift` are put on by the status door. The cursor rows drive the real mapper over the world, as the join of a real curse and the cursor's rule. Every row was green as the engine stood, so nothing under `src/` changed; five first failures were the spec reading a flag before the status pass had raised it or reading the tick counter one ahead, fixed in the spec. `pnpm check` green, 3193 tests, the replay and stress tiers included.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| One green test per matrix cell | |
-| Actual days per ticket | T01 0.3 · T02 0.5 · T03 0.1 · T04 |
+| One green test per matrix cell | Green, 2026-09-25: `tests/domain/orders/disable-matrix.spec.ts` names one test per cell, 117, each through a real status on a real world, and `tests/content/disable-matrix.spec.ts` checks the data is complete. Every row of the status page's states table is green by name in `tests/simulation/statuses/matrix-edges.spec.ts`. The product owner's approval of the page and the playable outcome by hand wait on a person, deferred until phase 5 is done |
+| Actual days per ticket | T01 0.3 · T02 0.5 · T03 0.1 · T04 0.2. Sized 4, done in 1.1 |
 
 ## Risks in this sprint
 
