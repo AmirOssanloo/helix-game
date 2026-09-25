@@ -40,6 +40,7 @@ export const rangedArcherDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "ranged_holder",
   atlasFrame: "square_dot",
   tint: 0x5cb85c, // tunable

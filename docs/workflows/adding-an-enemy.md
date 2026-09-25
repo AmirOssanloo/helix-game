@@ -50,6 +50,7 @@ export const frostArcherDef = {
   experience: 60,
   behaviour: 'ranged_kiter',            // A key under src/domain/ai/behaviours/
   abilities: ['frost_volley'],          // Keys of definitions under src/content/abilities/
+  statuses: [],                         // Statuses it carries for life, such as 'bash'; at most two, none raising a flag
   atlasFrame: 'square',
   tint: 0x99ddff,
 } as const satisfies EnemyDef
@@ -82,7 +83,9 @@ Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves th
 
 ## 4. Add its abilities
 
-An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The state machine's selection rule decides when to cast it, in Chase and Attack: the first listed ability that is off its clock, reaches the hero, and is aimed at a unit, a point, or nothing; the pipeline decides whether it may. A direction or a vector ability is never chosen, so an enemy's is aimed at one of the other three.
+An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The state machine's selection rule decides when to cast it, in Chase and Attack: the first listed ability that is off its clock, reaches the hero, and is aimed at a unit, a point, or nothing; the pipeline decides whether it may. A direction or a vector ability is never chosen, so an enemy's is aimed at one of the other three. A unit ability anchors on its target, so a projectile the enemy throws at the hero writes `origin: 'caster'` to leave from the enemy.
+
+Something the enemy does on every hit, a bash or a frost attack, is not an ability. It is a status under `src/content/statuses/` with a damage-dealt hook, listed in the enemy's `statuses`, and the spawn puts it on the unit for life.
 
 ---
 

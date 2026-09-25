@@ -18,6 +18,12 @@ import type { Schema, SchemaFault } from "./schema";
 import type { StatusDef } from "./status-def";
 
 /**
+ * The most statuses an archetype may carry for its life. Each takes a row of the unit's table
+ * for as long as it lives, so the rows left for what is thrown at it stay the greater part.
+ */
+export const MAX_CARRIED_STATUSES = 2;
+
+/**
  * One reason a registry is refused: the content file it comes from, the path inside the
  * definition, and what was expected. The file is derived from the kind's folder and the
  * definition's id, since content keeps one definition per file named after its id.
@@ -392,11 +398,59 @@ const checkStatus = (
   );
 };
 
+/**
+ * The statuses an archetype carries for its life: each one exists, none twice, no more than
+ * the cap, and none raising a flag, since a disable or a lift held until death would leave a
+ * unit that never acts.
+ */
+const checkCarriedStatuses = (
+  faults: RegistryFault[],
+  file: string,
+  def: EnemyDef,
+  spaces: IdSpaces,
+  statuses: ReadonlyMap<string, StatusDef>,
+): void => {
+  if (def.statuses.length > MAX_CARRIED_STATUSES) {
+    faults.push({
+      file,
+      path: "statuses",
+      message: `expected at most ${String(MAX_CARRIED_STATUSES)} statuses, found ${String(def.statuses.length)}`,
+    });
+  }
+
+  for (let index = 0; index < def.statuses.length; index += 1) {
+    const id = def.statuses[index];
+
+    if (id === undefined) {
+      continue;
+    }
+
+    const path = `statuses[${String(index)}]`;
+
+    checkReference(faults, file, path, id, spaces.statuses);
+
+    if (def.statuses.indexOf(id) !== index) {
+      faults.push({ file, path, message: `"${id}" is listed twice` });
+    }
+
+    const status = statuses.get(id);
+
+    if (status !== undefined && status.flags.length > 0) {
+      faults.push({
+        file,
+        path,
+        message: `"${id}" raises ${status.flags.join(", ")}; a status carried for life raises no flag`,
+      });
+    }
+  }
+};
+
 const checkUnitDef = (
   faults: RegistryFault[],
   file: string,
   def: EnemyDef,
   spaces: IdSpaces,
+  statuses: ReadonlyMap<string, StatusDef>,
 ): void => {
   checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
   checkFrame(faults, file, "attack.atlasFrame", def.attack.atlasFrame, spaces);
@@ -422,6 +476,8 @@ const checkUnitDef = (
       );
     }
   }
+
+  checkCarriedStatuses(faults, file, def, spaces, statuses);
 };
 
 /**
@@ -570,12 +626,16 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
     checkStatus(faults, file, def, spaces, schemas.effect);
   }
 
+  const statusDefs = new Map(
+    statuses.map((entry): [string, StatusDef] => [entry.def.id, entry.def]),
+  );
+
   for (const { file, def } of enemies) {
-    checkUnitDef(faults, file, def, spaces);
+    checkUnitDef(faults, file, def, spaces, statusDefs);
   }
 
   for (const { file, def } of summons) {
-    checkUnitDef(faults, file, def, spaces);
+    checkUnitDef(faults, file, def, spaces, statusDefs);
   }
 
   for (const { file, def } of maps) {

@@ -33,6 +33,7 @@ const PATIENCE = 200;
 /** A projectile that homes on the cast's target and deals a pure hit to it. */
 const entry: SpawnProjectileEffectDef = {
   kind: "spawn_projectile",
+  origin: "anchor",
   speed: SPEED,
   radius: RADIUS,
   homing: true,

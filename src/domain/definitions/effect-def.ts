@@ -32,6 +32,19 @@ export type ZoneAnchor = "anchor" | "caster";
 /** Every zone anchor, for content validation to check an entry against. */
 export const ZONE_ANCHORS: readonly ZoneAnchor[] = ["anchor", "caster"];
 
+/**
+ * Where a projectile leaves from: the context's anchor, or the caster, turned toward the
+ * anchor. A unit cast anchors on its target, so a shot the caster throws at a unit leaves from
+ * the caster.
+ */
+export type ProjectileOrigin = "anchor" | "caster";
+
+/** Every projectile origin, for content validation to check an entry against. */
+export const PROJECTILE_ORIGINS: readonly ProjectileOrigin[] = [
+  "anchor",
+  "caster",
+];
+
 /** How long a zone stays active: a duration, or exactly as long as its motion takes. */
 export type ZoneLifetimeDef =
   Readonly<{ kind: "seconds"; seconds: Scalar }> | Readonly<{ kind: "motion" }>;
@@ -71,9 +84,10 @@ export type ApplyStatusEffectDef = Readonly<{
   seconds: Scalar;
 }>;
 
-/** A projectile from the anchor, homing on the target unit or flying the facing, running its list on what it hits. */
+/** A projectile from the anchor or the caster, homing on the target unit or flying its bearing, running its list on what it hits. */
 export type SpawnProjectileEffectDef = Readonly<{
   kind: "spawn_projectile";
+  origin: ProjectileOrigin;
   speed: number;
   radius: number;
   homing: boolean;

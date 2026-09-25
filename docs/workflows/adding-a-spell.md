@@ -37,6 +37,7 @@ export const frostLanceDef = {
   effects: [
     {
       kind: 'spawn_projectile',
+      origin: 'caster',                           // Leaves from the hero toward the click, not from the click
       speed: 1200,
       radius: 40,
       homing: false,

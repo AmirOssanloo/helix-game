@@ -99,8 +99,10 @@ const cones: readonly AtlasFrameDef[] = CONE_ANGLES.map(
  * "not the one beside it". A status definition names `icon_<its id>` and nothing else does.
  */
 const STATUS_ICON_GLYPHS: Readonly<Record<string, string>> = {
+  bash: "A",
   burn: "B",
   disarm: "D",
+  frost_attack: "F",
   glacier_chill: "G",
   hoarfrost: "H",
   knockback: "K",

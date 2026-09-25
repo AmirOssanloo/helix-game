@@ -1,4 +1,6 @@
 export { abilities } from "./abilities/index";
+export { rootNetDef } from "./abilities/root-net.def";
+export { silenceCurseDef } from "./abilities/silence-curse.def";
 export {
   atlasFrames,
   CONE_ANGLES,
@@ -29,6 +31,8 @@ export { contentRegistry } from "./index";
 export { arenaDef } from "./maps/arena.def";
 export { maps } from "./maps/index";
 export { spells } from "./spells/index";
+export { bashDef } from "./statuses/bash.def";
+export { frostAttackDef } from "./statuses/frost-attack.def";
 export { statuses } from "./statuses/index";
 export { summons } from "./summons/index";
 export { tuningTable } from "./tuning";

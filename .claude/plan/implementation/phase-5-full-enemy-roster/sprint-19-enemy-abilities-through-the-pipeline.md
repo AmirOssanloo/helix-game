@@ -4,7 +4,9 @@
 
 ## Goal
 
-Nine enemy ability kinds exist as definitions under `src/content/abilities/`, cast through the same pipeline as the hero's spells, chosen by a behaviour rule, with nothing enemy-specific added to the pipeline.
+Nine enemy ability kinds exist as definitions: seven under `src/content/abilities/`, cast through the same pipeline as the hero's spells and chosen by a behaviour rule, and the bash and the frost attack as statuses an archetype carries under `src/content/statuses/`; nothing enemy-specific is added to the pipeline.
+
+> Edited 2026-09-25: two of the nine are carried statuses, not abilities; the P5-S19-T02 note says why.
 
 ## Playable outcome
 
@@ -44,7 +46,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Layer | content, domain, tests |
 | Size | 1 |
 | Depends on | T01, P2-S10-T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `bash` as a status on the enemy whose `onDamageDealt` hook, the side sprint 10 built and left without a consumer, applies a short stun to the hit unit with an internal cooldown; `frost_attack` likewise applying slow; `silence_curse` as a unit-targeted ability applying silence; `root_net` as a projectile applying root on hit. Each with tables, frames, and an icon.
 
@@ -55,6 +57,8 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 - `tests/simulation/abilities/bash.spec.ts`, `frost-attack.spec.ts`, `silence-curse.spec.ts`, `root-net.spec.ts`.
 
 **Definition of done:** Every change · A new spell, effect, or enemy ability.
+
+> **Note, 2026-09-25: the bash and the frost attack are statuses an archetype carries, and a projectile may leave from the caster.** Nothing put a status on a unit for its life, so `EnemyDef` gains `statuses`, ids the spawn applies from the unit itself at level one with an end tick no tick reaches (`STATUS_NEVER_ENDS`), through packs, summons, and the test helper alike; the validator refuses an unknown id, a duplicate, more than two, or one that raises a flag. `bash` and `frost_attack` live under `src/content/statuses/`, not `abilities/`, so the selection rule and the elite's extra ability never pick them. A unit cast anchors on its target, so the net would have been spawned on the hero; `spawn_projectile` gains `origin`, `anchor` or `caster`, and the net leaves from the caster toward its target. Both were decided with the engineering architect and are Q40. No archetype carries any of the four yet; the roster does.
 
 ---
 
@@ -107,7 +111,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Check | Result |
 | --- | --- |
 | Nine abilities green; pipeline diff clean of caster-kind branches | |
-| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.4 · T03 · T04 |
 
 ## Risks in this sprint
 

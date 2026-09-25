@@ -39,6 +39,7 @@ export const meleeGruntDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "melee_chaser",
   atlasFrame: "square",
   tint: 0xe05a4f, // tunable

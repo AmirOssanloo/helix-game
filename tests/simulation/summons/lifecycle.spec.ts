@@ -6,7 +6,7 @@ import type {
   SummonDef,
   Unit,
 } from "@domain/public";
-import { runPrimitive } from "@domain/public";
+import { runPrimitive, STATUS_NEVER_ENDS } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
@@ -33,6 +33,16 @@ const EMBERLING: SummonDef = makeSummonDef.build({
 
 /** The chill every status case applies, with nothing on it but a name. */
 const CHILL = makeStatusDef.build({ id: "chill" });
+
+/** A status a summon carries for its life, with nothing on it but a name. */
+const BARB = makeStatusDef.build({ id: "barb" });
+
+/** The emberling again, carrying the barb. */
+const BARBED: SummonDef = makeSummonDef.build({
+  ...EMBERLING,
+  id: "barbed_emberling",
+  statuses: [BARB.id],
+});
 
 /** How long a spawned summon lives, in seconds, and the same in ticks. */
 const LIFETIME_SECONDS = 20;
@@ -79,7 +89,10 @@ type Arranged = { world: Simulation; hero: Unit };
 const arrange = (): Arranged => {
   const world = makeWorld({
     seed: 1,
-    registry: makeRegistry({ summons: [EMBERLING], statuses: [CHILL] }),
+    registry: makeRegistry({
+      summons: [EMBERLING, BARBED],
+      statuses: [CHILL, BARB],
+    }),
   });
 
   return { world, hero: spawnHero(world) };
@@ -136,6 +149,18 @@ describe("a summon's lifecycle", () => {
       x: hero.curr.x,
       y: hero.curr.y - OFFSET.right,
     });
+  });
+
+  it("holds the statuses its definition carries from the tick it spawns, applied by itself, until it goes", () => {
+    const { world } = arrange();
+
+    cast(world, { ...entry(1, false), summonId: BARBED.id });
+
+    const { unit, id } = summonOf(world);
+    const row = unit.statuses.find((entry) => entry.definitionId === BARB.id);
+
+    expect(row?.sourceId).toBe(id);
+    expect(row?.endsAtTick).toBe(STATUS_NEVER_ENDS);
   });
 
   it("carries the entry's bonuses as modifier rows, so the orbs add to the definition's numbers", () => {

@@ -43,6 +43,7 @@ export const emberlingDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "summon_follow",
   followDistance: 250, // tunable
   atlasFrame: "disc",

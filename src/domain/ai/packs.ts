@@ -11,6 +11,7 @@ import { isBlockedAt, radiusClassOf } from "../map/walkability";
 import { createCandidateBuffer } from "../movement/spatial-hash";
 import type { RefusalReason } from "../orders/validator";
 import { resolveDestination } from "../pathing/destination";
+import { applyLifetimeStatuses } from "../statuses/lifetime-statuses";
 
 /**
  * One pack of the loaded map: its definition, and whether it still waits as a record. A
@@ -203,11 +204,15 @@ export const placePack = (
     );
     const unit: Unit | null = id === null ? null : units.resolve(id);
 
-    assert(unit !== null, "A pool with room for the pack takes every member");
+    assert(
+      id !== null && unit !== null,
+      "A pool with room for the pack takes every member",
+    );
     wearDefinition(unit, record);
     fillFromDefinition(unit, record);
     unit.packId = packId;
     unit.tier = tier;
+    applyLifetimeStatuses(world, id, record);
   }
 
   return null;

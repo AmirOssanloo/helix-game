@@ -29,6 +29,7 @@ const HEALTH = 100;
 /** A projectile that flies the cast's facing and deals a pure hit to what it touches. */
 const entry: SpawnProjectileEffectDef = {
   kind: "spawn_projectile",
+  origin: "anchor",
   speed: SPEED,
   radius: 0,
   homing: false,

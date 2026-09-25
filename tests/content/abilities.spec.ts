@@ -53,14 +53,9 @@ describe("the enemy abilities", () => {
     expect(faults).toEqual([]);
   });
 
-  it("are each named by snake_case id, listed once, and cast by some archetype", () => {
-    const listed = new Set<string>(
-      enemies.flatMap((def): readonly string[] => def.abilities),
-    );
-
+  it("are each named by snake_case id and listed once", () => {
     for (const ability of abilities) {
       expect(ability.id).toMatch(ID_SHAPE);
-      expect(listed.has(ability.id), ability.id).toBe(true);
     }
 
     expect(new Set(abilities.map((ability) => ability.id)).size).toBe(

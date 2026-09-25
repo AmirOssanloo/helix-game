@@ -277,6 +277,7 @@ export {
 export {
   assertRegistryValid,
   describeRegistryFaults,
+  MAX_CARRIED_STATUSES,
   type RegistryFault,
   validateRegistry,
 } from "./definitions/validate-registry";
@@ -526,6 +527,7 @@ export {
 export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
 export { regenerate } from "./stats/regeneration";
 export { refreshStats, statsSystem } from "./stats/stats.system";
+export { applyLifetimeStatuses } from "./statuses/lifetime-statuses";
 export {
   applyStatus,
   type StatusRefusal,
@@ -534,6 +536,7 @@ export {
 } from "./statuses/status.system";
 export {
   holdsStatus,
+  STATUS_NEVER_ENDS,
   type StatusWrite,
   writeStatus,
 } from "./statuses/status-table";

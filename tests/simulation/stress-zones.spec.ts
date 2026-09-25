@@ -62,6 +62,7 @@ const ROTATION: readonly string[] = [
 /** The hero's own shot, as the auto-attack fires it: its speed and radius, a physical hit. */
 const shot = (homing: boolean): SpawnProjectileEffectDef => ({
   kind: "spawn_projectile",
+  origin: "anchor",
   speed: 900,
   radius: 12,
   homing,

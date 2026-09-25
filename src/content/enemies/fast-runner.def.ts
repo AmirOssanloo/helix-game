@@ -39,6 +39,7 @@ export const fastRunnerDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "melee_chaser",
   atlasFrame: "square",
   tint: 0xf2c14e, // tunable

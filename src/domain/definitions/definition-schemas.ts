@@ -19,7 +19,12 @@ import type {
   ZoneLifetimeDef,
   ZoneMotionDef,
 } from "./effect-def";
-import { DAMAGE_RATES, PUSH_DIRECTIONS, ZONE_ANCHORS } from "./effect-def";
+import {
+  DAMAGE_RATES,
+  PROJECTILE_ORIGINS,
+  PUSH_DIRECTIONS,
+  ZONE_ANCHORS,
+} from "./effect-def";
 import type { EnemyDef, SummonDef } from "./enemy-def";
 import { ENEMY_TIERS } from "./enemy-def";
 import type {
@@ -334,6 +339,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
       }),
       spawn_projectile: objectOf<SpawnProjectileEffectDef>({
         kind: oneOf(["spawn_projectile"]),
+        origin: oneOf(PROJECTILE_ORIGINS),
         speed: nonNegativeSchema,
         radius: nonNegativeSchema,
         homing: booleanSchema,
@@ -440,6 +446,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
     indestructible: booleanSchema,
     tier: oneOf(ENEMY_TIERS),
     abilities: arrayOf(idSchema),
+    statuses: arrayOf(idSchema),
     behaviour: idSchema,
     atlasFrame: stringSchema,
     tint: tintSchema,

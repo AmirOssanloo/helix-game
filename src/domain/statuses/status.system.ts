@@ -13,7 +13,7 @@ import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
 import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
-import { writeStatus } from "./status-table";
+import { STATUS_NEVER_ENDS, writeStatus } from "./status-table";
 
 /** Why a status did not land: no status has the id, the unit is gone, dead, or out of reach, or every row of its table is taken. */
 export type StatusRefusal =
@@ -79,7 +79,8 @@ const announce = (
  * nothing. Refresh and stack both take the later of the two end ticks, so the longer remaining
  * duration wins, and both take the new applier's source and levels. Nothing lands on a unit
  * that is gone, dead, or untargetable, and nothing lands when every row of the table is taken;
- * the caller decides what a status that does not apply means.
+ * the caller decides what a status that does not apply means. An end past `STATUS_NEVER_ENDS`
+ * is held at it, so a status given that many ticks lasts as long as its holder.
  */
 export const applyStatus = (
   world: World,
@@ -113,7 +114,7 @@ export const applyStatus = (
     target.statuses,
     statusId,
     record.def.stack,
-    world.tick + ticks,
+    Math.min(world.tick + ticks, STATUS_NEVER_ENDS),
     sourceId,
     orbLevels,
   );

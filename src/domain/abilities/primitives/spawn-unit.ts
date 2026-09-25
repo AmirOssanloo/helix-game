@@ -12,6 +12,7 @@ import { acquireUnit } from "../../entities/unit";
 import { fillFromDefinition, wearDefinition } from "../../entities/unit-spawn";
 import type { World } from "../../entities/world-state";
 import { addModifier } from "../../stats/modifiers";
+import { applyLifetimeStatuses } from "../../statuses/lifetime-statuses";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
 
@@ -63,7 +64,7 @@ const spawnOne = (
   const id: EntityId | null = acquireUnit(world, "summon", x, y);
   const summon = id === null ? null : world.map.units.resolve(id);
 
-  if (summon === null) {
+  if (id === null || summon === null) {
     return false;
   }
 
@@ -73,6 +74,7 @@ const spawnOne = (
   wearDefinition(summon, record);
   writeBonuses(summon, entry.bonuses, cast.orbLevels);
   fillFromDefinition(summon, record);
+  applyLifetimeStatuses(world, id, record);
 
   return true;
 };

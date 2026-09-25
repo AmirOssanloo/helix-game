@@ -9,9 +9,10 @@ export const ENEMY_TIERS: readonly EnemyTier[] = ["normal", "elite", "boss"];
 
 /**
  * One archetype as content writes it: every number a unit of it starts with, in the
- * designer's units, the abilities it may cast by id, and the behaviour that drives it by
- * key. A field an archetype does not use holds its neutral value rather than being left
- * out, so a spell that burns mana or fires at range always finds a number. Regeneration is
+ * designer's units, the abilities it may cast and the statuses it carries by id, and the
+ * behaviour that drives it by key. A field an archetype does not use holds its neutral value
+ * rather than being left out, so a spell that burns mana or fires at range always finds a
+ * number. Regeneration is
  * per second and the turn rate is radians per the spec's turn step, both converted once when
  * the world is created; the attack it swings is its own block, converted the same way.
  */
@@ -35,6 +36,11 @@ export type EnemyDef = Readonly<{
   indestructible: boolean;
   tier: EnemyTier;
   abilities: readonly string[];
+  /**
+   * The statuses a unit of it holds from spawn until it dies, by id: what it does on every
+   * hit it deals or takes, such as a bash. At most two, and none raises a flag.
+   */
+  statuses: readonly string[];
   behaviour: string;
   atlasFrame: string;
   tint: number;

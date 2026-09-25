@@ -21,6 +21,7 @@ const unitDefaults = (id: string): EnemyDef => ({
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "stationary",
   atlasFrame: "square",
   tint: 0xffffff,

@@ -41,6 +41,7 @@ export const trainingDummyDef = {
   indestructible: true,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "stationary",
   atlasFrame: "square_outline",
   tint: 0xffffff, // tunable

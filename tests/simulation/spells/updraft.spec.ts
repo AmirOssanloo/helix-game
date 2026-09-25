@@ -56,6 +56,7 @@ const FLIGHT_TICKS = 14;
 
 const PROJECTILE: SpawnProjectileEffectDef = {
   kind: "spawn_projectile",
+  origin: "anchor",
   speed: PROJECTILE_SPEED,
   radius: 0,
   homing: false,

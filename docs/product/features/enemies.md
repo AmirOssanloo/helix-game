@@ -34,6 +34,7 @@ Every archetype carries the same fields. A field an archetype does not use is se
 - Experience reward
 - Tier: normal, elite, or boss
 - An ability list, by name, which may be empty
+- A list of the statuses it carries for its life, by name, which may be empty: at most two, none of them a disable
 - A behaviour, by name
 
 ## Behaviour
@@ -69,7 +70,9 @@ A tier multiplies; it does not change the rules. A boss is stunned by Hoarfrost 
 
 Enemy abilities go through the same cast pipeline as the hero's spells: a targeting kind, a cast point, a cooldown, and effects. The set is chosen to exercise every status the hero can suffer.
 
-Stun (a bash on hit), slow (a frost attack), silence (a caster's curse), root (a net), a ranged projectile, an area slam around the enemy, summoning adds, a self-heal, and a charge or leap that closes distance. Each is a named effect an archetype references; the [ability pipeline](../../architecture/ability-pipeline.md) explains how.
+Stun (a bash on hit), slow (a frost attack), silence (a caster's curse), root (a net), a ranged projectile, an area slam around the enemy, summoning adds, a self-heal, and a charge or leap that closes distance. Each is a definition an archetype references by name; the [ability pipeline](../../architecture/ability-pipeline.md) explains how.
+
+The bash and the frost attack are not cast. Each is a status the archetype carries from the moment it spawns until it dies, whose damage-dealt hook stuns or slows whatever its swing or shot lands on, at most once per the hook's internal cooldown. Its icon shows above the enemy for as long as it lives, so the player can tell a basher from a plain grunt. The curse is cast at the hero and silences it once its cast point ends. The net is thrown from the enemy at the hero, flies to it, and roots it where it lands.
 
 An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It takes the first ability its definition lists that is off cooldown, reaches the hero, and is aimed at the hero, at the ground the hero stands on, or at itself; an ability aimed along a line is never chosen. It chooses nothing while silenced or in its own attack point, and never interrupts its own cast point; a stun during the cast point cancels the cast, spends nothing, and starts no clock. After the cast it goes back to attacking.
 

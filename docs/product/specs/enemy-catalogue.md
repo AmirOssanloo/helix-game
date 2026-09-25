@@ -46,6 +46,7 @@ Every archetype carries the same fields, the ones the [enemies page](../features
 | Indestructible | Whether damage leaves it at one health. Only the dummy |
 | Tier | Normal for every archetype here. Elite and boss are what a spawn asks for, and multiply as the [enemies page](../features/enemies.md#tiers) says |
 | Abilities · behaviour | Ability ids, empty for every archetype here; the behaviour by key |
+| Statuses | Status ids the archetype carries from spawn until it dies, such as a bash; empty for every archetype here |
 | Frame · tint | The atlas frame the body is drawn with, and its colour. The attack's projectile carries the same tint |
 
 ### 2.2 The hero they are set against

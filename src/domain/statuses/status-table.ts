@@ -10,6 +10,13 @@ import type { StatusEntry } from "../entities/unit";
 export type StatusWrite =
   "applied" | "refreshed" | "stacked" | "ignored" | "status_table_full";
 
+/**
+ * The end tick of a status that lasts as long as its holder: a whole number no tick reaches,
+ * so every comparison against the tick stays plain arithmetic and the row goes with the
+ * unit's death rather than an expiry.
+ */
+export const STATUS_NEVER_ENDS = Number.MAX_SAFE_INTEGER;
+
 /** The stacks a row that has just landed carries. */
 const FIRST_STACK = 1;
 

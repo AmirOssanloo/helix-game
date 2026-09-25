@@ -1,6 +1,7 @@
 import type { Unit } from "@domain/public";
 import {
   acquireUnit,
+  applyLifetimeStatuses,
   fillFromDefinition,
   wearDefinition,
 } from "@domain/public";
@@ -17,8 +18,8 @@ export type SpawnEnemyOptions = Readonly<{
 /**
  * Arranges one enemy of an archetype the world's registry holds, exactly as a pack spawn
  * dresses each member: a slot through the unit door, so it is in the spatial hash, wearing
- * the definition's body and numbers at full health, in the pack the options name. Returns the
- * live unit.
+ * the definition's body and numbers at full health, with the statuses it carries, in the pack
+ * the options name. Returns the live unit.
  */
 export const spawnEnemy = (
   world: Simulation,
@@ -32,13 +33,14 @@ export const spawnEnemy = (
     throw new Error(`The registry holds an archetype ${options.definitionId}`);
   }
 
-  if (unit === null) {
+  if (id === null || unit === null) {
     throw new Error("The unit pool has room for the enemy");
   }
 
   wearDefinition(unit, record);
   fillFromDefinition(unit, record);
   unit.packId = options.packId ?? null;
+  applyLifetimeStatuses(world.state, id, record);
 
   return unit;
 };

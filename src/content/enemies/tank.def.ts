@@ -40,6 +40,7 @@ export const tankDef = {
   indestructible: false,
   tier: "normal",
   abilities: [],
+  statuses: [],
   behaviour: "melee_chaser",
   atlasFrame: "square",
   tint: 0xa9743b, // tunable

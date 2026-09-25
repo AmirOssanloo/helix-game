@@ -138,6 +138,7 @@ const CHASING: ReadonlySet<string> = new Set(["chase", "attack"]);
  */
 const SHOT: SpawnProjectileEffectDef = {
   kind: "spawn_projectile",
+  origin: "anchor",
   speed: 900,
   radius: 12,
   homing: false,

@@ -9,6 +9,7 @@ import type {
 import {
   assertRegistryValid,
   ENEMY_LIVE_CAP,
+  MAX_CARRIED_STATUSES,
   validateRegistry,
 } from "@domain/public";
 import {
@@ -505,6 +506,61 @@ describe("a broken definition", () => {
 
     expect(fault.file).toBe("forms/skein.def.ts");
     expect(fault.path).toBe("abilities[1]");
+  });
+
+  it("fails on an archetype carrying a status that does not exist", () => {
+    const registry = makeRegistry({
+      statuses: withStatuses(),
+      enemies: [makeEnemyDef.build({ id: "basher", statuses: ["bassh"] })],
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.file).toBe("enemies/basher.def.ts");
+    expect(fault.path).toBe("statuses[0]");
+  });
+
+  it("fails on an archetype carrying the same status twice", () => {
+    const registry = makeRegistry({
+      statuses: withStatuses(),
+      enemies: [
+        makeEnemyDef.build({ id: "basher", statuses: ["bash", "bash"] }),
+      ],
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("statuses[1]");
+    expect(fault.message).toContain("listed twice");
+  });
+
+  it("fails on an archetype carrying more statuses than its table keeps for them", () => {
+    const registry = makeRegistry({
+      statuses: withStatuses(),
+      enemies: [
+        makeEnemyDef.build({
+          id: "basher",
+          statuses: ["bash", "frost_attack", "burn"],
+        }),
+      ],
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("statuses");
+    expect(fault.message).toContain(`at most ${String(MAX_CARRIED_STATUSES)}`);
+  });
+
+  it("fails on an archetype carrying a status that raises a flag, which would hold it for life", () => {
+    const registry = makeRegistry({
+      statuses: withStatuses(),
+      enemies: [makeEnemyDef.build({ id: "basher", statuses: ["stun"] })],
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("statuses[0]");
+    expect(fault.message).toContain("stunned");
   });
 
   it("fails on a field the schema does not know, naming it", () => {

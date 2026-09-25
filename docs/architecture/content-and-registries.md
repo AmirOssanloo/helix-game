@@ -60,6 +60,7 @@ A key is the file name. A definition says `key: 'foo'`; the registry maps `'foo'
 - A definition that does not match its schema, a field the schema does not know included.
 - An effect key or behaviour key that resolves to nothing, or a named effect's fields that fail the schema declared beside the effect.
 - A referenced id that does not exist: a status, a summon, an ability, a form, an archetype.
+- An enemy or summon that carries a status twice, more than two statuses, or a status that raises a flag, which it would hold until it died.
 - A level table without one entry per orb level.
 - An atlas frame name that is not in the frame list.
 - Two definitions of one kind sharing an id. Spells and enemy abilities share one id space, as do enemies and summons.
