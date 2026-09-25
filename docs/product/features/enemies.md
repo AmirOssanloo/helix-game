@@ -57,7 +57,7 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 | Chaser | On the hero: it closes to contact |
 | Holder | At its attack range, less a margin, and fires |
 | Kiter | Where the holder does; when the hero closes on it, it backs away along a path while its attack is on its clock and turns to fire each time the clock allows |
-| Charger | While its charge is on its clock, at the charge's range less a margin, or where it is if the hero is nearer; once the charge is ready, it closes and throws it |
+| Charger | While its charge is on its clock, at the charge's range less a margin; a hero a margin nearer than that it closes on and fights, as the chaser does, pathing round walls; once the charge is ready, it closes and throws it |
 | Stationary | Where it spawned; it never leaves Idle |
 
 | State | What the enemy does | Leaves when |

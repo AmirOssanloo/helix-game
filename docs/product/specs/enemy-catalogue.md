@@ -286,7 +286,7 @@ An entry carries every field in [section 2.1](#21-the-fields) and reads as the e
 
 Every roster archetype may spawn at all three tiers. An elite adds one ability the archetype does not already cast, and a boss adds the ones that make a single unit of it a fight: a heal where it has none, a way to close the gap or to hold the hero, adds where it has a pack to protect. A tier's entries come after the archetype's own, so a tier adds to what a plain unit does and never shadows it.
 
-Two behaviours are the roster's own. A kiter, `ranged_kiter`, holds at its attack range less the margin and fires as the holder does; when the hero comes nearer than a second margin inside that, it backs away along a path while its attack is on its clock and turns to fire each time the clock allows. A charger, `charger`, closes as the chaser does while its charge is ready; while the charge is on its clock it waits at the charge's range less the margin, standing where it is if the hero is already nearer, so the charge is thrown the moment its clock allows. Its charge is the first entry of its list at its tier. The hexer and the skirmisher are kiters, and the lancer a charger.
+Two behaviours are the roster's own. A kiter, `ranged_kiter`, holds at its attack range less the margin and fires as the holder does; when the hero comes nearer than a second margin inside that, it backs away along a path while its attack is on its clock and turns to fire each time the clock allows. A charger, `charger`, closes as the chaser does while its charge is ready; while the charge is on its clock it waits at the charge's range less the margin, and if the hero comes a margin nearer than that it closes as the chaser does and fights, pathing round whatever stands between them, so a wall never pins it. A hero farther than that point is waited for, not followed into melee, so the charge is thrown the moment its clock allows. Its charge is the first entry of its list at its tier. The hexer and the skirmisher are kiters, and the lancer a charger.
 
 ### 7.2 The roster at a glance
 
@@ -523,7 +523,7 @@ A melee enemy that charges across the gap to the hero.
 | Aggro · leash radius | 750 · 1600 | A little past the grunt's |
 | Experience | 65 | Over a grunt, for the charge |
 | Indestructible · tier | false · normal | |
-| Abilities · behaviour | `charge` always · `charger` | Charges whenever the clock allows and the hero is within its 600. It is a charger: it waits at range for its charge, then closes |
+| Abilities · behaviour | `charge` always · `charger` | Charges whenever the clock allows and the hero is within its 600. It is a charger: it waits at range for its charge, then closes, and closes at once on a hero that comes inside that range |
 | Statuses | none | |
 | Tiers | Normal · elite · boss | |
 | Elite ability | `slam` with the hero within 250 | The charge lands it beside the hero, where the slam reaches |

@@ -78,7 +78,7 @@ The game as the roadmap's five phases describe it. Milestone M8.
 | Layer | tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** One test per door in the roadmap's "doors kept open": a map transition (`loadMap` to a second map definition) keeps the hero's id, level, orbs, slots, and clocks; a view pool sized to the screen binds by rectangle with a fake world larger than the pool; a tile-layer view kind can be registered without the domain map changing (a presentation test with a stub); dormant packs activate by proximity on a large fake map; a second modifier source kind (a fixture "item") changes a derived stat through the same stack; a second kit (`hotbar`) fills the HUD from a fixture form. Each test is named after the door.
 
@@ -90,6 +90,18 @@ The game as the roadmap's five phases describe it. Milestone M8.
 
 **Definition of done:** Every change.
 
+**Note, 2026-09-25: six doors, six green tests, one finding beside the sixth.** Each spec is one case, named after its door, and touches no code under `src/`.
+
+- **Run scope and map scope are separate lifetimes**, `tests/simulation/doors/run-scope-outlives-map-scope.spec.ts`: green. A hero at level 4 with experience and points, orbs learned, Q W E held, a spell prepared, and the composer's clock running is loaded onto a second map definition. It is the same unit under the same id at the new spawn point, with the same level, orb levels, held instances, prepared slot, and clock.
+- **View pools are sized to the screen**, `tests/presentation/doors/view-pools-sized-to-the-screen.spec.ts`: green. Eight unit views draw a world of 400 units in a hundred clusters. The camera rectangle crosses every cluster, the four on screen are bound each time, and there is never a miss.
+- **Static map geometry is drawn by a tile layer**, `tests/presentation/doors/map-geometry-as-a-tile-layer.spec.ts`: green. A stub tile-layer view kind reads only the world view's walkability grid, binds once per map as the obstacle views do, paints a pillar as wall tiles, repaints on a map load, and leaves the grid's cells as the domain derived them. There is no view-kind registry: `PlayScene` builds its views by hand, so a real tile layer is an edit there, which the presentation page expects.
+- **Dormant packs activate by proximity**, `tests/simulation/doors/dormant-packs-by-proximity.spec.ts`: green. A strip 68 000 long holds sixteen dormant packs of twenty, 320 enemies against the cap of 200. A hero beside the tenth wakes that pack alone, and twenty enemies are live.
+- **Stats are modifier-driven, so an item is one more source**, `tests/simulation/doors/items-are-a-modifier-source.spec.ts`: green. Two `item` rows, +50 flat and +50 %, sum with a status's +100 on maximum health, 300 to 675, survive thirty ticks of the status and kit passes, and leave alone when the item's rows are removed. That usable items are abilities cast through the pipeline is not tested here.
+- **Later modules land in layers that already exist: a hotbar kit fills the HUD**, `tests/presentation/doors/a-second-kit-fills-the-hud.spec.ts`: green. The HUD names no kit and fills its six squares from a hotbar form's abilities in each ability's colour, and the orb row is hidden.
+- **Finding for leadership, beside the sixth door.** The HUD half of the door holds. The domain half does not hold as the ability pipeline page words it. A kit's `resolveSlot` and `describeSlot` are handed the form's kit state, which is Invoke's shape (orb levels, held orbs, prepared slots), and never the form's definition. So a real hotbar kit module has no way to read the ability list of the form it serves. The fixture kit reads the fixture form directly, which only a test can do. Making the door real needs one of two things: the form definition passed to the kit, or a kit state each kit owns. That is a change to the `Kit` type under `src/domain/kits/`, and it is not made here. Two things are as designed and not a gap. The kit registry is closed, so a world whose form names `hotbar` cannot tick until the module is registered, since the kit system asserts. The content tier also refuses the key until then.
+- **Doors not given a test.** The roadmap lists seven doors, and the ticket names six. The move of the Phaser-free layers to a workspace package has no test of its own; the architecture test's import rules are what keep it open.
+- **Definition of done.** Every change: `pnpm check` green, 194 files and 3397 tests with one todo. No optional property, non-null assertion, or ticket reference added. No code under `src/` changed, so nothing is replaced and no page's rule changed.
+
 ---
 
 ### P5-S22-T04 — Retrospective and the account for leadership
@@ -99,7 +111,7 @@ The game as the roadmap's five phases describe it. Milestone M8.
 | Layer | docs |
 | Size | 1 |
 | Depends on | T02, T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** A dated note under `.claude/plan/` with: sized versus actual per phase and the ratio; the three largest misses and why; every risk in the register with what happened; the headroom table as it stands; the door tests' results; and a first-order sizing of the "beyond phase 5" list (items and inventory, loot, procedural dungeons, a town, difficulty tiers, art, audio, saves) using the same unit and the same anchors, marked as direction, not commitment.
 
@@ -109,6 +121,8 @@ The game as the roadmap's five phases describe it. Milestone M8.
 **Tests:** none.
 
 **Definition of done:** Every change.
+
+**Note, 2026-09-25: the account written.** [`2026-09-25-retrospective-and-account.md`](../../2026-09-25-retrospective-and-account.md): sized versus actual per phase, 60.7 actual against 107.25 sized, 0.57 overall, 0.83 for phases 1 and 2 and 0.35 for phases 3 to 5; three misses of the plan's model rather than of a ticket, the reference laptop first; all twenty risks with what happened; the headroom table and what it does and does not say for the 200 cap; the door tests with the kit finding for the engineering architect; the "beyond phase 5" list sized at 76.5 days as direction; and the recommended next bet, one generated floor with loot and descent at 24 sized days in six sprints, behind the reference-laptop session, with its cut-line. Sprint 22 closes at 1.35 actual against 4.05, and phase 5 at 5.45 against 16.05, 0.34, completed in the [phase README](./README.md#exit-record). No code changed.
 
 ---
 
@@ -134,14 +148,78 @@ The game as the roadmap's five phases describe it. Milestone M8.
 
 ---
 
+
+### P5-S22-T06 — The HUD greys while the hero is dead
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation |
+| Size | 0.1 |
+| Depends on | none |
+| Status | done |
+
+**Note:** Unplanned: decided by the delivery lead on 2026-09-25 from Q49 / Q47. The [HUD page](../../../../docs/product/features/hud.md) says the bottom bar greys while the hero is dead. The build refused a dead hero's keys and flashed them striped, but the squares stayed lit.
+
+**Build:** While the hero is dead, the HUD's sync marks each of the six slot descriptors blocked by `dead`, the reason the validator refuses every key with, after the kit has described it. The squares grey through the same read that greys them under a disable, and the orb row takes the same greyed alpha. No simulation change. The HUD page states which elements grey. The disable matrix spec says that death, which is not a row, greys all six.
+
+**Acceptance:**
+- A dead hero's six squares and orb row are greyed. They are lit again from the first sync after the respawn.
+- A disarm alone greys no square, and a disarm on a dead hero still greys all six.
+
+**Tests:**
+- `tests/presentation/hud.spec.ts`: "grey all six and the orb row while the hero is dead, and light them again when it respawns"; "grey all six by death even under a disarm, which on its own greys none".
+
+**Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+**Definition of done, walked 2026-09-25.**
+
+- **Every change.** `pnpm check`: lint, typecheck, and build green, with 3400 tests passed of 3405 and one todo. Only the budget project missed, 4 of its 5 variants at a mean of 4.4 to 6.6 ms. A Dota 2 client was running on the same machine at 110 to 335 % CPU, with load averages of 9 to 20. The budget project was green alone twice at load 9, before the spike. Paired runs of all five variants, with and without the charger change under the same load, fall in the same noise band. The generic-units variant, which has no charger in it, alone moves from 5.06 to 5.72 ms between runs. The gate needs a re-run on an idle machine before commit. No optional property, non-null assertion, or ticket reference added. Nothing is replaced but the lit squares. The vocabulary holds. The HUD page and the disable matrix spec state the rule.
+- **Anything under `src/presentation`.** No game object made or destroyed, and no Shape, Graphics, or `Text`: the orb row writes one alpha per existing quad. The sync reads the hero's state from the world view and writes quads. The rule that death refuses every key is the validator's, and the HUD only mirrors it. The render benchmark was not rerun, because it needs a GPU browser. No quad, frame, or atlas change was made. By the maintainer's standing instruction of 2026-09-24, it waits with the other by-hand rows.
+- **A documentation change.** Both pages are product pages and use real names. The link test passes.
+
+---
+
+### P5-S22-T07 — A waiting charger closes on a hero inside its hold point
+
+| Field | Value |
+| --- | --- |
+| Layer | domain, tests, docs |
+| Size | 0.25 |
+| Depends on | none |
+| Status | done |
+
+**Note:** Unplanned: decided by the delivery lead on 2026-09-25 from Q49 / Q47. Q47 is amended. In Chrome, a lancer charged into the thin wall at x 1920 to 2080 and stopped against it, which is correct. It then stood pinned behind the wall for the rest of its 12 s clock, with the hero 327 away on the other side, because a waiting charger with the hero nearer than its hold point stood where it was.
+
+**Build:** `charger`'s standing rule, `src/domain/ai/behaviours/charger.behaviour.ts`. While the charge is on its clock, the hold point is the charge's range less the hold margin. A hero more than one hold margin inside that point is closed on as `melee_chaser` does: the charger walks at the hero on a path, so a wall never pins it, and swings in reach. A hero between the hold point and one margin inside it is stood for. A hero farther out is waited for at the hold point and not followed into melee. The margin is the band the kiter already uses, so a charger that has just walked to its hold point does not read its own arrival as the hero closing. Once the clock is ready, it closes and the selection rule throws the charge, as before. It reads one squared distance and allocates nothing. The enemy catalogue (section 7 prose and the lancer's table), the enemies feature page, the adding-an-enemy runbook, and the lancer's definition comment state the new rule.
+
+**Acceptance:**
+- On open ground, with the charge on its clock, a lancer 420 from the hero closes and lands a swing before the clock runs out, without charging.
+- With a thin wall between them, the same lancer paths round the wall's end and lands a swing. It does not stand.
+- With the hero farther than the hold point, it walks to the hold point and stands there for the whole clock. It does not swing.
+- Once the clock runs out, it charges from where it waits.
+
+**Tests:**
+- `tests/simulation/enemies/lancer.spec.ts`, "the lancer waiting on its charge's clock": open ground, the wall, and the hold with the hero farther away. The old case "waits at the charge's range less the margin", which walked the hero away from a lancer at contact, is replaced by the third. Under the new rule a hero inside the hold point is followed, so that arrangement no longer tests the hold.
+- `tests/simulation/ai/transitions.spec.ts`, "the machine under charger". A new `waiting()` arrangement puts the hero outside the hold point with the clock started. The cases are: waits at the hold point; stands for a hero less than a margin inside it; closes and fights a hero a margin inside it, bounded by the clock that remains; follows a hero that walks out of its swing; charges again from where it waits. Two old cases are replaced. "Stands where it is while it waits for a hero already inside its charge's range" was the old rule. "Charges again once the charge's clock runs out" walked the hero away from contact, which the charger now follows. The shared Attack case "chases again when the hero walks out of its reach" now expects a `move` of every fighter, and the fixture list loses its `waits` column.
+
+**Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
+
+**Definition of done, walked 2026-09-25.**
+
+- **Every change.** `pnpm check`: lint, typecheck, and build green, with 3400 tests passed of 3405 and one todo. Only the budget project missed, 4 of its 5 variants at a mean of 4.4 to 6.6 ms. A Dota 2 client was running on the same machine at 110 to 335 % CPU, with load averages of 9 to 20. The budget project was green alone twice at load 9, before the spike. Paired runs of all five variants, with and without the charger change under the same load, fall in the same noise band. The generic-units variant, which has no charger in it, alone moves from 5.06 to 5.72 ms between runs. The gate needs a re-run on an idle machine before commit. No optional property, non-null assertion, or ticket reference added. The old standing branch is replaced, not flagged. Every page that stated the old rule is updated.
+- **A change under `src/domain` or `src/simulation`.** No clock, random source, or Phaser. The rule reads one squared distance and allocates nothing. The one number is the tuning table's `ranged_hold_margin`. It has a simulation test at each tier. The replay determinism tests pass. No stored replay under `tests/simulation/replays/` spawns a lancer, so none was re-recorded. The gate session in `notes/2026-09-25-phase-5-gate-session.json` does spawn lancers. It is an input log that no test reads, and it would replay to a different digest chain than the one quoted in the gate walk, which records the build of that morning. The stress row is the budget project above.
+- **A documentation change.** Product pages and a runbook, with real names. The link test passes.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
 | Phase 5 gate rows per browser | Walked headless 2026-09-25 by T01, in the [gate walk](#phase-5-gate-walk): five rows hold outright, the boss encounter holds headless, and the docs row holds since T02 on 2026-09-25. Every row per browser and on the reference laptop waits on a person, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24 |
-| Six door tests | |
+| Six door tests | Six of six green, 2026-09-25, in P5-S22-T03: run scope past a map load, view pools sized to the screen, a tile layer over the grid, dormant packs by proximity, an item as a modifier source, a hotbar kit in the HUD. One finding beside the last: a kit is never handed its form's definition |
 | Milestone M8 | Reached 2026-09-25 on what an agent can verify, when T02 made the docs row hold: every gate row holds headless, and the rows per browser and on the reference laptop wait on a person, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24 |
-| Actual days per ticket | T01 0.3 · T02 0.4 · T03 · T04 · T05 0.05 (unplanned) |
+| Actual days per ticket | T01 0.3 · T02 0.4 · T03 0.3 · T04 0.3 · T05 0.05 (unplanned) · T06 0.1 (unplanned) · T07 0.2 (unplanned). Sized 4.4, 4 planned and 0.4 unplanned, done in 1.65 |
 
 ### Phase 5 gate walk
 

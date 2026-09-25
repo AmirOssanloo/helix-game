@@ -59,8 +59,8 @@ export class OrbSquaresView {
     }
   }
 
-  /** Shows the instances `state` holds, oldest first; a slot past its count is an empty socket. */
-  sync(state: DeepReadonly<KitState>): void {
+  /** Shows the instances `state` holds, oldest first, at `alpha`; a slot past its count is an empty socket. */
+  sync(state: DeepReadonly<KitState>, alpha: number): void {
     for (let index = 0; index < this.fills.length; index += 1) {
       const fill = this.fills[index];
       const socket = this.sockets[index];
@@ -69,6 +69,9 @@ export class OrbSquaresView {
       if (fill === undefined || socket === undefined) {
         continue;
       }
+
+      fill.alpha = alpha;
+      socket.alpha = alpha;
 
       if (orb === null) {
         fill.visible = false;

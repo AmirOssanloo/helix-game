@@ -40,7 +40,7 @@ import {
 } from "./hud-layout";
 import { LevelView } from "./level.view";
 import { OrbSquaresView } from "./orb-squares.view";
-import { HEALTH_TINT, MANA_TINT } from "./palette";
+import { GREYED_ALPHA, HEALTH_TINT, MANA_TINT, OPAQUE } from "./palette";
 import type { SlotFlashes } from "./slot-flashes";
 
 /** The kit registered under a form's kit key, or `null`. The scene hands the domain registry's; a test hands a fake. */
@@ -71,7 +71,9 @@ const LEFT_BUTTON = 0;
  * The bottom bar: the two resource bars, the orb squares, the six ability squares, and the
  * level block, read from the world view once per frame. It names no spell and no kit: the
  * active form's kit describes each slot, the spell table gives a prepared spell its colour,
- * and the orb row shows only while the kit describes an orb. A click on an orb square with
+ * and the orb row shows only while the kit describes an orb. While the hero is dead every
+ * square reads as blocked by death, as the command validator refuses its keys, and the
+ * squares and the orb row grey as they do under a disable. A click on an orb square with
  * a point unspent becomes a `spend_skill_point` command naming the slot; a refusal comes
  * back as an event and flashes the square.
  */
@@ -204,6 +206,7 @@ export class Hud {
     );
 
     let hasOrbs = false;
+    const dead = hero.state === "dead";
 
     this.input.sweepSteps = readTunable(
       world.run.tuning,
@@ -229,6 +232,10 @@ export class Hud {
         descriptor,
       );
 
+      if (dead) {
+        descriptor.blockedBy = "dead";
+      }
+
       if (descriptor.kind === "orb") {
         hasOrbs = true;
       }
@@ -246,7 +253,7 @@ export class Hud {
     }
 
     if (hasOrbs) {
-      this.orbs.sync(form.kit);
+      this.orbs.sync(form.kit, dead ? GREYED_ALPHA : OPAQUE);
     } else {
       this.orbs.hide();
     }

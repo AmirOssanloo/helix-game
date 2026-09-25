@@ -113,7 +113,7 @@ A death is not a status and is not a row: a dead unit refuses every command unti
 
 ## 5. What the player sees
 
-A square on the ability bar greys while the hero wears a status whose cell for that key says refused or cancelled, so stun, silence, and lift grey six squares and root, disarm, and knockback grey none. The HUD reads the same cells the validator refuses by, so a grey square is always a refused key and a lit one never is.
+A square on the ability bar greys while the hero wears a status whose cell for that key says refused or cancelled, so stun, silence, and lift grey six squares and root, disarm, and knockback grey none. Death is not a row, but it refuses every key, so all six grey while the hero is dead. The HUD reads the same cells the validator refuses by, so a grey square is always a refused key and a lit one never is.
 
 An open cursor closes on the first frame its column says closed, at no cost and with no flash.
 

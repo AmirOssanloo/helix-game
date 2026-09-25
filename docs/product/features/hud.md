@@ -20,7 +20,7 @@ Centred at the bottom of the screen.
 
 Skill points are spent by clicking the Q, W, or E square while a point is unspent. Each square shows its orb level as a small number.
 
-D and F show the prepared spell's colour and a short label. Empty slots show an empty socket. A key a disable blocks is greyed out while the disable lasts.
+D and F show the prepared spell's colour and a short label. Empty slots show an empty socket. A key a disable blocks is greyed out while the disable lasts, and every key and the orb buffer grey while the hero is dead.
 
 ## Around the hero
 
@@ -79,7 +79,7 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 | Click on the bottom bar | The HUD takes it; the world never sees it, so a right click on the bar is not a move |
 | Simulation paused with a flash showing | The flash holds until the simulation resumes; it ends on a tick, not a frame |
 | More damage numbers than the pool holds | The oldest number is recycled early; nothing is dropped silently |
-| Health at zero | The bar is empty; the bottom bar greys until respawn |
+| Health at zero | The health bar is empty; the six ability squares and the orb buffer grey until respawn, as death refuses every key |
 | Skill point unspent at level cap | The marker stays until spent |
 | Tab hidden | The HUD freezes with the simulation |
 

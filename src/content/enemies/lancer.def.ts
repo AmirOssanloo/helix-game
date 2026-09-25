@@ -3,9 +3,10 @@ import type { EnemyDef } from "@domain/public";
 /**
  * The lancer: a melee enemy that charges across the gap to the hero, so distance is not safety. The
  * hero's body, slower than the hero on foot, a medium swing a little longer than a grunt's. It
- * waits at range while its charge is on its clock, then closes, the charge carrying it the last
- * of the way. An elite also slams beside the hero; a boss throws a net first, then
- * slams. Every number is a starting value design retunes here.
+ * waits at range while its charge is on its clock and closes to swing on a hero that comes
+ * inside that range. Once the charge is ready it closes, the charge carrying it the last of the
+ * way. An elite also slams beside the hero; a boss throws a net first, then slams. Every
+ * number is a starting value design retunes here.
  */
 export const lancerDef = {
   id: "lancer",

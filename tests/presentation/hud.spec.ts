@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heroDef, WEDGE_STEPS } from "@content/public";
+import { heroDef, tuningTable, WEDGE_STEPS } from "@content/public";
 import type {
   FormRecord,
   Kit,
@@ -11,6 +11,7 @@ import { applyStatus, resolveKit, validateRegistry } from "@domain/public";
 import type { KitResolver } from "@presentation/public";
 import {
   Hud,
+  ORB_ROW_CENTRE_Y,
   ORB_TINTS,
   SlotFlashes,
   squareCentreX,
@@ -32,6 +33,7 @@ import {
   SEALED_STATUSES,
   spawnHero,
   submit,
+  tickUntil,
 } from "../helpers";
 
 /** Every frame the test atlas holds is this wide. */
@@ -48,6 +50,10 @@ const SLOTS: readonly number[] = [1, 2, 3, 4, 5, 6];
 
 /** How long a status a case applies lasts: two seconds at 30 Hz, well past the tick that reads it. */
 const STATUS_TICKS = 60;
+
+/** The respawn delay in ticks under the content table's defaults, and a margin past it. */
+const RESPAWN_TICKS = tuningTable.respawn_delay * tuningTable.sim_hz;
+const RESPAWN_MARGIN_TICKS = 10;
 
 /** The DOM buttons. */
 const LEFT = 0;
@@ -180,6 +186,10 @@ const greyedSlots = (arranged: Arranged): readonly number[] =>
 
     return descriptor !== null && descriptor.blockedBy !== null;
   });
+
+/** The orb row's visible quads, fills and sockets, in creation order. */
+const orbRowQuads = (arranged: Arranged): QuadRecorder[] =>
+  arranged.quads.filter((quad) => quad.visible && quad.y === ORB_ROW_CENTRE_Y);
 
 /** The labels showing `text`. */
 const labelsShowing = (arranged: Arranged, text: string): LabelRecorder[] =>
@@ -332,6 +342,60 @@ describe("the six ability squares", () => {
     expect(greyedSlots(arranged)).toEqual([D, F]);
     expect(arranged.hud.descriptorOf(D)?.blockedBy).toBe("silenced");
     expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBeNull();
+  });
+
+  it("grey all six and the orb row while the hero is dead, and light them again when it respawns", () => {
+    const arranged = arrange();
+    const record = arranged.world.state.run.forms[0];
+
+    if (record === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    record.kit.orbs[0] = 0;
+    record.kit.orbCount = 1;
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hero.state).toBe("dead");
+    expect(greyedSlots(arranged)).toEqual(SLOTS);
+    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("dead");
+    expect(arranged.hud.descriptorOf(D)?.blockedBy).toBe("dead");
+    expect(labelsShowing(arranged, "Q")[0]?.alpha).toBeLessThan(1);
+    expect(orbRowQuads(arranged)).toHaveLength(3);
+    expect(orbRowQuads(arranged).every((quad) => quad.alpha < 1)).toBe(true);
+
+    tickUntil(
+      arranged.world,
+      () => arranged.hero.state !== "dead",
+      RESPAWN_TICKS + RESPAWN_MARGIN_TICKS,
+    );
+    arranged.hud.sync(arranged.view);
+
+    expect(greyedSlots(arranged)).toEqual([]);
+    expect(labelsShowing(arranged, "Q")[0]?.alpha).toBe(1);
+    expect(orbRowQuads(arranged)).toHaveLength(3);
+    expect(orbRowQuads(arranged).every((quad) => quad.alpha === 1)).toBe(true);
+  });
+
+  it("grey all six by death even under a disarm, which on its own greys none", () => {
+    const arranged = arrange();
+
+    wear(arranged, "disarm");
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(greyedSlots(arranged)).toEqual(SLOTS);
   });
 
   it("rewrite a label only when its number changes", () => {
