@@ -21,7 +21,7 @@ Get silenced with the cursor open and watch it close. Get rooted mid-walk and st
 | Layer | docs |
 | Size | 0.5 |
 | Depends on | P4-S18-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** `docs/product/specs/disable-matrix.md`: rows for stun, silence, root, disarm, slow, damage over time, knockback, lift; columns for Q, W, E, R, D, F, move, attack-target, attack-move, stop, a cast point in progress, a targeting cursor open; each cell one of refused, allowed, cancelled, closed, or continues, with a note where the answer is not obvious. The status page's table is the starting contract; every disagreement is resolved on this page.
 
@@ -46,6 +46,10 @@ Get silenced with the cursor open and watch it close. Get rooted mid-walk and st
 | Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | | | | | | | | | | | | |
 
 Each cell is one of refused, allowed, cancelled, closed, or continues. Three things for this ticket to settle, none of them structure: whether `wane`, which raises `aggro_hidden`, `quicken`, which raises nothing, and `hoarfrost`, whose hook applies `stun` and so reaches the stun row, get rows of their own, since none blocks a key by itself and the ticket's list leaves them out; whether the slow and damage-over-time rows, which raise no flag, are written out in full or as one "allowed everywhere" line; and that lift raises `stunned`, so its row must at least match stun's. The status ids are read from the definition files; check them there before T02 writes the constant.
+
+Edited in place, 2026-09-25: the page adds a thirteenth column, the attack-move cursor open, because one cursor cell cannot say both that silence closes the spell cursor and that it leaves the attack-move cursor open, as the status page requires; and a ninth row, no disable, for `quicken`, `self_heal`, `hoarfrost`, `bash`, and `frost_attack`, so every status id sits in exactly one row. `wane` joins the slow row and `charge` the knockback row. The matrix is 117 cells. Q43 records the readings the docs did not settle.
+
+**Closed, 2026-09-25.** `docs/product/specs/disable-matrix.md` fills every cell, with fourteen notes. The status effects page, the product README, the docs index, and the mechanics spec's document map point at it, and the status page defers to it where the two disagree. The product owner's approval is deferred until phase 5 is done, by the maintainer's standing instruction of 2026-09-24, and waits under "Waiting on a person" in STATUS.md.
 
 ---
 
@@ -118,7 +122,7 @@ Each cell is one of refused, allowed, cancelled, closed, or continues. Three thi
 | Check | Result |
 | --- | --- |
 | One green test per matrix cell | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

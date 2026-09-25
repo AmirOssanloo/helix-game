@@ -564,7 +564,7 @@ Do not bury these in code. Designers will retune these.
 This file is only the control and locomotion layer. Later briefs, not amendments that smuggle spells into this one:
 
 - Prepared-spell catalogue (the excluded ten identities).
-- Disable matrix (what silence, stun, and similar states do to Q/W/E versus R versus D/F).
+- Disable matrix (what silence, stun, and similar states do to Q/W/E versus R versus D/F): the [disable matrix](./disable-matrix.md).
 - Animation set and orb VFX readability standard for a web renderer.
 - Encounter scripting that assumes this control surface.
 

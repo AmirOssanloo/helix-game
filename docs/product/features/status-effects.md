@@ -40,7 +40,7 @@ Every status on a unit shows as an icon above it ([HUD](./hud.md)), one glyph pe
 
 ## The disable matrix
 
-Which status blocks which key, order, and cast state is one table with a cell per pair: every status against Q, W, E, R, D, F, move, attack-target, attack-move, stop, a cast point in progress, and a targeting cursor open. Each cell is a test. The matrix is data in two halves: each status definition under `src/content/statuses/` names the flags it raises, and the validator beside the order state machine decides which command each flag refuses. The table above says what the two halves have to add up to.
+Which status blocks which key, order, and cast state is one table with a cell per pair: every status against Q, W, E, R, D, F, move, attack-target, attack-move, stop, a cast point in progress, a targeting cursor open, and an attack-move cursor open. The [disable matrix](../specs/disable-matrix.md) fills in every cell and says why where the answer is not obvious; where it and the table above disagree, the matrix wins. The matrix is data under `src/content/statuses/`, and each cell is a test: the validator refuses by it, the status pass ends a running order or cast by it, and the HUD greys and the mapper closes a cursor by it.
 
 ## States and edge cases
 
@@ -75,8 +75,8 @@ Which status blocks which key, order, and cast state is one table with a cell pe
 
 ## Related documentation
 
+- [Disable matrix](../specs/disable-matrix.md) — every status against every key, order, and cast state, cell by cell
 - [Spells and attack](./spells-and-attack.md) — the spells that apply these
 - [Enemies](./enemies.md) — the enemy abilities that apply them to the hero
-- [Controls and orders](./controls-and-orders.md) — the keys and orders the disables block
 - [Hero](./hero.md) — the speed and health values slows and damage over time act on
 - [Ability pipeline](../../architecture/ability-pipeline.md) — how a status is one of the effect primitives

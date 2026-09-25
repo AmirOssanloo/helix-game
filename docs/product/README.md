@@ -19,6 +19,7 @@ These pages use **real names and real numbers** — Quartz, Hoarfrost, 280 units
 - [Character movement and mechanics](./specs/character-movement-and-mechanics.md) — the control model with every number: pointer and keys, locomotion, turn rate, the orb buffer, Invoke, the D and F slots, cooldowns, the tick model, and the acceptance tests. Authoritative on all of those; every feature page defers to it
 - [Spell catalogue](./specs/spell-catalogue.md) — the ten spells as data: recipe, targeting, cast point, range, cooldown and mana by level, effect lists, statuses, shapes, frames, and the pieces the pipeline needs to cast them. Authoritative on the shape; the definition files own the numbers
 - [Enemy catalogue](./specs/enemy-catalogue.md) — the archetypes as data: every field of an enemy definition with a starting value and why it starts there, set against the level-1 hero, and what a pack is worth in experience. The definition files own the numbers
+- [Disable matrix](./specs/disable-matrix.md) — every status against Q, W, E, R, D, F, the four orders, a cast point in progress, and the two cursors, one answer per cell with a note where it is not obvious. Authoritative over the status effects page's table; the data file mirrors it cell for cell
 
 ## The surfaces
 
