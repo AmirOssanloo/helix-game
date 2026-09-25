@@ -32,6 +32,7 @@ export const greyedSlots = (
       form.kit,
       hero.cooldowns,
       hero.disables,
+      world.state.run.disableMatrix,
       world.state.run.spells,
       world.state.run.tuning,
       descriptor,

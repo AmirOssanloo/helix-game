@@ -1,9 +1,5 @@
 import type { AnyCommand, CastTarget } from "@domain/public";
-import {
-  abilityDisable,
-  createCandidateBuffer,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { createCandidateBuffer, isClosed, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId, Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
@@ -85,10 +81,11 @@ export class InputMapper {
 
   /**
    * One frame, before the preview is drawn: an open cursor the hero may no longer commit is
-   * closed. Every cursor goes when the hero dies, since a dead hero takes no order. A slot
-   * cursor goes when a stun or a silence lands, since both refuse the cast the click would
-   * send; the attack-move cursor goes on a stun alone, because silence leaves movement and
-   * attacks to the hero. Nothing flashes: the player asked for nothing yet.
+   * closed. Every cursor goes when the hero dies, since a dead hero takes no order. Otherwise
+   * a cursor goes when the disable matrix's cell for it says closed under a status the hero
+   * wears: a slot cursor on a stun, a silence, or a lift, the attack-move cursor on a stun or
+   * a lift, since silence leaves movement and attacks to the hero. Nothing flashes: the
+   * player asked for nothing yet.
    */
   syncCursor(): void {
     if (this.cursor.kind === "closed") {
@@ -104,9 +101,13 @@ export class InputMapper {
 
     const blocked =
       hero.state === "dead" ||
-      (this.cursor.kind === "attack_move"
-        ? hero.disables.stunned
-        : abilityDisable(hero.disables) !== null);
+      isClosed(
+        this.world.run.disableMatrix,
+        hero.disables,
+        this.cursor.kind === "attack_move"
+          ? "attackMoveCursor"
+          : "targetingCursor",
+      );
 
     if (blocked) {
       closeCursor(this.cursor);

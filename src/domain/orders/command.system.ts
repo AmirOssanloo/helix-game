@@ -185,7 +185,7 @@ export const commandSystem = (world: World): void => {
       continue;
     }
 
-    const validation = validateCommand(hero, command);
+    const validation = validateCommand(hero, command, world.run.disableMatrix);
 
     if (validation !== "ok") {
       announceRefusal(world, command, validation);

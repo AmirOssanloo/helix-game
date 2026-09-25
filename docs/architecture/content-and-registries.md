@@ -62,6 +62,7 @@ A key is the file name. A definition says `key: 'foo'`; the registry maps `'foo'
 - A referenced id that does not exist: a status, a summon, an ability, a form, an archetype.
 - An enemy or summon that carries a status twice, more than two statuses, or a status that raises a flag, which it would hold until it died.
 - A level table without one entry per orb level.
+- A disable matrix that leaves a status out of every row or puts one in two, names a status that does not exist, lacks a column, writes a row's flags other than the flags its statuses raise, or gives a reason to a row that refuses nothing or none to one that refuses.
 - An atlas frame name that is not in the frame list.
 - Two definitions of one kind sharing an id. Spells and enemy abilities share one id space, as do enemies and summons.
 
@@ -132,7 +133,7 @@ A system writing a stack count back into the status definition. The next unit th
 | Named effects | `domain/abilities/effects/`, one file per key |
 | AI behaviours | `domain/ai/behaviours/`, one file per key |
 | The content registry | Assembled in `content/index.ts`; validated by the domain's validator at startup and in the content test |
-| Validation fails on | A schema mismatch, an unresolved key, a named effect's fields failing its schema, a missing referenced id, a short level table, an unknown atlas frame, a duplicate id |
+| Validation fails on | A schema mismatch, an unresolved key, a named effect's fields failing its schema, a missing referenced id, a short level table, a status in no row of the disable matrix or in two, an unknown atlas frame, a duplicate id |
 | Units in a definition | The designer's: seconds, world units, percentages; converted to ticks and radians once at load |
 | The domain and content | The domain never imports content; the world receives the registry at creation |
 | A number in a system | Never a literal; a tunable or a definition field |

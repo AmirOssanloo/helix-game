@@ -6,6 +6,17 @@ import { TARGETING_KINDS } from "./ability-def";
 import type { AtlasFrameDef, AtlasShape } from "./atlas-frame-def";
 import type { AttackDef } from "./attack-def";
 import type {
+  DisableCellsDef,
+  DisableMatrixDef,
+  DisableRowDef,
+} from "./disable-matrix-def";
+import {
+  CAST_POINT_ANSWERS,
+  COMMAND_ANSWERS,
+  CURSOR_ANSWERS,
+  DISABLE_REASONS,
+} from "./disable-matrix-def";
+import type {
   DamageAreaEffectDef,
   DisplaceEffectDef,
   EffectDef,
@@ -267,6 +278,35 @@ export const mapSchema: Schema<MapDef> = objectOf<MapDef>({
     }),
   ),
 });
+
+const commandAnswerSchema = oneOf(COMMAND_ANSWERS);
+const cursorAnswerSchema = oneOf(CURSOR_ANSWERS);
+
+/** The disable matrix: one row per group of statuses, each with an answer of its column's kind in every column. Which status sits in which row is a check the registry makes against the statuses. */
+export const disableMatrixSchema: Schema<DisableMatrixDef> = arrayOf(
+  objectOf<DisableRowDef>({
+    id: idSchema,
+    statuses: arrayOf(idSchema),
+    flags: arrayOf(oneOf(STATUS_FLAGS)),
+    wornBy: arrayOf(oneOf(STATUS_FLAGS)),
+    reason: nullable(oneOf(DISABLE_REASONS)),
+    cells: objectOf<DisableCellsDef>({
+      q: commandAnswerSchema,
+      w: commandAnswerSchema,
+      e: commandAnswerSchema,
+      r: commandAnswerSchema,
+      d: commandAnswerSchema,
+      f: commandAnswerSchema,
+      move: commandAnswerSchema,
+      attackTarget: commandAnswerSchema,
+      attackMove: commandAnswerSchema,
+      stop: commandAnswerSchema,
+      castPoint: oneOf(CAST_POINT_ANSWERS),
+      targetingCursor: cursorAnswerSchema,
+      attackMoveCursor: cursorAnswerSchema,
+    }),
+  }),
+);
 
 /**
  * The schema of every definition kind whose tables are indexed by orb level, and the effect

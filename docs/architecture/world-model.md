@@ -38,6 +38,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
 | Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, tier, behaviour key, and the abilities it may cast | Content |
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
+| Disable matrix | `content/statuses/disable-matrix.ts`, typed in `domain/definitions` | Every status against every key, order, cast in progress, and cursor: one row per group of statuses, one answer per cell | Content |
 | Summon definition | `content/summons/`, typed in `domain/definitions` | A unit an ability spawns: enemy-shaped, with the distance it keeps from its owner | Content |
 | Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, spawn points, and spawn data for one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |

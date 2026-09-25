@@ -63,8 +63,8 @@ const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
  * the world's own copy of every definition it may retune with each number under its key in
- * the tuning state, the hero's form records, its attack read for the tick, and the spell,
- * status, and unit tables built over the copies, both switches off, no hero yet, and the
+ * the tuning state, the hero's form records, its attack read for the tick, the spell,
+ * status, and unit tables built over the copies, the disable matrix as written, both switches off, no hero yet, and the
  * random source at the start of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
@@ -82,6 +82,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     forms: createFormRecords(copies.hero, copies.forms, tuning),
     spells: createSpellTable(copies.spells, copies.abilities, tuning),
     statuses: createStatusTable(copies.statuses, tuning),
+    disableMatrix: registry.disableMatrix,
     units: createUnitTable(copies.enemies, copies.summons, tuning),
     tuning,
     definitionSlots,

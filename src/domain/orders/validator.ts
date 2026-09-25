@@ -1,12 +1,16 @@
 import { isDamageType } from "../combat/damage";
 import type { Command, DebugCommand } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
+import type {
+  DisableMatrixDef,
+  DisableReason,
+} from "../definitions/disable-matrix-def";
 import { ENEMY_TIERS } from "../definitions/enemy-def";
 import type { Unit } from "../entities/unit";
 import { ORB_COUNT } from "../entities/world-state";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/status.system";
-import type { DisableFlags } from "./disable-flags";
+import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
 
 /**
  * Why a command was refused. A disable names the flag that blocked it, and `dead` says the
@@ -29,10 +33,7 @@ import type { DisableFlags } from "./disable-flags";
  * application.
  */
 export type RefusalReason =
-  | "stunned"
-  | "silenced"
-  | "rooted"
-  | "disarmed"
+  | DisableReason
   | "dead"
   | "invalid_slot"
   | "invalid_destination"
@@ -100,63 +101,46 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
 };
 
 /**
- * The disable that refuses an ability key or a cast right now, or `null` when none does:
- * stun, then silence. The validator reads it for a slot key and a cast, and a kit reads it
- * to say a slot is blocked, so the HUD greys the square by the same rule the tick refuses by.
- */
-export const abilityDisable = (
-  disables: Readonly<DisableFlags>,
-): RefusalReason | null => {
-  if (disables.stunned) {
-    return "stunned";
-  }
-
-  if (disables.silenced) {
-    return "silenced";
-  }
-
-  return null;
-};
-
-/**
- * Decides whether `unit` may act on `command` this tick, from its state and its disable
- * flags. Reads nothing else and writes nothing: a refusal is a value, and the caller drops
- * the command. What a cast needs beyond that, the spell, its clock, its cost, its target,
- * and its range, is the cast pipeline's request stage to refuse. A tuning change is not a
- * unit's to accept; the tuning state validates it. A debug command is not the unit's act
- * either; `validateDebugCommand` checks its shape. Neither arrives here.
+ * Decides whether `unit` may act on `command` this tick, from its state, its disable flags,
+ * and the disable matrix. Reads nothing else and writes nothing: a refusal is a value, and the
+ * caller drops the command. What a cast needs beyond that, the spell, its clock, its cost, its
+ * target, and its range, is the cast pipeline's request stage to refuse. A tuning change is
+ * not a unit's to accept; the tuning state validates it. A debug command is not the unit's
+ * act either; `validateDebugCommand` checks its shape. Neither arrives here.
  *
- * Death refuses everything: a dead unit responds to nothing until it respawns. Stun refuses
- * everything else, the stop included, so a stunned unit keeps whatever it was doing.
- * Silence refuses the ability keys and leaves movement and attacks alone. Root refuses a move
- * and an attack-move; an attack on a target in range continues. Disarm refuses an attack on a
- * target; an attack-move still moves, and acquisition along the way is the attack rule's to
- * refuse. An attack point or a cast point in progress refuses nothing: the state machine
- * cancels it when the new order lands, with nothing spent. A skill-point spend is refused by
- * no disable, only by death and by a slot outside the six keys; a level is not something the
- * unit does.
+ * Death refuses everything: a dead unit responds to nothing until it respawns. A slot key, an
+ * order, and the stop are refused when the matrix's cell for their column says refused or
+ * cancelled under a row the unit wears, with the strictest row's reason; a cast reads the two
+ * spell keys' cells. A payload's boundary checks come after the matrix, so a disabled unit's
+ * refusal names the disable; a slot outside the six keys has no column and is refused as
+ * invalid first. An attack point or a cast point in progress refuses nothing: the state
+ * machine cancels it when the new order lands, with nothing spent. A skill-point spend is
+ * refused by no disable, only by death and by a slot outside the six keys; a level is not
+ * something the unit does, and has no column.
  */
 export const validateCommand = (
   unit: Readonly<Unit>,
   command: Command,
+  matrix: DisableMatrixDef,
 ): ValidationResult => {
   if (unit.state === "dead") {
     return "dead";
   }
 
-  if (command.kind === "spend_skill_point") {
-    return isSlotIndex(command.slot) ? "ok" : "invalid_slot";
-  }
-
-  if (unit.disables.stunned) {
-    return "stunned";
-  }
-
   switch (command.kind) {
+    case "spend_skill_point":
+      return isSlotIndex(command.slot) ? "ok" : "invalid_slot";
+
     case "move":
     case "attack_move": {
-      if (unit.disables.rooted) {
-        return "rooted";
+      const refusal = refusalOf(
+        matrix,
+        unit.disables,
+        command.kind === "move" ? "move" : "attackMove",
+      );
+
+      if (refusal !== null) {
+        return refusal;
       }
 
       if (!isFiniteDestination(command.destination)) {
@@ -166,36 +150,25 @@ export const validateCommand = (
       return "ok";
     }
 
-    case "attack_target": {
-      if (unit.disables.disarmed) {
-        return "disarmed";
-      }
-
-      return "ok";
-    }
+    case "attack_target":
+      return refusalOf(matrix, unit.disables, "attackTarget") ?? "ok";
 
     case "stop":
-      return "ok";
+      return refusalOf(matrix, unit.disables, "stop") ?? "ok";
 
     case "slot": {
-      const disable = abilityDisable(unit.disables);
-
-      if (disable !== null) {
-        return disable;
-      }
-
       if (!isSlotIndex(command.slot)) {
         return "invalid_slot";
       }
 
-      return "ok";
+      return slotRefusal(matrix, unit.disables, command.slot) ?? "ok";
     }
 
     case "cast": {
-      const disable = abilityDisable(unit.disables);
+      const refusal = castRefusal(matrix, unit.disables);
 
-      if (disable !== null) {
-        return disable;
+      if (refusal !== null) {
+        return refusal;
       }
 
       const target = command.target;

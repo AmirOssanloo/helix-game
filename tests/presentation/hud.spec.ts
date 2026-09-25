@@ -677,6 +677,7 @@ describe("the orb row and a second kit", () => {
         _state,
         _cooldowns,
         _disables,
+        _matrix,
         _spells,
         _tuning,
         out,

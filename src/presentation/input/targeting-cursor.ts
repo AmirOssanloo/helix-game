@@ -148,6 +148,7 @@ export const pressSlotKey = (
     form.kit,
     hero.cooldowns,
     hero.disables,
+    world.run.disableMatrix,
     world.run.spells,
     world.run.tuning,
     descriptor,

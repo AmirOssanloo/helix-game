@@ -1,4 +1,5 @@
 import type { DeepReadonly } from "@shared/public";
+import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { Unit } from "../entities/unit";
 import type { KitState } from "../entities/world-state";
@@ -54,12 +55,13 @@ export type Kit = Readonly<{
     state: DeepReadonly<KitState>,
     out: AbilityRequest,
   ) => AbilityRequest;
-  /** Writes what slot key `slot` shows, reading the unit's clocks and disable flags, and the spell table and the tuning table for costs and clocks. */
+  /** Writes what slot key `slot` shows, reading the unit's clocks, its disable flags against the disable matrix, and the spell table and the tuning table for costs and clocks. */
   describeSlot: (
     slot: number,
     state: DeepReadonly<KitState>,
     cooldowns: ReadonlyMap<string, Tick>,
     disables: Readonly<DisableFlags>,
+    matrix: DisableMatrixDef,
     spells: ReadonlyMap<string, SpellRecord>,
     tuning: ReadonlyMap<string, number>,
     out: SlotDescriptor,

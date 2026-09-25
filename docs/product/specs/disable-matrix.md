@@ -19,7 +19,7 @@
 
 This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
 
-The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell. One test per cell holds the two together, so a changed cell is a change to both.
+The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell, its rows in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by. One test per cell holds the two together, so a changed cell is a change to both.
 
 ---
 
@@ -65,6 +65,10 @@ A refusal carries the row's reason, the flag the validator names in the refused-
 ### 2.4 Two statuses at once
 
 A unit wearing two statuses answers each cell with the stricter of the two rows: cancelled over refused, refused over allowed, closed over continues, cancelled over continues. A rooted and silenced hero is refused Q through F and cancelled on a move; a lifted and rooted one answers as lift, and root keeps counting in the air.
+
+A unit is placed in a row by the flags it wears, not by the statuses behind them. Lift raises the stunned flag, so a lifted unit wears every flag the stun row is worn by and more: the lift row covers the stun row, and a lifted unit answers as lift, not as the stricter stun. A move put aside by a lift is not cancelled in the air; if a stun or a root outlasts the lift, it cancels the move on landing.
+
+When two rows refuse one command, the refusal names the reason of the first in the order stun, lift, silence, root, disarm. A stunned and silenced hero is refused Q with `stunned`; a lifted and rooted one is refused a move with `stunned`.
 
 ---
 

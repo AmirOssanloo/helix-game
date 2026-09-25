@@ -3,6 +3,7 @@ import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
 import type { DamageRecord } from "../combat/damage";
 import { dealDamage } from "../combat/damage";
+import type { DisableColumn } from "../definitions/disable-matrix-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
@@ -12,6 +13,7 @@ import { clearStatusEntry, STATUS_TABLE_SIZE } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
+import { isCancelled } from "../orders/disable-matrix";
 import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
 import { restoreHealth } from "../stats/regeneration";
@@ -314,6 +316,33 @@ const runExpiries = (
 };
 
 /**
+ * The matrix column of what `unit` is doing, or `null` when it holds nothing a status could
+ * end: a cast under way, from the approach to the channel, reads the cast point column, and a
+ * move, an attack on a target, or an attack-move reads its order's.
+ */
+const activityColumn = (unit: Readonly<Unit>): DisableColumn | null => {
+  if (
+    unit.order.kind === "cast" ||
+    unit.state === "ability_cast_point" ||
+    unit.state === "ability_backswing" ||
+    unit.state === "channeling"
+  ) {
+    return "castPoint";
+  }
+
+  switch (unit.order.kind) {
+    case "move":
+      return "move";
+    case "attack_target":
+      return "attackTarget";
+    case "attack_move":
+      return "attackMove";
+    case "none":
+      return null;
+  }
+};
+
+/**
  * Keeps every unit's disable flags and status modifier rows true to its status table, early
  * in the tick: right after the commands are applied, so a status the tick put on is in this
  * tick's flags and this tick's derived values, and before the stats are derived, the cast
@@ -322,11 +351,13 @@ const runExpiries = (
  * validator reads the flags this pass wrote, which is the previous tick's for a command
  * arriving now: a status that lands mid-tick blocks from the next tick on.
  *
- * A stun clears the order, so a stunned unit stands where it was and whatever it was casting
- * is cancelled; a root clears a move or an attack-move, so a rooted unit does not resume it
- * when the root ends. A lift is the one condition that gives an order back: it takes the
- * order off the unit for as long as the unit is in the air and puts it on again on the tick
- * the lift ends, from wherever the unit was dropped. A dead unit holds no order and keeps its
+ * What the unit is doing is ended when the disable matrix's cell for it says cancelled under
+ * a row the unit wears: a stun clears any order and cancels a cast, so the unit stands where
+ * it was; a root clears a move or an attack-move, so the unit does not resume it when the
+ * root ends. A lift is the one condition that gives an order back, which no cell can say: it
+ * takes the order off the unit for as long as the unit is in the air and puts it on again on
+ * the tick the lift ends, from wherever the unit was dropped. It is read before the matrix,
+ * since the stun a lift carries would otherwise cancel what the lift puts aside. A dead unit holds no order and keeps its
  * empty table until it respawns.
  *
  * A status that ended runs its expiry list on the same tick, between the table being read and
@@ -361,10 +392,12 @@ export const statusSystem = (world: World): void => {
       resumeOrder(unit);
     }
 
-    const isWalking =
-      unit.order.kind === "move" || unit.order.kind === "attack_move";
+    const column = activityColumn(unit);
 
-    if (unit.disables.stunned || (unit.disables.rooted && isWalking)) {
+    if (
+      column !== null &&
+      isCancelled(world.run.disableMatrix, unit.disables, column)
+    ) {
       clearOrder(unit);
     }
   }

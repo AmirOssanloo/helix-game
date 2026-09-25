@@ -139,7 +139,7 @@ Static map geometry drawn as a tile layer is a view kind like any other when a m
 
 A vector cursor is aimed with the button held. The button going down on it holds the press — its world point and its canvas point — and sends nothing; the button coming up, over the canvas or off it, sends the cast. Whether the pointer has dragged is one test in `presentation/input/`, a distance in logical canvas pixels from the press, asked by the mapper on the release and by the preview every frame, so what the player sees while holding is what the release sends. While the pointer is dragged, the drag line is a stretched copy of a filled frame from the press to the pointer, in the ability's tint.
 
-The cursor is the only piece of state the layer holds that is not in the world: which slot's cursor is open, and a press held on it. Each frame it reads the hero's state and disable flags and closes a cursor the hero may no longer commit — every cursor on death, a slot cursor on a stun or a silence, the attack-move cursor on a stun — at no cost and with no flash. While a press is held, Escape, a right click, a slot key, and the window losing focus each close the cursor with nothing sent, and S closes it and stops; the right click is the one time a right click is not a move.
+The cursor is the only piece of state the layer holds that is not in the world: which slot's cursor is open, and a press held on it. Each frame it reads the hero's state and disable flags and closes a cursor the hero may no longer commit — every cursor on death, and any cursor whose column in the disable matrix says closed under a status the hero wears: a slot cursor on a stun, a silence, or a lift, the attack-move cursor on a stun or a lift — at no cost and with no flash. While a press is held, Escape, a right click, a slot key, and the window losing focus each close the cursor with nothing sent, and S closes it and stops; the right click is the one time a right click is not a move.
 
 ---
 
@@ -202,7 +202,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
 | Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands; a vector cursor holds its press on the button going down and sends on the button coming up, on the canvas or off it; one drag test, in logical canvas pixels, serves the mapper and the preview |
-| An open cursor | Closed each frame when the hero's state or flags refuse what it would send: every cursor on death, a slot cursor on stun or silence, the attack-move cursor on stun. A held press is closed with nothing sent by Escape, a right click, a slot key, or losing focus, and by S with a stop |
+| An open cursor | Closed each frame when the hero's state or flags refuse what it would send: every cursor on death, and one whose disable matrix cell says closed: a slot cursor on stun, silence, or lift, the attack-move cursor on stun or lift. A held press is closed with nothing sent by Escape, a right click, a slot key, or losing focus, and by S with a stop |
 
 ---
 

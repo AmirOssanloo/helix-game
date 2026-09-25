@@ -39,6 +39,7 @@ export { maps } from "./maps/index";
 export { spells } from "./spells/index";
 export { bashDef } from "./statuses/bash.def";
 export { frostAttackDef } from "./statuses/frost-attack.def";
+export { disableMatrix } from "./statuses/disable-matrix";
 export { statuses } from "./statuses/index";
 export { summons } from "./summons/index";
 export { tuningTable } from "./tuning";

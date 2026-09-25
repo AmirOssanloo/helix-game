@@ -7,10 +7,13 @@ import type { LevelledSchemas } from "./definition-schemas";
 import {
   atlasFrameSchema,
   createLevelledSchemas,
+  disableMatrixSchema,
   heroSchema,
   mapSchema,
   tuningSchema,
 } from "./definition-schemas";
+import type { DisableMatrixDef } from "./disable-matrix-def";
+import { COMMAND_COLUMNS, DISABLE_COLUMNS } from "./disable-matrix-def";
 import type { EffectDef } from "./effect-def";
 import type { EnemyAbilityEntryDef, EnemyDef } from "./enemy-def";
 import type { Registry } from "./registry";
@@ -550,6 +553,155 @@ const checkUnitDef = (
   checkCarriedStatuses(faults, file, def, spaces, statuses);
 };
 
+/** The file the disable matrix lives in. */
+const DISABLE_MATRIX_FILE = "statuses/disable-matrix.ts";
+
+/**
+ * The disable matrix against the statuses: its shape, every row id once, every status in
+ * exactly one row and no row naming a status that does not exist, each row's flags exactly
+ * the flags its statuses raise, the flags it is worn by among them, a reason exactly when a
+ * key or order cell refuses, and a row worn by no flag blocking nothing.
+ */
+const checkDisableMatrix = (
+  faults: RegistryFault[],
+  matrix: unknown,
+  statuses: ReadonlyMap<string, StatusDef>,
+): void => {
+  const found: SchemaFault[] = [];
+
+  if (!disableMatrixSchema(matrix, "", found)) {
+    report(faults, DISABLE_MATRIX_FILE, found);
+
+    return;
+  }
+
+  const rows: DisableMatrixDef = matrix;
+  const rowOf = new Map<string, string>();
+  const rowIds = new Set<string>();
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+
+    if (row === undefined) {
+      continue;
+    }
+
+    const path = `[${String(index)}]`;
+    const raised = new Set<string>();
+
+    if (rowIds.has(row.id)) {
+      faults.push({
+        file: DISABLE_MATRIX_FILE,
+        path: `${path}.id`,
+        message: `"${row.id}" is already the id of a row`,
+      });
+    }
+
+    rowIds.add(row.id);
+
+    for (let entry = 0; entry < row.statuses.length; entry += 1) {
+      const id = row.statuses[entry];
+
+      if (id === undefined) {
+        continue;
+      }
+
+      const entryPath = `${path}.statuses[${String(entry)}]`;
+      const status = statuses.get(id);
+      const earlier = rowOf.get(id);
+
+      if (status === undefined) {
+        faults.push({
+          file: DISABLE_MATRIX_FILE,
+          path: entryPath,
+          message: `"${id}" names no status`,
+        });
+
+        continue;
+      }
+
+      if (earlier !== undefined) {
+        faults.push({
+          file: DISABLE_MATRIX_FILE,
+          path: entryPath,
+          message: `"${id}" already sits in the row "${earlier}"`,
+        });
+
+        continue;
+      }
+
+      rowOf.set(id, row.id);
+
+      for (const flag of status.flags) {
+        raised.add(flag);
+      }
+    }
+
+    const written = new Set<string>(row.flags);
+    const matches =
+      written.size === raised.size &&
+      [...raised].every((flag) => written.has(flag));
+
+    if (!matches) {
+      faults.push({
+        file: DISABLE_MATRIX_FILE,
+        path: `${path}.flags`,
+        message: `expected the flags its statuses raise, ${[...raised].sort().join(", ") || "none"}`,
+      });
+    }
+
+    for (let entry = 0; entry < row.wornBy.length; entry += 1) {
+      const flag = row.wornBy[entry];
+
+      if (flag !== undefined && !written.has(flag)) {
+        faults.push({
+          file: DISABLE_MATRIX_FILE,
+          path: `${path}.wornBy[${String(entry)}]`,
+          message: `expected one of the row's flags, found "${flag}"`,
+        });
+      }
+    }
+
+    const refuses = COMMAND_COLUMNS.some(
+      (column) => row.cells[column] !== "allowed",
+    );
+
+    if (refuses !== (row.reason !== null)) {
+      faults.push({
+        file: DISABLE_MATRIX_FILE,
+        path: `${path}.reason`,
+        message: refuses
+          ? "expected a reason, since a key or order cell refuses"
+          : "expected null, since no key or order cell refuses",
+      });
+    }
+
+    if (row.wornBy.length === 0) {
+      for (const column of DISABLE_COLUMNS) {
+        const answer = row.cells[column];
+
+        if (answer !== "allowed" && answer !== "continues") {
+          faults.push({
+            file: DISABLE_MATRIX_FILE,
+            path: `${path}.cells.${column}`,
+            message: `expected allowed or continues, since no flag wears the row; found ${answer}`,
+          });
+        }
+      }
+    }
+  }
+
+  for (const id of statuses.keys()) {
+    if (!rowOf.has(id)) {
+      faults.push({
+        file: DISABLE_MATRIX_FILE,
+        path: "",
+        message: `the status "${id}" sits in no row`,
+      });
+    }
+  }
+};
+
 /**
  * Every fault in `registry`, or none when it is sound. The hero and the tuning table are
  * checked first, since the orb level cap fixes every table's length; then every definition
@@ -703,6 +855,8 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
   const statusDefs = new Map(
     statuses.map((entry): [string, StatusDef] => [entry.def.id, entry.def]),
   );
+
+  checkDisableMatrix(faults, registry.disableMatrix, statusDefs);
 
   for (const { file, def } of enemies) {
     checkUnitDef(faults, file, def, spaces, statusDefs);

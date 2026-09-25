@@ -7,7 +7,7 @@ import type { AbilityConditionDef } from "../definitions/enemy-def";
 import type { UnitRecord } from "../definitions/unit-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { abilityDisable } from "../orders/validator";
+import { castRefusal } from "../orders/disable-matrix";
 
 /** The target a no-target ability is requested with. */
 const NO_TARGET: CastTarget = { kind: "none" };
@@ -112,7 +112,7 @@ export const selectAbility = (
   targetId: EntityId,
 ): boolean => {
   if (
-    abilityDisable(unit.disables) !== null ||
+    castRefusal(world.run.disableMatrix, unit.disables) !== null ||
     unit.state === "attack_windup"
   ) {
     return false;

@@ -202,6 +202,26 @@ export {
 export { ticksOfSeconds } from "./definitions/duration";
 export type { MapDef, PackDef } from "./definitions/map-def";
 export { ORB_IDS, type OrbId } from "./definitions/orb-id";
+export {
+  CAST_POINT_ANSWERS,
+  type CastPointAnswer,
+  COMMAND_ANSWERS,
+  COMMAND_COLUMNS,
+  type CommandAnswer,
+  type CommandColumn,
+  CURSOR_ANSWERS,
+  type CursorAnswer,
+  type CursorColumn,
+  DISABLE_COLUMNS,
+  DISABLE_REASONS,
+  type DisableAnswer,
+  type DisableCellsDef,
+  type DisableColumn,
+  type DisableMatrixDef,
+  type DisableReason,
+  type DisableRowDef,
+  SLOT_COLUMNS,
+} from "./definitions/disable-matrix-def";
 export type { Registry } from "./definitions/registry";
 export {
   arrayOf,
@@ -468,6 +488,15 @@ export {
   type DisableFlags,
   raiseDisable,
 } from "./orders/disable-flags";
+export {
+  answerOf,
+  castRefusal,
+  isCancelled,
+  isClosed,
+  isWearing,
+  refusalOf,
+  slotRefusal,
+} from "./orders/disable-matrix";
 export type { Order, OrderKind, OrderState } from "./orders/order";
 export {
   createPathSearch,
@@ -509,7 +538,6 @@ export {
   type TransitionResult,
 } from "./orders/state-machine";
 export {
-  abilityDisable,
   type RefusalReason,
   validateCommand,
   validateDebugCommand,

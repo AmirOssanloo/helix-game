@@ -60,7 +60,7 @@ Edited in place, 2026-09-25: the page adds a thirteenth column, the attack-move 
 | Layer | domain, content, tests |
 | Size | 2 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/content/statuses/disable-matrix.ts` as a typed constant mirroring the document, validated by the registry for completeness (every status times every column). The validator and the order machine replace their hand-written disable branches with a read of the matrix, keeping every phase 2 refusal test green. Cells that say cancelled or closed drive the status system (cancel a cast point, clear a move) and the mapper (close the cursor). One test per cell, table-driven with a literal expected outcome per row.
 
@@ -72,6 +72,10 @@ Edited in place, 2026-09-25: the page adds a thirteenth column, the attack-move 
 - `tests/content/disable-matrix.spec.ts` — completeness.
 
 **Definition of done:** Every change · `src/domain` · A new command, event, or system.
+
+Edited in place, 2026-09-25: the validator takes the matrix as a third argument, since the domain never imports content and the matrix reaches it with the registry, so the phase 2 validator suite passes it on every call; no expectation in it changed. A row is worn by a list of flags rather than one, because a lone `lifted` flag refuses nothing in that suite; and the data runs its rows stun, lift, silence, root, disarm, then the rest, the order a refusal's reason is chosen by. Q44 records the readings.
+
+**Closed, 2026-09-25.** `src/content/statuses/disable-matrix.ts` holds the nine rows as a typed constant the registry receives, typed by `src/domain/definitions/disable-matrix-def.ts` and validated for completeness: every status in exactly one row, every column filled with an answer of its kind, each row's flags its statuses' flags, a reason exactly where a row refuses. `src/domain/orders/disable-matrix.ts` reads it: a unit wears a row by its flags, a wider row covers a narrower one so lift answers as lift, two rows give the stricter answer. The validator's stun, silence, root, and disarm branches and `abilityDisable` are gone; the validator, the status pass (clearing a running order), the cast stages (cancelling a cast point), enemy ability selection, the kit's greyed slot, and the mapper's cursor close all read the matrix. The five stored replay logs are re-stamped, since the registry now hashes the matrix; no behaviour moved and every replay agrees. The primitive table calls its primitives rather than holding them, since the evaluation order of an existing import cycle shifted with the validator's imports. `tests/domain/orders/disable-matrix.spec.ts` has one named test per cell, 117, each through a real status on a real world, and `tests/content/disable-matrix.spec.ts` checks completeness and every refusal. `pnpm check` green, 3166 tests, and the stress tier green.
 
 ---
 
@@ -122,7 +126,7 @@ Edited in place, 2026-09-25: the page adds a thirteenth column, the attack-move 
 | Check | Result |
 | --- | --- |
 | One green test per matrix cell | |
-| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.5 · T03 · T04 |
 
 ## Risks in this sprint
 

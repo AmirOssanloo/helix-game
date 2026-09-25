@@ -1,5 +1,6 @@
 import type { AbilityDef } from "./ability-def";
 import type { AtlasFrameList } from "./atlas-frame-def";
+import type { DisableMatrixDef } from "./disable-matrix-def";
 import type { EnemyDef, SummonDef } from "./enemy-def";
 import type { FormDef } from "./form-def";
 import type { HeroDef } from "./hero-def";
@@ -29,6 +30,8 @@ export type Registry = Readonly<{
   abilities: readonly AbilityDef[];
   /** Every status an effect list, a hook, or the developer panel may apply. */
   statuses: readonly StatusDef[];
+  /** What every status refuses, ends, and closes, one row per group of statuses; every status sits in exactly one row. */
+  disableMatrix: DisableMatrixDef;
   /** Every archetype a map may spawn. */
   enemies: readonly EnemyDef[];
   /** Every unit a spawn-unit effect may create, sharing the enemies' id namespace. */

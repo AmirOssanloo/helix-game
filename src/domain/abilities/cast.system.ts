@@ -9,6 +9,7 @@ import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { isPathComplete } from "../movement/path";
 import { isInsideCone, turnToward } from "../movement/turn";
 import { turnRateOf } from "../movement/unit-rates";
+import { isCancelled } from "../orders/disable-matrix";
 import {
   beginCastBackswing,
   beginCastPoint,
@@ -283,9 +284,9 @@ const commit = (
  * Runs the stages of every cast under way, one unit at a time: the approach while the aim is
  * out of range, the turn to face once it is in range, the cast point once the bearing is
  * inside the action cone, the commit on the tick the cast point ends, and the backswing
- * until its tick, and a channel until its tick. A stun, a unit target that is gone or out of
- * reach, or an
- * approach that ends short of range cancels the cast with nothing spent; a stop or a new
+ * until its tick, and a channel until its tick. A disable whose cast point cell in the
+ * disable matrix says cancelled, a unit target that is gone or out of reach, or an approach
+ * that ends short of range cancels the cast with nothing spent; a stop or a new
  * order does the same through the state machine before this system runs. The cast point and
  * the backswing are counted in ticks from the record; a cast point of zero ticks commits on
  * the tick it begins, and a backswing of zero ticks ends on the tick of the commit. A
@@ -337,7 +338,7 @@ export const castSystem = (world: World): void => {
       "A cast names a spell the request stage found, on a live slot",
     );
 
-    if (unit.disables.stunned) {
+    if (isCancelled(world.run.disableMatrix, unit.disables, "castPoint")) {
       cancel(unit);
 
       continue;

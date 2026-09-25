@@ -74,6 +74,7 @@ const shapeOf = (registry: Registry): string => {
     tuningKeys: Object.keys(registry.tuning),
     copies,
     maps: registry.maps,
+    disableMatrix: registry.disableMatrix,
     atlasFrames: registry.atlasFrames,
   });
 };

@@ -2,6 +2,7 @@ import { contentRegistry } from "@content/public";
 import type {
   AbilityDef,
   AtlasFrameList,
+  DisableMatrixDef,
   EnemyDef,
   FormDef,
   HeroDef,
@@ -21,6 +22,7 @@ export type MakeRegistryOptions = Readonly<{
   spells?: readonly SpellDef[];
   abilities?: readonly AbilityDef[];
   statuses?: readonly StatusDef[];
+  disableMatrix?: DisableMatrixDef;
   enemies?: readonly EnemyDef[];
   summons?: readonly SummonDef[];
   maps?: readonly MapDef[];
@@ -35,6 +37,7 @@ export const makeRegistry = (options: MakeRegistryOptions = {}): Registry => ({
   spells: options.spells ?? contentRegistry.spells,
   abilities: options.abilities ?? contentRegistry.abilities,
   statuses: options.statuses ?? contentRegistry.statuses,
+  disableMatrix: options.disableMatrix ?? contentRegistry.disableMatrix,
   enemies: options.enemies ?? contentRegistry.enemies,
   summons: options.summons ?? contentRegistry.summons,
   maps: options.maps ?? contentRegistry.maps,

@@ -49,13 +49,18 @@ type PrimitiveTable = Readonly<{
   displace: Primitive<DisplaceEffectDef> | null;
 }>;
 
+/**
+ * Each entry calls its primitive rather than holding it: the primitives and the effect runner
+ * reach each other through the status system, so which module finishes loading first depends
+ * on who imports the domain first, and a primitive read at load could still be undefined.
+ */
 const primitives: PrimitiveTable = {
-  damage_area: damageArea,
-  apply_status: applyStatusEffect,
-  spawn_projectile: spawnProjectile,
-  spawn_zone: spawnZone,
-  spawn_unit: spawnUnit,
-  displace,
+  damage_area: (world, cast, entry) => damageArea(world, cast, entry),
+  apply_status: (world, cast, entry) => applyStatusEffect(world, cast, entry),
+  spawn_projectile: (world, cast, entry) => spawnProjectile(world, cast, entry),
+  spawn_zone: (world, cast, entry) => spawnZone(world, cast, entry),
+  spawn_unit: (world, cast, entry) => spawnUnit(world, cast, entry),
+  displace: (world, cast, entry) => displace(world, cast, entry),
 };
 
 const call = <E extends PrimitiveEffectDef>(

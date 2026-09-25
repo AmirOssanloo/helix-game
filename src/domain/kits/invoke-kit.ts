@@ -2,6 +2,7 @@ import type { DeepReadonly } from "@shared/public";
 import { assert } from "@shared/public";
 import { spellLevelOf } from "../abilities/spell-level";
 import { SLOT_COUNT } from "../commands/command";
+import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
@@ -16,7 +17,7 @@ import {
 } from "../invoke/invoke";
 import { refreshOrbPassives } from "../invoke/passives";
 import type { DisableFlags } from "../orders/disable-flags";
-import { abilityDisable } from "../orders/validator";
+import { slotRefusal } from "../orders/disable-matrix";
 import type { Tick } from "../tick";
 import type { AbilityRequest, Kit, SlotDescriptor } from "./kit";
 
@@ -77,6 +78,7 @@ const describeSlot = (
   state: DeepReadonly<KitState>,
   cooldowns: ReadonlyMap<string, Tick>,
   disables: Readonly<DisableFlags>,
+  matrix: DisableMatrixDef,
   spells: ReadonlyMap<string, SpellRecord>,
   tuning: ReadonlyMap<string, number>,
   out: SlotDescriptor,
@@ -86,7 +88,7 @@ const describeSlot = (
     "A view describes one of the six keys",
   );
 
-  out.blockedBy = abilityDisable(disables);
+  out.blockedBy = slotRefusal(matrix, disables, slot);
 
   if (slot <= ORB_COUNT) {
     const orb = ORB_IDS[slot - 1];

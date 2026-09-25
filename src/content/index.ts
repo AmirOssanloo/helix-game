@@ -6,6 +6,7 @@ import { forms } from "./forms/index";
 import { heroDef } from "./hero";
 import { maps } from "./maps/index";
 import { spells } from "./spells/index";
+import { disableMatrix } from "./statuses/disable-matrix";
 import { statuses } from "./statuses/index";
 import { summons } from "./summons/index";
 import { tuningTable } from "./tuning";
@@ -23,6 +24,7 @@ export const contentRegistry: Registry = {
   spells,
   abilities,
   statuses,
+  disableMatrix,
   enemies,
   summons,
   maps,

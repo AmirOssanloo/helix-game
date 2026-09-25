@@ -3,6 +3,7 @@ import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
 import type { DefinitionSlot } from "../definitions/definition-tuning";
+import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
 import { ORB_IDS } from "../definitions/orb-id";
@@ -85,6 +86,8 @@ export type RunScope = {
   spells: Map<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */
   statuses: Map<string, StatusRecord>;
+  /** What every status refuses, ends, and closes, as the registry wrote it: the validator, the status and cast passes, the kits, and the mapper read it. */
+  disableMatrix: DisableMatrixDef;
   /** Every archetype and every summon by id, with its rates read for the tick, for a spawn to dress a unit from. The live units are map scope's. */
   units: Map<string, UnitRecord>;
   tuning: TuningState;

@@ -9,7 +9,8 @@ import type { StatusFlag } from "../definitions/status-def";
  * blocks attacks. Lifted says the unit is in the air with its order suspended, untargetable
  * says nothing may land on it, aggro hidden drops it out of enemy sight, and displaced says a
  * push is carrying it, so it does not move itself while its order is kept. Which command each
- * one refuses is decided in the validator beside this file.
+ * one refuses, which running order it ends, and which cursor it closes is the disable matrix's
+ * to say, read beside this file.
  */
 export type DisableFlags = {
   stunned: boolean;
@@ -62,3 +63,9 @@ export const clearDisableFlags = (flags: DisableFlags): void => {
 export const raiseDisable = (flags: DisableFlags, flag: StatusFlag): void => {
   flags[FIELD_OF[flag]] = true;
 };
+
+/** Whether the field `flag` names is raised on `flags`. */
+export const isRaised = (
+  flags: Readonly<DisableFlags>,
+  flag: StatusFlag,
+): boolean => flags[FIELD_OF[flag]];

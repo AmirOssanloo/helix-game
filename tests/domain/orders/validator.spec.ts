@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { disableMatrix } from "@content/public";
 import type {
   CastTarget,
   Command,
@@ -96,7 +97,7 @@ describe("validateCommand on a fresh unit", () => {
   it.each(ACCEPTED_ON_A_FRESH_UNIT)(
     "accepts a well-formed %s",
     (_name, command) => {
-      expect(validateCommand(unitIn(), command)).toBe("ok");
+      expect(validateCommand(unitIn(), command, disableMatrix)).toBe("ok");
     },
   );
 });
@@ -105,7 +106,9 @@ describe("validateCommand while dead", () => {
   it.each(ACCEPTED_ON_A_FRESH_UNIT)(
     "refuses %s: nothing responds until the respawn",
     (_name, command) => {
-      expect(validateCommand(unitIn("dead"), command)).toBe("dead");
+      expect(validateCommand(unitIn("dead"), command, disableMatrix)).toBe(
+        "dead",
+      );
     },
   );
 
@@ -113,7 +116,7 @@ describe("validateCommand while dead", () => {
     const unit = unitIn("dead");
     unit.disables.stunned = true;
 
-    expect(validateCommand(unit, move())).toBe("dead");
+    expect(validateCommand(unit, move(), disableMatrix)).toBe("dead");
   });
 });
 
@@ -124,7 +127,7 @@ describe("validateCommand while stunned", () => {
       const unit = unitIn();
       unit.disables.stunned = true;
 
-      expect(validateCommand(unit, command)).toBe("stunned");
+      expect(validateCommand(unit, command, disableMatrix)).toBe("stunned");
     },
   );
 });
@@ -137,7 +140,7 @@ describe("validateCommand while silenced", () => {
     const unit = unitIn();
     unit.disables.silenced = true;
 
-    expect(validateCommand(unit, command)).toBe("silenced");
+    expect(validateCommand(unit, command, disableMatrix)).toBe("silenced");
   });
 
   it.each([
@@ -149,7 +152,7 @@ describe("validateCommand while silenced", () => {
     const unit = unitIn();
     unit.disables.silenced = true;
 
-    expect(validateCommand(unit, command)).toBe("ok");
+    expect(validateCommand(unit, command, disableMatrix)).toBe("ok");
   });
 });
 
@@ -161,7 +164,7 @@ describe("validateCommand while rooted", () => {
     const unit = unitIn();
     unit.disables.rooted = true;
 
-    expect(validateCommand(unit, command)).toBe("rooted");
+    expect(validateCommand(unit, command, disableMatrix)).toBe("rooted");
   });
 
   it.each([
@@ -173,7 +176,7 @@ describe("validateCommand while rooted", () => {
     const unit = unitIn();
     unit.disables.rooted = true;
 
-    expect(validateCommand(unit, command)).toBe("ok");
+    expect(validateCommand(unit, command, disableMatrix)).toBe("ok");
   });
 });
 
@@ -182,7 +185,9 @@ describe("validateCommand while disarmed", () => {
     const unit = unitIn();
     unit.disables.disarmed = true;
 
-    expect(validateCommand(unit, attackTarget())).toBe("disarmed");
+    expect(validateCommand(unit, attackTarget(), disableMatrix)).toBe(
+      "disarmed",
+    );
   });
 
   it.each([
@@ -195,7 +200,7 @@ describe("validateCommand while disarmed", () => {
     const unit = unitIn();
     unit.disables.disarmed = true;
 
-    expect(validateCommand(unit, command)).toBe("ok");
+    expect(validateCommand(unit, command, disableMatrix)).toBe("ok");
   });
 });
 
@@ -212,7 +217,9 @@ describe.each(["attack_windup", "ability_cast_point"] as const)(
     ])(
       "accepts %s: the point in progress is the state machine's to cancel, not the validator's to guard",
       (_name, command) => {
-        expect(validateCommand(unitIn(state), command)).toBe("ok");
+        expect(validateCommand(unitIn(state), command, disableMatrix)).toBe(
+          "ok",
+        );
       },
     );
   },
@@ -227,7 +234,7 @@ describe.each(["lifted", "untargetable", "aggroHidden", "displaced"] as const)(
         const unit = unitIn();
         unit.disables[flag] = true;
 
-        expect(validateCommand(unit, command)).toBe("ok");
+        expect(validateCommand(unit, command, disableMatrix)).toBe("ok");
       },
     );
   },
@@ -242,7 +249,7 @@ describe("validateCommand while lifted by a status that stuns", () => {
       unit.disables.untargetable = true;
       unit.disables.stunned = true;
 
-      expect(validateCommand(unit, command)).toBe("stunned");
+      expect(validateCommand(unit, command, disableMatrix)).toBe("stunned");
     },
   );
 });
@@ -263,37 +270,45 @@ describe("validateCommand on a skill-point spend", () => {
       const unit = unitIn();
       unit.disables[flag] = true;
 
-      expect(validateCommand(unit, spendSkillPoint(3))).toBe("ok");
+      expect(validateCommand(unit, spendSkillPoint(3), disableMatrix)).toBe(
+        "ok",
+      );
     },
   );
 
   it.each([0, 7, 1.5])("refuses slot %s", (index) => {
-    expect(validateCommand(unitIn(), spendSkillPoint(index))).toBe(
-      "invalid_slot",
-    );
+    expect(
+      validateCommand(unitIn(), spendSkillPoint(index), disableMatrix),
+    ).toBe("invalid_slot");
   });
 });
 
 describe("validateCommand on a slot index", () => {
   it.each([1, 6])("accepts slot %i", (index) => {
-    expect(validateCommand(unitIn(), slot(index))).toBe("ok");
+    expect(validateCommand(unitIn(), slot(index), disableMatrix)).toBe("ok");
   });
 
   it.each([0, 7, 1.5])("refuses slot %s", (index) => {
-    expect(validateCommand(unitIn(), slot(index))).toBe("invalid_slot");
+    expect(validateCommand(unitIn(), slot(index), disableMatrix)).toBe(
+      "invalid_slot",
+    );
   });
 });
 
 describe("validateCommand on a destination", () => {
   it("refuses a move to a non-finite point", () => {
-    expect(validateCommand(unitIn(), move(Number.NaN, 0))).toBe(
+    expect(validateCommand(unitIn(), move(Number.NaN, 0), disableMatrix)).toBe(
       "invalid_destination",
     );
   });
 
   it("refuses an attack-move to a non-finite point", () => {
     expect(
-      validateCommand(unitIn(), attackMove(0, Number.POSITIVE_INFINITY)),
+      validateCommand(
+        unitIn(),
+        attackMove(0, Number.POSITIVE_INFINITY),
+        disableMatrix,
+      ),
     ).toBe("invalid_destination");
   });
 
@@ -303,7 +318,9 @@ describe("validateCommand on a destination", () => {
       position: { x: Number.NaN, y: 0 },
     };
 
-    expect(validateCommand(unitIn(), cast(target))).toBe("invalid_destination");
+    expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe(
+      "invalid_destination",
+    );
   });
 
   it("refuses a direction-targeted cast toward a non-finite point", () => {
@@ -312,7 +329,9 @@ describe("validateCommand on a destination", () => {
       position: { x: 0, y: Number.NaN },
     };
 
-    expect(validateCommand(unitIn(), cast(target))).toBe("invalid_destination");
+    expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe(
+      "invalid_destination",
+    );
   });
 
   it.each([
@@ -327,7 +346,7 @@ describe("validateCommand on a destination", () => {
         end: { x: 100, y: 100 },
       };
 
-      expect(validateCommand(unitIn(), cast(target))).toBe(
+      expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe(
         "invalid_destination",
       );
     },
@@ -345,7 +364,7 @@ describe("validateCommand on a destination", () => {
         end,
       };
 
-      expect(validateCommand(unitIn(), cast(target))).toBe(
+      expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe(
         "invalid_destination",
       );
     },
@@ -358,7 +377,7 @@ describe("validateCommand on a destination", () => {
       end: { x: 100, y: 100 },
     };
 
-    expect(validateCommand(unitIn(), cast(target))).toBe("ok");
+    expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe("ok");
   });
 
   it("accepts a vector-targeted cast with a drag, its end past the map", () => {
@@ -368,13 +387,17 @@ describe("validateCommand on a destination", () => {
       end: { x: -90000, y: 90000 },
     };
 
-    expect(validateCommand(unitIn(), cast(target))).toBe("ok");
+    expect(validateCommand(unitIn(), cast(target), disableMatrix)).toBe("ok");
   });
 
   it("accepts a unit-targeted cast, which carries no point", () => {
-    expect(validateCommand(unitIn(), cast({ kind: "unit", unitId: 7 }))).toBe(
-      "ok",
-    );
+    expect(
+      validateCommand(
+        unitIn(),
+        cast({ kind: "unit", unitId: 7 }),
+        disableMatrix,
+      ),
+    ).toBe("ok");
   });
 });
 
