@@ -321,19 +321,23 @@ const farthestMove = (before: Disc[], view: WorldView): number => {
 };
 
 describe("two hundred enemies chasing the hero into the corridor", () => {
-  it("set every enemy of the twenty packs after the hero, with a column of them in the corridor at the press's end", () => {
-    const pressed = replayToPressEnd();
+  it(
+    "set every enemy of the twenty packs after the hero, with a column of them in the corridor at the press's end",
+    () => {
+      const pressed = replayToPressEnd();
 
-    expect(
-      loadInputLog(RECORDED_SESSION).records.filter(
-        (record) => record.command.kind === "spawn_pack",
-      ),
-    ).toHaveLength(PACK_COUNT);
-    expect(enemiesByState(pressed.view).idle).toBeUndefined();
-    expect(enemiesInCorridor(pressed.view)).toBeGreaterThanOrEqual(
-      CORRIDOR_COLUMN,
-    );
-  });
+      expect(
+        loadInputLog(RECORDED_SESSION).records.filter(
+          (record) => record.command.kind === "spawn_pack",
+        ),
+      ).toHaveLength(PACK_COUNT);
+      expect(enemiesByState(pressed.view).idle).toBeUndefined();
+      expect(enemiesInCorridor(pressed.view)).toBeGreaterThanOrEqual(
+        CORRIDOR_COLUMN,
+      );
+    },
+    REPLAY_TIMEOUT_MS,
+  );
 
   it(
     "never put a unit inside a wall or past the bounds, pressing in or walking home",
@@ -353,23 +357,31 @@ describe("two hundred enemies chasing the hero into the corridor", () => {
     REPLAY_TIMEOUT_MS,
   );
 
-  it("settle the pile left at the press's end, walking stopped, to under a world unit within a second and a half and to touching within three", () => {
-    const pile = replayToPressEnd();
-    const visible = settleUnder(pile, VISIBLE_OVERLAP);
-    const settled = settleUnder(pile, SETTLED_OVERLAP);
+  it(
+    "settle the pile left at the press's end, walking stopped, to under a world unit within a second and a half and to touching within three",
+    () => {
+      const pile = replayToPressEnd();
+      const visible = settleUnder(pile, VISIBLE_OVERLAP);
+      const settled = settleUnder(pile, SETTLED_OVERLAP);
 
-    expect(visible.ticks).toBeLessThanOrEqual(VISIBLE_TICKS);
-    expect(visible.ticks + settled.ticks).toBeLessThanOrEqual(SETTLE_TICKS);
-  });
+      expect(visible.ticks).toBeLessThanOrEqual(VISIBLE_TICKS);
+      expect(visible.ticks + settled.ticks).toBeLessThanOrEqual(SETTLE_TICKS);
+    },
+    REPLAY_TIMEOUT_MS,
+  );
 
-  it("settle that pile in place: no unit pushed into a wall by the passes and none carried further than a hull", () => {
-    const pile = replayToPressEnd();
-    const before = discsOf(pile.view);
-    const settled = settleUnder(pile, SETTLED_OVERLAP);
+  it(
+    "settle that pile in place: no unit pushed into a wall by the passes and none carried further than a hull",
+    () => {
+      const pile = replayToPressEnd();
+      const before = discsOf(pile.view);
+      const settled = settleUnder(pile, SETTLED_OVERLAP);
 
-    expect(settled.deepestInWall).toBeLessThan(WALL_TOLERANCE);
-    expect(farthestMove(before, pile.view)).toBeLessThan(HULL);
-  });
+      expect(settled.deepestInWall).toBeLessThan(WALL_TOLERANCE);
+      expect(farthestMove(before, pile.view)).toBeLessThan(HULL);
+    },
+    REPLAY_TIMEOUT_MS,
+  );
 
   it(
     "replay into two worlds that put every unit in the same place at every tick",

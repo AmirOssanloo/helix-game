@@ -1,6 +1,6 @@
 # Deferred
 
-**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S19-T04 · **Kept current by:** whoever cuts something
+**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S22-T01 · **Kept current by:** whoever cuts something
 
 Everything the plan deliberately leaves out, with the phase it was cut from and the door it waits behind. A missing capability that is a decision reads differently from one that is an oversight; this page is what makes the difference visible.
 
@@ -22,6 +22,7 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Milestone M1's numbers on the reference laptop: `pnpm bench` in Chrome and Safari, as configured and with `?textures=default` | Sprint 02 | The phase 5 gate, sprint 22 | The same, 2026-09-23. The bench holds on the Apple M1 laptop in Chrome in every run recorded since sprint 02 |
 | The phase 3 gate's browser rows: two hundred spawned from the panel and fought for 60 seconds in Chrome, Firefox, Safari, and Edge on the reference laptop, every readout of the bar per browser at two hundred enemies and a hundred projectiles; and the render benchmark at the phase 3 close, `pnpm bench` in Chrome, the four figures | Phase 3 gate, sprint 15 | The phase 5 gate, sprint 22 | The maintainer deferred every validation by a person until phase 5 is done, 2026-09-24. The rows hold headless: the stress spec at two hundred chasing and a hundred projectiles, the tick at 0.5 ms mean in the bundle, sync at 0.77 ms with 201 bound, and the gate session replaying identically; recorded in the sprint 15 gate walk |
 | The phase 4 gate's browser and by-hand rows: every readout of the bar per browser in Chrome, Firefox, Safari, and Edge on the reference laptop at two hundred enemies, twenty zones, and a hundred projectiles, written into the headroom table's frame rate, sync, render, and draw-call rows with their margins; the render benchmark at the phase 4 close; three random keys retuned from the panel by hand; and content hot-reload and the version refusal by hand | Phase 4 gate, sprint 18 | The phase 5 gate, sprint 22 | The maintainer deferred every validation by a person until phase 5 is done, 2026-09-24. The rows hold headless and by test, recorded in the sprint 18 gate walk: the tick at 200 enemies 2.33 ms worst with 1.67 ms of margin, pool misses and overwrites zero, heap flat |
+| The phase 5 gate's person rows: the boss encounter with adds among two hundred enemies in Chrome, Firefox, Safari, and Edge on the reference laptop, every readout of the bar per browser; the render benchmark at the phase 5 close; and the reference-laptop row, which is every row above that waits on the phase 5 gate | Phase 5 gate, sprint 22 | Phase 5 done, by the maintainer's standing instruction | The maintainer deferred every validation by a person until phase 5 is done, 2026-09-24. The rows hold headless and by test, recorded in the sprint 22 gate walk: the boss variant of the stress test green, the gate session with two bosses among the cap replaying identically, `pnpm check:ci` green |
 
 ---
 
