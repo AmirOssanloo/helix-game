@@ -95,7 +95,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Layer | content, tests |
 | Size | 1 |
 | Depends on | T02, T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** One boss definition with a bash, a slam, adds, and a charge, spawned from the panel at boss tier among grunts, the boss and its adds counting inside `ENEMY_LIVE_CAP`, the constant inside the unit pool's capacity, at the number phase 4 decided, because they are enemies (Q9); a stress test variant with the boss and its adds; readouts recorded in Chrome; a recorded and replayed encounter.
 
@@ -108,14 +108,16 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 
 **Definition of done:** Every change · A new enemy or behaviour.
 
+> **Note, 2026-09-25:** built. The boss is the brute at boss tier: T02 gave the brute's definition a bash it carries and boss abilities of a slam, adds, and a charge, so no new definition was written and the new-enemy rows of the definition of done are met by T02's file and its six tests. Q48. The recorded session is `tests/simulation/replays/boss-encounter.json`, 1200 ticks and 271 commands, every one a kind the panel or the player sends: the brute spawned at boss tier by `spawn_pack` 550 west of the hero, and nineteen packs of grunts and runners, 197 enemies, on a ring round the hero, so the boss's two imps fill `ENEMY_LIVE_CAP` at 200. The hero, orbs at 7 and mana without end, invokes and casts Hoarfrost, Bolide, Zenith, Updraft, and Glacier at the boss as each comes off its clock, attacks it between casts, and is healed every ten ticks; the boss bashes, slams, summons, and charges, is carried off its leash as the crowd shoves the hero north, walks home, and takes the hero up again. `tests/simulation/boss-encounter.spec.ts` checks the boss's tier and health, that it bashes and commits its three tier abilities, that the hero commits all five spells, that the adds make 200 and never 201, that no tick announces more than 714 events and a reader draining every tick loses none, and that two replays agree at every tick. The stress spec's fourth case puts the boss 500 west of the hero among 197 grunts and runners on the ring, all struck once, with the hero's loop and a hundred shots, and asserts the mean tick under 4 ms, 200 enemies at the end and never more, and the heaviest tick at or under 714 events. It is the heaviest case in the file: the bash stuns the hero early, the crowd closes on it, and it walks 570 units in the measured ten seconds against 2198 in the chase case, with some 75 enemies within 200 against 22 and 93 shots landing and respawned a tick against 37. Under Vitest's development build that reads 3.15 to 3.40 ms mean over five runs, against 1.93 to 2.01 for the chase; a normal-tier brute in the boss's place reads the same, so the cost is the hemmed-in hero, not the boss's abilities. Measured as phase 4's headroom table was, a Vite production build in plain Node v24.21.0 on the Apple M1 laptop, 1200 ticks of warm-up and 1800 measured, load 2.7 to 3.2, 21 runs: mean 0.58 to 0.69 ms, median 0.58 to 0.60, p99 0.81 to 1.83, worst 1.33 to 3.19 on nineteen and one stalled tick on two, 26.7 and 55.9 ms, with p99 0.90 and 1.83; `--trace-gc` on six runs shows no collection over 1.3 ms, so the two are read as scheduler stalls, as phase 4 read its 3.11 at 100. The chase case beside it, five runs: mean 0.52 to 0.56, worst 1.28 to 3.13. The heaviest tick announces 209 events against the ring's 714, so the ring is not resized; pool misses 0. The boss adds about 0.07 ms to the mean against the chase. The case leaves the least margin of the file under Vitest, some 0.6 ms: one `pnpm check` on a machine at load 52, where the chase case read 4.66 ms, failed it at 4.23 along with four replay tests that timed out, and the same tree was green at load 5. Starting the boss 800 or 1100 west instead of 500 reads the same within noise, since the bash traps the hero wherever it starts. The cap stays 200 on this reading; the phase 5 README records why. Readouts in Chrome, and the encounter by hand, wait on a person, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24. The performance standard, the development workflow, and the onboarding page name the boss case among the stress cases, and the performance standard now also names the zones case it had left out.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Roster complete and green; boss encounter readouts | |
-| Actual days per ticket | T01 0.3 · T02 0.6 · T03 0.2 · T04 |
+| Roster complete and green; boss encounter readouts | Green, 2026-09-25: `ls src/content/enemies/` matches section 7 of the enemy catalogue, which `tests/content/catalogues.spec.ts` checks, and every archetype's six tests are green. The boss encounter replays identically in `tests/simulation/boss-encounter.spec.ts`, and the stress spec's boss case holds the mean tick under 4 ms. Headless in a production build, 21 runs: mean 0.58 to 0.69 ms, worst 1.33 to 3.19 on nineteen runs, two single-tick scheduler stalls, heaviest tick 209 events, pool misses 0. The readouts in Chrome, the roster, tiers, and behaviours by hand, and the encounter by hand wait on a person, deferred until phase 5 is done |
+| Actual days per ticket | T01 0.3 · T02 0.6 · T03 0.2 · T04 0.3. Sized 4, done in 1.4 |
 
 ## Risks in this sprint
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { MAX_TICKS_PER_FRAME } from "@app/public";
-import { arenaDef, fastRunnerDef, meleeGruntDef } from "@content/public";
+import {
+  arenaDef,
+  bruteDef,
+  fastRunnerDef,
+  meleeGruntDef,
+} from "@content/public";
 import type {
   SpawnProjectileEffectDef,
   SpellRecord,
@@ -233,6 +238,100 @@ const arrangeChase = (durable: boolean): Chase => {
   }
 
   return { world, hero };
+};
+
+/** Where the boss stands when it spawns: west of the hero, inside its aggro radius and its charge's range. */
+const BOSS_OFFSET = { x: -500, y: 0 };
+
+/** The enemies the boss's one cast of adds brings. */
+const ADDS = 2;
+
+/**
+ * The events the heaviest tick at the live cap announced in phase 4, every enemy chasing through
+ * twenty zones with a hundred shots landing at once. The ring is sized for twenty-two such ticks;
+ * an encounter whose heaviest tick announces more resizes it.
+ */
+const HEAVIEST_TICK_EVENTS = 714;
+
+/**
+ * The arena with the hero at its spawn point, a brute at boss tier beside it, and packs of
+ * grunts and runners on the ring round the centre, the last pack short, so the boss, the crowd,
+ * and one cast of the boss's adds make the live cap between them. Every enemy is struck once by
+ * the hero, so the crowd sets off after it and the boss takes it up at once.
+ */
+const arrangeBoss = (): Chase => {
+  const world = createSessionWorld({
+    seed: SEED,
+    registry: makeRegistry(),
+    map: arenaDef,
+  });
+  const spawn = arenaDef.spawnPoint;
+  const crowd = ENEMY_LIVE_CAP - 1 - ADDS;
+  const packCount = Math.ceil(crowd / PACK_SIZE);
+
+  submit(world, {
+    kind: "spawn_pack",
+    tick: 0,
+    timestamp: 0,
+    archetypeId: bruteDef.id,
+    tier: "boss",
+    count: 1,
+    position: { x: spawn.x + BOSS_OFFSET.x, y: spawn.y + BOSS_OFFSET.y },
+  });
+
+  for (let pack = 0; pack < packCount; pack += 1) {
+    const angle = (2 * Math.PI * pack) / packCount;
+
+    submit(world, {
+      kind: "spawn_pack",
+      tick: 0,
+      timestamp: pack + 1,
+      archetypeId: pack % 2 === 0 ? meleeGruntDef.id : fastRunnerDef.id,
+      tier: "normal",
+      count: Math.min(PACK_SIZE, crowd - pack * PACK_SIZE),
+      position: {
+        x: spawn.x + PACK_RING * Math.cos(angle),
+        y: spawn.y + PACK_RING * Math.sin(angle),
+      },
+    });
+  }
+
+  world.tick();
+
+  const units = world.state.map.units;
+  const heroId = world.state.run.heroId;
+  const hero = heroId === null ? null : units.resolve(heroId);
+
+  if (heroId === null || hero === null) {
+    throw new Error("The session world holds the hero");
+  }
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+    const id = units.idAt(index);
+
+    if (unit !== null && id !== null && unit.kind === "enemy") {
+      applyDamage(world.state, id, 1, "pure", heroId);
+    }
+  }
+
+  return { world, hero };
+};
+
+/** How many enemies stand on the map. */
+const enemyCount = (world: Simulation): number => {
+  const units = world.state.map.units;
+  let count = 0;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit !== null && unit.kind === "enemy") {
+      count += 1;
+    }
+  }
+
+  return count;
 };
 
 /** Keeps the hero alive and walking its loop, and a hundred of its shots in the air. Runs between ticks. */
@@ -566,5 +665,57 @@ describe("stress", () => {
     expect(map.projectiles.misses).toBe(0);
     expect(map.effects.misses).toBe(0);
     expect(map.zones.misses).toBe(0);
+  });
+
+  it("holds the mean tick under the budget with a boss and its adds among the live cap chasing the hero and a hundred projectiles in flight, never past the cap", () => {
+    const chase = arrangeBoss();
+    const { world, hero } = chase;
+    const leg = { next: 0, endsAt: 0 };
+
+    expect(enemyCount(world)).toBe(ENEMY_LIVE_CAP - ADDS);
+
+    let mostEnemies = 0;
+
+    for (let tick = 0; tick < CHASE_WARM_UP_TICKS; tick += 1) {
+      drive(chase, leg);
+      world.tick();
+      mostEnemies = Math.max(mostEnemies, enemyCount(world));
+    }
+
+    let totalMs = 0;
+    let maxMs = 0;
+    let heaviestTickEvents = 0;
+
+    for (let tick = 0; tick < MEASURED_TICKS; tick += 1) {
+      drive(chase, leg);
+
+      const cursor = world.events.cursor;
+      const start = performance.now();
+
+      world.tick();
+
+      const elapsed = performance.now() - start;
+
+      totalMs += elapsed;
+      maxMs = Math.max(maxMs, elapsed);
+      heaviestTickEvents = Math.max(
+        heaviestTickEvents,
+        world.events.cursor - cursor,
+      );
+      mostEnemies = Math.max(mostEnemies, enemyCount(world));
+    }
+
+    const meanMs = totalMs / MEASURED_TICKS;
+
+    expect(mostEnemies).toBe(ENEMY_LIVE_CAP);
+    expect(enemyCount(world)).toBe(ENEMY_LIVE_CAP);
+    expect(resourcesOf(world.state, hero).health).toBeGreaterThan(0);
+    expect(
+      meanMs,
+      `mean tick ${meanMs.toFixed(3)} ms, max ${maxMs.toFixed(3)} ms, heaviest tick ${String(heaviestTickEvents)} events over ${String(MEASURED_TICKS)} ticks`,
+    ).toBeLessThan(TICK_BUDGET_MS);
+    expect(heaviestTickEvents).toBeLessThanOrEqual(HEAVIEST_TICK_EVENTS);
+    expect(world.view.map.units.misses).toBe(0);
+    expect(world.view.map.projectiles.misses).toBe(0);
   });
 });
