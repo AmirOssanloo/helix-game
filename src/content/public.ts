@@ -24,12 +24,21 @@ export type {
   ContentTuningKey,
 } from "./content-tuning-key";
 export { enemies } from "./enemies/index";
+export { bruteDef } from "./enemies/brute.def";
+export { crusherDef } from "./enemies/crusher.def";
 export { fastRunnerDef } from "./enemies/fast-runner.def";
+export { frostRaiderDef } from "./enemies/frost-raider.def";
+export { hexerDef } from "./enemies/hexer.def";
 export { impDef } from "./enemies/imp.def";
+export { lancerDef } from "./enemies/lancer.def";
 export { meleeGruntDef } from "./enemies/melee-grunt.def";
 export { rangedArcherDef } from "./enemies/ranged-archer.def";
+export { skirmisherDef } from "./enemies/skirmisher.def";
+export { summonerDef } from "./enemies/summoner.def";
 export { tankDef } from "./enemies/tank.def";
 export { trainingDummyDef } from "./enemies/training-dummy.def";
+export { trapperDef } from "./enemies/trapper.def";
+export { trollDef } from "./enemies/troll.def";
 export { forms } from "./forms/index";
 export { skeinDef } from "./forms/skein.def";
 export { heroDef } from "./hero";

@@ -131,7 +131,7 @@ Build a world with the hero at the centre and a pack of three Frost Archers just
 pnpm test -t "frost-archer"
 ```
 
-Every enemy gets these six; an ability adds one test per effect, as for a spell.
+Every enemy gets these six; an ability adds one test per effect, as for a spell. `describeArchetype` in the test helpers mounts the six for a definition, given the nearest its centre may stand to the hero's when it swings, so the spec writes that number and its ability tests; `arrangeArchetype` gives an ability test the hero and one enemy to start from.
 
 ---
 

@@ -10,7 +10,7 @@ Every archetype owns a definition file under `src/content/enemies/`, one per arc
 
 ## Archetypes
 
-The first set is small and covers the four things a spell has to deal with: something slow that hits hard, something fast, something at range, and something that does not die quickly.
+The first four cover the four things a spell has to deal with: something slow that hits hard, something fast, something at range, and something that does not die quickly. The rest of the roster each brings one enemy ability to the fight, so every status the hero can suffer has an archetype that causes it.
 
 | Archetype | Role | Shape |
 | --- | --- | --- |
@@ -19,6 +19,15 @@ The first set is small and covers the four things a spell has to deal with: some
 | Ranged archer | Stays at range, fires a projectile | Square with a dot |
 | Tank | High health, high armour, slow | Large square |
 | Training dummy | Never moves, never attacks, never dies. Takes and shows damage | Square with an outline |
+| Brute | Heavy melee; its swing stuns on a rhythm | Square, dark red |
+| Frost raider | Quick melee; every hit slows the hero | Small square, ice blue |
+| Hexer | Stands off and silences the hero | Square with a dot, indigo |
+| Trapper | Throws a net that roots the hero | Square with a dot, teal |
+| Skirmisher | Light and fast; looses a heavy arrow from beyond the hero's reach | Small square with a dot, orange |
+| Crusher | Slow and armoured; slams the ground beside it | Large square, slate |
+| Summoner | Stays back and brings imps until it dies | Square with a dot, dark violet |
+| Lancer | Charges across the gap to the hero | Square, steel blue |
+| Troll | Heals itself once it is hurt | Square, moss green |
 
 Each archetype has a colour, its tint in the [enemy catalogue](../specs/enemy-catalogue.md#3-the-archetypes), and elites take a thicker outline.
 

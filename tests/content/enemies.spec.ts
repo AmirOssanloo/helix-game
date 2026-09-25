@@ -1,14 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
+  abilities,
   atlasFrames,
+  bruteDef,
   contentRegistry,
+  crusherDef,
   enemies,
   fastRunnerDef,
+  frostRaiderDef,
   heroDef,
+  hexerDef,
+  impDef,
+  lancerDef,
   meleeGruntDef,
   rangedArcherDef,
+  skirmisherDef,
+  summonerDef,
   tankDef,
   trainingDummyDef,
+  trapperDef,
+  trollDef,
   tuningTable,
 } from "@content/public";
 import type { EnemyDef } from "@domain/public";
@@ -185,8 +196,14 @@ describe("the tier abilities", () => {
     expect(faultsOf(meleeGruntDef.id)).toEqual([]);
   });
 
-  it("leave every other archetype nothing at either tier yet", () => {
-    for (const def of enemies.filter((other) => other !== meleeGruntDef)) {
+  it("leave the runner, the archer, the tank, the dummy, and the imp nothing at either tier", () => {
+    for (const def of [
+      fastRunnerDef,
+      rangedArcherDef,
+      tankDef,
+      trainingDummyDef,
+      impDef,
+    ]) {
       expect(def.eliteAbility).toBeNull();
       expect(def.bossAbilities).toEqual([]);
     }
@@ -215,5 +232,142 @@ describe("the tier abilities", () => {
       "bossAbilities[1].id",
       "bossAbilities[2].condition.fraction",
     ]);
+  });
+});
+
+/** The nine archetypes of the long roster, in the catalogue's order. */
+const ROSTER: readonly EnemyDef[] = [
+  bruteDef,
+  frostRaiderDef,
+  hexerDef,
+  trapperDef,
+  skirmisherDef,
+  crusherDef,
+  summonerDef,
+  lancerDef,
+  trollDef,
+];
+
+/** The roster archetypes that fight from range, drawn with the dot, and those that close to contact. */
+const RANGED: readonly EnemyDef[] = [
+  hexerDef,
+  trapperDef,
+  skirmisherDef,
+  summonerDef,
+];
+const MELEE: readonly EnemyDef[] = [
+  bruteDef,
+  frostRaiderDef,
+  crusherDef,
+  lancerDef,
+  trollDef,
+];
+
+/** The two statuses an archetype carries for what it does on every hit. */
+const ON_HIT_STATUSES = ["bash", "frost_attack"];
+
+/** Every id an entry list names. */
+const idsOf = (entries: readonly { id: string }[]): string[] =>
+  entries.map((entry) => entry.id);
+
+describe("the long roster", () => {
+  it.each(ROSTER.map((def) => [def.id, def] as const))(
+    "%s is in the registry and validates",
+    (_id, def) => {
+      expect(enemies).toContain(def);
+      expect(faultsOf(def.id)).toEqual([]);
+    },
+  );
+
+  it.each(ROSTER.map((def) => [def.id, def] as const))(
+    "%s writes every field the dummy writes, and no other",
+    (_id, def) => {
+      expect(shapeOf(def)).toEqual(shapeOf(trainingDummyDef));
+    },
+  );
+
+  it("is every archetype but the four, the dummy, and the imp", () => {
+    expect(idsOf(ROSTER).sort()).toEqual(
+      idsOf(
+        enemies.filter(
+          (def) =>
+            !ARCHETYPES.includes(def) &&
+            def !== trainingDummyDef &&
+            def !== impDef,
+        ),
+      ).sort(),
+    );
+  });
+
+  it("stands each archetype on one of the three radius classes pathing plans for", () => {
+    const classes = [
+      tuningTable["radius_class:0"],
+      tuningTable["radius_class:1"],
+      tuningTable["radius_class:2"],
+    ];
+
+    for (const def of ROSTER) {
+      expect(classes).toContain(def.body.collisionRadius);
+    }
+  });
+
+  it("is normal, can die, and grants experience", () => {
+    for (const def of ROSTER) {
+      expect(def.tier).toBe("normal");
+      expect(def.indestructible).toBe(false);
+      expect(def.experience).toBeGreaterThan(0);
+    }
+  });
+
+  it("gives every archetype in the game its own colour", () => {
+    expect(new Set(enemies.map((def) => def.tint)).size).toBe(enemies.length);
+  });
+
+  it("meets every enemy ability and both on-hit statuses in some archetype's own list", () => {
+    const own = ROSTER.flatMap((def) => [
+      ...idsOf(def.abilities),
+      ...def.statuses,
+    ]);
+
+    for (const id of [...abilities.map((def) => def.id), ...ON_HIT_STATUSES]) {
+      expect(own).toContain(id);
+    }
+  });
+
+  it("gives every archetype an elite ability and boss abilities it does not already cast", () => {
+    for (const def of ROSTER) {
+      const own = idsOf(def.abilities);
+
+      expect(def.eliteAbility).not.toBeNull();
+      expect(own).not.toContain(def.eliteAbility?.id);
+      expect(def.bossAbilities.length).toBeGreaterThan(0);
+
+      for (const id of idsOf(def.bossAbilities)) {
+        expect(own).not.toContain(id);
+      }
+    }
+  });
+
+  it("fires a projectile short of the hero's range from the dotted square, and closes to contact with the plain one", () => {
+    expect(idsOf([...RANGED, ...MELEE]).sort()).toEqual(idsOf(ROSTER).sort());
+
+    for (const def of RANGED) {
+      expect(def.attack.projectileSpeed).toBeGreaterThan(0);
+      expect(def.attack.range).toBeLessThan(heroDef.attack.range);
+      expect(def.atlasFrame).toBe("square_dot");
+    }
+
+    for (const def of MELEE) {
+      expect(def.attack.projectileSpeed).toBe(0);
+      expect(def.atlasFrame).toBe("square");
+    }
+  });
+
+  it("closes the arena's corridor to the crusher alone", () => {
+    for (const def of ROSTER) {
+      expect(def.body.collisionRadius * 2 > CORRIDOR_WIDTH).toBe(
+        def === crusherDef,
+      );
+    }
   });
 });

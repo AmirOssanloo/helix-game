@@ -44,7 +44,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Layer | docs, content, tests |
 | Size | 2 |
 | Depends on | T01, P5-S19-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** The enemy catalogue's phase 5 section: a long roster (twelve to sixteen archetypes) composed from the three existing behaviours, the two new ones next ticket, and the nine abilities, each with a role in one line, its numbers, its colour and frame, its tier eligibility, and its elite and boss ability picks. One definition file per archetype, registered, each with the six standard tests from the adding-an-enemy runbook plus one per ability effect.
 
@@ -58,6 +58,8 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 - `tests/content/enemies.spec.ts` extended.
 
 **Definition of done:** Every change · A new enemy or behaviour · A documentation change.
+
+> **Note, 2026-09-25:** the roster is thirteen, the four and nine new: the brute, the frost raider, the hexer, the trapper, the skirmisher, the crusher, the summoner, the lancer, and the troll, in [section 7 of the enemy catalogue](../../../../docs/product/specs/enemy-catalogue.md#7-the-long-roster). Each of the nine enemy abilities is in at least one of their own lists or statuses, and each carries an elite ability and boss abilities it does not already cast; the brute at boss tier is a bash, a slam, adds, and a charge. The six standard tests are mounted by `describeArchetype` under `tests/helpers/world/`, as the risk below asked, and each spec adds one test per ability effect, two for the crusher's slam. The hexer, the skirmisher, and the lancer name `ranged_holder` and `melee_chaser` until T03 registers theirs; T03 carries the switch. `tests/content/catalogues.spec.ts` now also reads the roster's entries and summary rows against the files and checks the catalogue names every file under `src/content/enemies/` and no other. The five stored replay logs are re-stamped for the new content version. The panel check by hand is deferred until phase 5 is done under Waiting on a person. Q46 records the readings as provisional.
 
 ---
 
@@ -79,6 +81,8 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 - `tests/simulation/ai/transitions.spec.ts` extended.
 
 **Definition of done:** Every change · `src/domain` · A new enemy or behaviour.
+
+> **Note, 2026-09-25:** the roster names these two behaviours for three archetypes before they exist, so it writes the nearest registered key in their place: the hexer and the skirmisher hold as `ranged_holder`, and the lancer closes as `melee_chaser`. This ticket also switches those three definitions to `ranged_kiter` and `charger`, their rows in section 7 of the enemy catalogue, and the range test each passes through `describeArchetype`, which for a kiter reads the gap it backs away to. Q46.
 
 ---
 
@@ -109,7 +113,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Check | Result |
 | --- | --- |
 | Roster complete and green; boss encounter readouts | |
-| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.6 · T03 · T04 |
 
 ## Risks in this sprint
 

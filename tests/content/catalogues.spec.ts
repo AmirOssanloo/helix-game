@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { enemies, spells } from "@content/public";
@@ -29,6 +29,12 @@ const numbersIn = (cell: string): number[] =>
 const idIn = (cell: string): string | null =>
   /`([a-z_]+)`/.exec(cell)?.[1] ?? null;
 
+/** The headings an archetype's field table sits under: the four and the dummy and imp in section 3, the roster in section 7.3. */
+const ENTRY_HEADING = /^#{3,4} (?:3|7\.3)\./;
+
+/** How many cells a summary row holds: section 3's table, and the roster's with its three columns more. */
+const SUMMARY_WIDTHS: readonly number[] = [11, 14];
+
 /**
  * Each archetype's field table in the enemy catalogue, by the id its `Id` row names: the
  * field's name to the cell that holds its value.
@@ -38,12 +44,12 @@ const enemyEntries = (): Map<string, Map<string, string>> => {
   let fields: Map<string, string> | null = null;
 
   for (const line of linesOf(ENEMY_CATALOGUE)) {
-    if (line.startsWith("### 3.")) {
+    if (ENTRY_HEADING.test(line)) {
       fields = new Map();
       continue;
     }
 
-    if (line.startsWith("## ") || line.startsWith("### ")) {
+    if (/^#{2,4} /.test(line)) {
       fields = null;
       continue;
     }
@@ -78,7 +84,11 @@ const enemySummary = (): Map<string, string[]> => {
     const cells = cellsOf(line);
     const id = cells === null ? null : idIn(cells[1] ?? "");
 
-    if (cells !== null && id !== null && cells.length === 11) {
+    if (
+      cells !== null &&
+      id !== null &&
+      SUMMARY_WIDTHS.includes(cells.length)
+    ) {
       rows.set(id, cells);
     }
   }
@@ -106,9 +116,24 @@ const firstAndLast = (table: readonly number[]): number[] => [
   table[table.length - 1] ?? Number.NaN,
 ];
 
+/** Where the archetype definitions live, one file per archetype, the file name the id. */
+const ENEMY_DIR = "src/content/enemies";
+
+/** The id each definition file under the enemies folder is named for. */
+const enemyFileIds = (): string[] =>
+  readdirSync(join(REPOSITORY_ROOT, ENEMY_DIR))
+    .filter((name) => name.endsWith(".def.ts"))
+    .map((name) => name.replace(/\.def\.ts$/, "").replace(/-/g, "_"))
+    .sort();
+
 describe("the enemy catalogue", () => {
   const entries = enemyEntries();
   const summary = enemySummary();
+
+  it("holds an entry and a summary row for every definition file in the enemies folder, and for no other", () => {
+    expect([...entries.keys()].sort()).toEqual(enemyFileIds());
+    expect([...summary.keys()].sort()).toEqual(enemyFileIds());
+  });
 
   it.each(enemies.map((def): [string, EnemyDef] => [def.id, def]))(
     "writes %s's numbers as its definition holds them",

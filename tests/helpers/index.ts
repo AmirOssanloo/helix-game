@@ -64,6 +64,14 @@ export {
   type Factory,
   type FactoryDefaults,
 } from "./factories/define-factory";
+export {
+  arrangeArchetype,
+  type ArrangedArchetype,
+} from "./world/arrange-archetype";
+export {
+  describeArchetype,
+  type DescribeArchetypeOptions,
+} from "./world/describe-archetype";
 export { greyedSlots } from "./world/greyed-slots";
 export { loadInputLog } from "./world/load-input-log";
 export { makeCast, type MakeCastOptions } from "./world/make-cast";

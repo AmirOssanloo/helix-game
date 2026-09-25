@@ -125,6 +125,7 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 | Command helper | `submit(world, command)` and `tickUntil(world, predicate, maxTicks)` | Driving a scenario without hand-counting ticks |
 | Recorded log | `loadInputLog(name)` | A replay test, from `tests/simulation/replays/` |
 | World view stub | `makeWorldView(overrides)` | A presentation test needs something to sync from |
+| Shared suite | `describeFoo({ def, ... })` | Every definition of one kind passes the same tests, such as the six every archetype passes; it mounts them and takes every number that differs as an option, so it never branches on which definition it has |
 
 **A recorded log is valid only on the content version it was recorded on.** A change to a definition number moves the version, and every stored log goes with it in the same change: re-stamped with the new version where its spec asserts something the number does not decide, and recorded again where the spec asserts what the numbers do, as a balance pass's logs do.
 
@@ -188,7 +189,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Worlds | Small: a factory-made registry of the definitions the test needs |
 | Focused and skipped | None focused; skipped only with an owner and condition. No retries |
 | A flaky test | A determinism bug, treated as one the day it flakes |
-| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate |
+| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition |
 | Where helpers live | `tests/helpers/`, one folder per kind; a spec imports from the barrel only; factories count, never randomise; an architecture rule exports its collect function beside its describe |
 
 ---
