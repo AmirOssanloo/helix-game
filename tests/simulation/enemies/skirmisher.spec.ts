@@ -2,14 +2,19 @@ import { describe, expect, it } from "vitest";
 import { arrowDef, skirmisherDef, tuningTable } from "@content/public";
 import { mitigate } from "@domain/public";
 import type { Simulation } from "@simulation/public";
-import { arrangeArchetype, describeArchetype, tickUntil } from "../../helpers";
+import {
+  arrangeArchetype,
+  describeArchetype,
+  describeKiting,
+  tickUntil,
+} from "../../helpers";
 
 /** The archetype under test, as content writes it. */
 const DEF = skirmisherDef;
 
 /** The hero's bound radius, which widens every reach at it. */
 const HERO_BOUND = 24;
-/** It holds at its reach less the hold margin, within the arrival epsilon. */
+/** It holds at its reach less the hold margin, within the arrival epsilon, and backs away to it from a hero that closes. */
 const CLOSEST_GAP =
   DEF.attack.range +
   DEF.body.boundRadius +
@@ -31,6 +36,10 @@ const heroHealth = (world: Simulation): number =>
   world.view.run.forms[0]?.resources.health ?? Number.NaN;
 
 describeArchetype({ def: DEF, closestGap: CLOSEST_GAP });
+
+describe("the skirmisher as a kiter", () => {
+  describeKiting(DEF, START_X);
+});
 
 describe("the skirmisher's arrow", () => {
   it("is loosed at the hero and deals its physical damage, less the hero's armour, where it lands", () => {

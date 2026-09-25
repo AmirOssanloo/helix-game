@@ -70,7 +70,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Layer | domain, tests |
 | Size | 0.5 |
 | Depends on | T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** `ranged_kiter` (backs away when the hero closes, keeps firing) and `charger` (waits at range for its charge clock, then closes), registered by key; one test per transition each.
 
@@ -83,6 +83,8 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 **Definition of done:** Every change · `src/domain` · A new enemy or behaviour.
 
 > **Note, 2026-09-25:** the roster names these two behaviours for three archetypes before they exist, so it writes the nearest registered key in their place: the hexer and the skirmisher hold as `ranged_holder`, and the lancer closes as `melee_chaser`. This ticket also switches those three definitions to `ranged_kiter` and `charger`, their rows in section 7 of the enemy catalogue, and the range test each passes through `describeArchetype`, which for a kiter reads the gap it backs away to. Q46.
+
+> **Note, 2026-09-25:** built. `ranged_kiter` and `charger` are registered under `src/domain/ai/behaviours/`. The machine behaviour gains `kites`, which the Attack step reads: a kiter the hero has come nearer than a second hold margin inside its hold point backs away to that point along a path while its attack is on its clock, and turns to fire when the clock allows. The standing rule is now handed the world, so the charger reads the clock of the first ability its list names at its tier and waits at that ability's range less the margin until it is ready. A unit whose standing point is where it stands stops rather than walking to its own feet. The hexer and the skirmisher name `ranged_kiter` and the lancer `charger`, in their definitions and in section 7 of the enemy catalogue. `tests/simulation/ai/transitions.spec.ts` runs every shared transition under both new keys and adds four cases for the kiter and five for the charger; `describeKiting` under `tests/helpers/world/` gives the hexer and the skirmisher their kiting case, and the lancer spec gains its waiting case. The runbook's behaviour step and the enemies page's behaviour table follow. The five stored replay logs are re-stamped for the new content version. Q47 records the readings as provisional.
 
 ---
 
@@ -113,7 +115,7 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 | Check | Result |
 | --- | --- |
 | Roster complete and green; boss encounter readouts | |
-| Actual days per ticket | T01 0.3 · T02 0.6 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.6 · T03 0.2 · T04 |
 
 ## Risks in this sprint
 

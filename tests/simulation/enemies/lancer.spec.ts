@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { lancerDef } from "@content/public";
+import { chargeDef, lancerDef, tuningTable } from "@content/public";
 import type { Unit } from "@domain/public";
-import { arrangeArchetype, describeArchetype, tickUntil } from "../../helpers";
+import {
+  arrangeArchetype,
+  describeArchetype,
+  submit,
+  tickUntil,
+} from "../../helpers";
 
 /** The archetype under test, as content writes it. */
 const DEF = lancerDef;
@@ -40,5 +45,36 @@ describe("the lancer's charge", () => {
     tickUntil(world, () => gap(unit, hero) <= reach, CHARGE_TICKS);
 
     expect(gap(unit, hero)).toBeLessThanOrEqual(reach);
+  });
+});
+
+describe("the lancer as a charger", () => {
+  it("waits at the charge's range less the margin while the charge is on its clock", () => {
+    const { world, hero, unit } = arrangeArchetype(DEF.id, START_X);
+    const wait =
+      chargeDef.range +
+      DEF.body.boundRadius +
+      HERO_BOUND -
+      tuningTable.ranged_hold_margin;
+    const away = -2 * chargeDef.range;
+
+    tickUntil(world, () => unit.ai.state === "attack", PATIENCE);
+    submit(world, {
+      kind: "move",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      destination: { x: away, y: 0 },
+    });
+    tickUntil(
+      world,
+      () => hero.curr.x <= away + tuningTable.arrival_epsilon,
+      PATIENCE,
+    );
+    tickUntil(world, () => unit.order.kind === "none", PATIENCE);
+
+    expect(unit.ai.state).toBe("chase");
+    expect(unit.cast.abilityId).toBeNull();
+    expect(gap(unit, hero)).toBeGreaterThan(wait - tuningTable.arrival_epsilon);
+    expect(gap(unit, hero)).toBeLessThanOrEqual(wait + HERO_BOUND);
   });
 });

@@ -3,8 +3,8 @@ import type { EnemyDef } from "@domain/public";
 /**
  * The hexer: a caster that stands off and silences the hero from beyond its own shot, so the kit
  * goes grey while its pack closes. Light, slower than the hero, with a mana pool for a burn to
- * take. It holds at its range and fires; backing away as the hero closes is the kiter
- * behaviour's, which the catalogue names for it. An elite also throws a net; a boss throws the
+ * take. It holds at its range and fires, and backs away when the hero closes on it,
+ * turning to fire each time its clock allows. An elite also throws a net; a boss throws the
  * net and brings adds. Every number is a starting value design retunes here.
  */
 export const hexerDef = {
@@ -46,7 +46,7 @@ export const hexerDef = {
     { id: "summon_adds", condition: { kind: "always" } },
   ],
   statuses: [],
-  behaviour: "ranged_holder",
+  behaviour: "ranged_kiter",
   atlasFrame: "square_dot",
   tint: 0x3f51b5, // tunable
 } as const satisfies EnemyDef;

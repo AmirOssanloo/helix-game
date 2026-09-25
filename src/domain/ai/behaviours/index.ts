@@ -1,6 +1,8 @@
 import type { Behaviour } from "../behaviour";
+import { chargerBehaviour } from "./charger.behaviour";
 import { meleeChaserBehaviour } from "./melee-chaser.behaviour";
 import { rangedHolderBehaviour } from "./ranged-holder.behaviour";
+import { rangedKiterBehaviour } from "./ranged-kiter.behaviour";
 import { stationaryBehaviour } from "./stationary.behaviour";
 import { summonFollowBehaviour } from "./summon-follow.behaviour";
 
@@ -8,6 +10,8 @@ import { summonFollowBehaviour } from "./summon-follow.behaviour";
 const behaviours: ReadonlyMap<string, Behaviour> = new Map<string, Behaviour>([
   ["melee_chaser", meleeChaserBehaviour],
   ["ranged_holder", rangedHolderBehaviour],
+  ["ranged_kiter", rangedKiterBehaviour],
+  ["charger", chargerBehaviour],
   ["stationary", stationaryBehaviour],
   ["summon_follow", summonFollowBehaviour],
 ]);

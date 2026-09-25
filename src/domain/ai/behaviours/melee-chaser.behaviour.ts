@@ -1,10 +1,12 @@
 import type { Vec2 } from "@shared/public";
 import type { AttackRecord } from "../../definitions/attack-state";
 import type { Unit } from "../../entities/unit";
+import type { World } from "../../entities/world-state";
 import type { MachineBehaviour } from "../behaviour";
 
 /** Walks at the target itself: collision stops it at contact, and it is in reach well before. */
 const standOnTarget = (
+  _world: Readonly<World>,
   _unit: Readonly<Unit>,
   target: Readonly<Unit>,
   _record: AttackRecord,
@@ -20,5 +22,6 @@ export const meleeChaserBehaviour: MachineBehaviour = {
   kind: "machine",
   engages: true,
   wanders: true,
+  kites: false,
   standAt: standOnTarget,
 };

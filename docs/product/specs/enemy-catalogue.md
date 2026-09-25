@@ -286,7 +286,7 @@ An entry carries every field in [section 2.1](#21-the-fields) and reads as the e
 
 Every roster archetype may spawn at all three tiers. An elite adds one ability the archetype does not already cast, and a boss adds the ones that make a single unit of it a fight: a heal where it has none, a way to close the gap or to hold the hero, adds where it has a pack to protect. A tier's entries come after the archetype's own, so a tier adds to what a plain unit does and never shadows it.
 
-Three entries name a behaviour by what it does, not only by its key. A kiter backs away when the hero closes and keeps firing; a charger waits at range for its charge and then closes. Until those two keys are registered, the hexer and the skirmisher hold as `ranged_holder` does, and the lancer closes as `melee_chaser` does, and their definitions name those keys.
+Two behaviours are the roster's own. A kiter, `ranged_kiter`, holds at its attack range less the margin and fires as the holder does; when the hero comes nearer than a second margin inside that, it backs away along a path while its attack is on its clock and turns to fire each time the clock allows. A charger, `charger`, closes as the chaser does while its charge is ready; while the charge is on its clock it waits at the charge's range less the margin, standing where it is if the hero is already nearer, so the charge is thrown the moment its clock allows. Its charge is the first entry of its list at its tier. The hexer and the skirmisher are kiters, and the lancer a charger.
 
 ### 7.2 The roster at a glance
 
@@ -294,12 +294,12 @@ Three entries name a behaviour by what it does, not only by its key. A kiter bac
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Brute | `brute` | 700 | 4 | 230 | 27 | 28 melee every 1.6 s | 650 · 1400 | 90 | `melee_chaser` | `square` · `0x8c2f39` | `bash` carried | Normal · elite · boss | `slam` · `slam`, `summon_adds`, `charge` |
 | Frost raider | `frost_raider` | 280 | 1 | 290 | 16 | 12 melee every 1.1 s | 800 · 1800 | 38 | `melee_chaser` | `square` · `0x7fd3e8` | `frost_attack` carried | Normal · elite · boss | `charge` · `self_heal`, `charge` |
-| Hexer | `hexer` | 260 | 0 | 250 | 27 | 14 at 450 every 2.0 s | 800 · 1500 | 60 | `ranged_holder` | `square_dot` · `0x3f51b5` | `silence_curse` | Normal · elite · boss | `root_net` · `root_net`, `summon_adds` |
+| Hexer | `hexer` | 260 | 0 | 250 | 27 | 14 at 450 every 2.0 s | 800 · 1500 | 60 | `ranged_kiter` | `square_dot` · `0x3f51b5` | `silence_curse` | Normal · elite · boss | `root_net` · `root_net`, `summon_adds` |
 | Trapper | `trapper` | 320 | 2 | 260 | 27 | 16 at 500 every 1.8 s | 800 · 1500 | 55 | `ranged_holder` | `square_dot` · `0x2e8b7a` | `root_net` | Normal · elite · boss | `arrow` · `arrow`, `summon_adds` |
-| Skirmisher | `skirmisher` | 240 | 0 | 290 | 16 | 14 at 450 every 1.5 s | 850 · 1800 | 55 | `ranged_holder` | `square_dot` · `0xe07b39` | `arrow` | Normal · elite · boss | `root_net` · `self_heal`, `root_net` |
+| Skirmisher | `skirmisher` | 240 | 0 | 290 | 16 | 14 at 450 every 1.5 s | 850 · 1800 | 55 | `ranged_kiter` | `square_dot` · `0xe07b39` | `arrow` | Normal · elite · boss | `root_net` · `self_heal`, `root_net` |
 | Crusher | `crusher` | 1000 | 6 | 210 | 50 | 30 melee every 1.9 s | 600 · 1200 | 110 | `melee_chaser` | `square` · `0x7a7a8c` | `slam` | Normal · elite · boss | `charge` · `self_heal`, `charge` |
 | Summoner | `summoner` | 350 | 1 | 240 | 27 | 12 at 550 every 2.0 s | 800 · 1500 | 70 | `ranged_holder` | `square_dot` · `0x5e3a8c` | `summon_adds` | Normal · elite · boss | `silence_curse` · `silence_curse`, `self_heal` |
-| Lancer | `lancer` | 450 | 3 | 250 | 27 | 24 melee every 1.5 s | 750 · 1600 | 65 | `melee_chaser` | `square` · `0x4a90d9` | `charge` | Normal · elite · boss | `slam` · `root_net`, `slam` |
+| Lancer | `lancer` | 450 | 3 | 250 | 27 | 24 melee every 1.5 s | 750 · 1600 | 65 | `charger` | `square` · `0x4a90d9` | `charge` | Normal · elite · boss | `slam` · `root_net`, `slam` |
 | Troll | `troll` | 650 | 3 | 235 | 27 | 26 melee every 1.6 s | 650 · 1400 | 85 | `melee_chaser` | `square` · `0x9aa33b` | `self_heal` | Normal · elite · boss | `slam` · `slam`, `charge` |
 
 The frames stay the four's: a filled square for what closes to contact, a square with a dot for what fights from range, drawn at the collision radius, so size and colour tell the nine apart from each other and from the four.
@@ -383,7 +383,7 @@ A caster that stands off and silences the hero.
 | Aggro · leash radius | 800 · 1500 | The archer's |
 | Experience | 60 | More than an archer for less health, because it takes the kit away |
 | Indestructible · tier | false · normal | |
-| Abilities · behaviour | `silence_curse` always · `ranged_holder` | Curses whenever the clock allows. It is a kiter: it backs away when the hero closes and keeps firing |
+| Abilities · behaviour | `silence_curse` always · `ranged_kiter` | Curses whenever the clock allows. It is a kiter: it backs away when the hero closes and keeps firing |
 | Statuses | none | |
 | Tiers | Normal · elite · boss | |
 | Elite ability | `root_net` always | A silenced hero that is also held cannot walk to it |
@@ -439,7 +439,7 @@ A light ranged enemy that looses a heavy arrow from beyond the hero's reach.
 | Aggro · leash radius | 850 · 1800 | It sees the hero first and follows far |
 | Experience | 55 | More than a runner for the same health, because it is hard to reach |
 | Indestructible · tier | false · normal | |
-| Abilities · behaviour | `arrow` always · `ranged_holder` | Looses the arrow whenever the clock allows. It is a kiter: it backs away when the hero closes and keeps firing |
+| Abilities · behaviour | `arrow` always · `ranged_kiter` | Looses the arrow whenever the clock allows. It is a kiter: it backs away when the hero closes and keeps firing |
 | Statuses | none | |
 | Tiers | Normal · elite · boss | |
 | Elite ability | `root_net` always | Holds the hero out of its own reach |
@@ -523,7 +523,7 @@ A melee enemy that charges across the gap to the hero.
 | Aggro · leash radius | 750 · 1600 | A little past the grunt's |
 | Experience | 65 | Over a grunt, for the charge |
 | Indestructible · tier | false · normal | |
-| Abilities · behaviour | `charge` always · `melee_chaser` | Charges whenever the clock allows and the hero is within its 600. It is a charger: it waits at range for its charge, then closes |
+| Abilities · behaviour | `charge` always · `charger` | Charges whenever the clock allows and the hero is within its 600. It is a charger: it waits at range for its charge, then closes |
 | Statuses | none | |
 | Tiers | Normal · elite · boss | |
 | Elite ability | `slam` with the hero within 250 | The charge lands it beside the hero, where the slam reaches |

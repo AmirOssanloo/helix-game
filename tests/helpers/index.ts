@@ -72,6 +72,7 @@ export {
   describeArchetype,
   type DescribeArchetypeOptions,
 } from "./world/describe-archetype";
+export { describeKiting } from "./world/describe-kiting";
 export { greyedSlots } from "./world/greyed-slots";
 export { loadInputLog } from "./world/load-input-log";
 export { makeCast, type MakeCastOptions } from "./world/make-cast";

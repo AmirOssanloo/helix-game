@@ -56,3 +56,16 @@ export const isInAttackRange = (
  */
 export const isMelee = (record: AttackRecord): boolean =>
   record.def.projectileSpeed === 0;
+
+/**
+ * Whether an attack point may begin now: the unit is hurried at all, and its clock lets the
+ * shot land. The point is counted backwards from the shot, so two shots are one attack time
+ * apart however long the point between them is.
+ */
+export const isReadyToSwing = (
+  world: World,
+  unit: Readonly<Unit>,
+  record: AttackRecord,
+): boolean =>
+  unit.stats.attackSpeed > 0 &&
+  world.tick + record.pointTicks >= unit.attackReadyAtTick;

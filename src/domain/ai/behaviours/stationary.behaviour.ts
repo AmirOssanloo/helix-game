@@ -1,10 +1,12 @@
 import type { Vec2 } from "@shared/public";
 import type { AttackRecord } from "../../definitions/attack-state";
 import type { Unit } from "../../entities/unit";
+import type { World } from "../../entities/world-state";
 import type { MachineBehaviour } from "../behaviour";
 
 /** Stands where it is: a behaviour that never engages is never asked, and this is its answer if it were. */
 const standStill = (
+  _world: Readonly<World>,
   unit: Readonly<Unit>,
   _target: Readonly<Unit>,
   _record: AttackRecord,
@@ -20,5 +22,6 @@ export const stationaryBehaviour: MachineBehaviour = {
   kind: "machine",
   engages: false,
   wanders: false,
+  kites: false,
   standAt: standStill,
 };

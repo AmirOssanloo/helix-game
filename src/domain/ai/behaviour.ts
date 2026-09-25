@@ -6,9 +6,12 @@ import type { World } from "../entities/world-state";
 /**
  * Where a unit wants to stand to fight `target` with `record`, written into `out`. `margin`
  * is the tuning table's hold margin, for a behaviour that stands inside its reach rather than
- * at its edge. The machine resolves the point to somewhere the map lets the unit stand.
+ * at its edge. The world is there to be read, for a rule that stands by an ability's clock;
+ * a rule changes nothing in it. The machine resolves the point to somewhere the map lets the
+ * unit stand.
  */
 export type StandingRule = (
+  world: Readonly<World>,
   unit: Readonly<Unit>,
   target: Readonly<Unit>,
   record: AttackRecord,
@@ -18,13 +21,15 @@ export type StandingRule = (
 
 /**
  * An enemy's driver: it runs the shared state machine, and says only whether the unit ever
- * leaves Idle, whether it wanders while there, and where it stands to fight. The states and
- * their transitions are the machine's and every such behaviour shares them.
+ * leaves Idle, whether it wanders while there, whether it backs away from a hero that closes
+ * on it while its attack is on its clock, and where it stands to fight. The states and their
+ * transitions are the machine's and every such behaviour shares them.
  */
 export type MachineBehaviour = Readonly<{
   kind: "machine";
   engages: boolean;
   wanders: boolean;
+  kites: boolean;
   standAt: StandingRule;
 }>;
 

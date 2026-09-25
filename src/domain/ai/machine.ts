@@ -1,7 +1,13 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert, distanceSquared } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
-import { attackOf, isInAttackRange, isMelee } from "../attack/attack";
+import {
+  attackOf,
+  isInAttackRange,
+  isMelee,
+  isReadyToSwing,
+} from "../attack/attack";
+import type { AttackRecord } from "../definitions/attack-state";
 import { readTunable } from "../definitions/tuning-state";
 import type { UnitRecord } from "../definitions/unit-state";
 import type { Unit } from "../entities/unit";
@@ -120,6 +126,31 @@ const walkTo = (world: World, unit: Unit, x: number, y: number): void => {
   assert(result === "ok", "A living unit takes the walk its machine asks for");
 };
 
+/**
+ * Walks to where the behaviour wants to stand, the scratch point, resolved to somewhere the
+ * unit may stand; a unit already there stops instead, letting go of whatever order it held, so
+ * one that waits where it is neither asks for a path to its own feet nor walks at the hero
+ * under an attack order.
+ */
+const standOrWalk = (world: World, unit: Unit): void => {
+  resolveDestinationFor(world, unit, standing.x, standing.y, destination);
+
+  if (
+    distanceSquared(destination, unit.curr) >
+    tuning.epsilon * tuning.epsilon
+  ) {
+    walkTo(world, unit, destination.x, destination.y);
+
+    return;
+  }
+
+  if (unit.order.kind !== "none") {
+    const result = clearOrder(unit);
+
+    assert(result === "ok", "A living unit stops where it wants to stand");
+  }
+};
+
 /** Into Return: the fight is dropped, whatever point was under way is cancelled, and the unit walks home. A projectile already fired flies on. */
 const enterReturn = (world: World, unit: Unit): void => {
   unit.ai.state = "return";
@@ -204,8 +235,8 @@ const chase = (
     return;
   }
 
-  behaviour.standAt(unit, hero, swing, tuning.holdMargin, standing);
-  walkTo(world, unit, standing.x, standing.y);
+  behaviour.standAt(world, unit, hero, swing, tuning.holdMargin, standing);
+  standOrWalk(world, unit);
 };
 
 /** Into Chase, with a path asked for on this tick rather than at the next re-path. */
@@ -223,13 +254,60 @@ const enterChase = (
 };
 
 /**
+ * Whether the hero has closed on a unit that kites: nearer its centre than the unit's reach
+ * less twice the hold margin, a margin inside where it holds, so a hero that steps in a little
+ * is fired on and one that walks in is backed away from.
+ */
+const isCrowded = (
+  unit: Readonly<Unit>,
+  hero: Readonly<Unit>,
+  record: AttackRecord,
+): boolean => {
+  const near =
+    record.def.range +
+    unit.boundRadius +
+    hero.boundRadius -
+    tuning.holdMargin -
+    tuning.holdMargin;
+
+  return near > 0 && distanceSquared(unit.curr, hero.curr) < near * near;
+};
+
+/**
+ * One tick of backing away, still in Attack: the unit walks to where its behaviour wants to
+ * stand, away from the hero, asking for that walk again at most once a re-path interval. A
+ * shot just loosed is the exception, since its attack order is what the walk replaces, so the
+ * unit leaves in its backswing on the tick it can.
+ */
+const backAway = (
+  world: World,
+  unit: Unit,
+  behaviour: MachineBehaviour,
+  hero: Readonly<Unit>,
+  record: AttackRecord,
+): void => {
+  if (
+    unit.order.kind !== "attack_target" &&
+    world.tick < unit.ai.repathAtTick
+  ) {
+    return;
+  }
+
+  unit.ai.repathAtTick = world.tick + tuning.repathTicks;
+  behaviour.standAt(world, unit, hero, record, tuning.holdMargin, standing);
+  standOrWalk(world, unit);
+};
+
+/**
  * One tick of Attack: a lost hero or a leash passed sends the unit home, cancelling the point
  * under way; a dead hero turns it back to Chase. A hidden hero sends it home too, unless it is
  * adjacent, a melee attacker in reach, which swings on; an archer firing from range drops the
  * hero with the rest, and an arrow already in the air lands. A cast of its own under way is
  * left to run, and an ability the selection rule takes on a hero it can see is cast. In reach
- * it keeps the hero as its attack target; out of reach it keeps an attack point it has begun,
- * and chases otherwise.
+ * it keeps the hero as its attack target, unless it kites, the hero has closed on it, and its
+ * attack is on its clock, when it backs away and turns to fire again once the clock allows; an
+ * attack point it has begun is never cut short for it. Out of reach it keeps an attack point it
+ * has begun, and chases otherwise.
  */
 const fight = (
   world: World,
@@ -269,6 +347,19 @@ const fight = (
     !hero.disables.aggroHidden &&
     selectAbility(world, unit, record, hero, heroId)
   ) {
+    return;
+  }
+
+  if (
+    isInReach &&
+    swing !== null &&
+    behaviour.kites &&
+    unit.state !== "attack_windup" &&
+    isCrowded(unit, hero, swing) &&
+    !isReadyToSwing(world, unit, swing)
+  ) {
+    backAway(world, unit, behaviour, hero, swing);
+
     return;
   }
 

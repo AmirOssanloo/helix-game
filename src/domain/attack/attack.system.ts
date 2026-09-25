@@ -23,7 +23,13 @@ import {
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
 import { nearestEnemy } from "./acquire";
-import { attackDamageOf, attackOf, isInAttackRange, isMelee } from "./attack";
+import {
+  attackDamageOf,
+  attackOf,
+  isInAttackRange,
+  isMelee,
+  isReadyToSwing,
+} from "./attack";
 
 /** What every attack lands as, melee or ranged. */
 const ATTACK_DAMAGE_TYPE: DamageType = "physical";
@@ -162,19 +168,6 @@ const face = (world: World, unit: Unit, target: Readonly<Unit>): boolean => {
 
   return isInsideCone(unit.facing, toTarget, facing.cone);
 };
-
-/**
- * Whether an attack point may begin now: the unit is hurried at all, and its clock lets the
- * shot land. The point is counted backwards from the shot, so two shots are one attack time
- * apart however long the point between them is.
- */
-const isReadyToSwing = (
-  world: World,
-  unit: Readonly<Unit>,
-  record: AttackRecord,
-): boolean =>
-  unit.stats.attackSpeed > 0 &&
-  world.tick + record.pointTicks >= unit.attackReadyAtTick;
 
 /**
  * A ranged shot: a homing projectile from where the unit stands, carrying the attack damage

@@ -51,6 +51,14 @@ Every archetype carries the same fields. A field an archetype does not use is se
 
 Every enemy runs the same state machine. The behaviour name in its definition picks how it chooses a target and where it wants to stand; the states are shared.
 
+| Behaviour | Where it stands to fight |
+| --- | --- |
+| Chaser | On the hero: it closes to contact |
+| Holder | At its attack range, less a margin, and fires |
+| Kiter | Where the holder does; when the hero closes on it, it backs away along a path while its attack is on its clock and turns to fire each time the clock allows |
+| Charger | While its charge is on its clock, at the charge's range less a margin, or where it is if the hero is nearer; once the charge is ready, it closes and throws it |
+| Stationary | Where it spawned; it never leaves Idle |
+
 | State | What the enemy does | Leaves when |
 | --- | --- | --- |
 | Idle | Stands at its spawn point, or wanders a few units around it | The hero enters its aggro radius, or it takes damage |
@@ -118,7 +126,7 @@ A pack spawns once per map load: one the hero kills does not come back when the 
 ## Deferred
 
 - **Loot and drops.** Enemies grant experience only.
-- **Kiting and flanking behaviour** for the archer beyond standing at range.
+- **Flanking behaviour**, and kiting for the archer, which holds at range; the roster's kiters are the hexer and the skirmisher.
 - **Formations, patrols, and scripted encounters.** Packs stand where spawned.
 - **Bosses with phases** or scripted mechanics. A boss is numbers plus abilities.
 - **Enemy affixes** — an elite is a multiplier and one extra ability, not a random modifier set.

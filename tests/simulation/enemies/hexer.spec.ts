@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { hexerDef, tuningTable } from "@content/public";
-import { arrangeArchetype, describeArchetype, tickUntil } from "../../helpers";
+import {
+  arrangeArchetype,
+  describeArchetype,
+  describeKiting,
+  tickUntil,
+} from "../../helpers";
 
 /** The archetype under test, as content writes it. */
 const DEF = hexerDef;
 
 /** The hero's bound radius, which widens every reach at it. */
 const HERO_BOUND = 24;
-/** It holds at its reach less the hold margin, within the arrival epsilon. */
+/** It holds at its reach less the hold margin, within the arrival epsilon, and backs away to it from a hero that closes. */
 const CLOSEST_GAP =
   DEF.attack.range +
   DEF.body.boundRadius +
@@ -22,6 +27,10 @@ const PATIENCE = 600;
 const START_X = 600;
 
 describeArchetype({ def: DEF, closestGap: CLOSEST_GAP });
+
+describe("the hexer as a kiter", () => {
+  describeKiting(DEF, START_X);
+});
 
 describe("the hexer's curse", () => {
   it("is cast at the hero and silences it, from the hexer", () => {

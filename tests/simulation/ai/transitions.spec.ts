@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { chargeDef, contentRegistry } from "@content/public";
 import type { AnyCommand, EnemyDef, StatusDef, Unit } from "@domain/public";
-import { applyDamage } from "@domain/public";
+import { applyDamage, remainingCooldownTicks } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
@@ -78,6 +79,56 @@ const HOLDER: EnemyDef = makeEnemyDef.build({
   }),
 });
 
+/** The kiting enemy: it holds as the holding enemy does, and backs away from a hero that closes on it. */
+const KITER: EnemyDef = makeEnemyDef.build({
+  id: "kiter",
+  behaviour: "ranged_kiter",
+  healthRegen: HEALTH_REGEN,
+  aggroRadius: AGGRO_RADIUS,
+  leashRadius: LEASH_RADIUS,
+  attack: makeAttackDef.build({
+    range: RANGED_RANGE,
+    acquireRadius: AGGRO_RADIUS,
+  }),
+});
+
+/** How far the charging enemy's charge reaches, and so where it waits while the charge is on its clock. */
+const CHARGE_RANGE = chargeDef.range;
+
+/** The charging enemy's charge clock, in ticks, at the 30 Hz step. */
+const CHARGE_COOLDOWN_TICKS = chargeDef.cooldownSeconds[0] * 30;
+
+/** The charging enemy: it closes to contact and swings in melee, and waits at the range of its charge while the charge is on its clock. */
+const CHARGER: EnemyDef = makeEnemyDef.build({
+  id: "charger",
+  behaviour: "charger",
+  healthRegen: HEALTH_REGEN,
+  aggroRadius: AGGRO_RADIUS,
+  leashRadius: LEASH_RADIUS,
+  abilities: [{ id: chargeDef.id, condition: { kind: "always" } }],
+  attack: makeAttackDef.build({
+    range: MELEE_RANGE,
+    acquireRadius: AGGRO_RADIUS,
+    projectileSpeed: 0,
+    projectileRadius: 0,
+  }),
+});
+
+/** The charging enemy with a longer sight, so it notices the hero from beyond its charge's range and has to close to throw it. */
+const FAR_CHARGER: EnemyDef = {
+  ...CHARGER,
+  id: "far_charger",
+  aggroRadius: 2 * CHARGE_RANGE,
+  leashRadius: 6 * CHARGE_RANGE,
+};
+
+/** The charging enemy with nothing on any clock to wait for. */
+const BARE_CHARGER: EnemyDef = {
+  ...CHARGER,
+  id: "bare_charger",
+  abilities: [],
+};
+
 /** The standing enemy: the dummy's behaviour on an enemy that could fight. */
 const STANDER: EnemyDef = makeEnemyDef.build({
   id: "stander",
@@ -101,21 +152,35 @@ const UNTOUCHABLE: StatusDef = makeStatusDef.build({
 /** Long enough that no status below runs out during its case. */
 const STATUS_TICKS = 9000;
 
-/** The two behaviours that fight, each with the reach its standing rule works to. */
+/**
+ * The behaviours that fight, each with the reach its standing rule works to, and whether it
+ * waits where it stands for a hero that walks out of its reach rather than walking after it,
+ * as the charger does while its charge is on its clock.
+ */
 const FIGHTERS = [
-  { def: CHASER, range: MELEE_RANGE },
-  { def: HOLDER, range: RANGED_RANGE },
+  { def: CHASER, range: MELEE_RANGE, waits: false },
+  { def: HOLDER, range: RANGED_RANGE, waits: false },
+  { def: KITER, range: RANGED_RANGE, waits: false },
+  { def: CHARGER, range: MELEE_RANGE, waits: true },
 ] as const;
 
 type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
 
-/** A world with the three enemies and the two statuses, the hero at the origin, and no wander unless a case asks for one. */
+/** A world with the enemies and the two statuses, the hero at the origin, and no wander unless a case asks for one. */
 const arrange = (wanderRadius = 0): Arranged => {
   const world = makeWorld({
     seed: 1,
     registry: makeRegistry({
-      enemies: [CHASER, HOLDER, STANDER],
-      statuses: [HIDDEN, UNTOUCHABLE],
+      enemies: [
+        CHASER,
+        HOLDER,
+        KITER,
+        CHARGER,
+        FAR_CHARGER,
+        BARE_CHARGER,
+        STANDER,
+      ],
+      statuses: [...contentRegistry.statuses, HIDDEN, UNTOUCHABLE],
       tuning: { wander_radius: wanderRadius },
     }),
   });
@@ -163,7 +228,7 @@ const fromHome = (unit: Readonly<Unit>): number =>
 
 describe.each(FIGHTERS)(
   "the machine under $def.behaviour",
-  ({ def, range }) => {
+  ({ def, range, waits }) => {
     describe("Idle", () => {
       it("chases a hero that stands inside its aggro radius", () => {
         const { world } = arrange();
@@ -373,7 +438,7 @@ describe.each(FIGHTERS)(
         walkHero(world, -LEASH_RADIUS / 2, 0);
         tickUntil(world, () => enemy.ai.state === "chase", PATIENCE);
 
-        expect(enemy.order.kind).toBe("move");
+        expect(enemy.order.kind).toBe(waits ? "none" : "move");
       });
 
       it("cancels the attack point and goes home when leashed mid-attack", () => {
@@ -594,6 +659,218 @@ describe("the machine under ranged_holder", () => {
     }
 
     expect(targetId).toBe(heroId);
+  });
+});
+
+describe("the machine under ranged_kiter", () => {
+  /** Where the kiter holds from the hero's centre: its reach less the margin. */
+  const HOLD = RANGED_RANGE + HERO_BOUND + ENEMY_BOUND - HOLD_MARGIN;
+
+  /** A kiter standing at its hold point, the hero at the origin, on the tick its first shot leaves. */
+  const holding = (): Readonly<Arranged & { enemy: Unit }> => {
+    const arranged = arrange();
+    const enemy = spawnEnemy(arranged.world, {
+      definitionId: KITER.id,
+      x: AGGRO_RADIUS - 10,
+      y: 0,
+    });
+
+    tickUntil(
+      arranged.world,
+      () => enemy.state === "attack_backswing",
+      PATIENCE,
+    );
+
+    return { ...arranged, enemy };
+  };
+
+  it("holds at its reach less the margin while the hero stands off", () => {
+    const { hero, enemy } = holding();
+
+    expect(gap(enemy, hero)).toBeGreaterThan(HOLD - EPSILON);
+    expect(gap(enemy, hero)).toBeLessThanOrEqual(HOLD + HOLD_MARGIN);
+  });
+
+  it("keeps firing where it stands at a hero that steps in by less than a margin", () => {
+    const { world, hero, heroId, enemy } = holding();
+    const standing = enemy.curr.x;
+
+    walkHero(world, HOLD_MARGIN / 2, 0);
+
+    for (let tick = 0; tick < SETTLE; tick += 1) {
+      world.tick();
+    }
+
+    expect(hero.curr.x).toBeCloseTo(HOLD_MARGIN / 2, 0);
+    expect([enemy.ai.state, enemy.order.kind, enemy.order.targetId]).toEqual([
+      "attack",
+      "attack_target",
+      heroId,
+    ]);
+    expect(Math.abs(enemy.curr.x - standing)).toBeLessThanOrEqual(EPSILON);
+  });
+
+  it("backs away along a path to its hold point when the hero closes, its attack on its clock", () => {
+    const { world, hero, enemy } = holding();
+    const standing = enemy.curr.x;
+
+    let heroAt = hero.curr.x;
+
+    walkHero(world, standing, 0);
+
+    for (
+      let tick = 0;
+      tick < PATIENCE && enemy.order.kind !== "move";
+      tick += 1
+    ) {
+      heroAt = hero.curr.x;
+      world.tick();
+    }
+
+    expect(enemy.ai.state).toBe("attack");
+    expect(enemy.order.destination.x - heroAt).toBeCloseTo(HOLD, 0);
+
+    world.tick();
+
+    expect(enemy.path.count).toBeGreaterThan(0);
+
+    for (let tick = 0; tick < SETTLE; tick += 1) {
+      world.tick();
+    }
+
+    expect(enemy.curr.x).toBeGreaterThan(standing);
+  });
+
+  it("turns to fire each time its clock allows while the hero keeps closing", () => {
+    const { world, enemy } = holding();
+    let shots = 0;
+    let backedAway = false;
+    let wasSwinging = true;
+
+    walkHero(world, 3 * LEASH_RADIUS, 0);
+
+    for (let tick = 0; tick < 4 * SETTLE; tick += 1) {
+      world.tick();
+
+      const isSwinging = enemy.state === "attack_backswing";
+
+      if (isSwinging && !wasSwinging) {
+        shots += 1;
+      }
+
+      wasSwinging = isSwinging;
+      backedAway = backedAway || enemy.order.kind === "move";
+    }
+
+    expect(backedAway).toBe(true);
+    expect(shots).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("the machine under charger", () => {
+  /** Where the charger waits from the hero's centre while its charge is on its clock: the charge's reach less the margin. */
+  const WAIT = CHARGE_RANGE + HERO_BOUND + ENEMY_BOUND - HOLD_MARGIN;
+
+  /** Its melee reach at the hero. */
+  const REACH = MELEE_RANGE + HERO_BOUND + ENEMY_BOUND;
+
+  /** A far charger that has charged the hero at the origin and stands beside it, its charge on its clock. */
+  const charged = (): Readonly<Arranged & { enemy: Unit }> => {
+    const arranged = arrange();
+    const enemy = spawnEnemy(arranged.world, {
+      definitionId: FAR_CHARGER.id,
+      x: 2 * CHARGE_RANGE - 50,
+      y: 0,
+    });
+
+    tickUntil(arranged.world, () => enemy.ai.state === "attack", PATIENCE);
+
+    return { ...arranged, enemy };
+  };
+
+  it("closes on a hero beyond its charge's range and throws the charge once in it", () => {
+    const { world, hero } = arrange();
+    const enemy = spawnEnemy(world, {
+      definitionId: FAR_CHARGER.id,
+      x: 2 * CHARGE_RANGE - 50,
+      y: 0,
+    });
+
+    tickUntil(world, () => enemy.cast.abilityId !== null, PATIENCE);
+
+    expect(enemy.cast.abilityId).toBe(chargeDef.id);
+    expect(gap(enemy, hero)).toBeLessThanOrEqual(WAIT + HOLD_MARGIN);
+    expect(gap(enemy, hero)).toBeGreaterThan(REACH);
+  });
+
+  it("waits at its charge's range less the margin while the charge is on its clock", () => {
+    const { world, hero, enemy } = charged();
+
+    walkHero(world, -3 * CHARGE_RANGE, 0);
+    tickUntil(
+      world,
+      () => hero.curr.x <= -3 * CHARGE_RANGE + EPSILON,
+      PATIENCE,
+    );
+
+    for (let tick = 0; tick < SETTLE; tick += 1) {
+      world.tick();
+    }
+
+    expect(
+      remainingCooldownTicks(enemy.cooldowns, chargeDef.id, world.view.tick),
+    ).toBeGreaterThan(0);
+    expect(enemy.ai.state).toBe("chase");
+    expect(gap(enemy, hero)).toBeGreaterThan(WAIT - EPSILON);
+    expect(gap(enemy, hero)).toBeLessThanOrEqual(WAIT + HOLD_MARGIN);
+  });
+
+  it("stands where it is while it waits for a hero already inside its charge's range", () => {
+    const { world, hero, enemy } = charged();
+
+    walkHero(world, -CHARGE_RANGE / 2, 0);
+    tickUntil(
+      world,
+      () => hero.curr.x <= -CHARGE_RANGE / 2 + EPSILON,
+      PATIENCE,
+    );
+
+    const waitingAt = enemy.curr.x;
+
+    for (let tick = 0; tick < SETTLE; tick += 1) {
+      world.tick();
+    }
+
+    expect(enemy.ai.state).toBe("chase");
+    expect(gap(enemy, hero)).toBeGreaterThan(REACH);
+    expect(Math.abs(enemy.curr.x - waitingAt)).toBeLessThanOrEqual(EPSILON);
+  });
+
+  it("charges again once the charge's clock runs out", () => {
+    const { world, hero, enemy } = charged();
+
+    walkHero(world, -3 * CHARGE_RANGE, 0);
+    tickUntil(
+      world,
+      () => enemy.cast.abilityId !== null,
+      2 * CHARGE_COOLDOWN_TICKS,
+    );
+
+    expect(enemy.cast.abilityId).toBe(chargeDef.id);
+    expect(gap(enemy, hero)).toBeGreaterThan(REACH);
+  });
+
+  it("closes to contact as the chaser does with nothing on a clock to wait for", () => {
+    const { world, hero } = arrange();
+    const enemy = spawnEnemy(world, {
+      definitionId: BARE_CHARGER.id,
+      x: AGGRO_RADIUS - 50,
+      y: 0,
+    });
+
+    tickUntil(world, () => enemy.state === "attack_windup", PATIENCE);
+
+    expect(gap(enemy, hero)).toBeLessThanOrEqual(REACH);
   });
 });
 

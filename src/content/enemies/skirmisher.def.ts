@@ -3,8 +3,8 @@ import type { EnemyDef } from "@domain/public";
 /**
  * The skirmisher: a light ranged enemy, a little faster than the hero, that looses a heavy arrow
  * from beyond the hero's reach between its own quick shots. The small body. It holds at its range
- * and fires; backing away as the hero closes is the kiter behaviour's, which the catalogue names
- * for it. An elite also throws a net; a boss heals itself below half its health first. Every
+ * and fires, and backs away when the hero closes on it, turning to fire each time its clock
+ * allows. An elite also throws a net; a boss heals itself below half its health first. Every
  * number is a starting value design retunes here.
  */
 export const skirmisherDef = {
@@ -46,7 +46,7 @@ export const skirmisherDef = {
     { id: "root_net", condition: { kind: "always" } },
   ],
   statuses: [],
-  behaviour: "ranged_holder",
+  behaviour: "ranged_kiter",
   atlasFrame: "square_dot",
   tint: 0xe07b39, // tunable
 } as const satisfies EnemyDef;
