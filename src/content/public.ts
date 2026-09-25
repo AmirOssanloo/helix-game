@@ -1,6 +1,9 @@
 export { abilities } from "./abilities/index";
+export { arrowDef } from "./abilities/arrow.def";
 export { rootNetDef } from "./abilities/root-net.def";
+export { selfHealDef } from "./abilities/self-heal.def";
 export { silenceCurseDef } from "./abilities/silence-curse.def";
+export { slamDef } from "./abilities/slam.def";
 export {
   atlasFrames,
   CONE_ANGLES,

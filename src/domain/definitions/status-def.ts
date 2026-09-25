@@ -60,6 +60,15 @@ export type DamageOverTimeDef = Readonly<{
 }>;
 
 /**
+ * Health the status restores to its holder every tick, never past its maximum and never to a
+ * holder at zero. It is not damage turned around: it announces nothing, runs no hook, and
+ * credits nobody.
+ */
+export type HealOverTimeDef = Readonly<{
+  perSecond: LevelTable;
+}>;
+
+/**
  * An effect list the status runs when its holder takes or deals damage, at most once per
  * cooldown, anchored on the holder and aimed at the unit the damage landed on: the holder
  * itself for a damage-taken hook, and the unit on the other side for a damage-dealt one.
@@ -72,8 +81,8 @@ export type StatusHookDef = Readonly<{
 }>;
 
 /**
- * One lasting condition as content writes it: what it sets, changes, and takes on its
- * holder, what it runs on damage and on expiry, how a second application stacks, and the
+ * One lasting condition as content writes it: what it sets, changes, takes, and restores on
+ * its holder, what it runs on damage and on expiry, how a second application stacks, and the
  * icon it is drawn with. A status carries no duration; the applier gives one, so one
  * definition serves a short stun and a long one. Every table on it names its orb, and the
  * entry on the holder snapshots the three orb levels at application.
@@ -83,6 +92,7 @@ export type StatusDef = Readonly<{
   flags: readonly StatusFlag[];
   modifiers: readonly StatusModifierDef[];
   damageOverTime: DamageOverTimeDef | null;
+  healOverTime: HealOverTimeDef | null;
   onDamageTaken: StatusHookDef | null;
   onDamageDealt: StatusHookDef | null;
   onExpiry: readonly EffectDef[];

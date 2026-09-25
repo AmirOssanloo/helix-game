@@ -20,6 +20,7 @@ export const slowDef = {
     },
   ],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

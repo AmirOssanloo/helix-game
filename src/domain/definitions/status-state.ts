@@ -28,6 +28,12 @@ export type StatusDamageRecord = Readonly<{
   byLevel: readonly number[];
 }>;
 
+/** The health a status restores every tick, one entry per orb level, converted from the definition's per-second table. */
+export type StatusHealRecord = Readonly<{
+  orbIndex: number;
+  byLevel: readonly number[];
+}>;
+
 /**
  * One damage hook as run scope holds it: the list the runner runs, and the internal cooldown
  * in ticks, one entry per orb level, converted from the definition's seconds.
@@ -40,7 +46,8 @@ export type StatusHookRecord = Readonly<{
 
 /**
  * One status as run scope holds it: the definition as content wrote it, its modifier tables
- * with the orb each names resolved to an index, its damage over time in health per tick, and
+ * with the orb each names resolved to an index, its damage and heal over time in health per
+ * tick, and
  * its two damage hooks with their cooldowns in ticks. This is the one conversion for a status,
  * run once per status when a world is created, so no system ever multiplies by the tick rate
  * or searches the orb list.
@@ -49,6 +56,7 @@ export type StatusRecord = Readonly<{
   def: StatusDef;
   modifiers: readonly StatusModifierRecord[];
   damageOverTime: StatusDamageRecord | null;
+  healOverTime: StatusHealRecord | null;
   onDamageTaken: StatusHookRecord | null;
   onDamageDealt: StatusHookRecord | null;
 }>;
@@ -110,6 +118,28 @@ const createDamageRecord = (
   };
 };
 
+const createHealRecord = (
+  def: StatusDef,
+  simHz: number,
+): StatusHealRecord | null => {
+  const heal = def.healOverTime;
+
+  if (heal === null) {
+    return null;
+  }
+
+  const byLevel: number[] = [];
+
+  for (let index = 0; index < heal.perSecond.byLevel.length; index += 1) {
+    byLevel.push((heal.perSecond.byLevel[index] ?? 0) / simHz);
+  }
+
+  return {
+    orbIndex: ORB_IDS.indexOf(heal.perSecond.orb),
+    byLevel,
+  };
+};
+
 const createHookRecord = (
   hook: StatusHookDef | null,
   simHz: number,
@@ -141,6 +171,7 @@ export const createStatusRecord = (
   def,
   modifiers: createModifierRecords(def),
   damageOverTime: createDamageRecord(def, simHz),
+  healOverTime: createHealRecord(def, simHz),
   onDamageTaken: createHookRecord(def.onDamageTaken, simHz),
   onDamageDealt: createHookRecord(def.onDamageDealt, simHz),
 });

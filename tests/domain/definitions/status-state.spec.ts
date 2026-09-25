@@ -32,16 +32,23 @@ const burn = makeStatusDef.build({
   },
 });
 
-const table = createStatusTable([slow, burn], tuning);
+const mend = makeStatusDef.build({
+  healOverTime: {
+    perSecond: { orb: "quartz", byLevel: BY_LEVEL.map(() => PER_SECOND) },
+  },
+});
+
+const table = createStatusTable([slow, burn, mend], tuning);
 
 describe("createStatusTable", () => {
   it("holds every status by id", () => {
-    expect([...table.keys()]).toEqual([slow.id, burn.id]);
+    expect([...table.keys()]).toEqual([slow.id, burn.id, mend.id]);
   });
 
   it("resolves the orb each table names to its index in orb order", () => {
     expect(table.get(slow.id)?.modifiers[0]?.orbIndex).toBe(1);
     expect(table.get(burn.id)?.damageOverTime?.orbIndex).toBe(2);
+    expect(table.get(mend.id)?.healOverTime?.orbIndex).toBe(0);
   });
 
   it("reads a per-second rate as health per tick", () => {
@@ -50,8 +57,18 @@ describe("createStatusTable", () => {
     );
   });
 
+  it("reads a per-second heal as health per tick", () => {
+    expect(table.get(mend.id)?.healOverTime?.byLevel[0]).toBeCloseTo(
+      PER_SECOND / tuningTable.sim_hz,
+    );
+  });
+
   it("holds no damage record for a status that takes none", () => {
     expect(table.get(slow.id)?.damageOverTime).toBeNull();
+  });
+
+  it("holds no heal record for a status that restores none", () => {
+    expect(table.get(burn.id)?.healOverTime).toBeNull();
   });
 });
 

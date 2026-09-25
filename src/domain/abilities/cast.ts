@@ -62,7 +62,19 @@ export const holdsAbility = (
     const record =
       definitionId === null ? undefined : world.run.units.get(definitionId);
 
-    return record !== undefined && record.def.abilities.includes(abilityId);
+    if (record === undefined) {
+      return false;
+    }
+
+    const entries = record.def.abilities;
+
+    for (let index = 0; index < entries.length; index += 1) {
+      if (entries[index]?.id === abilityId) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   const kit = resolveKit(form.def.kit);

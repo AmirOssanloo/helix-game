@@ -11,6 +11,7 @@ export const silenceDef = {
   flags: ["silenced"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

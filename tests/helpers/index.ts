@@ -32,6 +32,7 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
+export { always } from "./content/always";
 export { FEEDBACK_TIMINGS } from "./content/feedback-timings";
 export { FROST_VOLLEY } from "./content/frost-volley";
 export { makeAbilityDef } from "./content/make-ability-def";

@@ -5,6 +5,7 @@ import { applyStatus, remainingCooldownTicks } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  always,
   greyedSlots,
   makeAttackDef,
   makeEnemyDef,
@@ -50,7 +51,7 @@ const CURSER: EnemyDef = makeEnemyDef.build({
   health: 5000,
   aggroRadius: 700,
   leashRadius: 2000,
-  abilities: [silenceCurseDef.id],
+  abilities: [always(silenceCurseDef.id)],
   attack: makeAttackDef.build({
     range: 100,
     acquireRadius: 700,

@@ -23,3 +23,18 @@ export const regenerate = (
 
   resources.mana = clamp(resources.mana + stats.manaRegen, 0, stats.maxMana);
 };
+
+/**
+ * Restores `amount` health to a unit, held at its maximum: a status's heal over time. Health at
+ * zero stays there, for the same reason regeneration leaves it, so a unit emptied this tick is
+ * not lifted back before the death system takes it.
+ */
+export const restoreHealth = (
+  resources: Resources,
+  stats: Readonly<Stats>,
+  amount: number,
+): void => {
+  if (resources.health > 0) {
+    resources.health = clamp(resources.health + amount, 0, stats.maxHealth);
+  }
+};

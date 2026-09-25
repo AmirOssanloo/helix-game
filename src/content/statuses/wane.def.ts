@@ -20,6 +20,7 @@ export const waneDef = {
     },
   ],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

@@ -11,6 +11,7 @@ export const disarmDef = {
   flags: ["disarmed"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

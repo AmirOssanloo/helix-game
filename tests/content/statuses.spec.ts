@@ -5,8 +5,8 @@ import { ID_SHAPE, validateRegistry } from "@domain/public";
 /** The statuses as the registry holds them, typed as any status rather than as the literal each file writes. */
 const { statuses } = contentRegistry;
 
-/** The eight status kinds the status page names, the six spell-specific definitions the catalogue adds, and the two an archetype carries. */
-const STATUS_COUNT = 16;
+/** The eight status kinds the status page names, the six spell-specific definitions the catalogue adds, the two an archetype carries, and the one an enemy's self-heal applies. */
+const STATUS_COUNT = 17;
 
 /** The generic definitions every spell status is a variant of, which the panel and enemy abilities apply. */
 const GENERIC_STATUSES = [
@@ -26,7 +26,7 @@ const faultsOf = (id: string) =>
   );
 
 describe("the statuses", () => {
-  it("are the sixteen the catalogues name, each listed once", () => {
+  it("are the seventeen the catalogues name, each listed once", () => {
     const ids = statuses.map((status) => status.id);
 
     expect(statuses).toHaveLength(STATUS_COUNT);
@@ -151,6 +151,12 @@ describe("the catalogue's capabilities", () => {
       if (status.damageOverTime !== null) {
         expect(["quartz", "whorl", "ember"]).toContain(
           status.damageOverTime.perSecond.orb,
+        );
+      }
+
+      if (status.healOverTime !== null) {
+        expect(["quartz", "whorl", "ember"]).toContain(
+          status.healOverTime.perSecond.orb,
         );
       }
     }

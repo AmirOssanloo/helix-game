@@ -8,8 +8,25 @@ export type EnemyTier = "normal" | "elite" | "boss";
 export const ENEMY_TIERS: readonly EnemyTier[] = ["normal", "elite", "boss"];
 
 /**
+ * When the selection rule may choose an entry: always, only while the caster's health is below
+ * a fraction of its maximum, or only while its target stands within a distance of it, centre to
+ * centre. The cast pipeline never reads a condition; it is the behaviour's choice.
+ */
+export type AbilityConditionDef =
+  | Readonly<{ kind: "always" }>
+  | Readonly<{ kind: "health_below"; fraction: number }>
+  | Readonly<{ kind: "target_within"; distance: number }>;
+
+/** One ability an enemy or summon definition lists, by id, and when its behaviour may choose it. */
+export type EnemyAbilityEntryDef = Readonly<{
+  id: string;
+  condition: AbilityConditionDef;
+}>;
+
+/**
  * One archetype as content writes it: every number a unit of it starts with, in the
- * designer's units, the abilities it may cast and the statuses it carries by id, and the
+ * designer's units, the abilities it may cast, each with the condition it is chosen under,
+ * and the statuses it carries by id, and the
  * behaviour that drives it by key. A field an archetype does not use holds its neutral value
  * rather than being left out, so a spell that burns mana or fires at range always finds a
  * number. Regeneration is
@@ -35,7 +52,8 @@ export type EnemyDef = Readonly<{
   /** Whether damage leaves a unit of it at one health instead of killing it: the training dummy takes and shows every hit and never dies. */
   indestructible: boolean;
   tier: EnemyTier;
-  abilities: readonly string[];
+  /** What it may cast, in the order the selection rule tries them. */
+  abilities: readonly EnemyAbilityEntryDef[];
   /**
    * The statuses a unit of it holds from spawn until it dies, by id: what it does on every
    * hit it deals or takes, such as a bash. At most two, and none raises a flag.

@@ -164,6 +164,7 @@ describe("definitionFieldUnit", () => {
     ["healthRegen", "units_per_second"],
     ["conversions.manaRegenPerIntelligence", "units_per_second"],
     ["damageOverTime.perSecond.byLevel", "units_per_second"],
+    ["healOverTime.perSecond.byLevel", "units_per_second"],
     ["movementSpeed", "units_per_second"],
     ["attack.projectileSpeed", "units_per_second"],
     ["effects.1.motion.speed", "units_per_second"],
@@ -172,6 +173,8 @@ describe("definitionFieldUnit", () => {
     ["baseStats.attackSpeed", "as_written"],
     ["conversions.attackSpeedPerAgility", "as_written"],
     ["range", "as_written"],
+    ["abilities.0.condition.fraction", "as_written"],
+    ["abilities.0.condition.distance", "as_written"],
   ] as const)("reads %s as %s", (path, unit) => {
     expect(definitionFieldUnit(path)).toBe(unit);
   });

@@ -9,6 +9,7 @@ import { knockbackDef } from "./knockback.def";
 import { liftDef } from "./lift.def";
 import { quickenDef } from "./quicken.def";
 import { rootDef } from "./root.def";
+import { selfHealDef } from "./self-heal.def";
 import { silenceDef } from "./silence.def";
 import { slowDef } from "./slow.def";
 import { stunDef } from "./stun.def";
@@ -34,4 +35,5 @@ export const statuses = [
   liftDef,
   bashDef,
   frostAttackDef,
+  selfHealDef,
 ] as const satisfies readonly StatusDef[];

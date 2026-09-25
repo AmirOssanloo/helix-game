@@ -45,7 +45,7 @@ Every archetype carries the same fields, the ones the [enemies page](../features
 | Experience | What the hero gains when it dies, against the level table in [section 4](#4-experience-against-the-level-table) |
 | Indestructible | Whether damage leaves it at one health. Only the dummy |
 | Tier | Normal for every archetype here. Elite and boss are what a spawn asks for, and multiply as the [enemies page](../features/enemies.md#tiers) says |
-| Abilities · behaviour | Ability ids, empty for every archetype here; the behaviour by key |
+| Abilities · behaviour | Ability ids, each with the condition it is chosen under, empty for every archetype here; the behaviour by key |
 | Statuses | Status ids the archetype carries from spawn until it dies, such as a bash; empty for every archetype here |
 | Frame · tint | The atlas frame the body is drawn with, and its colour. The attack's projectile carries the same tint |
 
@@ -253,7 +253,7 @@ The archetypes beyond these four: composed from the behaviours above and the ene
 
 ### 7.1 How a roster entry reads
 
-An entry carries every field in [section 2.1](#21-the-fields) and reads as the entries in section 3 do, with four rows more: its role in one line, its ability list by key, the tiers it may spawn at, and the abilities an elite and a boss of it add. Every number is set against the hero in [section 2.2](#22-the-hero-they-are-set-against), and against the four archetypes above.
+An entry carries every field in [section 2.1](#21-the-fields) and reads as the entries in section 3 do, with four rows more: its role in one line, its ability list by key, with the condition each is chosen under, the tiers it may spawn at, and the abilities an elite and a boss of it add. Every number is set against the hero in [section 2.2](#22-the-hero-they-are-set-against), and against the four archetypes above.
 
 ### 7.2 The roster at a glance
 

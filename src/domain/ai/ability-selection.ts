@@ -1,8 +1,9 @@
 import type { EntityId, Vec2 } from "@shared/public";
-import { isInCastRange, requestCast } from "../abilities/cast";
+import { isInCastRange, requestCast, resourcesOf } from "../abilities/cast";
 import { isCooldownReady } from "../abilities/cooldowns";
 import type { CastTarget } from "../commands/command";
 import type { TargetingKind } from "../definitions/ability-def";
+import type { AbilityConditionDef } from "../definitions/enemy-def";
 import type { UnitRecord } from "../definitions/unit-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -55,6 +56,37 @@ const aimAt = (
 };
 
 /**
+ * Whether the entry's condition lets the unit choose it now: always; while its health is
+ * strictly below the fraction of its maximum; or while its target's centre stands within the
+ * distance of its own, measured as an area collects a unit, so a distance equal to a circle's
+ * radius holds exactly when the circle would reach the target.
+ */
+const meetsCondition = (
+  world: World,
+  unit: Unit,
+  target: Readonly<Unit>,
+  condition: AbilityConditionDef,
+): boolean => {
+  switch (condition.kind) {
+    case "always":
+      return true;
+
+    case "health_below":
+      return (
+        resourcesOf(world, unit).health <
+        condition.fraction * unit.stats.maxHealth
+      );
+
+    case "target_within": {
+      const dx = target.curr.x - unit.curr.x;
+      const dy = target.curr.y - unit.curr.y;
+
+      return dx * dx + dy * dy <= condition.distance * condition.distance;
+    }
+  }
+};
+
+/**
  * Whether the unit is holding a cast of its own: turning to, walking to, or in the cast point
  * of one. The machine leaves it to the cast pipeline until the commit or a cancel ends it, so
  * it never interrupts its own cast point; the backswing after the commit is the attack loop's
@@ -65,9 +97,9 @@ export const isCasting = (unit: Readonly<Unit>): boolean =>
 
 /**
  * The selection rule, run in Chase and Attack: the first ability the unit's definition lists
- * whose clock has run out, whose targeting kind the machine can aim at `target`, and which
- * reaches it from where the unit stands is requested through the cast pipeline, exactly as
- * the hero's cast is. Returns whether a cast was taken, which replaces the unit's order; when
+ * whose condition holds, whose clock has run out, whose targeting kind the machine can aim at
+ * `target`, and which reaches it from where the unit stands is requested through the cast
+ * pipeline, exactly as the hero's cast is. Returns whether a cast was taken, which replaces the unit's order; when
  * none is, or the pipeline refuses the one chosen, the unit fights on with its attack.
  * Nothing is chosen while a disable blocks abilities, or over an attack point already under
  * way, which a new order would cancel.
@@ -86,16 +118,22 @@ export const selectAbility = (
     return false;
   }
 
-  const abilities = record.def.abilities;
+  const entries = record.def.abilities;
 
-  for (let index = 0; index < abilities.length; index += 1) {
-    const abilityId = abilities[index];
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index];
     const ability =
-      abilityId === undefined ? undefined : world.run.spells.get(abilityId);
+      entry === undefined ? undefined : world.run.spells.get(entry.id);
 
-    if (abilityId === undefined || ability === undefined) {
+    if (
+      entry === undefined ||
+      ability === undefined ||
+      !meetsCondition(world, unit, target, entry.condition)
+    ) {
       continue;
     }
+
+    const abilityId = entry.id;
 
     const kind = ability.def.targeting;
     const aim = aimAt(kind, target, targetId);

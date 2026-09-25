@@ -25,7 +25,12 @@ import {
   PUSH_DIRECTIONS,
   ZONE_ANCHORS,
 } from "./effect-def";
-import type { EnemyDef, SummonDef } from "./enemy-def";
+import type {
+  AbilityConditionDef,
+  EnemyAbilityEntryDef,
+  EnemyDef,
+  SummonDef,
+} from "./enemy-def";
 import { ENEMY_TIERS } from "./enemy-def";
 import type {
   AttributeConversions,
@@ -60,6 +65,7 @@ import {
 import type { SpellDef } from "./spell-def";
 import type {
   DamageOverTimeDef,
+  HealOverTimeDef,
   StatusDef,
   StatusHookDef,
   StatusModifierDef,
@@ -115,6 +121,27 @@ const effectTargetSchema: Schema<EffectTargetDef> = taggedUnion<
     length: nonNegativeSchema,
   }),
 });
+
+const abilityConditionSchema: Schema<AbilityConditionDef> = taggedUnion<
+  "kind",
+  AbilityConditionDef
+>("kind", {
+  always: objectOf({ kind: oneOf(["always"]) }),
+  health_below: objectOf({
+    kind: oneOf(["health_below"]),
+    fraction: numberSchema,
+  }),
+  target_within: objectOf({
+    kind: oneOf(["target_within"]),
+    distance: numberSchema,
+  }),
+});
+
+const enemyAbilityEntrySchema: Schema<EnemyAbilityEntryDef> =
+  objectOf<EnemyAbilityEntryDef>({
+    id: idSchema,
+    condition: abilityConditionSchema,
+  });
 
 const bodySchema: Schema<BodyDef> = objectOf<BodyDef>({
   collisionRadius: nonNegativeSchema,
@@ -445,7 +472,7 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
     experience: nonNegativeSchema,
     indestructible: booleanSchema,
     tier: oneOf(ENEMY_TIERS),
-    abilities: arrayOf(idSchema),
+    abilities: arrayOf(enemyAbilityEntrySchema),
     statuses: arrayOf(idSchema),
     behaviour: idSchema,
     atlasFrame: stringSchema,
@@ -484,6 +511,9 @@ export const createLevelledSchemas = (levels: number): LevelledSchemas => {
           damageType: oneOf(DAMAGE_TYPES),
           perSecond: levelTableSchema,
         }),
+      ),
+      healOverTime: nullable(
+        objectOf<HealOverTimeDef>({ perSecond: levelTableSchema }),
       ),
       onDamageTaken: nullable(hookSchema),
       onDamageDealt: nullable(hookSchema),

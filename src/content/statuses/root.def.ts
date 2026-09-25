@@ -12,6 +12,7 @@ export const rootDef = {
   flags: ["rooted"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

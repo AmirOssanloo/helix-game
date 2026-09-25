@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Resources, Stats } from "@domain/public";
-import { regenerate } from "@domain/public";
+import { regenerate, restoreHealth } from "@domain/public";
 
 const stats = (overrides: Partial<Stats> = {}): Stats => ({
   maxHealth: 100,
@@ -52,5 +52,31 @@ describe("regenerate", () => {
     regenerate(resources, stats());
 
     expect(resources).toEqual({ health: 0, mana: 10.5 });
+  });
+});
+
+describe("restoreHealth", () => {
+  it("raises health by the amount and leaves mana alone", () => {
+    const resources: Resources = { health: 40, mana: 10 };
+
+    restoreHealth(resources, stats(), 5);
+
+    expect(resources).toEqual({ health: 45, mana: 10 });
+  });
+
+  it("holds health at its maximum", () => {
+    const resources: Resources = { health: 98, mana: 10 };
+
+    restoreHealth(resources, stats(), 5);
+
+    expect(resources.health).toBe(100);
+  });
+
+  it("leaves health at zero, so a unit emptied this tick still dies at its end", () => {
+    const resources: Resources = { health: 0, mana: 10 };
+
+    restoreHealth(resources, stats(), 5);
+
+    expect(resources.health).toBe(0);
   });
 });

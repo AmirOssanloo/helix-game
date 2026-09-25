@@ -5,6 +5,7 @@ import { applyStatus, remainingCooldownTicks } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  always,
   greyedSlots,
   makeAttackDef,
   makeEnemyDef,
@@ -44,7 +45,7 @@ const NETTER: EnemyDef = makeEnemyDef.build({
   health: 5000,
   aggroRadius: 800,
   leashRadius: 2000,
-  abilities: [rootNetDef.id],
+  abilities: [always(rootNetDef.id)],
   attack: makeAttackDef.build({
     range: 100,
     acquireRadius: 800,

@@ -5,7 +5,12 @@ import {
   enemies,
   tuningTable,
 } from "@content/public";
-import type { AbilityDef, RegistryFault, TargetingKind } from "@domain/public";
+import type {
+  AbilityDef,
+  EnemyDef,
+  RegistryFault,
+  TargetingKind,
+} from "@domain/public";
 import {
   createSpellTable,
   createTuningState,
@@ -13,6 +18,7 @@ import {
   validateRegistry,
 } from "@domain/public";
 import {
+  always,
   FROST_VOLLEY,
   makeAbilityDef,
   makeEnemyDef,
@@ -23,13 +29,16 @@ import {
 /** The content layer's abilities, read as the registry reads them. */
 const abilities: readonly AbilityDef[] = contentAbilities;
 
+/** The content layer's archetypes, read as the registry reads them. */
+const archetypes: readonly EnemyDef[] = enemies;
+
 /** The targeting kinds an enemy's behaviour can aim: its target, the point it stands on, or itself. */
 const SUPPLIED_KINDS: readonly TargetingKind[] = ["unit", "point", "none"];
 
 /** An enemy that casts the runbook's volley, for the registries below. */
 const FROST_ARCHER = makeEnemyDef.build({
   id: "frost_archer",
-  abilities: [FROST_VOLLEY.id],
+  abilities: [always(FROST_VOLLEY.id)],
 });
 
 const onlyFault = (faults: readonly RegistryFault[]): RegistryFault => {
@@ -72,9 +81,9 @@ describe("the enemy abilities", () => {
   it("name only abilities the registry holds, from every archetype", () => {
     const held = new Set(abilities.map((ability) => ability.id));
 
-    for (const def of enemies) {
-      for (const id of def.abilities) {
-        expect(held.has(id), `${def.id} names ${id}`).toBe(true);
+    for (const def of archetypes) {
+      for (const entry of def.abilities) {
+        expect(held.has(entry.id), `${def.id} names ${entry.id}`).toBe(true);
       }
     }
   });
@@ -168,7 +177,81 @@ describe("an enemy ability", () => {
     const fault = onlyFault(validateRegistry(registry));
 
     expect(fault.file).toBe("enemies/frost-archer.def.ts");
-    expect(fault.path).toBe("abilities[0]");
+    expect(fault.path).toBe("abilities[0].id");
+  });
+
+  it.each([0, 1, -0.5, 1.5, Number.NaN])(
+    "is refused when an entry's health fraction is %s, outside the open range from 0 to 1",
+    (fraction) => {
+      const registry = makeRegistry({
+        abilities: [FROST_VOLLEY],
+        enemies: [
+          makeEnemyDef.build({
+            id: "frost_archer",
+            abilities: [
+              {
+                id: FROST_VOLLEY.id,
+                condition: { kind: "health_below", fraction },
+              },
+            ],
+          }),
+        ],
+      });
+
+      const fault = onlyFault(validateRegistry(registry));
+
+      expect(fault.file).toBe("enemies/frost-archer.def.ts");
+      expect(fault.path).toBe("abilities[0].condition.fraction");
+    },
+  );
+
+  it.each([0, -100, Number.POSITIVE_INFINITY])(
+    "is refused when an entry's target distance is %s, not a distance greater than 0",
+    (distance) => {
+      const registry = makeRegistry({
+        abilities: [FROST_VOLLEY],
+        enemies: [
+          makeEnemyDef.build({
+            id: "frost_archer",
+            abilities: [
+              {
+                id: FROST_VOLLEY.id,
+                condition: { kind: "target_within", distance },
+              },
+            ],
+          }),
+        ],
+      });
+
+      const fault = onlyFault(validateRegistry(registry));
+
+      expect(fault.file).toBe("enemies/frost-archer.def.ts");
+      expect(fault.path).toBe("abilities[0].condition.distance");
+    },
+  );
+
+  it("passes an entry of each condition kind whose number can be met", () => {
+    const registry = makeRegistry({
+      abilities: [FROST_VOLLEY],
+      enemies: [
+        makeEnemyDef.build({
+          id: "frost_archer",
+          abilities: [
+            always(FROST_VOLLEY.id),
+            {
+              id: FROST_VOLLEY.id,
+              condition: { kind: "health_below", fraction: 0.5 },
+            },
+            {
+              id: FROST_VOLLEY.id,
+              condition: { kind: "target_within", distance: 250 },
+            },
+          ],
+        }),
+      ],
+    });
+
+    expect(validateRegistry(registry)).toEqual([]);
   });
 
   it("is held by run scope beside the spells, at the first level, with its seconds in ticks", () => {

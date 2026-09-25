@@ -33,7 +33,7 @@ Every archetype carries the same fields. A field an archetype does not use is se
 - Aggro radius, leash radius
 - Experience reward
 - Tier: normal, elite, or boss
-- An ability list, by name, which may be empty
+- An ability list, by name, each with the condition it is chosen under — always, below a fraction of the enemy's health, or with the hero within a distance — which may be empty
 - A list of the statuses it carries for its life, by name, which may be empty: at most two, none of them a disable
 - A behaviour, by name
 
@@ -74,7 +74,9 @@ Stun (a bash on hit), slow (a frost attack), silence (a caster's curse), root (a
 
 The bash and the frost attack are not cast. Each is a status the archetype carries from the moment it spawns until it dies, whose damage-dealt hook stuns or slows whatever its swing or shot lands on, at most once per the hook's internal cooldown. Its icon shows above the enemy for as long as it lives, so the player can tell a basher from a plain grunt. The curse is cast at the hero and silences it once its cast point ends. The net is thrown from the enemy at the hero, flies to it, and roots it where it lands.
 
-An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It takes the first ability its definition lists that is off cooldown, reaches the hero, and is aimed at the hero, at the ground the hero stands on, or at itself; an ability aimed along a line is never chosen. It chooses nothing while silenced or in its own attack point, and never interrupts its own cast point; a stun during the cast point cancels the cast, spends nothing, and starts no clock. After the cast it goes back to attacking.
+The arrow is loosed from the enemy at the hero, homes on it, and deals physical damage where it lands, so armour takes its share. The slam strikes a circle around the enemy, damaging every unit on the hero's side inside and pushing each one straight away from the enemy; a wall stops the push. It is cast only once the hero is inside the circle, and its long cast point is the tell. The self-heal is cast on the enemy itself only once its health is below a fraction of its maximum, and restores health for a few seconds, never past the maximum; a stun in its cast point cancels it. It is the only way an enemy regains health in a fight, since its regeneration runs only while it walks home.
+
+An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It takes the first ability its definition lists whose condition holds, that is off cooldown, reaches the hero, and is aimed at the hero, at the ground the hero stands on, or at itself; an ability aimed along a line is never chosen. It chooses nothing while silenced or in its own attack point, and never interrupts its own cast point; a stun during the cast point cancels the cast, spends nothing, and starts no clock. After the cast it goes back to attacking.
 
 ## Experience
 

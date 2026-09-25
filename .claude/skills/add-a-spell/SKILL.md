@@ -18,7 +18,7 @@ The steps are owned by the runbook [Adding a spell](../../../docs/workflows/addi
 - Content names effects by string key and imports domain types only. If the primitives cover the spell, add no named effect.
 - A named effect runs inside the tick: no allocation, no clock, every number from the cast's definition or the tuning table.
 - One simulation test per effect, at orb levels 1 and 7 where the ability scales, plus the refusals the runbook lists.
-- An enemy ability is the same shape without a recipe, under `src/content/abilities/`, listed in the enemy's `abilities`.
+- An enemy ability is the same shape without a recipe, under `src/content/abilities/`, listed in the enemy's `abilities` with the condition it is chosen under.
 
 ## Before reporting
 

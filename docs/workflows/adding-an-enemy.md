@@ -49,7 +49,9 @@ export const frostArcherDef = {
   leashRadius: 1400,
   experience: 60,
   behaviour: 'ranged_kiter',            // A key under src/domain/ai/behaviours/
-  abilities: ['frost_volley'],          // Keys of definitions under src/content/abilities/
+  abilities: [                          // Tried in order; each id a key of a definition under src/content/abilities/
+    { id: 'frost_volley', condition: { kind: 'always' } },  // Or 'health_below' with a fraction, 'target_within' with a distance
+  ],
   statuses: [],                         // Statuses it carries for life, such as 'bash'; at most two, none raising a flag
   atlasFrame: 'square',
   tint: 0x99ddff,
@@ -83,7 +85,7 @@ Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves th
 
 ## 4. Add its abilities
 
-An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The state machine's selection rule decides when to cast it, in Chase and Attack: the first listed ability that is off its clock, reaches the hero, and is aimed at a unit, a point, or nothing; the pipeline decides whether it may. A direction or a vector ability is never chosen, so an enemy's is aimed at one of the other three. A unit ability anchors on its target, so a projectile the enemy throws at the hero writes `origin: 'caster'` to leave from the enemy.
+An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The state machine's selection rule decides when to cast it, in Chase and Attack: the first listed entry whose condition holds, that is off its clock, reaches the hero, and is aimed at a unit, a point, or nothing; the pipeline decides whether it may. An entry's condition is `always`; `health_below` with a fraction strictly between 0 and 1, for a heal kept for when the enemy is hurt; or `target_within` with a distance, centre to centre, for an ability aimed at nothing that strikes around the enemy, whose range is zero and so would otherwise be cast from anywhere. The pipeline never reads a condition. A direction or a vector ability is never chosen, so an enemy's is aimed at one of the other three. A unit ability anchors on its target, so a projectile the enemy throws at the hero writes `origin: 'caster'` to leave from the enemy.
 
 Something the enemy does on every hit, a bash or a frost attack, is not an ability. It is a status under `src/content/statuses/` with a damage-dealt hook, listed in the enemy's `statuses`, and the spawn puts it on the unit for life.
 

@@ -12,6 +12,7 @@ export const makeStatusDef = defineFactory<StatusDef>((sequence) => ({
   flags: [],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

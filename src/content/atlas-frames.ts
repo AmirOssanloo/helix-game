@@ -109,6 +109,7 @@ const STATUS_ICON_GLYPHS: Readonly<Record<string, string>> = {
   lift: "L",
   quicken: "Q",
   root: "R",
+  self_heal: "E",
   silence: "S",
   slow: "O",
   stun: "T",

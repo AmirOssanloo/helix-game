@@ -5,6 +5,7 @@ import { applyStatus, remainingCooldownTicks } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  always,
   FROST_VOLLEY,
   makeAbilityDef,
   makeAttackDef,
@@ -87,7 +88,7 @@ const casterOf = (id: string, ids: readonly string[]): EnemyDef =>
     health: 5000,
     aggroRadius: AGGRO_RADIUS,
     leashRadius: LEASH_RADIUS,
-    abilities: ids,
+    abilities: ids.map(always),
     attack: makeAttackDef.build({
       range: MELEE_RANGE,
       acquireRadius: AGGRO_RADIUS,

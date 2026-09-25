@@ -22,6 +22,7 @@ export const quickenDef = {
     },
   ],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

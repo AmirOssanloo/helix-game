@@ -6,6 +6,7 @@ import { dealDamage } from "../combat/damage";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
+import { activeFormOf } from "../entities/hero";
 import type { StatusEntry, Unit } from "../entities/unit";
 import { clearStatusEntry, STATUS_TABLE_SIZE } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -13,6 +14,7 @@ import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
 import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
+import { restoreHealth } from "../stats/regeneration";
 import { STATUS_NEVER_ENDS, writeStatus } from "./status-table";
 
 /** Why a status did not land: no status has the id, the unit is gone, dead, or out of reach, or every row of its table is taken. */
@@ -168,6 +170,31 @@ const takeDamageOverTime = (
   dealDamage(world, unitId, share, damage.damageType, entry.sourceId);
 };
 
+/**
+ * Restores this tick's share of the status's heal to the unit's pool: the hero's active form's,
+ * or the unit's own.
+ */
+const restoreHealthOverTime = (
+  world: World,
+  unit: Unit,
+  record: StatusRecord,
+  entry: Readonly<StatusEntry>,
+): void => {
+  const heal = record.healOverTime;
+
+  if (heal === null) {
+    return;
+  }
+
+  const form = activeFormOf(world, unit);
+
+  restoreHealth(
+    form === null ? unit.resources : form.resources,
+    unit.stats,
+    amountAtOrbLevel(heal, entry.orbLevels) * entry.stacks,
+  );
+};
+
 /** Keeps what the ended row's list needs, in the scratch slot `found`, before the row is emptied. */
 const rememberEnded = (found: number, entry: Readonly<StatusEntry>): void => {
   const levels = endedLevels[found];
@@ -187,7 +214,7 @@ const rememberEnded = (found: number, entry: Readonly<StatusEntry>): void => {
 /**
  * Reads one unit's status table: every row whose tick has come is remembered, emptied, and
  * announced, and every row still live raises the flags its definition sets, writes its
- * modifier rows, and takes its damage. The unit's flags and its status modifier rows are
+ * modifier rows, takes its damage, and restores its heal. The unit's flags and its status modifier rows are
  * rewritten from nothing each tick, so a status that ended takes everything it set with it on
  * the tick it ended.
  *
@@ -234,6 +261,7 @@ const readTable = (world: World, unit: Unit, unitId: EntityId): number => {
 
     installModifiers(unit, record, entry);
     takeDamageOverTime(world, unitId, record, entry);
+    restoreHealthOverTime(world, unit, record, entry);
   }
 
   return ended;

@@ -24,6 +24,7 @@ export const glacierChillDef = {
     damageType: "magical",
     perSecond: { orb: "ember", byLevel: [6, 12, 18, 24, 30, 36, 42] }, // tunable
   },
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

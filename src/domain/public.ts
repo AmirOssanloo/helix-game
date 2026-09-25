@@ -177,7 +177,9 @@ export {
   type ZoneMotionDef,
 } from "./definitions/effect-def";
 export {
+  type AbilityConditionDef,
   ENEMY_TIERS,
+  type EnemyAbilityEntryDef,
   type EnemyDef,
   type EnemyTier,
   type SummonDef,
@@ -226,6 +228,7 @@ export {
 export type { SpellDef } from "./definitions/spell-def";
 export {
   type DamageOverTimeDef,
+  type HealOverTimeDef,
   STACK_RULES,
   type StackRule,
   STATUS_FLAGS,
@@ -525,7 +528,7 @@ export {
   spendSkillPoint,
 } from "./stats/levels";
 export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
-export { regenerate } from "./stats/regeneration";
+export { regenerate, restoreHealth } from "./stats/regeneration";
 export { refreshStats, statsSystem } from "./stats/stats.system";
 export { applyLifetimeStatuses } from "./statuses/lifetime-statuses";
 export {

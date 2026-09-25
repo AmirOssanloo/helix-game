@@ -11,6 +11,7 @@ export const knockbackDef = {
   flags: ["displaced"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],

@@ -12,7 +12,7 @@ import {
   tuningSchema,
 } from "./definition-schemas";
 import type { EffectDef } from "./effect-def";
-import type { EnemyDef } from "./enemy-def";
+import type { EnemyAbilityEntryDef, EnemyDef } from "./enemy-def";
 import type { Registry } from "./registry";
 import type { Schema, SchemaFault } from "./schema";
 import type { StatusDef } from "./status-def";
@@ -136,6 +136,55 @@ const checkReference = (
       path,
       message: `"${id}" is not the id of any ${space.kind}`,
     });
+  }
+};
+
+/**
+ * One entry of an enemy's ability list: an id the registry holds, and a condition whose number
+ * can be met. A health fraction lies strictly between none and all of the maximum, since at
+ * either end the entry would always or never be chosen and should say so; a distance is more
+ * than nothing.
+ */
+const checkAbilityEntry = (
+  faults: RegistryFault[],
+  file: string,
+  path: string,
+  entry: EnemyAbilityEntryDef,
+  spaces: IdSpaces,
+): void => {
+  checkReference(faults, file, `${path}.id`, entry.id, spaces.abilities);
+
+  const condition = entry.condition;
+
+  switch (condition.kind) {
+    case "always":
+      return;
+
+    case "health_below":
+      if (
+        !Number.isFinite(condition.fraction) ||
+        condition.fraction <= 0 ||
+        condition.fraction >= 1
+      ) {
+        faults.push({
+          file,
+          path: `${path}.condition.fraction`,
+          message: `${String(condition.fraction)} is not a health fraction strictly between 0 and 1`,
+        });
+      }
+
+      return;
+
+    case "target_within":
+      if (!Number.isFinite(condition.distance) || condition.distance <= 0) {
+        faults.push({
+          file,
+          path: `${path}.condition.distance`,
+          message: `${String(condition.distance)} is not a distance greater than 0`,
+        });
+      }
+
+      return;
   }
 };
 
@@ -464,15 +513,15 @@ const checkUnitDef = (
   }
 
   for (let index = 0; index < def.abilities.length; index += 1) {
-    const id = def.abilities[index];
+    const entry = def.abilities[index];
 
-    if (id !== undefined) {
-      checkReference(
+    if (entry !== undefined) {
+      checkAbilityEntry(
         faults,
         file,
         `abilities[${String(index)}]`,
-        id,
-        spaces.abilities,
+        entry,
+        spaces,
       );
     }
   }

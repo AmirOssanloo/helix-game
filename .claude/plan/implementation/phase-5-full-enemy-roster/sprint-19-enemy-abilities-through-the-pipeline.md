@@ -66,10 +66,10 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 
 | Field | Value |
 | --- | --- |
-| Layer | content, tests |
+| Layer | content, domain, tests |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** `arrow` as a unit-targeted homing projectile with physical damage; `slam` as a self-centred `damage_area` circle with `displace('push')` outward; `self_heal` as a no-target self status restoring health over time, chosen only below a health fraction (a behaviour condition on the ability entry).
 
@@ -79,7 +79,9 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 **Tests:**
 - `tests/simulation/abilities/arrow.spec.ts`, `slam.spec.ts`, `self-heal.spec.ts`.
 
-**Definition of done:** Every change · A new spell, effect, or enemy ability.
+**Definition of done:** Every change · `src/domain` · A new spell, effect, or enemy ability.
+
+> **Note, 2026-09-25: the ticket needed domain, for an entry's condition and a status's heal.** An enemy's ability list held bare ids, so each entry becomes an id and a condition, `always`, `health_below`, or `target_within`, checked by the selection rule alone; the slam needs the third, since a no-target ability's range is zero and it would be cast from anywhere. An enemy's stats are written once at spawn and it regenerates only in Return, so a status restores health through a new `healOverTime` field rather than a `health_regen` modifier. Both were decided with the engineering architect and are Q41.
 
 ---
 
@@ -111,7 +113,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Check | Result |
 | --- | --- |
 | Nine abilities green; pipeline diff clean of caster-kind branches | |
-| Actual days per ticket | T01 0.3 · T02 0.4 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 0.4 · T03 0.4 · T04 |
 
 ## Risks in this sprint
 

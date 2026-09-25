@@ -12,6 +12,7 @@ export const bashDef = {
   flags: [],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: {
     cooldownSeconds: {

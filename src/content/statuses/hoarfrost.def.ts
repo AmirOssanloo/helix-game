@@ -12,6 +12,7 @@ export const hoarfrostDef = {
   flags: [],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: {
     cooldownSeconds: {
       orb: "quartz",

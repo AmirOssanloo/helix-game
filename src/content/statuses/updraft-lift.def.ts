@@ -12,6 +12,7 @@ export const updraftLiftDef = {
   flags: ["lifted", "stunned", "untargetable"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [

@@ -12,6 +12,7 @@ export const stunDef = {
   flags: ["stunned"],
   modifiers: [],
   damageOverTime: null,
+  healOverTime: null,
   onDamageTaken: null,
   onDamageDealt: null,
   onExpiry: [],
