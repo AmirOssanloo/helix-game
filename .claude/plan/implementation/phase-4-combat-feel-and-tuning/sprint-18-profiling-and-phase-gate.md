@@ -111,7 +111,7 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 | Layer | docs |
 | Size | 0.5 |
 | Depends on | T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** Read [Deferred](../backlog/deferred.md) and [Open questions](../backlog/open-questions.md); close what phase 4 answered; draft the disable matrix's row and column headings and the enemy catalogue's phase 5 section headings so sprint 19 starts on content, not on structure. Confirm the phase 5 sprints against the headroom table: if the margin on the worst browser's max tick is under 1 ms, `ENEMY_LIVE_CAP` is planned at the largest multiple of ten whose projected max tick, from the slope between the 100 and 200 rows, leaves 1 ms, and the ticket says so (Q9).
 
@@ -121,6 +121,15 @@ The same game, with numbers that say how much room phase 5 has. Milestone M7.
 **Tests:** none.
 
 **Definition of done:** Every change · A documentation change.
+
+**Note, 2026-09-25: the backlog reviewed, the headings drafted, the cap kept at 200.**
+
+- **The cap.** The worst tick at 200 enemies is 2.33 ms headless, 1.67 ms of margin, over the 1 ms the rule asks for, so `ENEMY_LIVE_CAP` stays 200 and the code is not touched; on the slope of 0.0036 ms an enemy the tick leaves 1 ms up to about 380. The rule reads the worst browser's max tick, which waits on a person and is deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, so the cap is written into the [phase 5 README](../phase-5-full-enemy-roster/README.md#live-cap-for-the-boss-encounter) as provisional, with the formula that lowers it if the browser figure is over 3 ms: the largest multiple of ten not above 200 + (3 − M) ÷ 0.0036. The phase 4 gate's box in STATUS.md now points there. Q9 is provisional at 200.
+- **The phase 5 sprints against the table.** They stand as written. The note under the cap names what the roster adds per tick against the margin, and that P5-S21-T04 resizes the event ring if the boss variant's heaviest tick passes 714 events.
+- **Deferred.** Eight rows of "Cut from a phase" were built by the sprint they waited on, and moved to a new table, "Cut and since built", with where each landed: content hot-reload, the `Readonly` cast ban, the replay loader, real enemy definitions for the stress test, Wane's aggro-drop test, a unit's own speed and turn rate, the melee attack, and the disable matrix's draft, which is this ticket. The rows waiting on sprint 19, a designer, or the phase 5 gate stand. The phase 5 gate's reference-laptop row named three deferred rows; it now names every row that waits on it, phases 1 to 4 and the benches.
+- **Open questions.** Q9 as above. Nothing phase 4 did settles another; three are brought up to date. Q23: the balance pass moved no radius, and the definition tuning surface reaches the form's three numbers with the same catch, since the hero copies them when it is made. Q26: the condition its alternative waited on is measured, the zone pass 0.02 ms of the tick, so the one door stands. Q31: the balance pass took up neither the push rule nor the cap, and its goals held with both. Q30 and Q32 to Q38 wait on the maintainer as they stood; Q24, Q25, and Q28 are not phase 4 matters.
+- **The headings.** The disable matrix's rows and columns are drafted under [P5-S20-T01](../phase-5-full-enemy-roster/sprint-20-the-disable-matrix.md), with the status definitions each row covers and the flags each raises, and three things for that ticket to settle. The enemy catalogue's long roster, [section 7](../../../../docs/product/specs/enemy-catalogue.md#7-the-long-roster), has five subsection headings with a sentence each, and P5-S21-T02 points to them.
+- **Definition of done.** Every change: `pnpm check` green, 162 files and 2863 tests with two todo, after a first run failed three timing cases under a load of 55 from another project's test run and passed once it fell below 8; no code changed, so no optional property, non-null assertion, or ticket reference is added. A documentation change: the catalogue's new subsections follow the documentation standards, present tense and real names on a product page, and the link test passes.
 
 ---
 
@@ -178,8 +187,8 @@ Unplanned, found while T03 measured the headroom table.
 | Check | Result |
 | --- | --- |
 | Headroom table complete, per browser | Headless, yes: every row an agent can measure has a margin in the [phase README](./README.md#headroom-table), none negative, the tick at 200 and at 100 enemies (T03). Per browser, waiting on a person: frame rate, sync, render, draw calls, the sampler over sync, and Safari's WebGL on the reference laptop, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24 |
-| Milestone M7 | |
-| Actual days per ticket | T01 0.4 · T02 0.3 · T03 0.4 · T04 · T05 0.05 (unplanned) · T06 0.05 (unplanned) |
+| Milestone M7 | Reached 2026-09-25 on what an agent can verify: a designer's retune of three random keys by command with no code change, read on the next use and held in the log, and the headroom table recorded with no margin negative. Retuning from the panel by hand and the table's browser rows are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24 |
+| Actual days per ticket | T01 0.4 · T02 0.3 · T03 0.4 · T04 0.2 · T05 0.05 (unplanned) · T06 0.05 (unplanned). Sized 4.1, 4 planned and 0.1 unplanned, done in 1.4 |
 
 ### Phase 4 gate walk
 

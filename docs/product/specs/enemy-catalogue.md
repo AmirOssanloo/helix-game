@@ -250,6 +250,26 @@ Frames the archetypes draw with. Every name is in the frame list under `src/cont
 
 The archetypes beyond these four: composed from the behaviours above and the enemy abilities the [enemies page](../features/enemies.md#enemy-abilities) lists, each with its role, its numbers, its frame and colour, the tiers it may spawn at, and the abilities an elite or a boss of it adds. Until this section holds an entry, the four above and the dummy are the whole roster.
 
+### 7.1 How a roster entry reads
+
+An entry carries every field in [section 2.1](#21-the-fields) and reads as the entries in section 3 do, with four rows more: its role in one line, its ability list by key, the tiers it may spawn at, and the abilities an elite and a boss of it add. Every number is set against the hero in [section 2.2](#22-the-hero-they-are-set-against), and against the four archetypes above.
+
+### 7.2 The roster at a glance
+
+One table in the shape of section 3's, with three columns more: abilities, tiers, and the elite and boss picks.
+
+### 7.3 The entries
+
+One subsection per archetype, in the order of the table, each a table of its fields with the reason for each value.
+
+### 7.4 Experience across the roster
+
+What each archetype is worth against a grunt's 46, and what a mixed pack of the roster is worth against the level table, as [section 4](#4-experience-against-the-level-table) does for the four.
+
+### 7.5 Frames the roster adds
+
+Every frame an entry names that [section 6](#6-atlas-frames) does not hold yet, and whether the atlas has it.
+
 ---
 
 ## Related documentation

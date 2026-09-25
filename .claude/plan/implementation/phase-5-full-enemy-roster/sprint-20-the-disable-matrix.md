@@ -32,6 +32,21 @@ Get silenced with the cursor open and watch it close. Get rooted mid-walk and st
 
 **Definition of done:** Every change · A documentation change.
 
+**Headings drafted, 2026-09-25, by P4-S18-T04.** The table's rows and columns, so this ticket starts on the cells. They are the status page's table and its disable-matrix paragraph read against the definitions under `src/content/statuses/` as they stand; the page itself is written by this ticket.
+
+| Status | Definitions it covers | Flags raised | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Cast point in progress | Targeting cursor open |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Stun | `stun` | `stunned` | | | | | | | | | | | | |
+| Silence | `silence` | `silenced` | | | | | | | | | | | | |
+| Root | `root` | `rooted` | | | | | | | | | | | | |
+| Disarm | `disarm` | `disarmed` | | | | | | | | | | | | |
+| Slow | `slow`, `glacier_chill`, `wane_chill` | none | | | | | | | | | | | | |
+| Damage over time | `burn`, `glacier_chill` | none | | | | | | | | | | | | |
+| Knockback | `knockback` | `displaced` | | | | | | | | | | | | |
+| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | | | | | | | | | | | | |
+
+Each cell is one of refused, allowed, cancelled, closed, or continues. Three things for this ticket to settle, none of them structure: whether `wane`, which raises `aggro_hidden`, `quicken`, which raises nothing, and `hoarfrost`, whose hook applies `stun` and so reaches the stun row, get rows of their own, since none blocks a key by itself and the ticket's list leaves them out; whether the slow and damage-over-time rows, which raise no flag, are written out in full or as one "allowed everywhere" line; and that lift raises `stunned`, so its row must at least match stun's. The status ids are read from the definition files; check them there before T02 writes the constant.
+
 ---
 
 ### P5-S20-T02 — The matrix as data and the validator reading it

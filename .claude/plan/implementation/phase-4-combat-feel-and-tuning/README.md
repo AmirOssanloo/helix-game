@@ -52,9 +52,15 @@ No margin measured is negative. The lowest is the tick at 100 enemies on its sin
 
 ## Exit record
 
+Closed 2026-09-25 on the rows an agent can verify. The by-hand half of two rows and the browser half of the bar are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24: the retune from the panel, hot reload and the version refusal in a browser, four browsers on the reference laptop, and the bench.
+
 | Row | Result | Recorded by |
 | --- | --- | --- |
 | Gate rows | Walked 2026-09-25; the evidence per row is in the [sprint 18 gate walk](./sprint-18-profiling-and-phase-gate.md#phase-4-gate-walk). Every row holds on what an agent can verify. The by-hand half of two rows, the retune from the panel and hot reload with the version refusal in a browser, and the browser half of the bar are deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24, as open boxes in STATUS.md and a row of [Deferred](../backlog/deferred.md). One gate bug: the event ring's margin, fixed as P4-S18-T06 | the engineer running the plan |
 | Headroom table (budget, measured, margin per row) | [Above](#headroom-table). Every row an agent can measure has a margin and none is negative; the tick at 200 enemies has 1.67 ms on its highest reading. Frame rate, sync, render, draw calls, and the bench per browser wait on a person | the engineer running the plan |
-| Sized versus actual | Filled when P4-S18-T04, the sprint's last ticket, closes the sprint and the phase | |
-| Largest miss | As above | |
+| Sized versus actual | Sized 12.1 days: 12 planned and 0.1 unplanned (P4-S18-T05 0.05, P4-S18-T06 0.05). Actual 4.2: sprint 16 took 1.4 against 4, sprint 17 1.4 against 4, and sprint 18 1.4 against 4.1. Ratio 0.35. Across phases 1 to 4, 51.0 actual against 82.2 sized, 0.62, well under the 1.3 that would re-cut phase 5 | the engineer running the plan |
+| Largest miss | No ticket went over its size. The widest was P4-S18-T01, the profile in four browsers, sized 2 and done in 0.4: the tick half ran headless and found one boxing site, and the four browsers it was sized for are deferred. Next, P4-S16-T02, death handling and the colours, sized 1.5 and done in 0.4. The phase's one real miss is not days but a number: T02 sized the event ring on a heaviest tick of 430 events and T03's measurement found 714, fixed as T06. The only unplanned work was 0.1 days | the engineer running the plan |
+
+| Phase | Sized | Actual | Ratio | Largest miss |
+| --- | --- | --- | --- | --- |
+| 4 | 12.1 | 4.2 | 0.35 | P4-S18-T01: sized 2, actual 0.4 |

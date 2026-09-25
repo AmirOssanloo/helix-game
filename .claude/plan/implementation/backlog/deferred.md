@@ -1,6 +1,6 @@
 # Deferred
 
-**Written:** 2026-09-20 · **Kept current by:** whoever cuts something
+**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close · **Kept current by:** whoever cuts something
 
 Everything the plan deliberately leaves out, with the phase it was cut from and the door it waits behind. A missing capability that is a decision reads differently from one that is an oversight; this page is what makes the difference visible.
 
@@ -12,17 +12,9 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 
 | Item | Cut from | Waits on | Why |
 | --- | --- | --- | --- |
-| Content hot-reload | Phase 0, sprint 00 | Sprint 17 | A convenience with a replay-validity cost; built once the version stamp exists to refuse a cross-version replay |
-| The `Readonly` cast ban, if its lint selector runs over | Sprint 00 | Sprint 01 | The rule is load-bearing; the sprint is not. Move the ticket, not the rule |
-| Replay loader and determinism test | Sprint 01 | Sprint 06 | Recording is in sprint 01; replaying proves nothing until there is a session worth replaying |
-| Real enemy definitions for the stress test | Sprint 06 | Sprint 12 | A generic unit with random orders is enough to load movement, push-out, and pathing |
-| Wane's aggro-drop behaviour test | Sprint 10 | Sprint 12 | The flag is set and tested in phase 2; the behaviour that reads it needs the AI module |
 | Enemy summon adds at the live cap | Sprint 16 | Sprint 19 | A pending test in `tests/simulation/enemies/edges.spec.ts`; real when summon adds exist |
 | Damage-number crit styling | Sprint 16 | No crit exists | Colour per type is enough for the balance pass |
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
-| The disable matrix's draft | Sprint 18 | Sprint 20 | Only the headings are drafted early so sprint 20 starts on content |
-| A unit's own movement speed and turn rate | Sprint 09 | Sprint 12, as P3-S12-T05 | The movement system reads the two tunables for every unit; a definition's `movementSpeed` and `turnRate` are written by content and read by nothing. The summon follows at the hero's base speed, which is enough for it; the AI module is where enemies of different speeds first matter |
-| A melee attack | Sprint 09 | Sprint 12 | Every attack fires a homing projectile, since the hero's and the summon's both do. An archetype with a projectile speed of nothing would fire one that never arrives; the rule refuses to pretend otherwise, and the melee branch is written with the first melee archetype |
 | The bar on the reference laptop for phase 1: four browsers at 300 units, the 30-second allocation sampler, and the stress test there | Phase 1 gate | The phase 5 gate, sprint 22 | The maintainer has no access to the reference laptop until then, 2026-09-23. The bar holds in Chrome on the Apple M1 laptop, recorded in the sprint 06 gate walk; phase 1 closed on that with this row carried |
 | The bar on the reference laptop for phase 2: four browsers with twenty zones live, the 30-second allocation sampler, and both stress tests there | Phase 2 gate | The phase 5 gate, sprint 22 | The same, 2026-09-23. The bar holds in Chrome on the Apple M1 laptop, recorded in the sprint 11 gate walk; phase 2 closed on that with this row carried |
 | What the isometric view needs once art is tall: sorting by screen position inside the units and obstacles bands, obstacles split per tile so they hide the right things, picking a unit by its sprite, walls that fade near the hero, and sprites drawn in eight or sixteen directions | Sprint 23 | Sprite art, beyond phase 5 | While the art is flat geometry nothing is tall, so the fixed depth bands hold. ADR 0006 names what changes when it is not |
@@ -31,6 +23,23 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Milestone M1's numbers on the reference laptop: `pnpm bench` in Chrome and Safari, as configured and with `?textures=default` | Sprint 02 | The phase 5 gate, sprint 22 | The same, 2026-09-23. The bench holds on the Apple M1 laptop in Chrome in every run recorded since sprint 02 |
 | The phase 3 gate's browser rows: two hundred spawned from the panel and fought for 60 seconds in Chrome, Firefox, Safari, and Edge on the reference laptop, every readout of the bar per browser at two hundred enemies and a hundred projectiles; and the render benchmark at the phase 3 close, `pnpm bench` in Chrome, the four figures | Phase 3 gate, sprint 15 | The phase 5 gate, sprint 22 | The maintainer deferred every validation by a person until phase 5 is done, 2026-09-24. The rows hold headless: the stress spec at two hundred chasing and a hundred projectiles, the tick at 0.5 ms mean in the bundle, sync at 0.77 ms with 201 bound, and the gate session replaying identically; recorded in the sprint 15 gate walk |
 | The phase 4 gate's browser and by-hand rows: every readout of the bar per browser in Chrome, Firefox, Safari, and Edge on the reference laptop at two hundred enemies, twenty zones, and a hundred projectiles, written into the headroom table's frame rate, sync, render, and draw-call rows with their margins; the render benchmark at the phase 4 close; three random keys retuned from the panel by hand; and content hot-reload and the version refusal by hand | Phase 4 gate, sprint 18 | The phase 5 gate, sprint 22 | The maintainer deferred every validation by a person until phase 5 is done, 2026-09-24. The rows hold headless and by test, recorded in the sprint 18 gate walk: the tick at 200 enemies 2.33 ms worst with 1.67 ms of margin, pool misses and overwrites zero, heap flat |
+
+---
+
+## Cut and since built
+
+A row of the table above moves here when the sprint it waited on builds it, with where it landed.
+
+| Item | Cut from | Built in |
+| --- | --- | --- |
+| Content hot-reload | Phase 0, sprint 00 | Sprint 17, P4-S17-T02, with the version refusal in P4-S17-T03 |
+| The `Readonly` cast ban, if its lint selector runs over | Sprint 00 | The lint rule `no-world-view-cast` under `eslint/rules/` |
+| Replay loader and determinism test | Sprint 01 | Sprint 06; `tests/simulation/replay-determinism.spec.ts` |
+| Real enemy definitions for the stress test | Sprint 06 | Sprint 12; the stress test spawns grunt and runner packs |
+| Wane's aggro-drop behaviour test | Sprint 10 | Sprint 12; `tests/simulation/ai/transitions.spec.ts` reads `aggro_hidden` |
+| The disable matrix's draft | Sprint 18 | P4-S18-T04: the row and column headings are in the P5-S20-T01 ticket; the cells are that ticket's |
+| A unit's own movement speed and turn rate | Sprint 09 | P3-S12-T05 |
+| A melee attack | Sprint 09 | Sprint 12; `src/domain/attack/attack.ts` lands an attack with no projectile at the end of its attack point |
 
 ---
 

@@ -22,7 +22,9 @@ Written in at the end of phase 4 from the headroom table, read on the worst brow
 
 | Decided cap | Recorded by |
 | --- | --- |
-| | |
+| **200**, `ENEMY_LIVE_CAP` as it stands in `src/domain/entities/unit.ts`, the boss and its adds inside it. Read on the [phase 4 headroom table](../phase-4-combat-feel-and-tuning/README.md#headroom-table), 2026-09-25: the worst tick at 200 enemies is 2.33 ms on its highest quiet reading, a margin of 1.67 ms against the 4 ms budget, over the 1 ms the rule asks for, so the cap is not lowered. Projected on the worst-tick slope of 0.0036 ms an enemy, the tick leaves 1 ms up to about 380 enemies. Provisional: the reading is headless in V8, and the worst browser's max tick waits on a person on the reference laptop, deferred until phase 5 is done by the maintainer's standing instruction of 2026-09-24. When it is read, the rule applies to it as written: if the worst browser's max tick at 200, M, is over 3 ms, the cap is the largest multiple of ten not above 200 + (3 − M) ÷ 0.0036, P5-S21-T04's stress variant is run at that number, and this row is rewritten. See [Q9](../backlog/open-questions.md) | the engineer running the plan, P4-S18-T04 |
+
+**The sprints against the table.** Sprints 19 to 22 stand as written. The boss encounter and the phase 5 gate row "alongside 200 enemies" both run at the cap above. What the roster adds per tick is ability selection in Chase and Attack, casts through the pipeline, and statuses on the hero, against 1.67 ms of worst-tick margin; P5-S21-T04's stress variant measures it before the gate. The event ring holds twenty-two of phase 4's heaviest ticks, so an enemy cast's events have room; if the boss variant's heaviest tick announces more than 714 events, the ring is resized in that ticket.
 
 ## What the engineer can do at the end
 

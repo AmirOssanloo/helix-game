@@ -46,6 +46,8 @@ A boss and its adds among two hundred grunts, fought with the full kit, within t
 
 **Build:** The enemy catalogue's phase 5 section: a long roster (twelve to sixteen archetypes) composed from the three existing behaviours, the two new ones next ticket, and the nine abilities, each with a role in one line, its numbers, its colour and frame, its tier eligibility, and its elite and boss ability picks. One definition file per archetype, registered, each with the six standard tests from the adding-an-enemy runbook plus one per ability effect.
 
+> **Note, 2026-09-25:** the section's headings are drafted, by P4-S18-T04: [section 7 of the enemy catalogue](../../../../docs/product/specs/enemy-catalogue.md#7-the-long-roster) holds how an entry reads, the table at a glance, the entries, experience across the roster, and the frames the roster adds, each with one sentence saying what goes there. This ticket writes the content under them.
+
 **Acceptance:**
 - `ls src/content/enemies/` matches the catalogue; every archetype's six tests are green; the dropdown lists them all.
 
