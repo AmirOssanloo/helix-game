@@ -19,7 +19,7 @@ const qwe = makeSpellDef.build({ recipe: ["quartz", "whorl", "ember"] });
 const wee = makeSpellDef.build({ recipe: ["whorl", "ember", "ember"] });
 const eee = makeSpellDef.build({ recipe: ["ember", "ember", "ember"] });
 
-const spells = createSpellTable([qqw, qwe, wee, eee], tuning);
+const spells = createSpellTable([qqw, qwe, wee, eee], [], tuning);
 const abilities = [qqw.id, qwe.id, wee.id, eee.id];
 
 /** A full buffer holding `orbs`, oldest first. */
@@ -64,7 +64,7 @@ describe("composeSpell", () => {
       composeSpell(
         holding([QUARTZ, WHORL, EMBER]),
         [ewq.id],
-        createSpellTable([ewq], tuning),
+        createSpellTable([ewq], [], tuning),
       ),
     ).toBe(ewq.id);
   });

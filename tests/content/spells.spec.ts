@@ -111,7 +111,7 @@ const tablesOf = (
 };
 
 /** Every spell as run scope holds it, with its seconds converted to ticks under the real tuning table. */
-const records = createSpellTable(spells, createTuningState(tuningTable));
+const records = createSpellTable(spells, [], createTuningState(tuningTable));
 
 /** The levels a spell is cast at, one to the orb cap. */
 const everyLevel: readonly number[] = Array.from(

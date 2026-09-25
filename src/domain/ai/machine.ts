@@ -15,6 +15,7 @@ import {
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
 import { regenerate } from "../stats/regeneration";
+import { isCasting, selectAbility } from "./ability-selection";
 import type { MachineBehaviour } from "./behaviour";
 import { resolveBehaviour } from "./behaviours/index";
 
@@ -148,9 +149,10 @@ const enterAttack = (unit: Unit, heroId: EntityId): void => {
 };
 
 /**
- * One tick of Chase: a lost hero, a hidden one, or a leash passed sends the unit home; a hero
- * in reach turns it to Attack; otherwise, at most once a re-path interval, it walks to where
- * its behaviour wants to stand. A dead hero is chased to the point it will stand up at.
+ * One tick of Chase: a lost hero, a hidden one, or a leash passed sends the unit home; a cast
+ * of its own under way is left to run; an ability the selection rule takes is cast; a hero in
+ * reach turns it to Attack; otherwise, at most once a re-path interval, it walks to where its
+ * behaviour wants to stand. A dead hero is chased to the point it will stand up at.
  */
 const chase = (
   world: World,
@@ -171,6 +173,14 @@ const chase = (
   if (!isDead && hero.disables.aggroHidden) {
     enterReturn(world, unit);
 
+    return;
+  }
+
+  if (isCasting(unit)) {
+    return;
+  }
+
+  if (!isDead && selectAbility(world, unit, record, hero, heroId)) {
     return;
   }
 
@@ -216,8 +226,10 @@ const enterChase = (
  * One tick of Attack: a lost hero or a leash passed sends the unit home, cancelling the point
  * under way; a dead hero turns it back to Chase. A hidden hero sends it home too, unless it is
  * adjacent, a melee attacker in reach, which swings on; an archer firing from range drops the
- * hero with the rest, and an arrow already in the air lands. In reach it keeps the hero as its
- * attack target; out of reach it keeps an attack point it has begun, and chases otherwise.
+ * hero with the rest, and an arrow already in the air lands. A cast of its own under way is
+ * left to run, and an ability the selection rule takes on a hero it can see is cast. In reach
+ * it keeps the hero as its attack target; out of reach it keeps an attack point it has begun,
+ * and chases otherwise.
  */
 const fight = (
   world: World,
@@ -246,6 +258,17 @@ const fight = (
   if (hero.disables.aggroHidden && !isAdjacent) {
     enterReturn(world, unit);
 
+    return;
+  }
+
+  if (isCasting(unit)) {
+    return;
+  }
+
+  if (
+    !hero.disables.aggroHidden &&
+    selectAbility(world, unit, record, hero, heroId)
+  ) {
     return;
   }
 

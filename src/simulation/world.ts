@@ -80,7 +80,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
       readTunable(tuning, "sim_hz"),
     ),
     forms: createFormRecords(copies.hero, copies.forms, tuning),
-    spells: createSpellTable(copies.spells, tuning),
+    spells: createSpellTable(copies.spells, copies.abilities, tuning),
     statuses: createStatusTable(copies.statuses, tuning),
     units: createUnitTable(copies.enemies, copies.summons, tuning),
     tuning,

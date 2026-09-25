@@ -33,6 +33,8 @@ export {
 } from "./architecture/no-spec-under-src";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
 export { FEEDBACK_TIMINGS } from "./content/feedback-timings";
+export { FROST_VOLLEY } from "./content/frost-volley";
+export { makeAbilityDef } from "./content/make-ability-def";
 export { makeAttackDef } from "./content/make-attack-def";
 export { makeEnemyDef, makeSummonDef } from "./content/make-enemy-def";
 export { makeFormDef } from "./content/make-form-def";

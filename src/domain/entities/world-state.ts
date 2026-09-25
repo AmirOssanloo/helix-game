@@ -81,7 +81,7 @@ export type RunScope = {
   heroAttack: AttackRecord;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
-  /** Every spell by id, with its durations in ticks, for the composer and the cast pipeline to read. */
+  /** Every spell and every enemy ability by id, with its durations in ticks, for the composer and the cast pipeline to read. */
   spells: Map<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */
   statuses: Map<string, StatusRecord>;

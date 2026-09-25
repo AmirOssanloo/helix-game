@@ -1,4 +1,6 @@
 import { assert } from "@shared/public";
+import type { AbilityDef } from "./ability-def";
+import type { OrbId } from "./orb-id";
 import type { SpellDef } from "./spell-def";
 import { readTunable } from "./tuning-state";
 
@@ -14,6 +16,19 @@ export type SpellRecord = Readonly<{
   /** Indexed by level from zero, one entry per entry of the definition's cooldown table. */
   cooldownTicks: readonly number[];
 }>;
+
+/** What an ability no kit composes is composed from: nothing, so it is cast at the first level. */
+const NO_RECIPE: readonly OrbId[] = [];
+
+/**
+ * An enemy's ability in the shape run scope holds every ability in: a spell whose recipe is
+ * empty. No buffer composes it, and its tables are read at the first level, which is the
+ * level every caster that levels no orbs casts at.
+ */
+export const abilityAsSpell = (def: AbilityDef): SpellDef => ({
+  ...def,
+  recipe: NO_RECIPE,
+});
 
 /** `seconds` as a whole number of ticks at `simHz`. */
 const toTicks = (seconds: number, simHz: number): number =>
@@ -43,13 +58,16 @@ export const createSpellRecord = (
 };
 
 /**
- * Run scope's spell table from the registry: every spell by id, each with its durations in
- * ticks under the tuning state's step rate, for the composer to look a recipe up in and the
- * cast pipeline to read timing and cost from. Allocated once, here. A duplicate id is a
- * broken invariant, since the content tier refuses one.
+ * Run scope's ability table from the registry: every spell and every enemy ability by id,
+ * each with its durations in ticks under the tuning state's step rate, for the composer to
+ * look a recipe up in and the cast pipeline to read timing and cost from. The two share one
+ * id space, so whoever casts names an id and the pipeline finds it here whoever the caster
+ * is. Allocated once, here. A duplicate id is a broken invariant, since the content tier
+ * refuses one.
  */
 export const createSpellTable = (
   spells: readonly SpellDef[],
+  abilities: readonly AbilityDef[],
   tuning: ReadonlyMap<string, number>,
 ): Map<string, SpellRecord> => {
   const table = new Map<string, SpellRecord>();
@@ -60,6 +78,14 @@ export const createSpellTable = (
 
     if (spell !== undefined) {
       table.set(spell.id, createSpellRecord(spell, simHz));
+    }
+  }
+
+  for (let index = 0; index < abilities.length; index += 1) {
+    const ability = abilities[index];
+
+    if (ability !== undefined) {
+      table.set(ability.id, createSpellRecord(abilityAsSpell(ability), simHz));
     }
   }
 

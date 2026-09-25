@@ -82,7 +82,7 @@ Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves th
 
 ## 4. Add its abilities
 
-An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The behaviour decides when to cast it; the pipeline decides whether it may.
+An enemy ability is an ability definition, exactly the shape a hero spell has, under `src/content/abilities/` instead of `src/content/spells/`. The pipeline does not know the difference. Follow [Adding a spell](./adding-a-spell.md) steps 2 to 7 for `frost_volley`, with `recipe` absent — enemies do not invoke — and the ability listed in the enemy's `abilities`. The state machine's selection rule decides when to cast it, in Chase and Attack: the first listed ability that is off its clock, reaches the hero, and is aimed at a unit, a point, or nothing; the pipeline decides whether it may. A direction or a vector ability is never chosen, so an enemy's is aimed at one of the other three.
 
 ---
 

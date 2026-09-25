@@ -42,6 +42,7 @@ const SPELLS = createSpellTable(
       manaCost: [15, 25, 35, 45, 55, 65, 75],
     }),
   ],
+  [],
   TUNING,
 );
 

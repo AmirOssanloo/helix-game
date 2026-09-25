@@ -1,5 +1,6 @@
 import { assert } from "@shared/public";
 import type { RunScope, TuningState } from "../entities/world-state";
+import type { AbilityDef } from "./ability-def";
 import { createAttackRecord } from "./attack-state";
 import type {
   DefinitionKey,
@@ -17,7 +18,7 @@ import type { FormDef } from "./form-def";
 import { formInSimulationUnits } from "./form-state";
 import type { HeroDef } from "./hero-def";
 import type { SpellDef } from "./spell-def";
-import { createSpellRecord } from "./spell-state";
+import { abilityAsSpell, createSpellRecord } from "./spell-state";
 import type { StatusDef } from "./status-def";
 import { createStatusRecord } from "./status-state";
 import type { TuningUnit } from "./tuning-def";
@@ -152,7 +153,11 @@ const rebuildRecord = (
       return;
 
     case "ability":
-      // No record reads an enemy ability yet; the copy holds the number for the first that does.
+      run.spells.set(
+        slot.id,
+        createSpellRecord(abilityAsSpell(slot.def as AbilityDef), simHz),
+      );
+
       return;
   }
 };

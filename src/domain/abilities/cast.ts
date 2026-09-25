@@ -46,9 +46,9 @@ export const castLevelOf = (
 ): number => spellLevelOf(orbLevelsOf(world, unit), record.def.recipe);
 
 /**
- * Whether a slot key of `unit`'s active form's kit throws `abilityId`, which is what makes an
- * ability the unit's to cast. A unit with no form holds nothing; an enemy's ability list is
- * the behaviour's to read when enemies cast.
+ * Whether `abilityId` is `unit`'s to cast: a slot key of its active form's kit throws it, or,
+ * for a unit with no form, the definition it wears lists it. A unit with neither holds
+ * nothing.
  */
 export const holdsAbility = (
   world: World,
@@ -58,7 +58,11 @@ export const holdsAbility = (
   const form = activeFormOf(world, unit);
 
   if (form === null) {
-    return false;
+    const definitionId = unit.definitionId;
+    const record =
+      definitionId === null ? undefined : world.run.units.get(definitionId);
+
+    return record !== undefined && record.def.abilities.includes(abilityId);
   }
 
   const kit = resolveKit(form.def.kit);
@@ -118,7 +122,7 @@ export const isInCastRange = (
 /**
  * The request stage over `unit`: a cast of `abilityId` at `target` is checked and, when it
  * passes, replaces the unit's order. Refused, with the reason for the caller to announce and
- * nothing changed, when no spell has the id, no slot of the unit's kit holds it, the target
+ * nothing changed, when no spell or ability has the id, the unit does not hold it, the target
  * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
  * unit is, the clock is running, the mana is short, or the unit is rooted with the target out
  * of range. The clock and the mana

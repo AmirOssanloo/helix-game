@@ -21,7 +21,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Layer | domain, content, tests |
 | Size | 1 |
 | Depends on | P4-S18-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/content/abilities/` with its registry index, validated exactly as spells without a recipe. The enemy's ability list on its definition. In `domain/ai/`: a selection rule run in Chase and Attack: pick the first listed ability that is off cooldown, in range of the current target, and whose targeting kind the behaviour can supply (unit, point at the target, self); submit a `cast` request through the pipeline as the hero would; never interrupt the enemy's own cast point; back to the attack loop after. An enemy in cast point is `ability_cast_point` in the shared order machine, so a stun on it cancels it at no cost. A `frost_volley`-style test ability for the runbook.
 
@@ -107,7 +107,7 @@ A grunt with a bash stuns the hero; a caster silences; a netter roots; a slammer
 | Check | Result |
 | --- | --- |
 | Nine abilities green; pipeline diff clean of caster-kind branches | |
-| Actual days per ticket | T01 · T02 · T03 · T04 |
+| Actual days per ticket | T01 0.3 · T02 · T03 · T04 |
 
 ## Risks in this sprint
 

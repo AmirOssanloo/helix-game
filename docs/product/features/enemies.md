@@ -71,7 +71,7 @@ Enemy abilities go through the same cast pipeline as the hero's spells: a target
 
 Stun (a bash on hit), slow (a frost attack), silence (a caster's curse), root (a net), a ranged projectile, an area slam around the enemy, summoning adds, a self-heal, and a charge or leap that closes distance. Each is a named effect an archetype references; the [ability pipeline](../../architecture/ability-pipeline.md) explains how.
 
-An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It never interrupts its own cast point.
+An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It takes the first ability its definition lists that is off cooldown, reaches the hero, and is aimed at the hero, at the ground the hero stands on, or at itself; an ability aimed along a line is never chosen. It chooses nothing while silenced or in its own attack point, and never interrupts its own cast point; a stun during the cast point cancels the cast, spends nothing, and starts no clock. After the cast it goes back to attacking.
 
 ## Experience
 
