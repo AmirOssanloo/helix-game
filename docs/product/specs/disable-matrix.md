@@ -19,7 +19,7 @@
 
 This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
 
-The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell, its rows in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by. One test per cell holds the two together, so a changed cell is a change to both.
+The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell. Its rows run in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by, stun and lift first, where the table here keeps lift beside the other rows that move a unit. One test per cell holds the two together, so a changed cell is a change to both.
 
 ---
 

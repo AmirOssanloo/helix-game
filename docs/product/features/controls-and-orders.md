@@ -12,12 +12,12 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 
 | Input | Where | What happens |
 | --- | --- | --- |
-| Right click | Walkable ground | Replaces the current order with a move to that point. No auto-attack on the way |
+| Right click | Walkable ground | Replaces the current order with a move to that point. No attack on the way |
 | Right click | Enemy | Replaces the current order with attack-target |
-| Right click | Summon or neutral | Nothing. No follow order starts |
+| Right click | The hero itself or a summon | Nothing. No follow order starts |
 | Left click | World, no targeting cursor open | Selects. Never issues a move |
 | Left click | Targeting cursor open | Commits the target and starts the cast |
-| Left click | An orb square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
+| Left click | The Q, W, or E square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
 | Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
 | Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
@@ -37,21 +37,21 @@ A click resolves against the world at the moment of the click, so a camera move 
 | S | Stop | Clear the order, close the cursor, cancel a cast whose cast point has not finished |
 | Esc | Cancel targeting | Close the cursor. A running move continues |
 
-Q, W, E, and R fire on key-down and never repeat while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
+Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
 
 ## One order at a time
 
-The hero holds one current order: move, attack-target, attack-move, or none. A new order replaces the old one at the end of the tick; the hero never finishes the old path first. There is no queue.
+The hero holds one current order: move, attack-target, attack-move, the walk and turn toward a targeted cast, or none. A new order replaces the old one on the tick it is consumed, before the hero moves, so the first step toward it lands on that tick; the hero never finishes the old path first. There is no queue.
 
 Q, W, E, and R are not orders. They execute on the current tick without replacing a move or attack, so the player weaves orbs while walking. They do interrupt a channel.
 
 ## Turning first
 
-The hero faces before it acts. A move, an attack, or a targeted spell starts only when the target bearing is within 11.5 degrees of the current facing; otherwise the hero stands and turns, then acts. A full about-face costs about 0.16 seconds. Orb presses and Invoke never force a turn. The numbers and the ramp are in spec section 7.
+The hero faces before it acts. A move, an attack, or a targeted spell starts only when the target bearing is within 11.5 degrees of the current facing; otherwise the hero stands and turns, then acts. A full about-face costs about 0.16 seconds, plus a three-tick ramp into the turn. Orb presses and Invoke never force a turn. The numbers and the ramp are in spec section 7.
 
 ## Normal cast
 
-Every targeted spell takes two steps: press the key, then left click. Pressing D opens a targeting cursor with a range ring and an area preview, or for Glacier the ring alone until its press is dragged; nothing is spent yet. Left click commits, the hero turns to face the point, the cast point runs, and then mana is spent and the cooldown starts. Esc or S before the click closes the cursor at no cost.
+Every targeted spell takes two steps: press the key, then left click. Pressing D opens a targeting cursor with a range ring and an area preview, or for Glacier the ring alone until its press is dragged; nothing is spent yet. Left click commits (for Glacier, the button coming up commits, with the press and the drag as its aim), the hero turns to face the point, the cast point runs, and then mana is spent and the cooldown starts. Esc or S before the click closes the cursor at no cost.
 
 There is no quick-cast. Hovering an enemy and tapping D never fires a targeted spell.
 
@@ -68,11 +68,11 @@ Four common orders are removed on purpose, and the spec says so in section 5.4 s
 
 ## A build fails if
 
-Copied from spec section 15, because it is the shortest test of whether the controls are right.
+The fail column of spec section 15, in short, because it is the shortest test of whether the controls are right.
 
 - The unit translates while its back is still more than 11.5° off the move bearing
 - A 180° order completes in one rendered frame
-- Right click on empty ground auto-attacks something
+- Right click on empty ground attacks something
 - Right click on an ally starts a follow leash
 - Shift plus click creates a waypoint queue
 - A targeted D or F spell fires on key-down without a confirming left click
@@ -88,7 +88,7 @@ Copied from spec section 15, because it is the shortest test of whether the cont
 
 | State | What happens |
 | --- | --- |
-| Order issued while stunned | Refused; the hero keeps whatever it was doing when stunned. Nothing is queued for after |
+| Order issued while stunned | Refused. The stun already cleared the current order, or a lift has put it aside until landing. Nothing is queued for after |
 | Skill point spent while stunned or silenced | Allowed. A level is not an action of the hero, so no disable refuses it |
 | Right click while the targeting cursor is open | The click is a move order; the cursor closes at no cost |
 | Right click while the button is held on a spell aimed by press and drag | The cursor closes at no cost, and nothing is ordered: no cast and no move |

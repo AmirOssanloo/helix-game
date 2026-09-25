@@ -38,7 +38,7 @@ Every spell carries the same fields, and a field a spell does not use holds its 
 | Backswing | The hold after commit. A new order cancels it; the cast already landed |
 | Cast range | World units, for unit, point, and vector spells; a vector's is measured to the press. Zero for none and direction |
 | Cooldown | A table by level, seconds, started at commit |
-| Mana | A table by level, refused at key-down when short |
+| Mana | A table by level, refused at key-down when short, and cancelled at no cost at commit if the pool ran short during the cast point |
 | Effects | The list the pipeline runs at commit, in order |
 | Preview | The shape the targeting cursor draws, or none |
 | Frame and tint | The atlas frame the spell's presence in the world is drawn with, and its colour on the D and F squares, on its zone, and on its preview |
@@ -199,7 +199,7 @@ A zone that charges, then burns mana from every enemy inside and deals damage fo
 
 **Statuses:** none.
 
-**Adapted:** the source returns some of the burned mana to the caster; Helix does not. An enemy with no mana takes no damage. Every enemy definition carries mana and mana regeneration so there is something to burn, and the training dummy has some. Of the archetypes only the archer carries any, as deep as the largest burn, so every level of the table takes more from it. On empty ground the zone resolves on nothing; mana and cooldown were spent at commit.
+**Adapted:** the source returns some of the burned mana to the caster; Helix does not. An enemy with no mana takes no damage. Every enemy definition carries mana and mana regeneration so there is something to burn, and the training dummy has some. Of the archetypes the archer, the hexer, and the summoner carry any, the archer as deep as the largest burn, so every level of the table takes more from it. On empty ground the zone resolves on nothing; mana and cooldown were spent at commit.
 
 ### 3.5 Updraft — WWQ
 
@@ -358,13 +358,13 @@ A status definition says what the status does; the applier says how long. A spel
 | Status | Applied by | Flags | Modifiers and damage | Hook or expiry | Stack | Icon |
 |---|---|---|---|---|---|---|
 | `hoarfrost` | Hoarfrost | none | none | Damage taken, cooldown Quartz [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8]: apply `stun` 0.4 s to the holder, then magical damage Quartz [8, 16, 24, 32, 40, 48, 56] to the holder | Refresh | `icon_hoarfrost` |
-| `stun` | The Hoarfrost hook, the panel | stunned | none | none | Refresh, the longer remaining wins | `icon_stun` |
+| `stun` | The Hoarfrost hook, an archetype's bash, the panel | stunned | none | none | Refresh, the longer remaining wins | `icon_stun` |
 | `wane` | Wane | aggro hidden | Movement speed −Whorl [0.30, 0.25, 0.20, 0.15, 0.10, 0.05, 0] | none | Refresh | `icon_wane` |
-| `wane_chill` | Wane's circle | none | Movement speed −Quartz [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50] | none | Refresh | `icon_slow` |
-| `glacier_chill` | Glacier's segments | none | Movement speed −Quartz [0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80]; magical damage per second Ember [6, 12, 18, 24, 30, 36, 42] | none | Refresh | `icon_slow` |
-| `updraft_lift` | Updraft's carry | lifted, stunned, untargetable | none | On expiry: magical damage Whorl [70, 100, 130, 160, 190, 220, 250] to the holder | Ignore | `icon_lift` |
+| `wane_chill` | Wane's circle | none | Movement speed −Quartz [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50] | none | Refresh | `icon_wane_chill` |
+| `glacier_chill` | Glacier's segments | none | Movement speed −Quartz [0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80]; magical damage per second Ember [6, 12, 18, 24, 30, 36, 42] | none | Refresh | `icon_glacier_chill` |
+| `updraft_lift` | Updraft's catch | lifted, stunned, untargetable | none | On expiry: magical damage Whorl [70, 100, 130, 160, 190, 220, 250] to the holder | Ignore | `icon_updraft_lift` |
 | `quicken` | Quicken | none | Attack speed +Whorl [10, 25, 40, 55, 70, 85, 100]; attack damage +Ember [12, 24, 36, 48, 60, 72, 84] | none | Refresh | `icon_quicken` |
-| `burn` | Bolide | none | Magical damage per second Ember [10, 15, 20, 25, 30, 35, 40] | none | Refresh | `icon_damage_over_time` |
+| `burn` | Bolide | none | Magical damage per second Ember [10, 15, 20, 25, 30, 35, 40] | none | Refresh | `icon_burn` |
 | `disarm` | Clarion, the panel | disarmed | none | none | Refresh | `icon_disarm` |
 | `knockback` | Clarion's push, the panel | displaced | none | none | Ignore | `icon_knockback` |
 
@@ -408,9 +408,8 @@ Frames the ten spells and their statuses draw with. Every name is in the frame l
 | `ring_thick` | Zenith's marker, the unit reticle | Yes |
 | `square` | Glacier's segments | Yes |
 | `square_outline` | The rectangle previews | Yes |
-| `cone_60` | Clarion, its preview | New: a cone of 60 degrees, apex at the origin |
-| `icon_hoarfrost`, `icon_wane`, `icon_quicken` | The three spell-specific status icons | New |
-| `icon_stun`, `icon_slow`, `icon_damage_over_time`, `icon_lift`, `icon_disarm`, `icon_knockback` | The generic status icons the spells reuse | New, with `icon_silence` and `icon_root` beside them |
+| `cone_60` | Clarion, its preview | Yes: a cone of 60 degrees, apex at the origin |
+| `icon_<status id>`, one per status: `icon_hoarfrost`, `icon_stun`, `icon_wane_chill`, `icon_burn`, and the rest of section 4 | Each status's icon on the unit that holds it | Yes: a status names the frame of its own id and nothing else does, so a new status brings its own |
 
 ---
 
@@ -429,7 +428,7 @@ Every entry has a `kind`. A `target` is `target`, `zone`, or a shape from [secti
 | Spawn zone | The shape; `anchor`, the context's anchor or the caster, a caster-anchored zone moving with the caster; `delaySeconds` before it activates; `lifetimeSeconds`, a number, a table, or the motion; `motion`, still or a line along the facing with a speed and a distance table; `onActivate`, an effect list run once when the delay ends; `eachTick`, an effect list run every tick while active; the frame and tint it is drawn with | Wane, Glacier through its named effect, Siphon, Updraft, Zenith, Bolide |
 | Spawn unit | `unitId`, a summon definition's or, in a cast's own list alone, an archetype's; `count`; `offset`, forward and right of the caster's facing; `lifetimeSeconds`, a table; `bonuses`, a list of stat and flat table written as modifier rows on the unit for its life. The unit is the kind its definition names: a summon, or an enemy in the caster's pack that counts against the live cap, so a cast that would pass the cap is refused whole | Emberling; an enemy's `summon_adds` |
 | Displace | `target`; `mode`, push or lift; the status it applies for its duration; for push, `direction`, away from the caster or along the facing, `distance`, a table, and `speed`, in units a second; for lift, `seconds`, a table. A push lasts the whole ticks its distance at the level cast takes at its speed, converted once where it is applied and never fewer than one; one with no distance or no speed moves nobody. It moves the unit an even step through the movement step each tick so it stops at an obstacle edge, and names `knockback` as its status. A lift applies its status, which suspends the order, and the order comes back on expiry | Clarion and an enemy's slam push; `updraft_catch` lifts through the same function. Pull has no user and is not built until one exists |
-| Spawn projectile | `origin`, the context's anchor or the caster, a caster origin leaving from the caster toward the anchor; a speed, a radius, homing on the target or not, a maximum range, an on-hit effect list, a frame and tint | No spell. The auto-attack and the summon's attack fire one of their own; an enemy's root net and arrow fire one from the caster |
+| Spawn projectile | `origin`, the context's anchor or the caster, a caster origin leaving from the caster toward the anchor; a speed, a radius, homing on the target or not, a maximum range, an on-hit effect list, a frame and tint | No spell. The hero's attack and the summon's attack fire one of their own; an enemy's root net and arrow fire one from the caster |
 | Named | A key resolved from `src/domain/abilities/effects/`, and the effect's own fields, declared beside the function and validated by its schema | Glacier, Siphon, Updraft |
 
 A zone keeps, besides what its entry says: the caster, the ability, the orb levels at commit, its position and facing, its start and end ticks, its travel vector, and a hit list for once-per-unit rules. A zone with a delay is drawn for the whole delay. A zone's each-tick list runs with the zone as context, so a primitive in it with `target: zone` touches every enemy inside and a named effect in it runs once per tick.
@@ -470,7 +469,7 @@ What a status definition must be able to say, each with the status that needs it
 
 ### 7.5 What the ten do not need
 
-A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a status that stacks, a zone that runs an effect once per unit on contact other than through `updraft_catch`, and any number a system holds. Each waits for the first ability that needs it.
+A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a status that stacks, a zone that runs an effect once per unit on contact other than through `updraft_catch`, and any number a system holds. The enemy abilities and the archetypes' carried statuses bring the projectile from the caster, the damage-dealt hook, the silence, and the root; the rest wait for the first ability that needs them.
 
 ---
 
@@ -501,7 +500,7 @@ Every damaging spell deals more at each level than at the one before, and none a
 ## Related documentation
 
 - [Spells and attack](../features/spells-and-attack.md) — what each spell is for the player, and the edge cases every entry above inherits
-- [Status effects](../features/status-effects.md) — the eight status kinds, the stack rules, and what each disable blocks
+- [Status effects](../features/status-effects.md) — the status kinds, the stack rules, and what each disable blocks
 - [Ability pipeline](../../architecture/ability-pipeline.md) — the stages, the targeting kinds, and the primitives this page parameterises
 - [Content authoring standards](../../standards/content-authoring.md) — how a definition file writes these numbers
 - [Adding a spell](../../workflows/adding-a-spell.md) — the runbook that turns an entry here into a file and a test

@@ -39,10 +39,10 @@ The rules behind each row are in [Performance standards](../standards/performanc
 
 ## Phase 2: spells and attack
 
-**Goal:** every spell and the auto-attack are castable in an empty arena.
+**Goal:** every spell is castable, and the attack swings, in an empty arena.
 
 - All ten spells with targeting mode, range and area previews, projectiles, zones, summons, and self buffs.
-- Auto-attack and attack-move.
+- Attack and attack-move.
 - Statuses on the hero, applied from the developer panel.
 - Domain events drive hit and cast feedback.
 

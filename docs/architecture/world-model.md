@@ -11,13 +11,13 @@ This is the one page here that names real things. It exists because you can't pl
 
 ## Entity kinds
 
-An entity is a pooled runtime thing with an id. Every entity that carries rules references a definition; the definition is immutable data, the entity holds only what changes.
+An entity is a pooled runtime thing with an id. Every entity that carries rules references a definition; the definition is immutable data, the entity holds only what changes. The one unit with none is the developer panel's stress body: an enemy-kind hull that no behaviour drives and no death takes, there to load the tick.
 
 | Kind | Owned by | What it is | Scope |
 | --- | --- | --- | --- |
-| Hero unit | `domain/entities` | The one unit the player controls, with its orbs, slots, stats, and status table | Run |
-| Enemy unit | `domain/entities` | A hostile unit driven by an AI behaviour, referencing an enemy definition | Map |
-| Summon unit | `domain/entities` | A unit created by an ability and owned by another unit, with a lifetime, gone when its owner dies | Map |
+| Hero unit | `domain/entities` | The one unit the player controls, with its stats and status table. Its orbs, slots, and resources live on the record of each form, in run scope, and the unit wears the active one | Run |
+| Enemy unit | `domain/entities` | A hostile unit driven by an AI behaviour, referencing an enemy definition. One an ability spawns joins its caster's pack, and has an owner and a lifetime as a summon does | Map |
+| Summon unit | `domain/entities` | A unit created by an ability and owned by another unit, fighting on the hero's side, with a lifetime, gone when its owner dies | Map |
 | Projectile | `domain/entities` | A moving thing that hits, homing or linear, referencing the ability that fired it | Map |
 | Zone | `domain/entities` | An ability's presence on the ground with rules of its own — it damages, slows, lifts, or puts a status on what stands inside it, still or travelling | Map |
 | Effect | `domain/entities` | A short-lived visual with no rules, spawned for the presentation to draw | Map |
@@ -32,15 +32,15 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 
 | Kind | Owned by | What it describes | Scope |
 | --- | --- | --- | --- |
-| Hero definition | `content/hero.ts`, typed in `domain/definitions` | The hero's forms, and what is shared across them | Content |
+| Hero definition | `content/hero.ts`, typed in `domain/definitions` | The hero's forms, and what is shared across them: the attack every form swings, and how the hero levels | Content |
 | Form definition | `content/forms/`, typed in `domain/definitions` | One shape the hero can take: body, base attributes, growth, ability list, kit key, atlas frame | Content |
 | Spell definition | `content/spells/`, typed in `domain/definitions` | One of the ten hero spells: its orb recipe, targeting, timing, cost, and the effects it runs | Content |
 | Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
-| Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, tier, behaviour key, and the abilities it may cast | Content |
+| Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, the attack it swings, tier, behaviour key, the abilities it may cast and those an elite or a boss adds, and the statuses it carries from spawn | Content |
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
 | Disable matrix | `content/statuses/disable-matrix.ts`, typed in `domain/definitions` | Every status against every key, order, cast in progress, and cursor: one row per group of statuses, one answer per cell | Content |
 | Summon definition | `content/summons/`, typed in `domain/definitions` | A unit an ability spawns: enemy-shaped, with the distance it keeps from its owner | Content |
-| Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, spawn points, and spawn data for one map | Content |
+| Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, the hero's spawn point, and the packs of one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 
@@ -51,6 +51,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 ## Relationships that matter
 
 - A unit references exactly one definition at a time: the hero's active form definition, one enemy definition, or one summon definition. The hero's reference follows its active form and is read every tick, never cached. A summon references the summon definition of what it is, and carries the id of its owner.
+- A unit an ability spawns takes its kind from the definition the ability names, never from its caster: a summon definition makes a summon, an enemy definition makes an enemy. Either carries its owner's id and ends when the owner dies or its lifetime runs out, with no experience granted.
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it, if one did, and the unit that cast it. An attack's shot and a zone the panel places name no ability. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.

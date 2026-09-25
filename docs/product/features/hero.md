@@ -29,7 +29,7 @@ Both are shown as bars with numbers on the [HUD](./hud.md), and both can be push
 
 ## Levels and experience
 
-Levels run 1 to 30 on the experience table in `src/content/hero.ts`. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent from the HUD and can also be granted or assigned from the developer panel.
+Levels run 1 to 30 on the experience table in `src/content/hero.ts`. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). The hero starts at level 1 with one skill point and every orb at level 0; an orb with no level cannot be pressed. Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent by clicking the orb's square on the HUD and can also be granted or assigned from the developer panel.
 
 Orb level and orb instance are different things: a level-7 Whorl with one instance out is not a level-1 Whorl with three instances out. Level scales the size of each instance's passive; instance count is how many copies are applied ([mechanics spec](../specs/character-movement-and-mechanics.md) section 9.4).
 
@@ -40,10 +40,10 @@ Every orb instance the hero holds applies its passive while it is held. Swapping
 | Orb | Each instance grants | Scales with |
 | --- | --- | --- |
 | Quartz | Health regeneration | Quartz level |
-| Whorl | Movement speed and attack speed, as a percentage, and a percentage off every cooldown that starts while it is held | Whorl level; +0.6% movement speed per instance at level 1, rising 0.6% per level. The cooldown percentage is read when a clock starts and never rewrites a running one |
+| Whorl | Movement speed, as a percentage, and a percentage off every cooldown that starts while it is held | Whorl level; +0.6% movement speed per instance at level 1, rising 0.6% per level. The cooldown percentage is read when a clock starts and never rewrites a running one |
 | Ember | Attack damage | Ember level |
 
-The Whorl movement value is quoted because it is the one the spec insists players must feel: three Whorl out is visibly faster than three Quartz out. All three tables live in the tuning table, `src/content/tuning.ts`, one entry per orb level.
+The Whorl movement value is quoted because it is the one the spec insists players must feel: three Whorl out is visibly faster than three Quartz out. Every table lives in the tuning table, `src/content/tuning.ts`, one entry per orb level.
 
 ## Body and movement
 
@@ -55,7 +55,7 @@ Every hit has one damage type, and the type decides what reduces it.
 
 | Type | Reduced by | Typical source |
 | --- | --- | --- |
-| Physical | Armour | Auto-attacks, most enemy melee |
+| Physical | Armour | Every attack, the hero's, a summon's, and an enemy's |
 | Magical | Magic resistance | Most spells |
 | Pure | Nothing | Rare, deliberate |
 
@@ -63,7 +63,7 @@ The formulas follow the source game and live in `src/domain/combat/`. Armour run
 
 ## Death and respawn
 
-When health reaches zero the hero enters a death state at the end of that tick: the order is cleared, the status table is emptied, targeting closes, cooldowns keep counting, health regenerates nothing, and nothing responds to input. After the `respawn_delay` tunable, three seconds by default, the hero respawns at the map's spawn point with full health and mana and every cooldown cleared, including hidden cooldowns on evicted prepared spells. Held orb instances, the prepared spells in D and F, the orb levels, and the level survive death. There is no experience penalty and no drop.
+When health reaches zero the hero enters a death state at the end of that tick: the order is cleared, the status table is emptied, targeting closes, cooldowns keep counting, health and mana regenerate nothing, and nothing responds to input. After the `respawn_delay` tunable, three seconds by default, the hero respawns at the map's spawn point with full health and mana and every cooldown cleared, including hidden cooldowns on evicted prepared spells. Held orb instances, the prepared spells in D and F, the orb levels, and the level survive death. There is no experience penalty and no drop.
 
 ## States and edge cases
 
@@ -74,7 +74,7 @@ When health reaches zero the hero enters a death state at the end of that tick: 
 | Killed during a cast point | The cast is cancelled; no mana spent, no cooldown started, because both happen at the end of the cast point |
 | Killed while a projectile is in flight | The projectile still lands; damage credited to the hero for experience |
 | Respawn while enemies are aggroed | Enemies keep their aggro and path to the spawn point; the hero gets no grace period. The spawn point is placed so this is survivable on the arena |
-| Skill point unspent | Kept until spent; the HUD shows a marker on the orb squares |
+| Skill point unspent | Kept until spent; the HUD shows a marker beside the level number |
 | Regeneration while at full | Nothing; values clamp at maximum |
 
 ## Deferred

@@ -64,7 +64,7 @@ These are the body numbers the product starts from. Use 280 base movement speed 
 | Property | Value | Notes |
 |---|---|---|
 | Attack type | Ranged | Projectile speed 900 |
-| Attack range / acquire | 600 / 800 | Acquire is auto-attack search radius |
+| Attack range / acquire | 600 / 800 | Acquire is attack search radius |
 | Attack point + backswing | 0.4 + 0.7 s | Base attack time 1.7 s |
 | Base movement speed | 280 | World units per second |
 | Night hero bonus (optional) | +30 | Omit if the product has no day/night clock |
@@ -96,7 +96,7 @@ The control surface is an RTS hybrid: the pointer issues spatial orders; the lef
 | Left click | World or unit, no targeting mode | Select. Drag-box may multi-select owned units if the product has any. |
 | Left click | Ability targeting mode | Commit the target (unit or ground point) and begin the cast. |
 | Left click | Empty ground while not targeting | Select nothing / clear selection policy is a UI choice. It must not issue a move. |
-| Right click | Walkable ground | Replace the current order with a move to that point. No auto-attack en route. |
+| Right click | Walkable ground | Replace the current order with a move to that point. No attack en route. |
 | Right click | Enemy unit | Replace the current order with attack-target. |
 | Right click | Allied or neutral non-enemy | No follow order. Ignore, or treat as ground-move to that point. Do not start a follow leash. |
 | Middle drag / edge pan | Camera | Camera only. Does not issue unit orders. |
@@ -112,7 +112,7 @@ The control surface is an RTS hybrid: the pointer issues spatial orders; the lef
 | R | Composer | Invoke: compile current orb multiset into a slot |
 | D | Prepared slot 4 | If D is a no-target stub, cast it. If D needs a target, enter targeting mode. |
 | F | Prepared slot 5 | Same rules as D for slot F |
-| A then left click | Attack-move | Move to point; auto-acquire enemies along the way |
+| A then left click | Attack-move | Move to point; acquire enemies along the way |
 | S | Stop | Clear the current order and cancel targeting or an abortable cast |
 | Esc | Cancel targeting | Drop targeting mode. Do not clear an existing move unless S is also pressed |
 | Select Hero (optional F1) | Select the player unit | Does not move the unit |
@@ -132,7 +132,7 @@ There is no global cooldown. Q, W, E, R, D, and F may be legally processed on co
 
 ### 4.4 Input state machine
 
-The unit holds exactly one current order. There is no order queue. A newly issued legal order replaces the current one at the end of the current tick.
+The unit holds exactly one current order. There is no order queue. A newly issued legal order replaces the current one on the tick it is consumed, before the unit moves, so its first step lands on that tick (AT-M1).
 
 **States:** Idle, Turning, Moving, AttackWindup, AttackBackswing, AbilityCastPoint, AbilityBackswing, Channeling, TargetingCursor (local UI only).
 
@@ -146,7 +146,7 @@ The unit holds exactly one current order. There is no order queue. A newly issue
 
 A move order stores a world-space destination. The unit pathfinds on the navigation mesh, avoiding static blockers and the collision hulls of other solid units. Player-controlled units attempt to path around other units.
 
-Move does not arm auto-attack. Right-clicking ground repositions the unit without committing an attack animation. That distinction is load-bearing for weaving orbs while kiting.
+Move does not arm attack. Right-clicking ground repositions the unit without committing an attack animation. That distinction is load-bearing for weaving orbs while kiting.
 
 A new move replaces the previous order immediately. The unit does not finish the old path first. There is no waypoint list.
 
@@ -160,7 +160,7 @@ A new move replaces the previous order immediately. The unit does not finish the
 
 Stop (S) clears the current order, aborts targeting mode, and aborts a cast if the cast point has not completed. The unit returns to Idle. If a turn was already in progress, freeze yaw on Stop so the player can immediately issue a new facing.
 
-Stop is not hold. After Stop the unit may auto-acquire if the product’s idle policy allows auto-attack. If idle auto-attack is unwanted during orb composition, idle policy should be “no acquire” rather than introducing a hold key.
+Stop is not hold. After Stop the unit may acquire if the product’s idle policy allows attack. If idle attack is unwanted during orb composition, idle policy should be “no acquire” rather than introducing a hold key.
 
 ### 5.4 Explicitly not present
 

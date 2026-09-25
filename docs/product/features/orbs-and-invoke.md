@@ -20,7 +20,7 @@ Orb presses cost no mana, have no cooldown, have no cast time, and never force t
 
 R reads the three instances as a multiset — how many of each, ignoring order — and maps that to one of ten spells. QQW, QWQ, and WQQ are one spell.
 
-On a **first invoke**, when the spell is not already in a slot: R spends 7 mana, starts the Invoke cooldown, and writes the spell into slot D. The cooldown is 7.0 seconds minus 0.3 seconds per total orb level, so a hero with all three orbs at level 7 invokes every 0.7 seconds. Both numbers are tunables in `src/content/tuning.ts`; the table is in spec section 10.3.
+On a **first invoke**, when the spell is not already in a slot: R spends 7 mana, starts the Invoke cooldown, and writes the spell into slot D. The cooldown is 7.0 seconds minus 0.3 seconds per total orb level, so a hero with all three orbs at level 7 invokes every 0.7 seconds. Whorl's percentage reduction applies on top, like any other clock. Both numbers are tunables in `src/content/tuning.ts`; the table is in spec section 10.3.
 
 On a **re-invoke**, when the spell is already in D or F: nothing is spent and no cooldown starts. If it is in F, D and F swap so the spell is on the primary key. If it is already in D, nothing changes. The player can promote F to D as fast as they can press R.
 
@@ -71,7 +71,7 @@ The spec's acceptance traces, in prose. Each is a test.
 | R while the Invoke cooldown is running | Refused with a cooldown flash, unless it would be a swap, which is always free |
 | R while silenced | Refused. Silence blocks Q, W, E, R, D, and F ([Status effects](./status-effects.md)) |
 | R during a move | The move continues |
-| D on an empty slot | Nothing happens |
+| D on an empty slot | Nothing is thrown; the square blinks white |
 | D on a spell whose cooldown is running | Refused with a cooldown flash |
 | The hero dies | The buffer and both slots survive; all cooldowns, including hidden ones, clear on respawn |
 | Orb level raised while instances are out | Their passives update on the same tick |
@@ -79,7 +79,7 @@ The spec's acceptance traces, in prose. Each is a test.
 ## Deferred
 
 - **A third slot.** The kit has two, always.
-- **Levelling Invoke** and its talents. Invoke's cooldown scales with total orb levels and nothing else.
+- **Levelling Invoke** and its talents. Invoke's cooldown scales with total orb levels and Whorl's percentage, and nothing else.
 - **A "last invoked" indicator** beyond D and F being ordered. The two slots are the memory.
 - **Sound cues** for compose and throw. Nothing has audio yet.
 

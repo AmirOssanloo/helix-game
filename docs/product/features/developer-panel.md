@@ -16,7 +16,7 @@ Every action on the panel that changes the world is a command that goes through 
 
 | Control | Does |
 | --- | --- |
-| Apply damage | Removes the entered amount of health, as a chosen damage type |
+| Apply damage | Deals the entered amount as a chosen damage type, through mitigation like any other hit |
 | Drain mana | Removes the entered amount of mana |
 | Heal, restore mana | Sets health or mana to maximum |
 | Level up | Grants one level, with its skill point |
@@ -29,7 +29,7 @@ Every action on the panel that changes the world is a command that goes through 
 
 ### Tunables
 
-Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; and the enemies' wander, re-path, hold, and pack-activation numbers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
+Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, hold, and pack-activation numbers; and the elite and boss health multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
 
 **Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
@@ -48,13 +48,13 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
 | Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
 | Save input log | Downloads the session's seed and commands |
-| Load input log | Replays a saved log from the start |
+| Load input log | Replays a saved log from the start. A status line under the controls says what it is replaying, or why the log cannot run |
 | Reset map | Reloads the current map; the hero keeps run scope |
 | Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
 
 ### Enemies
 
-A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test.
+A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test. It is refused whole when the unit pool cannot take every one.
 
 ### Zones
 
@@ -72,10 +72,11 @@ Updated a few times per second, from the preallocated sample rings and the event
 | --- | --- |
 | Tick time | Mean and worst over the last second, against the 4 ms budget |
 | Render time | Mean and worst, against the 6 ms budget |
-| Frame rate | Current |
+| Frame rate | Mean over the last second |
 | Draw calls | Per frame, the total and the world's share without the HUD, against the budget of 5 for the world. A dash under the Canvas renderer |
-| Live counts | Units, projectiles, zones, effects, views |
-| Pool misses | How many times a pool was asked for more than it holds |
+| Live counts | Units, projectiles, zones, effects |
+| Pool misses | How many times a simulation pool was asked for more than it holds |
+| View misses | How many times a view pool, an overlay's included, was asked for more than it holds |
 | Event overwrites | How many events a reader of the event ring lost because the ring overwrote them first. Zero at the live cap; a panel that was folded skips what passed meanwhile instead of counting it |
 | Tick number | The simulation's clock |
 | Last refusal | The reason the last refused command was refused |
@@ -96,7 +97,7 @@ Toggles, each drawn over the world in its own colour at low alpha. Like every to
 - Spell areas as the simulation sees them, not as the HUD draws them, faint while a zone waits out its delay
 - Unit state labels: Idle, Chase, Attack, and the rest, above each enemy, and the hero's order state above the hero
 - Spatial hash cells, with the count of units in each
-- The walkability grid
+- The walkability grid: the cells the hero's size may not stand in
 
 ## Persistence
 
@@ -115,6 +116,8 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | A content file edited to change anything but numbers | The page reloads, to a fresh world |
 | A content file edited while a log replays | Refused until the replay ends; a replay runs on the content it was recorded against |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
+| Load a log recorded on a different map | Refused with a message naming both maps |
+| A panel control or a key used while a log replays | Refused until the recorded ticks have run; then the world is live again |
 | Load a log saved after a content hot-reload changed a number | Refused with a message naming every version the log spans; recreating the session starts a log that replays |
 | Panel closed | Every readout keeps sampling; only the display stops |
 | Production build | The panel and its API do not exist; the game has no trace of them |

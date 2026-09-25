@@ -45,9 +45,9 @@ Every archetype carries the same fields, the ones the [enemies page](../features
 | Experience | What the hero gains when it dies, against the level table in [section 4](#4-experience-against-the-level-table) |
 | Indestructible | Whether damage leaves it at one health. Only the dummy |
 | Tier | Normal for every archetype here. Elite and boss are what a spawn asks for, and multiply as the [enemies page](../features/enemies.md#tiers) says |
-| Abilities · behaviour | Ability ids, each with the condition it is chosen under, empty for every archetype here; the behaviour by key |
+| Abilities · behaviour | Ability ids, each with the condition it is chosen under, empty for the four of section 3; the behaviour by key |
 | Elite ability · boss abilities | The one ability an elite casts after its list, and the ones a boss casts after it, each with its condition; none for every archetype here but the grunt |
-| Statuses | Status ids the archetype carries from spawn until it dies, such as a bash; empty for every archetype here |
+| Statuses | Status ids the archetype carries from spawn until it dies, such as a bash; empty for the four of section 3 |
 | Frame · tint | The atlas frame the body is drawn with, and its colour. The attack's projectile carries the same tint |
 
 ### 2.2 The hero they are set against
@@ -271,7 +271,7 @@ Frames the archetypes draw with. Every name is in the frame list under `src/cont
 | `square` | The grunt, the runner, the tank, the imp | Yes |
 | `square_outline` | The training dummy | Yes |
 | `square_outline_thick` | The outline every elite and boss is drawn with over its body | Yes |
-| `square_dot` | The archer | New: a square with a round hole at its centre a third of its width across, so the dot reads in the floor's colour under the square's one tint |
+| `square_dot` | The archer, the hexer, the trapper, the skirmisher, the summoner | Yes: a square with a round hole at its centre a third of its width across, so the dot reads in the floor's colour under the square's one tint |
 | `disc` | Every archetype's projectile | Yes |
 
 ---

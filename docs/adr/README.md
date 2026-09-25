@@ -84,6 +84,9 @@ Correcting a small detail in an accepted record is fine — edit it. Changing wh
 | [0004](./0004-all-mutation-enters-as-commands.md) | Every change to world state is a command in one buffer, the developer panel included | Why there is no debug back door, and how a panel session replays |
 | [0005](./0005-content-references-by-string-key.md) | Content references effects and behaviours by string key, never by function | How a spell definition names its behaviour, and why a typo fails at startup |
 | [0006](./0006-isometric-view-over-a-square-world.md) | The view is isometric: a projection in presentation over a square world | Why the floor is diamonds while the simulation stays square, and where the scale lives |
+| [0007](./0007-a-spawned-unit-ends-with-its-owner.md) | A unit an ability spawns ends on the tick its owner dies | Why killing a summoner clears its adds, why they grant nothing, and why the death system runs a second pass |
+| [0008](./0008-damage-hooks-are-status-capabilities.md) | Doing something on damage is a hook on a status, written as an effect list | Where a bash or a mark lives, why a hook has no key of its own, and why hook damage runs no hooks |
+| [0009](./0009-definition-tuning-key-is-the-field-path.md) | A definition number's tuning key is its field path, verbatim | How a slider, a log, and a test name one number on a definition, and what a rename costs |
 
 ---
 

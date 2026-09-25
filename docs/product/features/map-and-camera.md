@@ -18,9 +18,9 @@ Every map definition holds:
 - **Packs** — each an archetype, a tier, a count, the point it stands around, and whether it waits dormant until the hero comes near; see [Enemies](./enemies.md#dormant-packs)
 - **Later:** spawn tables for packs and exits to other maps
 
-From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid is inflated per unit size so a wide unit never paths through a gap it cannot fit.
+From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid keeps one layer for each of three unit sizes, small, hero-sized, and large, each inflated by its radius, so a wide unit never paths through a gap it cannot fit.
 
-The world is square and every distance is in world units. The body numbers apply unchanged: the hero is 27 units across, moves 280 units per second, attacks at 600. How many pixels a unit covers depends on its direction on screen; [the camera](#the-camera) says how the square world is drawn.
+The world is square and every distance is in world units. The body numbers apply unchanged: the hero's body is a disc of radius 27, it moves 280 units per second, attacks at 600. How many pixels a unit covers depends on its direction on screen; [the camera](#the-camera) says how the square world is drawn.
 
 ## The arena
 
@@ -29,8 +29,8 @@ The one hand-authored map. It exists to test movement, spells, and enemies, not 
 | Property | Value |
 | --- | --- |
 | Size | 4000 by 4000 units, enclosed by walls |
-| Obstacles | 8 to 12 rectangles of varied sizes |
-| Corridor | One narrow passage wide enough for one unit, to test pathing and pack queueing |
+| Obstacles | Ten rectangles of varied sizes |
+| Corridor | One passage 96 units wide, between two blocks east of the centre: open to a small or hero-sized unit, closed to a large one, to test pathing and pack queueing |
 | Spawn point | The centre |
 | Enemies | None on load; spawned from the [developer panel](./developer-panel.md) |
 
@@ -47,7 +47,7 @@ Loading a map never recreates the hero. Later, walking through an exit keeps the
 
 Locked on the hero, looking down on an isometric floor. The square world is drawn as a classic 2:1 diamond grid: each 32-unit walkability cell is one diamond, 40 pixels across and 20 down, so the screen shows about 2172 world units across and 2443 down. Everything lies flat on that floor. The hero's disc is an ellipse twice as wide as it is tall, an obstacle's rectangle is a parallelogram along the diamonds, and a heading due east in the world points down and to the right on screen. A circle on the floor is a circle in the world: ranges, radii, and cones are the numbers the spec gives, drawn squashed.
 
-- **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen. The lag is a tunable: the fraction of the distance to the hero the camera closes each frame
+- **Follow** with a short smoothing lag, so a sharp turn does not jerk the screen. The lag is a tunable: the fraction of the distance to the hero the camera closes each frame, 0.1, `camera_follow_lerp` in `src/content/tuning.ts`
 - **Clamped** to the box around the map's diamond, so the corners past the walls are dark void and never more than that
 - **No zoom.** The scroll wheel does nothing. The game has one view
 - **No panning.** No edge pan, no middle drag, no free camera. The camera is not an order and never issues one
@@ -75,7 +75,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 
 - **Procedural dungeons**, acts, and biomes. The map format is designed for generation; the generator does not exist.
 - **Exits, portals, and map transitions.** Run scope and map scope are already separate so this costs no rewrite.
-- **Tile art.** Obstacles are grey rectangles; a tile layer replaces them when art arrives.
+- **Obstacle art.** Obstacles are grey rectangles on the painted floor; art replaces them when it arrives.
 - **Minimap and fog of war.** The arena is small enough to learn by walking it.
 - **A day-night clock** and its speed bonus. The spec keeps the option; the game does not use it.
 

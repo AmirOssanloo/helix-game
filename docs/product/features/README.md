@@ -24,7 +24,7 @@ These pages describe behaviour, not implementation. Numbers are quoted once as t
 - [Hero](./hero.md) — attributes, resources, levels, orb passives, death
 - [Controls and orders](./controls-and-orders.md) — pointer and keys, one order at a time, normal cast
 - [Orbs and Invoke](./orbs-and-invoke.md) — the three-instance buffer, the composer, slots D and F
-- [Spells and attack](./spells-and-attack.md) — the ten spells, the auto-attack, damage types
+- [Spells and attack](./spells-and-attack.md) — the ten spells, the attack, damage types
 - [Status effects](./status-effects.md) — what each status does, and what it blocks
 
 ## The world

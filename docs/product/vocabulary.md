@@ -24,6 +24,7 @@ When two people call the same thing different names, the names leak into the cod
 | A kind of enemy, as a definition | **Archetype** | Type, class, race |
 | Normal, elite, or boss | **Tier** | Rank, rarity |
 | A group of enemies that share aggro | **Pack** | Group, squad, wave |
+| What drives an enemy or a summon each tick, a function the definition names by key | **Behaviour** (AI behaviour) | Brain, controller, script |
 | One of Quartz, Whorl, Ember | **Orb** | Reagent, element, sphere |
 | One held copy of an orb | **Orb instance** | Ball, charge |
 | How far Q, W, or E has been levelled | **Orb level** | Skill level, rank |
@@ -44,6 +45,8 @@ When two people call the same thing different names, the names leak into the cod
 | A lasting condition on a unit | **Status** | Buff, debuff, modifier, effect (see below) |
 | A status that blocks something: stun, silence, root, disarm, lift | **Disable** | Crowd control, CC |
 | What a status does when its unit takes or deals damage, an effect list on the definition | **Damage hook** | Trigger, proc, on-hit |
+| A status a unit holds from spawn until it dies because its definition lists it: a bash, a frost attack | **Carried status** | Aura, trait, innate ability (a passive is what an orb instance carries) |
+| Every status against every key, order, cast point, and cursor, one answer per cell | **Disable matrix** | CC table, block list |
 | A short-lived visual thing with no rules of its own | **Effect** | Particle, VFX |
 | One of the six things the pipeline knows how to do by name: damage an area, apply a status, spawn a projectile, a zone, or a unit, displace | **Primitive** | Operation, verb, action |
 | A bespoke thing a definition names by string key, written as one function in the domain | **Named effect** | Script, custom effect, trigger |
@@ -51,7 +54,8 @@ When two people call the same thing different names, the names leak into the cod
 | An aim made of a press point and a drag: where the ability lands and the line it lies along | **Vector** (a targeting kind; not `Vec2`, which is any pair of coordinates in code) | Drag-cast, line target, two-point target |
 | A spell's presence on the ground with rules: a wall, a meteor, a updraft | **Zone** | Area, field, hazard |
 | A moving thing that hits: an arrow, a bolt | **Projectile** | Missile, bullet |
-| A unit the hero or an enemy creates and owns | **Summon** | Pet, minion, add (adds is fine in "boss adds") |
+| A unit an ability creates on the hero's side, owned by its caster | **Summon** | Pet, minion |
+| An enemy an ability creates, owned by its caster and in its pack | **Add** | Summon (that is on the hero's side), minion |
 | The typed data describing a spell, enemy, status, or map | **Definition** (`FooDef` in code) | Config, template, blueprint, prefab |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |

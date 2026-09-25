@@ -10,7 +10,7 @@ Every archetype owns a definition file under `src/content/enemies/`, one per arc
 
 ## Archetypes
 
-The first four cover the four things a spell has to deal with: something slow that hits hard, something fast, something at range, and something that does not die quickly. The rest of the roster each brings one enemy ability to the fight, so every status the hero can suffer has an archetype that causes it.
+The first four cover the four things a spell has to deal with: something slow that hits hard, something fast, something at range, and something that does not die quickly. The other nine each bring one enemy ability to the fight, so every status the hero can suffer has an archetype that causes it. Those thirteen are the roster; the training dummy and the imp stand outside it.
 
 | Archetype | Role | Shape |
 | --- | --- | --- |
@@ -28,8 +28,9 @@ The first four cover the four things a spell has to deal with: something slow th
 | Summoner | Stays back and brings imps until it dies | Square with a dot, dark violet |
 | Lancer | Charges across the gap to the hero | Square, steel blue |
 | Troll | Heals itself once it is hurt | Square, moss green |
+| Imp | What the summoner brings: small, quick, frail, worth no experience. Never placed in a pack of its own | Small square, violet |
 
-Each archetype has a colour, its tint in the [enemy catalogue](../specs/enemy-catalogue.md#3-the-archetypes), and elites take a thicker outline.
+Each archetype has a colour, its tint in the [enemy catalogue](../specs/enemy-catalogue.md#3-the-archetypes). Elites and bosses keep their archetype's body and take a thick outline around it in the same colour.
 
 ## What a definition holds
 
@@ -41,7 +42,7 @@ Every archetype carries the same fields. A field an archetype does not use is se
 - An attack: damage, range, acquire radius, attack point, backswing, base attack time, and the projectile it fires, or none for a melee attack, which lands at the end of its attack point
 - Aggro radius, leash radius
 - Experience reward
-- Tier: normal, elite, or boss
+- Tier: normal in every definition; elite and boss are what a spawn asks for
 - An ability list, by name, each with the condition it is chosen under — always, below a fraction of the enemy's health, or with the hero within a distance — which may be empty
 - The one ability an elite casts after that list, which may be none, and the abilities a boss casts after it, which may be empty
 - A list of the statuses it carries for its life, by name, which may be empty: at most two, none of them a disable
@@ -78,11 +79,11 @@ Enemies path with the same grid A* the hero uses and push each other apart rathe
 
 | Tier | Health | Abilities | Look |
 | --- | --- | --- | --- |
-| Normal | The definition's | The definition's list | Plain square |
-| Elite | 3 times the definition's | The definition's list, then its one elite ability | Thicker outline |
-| Boss | 10 times the definition's | The definition's list, then its boss abilities | Largest square, thickest outline |
+| Normal | The definition's | The definition's list | Its archetype's shape, no outline |
+| Elite | 3 times the definition's | The definition's list, then its one elite ability | An outline around the body |
+| Boss | 10 times the definition's | The definition's list, then its boss abilities | A larger outline, so its line reads thicker |
 
-A tier multiplies; it does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The two multipliers are tunables, read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was. The tier's abilities come after the definition's own in the order the selection rule tries them.
+A tier is chosen when a pack spawns, from the panel or from a map's pack; any archetype spawns at any of the three. An imp a summoner brings is always normal, whatever its summoner's tier. A tier multiplies health alone: an elite or a boss grants its archetype's experience. It does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The two multipliers are tunables, read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was. The tier's abilities come after the definition's own in the order the selection rule tries them.
 
 ## Enemy abilities
 
@@ -94,17 +95,17 @@ The bash and the frost attack are not cast. Each is a status the archetype carri
 
 The arrow is loosed from the enemy at the hero, homes on it, and deals physical damage where it lands, so armour takes its share. The slam strikes a circle around the enemy, damaging every unit on the hero's side inside and pushing each one straight away from the enemy; a wall stops the push. It is cast only once the hero is inside the circle, and its long cast point is the tell. The self-heal is cast on the enemy itself only once its health is below a fraction of its maximum, and restores health for a few seconds, never past the maximum; a stun in its cast point cancels it. It is the only way an enemy regains health in a fight, since its regeneration runs only while it walks home.
 
-The summon brings two imps beside the enemy: small, quick, and frail enemies of its pack that go for the hero, worth no experience, gone when their lifetime runs out or on the tick their summoner dies. They count against the live cap, so a summon that would pass the cap is refused whole, spending nothing and starting no clock, and the enemy attacks instead. The charge carries the enemy itself at the hero, fast, up to its distance or until it meets the hero's edge, whichever is nearer; a wall stops it where it stands, and the enemy attacks from wherever the charge left it. Nothing else moves it while it charges, and its icon says so.
+The call for adds brings two imps beside the enemy: small, quick, and frail enemies of its pack that go for the hero, worth no experience, gone when their lifetime runs out or on the tick their summoner dies. They count against the live cap, so a call that would pass the cap is refused whole, spending nothing and starting no clock, and the enemy attacks instead. The charge carries the enemy itself at the hero, fast, up to its distance or until it meets the hero's edge, whichever is nearer; a wall stops it where it stands, and the enemy attacks from wherever the charge left it. Nothing else moves it while it charges, and its icon says so.
 
 An enemy chooses an ability when it is off cooldown, in range, and the enemy's state is Attack or Chase. It takes the first ability its definition lists whose condition holds, that is off cooldown, reaches the hero, and is aimed at the hero, at the ground the hero stands on, or at itself; an ability aimed along a line is never chosen. It chooses nothing while silenced or in its own attack point, and never interrupts its own cast point; a stun during the cast point cancels the cast, spends nothing, and starts no clock. After the cast it goes back to attacking.
 
 ## Experience
 
-An enemy that dies grants its definition's experience reward to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy grants none.
+An enemy that dies grants its definition's experience reward to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy and the imp grant none.
 
 ## Dormant packs
 
-On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
+On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. Whatever the map, at most 200 enemies hold a slot at once, imps included, and a corpse keeps its slot until it is cleared: the budget performance is measured at, a constant beside the unit pool in `src/domain/entities/unit.ts`, not a tunable. A pack or a cast of adds that would pass it is refused whole. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
 
 A pack spawns once per map load: one the hero kills does not come back when the hero walks near its point again. Resetting the map puts every pack back as it was at load.
 
@@ -115,12 +116,13 @@ A pack spawns once per map load: one the hero kills does not come back when the 
 | Leashed mid-attack | The attack point is cancelled and the enemy returns; a projectile already fired still lands |
 | Pack partially in aggro radius | The whole pack aggroes on the first member that sees or is hit |
 | Hero uses Wane | Aggro drops; enemies return unless already adjacent and attacking |
-| Summon owner dies | The summon expires on the same tick |
-| Enemy summons adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |
+| A summoner dies, or the hero with a summon out | Its adds or summons go on the same tick, with no corpse and no experience |
+| Enemy calls adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |
+| Hero nears a dormant pack with the live cap reached | The pack keeps waiting, and is placed on a later tick the hero is near and the cap has room |
 | Dummy takes lethal damage | Health clamps at 1; damage numbers still show the full amount |
 | Enemy killed while returning | Dies normally, grants experience |
 | Spawn point occupied on Return | The enemy stops at the nearest free spot and idles there |
-| Hero dies with enemies chasing | They keep chasing to the spawn point; nothing resets them |
+| Hero dies with enemies chasing | They keep chasing to the hero's spawn point; nothing resets them |
 | Enemy blocked by a pack in a corridor | Pushes, waits, re-paths on its budget; never walks through |
 
 ## Deferred
