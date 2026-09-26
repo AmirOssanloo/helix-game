@@ -57,16 +57,16 @@ Whatever does not fit goes to [Deferred](../backlog/deferred.md) as "the long ro
 
 ## Exit record
 
-Filled when the gate is walked.
+Closed 2026-09-26 on every row an agent can verify. P6-S30-T01 walked the gate, and P6-S30-T02's docs sync made the docs row hold. The rows that need a person, the maintainer's playtest and its session replayed, the feedback and its triage, and the bar in Chrome, Firefox, Safari, and Edge, are deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24, as open boxes in STATUS.md and a row of [Deferred](../backlog/deferred.md). Milestone M10 is reached on the same terms. A bucket ticket the triage writes later runs against this record, and the gate's playtest and triage rows are walked again when it closes.
 
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | | |
-| The maintainer's playtest | | |
-| Triage and the bucket | | |
-| Sized versus actual | | |
-| Largest miss | | |
+| Gate rows | Walked 2026-09-26; the evidence per row is in the [sprint 30 gate walk](./sprint-30-the-bucket-and-the-phase-gate.md#phase-6-gate-walk). Six rows hold headless: the long road walkable to about level 10 by the budget, every pack placing, the cap, the push share at Q59's provisional default of 0.5, the checkpoints and sleeping packs, and the bar's tick. The docs row holds since P6-S30-T02, on its checklist. The session replayed, the feedback and triage, and the bar per browser wait on a person. No gate bug | the engineer running the plan |
+| The maintainer's playtest | Not yet played. The build starts on the long road and `tests/simulation/replays/long-road-playtest.spec.ts` skips until the session is stored, then reads the level at the last boss's kill. Headless, the long-road stress case reaches the last boss at level 9 in 8524 ticks with no death, fighting only what comes within 800 of its line | the engineer running the plan |
+| Triage and the bucket | No feedback filed, so nothing triaged and no bucket ticket written. The bucket: 0 of 4 days spent, 2.5 in sprint 29 and 1.5 in sprint 30, unspent; nothing cut to Deferred. The [triage note](../notes/2026-09-26-long-road-triage.md) holds the tables to fill | the engineer running the plan |
+| Sized versus actual | Sized 23 days, 19 in tickets and 4 of bucket appetite, with no unplanned ticket. Actual 8.0: sprints 25 to 30 took 1.75, 2, 1.5, 1.5, 0.5, and 0.75, the bucket nothing. Ratio 0.35 against 23, 0.42 against the 19 in tickets. Across phases 0 to 6, 69.0 actual against 130.6 sized, 0.53 | the engineer running the plan |
+| Largest miss | No ticket went over its size. The widest gap was P6-S28-T01, the long road as a map definition, sized 2 and done in 0.5, since the spec had settled every pack and checkpoint before it. The agent days leave out the maintainer's calendar time, which sets this phase's end | the engineer running the plan |
 
 | Phase | Sized | Actual | Ratio | Largest miss |
 | --- | --- | --- | --- | --- |
-| 6 | 23 | | | |
+| 6 | 23 | 8.0 | 0.35 | P6-S28-T01: sized 2, actual 0.5 |
