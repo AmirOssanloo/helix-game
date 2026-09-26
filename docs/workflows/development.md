@@ -56,7 +56,7 @@ pnpm test -t "AT-M2"                     # One spec by name — here, the 180-de
 pnpm test tests/simulation/spells/        # One folder
 pnpm test --project simulation           # One tier: unit, simulation, content, architecture, or presentation
 pnpm test -t "replay"                    # The determinism test
-pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders
+pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders, the long road
 pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
 ```
 
@@ -71,7 +71,7 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 - **The architecture spec** reads the import table and walks `src/`. It fails on an import lint missed — a dynamic import, a re-export through a barrel.
 - **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
 - **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
-- **The stress test** asserts the mean tick under 4 ms with 200 enemies chasing the hero and 100 projectiles in flight, again with a boss and its adds among them, and again with 300 units on random orders. It fails when a change makes a system too expensive.
+- **The stress test** asserts the mean tick under 4 ms with 200 enemies chasing the hero and 100 projectiles in flight, again with a boss and its adds among them, again with 300 units on random orders, and on a walk of the long road from the spawn to the last boss, where it also holds the live count under the cap and the packs behind the hero asleep. It fails when a change makes a system too expensive.
 - **The build** fails if `DevApi`, the developer panel, or the pane the panel is built from leaks into the production bundle — and the playtest build fails if the panel is missing from it, so neither build can quietly become the other.
 - **The docs link test** fails on a relative link or anchor that does not resolve, so a renamed page or heading cannot leave a dead pointer behind.
 

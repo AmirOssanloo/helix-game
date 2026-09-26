@@ -77,7 +77,7 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 | Layer | tests, docs |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** A long-road case in `tests/simulation/stress.spec.ts`: the hero, every orb at 7 and healed every ten ticks, walks the road checkpoint to checkpoint on move orders, fighting what wakes with the attack and the projectile spells, from the spawn to the last boss. The case asserts the live count at or under 200 at every tick, no `enemy_cap_reached` on the whole walk, the packs behind the hero asleep, and the mean tick under 4 ms; it prints the heaviest tick and the most A* expansions in one tick. Measured as the phase 4 headroom table was, in a production build in plain Node, and written under this ticket. The [performance standard](../../../../docs/standards/performance.md) and the development workflow name the case among the stress cases.
 
@@ -91,17 +91,25 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 
 **Definition of done:** Every change · A documentation change.
 
+> **Note, 2026-09-26:** The Layer row is short by one line of `src/domain/`: the search had no count of what it expands, so the case could not print one. `PathSearch` gains `expanded`, a running count of cells taken off the heap that only grows, and the case reads its difference over each tick. One increment per expanded cell; the four arena cases in the production build read the same before and after, mean 0.47 to 0.64 ms either way. `tests/domain/pathing/astar.spec.ts` holds the count. The kit has no projectile spell, so "the projectile spells" is read as the spells that throw damage at a target, Bolide, Zenith, and Updraft, committed through the effect runner at every orb 7 as the other stress cases commit theirs; the attack goes through the pipeline as an `attack_target` order.
+
+> **Note, 2026-09-26:** Done. The long-road case in `tests/simulation/stress.spec.ts`: the hero on `long_road`, every orb at 7 and healed every ten ticks, attacks the nearest enemy within 800 and throws one of the three spells at it every twenty ticks, and with none near walks to the next checkpoint and last to the last boss's pack, until that pack has no member standing. It asserts the last boss beaten, the live count at every tick at or under the cap less the six a boss's adds bring, so no cast and no placement could meet `enemy_cap_reached`; no pack ever waiting; no pack awake more than the sleep radius behind the hero at the end; the mean tick under 4 ms; and no unit or projectile miss. It prints the slowest tick with its events and expansions, the heaviest tick's events, and the most A* expansions in a tick. Green under `pnpm test:budget`.
+>
+> **The production-build reading.** Built with Vite, production defines, `__DEV__` false, minified, run in plain Node v24.21.0 on an Apple M1, load 2.4 to 3.2, twenty walks in four processes of five. The harness is not committed; it is this case with a stand-in for Vitest's `expect`. Every walk is the same 8524 ticks, about 4 minutes 44 seconds of play: the hero reaches the last boss at level 9 with no death, at most 10 enemies live and 13 events in the heaviest tick. Mean 0.019 to 0.026 ms. Worst 0.62 to 3.49 ms, median 1.43. The slowest tick of each process's first walk is tick 2, the hero's first path across region 1, 989 expansions on a cold engine, 3.2 to 3.5 ms; on a warm quiet walk it is tick 4562, the most A* expansions in any tick at 1576, 0.62 to 0.65 ms; every other slowest tick expands nothing, 1.3 to 1.9 ms, the collector or the scheduler. Under Vitest's development build the mean is 0.087 to 0.090 ms. The walk never comes near the cap: packs sleep behind the hero faster than it wakes them ahead, and at most one pack stood awake more than 2000 behind it on any tick, walking home. The scripted hero fights only what comes within 800 of its line, so packs off it stay asleep and it reaches level 9, not the spec's 10, which counts every pack.
+>
+> **A* at map size.** A search is the slowest tick on a warm quiet walk, at 16 percent of the budget, and on the cold first path, under it. On the most conservative reading of the third acceptance row, that the cap is for a tick A* takes past the budget, no expansion cap ticket is added; it is [Q66](../backlog/open-questions.md), decided provisionally and awaiting the maintainer. The performance standard, the testing standard, and the development workflow name the case among the stress cases. `pnpm check` green.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| The long road walked by hand from the spawn to the last boss | |
-| The long-road stress case: mean, worst, heaviest tick, A* expansions | |
-| The bench and the densest choke's readouts in Chrome | |
-| Milestone M9 | |
-| Actual days per ticket | T01: 0.5 · T02: 0.5 |
+| The long road walked by hand from the spawn to the last boss | Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24: a box in STATUS.md. Headless, the long-road stress case walks it from the spawn to the last boss's kill in 8524 ticks |
+| The long-road stress case: mean, worst, heaviest tick, A* expansions | Production build in plain Node, twenty walks: mean 0.019 to 0.026 ms, worst 0.62 to 3.49 ms (median 1.43), heaviest tick 13 events, most A* expansions in a tick 1576 at 0.62 to 0.65 ms warm; at most 10 enemies live, no pack refused, none awake behind at the end. No A* cap, Q66 |
+| The bench and the densest choke's readouts in Chrome | Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24: the P6-S28-T02 box in STATUS.md |
+| Milestone M9 | Reached 2026-09-26 on the rows an agent can verify: the long road in the panel's map list, every pack placing on the empty road (T01), and the cap holding on a full walk headless (T03). The walk chosen from the panel by hand waits on a person, deferred |
+| Actual days per ticket | T01: 0.5 · T02: 0.5 · T03: 0.5. Sized 4, done in 1.5 |
 
 ## Risks in this sprint
 

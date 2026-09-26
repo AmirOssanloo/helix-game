@@ -44,7 +44,7 @@ Two instruments, and both are read:
 
 **The render benchmark under `bench/` is rerun** after every Phaser upgrade and after any presentation change that touches the atlas, the views, or the scene composition. It drives the caps' worth of quads, rings, wedges, and bitmap text through a fake simulation with the camera following, and its pass condition is the render budget and a flat heap. It is manual and not part of CI, because it needs a GPU.
 
-**The stress test runs in CI.** Cases on the full arena for a fixed number of ticks, each asserting the mean tick under budget: the live cap of enemies, grunts and runners with their real AI, chasing a hero who walks a loop with a hundred of its projectiles in flight; the same crowd through twenty standing zones with the presentation and the panel reading the event ring; a boss among the crowd, its adds filling the live cap and never passing it; and three hundred generic units taking random orders. It runs in Node with no canvas. A change that fails it does not merge.
+**The stress test runs in CI.** Cases on the full arena for a fixed number of ticks, each asserting the mean tick under budget: the live cap of enemies, grunts and runners with their real AI, chasing a hero who walks a loop with a hundred of its projectiles in flight; the same crowd through twenty standing zones with the presentation and the panel reading the event ring; a boss among the crowd, its adds filling the live cap and never passing it; and three hundred generic units taking random orders. One more case walks the longest map from its spawn to its last boss, the hero fighting what wakes on the way: it asserts the mean tick under budget, the live count far enough under the cap on every tick that no pack and no cast is refused, and the packs behind the hero asleep, and it prints the slowest tick and the most A* expansions in one. It runs in Node with no canvas. A change that fails it does not merge.
 
 **It runs uninstrumented, outside the coverage pass.** Coverage instrumentation makes the same tick about three times slower, so a budget measured through it measures the profiler and nothing else. Every other tier is instrumented and holds its coverage floors; this one runs on its own afterwards. A test that asserts a duration belongs outside the profiler or it asserts nothing.
 
@@ -126,7 +126,7 @@ The stress test fails, so the tick budget becomes 5 ms. The budget is the produc
 | A hot-path change | Carries before and after numbers from the rings and the performance panel |
 | Optimising | Only from a profile |
 | Render benchmark | `bench/`, manual, rerun after every Phaser upgrade and any atlas, view, or scene change |
-| Stress test | 200 enemies chasing with 100 projectiles, and 300 units on random orders, in Node, in CI, asserting the tick budget; uninstrumented, outside the coverage pass |
+| Stress test | 200 enemies chasing with 100 projectiles, 300 units on random orders, and a walk of the longest map, in Node, in CI, asserting the tick budget; uninstrumented, outside the coverage pass |
 | Batch breaks | Second texture, blend mode, filter, mask, `Text` update in sync — each counted, none in the world scene |
 | Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections, fractional numbers passed per unit to a call not inlined — each with its replacement above |
 | Re-pathing | Budgeted per tick, the budget a tunable |

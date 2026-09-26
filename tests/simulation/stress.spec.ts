@@ -4,23 +4,29 @@ import {
   arenaDef,
   bruteDef,
   fastRunnerDef,
+  longRoadDef,
   meleeGruntDef,
+  summonAddsDef,
 } from "@content/public";
 import type {
+  PackRecord,
   SpawnProjectileEffectDef,
   SpellRecord,
   Unit,
 } from "@domain/public";
 import {
   applyDamage,
+  countLiveEnemies,
   ENEMY_LIVE_CAP,
   issueMove,
+  readTunable,
   resolveDestinationFor,
   resourcesOf,
   runEffects,
   runPrimitive,
 } from "@domain/public";
 import type { Vec2 } from "@shared/public";
+import { distanceSquared } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import {
   createEventReader,
@@ -508,6 +514,269 @@ const drain = (world: Simulation, reader: EventReader): void => {
   }
 };
 
+/** How often the hero on the long road is healed, in ticks. */
+const WALK_HEAL_TICKS = 10;
+
+/** How near an enemy must stand for the hero on the long road to stop and fight it. */
+const ENGAGE_RADIUS = 800;
+
+/** How near the hero must come to a stop on the road before it walks to the next. */
+const ARRIVAL_RADIUS = 160;
+
+/** Ticks between two orders of the same kind, so an order the crowd shoved off is given again. */
+const REORDER_TICKS = 30;
+
+/** Ticks between two spells the hero commits at what it fights. */
+const SPELL_TICKS = 20;
+
+/** The spells that throw damage at what the hero fights, in the order they are committed. */
+const WALK_ROTATION: readonly string[] = ["bolide", "zenith", "updraft"];
+
+/**
+ * The most ticks the walk is given, some thirteen minutes of play. The road is 24000 long and
+ * the hero walks it in under a minute and a half; the rest is fighting.
+ */
+const WALK_LIMIT_TICKS = 24_000;
+
+/**
+ * The most enemies one cast brings: the adds of a boss-tier cast. A live count this far under
+ * the cap on every tick means no cast and no pack could have been refused by it.
+ */
+const LARGEST_SPAWN =
+  summonAddsDef.effects.reduce(
+    (most, effect) =>
+      effect.kind === "spawn_unit" ? Math.max(most, effect.count) : most,
+    0,
+  ) * 3;
+
+type Walk = {
+  world: Simulation;
+  hero: Unit;
+  records: SpellRecord[];
+  /** The stops on the road in order: each checkpoint past the spawn, then the last boss's pack. */
+  stops: readonly Readonly<Vec2>[];
+  stop: number;
+  /** The tick the last move and the last attack order were given, and at what. */
+  movedAt: number;
+  movedTo: number;
+  attackedAt: number;
+  attacked: number | null;
+  castAt: number;
+  cast: number;
+};
+
+/**
+ * The long road with the hero at its spawn, every orb at the cap. The stops are the
+ * checkpoints after the spawn in order and the last pack's point, the last boss.
+ */
+const arrangeWalk = (): Walk => {
+  const world = createSessionWorld({
+    seed: SEED,
+    registry: makeRegistry(),
+    map: longRoadDef,
+  });
+
+  submit(world, {
+    kind: "set_orb_levels",
+    tick: 0,
+    timestamp: 0,
+    levels: ORB_LEVELS,
+  });
+  world.tick();
+
+  const heroId = world.state.run.heroId;
+  const hero = heroId === null ? null : world.state.map.units.resolve(heroId);
+  const lastPack = longRoadDef.packs.at(-1);
+
+  if (hero === null || lastPack === undefined) {
+    throw new Error("The long road holds the hero and its packs");
+  }
+
+  return {
+    world,
+    hero,
+    records: WALK_ROTATION.map((id) => {
+      const record = world.state.run.spells.get(id);
+
+      if (record === undefined) {
+        throw new Error(`Content registers ${id}`);
+      }
+
+      return record;
+    }),
+    stops: [...longRoadDef.checkpoints.slice(1), lastPack.position],
+    stop: 0,
+    movedAt: -REORDER_TICKS,
+    movedTo: -1,
+    attackedAt: -REORDER_TICKS,
+    attacked: null,
+    castAt: 0,
+    cast: 0,
+  };
+};
+
+/** The nearest living enemy within the engage radius of the hero, or `null`. */
+const nearestFoe = (world: Simulation, hero: Unit): number | null => {
+  const units = world.state.map.units;
+  let nearest: number | null = null;
+  let best = ENGAGE_RADIUS * ENGAGE_RADIUS;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit === null || unit.kind !== "enemy" || unit.state === "dead") {
+      continue;
+    }
+
+    const dx = unit.curr.x - hero.curr.x;
+    const dy = unit.curr.y - hero.curr.y;
+    const gap = dx * dx + dy * dy;
+
+    if (gap <= best) {
+      best = gap;
+      nearest = units.idAt(index);
+    }
+  }
+
+  return nearest;
+};
+
+/**
+ * One commit of the next spell of the walk's rotation at `foe`, at the orb cap: a point spell
+ * lands on it, and a direction spell starts at the hero facing it.
+ */
+const commitAt = (walk: Walk, foe: Unit): void => {
+  const { world, hero } = walk;
+  const record = walk.records[walk.cast % walk.records.length];
+
+  walk.cast += 1;
+
+  if (record === undefined) {
+    return;
+  }
+
+  const facing = Math.atan2(foe.curr.y - hero.curr.y, foe.curr.x - hero.curr.x);
+  const atFoe = record.def.targeting === "point";
+
+  runEffects(
+    world.state,
+    makeCast(world, {
+      ability: record.def,
+      orbLevels: ORB_LEVELS,
+      x: atFoe ? foe.curr.x : hero.curr.x,
+      y: atFoe ? foe.curr.y : hero.curr.y,
+      facing,
+    }),
+    record.def.effects,
+  );
+};
+
+/**
+ * Plays the hero down the road for one tick, between ticks: healed every ten, it attacks the
+ * nearest enemy within reach and throws a spell at it on a clock, and with none near it walks
+ * to the next stop, taking the one after once it arrives.
+ */
+const walkOn = (walk: Walk): void => {
+  const { world, hero } = walk;
+  const tick = world.view.tick;
+
+  if (tick % WALK_HEAL_TICKS === 0) {
+    submit(world, { kind: "heal", tick, timestamp: tick });
+  }
+
+  const foeId = nearestFoe(world, hero);
+  const foe = foeId === null ? null : world.state.map.units.resolve(foeId);
+
+  if (foeId !== null && foe !== null) {
+    if (foeId !== walk.attacked || tick - walk.attackedAt >= REORDER_TICKS) {
+      submit(world, {
+        kind: "attack_target",
+        tick,
+        timestamp: tick,
+        targetId: foeId,
+      });
+      walk.attacked = foeId;
+      walk.attackedAt = tick;
+    }
+
+    if (tick - walk.castAt >= SPELL_TICKS) {
+      commitAt(walk, foe);
+      walk.castAt = tick;
+    }
+
+    walk.movedTo = -1;
+
+    return;
+  }
+
+  walk.attacked = null;
+
+  const current = walk.stops[walk.stop];
+
+  if (
+    current !== undefined &&
+    walk.stop < walk.stops.length - 1 &&
+    distanceSquared(hero.curr, current) <= ARRIVAL_RADIUS * ARRIVAL_RADIUS
+  ) {
+    walk.stop += 1;
+  }
+
+  const destination = walk.stops[walk.stop];
+
+  if (
+    destination !== undefined &&
+    (walk.movedTo !== walk.stop || tick - walk.movedAt >= REORDER_TICKS)
+  ) {
+    submit(world, { kind: "move", tick, timestamp: tick, destination });
+    walk.movedTo = walk.stop;
+    walk.movedAt = tick;
+  }
+};
+
+/**
+ * Whether the pack `pack` records is beaten: dead for the map, or awake with no member left
+ * standing. A pack is marked dead only once the hero walks out of its sleep radius, so the
+ * last boss's pack, which the hero stands on, is beaten before it is dead.
+ */
+const isBeaten = (world: Simulation, pack: PackRecord): boolean => {
+  if (pack.state === "dead") {
+    return true;
+  }
+
+  if (pack.state !== "awake") {
+    return false;
+  }
+
+  const units = world.state.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (unit !== null && unit.packId === pack.packId && unit.state !== "dead") {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * How many awake packs of the loaded map stand farther behind the hero along the road than
+ * the sleep radius and were not fighting it: each should have walked home and slept.
+ */
+const awakeBehind = (world: Simulation, hero: Unit, reach: number): number => {
+  const packs: readonly PackRecord[] = world.state.map.packs;
+  let count = 0;
+
+  for (const pack of packs) {
+    if (pack.state === "awake" && pack.def.position.y < hero.curr.y - reach) {
+      count += 1;
+    }
+  }
+
+  return count;
+};
+
 describe("stress", () => {
   it("holds the mean tick under the budget with 300 generic units taking random orders on the arena", () => {
     const world = arrange();
@@ -715,6 +984,87 @@ describe("stress", () => {
       `mean tick ${meanMs.toFixed(3)} ms, max ${maxMs.toFixed(3)} ms, heaviest tick ${String(heaviestTickEvents)} events over ${String(MEASURED_TICKS)} ticks`,
     ).toBeLessThan(TICK_BUDGET_MS);
     expect(heaviestTickEvents).toBeLessThanOrEqual(HEAVIEST_TICK_EVENTS);
+    expect(world.view.map.units.misses).toBe(0);
+    expect(world.view.map.projectiles.misses).toBe(0);
+  });
+  it("holds the live cap and the mean tick under the budget with the hero walking the long road from the spawn to the last boss", () => {
+    const walk = arrangeWalk();
+    const { world, hero } = walk;
+    const packs = world.state.map.packs;
+    const lastPack = packs.at(-1);
+    const search = world.state.map.pathSearch;
+    const tuning = world.state.run.tuning;
+    const behind = Math.max(
+      readTunable(tuning, "pack_sleep_radius"),
+      readTunable(tuning, "pack_activation_radius"),
+    );
+
+    if (lastPack === undefined) {
+      throw new Error("The long road holds its packs");
+    }
+
+    let ticks = 0;
+    let totalMs = 0;
+    let maxMs = 0;
+    let worst = "";
+    let heaviestTickEvents = 0;
+    let mostExpansions = 0;
+    let mostLive = 0;
+    let waited = 0;
+    let lastBehind = 0;
+    let mostBehind = 0;
+    let heroDeaths = 0;
+    let wasDead = false;
+
+    while (!isBeaten(world, lastPack) && ticks < WALK_LIMIT_TICKS) {
+      walkOn(walk);
+
+      const cursor = world.events.cursor;
+      const expanded = search.expanded;
+      const start = performance.now();
+
+      world.tick();
+
+      const elapsed = performance.now() - start;
+
+      const events = world.events.cursor - cursor;
+      const expansions = search.expanded - expanded;
+
+      ticks += 1;
+      totalMs += elapsed;
+
+      if (elapsed > maxMs) {
+        maxMs = elapsed;
+        worst = `tick ${String(world.view.tick)}, ${String(events)} events, ${String(expansions)} expansions, ${String(countLiveEnemies(world.state))} live`;
+      }
+
+      heaviestTickEvents = Math.max(heaviestTickEvents, events);
+      mostExpansions = Math.max(mostExpansions, expansions);
+      mostLive = Math.max(mostLive, countLiveEnemies(world.state));
+      waited += packs.filter((pack) => pack.state === "waiting").length;
+      lastBehind = awakeBehind(world, hero, behind);
+      mostBehind = Math.max(mostBehind, lastBehind);
+
+      const dead = hero.state === "dead";
+
+      heroDeaths += dead && !wasDead ? 1 : 0;
+      wasDead = dead;
+    }
+
+    const meanMs = totalMs / ticks;
+
+    console.info(
+      `long road: ${String(ticks)} ticks, mean ${meanMs.toFixed(3)} ms, worst ${maxMs.toFixed(3)} ms (${worst}), heaviest tick ${String(heaviestTickEvents)} events, most A* expansions in a tick ${String(mostExpansions)}, most live ${String(mostLive)}, most awake behind ${String(mostBehind)}, hero deaths ${String(heroDeaths)}, level ${String(hero.progression.level)}`,
+    );
+
+    expect(isBeaten(world, lastPack)).toBe(true);
+    expect(mostLive).toBeLessThanOrEqual(ENEMY_LIVE_CAP - LARGEST_SPAWN);
+    expect(waited).toBe(0);
+    expect(lastBehind).toBe(0);
+    expect(
+      meanMs,
+      `mean tick ${meanMs.toFixed(3)} ms, max ${maxMs.toFixed(3)} ms over ${String(ticks)} ticks`,
+    ).toBeLessThan(TICK_BUDGET_MS);
     expect(world.view.map.units.misses).toBe(0);
     expect(world.view.map.projectiles.misses).toBe(0);
   });

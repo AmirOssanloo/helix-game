@@ -49,7 +49,7 @@ Answer in order. The first yes decides.
 
 Nothing draws in a test. The presentation tier tests the logic around Phaser — what a click becomes, which entity a view binds to — never what a pixel looks like.
 
-**The simulation tier holds the acceptance tests.** Every acceptance test in the [mechanics spec](../product/specs/character-movement-and-mechanics.md) is a named test in this tier — `AT-M1`, `AT-C4`, `AT-I6` — so a designer can read the spec and find the test. It also holds the replay determinism test (record a session, replay it on a fresh world, assert identical state at every tick) and the stress test (two hundred enemies chasing and three hundred units on random orders, the arena, the tick budget), which [Performance standards](./performance.md#quick-reference) own.
+**The simulation tier holds the acceptance tests.** Every acceptance test in the [mechanics spec](../product/specs/character-movement-and-mechanics.md) is a named test in this tier — `AT-M1`, `AT-C4`, `AT-I6` — so a designer can read the spec and find the test. It also holds the replay determinism test (record a session, replay it on a fresh world, assert identical state at every tick) and the stress test (two hundred enemies chasing and three hundred units on random orders on the arena, a walk of the longest map, the tick budget), which [Performance standards](./performance.md#quick-reference) own.
 
 ---
 

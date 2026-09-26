@@ -47,6 +47,8 @@ export type PathSearch = {
   heapCount: number;
   result: Int32Array;
   resultCount: number;
+  /** How many cells every search on this memory has expanded, a running count that only grows. A reader takes its difference over a tick. */
+  expanded: number;
 };
 
 /** A search sized for `capacity` cells. */
@@ -69,6 +71,7 @@ export const createPathSearch = (capacity: number): PathSearch => {
     heapCount: 0,
     result: new Int32Array(capacity),
     resultCount: 0,
+    expanded: 0,
   };
 };
 
@@ -325,6 +328,8 @@ export const searchPath = (
 
   while (search.heapCount > 0) {
     const current = popHeap(search);
+
+    search.expanded += 1;
 
     if (current === goal) {
       writeResult(search, start, goal);

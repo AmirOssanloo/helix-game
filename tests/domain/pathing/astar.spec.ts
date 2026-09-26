@@ -180,6 +180,24 @@ describe("searchPath", () => {
     expect(search.heap).toBe(heap);
   });
 
+  it("counts every cell a search expands, across searches and a fit, and none for a start on the goal", () => {
+    const grid = derive([]);
+    const search = searchFor(grid);
+
+    searchPath(search, grid, HERO_CLASS, 5, 5, 5, 5);
+    expect(search.expanded).toBe(0);
+
+    searchPath(search, grid, HERO_CLASS, 2, 10, 6, 10);
+    const straight = search.expanded;
+
+    expect(straight).toBe(5);
+
+    searchPath(search, grid, HERO_CLASS, 2, 10, 6, 10);
+    fitPathSearch(search, grid.columns * grid.rows * 2);
+
+    expect(search.expanded).toBe(straight * 2);
+  });
+
   it("grows through fitPathSearch when a grid has more cells than it was sized for", () => {
     const search = createPathSearch(4);
 
