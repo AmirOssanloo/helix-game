@@ -79,7 +79,7 @@ describe("a dormant pack", () => {
     }
 
     expect(world.view.map.units.count).toBe(1);
-    expect(world.state.map.packs[0]?.waiting).toBe(true);
+    expect(world.state.map.packs[0]?.state).toBe("asleep");
   });
 
   it("spawns in Idle on the first tick that begins with the hero inside the radius", () => {
@@ -99,7 +99,7 @@ describe("a dormant pack", () => {
       "idle",
     ]);
     expect(new Set(grunts.map((grunt) => grunt.packId)).size).toBe(1);
-    expect(world.state.map.packs[0]?.waiting).toBe(false);
+    expect(world.state.map.packs[0]?.state).toBe("awake");
   });
 
   it("was not spawned on the tick before, which began with the hero outside the radius", () => {
@@ -161,7 +161,7 @@ describe("a dormant pack", () => {
     world.tick();
 
     expect(gruntsOf(world)).toHaveLength(0);
-    expect(world.state.map.packs[0]?.waiting).toBe(true);
+    expect(world.state.map.packs[0]?.state).toBe("asleep");
   });
 
   it("is kept as a record by a map load", () => {
@@ -171,7 +171,7 @@ describe("a dormant pack", () => {
     world.loadMap(mapWith([gruntPack(true)]));
 
     expect(world.view.map.units.count).toBe(1);
-    expect(world.state.map.packs[0]?.waiting).toBe(true);
+    expect(world.state.map.packs[0]?.state).toBe("asleep");
   });
 });
 
@@ -184,7 +184,7 @@ describe("a live pack", () => {
       "idle",
       "idle",
     ]);
-    expect(world.state.map.packs[0]?.waiting).toBe(false);
+    expect(world.state.map.packs[0]?.state).toBe("awake");
   });
 
   it("stands when a map load brings it, however far the hero is", () => {
@@ -208,7 +208,7 @@ describe("a live pack", () => {
     });
 
     expect(gruntsOf(world)).toHaveLength(200);
-    expect(world.state.map.packs[1]?.waiting).toBe(true);
+    expect(world.state.map.packs[1]?.state).toBe("waiting");
 
     spawnHero(world, { x: PACK_AT.x, y: PACK_AT.y });
     submit(world, {
@@ -219,6 +219,6 @@ describe("a live pack", () => {
     world.tick();
 
     expect(gruntsOf(world)).toHaveLength(PACK_COUNT);
-    expect(world.state.map.packs[1]?.waiting).toBe(false);
+    expect(world.state.map.packs[1]?.state).toBe("awake");
   });
 });

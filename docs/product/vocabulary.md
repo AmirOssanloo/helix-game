@@ -24,6 +24,7 @@ When two people call the same thing different names, the names leak into the cod
 | A kind of enemy, as a definition | **Archetype** | Type, class, race |
 | Normal, elite, or boss | **Tier** | Rank, rarity |
 | A group of enemies that share aggro | **Pack** | Group, squad, wave, camp |
+| A map's pack held as spawn data, costing no unit: it **wakes** as the hero nears and **sleeps** again once left behind at rest | **Dormant** (asleep), and awake once placed | Despawned, culled, frozen, inactive |
 | What drives an enemy or a summon each tick, a function the definition names by key | **Behaviour** (AI behaviour) | Brain, controller, script |
 | One of Quartz, Whorl, Ember | **Orb** | Reagent, element, sphere |
 | One held copy of an orb | **Orb instance** | Ball, charge |

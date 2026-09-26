@@ -3,7 +3,7 @@ import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resolveBehaviour } from "./behaviours/index";
 import { readMachineTuning, runMachine } from "./machine";
-import { activatePacks } from "./packs";
+import { wakeAndSleepPacks } from "./packs";
 
 /**
  * Whether the unit is in control of itself this tick. A corpse, a stunned unit, one in the
@@ -30,10 +30,12 @@ const isDriving = (unit: Readonly<Unit>): boolean =>
  * A behaviour decides and issues orders; it moves nothing itself. The systems after it carry
  * out what it asked for, exactly as they carry out what the player asked for.
  *
- * Last, a dormant pack the hero has come within the activation radius of is placed. It is
- * placed after the pass, so a pack is in Idle on the tick it appears whatever the hero is
- * doing, and its first driving tick is the next. The hero's position is where the last tick
- * left it, since movement runs after this system.
+ * Last, a dormant pack the hero has come within the activation radius of is placed, and an
+ * awake one the hero has left past the sleep radius sleeps if every living member rests at
+ * home at full health. Both happen after the pass, so a pack is in Idle on the tick it
+ * appears whatever the hero is doing, its first driving tick is the next, and no behaviour
+ * holds a unit a sleep released. The hero's position is where the last tick left it, since
+ * movement runs after this system.
  */
 export const aiSystem = (world: World): void => {
   const units = world.map.units;
@@ -68,6 +70,6 @@ export const aiSystem = (world: World): void => {
   }
 
   if (hero !== null) {
-    activatePacks(world, hero);
+    wakeAndSleepPacks(world, hero);
   }
 };

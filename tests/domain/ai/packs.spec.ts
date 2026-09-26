@@ -209,7 +209,9 @@ describe("a walled-in dormant pack", () => {
     }
 
     expect(unitsOf(world, meleeGruntDef.id)).toHaveLength(0);
-    expect(world.state.map.packs.map((pack) => pack.waiting)).toEqual([true]);
+    expect(world.state.map.packs.map((pack) => pack.state)).toEqual([
+      "waiting",
+    ]);
   });
 
   it("is placed on the tick after the radius is retuned past its walls", () => {
@@ -221,7 +223,7 @@ describe("a walled-in dormant pack", () => {
     retune(world, "pack_placement_radius", WIDE_RADIUS);
 
     expect(unitsOf(world, meleeGruntDef.id)).toHaveLength(WALLED_IN_COUNT);
-    expect(world.state.map.packs.map((pack) => pack.waiting)).toEqual([false]);
+    expect(world.state.map.packs.map((pack) => pack.state)).toEqual(["awake"]);
   });
 });
 

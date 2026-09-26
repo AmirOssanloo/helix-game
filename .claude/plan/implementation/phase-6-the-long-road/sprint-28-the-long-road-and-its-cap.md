@@ -38,6 +38,8 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 
 **Definition of done:** Every change · A documentation change.
 
+> **Note, 2026-09-26:** P6-S26-T03 built the live-near-any-point check in `tests/content/maps.spec.ts` for every registered map, at the tuned `pack_sleep_radius`, reading each map's bound from a table keyed by map id; a map with no row fails. This ticket adds `long_road: 40`, the spec's section 8.
+
 ---
 
 ### P6-S28-T02 — Obstacle views bound by the camera

@@ -55,7 +55,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it, if one did, and the unit that cast it. An attack's shot and a zone the panel places name no ability. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
-- A map definition holds spawn data, not units. Units exist only after a pack is placed: a live pack at load, a dormant one when the hero approaches, so a large map costs little until the hero comes near.
+- A map definition holds spawn data, not units. Units exist only after a pack is placed: a live pack at load, a dormant one when the hero approaches, and a pack left behind at rest goes back to spawn data with its survivors, so a large map costs little away from the hero.
 - Run scope outlives map scope. Loading a map empties every map-scoped pool and leaves the hero, its form records, the tuning state, and the random source untouched.
 - The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it and gives the hero the map's spawn point back; a death clears nothing, so a killed pack stays dead.
 

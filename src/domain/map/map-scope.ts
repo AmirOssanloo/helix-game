@@ -11,7 +11,7 @@ import { clearOrder } from "../orders/state-machine";
  * back and carried to it with its order cleared and its
  * previous position written so nothing interpolates the carry, pack ids count from zero again, the spatial hash is
  * rebuilt at the tuned cell size over what is left, and the map's packs are set back to what
- * a load makes of them: the live ones placed, the dormant ones waiting as records. Run scope is untouched: the hero keeps
+ * a load makes of them: the live ones placed, the dormant ones asleep as records, and every pack whole again. Run scope is untouched: the hero keeps
  * its level, its forms, its clocks, and its statuses. A map load writes the map's spawn point
  * and checkpoints into map scope first and calls this; the panel's reset calls it on the loaded map. A dead hero is carried
  * dead and respawns at the map's spawn point when its delay runs out.

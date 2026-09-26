@@ -54,7 +54,12 @@ export type {
   StandingRule,
 } from "./ai/behaviour";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
-export { createPackRecords, type PackRecord, placeMapPacks } from "./ai/packs";
+export {
+  createPackRecords,
+  type PackRecord,
+  type PackState,
+  placeMapPacks,
+} from "./ai/packs";
 export {
   type AnyCommand,
   type ApplyDamageCommand,

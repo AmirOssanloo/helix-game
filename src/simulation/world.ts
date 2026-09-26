@@ -90,7 +90,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, a waiting record per pack the map lists, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
+/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
   const walkability = deriveGrid(map, tuning);
 
@@ -285,7 +285,7 @@ export class Simulation {
    * obstacles with the path search fitted to it, takes the map's spawn point and checkpoints, and
    * resets map scope around it: every map-scoped entity but the hero released, no checkpoint
    * reached, the hero given the map's spawn point and carried to it with its order cleared, the spatial hash rebuilt over what is
-   * left, the map's live packs placed, and its dormant ones kept as records. Run scope is untouched; the hero is never recreated. Anything standing on
+   * left, the map's live packs placed, and its dormant ones asleep as records. Run scope is untouched; the hero is never recreated. Anything standing on
    * the spawn point is pushed off by collision on the first tick.
    */
   loadMap(map: MapDef): void {

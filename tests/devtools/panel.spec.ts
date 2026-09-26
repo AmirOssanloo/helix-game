@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
 import { FixedStepDriver, Session } from "@app/public";
-import { contentRegistry, tuningTable } from "@content/public";
+import { contentRegistry, meleeGruntDef, tuningTable } from "@content/public";
 import type {
   DevApi,
   MemoryStore,
@@ -22,12 +22,28 @@ import { makeMapDef, makeRegistry } from "../helpers";
 const SEED = 3;
 
 /** The map a session starts on, and a second one with the hero spawning away from the origin, so a recreate on it shows. */
-/** The first map, with one checkpoint off the spawn point for the readout to report. */
+/** The first map, with one checkpoint off the spawn point for the readout to report, and two dormant packs: one inside the activation radius of the spawn point and outside a grunt's aggro radius, one far off. */
 const FIRST_MAP = makeMapDef.build({
   id: "first_map",
   checkpoints: [
     { x: 0, y: 0 },
     { x: 3000, y: 0 },
+  ],
+  packs: [
+    {
+      archetypeId: meleeGruntDef.id,
+      tier: "normal",
+      count: 2,
+      position: { x: 0, y: 1500 },
+      dormant: true,
+    },
+    {
+      archetypeId: meleeGruntDef.id,
+      tier: "normal",
+      count: 2,
+      position: { x: 0, y: -6000 },
+      dormant: true,
+    },
   ],
 });
 
@@ -706,6 +722,25 @@ describe("the developer panel", () => {
     arranged.handle.refresh();
 
     expect(readoutNamed(arranged.host, "Last checkpoint")).toBe("0 at tick 0");
+
+    arranged.handle.unmount();
+  });
+
+  it("shows how many of the map's packs are awake, asleep, and waiting", () => {
+    const arranged = arrange();
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Packs awake / asleep / waiting")).toBe(
+      "0 / 2 / 0",
+    );
+
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Packs awake / asleep / waiting")).toBe(
+      "1 / 1 / 0",
+    );
 
     arranged.handle.unmount();
   });

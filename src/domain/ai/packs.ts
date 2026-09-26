@@ -8,6 +8,7 @@ import {
   acquireUnit,
   countLiveEnemies,
   ENEMY_LIVE_CAP,
+  releaseUnit,
   UNIT_CAPACITY,
 } from "../entities/unit";
 import { fillFromDefinition, wearDefinition } from "../entities/unit-spawn";
@@ -19,18 +20,33 @@ import { resolveDestination } from "../pathing/destination";
 import { applyLifetimeStatuses } from "../statuses/lifetime-statuses";
 
 /**
- * One pack of the loaded map: its definition, and whether it still waits as a record. A
- * dormant pack waits until the hero comes within the activation radius of it; a live one
- * waits only when the map load could not place it, and is placed on the same rule after.
+ * Where one pack of the loaded map stands. Asleep, it is a record costing no unit, until the
+ * hero comes within the activation radius of it; waiting, the world refused it, past the cap
+ * or with no room, and it is tried again on every tick the hero is near; awake, its members
+ * stand in the world under its pack id; dead, it lost its last member and never comes back
+ * on this map.
+ */
+export type PackState = "asleep" | "waiting" | "awake" | "dead";
+
+/**
+ * One pack of the loaded map: its definition, where it stands, the pack id its members share
+ * while it is awake and `null` otherwise, and how many of them are left, which is how many a waking places.
  */
 export type PackRecord = {
   def: PackDef;
-  waiting: boolean;
+  state: PackState;
+  packId: number | null;
+  survivors: number;
 };
 
-/** One record per pack `packs` lists, in its order, each waiting. Built once per map load. */
+/** One record per pack `packs` lists, in its order, each asleep with every member. Built once per map load. */
 export const createPackRecords = (packs: readonly PackDef[]): PackRecord[] =>
-  packs.map((def) => ({ def, waiting: true }));
+  packs.map((def) => ({
+    def,
+    state: "asleep",
+    packId: null,
+    survivors: def.count,
+  }));
 
 /**
  * What `tier` multiplies an archetype's health by: nothing for a normal unit, and the elite or
@@ -232,20 +248,36 @@ export const placePack = (
   return null;
 };
 
-/** Places the pack `pack` records and returns whether it still waits: it does when the world could not take it. */
-const placeRecord = (world: World, pack: PackRecord): boolean => {
+/**
+ * Places the survivors of the pack `pack` records: awake under the pack id they were given
+ * when the world took them, and waiting when it did not.
+ */
+const placeRecord = (world: World, pack: PackRecord): void => {
   const def = pack.def;
+  const packId = world.map.nextPackId;
 
-  return (
-    placePack(world, def.archetypeId, def.tier, def.count, def.position) !==
-    null
-  );
+  if (
+    placePack(
+      world,
+      def.archetypeId,
+      def.tier,
+      pack.survivors,
+      def.position,
+    ) === null
+  ) {
+    pack.state = "awake";
+    pack.packId = packId;
+
+    return;
+  }
+
+  pack.state = "waiting";
 };
 
 /**
- * Sets every pack of the loaded map back to what a map load makes of it: a live pack is
- * placed at once, and a dormant one waits as its record. A live pack the world cannot take,
- * past the cap or with no room, waits too, and is placed the way a dormant one is.
+ * Sets every pack of the loaded map back to what a map load makes of it: every member alive,
+ * a live pack placed at once, and a dormant one asleep as its record. A live pack the world
+ * cannot take, past the cap or with no room, waits, and is placed the way a dormant one is.
  */
 export const placeMapPacks = (world: World): void => {
   const packs = world.map.packs;
@@ -257,29 +289,129 @@ export const placeMapPacks = (world: World): void => {
       continue;
     }
 
-    pack.waiting = pack.def.dormant ? true : placeRecord(world, pack);
+    pack.state = "asleep";
+    pack.packId = null;
+    pack.survivors = pack.def.count;
+
+    if (!pack.def.dormant) {
+      placeRecord(world, pack);
+    }
   }
 };
 
 /**
- * Places every waiting pack whose position `hero` stands within the activation radius of.
- * A pack the world cannot take yet keeps waiting and is tried again on the next tick the
- * hero is near. A map whose packs are all placed costs one pass over its records.
+ * Whether `unit` is a member of a pack rather than an add one of them brought: an add holds
+ * its owner, and ends with it.
  */
-export const activatePacks = (world: World, hero: Readonly<Unit>): void => {
+const isMember = (unit: Readonly<Unit>): boolean => unit.ownerId === null;
+
+/**
+ * Whether a living member lets its pack sleep: it stands in Idle, which is at home, and its
+ * health is full, since a waking places it whole and a sleep must heal nothing a walk home
+ * would not.
+ */
+const isRested = (unit: Readonly<Unit>): boolean =>
+  unit.ai.state === "idle" && unit.resources.health >= unit.stats.maxHealth;
+
+/**
+ * Counts the living members of the awake pack `pack` records, and returns how many there are,
+ * or -1 when one of them is not rested. A corpse and an add are not counted.
+ */
+const countRestedMembers = (world: World, pack: PackRecord): number => {
+  const units = world.map.units;
+  let living = 0;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+
+    if (
+      unit === null ||
+      unit.packId !== pack.packId ||
+      unit.state === "dead" ||
+      !isMember(unit)
+    ) {
+      continue;
+    }
+
+    if (!isRested(unit)) {
+      return -1;
+    }
+
+    living += 1;
+  }
+
+  return living;
+};
+
+/** Gives back every slot the awake pack `pack` records holds: its members, its corpses, and its adds. */
+const releasePack = (world: World, pack: PackRecord): void => {
+  const units = world.map.units;
+
+  for (let index = 0; index < units.end; index += 1) {
+    const unit = units.at(index);
+    const id = units.idAt(index);
+
+    if (unit !== null && id !== null && unit.packId === pack.packId) {
+      releaseUnit(world, id);
+    }
+  }
+};
+
+/**
+ * Puts the awake pack `pack` records back to sleep when every living member is rested: its
+ * slots go back to the pool, and the record keeps how many survived. A pack with none left is
+ * dead for the map. A pack with a member still fighting, walking home, or hurt stays awake.
+ */
+const trySleep = (world: World, pack: PackRecord): void => {
+  const living = countRestedMembers(world, pack);
+
+  if (living < 0) {
+    return;
+  }
+
+  releasePack(world, pack);
+  pack.packId = null;
+  pack.survivors = living;
+  pack.state = living > 0 ? "asleep" : "dead";
+};
+
+/**
+ * Wakes and sleeps the loaded map's packs around `hero`. An awake pack whose point the hero
+ * is farther than the sleep radius from, or the activation radius if that is larger, sleeps
+ * when its members let it, so a pack is never woken and put to sleep on one tick. An asleep
+ * or waiting pack whose point the hero is within the activation radius of places its
+ * survivors; one the world cannot take yet waits, and is tried again on the next tick the
+ * hero is near. A pack spawned from the panel has no record, and never sleeps.
+ */
+export const wakeAndSleepPacks = (world: World, hero: Readonly<Unit>): void => {
   const packs = world.map.packs;
-  const radius = readTunable(world.run.tuning, "pack_activation_radius");
-  const reach = radius * radius;
+  const wake = readTunable(world.run.tuning, "pack_activation_radius");
+  const sleep = Math.max(
+    readTunable(world.run.tuning, "pack_sleep_radius"),
+    wake,
+  );
+  const wakeReach = wake * wake;
+  const sleepReach = sleep * sleep;
 
   for (let index = 0; index < packs.length; index += 1) {
     const pack = packs[index];
 
-    if (
-      pack !== undefined &&
-      pack.waiting &&
-      distanceSquared(hero.curr, pack.def.position) <= reach
-    ) {
-      pack.waiting = placeRecord(world, pack);
+    if (pack === undefined || pack.state === "dead") {
+      continue;
+    }
+
+    const gap = distanceSquared(hero.curr, pack.def.position);
+
+    if (pack.state === "awake") {
+      if (gap > sleepReach) {
+        trySleep(world, pack);
+      }
+
+      continue;
+    }
+
+    if (gap <= wakeReach) {
+      placeRecord(world, pack);
     }
   }
 };

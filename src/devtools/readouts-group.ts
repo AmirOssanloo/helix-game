@@ -1,5 +1,5 @@
 import type { FolderApi } from "tweakpane";
-import type { RefusalReason } from "@domain/public";
+import type { PackRecord, PackState, RefusalReason } from "@domain/public";
 import { ENEMY_LIVE_CAP, readTunable } from "@domain/public";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
@@ -42,10 +42,27 @@ const meanAndMax = (
 
 const latest = (ring: SampleRing): string => formatNumber(lastSample(ring), 0);
 
+/** How many of the loaded map's packs stand in `state`. */
+const countPacks = (packs: readonly PackRecord[], state: PackState): number => {
+  let count = 0;
+
+  for (const pack of packs) {
+    if (pack.state === state) {
+      count += 1;
+    }
+  }
+
+  return count;
+};
+
+/** `awake / asleep / waiting` over the loaded map's packs. A pack spawned from the panel has no record and is not counted. */
+const packsText = (packs: readonly PackRecord[]): string =>
+  `${String(countPacks(packs, "awake"))} / ${String(countPacks(packs, "asleep"))} / ${String(countPacks(packs, "waiting"))}`;
+
 /**
  * The readouts group: every measurement the rings hold, as mean and max over the last second
- * for the timings and as the latest sample for the counts, plus the tick number from the view
- * and, from the event ring read with `reader`, the panel's own cursor, the last refusal, the last hit
+ * for the timings and as the latest sample for the counts, plus the tick number and how many of
+ * the loaded map's packs are awake, asleep, and waiting from the view and, from the event ring read with `reader`, the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, and how many units have
  * died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
@@ -68,6 +85,7 @@ export const readoutsGroup = (
   const viewMisses = readout(folder, "View misses");
   const overwrites = readout(folder, "Event overwrites");
   const tick = readout(folder, "Tick");
+  const packs = readout(folder, "Packs awake / asleep / waiting");
   const refusal = readout(folder, "Last refusal");
   const damage = readout(folder, "Last damage");
   const status = readout(folder, "Last status");
@@ -153,6 +171,7 @@ export const readoutsGroup = (
       viewMisses.show(latest(rings.viewMisses));
       overwrites.show(latest(rings.eventOverwrites));
       tick.show(String(api.view.tick));
+      packs.show(packsText(api.view.map.packs));
       refusal.show(lastRefusal);
       damage.show(lastDamage);
       status.show(lastStatus);

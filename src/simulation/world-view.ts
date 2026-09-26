@@ -1,5 +1,6 @@
 import type {
   Effect,
+  PackRecord,
   PoolView,
   Projectile,
   RunScope,
@@ -32,5 +33,6 @@ export type WorldView = DeepReadonly<{
     spawnPoint: Readonly<Vec2>;
     checkpoints: readonly Readonly<Vec2>[];
     furthestCheckpoint: number;
+    packs: readonly PackRecord[];
   };
 }>;

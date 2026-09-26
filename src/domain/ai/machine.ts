@@ -460,8 +460,9 @@ const wander = (world: World, unit: Unit, index: number): void => {
 
 /**
  * One tick of Idle: a hero the unit can see, inside its aggro radius or having hit it, sends
- * it and its pack through Aggro into Chase; otherwise it wanders. A behaviour that never
- * engages stands, and forgets what hit it.
+ * it and its pack through Aggro into Chase; otherwise it regenerates at its definition's
+ * rates, as Return does, and wanders, so a unit home before it was whole keeps healing and
+ * its pack can sleep again. A behaviour that never engages stands, and forgets what hit it.
  */
 const rest = (
   world: World,
@@ -486,6 +487,8 @@ const rest = (
     (provoked || distanceSquared(unit.curr, hero.curr) <= aggro * aggro);
 
   if (!notices) {
+    regenerate(unit.resources, unit.stats);
+
     if (behaviour.wanders) {
       wander(world, unit, index);
     }

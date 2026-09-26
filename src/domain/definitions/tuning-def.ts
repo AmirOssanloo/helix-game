@@ -52,6 +52,7 @@ export type TuningKey =
   | "chase_repath_interval"
   | "ranged_hold_margin"
   | "pack_activation_radius"
+  | "pack_sleep_radius"
   | "pack_placement_radius"
   | "checkpoint_reach_radius"
   | "elite_health_multiplier"
@@ -126,6 +127,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   chase_repath_interval: "seconds",
   ranged_hold_margin: "world_units",
   pack_activation_radius: "world_units",
+  pack_sleep_radius: "world_units",
   pack_placement_radius: "world_units",
   checkpoint_reach_radius: "world_units",
   elite_health_multiplier: "as_written",

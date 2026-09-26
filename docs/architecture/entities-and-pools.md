@@ -81,7 +81,9 @@ Nothing may assume the hero is recreated per map.
 
 A map definition holds spawn data, not units. A pack is dormant — a record of what to spawn and where — until the hero comes within an activation radius, and only then does the AI system acquire units for it. A large map with many packs costs the tick nothing until the hero is near, and the unit pool bounds the live cost whatever the map's size.
 
-The records are map scope, rebuilt by `loadMap`. A pack not marked dormant is placed by the load itself. A record is placed once; a pack that dies stays dead until the map loads again. A pack the world cannot take, past the live cap or with no room, keeps waiting and is placed on the rule a dormant one is.
+The records are map scope, rebuilt by `loadMap`. A pack not marked dormant is placed by the load itself. Each record is asleep, waiting, awake, or dead. A pack the world cannot take, past the live cap or with no room, waits and is tried on every tick the hero is near.
+
+Dormancy runs both ways, in the one rule the AI pass ends with. An awake pack whose point the hero is farther from than the `pack_sleep_radius` tunable, or the activation radius if that is larger, sleeps once every living member stands in Idle at full health: every slot under its pack id, adds and corpses included, goes back to the pool, and the record keeps its survivor count. Waking places the survivors, whole, under a new pack id. A pack with no living member is dead for the map until the map loads again. A pack spawned from the panel has no record and never sleeps. Sleeping and waking touch only the record and the pool, so neither allocates.
 
 A pack's members stand on free cells taken ring by ring outward from its point, one body apart. The search stops at the `pack_placement_radius` tunable, in world units from the point, so a pack walled in with no room within that radius costs a bounded search each tick it is tried, and waits. The default holds a pack at the live cap of the largest bodies on open ground.
 
@@ -124,8 +126,8 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | The hero's forms | Run-scoped records: definition, resources, kit state, armory; the unit holds the active index |
 | A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |
 | The hero's definition | Read through the active form every tick; never cached across ticks |
-| Packs | Spawn data until the hero is within the activation radius; then units |
-| A map's pack records | Map scope, rebuilt by `loadMap`; a pack not marked dormant placed by the load; each placed once per load; one the world cannot take keeps waiting |
+| Packs | Spawn data until the hero is within the activation radius; then units; spawn data again once the hero is past `pack_sleep_radius` and every living member rests at home at full health |
+| A map's pack records | Map scope, rebuilt by `loadMap`; asleep, waiting, awake, or dead; a pack not marked dormant placed by the load; a sleep keeps the survivor count, and a pack with none is dead until the next load; one the world cannot take keeps waiting |
 | A pack's placement | Free cells ring by ring from its point, no further than `pack_placement_radius`; no room within it, and it waits |
 
 ---

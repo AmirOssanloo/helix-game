@@ -59,6 +59,52 @@ const refusalsOf = (world: Simulation, reader: EventReader): string[] => {
   return found;
 };
 
+/**
+ * The most enemies any map's spec lets stand in packs within the sleep radius of one walkable
+ * point, by map id. The arena holds no packs of its own, so its bound is none. A map with no
+ * row here fails, so a new map names its spec's bound as it is added.
+ */
+const LIVE_NEAR_BOUND: Readonly<Record<string, number>> = {
+  arena: 0,
+};
+
+/**
+ * The most enemies in packs whose point lies within `radius` of one point of `map` open to the
+ * hero, over the centre of every such cell of the grid the game derives for it.
+ */
+const mostEnemiesNear = (map: MapDef, radius: number): number => {
+  const grid = gridOf(map);
+  const reach = radius * radius;
+  let most = 0;
+
+  for (let row = 0; row < grid.rows; row += 1) {
+    const y = grid.originY + (row + 0.5) * grid.cellSize;
+
+    for (let column = 0; column < grid.columns; column += 1) {
+      const x = grid.originX + (column + 0.5) * grid.cellSize;
+
+      if (isBlockedAt(grid, HERO_CLASS, x, y)) {
+        continue;
+      }
+
+      let near = 0;
+
+      for (const pack of map.packs) {
+        const dx = pack.position.x - x;
+        const dy = pack.position.y - y;
+
+        if (dx * dx + dy * dy <= reach) {
+          near += pack.count;
+        }
+      }
+
+      most = Math.max(most, near);
+    }
+  }
+
+  return most;
+};
+
 const faultsOf = (id: string) =>
   validateRegistry(contentRegistry).filter((fault) =>
     fault.file.endsWith(`/${id.replace(/_/g, "-")}.def.ts`),
@@ -147,10 +193,50 @@ describe("every map", () => {
     },
   );
 
+  it.each(maps.map((map) => [map.id, map] as const))(
+    "%s has no walkable point with more enemies in packs within the sleep radius than its spec's bound",
+    (id, map) => {
+      const bound = LIVE_NEAR_BOUND[id];
+
+      expect(bound).toBeDefined();
+      expect(
+        mostEnemiesNear(map, tuningTable.pack_sleep_radius),
+      ).toBeLessThanOrEqual(bound ?? 0);
+    },
+  );
+
   it("has an id no other map shares", () => {
     const ids = maps.map((map) => map.id);
 
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("live enemies near a point", () => {
+  const packAt = (x: number, count: number) => ({
+    archetypeId: "melee_grunt",
+    tier: "normal" as const,
+    count,
+    position: { x, y: 0 },
+    dormant: true,
+  });
+
+  it("adds up every pack within the radius of the worst walkable point", () => {
+    const map = makeMapDef.build({
+      packs: [packAt(-1000, 5), packAt(1000, 7), packAt(6000, 9)],
+    });
+
+    expect(mostEnemiesNear(map, 2000)).toBe(12);
+    expect(mostEnemiesNear(map, 900)).toBe(9);
+  });
+
+  it("does not count a pack whose point no walkable point comes within the radius of", () => {
+    const map = makeMapDef.build({
+      obstacles: [{ minX: -2048, minY: -2048, maxX: 2048, maxY: 2048 }],
+      packs: [packAt(0, 5)],
+    });
+
+    expect(mostEnemiesNear(map, 1000)).toBe(0);
   });
 });
 

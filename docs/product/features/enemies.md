@@ -62,7 +62,7 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 
 | State | What the enemy does | Leaves when |
 | --- | --- | --- |
-| Idle | Stands at its spawn point, or wanders a few units around it | The hero enters its aggro radius, or it takes damage |
+| Idle | Stands at its spawn point, or wanders a few units around it, regenerating | The hero enters its aggro radius, or it takes damage |
 | Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
 | Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero untargetable or hidden from aggro, into Return |
 | Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, or the hero dead, into Chase; or target lost, hidden, or past its leash radius, into Return |
@@ -93,7 +93,7 @@ Stun (a bash on hit), slow (a frost attack), silence (a caster's curse), root (a
 
 The bash and the frost attack are not cast. Each is a status the archetype carries from the moment it spawns until it dies, whose damage-dealt hook stuns or slows whatever its swing or shot lands on, at most once per the hook's internal cooldown. Its icon shows above the enemy for as long as it lives, so the player can tell a basher from a plain grunt. The curse is cast at the hero and silences it once its cast point ends. The net is thrown from the enemy at the hero, flies to it, and roots it where it lands.
 
-The arrow is loosed from the enemy at the hero, homes on it, and deals physical damage where it lands, so armour takes its share. The slam strikes a circle around the enemy, damaging every unit on the hero's side inside and pushing each one straight away from the enemy; a wall stops the push. It is cast only once the hero is inside the circle, and its long cast point is the tell. The self-heal is cast on the enemy itself only once its health is below a fraction of its maximum, and restores health for a few seconds, never past the maximum; a stun in its cast point cancels it. It is the only way an enemy regains health in a fight, since its regeneration runs only while it walks home.
+The arrow is loosed from the enemy at the hero, homes on it, and deals physical damage where it lands, so armour takes its share. The slam strikes a circle around the enemy, damaging every unit on the hero's side inside and pushing each one straight away from the enemy; a wall stops the push. It is cast only once the hero is inside the circle, and its long cast point is the tell. The self-heal is cast on the enemy itself only once its health is below a fraction of its maximum, and restores health for a few seconds, never past the maximum; a stun in its cast point cancels it. It is the only way an enemy regains health in a fight, since its regeneration runs only while it walks home and rests there.
 
 The call for adds brings two imps beside the enemy: small, quick, and frail enemies of its pack that go for the hero, worth no experience, gone when their lifetime runs out or on the tick their summoner dies. They count against the live cap, so a call that would pass the cap is refused whole, spending nothing and starting no clock, and the enemy attacks instead. The charge carries the enemy itself at the hero, fast, up to its distance or until it meets the hero's edge, whichever is nearer; a wall stops it where it stands, and the enemy attacks from wherever the charge left it. Nothing else moves it while it charges, and its icon says so.
 
@@ -107,7 +107,9 @@ An enemy that dies grants its definition's experience reward, times its tier's m
 
 On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. Whatever the map, at most 200 enemies hold a slot at once, imps included, and a corpse keeps its slot until it is cleared: the budget performance is measured at, a constant beside the unit pool in `src/domain/entities/unit.ts`, not a tunable. A pack or a cast of adds that would pass it is refused whole. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
 
-A pack spawns once per map load: one the hero kills does not come back when the hero walks near its point again. Resetting the map puts every pack back as it was at load.
+A pack left behind sleeps again, so the live count follows the hero rather than the map. Once the hero is farther from its point than a sleep radius, larger than the activation radius so a hero at the edge does not wake and sleep it every tick, and every living member rests in Idle at full health, its units go back to the pool and it waits as spawn data again, keeping how many survived. There is no leash heal: a member comes home no healthier than its walk home and its rest made it, and a pack with one still fighting, walking home, or hurt stays awake. Walking back wakes the survivors, whole, in Idle. A summoner's adds go with it and are not survivors. A pack spawned from the panel is not map data and never sleeps.
+
+A pack the hero kills to the last member is dead for the map load: it does not come back when the hero walks near its point again, and the hero's death does not bring it back. Resetting the map puts every pack back as it was at load, every member alive.
 
 ## States and edge cases
 
@@ -119,6 +121,9 @@ A pack spawns once per map load: one the hero kills does not come back when the 
 | A summoner dies, or the hero with a summon out | Its adds or summons go on the same tick, with no corpse and no experience |
 | Enemy calls adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |
 | Hero nears a dormant pack with the live cap reached | The pack keeps waiting, and is placed on a later tick the hero is near and the cap has room |
+| Hero leaves a pack that is still walking home, or hurt | It stays awake, and sleeps once every living member is home in Idle at full health and the hero is still past the sleep radius |
+| A pack that lost members sleeps | It keeps its survivors; walking back wakes that many, whole |
+| A summoner's pack sleeps with its adds out | The adds go with it, with no corpse and no experience, and do not come back on waking |
 | Dummy takes lethal damage | Health clamps at 1; damage numbers still show the full amount |
 | Enemy killed while returning | Dies normally, grants experience |
 | Spawn point occupied on Return | The enemy stops at the nearest free spot and idles there |

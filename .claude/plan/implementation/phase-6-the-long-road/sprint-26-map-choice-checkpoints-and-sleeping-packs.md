@@ -74,7 +74,7 @@ The reach radius has no default in the docs: 512, decided provisionally as Q60. 
 | Layer | domain, content, devtools, tests, docs |
 | Size | 1.5 |
 | Depends on | P6-S25-T04 |
-| Status | planned |
+| Status | done |
 
 **Build:** Dormancy in both directions, in the activation rule of `src/domain/ai/packs.ts`. A pack placed from a map's record sleeps again when every living member is idle at home at full health, having regenerated as Return does with no leash heal (Q28, Q53), and the hero is farther than a `pack_sleep_radius` tunable, larger than the activation radius so a hero at the edge does not wake and sleep it every tick. Sleeping releases its units to the pool and keeps the record with its survivor count; waking places the survivors. A pack with no survivors is dead for the map. A summoner's adds end with it as ADR 0007 says and are not survivors. A pack spawned from the panel has no record and never sleeps. The panel's readouts group shows packs awake, asleep, and waiting. A content check: for every map, the enemies in packs within the sleep radius of any walkable cell stay within the bound the map's spec names. The [entities and pools](../../../../docs/architecture/entities-and-pools.md) page's dormant-pack section, its table row, and its quick reference, and the [enemies](../../../../docs/product/features/enemies.md) page's dormant-pack section and edge cases, state the rule. No ADR.
 
@@ -91,15 +91,17 @@ The reach radius has no default in the docs: 512, decided provisionally as Q60. 
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A developer-panel control · A documentation change.
 
+The docs give no sleep radius beyond "larger than the activation radius" and the spec's bound "for any sleep radius up to 3200": 2000, decided provisionally as Q61. A member that came home hurt never healed, since regeneration ran only in Return, so a fought pack would never sleep and the live count would ratchet: an enemy now regenerates at its definition's rates in Idle too, as Return does, with no leash heal, decided provisionally as Q62. The record's `waiting` flag became a state, asleep, waiting, awake, or dead, with the pack id and the survivor count. The content check reads each map's bound from a table in `tests/content/maps.spec.ts` keyed by map id, the arena's 0, and fails a map with no row; the long road's row, 40 from its spec, comes with its map. The panel readout's **Packs** row is a readout, not a control, so the rows about a `DebugCommand` are not applicable.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Map choice and a log loaded on its map, by hand | |
-| Respawn at the furthest checkpoint; the live count falls behind the hero | |
-| Actual days per ticket | T01 0.5 of 1 · T02 0.5 of 1.5 |
+| Map choice and a log loaded on its map, by hand | Headless in T01's panel and replay-format specs: the recreate on a second map, a log loading on its own map, an unknown map refused. The walk by hand waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
+| Respawn at the furthest checkpoint; the live count falls behind the hero | Headless: T02's death spec respawns at the furthest; T03's door test walks the sixteen-pack strip end to end with at most two packs awake, 40 enemies live, none waiting, and all sixteen woken, and the dormancy spec sleeps a fought pack once it is home and whole. The six logs are re-stamped on content version `ea0a5f07`. The look in the panel waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
+| Actual days per ticket | T01 0.5 of 1 · T02 0.5 of 1.5 · T03 1 of 1.5. Sprint 2 of 4 sized days; the buffer untouched |
 
 ## Risks in this sprint
 
