@@ -21,7 +21,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | Layer | domain, tests, docs |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** In `src/domain/ai/machine.ts`, while the hero is dead an enemy in Chase or Attack returns home as a leashed enemy does, instead of chasing the hero's respawn point. On a long map the respawn point can be a map-length path away, which is R4's cost for every chaser at once. After the respawn, aggro is read as it always is. The [enemies](../../../../docs/product/features/enemies.md) page's edge cases state it.
 
@@ -135,7 +135,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | --- | --- |
 | A feedback file saved, reloaded, and stopped at its tick, by hand | |
 | Enemies home while the hero is dead; the checkpoint jump and marker by hand | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.25 |
 
 ## Risks in this sprint
 

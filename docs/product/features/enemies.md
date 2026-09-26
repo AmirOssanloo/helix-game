@@ -64,8 +64,8 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 | --- | --- | --- |
 | Idle | Stands at its spawn point, or wanders a few units around it, regenerating | The hero enters its aggro radius, or it takes damage |
 | Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
-| Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero untargetable or hidden from aggro, into Return |
-| Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, or the hero dead, into Chase; or target lost, hidden, or past its leash radius, into Return |
+| Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero dead, untargetable, or hidden from aggro, into Return |
+| Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, into Chase; or the hero dead, target lost, hidden, or past its leash radius, into Return |
 | Return | Paths back to its spawn point, ignoring the hero, regenerating | Arrives, into Idle |
 | Dead | Gives experience, clears statuses, releases its slot after a short delay | Never |
 
@@ -127,7 +127,7 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 | Dummy takes lethal damage | Health clamps at 1; damage numbers still show the full amount |
 | Enemy killed while returning | Dies normally, grants experience |
 | Spawn point occupied on Return | The enemy stops at the nearest free spot and idles there |
-| Hero dies with enemies chasing | They keep chasing to the hero's spawn point; nothing resets them |
+| Hero dies with enemies chasing | They turn for home on the next tick, as a leashed enemy does, and none paths toward where the hero will stand up, which on a long map can be a map away. Once it stands up, aggro is read as it always is: a pack home within its aggro radius of the hero takes it up again |
 | Enemy blocked by a pack in a corridor | Pushes, waits, re-paths on its budget; never walks through |
 
 ## Deferred

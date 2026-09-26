@@ -400,7 +400,7 @@ describe("Spawn point occupied on Return", () => {
 });
 
 describe("Hero dies with enemies chasing", () => {
-  /** A pack of three grunts chasing a hero that is then killed where it stands, on its spawn point. */
+  /** A pack of three grunts a second into chasing a hero that is then killed where it stands, on its spawn point. */
   const killedWhileChased = (): Arranged & { pack: Unit[] } => {
     const arranged = arrange();
     const { world } = arranged;
@@ -408,34 +408,56 @@ describe("Hero dies with enemies chasing", () => {
       spawnAt(world, meleeGruntDef.id, x),
     );
 
-    world.tick();
+    for (let tick = 0; tick < SETTLE / 2; tick += 1) {
+      world.tick();
+    }
+
     submit(world, stamp(world, { kind: "kill_hero" }));
     world.tick();
 
     return { ...arranged, pack };
   };
 
-  it("keeps the pack chasing to the spawn point: nothing resets them", () => {
+  it("turns the pack for home on the next tick, and none walks toward the respawn point", () => {
     const { world, hero, pack } = killedWhileChased();
-    const seen = new Set<string>();
+    const fromRespawn = (member: Readonly<Unit>): number =>
+      Math.hypot(
+        member.curr.x - hero.spawnPoint.x,
+        member.curr.y - hero.spawnPoint.y,
+      );
+    const atDeath = pack.map(fromRespawn);
+
+    world.tick();
+
+    expect(pack.map((member) => member.ai.state)).toEqual([
+      "return",
+      "return",
+      "return",
+    ]);
+
+    let nearest = Number.POSITIVE_INFINITY;
 
     while (hero.state === "dead") {
+      pack.forEach((member, slot) => {
+        nearest = Math.min(nearest, fromRespawn(member) - (atDeath[slot] ?? 0));
+      });
       world.tick();
-
-      for (const member of pack) {
-        seen.add(member.ai.state);
-      }
     }
 
-    expect([...seen]).toEqual(["chase"]);
+    expect(nearest).toBeGreaterThanOrEqual(-EPSILON);
   });
 
-  it("gives the hero no grace period: the pack attacks on the tick after it stands up", () => {
+  it("gives the hero no grace period: a pack whose aggro radius reaches the respawn point takes it up again", () => {
     const { world, hero, pack } = killedWhileChased();
 
     tickUntil(world, () => hero.state !== "dead", PATIENCE);
-    world.tick();
+    tickUntil(
+      world,
+      () => pack.some((member) => member.ai.state === "attack"),
+      PATIENCE,
+    );
 
+    expect(hero.state).not.toBe("dead");
     expect(pack.map((member) => member.ai.state)).toContain("attack");
   });
 });

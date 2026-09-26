@@ -213,6 +213,11 @@ const statusHero = (world: Simulation, statusId: string): void => {
   );
 };
 
+/** The panel's kill, which empties the hero's health for the death system to take at the end of the tick. */
+const killHero = (world: Simulation): void => {
+  submit(world, stamp(world, { kind: "kill_hero" }));
+};
+
 /** One point of pure damage on `unit` from the hero. */
 const hit = (world: Simulation, unit: Unit, heroId: EntityId): void => {
   applyDamage(world.state, unitIdOf(world, unit), 1, "pure", heroId);
@@ -400,28 +405,31 @@ describe.each(FIGHTERS)(
         expect(enemy.ai.state).toBe("return");
       });
 
-      it("keeps chasing a dead hero to the point it stands up at", () => {
-        const { world, hero } = arrange();
-
-        walkHero(world, 400, 0);
-        tickUntil(world, () => hero.curr.x >= 400 - EPSILON, PATIENCE);
-
+      it("goes home on the tick after the hero dies, never toward where it stands up", () => {
+        const { world, hero, heroId } = arrange();
         const enemy = spawnEnemy(world, {
           definitionId: def.id,
-          x: 800,
+          x: AGGRO_RADIUS + 400,
           y: 0,
         });
 
+        hit(world, enemy, heroId);
+        tickUntil(world, () => fromHome(enemy) > 100, PATIENCE);
+
+        expect(enemy.ai.state).toBe("chase");
+
+        killHero(world);
         world.tick();
-        submit(world, stamp(world, { kind: "kill_hero" }));
+
+        expect(hero.state).toBe("dead");
+
         world.tick();
-        tickUntil(world, () => hero.state !== "dead", PATIENCE);
 
         expect([
           enemy.ai.state,
           enemy.order.destination.x,
           enemy.order.destination.y,
-        ]).toEqual(["chase", hero.spawnPoint.x, hero.spawnPoint.y]);
+        ]).toEqual(["return", enemy.spawnPoint.x, enemy.spawnPoint.y]);
       });
     });
 
@@ -458,6 +466,46 @@ describe.each(FIGHTERS)(
           enemy.state,
           world.view.map.projectiles.count,
         ]).toEqual(["return", "turning", 0]);
+      });
+
+      it("goes home on the tick after the hero dies", () => {
+        const { world, hero } = arrange();
+        const enemy = spawnEnemy(world, {
+          definitionId: def.id,
+          x: AGGRO_RADIUS - 50,
+          y: 0,
+        });
+
+        tickUntil(world, () => enemy.ai.state === "attack", PATIENCE);
+        killHero(world);
+        world.tick();
+
+        expect(hero.state).toBe("dead");
+
+        world.tick();
+
+        expect([enemy.ai.state, enemy.order.kind]).toEqual(["return", "move"]);
+      });
+
+      it("takes the hero up again once it stands up inside the aggro radius", () => {
+        const { world, hero } = arrange();
+        const enemy = spawnEnemy(world, {
+          definitionId: def.id,
+          x: AGGRO_RADIUS - 50,
+          y: 0,
+        });
+
+        tickUntil(world, () => enemy.ai.state === "attack", PATIENCE);
+        killHero(world);
+        world.tick();
+        tickUntil(world, () => hero.state !== "dead", PATIENCE);
+        tickUntil(
+          world,
+          () => enemy.ai.state === "chase" || enemy.ai.state === "attack",
+          PATIENCE,
+        );
+
+        expect(hero.state).not.toBe("dead");
       });
 
       it("goes home when the hero becomes untargetable", () => {

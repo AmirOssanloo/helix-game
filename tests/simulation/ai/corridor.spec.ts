@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { arenaDef, fastRunnerDef, meleeGruntDef } from "@content/public";
+import {
+  arenaDef,
+  contentRegistry,
+  fastRunnerDef,
+  meleeGruntDef,
+} from "@content/public";
 import type { Unit } from "@domain/public";
 import { applyDamage } from "@domain/public";
 import type { Simulation } from "@simulation/public";
@@ -39,9 +44,23 @@ const HOMECOMING = 1200;
 
 type Arranged = Readonly<{ world: Simulation; grunts: readonly Unit[] }>;
 
-/** The hero west of the corridor and a pack of grunts east of it, every grunt already chasing. */
+/**
+ * The content's enemies with the grunt's swing made harmless. The cases below are about how a
+ * pack queues, and ten grunts kill a hero that stands still, which would send them home.
+ */
+const HARMLESS = contentRegistry.enemies.map((def) =>
+  def.id === meleeGruntDef.id
+    ? { ...def, attack: { ...def.attack, damage: 0 } }
+    : def,
+);
+
+/** The hero west of the corridor and a pack of harmless grunts east of it, every grunt already chasing. */
 const arrange = (): Arranged => {
-  const world = makeWorld({ seed: 1, registry: makeRegistry(), map: arenaDef });
+  const world = makeWorld({
+    seed: 1,
+    registry: makeRegistry({ enemies: HARMLESS }),
+    map: arenaDef,
+  });
   const hero = spawnHero(world, HERO_AT);
 
   submit(world, {
@@ -159,16 +178,21 @@ describe("a pack of grunts in the corridor", () => {
     expect(closest).toBeGreaterThanOrEqual(RADIUS + RADIUS - EPSILON);
   });
 
-  it("brings every grunt through to attack the hero", () => {
+  it("brings every grunt through to the hero, still fighting it", () => {
     const { world, grunts } = arrange();
 
     for (let tick = 0; tick < PATIENCE; tick += 1) {
       world.tick();
     }
 
-    expect(grunts.map((grunt) => grunt.ai.state)).toEqual(
-      grunts.map(() => "attack"),
-    );
+    expect(
+      grunts.map(
+        (grunt) =>
+          grunt.curr.x < CORRIDOR_WEST &&
+          (grunt.ai.state === "attack" || grunt.ai.state === "chase"),
+      ),
+    ).toEqual(grunts.map(() => true));
+    expect(grunts.map((grunt) => grunt.ai.state)).toContain("attack");
   });
 
   it("brings a mixed pack back home through the corridor after it leashes", () => {

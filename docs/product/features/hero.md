@@ -73,7 +73,7 @@ When health reaches zero the hero enters a death state at the end of that tick: 
 | Zero mana and R pressed | Invoke is refused at key-down; a HUD flash on the R square; nothing is spent, the orb buffer is untouched |
 | Killed during a cast point | The cast is cancelled; no mana spent, no cooldown started, because both happen at the end of the cast point |
 | Killed while a projectile is in flight | The projectile still lands; damage credited to the hero for experience |
-| Respawn while enemies are aggroed | Enemies keep their aggro and path to the spawn point; the hero gets no grace period. The spawn point is placed so this is survivable on the arena |
+| Respawn while enemies are aggroed | Enemies went home when the hero died; any whose aggro radius reaches where it stands up take it up again once they are home. The hero gets no grace period. The spawn point is placed so this is survivable on the arena |
 | Skill point unspent | Kept until spent; the HUD shows a marker beside the level number |
 | Regeneration while at full | Nothing; values clamp at maximum |
 

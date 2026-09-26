@@ -89,11 +89,12 @@ const canSee = (hero: Readonly<Unit> | null): hero is Unit =>
   hero !== null && isReachable(hero) && !hero.disables.aggroHidden;
 
 /**
- * Whether the hero is lost to a unit already fighting it: gone, or alive and untargetable. A
- * dead hero is not lost; what was chasing it walks on to where it will stand up again.
+ * Whether the hero is lost to a unit already fighting it: gone, dead, or untargetable. A dead
+ * hero is lost like any other, so what was chasing it walks home rather than across the map to
+ * where it will stand up again, and notices it there as it would anyone.
  */
 const isLost = (hero: Readonly<Unit> | null): hero is null =>
-  hero === null || (hero.state !== "dead" && hero.disables.untargetable);
+  hero === null || hero.state === "dead" || hero.disables.untargetable;
 
 /** Whether the unit stands further from its own spawn point than its leash reaches. */
 const isPastLeash = (unit: Readonly<Unit>, record: UnitRecord): boolean => {
@@ -183,7 +184,7 @@ const enterAttack = (unit: Unit, heroId: EntityId): void => {
  * One tick of Chase: a lost hero, a hidden one, or a leash passed sends the unit home; a cast
  * of its own under way is left to run; an ability the selection rule takes is cast; a hero in
  * reach turns it to Attack; otherwise, at most once a re-path interval, it walks to where its
- * behaviour wants to stand. A dead hero is chased to the point it will stand up at.
+ * behaviour wants to stand, or to the hero's spawn point for a unit with no attack.
  */
 const chase = (
   world: World,
@@ -199,9 +200,7 @@ const chase = (
     return;
   }
 
-  const isDead = hero.state === "dead";
-
-  if (!isDead && hero.disables.aggroHidden) {
+  if (hero.disables.aggroHidden) {
     enterReturn(world, unit);
 
     return;
@@ -211,13 +210,13 @@ const chase = (
     return;
   }
 
-  if (!isDead && selectAbility(world, unit, record, hero, heroId)) {
+  if (selectAbility(world, unit, record, hero, heroId)) {
     return;
   }
 
   const swing = attackOf(world, unit);
 
-  if (!isDead && swing !== null && isInAttackRange(unit, hero, swing)) {
+  if (swing !== null && isInAttackRange(unit, hero, swing)) {
     enterAttack(unit, heroId);
 
     return;
@@ -229,7 +228,7 @@ const chase = (
 
   unit.ai.repathAtTick = world.tick + tuning.repathTicks;
 
-  if (isDead || swing === null) {
+  if (swing === null) {
     walkTo(world, unit, hero.spawnPoint.x, hero.spawnPoint.y);
 
     return;
@@ -299,8 +298,8 @@ const backAway = (
 };
 
 /**
- * One tick of Attack: a lost hero or a leash passed sends the unit home, cancelling the point
- * under way; a dead hero turns it back to Chase. A hidden hero sends it home too, unless it is
+ * One tick of Attack: a lost hero, a dead one included, or a leash passed sends the unit home,
+ * cancelling the point under way. A hidden hero sends it home too, unless it is
  * adjacent, a melee attacker in reach, which swings on; an archer firing from range drops the
  * hero with the rest, and an arrow already in the air lands. A cast of its own under way is
  * left to run, and an ability the selection rule takes on a hero it can see is cast. In reach
@@ -319,12 +318,6 @@ const fight = (
 ): void => {
   if (isLost(hero) || heroId === null || isPastLeash(unit, record)) {
     enterReturn(world, unit);
-
-    return;
-  }
-
-  if (hero.state === "dead") {
-    enterChase(world, unit, record, behaviour, hero, heroId);
 
     return;
   }

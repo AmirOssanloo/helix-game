@@ -52,6 +52,9 @@ const OUT_OF_SIGHT = meleeGruntDef.aggroRadius + 400;
 const LIFT_TICKS = 30;
 const BURN_TICKS = 300;
 
+/** How long a pack chases before the hero is killed, far enough that each grunt is well off its spawn point. */
+const CHASE_TICKS = 30;
+
 /** Long enough for any wait below. */
 const PATIENCE = 1500;
 
@@ -227,13 +230,13 @@ const returningGrunt = (): Arranged & { grunt: Unit } => {
   return { ...arranged, grunt };
 };
 
-/** A pack of three grunts chasing the hero, which is then killed where it stands, on its spawn point. */
+/** A pack of three grunts a second into chasing the hero, which is then killed where it stands, on its spawn point. */
 const killedWhileChased = (): Arranged & { pack: Unit[] } => {
   const arranged = arrange();
   const { world } = arranged;
   const pack = [600, 700, 800].map((x) => spawnAt(world, meleeGruntDef.id, x));
 
-  world.tick();
+  tickTimes(world, CHASE_TICKS);
   killHero(world);
   world.tick();
 
@@ -291,12 +294,17 @@ describe("hero", () => {
     expect(hero.progression.experience).toBe(meleeGruntDef.experience);
   });
 
-  it("Respawn while enemies are aggroed: they keep their aggro, and the hero gets no grace period", () => {
+  it("Respawn while enemies are aggroed: a pack whose aggro radius reaches the spawn point takes the hero up again, and the hero gets no grace period", () => {
     const { world, hero, pack } = killedWhileChased();
 
     tickUntil(world, () => hero.state !== "dead", PATIENCE);
-    world.tick();
+    tickUntil(
+      world,
+      () => pack.some((member) => member.ai.state === "attack"),
+      PATIENCE,
+    );
 
+    expect(hero.state).not.toBe("dead");
     expect(pack.map((member) => member.ai.state)).toContain("attack");
   });
 });
@@ -388,19 +396,41 @@ describe("enemies", () => {
     expect(hero.progression.experience).toBe(meleeGruntDef.experience);
   });
 
-  it("Hero dies with enemies chasing: they keep chasing to the spawn point; nothing resets them", () => {
+  it("Hero dies with enemies chasing: they turn for home on the next tick, and none paths toward the respawn point", () => {
     const { world, hero, pack } = killedWhileChased();
-    const seen = new Set<string>();
+    const fromRespawn = (member: Readonly<Unit>): number =>
+      Math.hypot(
+        member.curr.x - hero.spawnPoint.x,
+        member.curr.y - hero.spawnPoint.y,
+      );
+    const atDeath = pack.map(fromRespawn);
+
+    world.tick();
+
+    expect(
+      pack.map((member) => [
+        member.ai.state,
+        member.order.destination.x,
+        member.order.destination.y,
+      ]),
+    ).toEqual(
+      pack.map((member) => [
+        "return",
+        member.spawnPoint.x,
+        member.spawnPoint.y,
+      ]),
+    );
+
+    let nearest = Number.POSITIVE_INFINITY;
 
     while (hero.state === "dead") {
+      pack.forEach((member, slot) => {
+        nearest = Math.min(nearest, fromRespawn(member) - (atDeath[slot] ?? 0));
+      });
       world.tick();
-
-      for (const member of pack) {
-        seen.add(member.ai.state);
-      }
     }
 
-    expect([...seen]).toEqual(["chase"]);
+    expect(nearest).toBeGreaterThanOrEqual(-EPSILON);
   });
 });
 
