@@ -13,7 +13,8 @@ import type { TuningDef } from "@domain/public";
  * the activation radius of it, in world units, an elite's and a boss's health are the
  * definition's times the tier's multiplier, read at spawn, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
- * counts per tick, and the orb tables hold what one held instance grants at each level:
+ * counts per tick, the hero's push share is the fraction of an overlap with a unit that is not
+ * the hero that moves the hero, the rest moving the other, and the orb tables hold what one held instance grants at each level:
  * Quartz health regeneration per second, Whorl a fraction of one of movement speed and a
  * fraction of one off every cooldown that starts while it is held, Ember attack damage.
  * The feedback timings are read by presentation alone, through the world like the rest: how
@@ -38,6 +39,7 @@ export const tuningTable = {
   bound_radius: 24,
   selection_radius: 32,
   push_out_passes: 4,
+  hero_push_share: 0.5,
   repath_budget: 8,
   hash_cell_size: 128,
   walkability_cell_size: 32,

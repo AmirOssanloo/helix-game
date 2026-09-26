@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { arenaDef } from "@content/public";
 import { collisionSystem } from "@domain/public";
 import type { Rect } from "@shared/public";
-import type { Replay, WorldView } from "@simulation/public";
+import type { InputLogFile, Replay, WorldView } from "@simulation/public";
 import { beginReplay } from "@simulation/public";
 import { loadInputLog, makeRegistry, tickUntil } from "../helpers";
 
@@ -68,6 +68,15 @@ const DEEPEST_PRESS_SHARE = 0.75;
 
 /** A grunt's hull across: the furthest the passes may carry a unit while settling the pile. */
 const HULL = 54;
+
+/** Where the session's clicks send the hero, and hold it once it is there. */
+const HOLD_POINT = { x: 3000, y: 2000 } as const;
+
+/** The first tick of the press: the hero has arrived at its hold point and the packs are closing. */
+const PRESS_START_TICK = 150;
+
+/** The furthest the press may carry the hero off its hold point when the hero takes none of the push-out, clicks back every half second included. */
+const CARRY_AT_ZERO_SHARE = 20;
 
 /** See the replay determinism spec: this replays a long session, asserts agreement, never speed. */
 const REPLAY_TIMEOUT_MS = 30_000;
@@ -239,6 +248,60 @@ const replay = (): Replay => {
   return started;
 };
 
+/** The recorded session with the hero's push share retuned to `share` on its first tick, as the panel would. */
+const withHeroShare = (share: number): InputLogFile => {
+  const recorded = loadInputLog(RECORDED_SESSION);
+
+  return {
+    ...recorded,
+    records: [
+      {
+        tick: 0,
+        command: {
+          kind: "set_tuning",
+          tick: 0,
+          timestamp: 0,
+          key: "hero_push_share",
+          value: share,
+        },
+      },
+      ...recorded.records,
+    ],
+  };
+};
+
+/** The furthest the hero stands from its hold point on any tick of the press, replaying `file`. */
+const farthestCarry = (file: InputLogFile): number => {
+  const started = beginReplay(file, { registry, map: arenaDef });
+
+  if ("reason" in started) {
+    throw new Error(started.message);
+  }
+
+  let farthest = 0;
+
+  while (!started.done && started.view.tick < PRESS_END_TICK) {
+    started.tick();
+
+    if (started.view.tick < PRESS_START_TICK) {
+      continue;
+    }
+
+    for (let index = 0; index < started.view.map.units.end; index += 1) {
+      const unit = started.view.map.units.at(index);
+
+      if (unit !== null && unit.kind === "hero") {
+        farthest = Math.max(
+          farthest,
+          Math.hypot(unit.curr.x - HOLD_POINT.x, unit.curr.y - HOLD_POINT.y),
+        );
+      }
+    }
+  }
+
+  return farthest;
+};
+
 /** The session replayed to the end of the press, with the corridor full. */
 const replayToPressEnd = (): Replay => {
   const pressed = replay();
@@ -379,6 +442,14 @@ describe("two hundred enemies chasing the hero into the corridor", () => {
 
       expect(settled.deepestInWall).toBeLessThan(WALL_TOLERANCE);
       expect(farthestMove(before, pile.view)).toBeLessThan(HULL);
+    },
+    REPLAY_TIMEOUT_MS,
+  );
+
+  it(
+    "carry the hero less than twenty units off its hold point over the press when the hero takes none of the push-out",
+    () => {
+      expect(farthestCarry(withHeroShare(0))).toBeLessThan(CARRY_AT_ZERO_SHARE);
     },
     REPLAY_TIMEOUT_MS,
   );

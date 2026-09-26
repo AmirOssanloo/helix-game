@@ -1,13 +1,27 @@
 import { describe, expect, it } from "vitest";
+import { tuningTable } from "@content/public";
+import type { Unit } from "@domain/public";
 import {
+  collisionSystem,
   keepInsideRect,
   pushOutOfRect,
   separateDiscs,
   separateFromHeld,
 } from "@domain/public";
 import type { Rect, Vec2 } from "@shared/public";
+import type { Simulation } from "@simulation/public";
+import {
+  makeRegistry,
+  makeWorld,
+  spawnHero,
+  spawnUnit,
+  submit,
+} from "../../helpers";
 
 const HULL = 27;
+
+/** The share at which a pair splits its overlap evenly, which is how two units that are not the hero separate. */
+const EVEN = 0.5;
 
 /** The rectangle every push-out case stands against: 200 wide from x 100, 400 tall from y 0. */
 const WALL: Rect = { minX: 100, minY: 0, maxX: 300, maxY: 400 };
@@ -22,7 +36,7 @@ describe("separateDiscs", () => {
     const a = at(0, 0);
     const b = at(40, 0);
 
-    const overlapped = separateDiscs(a, HULL, b, HULL, 0);
+    const overlapped = separateDiscs(a, HULL, b, HULL, 0, EVEN);
 
     expect(overlapped).toBe(true);
     expect(a).toEqual({ x: -7, y: 0 });
@@ -33,7 +47,7 @@ describe("separateDiscs", () => {
     const a = at(0, 0);
     const b = at(54, 0);
 
-    const overlapped = separateDiscs(a, HULL, b, HULL, 0);
+    const overlapped = separateDiscs(a, HULL, b, HULL, 0, EVEN);
 
     expect(overlapped).toBe(false);
     expect(a).toEqual({ x: 0, y: 0 });
@@ -44,7 +58,7 @@ describe("separateDiscs", () => {
     const a = at(0, 0);
     const b = at(60, 0);
 
-    expect(separateDiscs(a, HULL, b, HULL, 0)).toBe(false);
+    expect(separateDiscs(a, HULL, b, HULL, 0, EVEN)).toBe(false);
     expect(a).toEqual({ x: 0, y: 0 });
     expect(b).toEqual({ x: 60, y: 0 });
   });
@@ -53,7 +67,7 @@ describe("separateDiscs", () => {
     const a = at(0, 0);
     const b = at(30, 40);
 
-    separateDiscs(a, HULL, b, HULL, 0);
+    separateDiscs(a, HULL, b, HULL, 0, EVEN);
 
     expect(a.x).toBeCloseTo(-1.2);
     expect(a.y).toBeCloseTo(-1.6);
@@ -66,7 +80,7 @@ describe("separateDiscs", () => {
     const a = at(0, 0);
     const b = at(20, 0);
 
-    separateDiscs(a, 10, b, 30, 0);
+    separateDiscs(a, 10, b, 30, 0, EVEN);
 
     expect(a).toEqual({ x: -10, y: 0 });
     expect(b).toEqual({ x: 30, y: 0 });
@@ -76,7 +90,7 @@ describe("separateDiscs", () => {
     const a = at(5, 5);
     const b = at(5, 5);
 
-    separateDiscs(a, HULL, b, HULL, 0);
+    separateDiscs(a, HULL, b, HULL, 0, EVEN);
 
     expect(a).toEqual({ x: 5 - HULL, y: 5 });
     expect(b).toEqual({ x: 5 + HULL, y: 5 });
@@ -86,10 +100,136 @@ describe("separateDiscs", () => {
     const a = at(5, 5);
     const b = at(5, 5);
 
-    separateDiscs(a, HULL, b, HULL, 1);
+    separateDiscs(a, HULL, b, HULL, 1, EVEN);
 
     expect(distance(a, b)).toBeCloseTo(54);
     expect(a.y).not.toBe(5);
+  });
+
+  it("moves `a` by its share of the overlap and `b` by the rest", () => {
+    const a = at(0, 0);
+    const b = at(40, 0);
+
+    separateDiscs(a, HULL, b, HULL, 0, 0.25);
+
+    expect(a).toEqual({ x: -3.5, y: 0 });
+    expect(b).toEqual({ x: 50.5, y: 0 });
+  });
+
+  it("leaves `a` where it is at a share of zero and moves `b` the whole overlap", () => {
+    const a = at(0, 0);
+    const b = at(40, 0);
+
+    separateDiscs(a, HULL, b, HULL, 0, 0);
+
+    expect(a).toEqual({ x: 0, y: 0 });
+    expect(b).toEqual({ x: 54, y: 0 });
+  });
+});
+
+describe("the collision system's hero share", () => {
+  /** A world whose hero takes `share` of every overlap with a unit that is not the hero, with one pass so a pair is separated once a tick. */
+  const worldAt = (share: number): Simulation =>
+    makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        tuning: { hero_push_share: share, push_out_passes: 1 },
+      }),
+    });
+
+  /** The hero at the origin and an enemy overlapping it by 14 along +X. */
+  const heroPair = (share: number): { hero: Unit; enemy: Unit } => {
+    const world = worldAt(share);
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const enemy = spawnUnit(world, { x: 40, y: 0 });
+
+    collisionSystem(world.state);
+
+    return { hero, enemy };
+  };
+
+  it("at a share of one half, separates the hero and an enemy exactly as two enemies, to the bit", () => {
+    const { hero, enemy } = heroPair(EVEN);
+    const a = at(0, 0);
+    const b = at(40, 0);
+
+    separateDiscs(a, HULL, b, HULL, 0, EVEN);
+
+    expect(hero.curr).toEqual(a);
+    expect(enemy.curr).toEqual(b);
+    expect(hero.curr).toEqual({ x: -7, y: 0 });
+  });
+
+  it("splits a hero pair evenly at the default share, as today", () => {
+    expect(tuningTable.hero_push_share).toBe(EVEN);
+
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const enemy = spawnUnit(world, { x: 40, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(hero.curr).toEqual({ x: -7, y: 0 });
+    expect(enemy.curr).toEqual({ x: 47, y: 0 });
+  });
+
+  it("at a share of zero, leaves the hero where it stands and moves the enemy the whole overlap", () => {
+    const { hero, enemy } = heroPair(0);
+
+    expect(hero.curr).toEqual({ x: 0, y: 0 });
+    expect(enemy.curr).toEqual({ x: 54, y: 0 });
+  });
+
+  it("changes the share on the tick that consumes a tuning command", () => {
+    const world = makeWorld({ seed: 1 });
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const enemy = spawnUnit(world, { x: 40, y: 0 });
+
+    submit(world, {
+      kind: "set_tuning",
+      tick: 0,
+      timestamp: 0,
+      key: "hero_push_share",
+      value: 0,
+    });
+    world.tick();
+
+    expect(hero.curr).toEqual({ x: 0, y: 0 });
+    expect(enemy.curr.x).toBeCloseTo(54);
+  });
+
+  it("gives the hero its share whichever of the pair the pool holds first", () => {
+    const world = worldAt(0.25);
+    const enemy = spawnUnit(world, { x: 40, y: 0 });
+    const hero = spawnHero(world, { x: 0, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(hero.curr).toEqual({ x: -3.5, y: 0 });
+    expect(enemy.curr).toEqual({ x: 50.5, y: 0 });
+  });
+
+  it("decides a lifted enemy before the hero's share: the lifted enemy holds and the hero moves the whole overlap", () => {
+    const world = worldAt(0);
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const enemy = spawnUnit(world, { x: 40, y: 0 });
+
+    enemy.disables.lifted = true;
+    collisionSystem(world.state);
+
+    expect(enemy.curr).toEqual({ x: 40, y: 0 });
+    expect(hero.curr).toEqual({ x: -14, y: 0 });
+  });
+
+  it("splits two enemies evenly whatever the hero's share", () => {
+    const world = worldAt(0);
+    const first = spawnUnit(world, { x: 0, y: 0 });
+    const second = spawnUnit(world, { x: 40, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(first.curr).toEqual({ x: -7, y: 0 });
+    expect(second.curr).toEqual({ x: 47, y: 0 });
   });
 });
 

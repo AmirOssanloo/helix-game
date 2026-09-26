@@ -54,9 +54,11 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | Layer | domain, content, tests, docs |
 | Size | 1.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** moved here from [Deferred](../backlog/deferred.md), where Q31 put it on 2026-09-25 as the first ticket of the next bet. The Deferred row named an ADR 0002 amendment; the engineering architect's brief of 2026-09-26 says none is needed, because ADR 0002 fixes only that separation runs along the centre line, not how it is shared. The rule is the movement page's.
+
+> **Note, 2026-09-26, closed:** `separateDiscs` takes the share of `a`, and the collision system's pair rule decides the lift first, then gives the hero `hero_push_share` of an overlap with any unit that is not the hero, then splits the rest evenly. The tunable is in the table, a fraction, retuned from the panel through `set_tuning` on the next tick. The overlap bar does not hold at 0, so under the third acceptance row the default is **0.5, today's split to the bit**, decided provisionally and awaiting the maintainer as [Q59](../backlog/open-questions.md). Measured on the corridor replay at four passes: at 0 the hero is carried 0 units over the press, but two enemies in the column behind it are squeezed to 0.999 of their summed radii against the bar of 0.75. The bar holds at 0.43 to 0.46, 0.49, and 0.5 and fails at 0.35 to 0.42 and 0.47, so there is no clean threshold; those shares carry the hero 443 to 1065 units. At 0 the bar holds with 16 passes, at 0.605, but then the stress tier's mean tick is 5.9 to 7.5 ms against 4. The corridor spec proves the carry at 0 under 20 by retuning the recorded session on its first tick. The six logs are re-stamped, not re-recorded, because at 0.5 no position moves; no number in the enemy or spell catalogue moves either. The feel, stress-zones, and stress specs read no new positions at 0.5, so they are unchanged. The movement page and the status effects page state the share. Sized 1.5, actual 0.75.
 
 **Build:** `separateDiscs` in `src/domain/movement/collision.ts` takes a share. `separatePair` gives the hero the `hero_push_share` of the separation when exactly one disc of the pair is the hero, and the other disc the rest. The lift rule is read first: a lifted unit's held disc (Q32) is decided before the hero's share. Two units that are not the hero split evenly, as now. `hero_push_share` is a tunable in `src/content/tuning.ts`, starting at 0 (Q57, the maintainer's call: an enemy does not push the hero back unless an ability knocks it), and retunes from the panel on the next tick. The [movement, collision, and pathing](../../../../docs/architecture/movement-collision-pathing.md) page states the share in its push-out paragraph, its edge-case row, and its quick reference; the [status effects](../../../../docs/product/features/status-effects.md) page's push-out line follows.
 
@@ -130,8 +132,8 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | Check | Result |
 | --- | --- |
 | The map spec approved by the maintainer | Written by T01, 2026-09-26. The approval waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
-| The corridor carry at the default share, and the six logs on the new version | |
-| Actual days per ticket | T01 0.5 of 1.5 |
+| The corridor carry at the default share, and the six logs on the new version | T02: at a share of 0 the corridor press carries the hero 0 units, tested under 20. The default stays at 0.5 because the overlap bar fails at 0 (0.999 against 0.75), provisionally, as Q59, awaiting the maintainer. The six logs are re-stamped on content version `ce5563f6` |
+| Actual days per ticket | T01 0.5 of 1.5 · T02 0.75 of 1.5 |
 
 ## Risks in this sprint
 

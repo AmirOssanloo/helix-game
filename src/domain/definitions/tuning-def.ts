@@ -34,6 +34,7 @@ export type TuningKey =
   | "bound_radius"
   | "selection_radius"
   | "push_out_passes"
+  | "hero_push_share"
   | "repath_budget"
   | "hash_cell_size"
   | "walkability_cell_size"
@@ -103,6 +104,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   bound_radius: "world_units",
   selection_radius: "world_units",
   push_out_passes: "count",
+  hero_push_share: "fraction",
   repath_budget: "count",
   hash_cell_size: "world_units",
   walkability_cell_size: "world_units",

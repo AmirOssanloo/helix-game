@@ -53,10 +53,11 @@ const separate = (
 };
 
 /**
- * Moves two discs apart when they overlap: along the line between their centres, each by half
- * the overlap, so afterwards they just touch. Neither disc's speed or facing is involved; this
- * is a positional correction. Two discs on the same point have no centre line, so they separate
- * along a direction `tieSeed` fixes, which keeps a replay exact and a pile spreading.
+ * Moves two discs apart when they overlap, along the line between their centres, `a` by
+ * `shareA` of the overlap and `b` by the rest, so afterwards they just touch: at a share of
+ * one half each moves half. Neither disc's speed or facing is involved; this is a positional
+ * correction. Two discs on the same point have no centre line, so they separate along a
+ * direction `tieSeed` fixes, which keeps a replay exact and a pile spreading.
  *
  * Returns whether the discs overlapped.
  */
@@ -66,7 +67,8 @@ export const separateDiscs = (
   b: Vec2,
   radiusB: number,
   tieSeed: number,
-): boolean => separate(a, radiusA, b, radiusB, tieSeed, 0.5);
+  shareA: number,
+): boolean => separate(a, radiusA, b, radiusB, tieSeed, shareA);
 
 /**
  * Moves the disc `moving` out of the disc `held` when they overlap, by the whole overlap along

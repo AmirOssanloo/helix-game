@@ -15,6 +15,9 @@ import { createCandidateBuffer } from "./spatial-hash";
 /** Scratch for the ids a circle query returns, reused for every unit every pass. */
 const candidates: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
+/** The share of an overlap each unit of a pair takes when neither is the hero: the rule is an even split, not a tuning. */
+const EVEN_SPLIT = 0.5;
+
 /**
  * The direction a pair on one point separates along, from the pair's slots: the same pair
  * gets the same direction every run, and neighbouring pairs get different ones.
@@ -23,11 +26,18 @@ const tieSeedOf = (idA: EntityId, idB: EntityId): number =>
   unpackIndex(idA) + unpackIndex(idB);
 
 /**
- * Separates one pair by the collision rule: half the overlap each when both stand on the
- * ground, the whole of it on the grounded one when the other is in the air, and nothing when
- * both are. Returns whether either moved.
+ * Separates one pair by the collision rule: nothing when both are in the air, the whole of
+ * the overlap on the grounded one when the other is, and otherwise `heroShare` of it on the
+ * hero when exactly one of the pair is the hero and the rest on the other, and half each when
+ * neither is. The lift is decided first, so a lifted enemy holds its disc against the hero
+ * too. Returns whether either moved.
  */
-const separatePair = (a: Unit, b: Unit, tieSeed: number): boolean => {
+const separatePair = (
+  a: Unit,
+  b: Unit,
+  tieSeed: number,
+  heroShare: number,
+): boolean => {
   if (a.disables.lifted && b.disables.lifted) {
     return false;
   }
@@ -52,12 +62,21 @@ const separatePair = (a: Unit, b: Unit, tieSeed: number): boolean => {
     );
   }
 
+  let shareA = EVEN_SPLIT;
+
+  if (a.kind === "hero" && b.kind !== "hero") {
+    shareA = heroShare;
+  } else if (b.kind === "hero" && a.kind !== "hero") {
+    shareA = 1 - heroShare;
+  }
+
   return separateDiscs(
     a.curr,
     a.collisionRadius,
     b.curr,
     b.collisionRadius,
     tieSeed,
+    shareA,
   );
 };
 
@@ -71,6 +90,11 @@ const separatePair = (a: Unit, b: Unit, tieSeed: number): boolean => {
  * would otherwise stall for ticks on pairs the hash no longer proposes. The passes are a
  * capped count from the tuning table, not a loop to convergence: a pile settles over ticks.
  *
+ * The hero takes the `hero_push_share` of a pair's overlap with any unit that is not the
+ * hero, and the other unit the rest: at zero a crowd walking into the hero cannot carry it,
+ * and the hero still pushes its way through. A push status moves the hero through its own
+ * system, which the share does not touch.
+ *
  * A unit in the air is still a disc, but one nothing moves: a pair with one lifted unit in it
  * puts the whole overlap on the other, so a lifted unit comes down on the spot it was lifted
  * from, and two lifted units leave each other where they hang.
@@ -80,6 +104,7 @@ const separatePair = (a: Unit, b: Unit, tieSeed: number): boolean => {
  */
 export const collisionSystem = (world: World): void => {
   const passes = readTunable(world.run.tuning, "push_out_passes");
+  const heroShare = readTunable(world.run.tuning, "hero_push_share");
   const units = world.map.units;
   const hash = world.map.spatialHash;
   const obstacles = world.map.obstacles;
@@ -122,7 +147,12 @@ export const collisionSystem = (world: World): void => {
           continue;
         }
 
-        const pushed = separatePair(unit, other, tieSeedOf(id, otherId));
+        const pushed = separatePair(
+          unit,
+          other,
+          tieSeedOf(id, otherId),
+          heroShare,
+        );
 
         if (pushed) {
           hash.move(id, unit.curr);
