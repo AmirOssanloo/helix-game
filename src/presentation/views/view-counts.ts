@@ -34,7 +34,7 @@ export const PROJECTILE_VIEW_COUNT =
 /** Zone views: the zone pool's whole capacity, since every zone alive can be on screen at once. */
 export const ZONE_VIEW_COUNT = ZONE_CAPACITY;
 
-/** Obstacle quads: room for a map several times as busy as the arena. Bound per map, not per frame. */
+/** Obstacle quads: the most rectangles the camera's world rectangle reaches on the busiest shipped map, and room past it. Bound per frame, not per map. */
 export const OBSTACLE_VIEW_COUNT = 64;
 
 /** Checkpoint rings: a map's checkpoints stand far enough apart that two show at once at most, so this is room past that. */

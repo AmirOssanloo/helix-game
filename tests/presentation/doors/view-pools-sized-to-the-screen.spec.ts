@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
 import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
 import {
+  createObstacleViews,
   createUnitViewPool,
   HitFlashes,
   syncUnitViews,
@@ -99,6 +100,57 @@ describe("the door: view pools are sized to the screen and bound by camera recta
     ).toBe(true);
     expect(
       first.every((unit) => pool.viewOf(unitIdOf(world, unit)) === null),
+    ).toBe(true);
+  });
+
+  it("draws every obstacle on screen from a pool far smaller than the map's, with no miss as the camera crosses it", () => {
+    const obstacles: Rect[] = [];
+
+    for (let row = 0; row < CLUSTERS_ACROSS; row += 1) {
+      for (let column = 0; column < CLUSTERS_ACROSS; column += 1) {
+        for (const [dx, dy] of CLUSTER_OFFSETS) {
+          const x = centreOf(column) + dx;
+          const y = centreOf(row) + dy;
+
+          obstacles.push({
+            minX: x - 16,
+            minY: y - 16,
+            maxX: x + 16,
+            maxY: y + 16,
+          });
+        }
+      }
+    }
+
+    const quads: QuadRecorder[] = [];
+    const views = createObstacleViews(POOL_SIZE, (frame) => {
+      const quad = new QuadRecorder(frame);
+
+      quads.push(quad);
+
+      return quad;
+    });
+
+    for (let row = 0; row < CLUSTERS_ACROSS; row += 1) {
+      for (let column = 0; column < CLUSTERS_ACROSS; column += 1) {
+        views.sync(obstacles, screenAround(column, row));
+      }
+    }
+
+    const last = CLUSTERS_ACROSS - 1;
+
+    expect(obstacles).toHaveLength(400);
+    expect(views.size).toBe(POOL_SIZE);
+    expect(views.bound).toBe(CLUSTER_SIZE);
+    expect(views.misses).toBe(0);
+    expect(
+      quads
+        .filter((quad) => quad.visible)
+        .every(
+          (quad) =>
+            Math.abs(quad.x - centreOf(last)) <= SCREEN_REACH &&
+            Math.abs(quad.y - centreOf(last)) <= SCREEN_REACH,
+        ),
     ).toBe(true);
   });
 });

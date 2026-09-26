@@ -51,7 +51,7 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 | Layer | presentation, tests, docs |
 | Size | 1 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** `OBSTACLE_VIEW_COUNT` in `src/presentation/views/view-counts.ts` is 64 and binds every obstacle at map load, which the long road's 150 would overrun. The obstacle views bind by the camera rectangle as the unit views do, from a pool sized to the screen. The walkability overlay and the floor are checked for the same: neither may draw or bind per cell of a 94 000-cell grid when only a screen of it is visible. The [presentation](../../../../docs/architecture/presentation.md) page's view-pool rule already asks for this; its table row for obstacles follows.
 
@@ -65,6 +65,8 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 - The obstacle view spec under `tests/presentation/`: binding by rectangle, no miss on a map with more obstacles than the pool.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+> **Note, 2026-09-26:** Done. `ObstacleViews` no longer binds a map at load: each frame the play scene hands it the map's obstacles and the camera's world rectangle, and it walks them by index as the checkpoint markers do, putting a quad centred and sized to each rectangle that reaches inside, and hiding the rest; one on screen with no quad free is a miss. `OBSTACLE_VIEW_COUNT` stays 64, now a screen's worth: a sweep of the camera over every centre 100 apart on the long road, framed as the scene frames the 1920 by 1080 canvas, reaches at most 28 of the road's 137. The floor already laid its tiles over the screen, and the walkability overlay already walked only the cells inside the camera's rectangle, so neither changed. The presentation page's binding step, its **Binding** row, and its **View pool size** row name obstacles. `tests/presentation/obstacle-view.spec.ts` holds the bind by rectangle, the edge, the release and rebind, the writes, the miss, the arena drawn whole as before, and the long-road sweep with no miss and the bound count equal to the rectangles inside on every frame; `tests/presentation/doors/view-pools-sized-to-the-screen.spec.ts` adds 400 obstacles drawn from a pool of 8. `pnpm check` green, 3593 tests, the stress tier included. The bench in Chrome on this commit and the one before, and the panel's readouts at the densest choke, are a box under Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24.
 
 ---
 
@@ -99,7 +101,7 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 | The long-road stress case: mean, worst, heaviest tick, A* expansions | |
 | The bench and the densest choke's readouts in Chrome | |
 | Milestone M9 | |
-| Actual days per ticket | T01: 0.5 |
+| Actual days per ticket | T01: 0.5 · T02: 0.5 |
 
 ## Risks in this sprint
 

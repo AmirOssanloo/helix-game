@@ -113,7 +113,7 @@ type Stage = {
   flashes: HitFlashes;
   hitNumbers: HitNumbers;
   overlays: DebugOverlays;
-  /** The map whose obstacles and bounds are bound, so a map load rebinds them once. */
+  /** The map whose bounds and void are bound, so a map load rebinds them once. */
   boundMapId: string | null;
 };
 
@@ -124,8 +124,8 @@ type Stage = {
  * labels, is made in the scene and placed where its point is drawn. `create` makes every pool
  * it will ever hold; `update` hands the frame to the driver, then drains the event ring with
  * its own cursor so a hit the ticks just landed shows on this frame, then reads the world view
- * and writes the views: the camera onto the hero, the obstacles, bounds, and void on a map
- * load, the floor under the camera, the checkpoints on it, the zones, the units and their flashes, the outlines of the elites and
+ * and writes the views: the camera onto the hero, the bounds and void on a map load, the
+ * floor under the camera, the obstacles and the checkpoints on it, the zones, the units and their flashes, the outlines of the elites and
  * bosses among them, their status icons inside the camera rectangle, the projectiles in
  * flight, the orbs, the numbers rising where hits landed and the word over a hero that reached a checkpoint, the targeting preview under the
  * pointer, the debug overlays the toggles ask for, and the view misses into their ring. A
@@ -302,7 +302,6 @@ export class PlayScene extends Phaser.Scene {
 
     if (world.map.mapId !== stage.boundMapId) {
       stage.boundMapId = world.map.mapId;
-      stage.obstacles.bind(world.map.obstacles);
       stage.voids.bind(world.map.bounds);
       stage.numbers.releaseAll();
       stage.camera.fitBounds(world.map.bounds);
@@ -318,6 +317,7 @@ export class PlayScene extends Phaser.Scene {
 
     const frame = this.frame;
 
+    stage.obstacles.sync(world.map.obstacles, frame.world);
     stage.checkpoints.sync(world, frame.world);
     syncZoneViews(stage.zones, world, frame.world, alpha);
     syncUnitViews(
