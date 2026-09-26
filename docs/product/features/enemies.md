@@ -62,7 +62,7 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 
 | State | What the enemy does | Leaves when |
 | --- | --- | --- |
-| Idle | Stands at its spawn point, or wanders a few units around it, regenerating | The hero enters its aggro radius, or it takes damage |
+| Idle | Stands at its spawn point, or wanders 64 units from it every few seconds, regenerating | The hero enters its aggro radius, or it takes damage |
 | Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
 | Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero dead, untargetable, or hidden from aggro, into Return |
 | Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, into Chase; or the hero dead, target lost, hidden, or past its leash radius, into Return |
@@ -105,9 +105,9 @@ An enemy that dies grants its definition's experience reward, times its tier's m
 
 ## Dormant packs
 
-On a map larger than the arena, packs far from the hero do not exist as units. They sit as spawn data until the hero comes within an activation radius, then spawn in Idle. This keeps the live enemy count bounded by what is near the hero, not by the map. Whatever the map, at most 200 enemies hold a slot at once, imps included, and a corpse keeps its slot until it is cleared: the budget performance is measured at, a constant beside the unit pool in `src/domain/entities/unit.ts`, not a tunable. A pack or a cast of adds that would pass it is refused whole. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
+A map marks each of its packs dormant or live. A dormant pack does not exist as units: it sits as spawn data until the hero comes within 1600 units of its point (`pack_activation_radius`), then wakes, placed in Idle on the free cells nearest its point and no further than 1024 units from it (`pack_placement_radius`). This keeps the live enemy count bounded by what is near the hero, not by the map. Whatever the map, at most 200 enemies hold a slot at once, imps included, and a corpse keeps its slot until it is cleared: the budget performance is measured at, a constant beside the unit pool in `src/domain/entities/unit.ts`, not a tunable. A pack or a cast of adds that would pass it is refused whole. The arena holds no packs of its own; every pack on it is spawned from the panel, live from that tick.
 
-A pack left behind sleeps again, so the live count follows the hero rather than the map. Once the hero is farther from its point than a sleep radius, larger than the activation radius so a hero at the edge does not wake and sleep it every tick, and every living member rests in Idle at full health, its units go back to the pool and it waits as spawn data again, keeping how many survived. There is no leash heal: a member comes home no healthier than its walk home and its rest made it, and a pack with one still fighting, walking home, or hurt stays awake. Walking back wakes the survivors, whole, in Idle. A summoner's adds go with it and are not survivors. A pack spawned from the panel is not map data and never sleeps.
+A pack left behind sleeps again, so the live count follows the hero rather than the map. Once the hero is farther from its point than the sleep radius, 2000 units (`pack_sleep_radius`) and never less than the activation radius whatever the tuning, so a hero at the edge does not wake and sleep it every tick, and every living member rests in Idle at full health, its units go back to the pool and it waits as spawn data again, keeping how many survived. There is no leash heal: a member comes home no healthier than its walk home and its rest made it, and a pack with one still fighting, walking home, or hurt stays awake. Walking back wakes the survivors, whole, in Idle. A summoner's adds go with it and are not survivors. A pack spawned from the panel is not map data and never sleeps.
 
 A pack the hero kills to the last member is dead for the map load: it does not come back when the hero walks near its point again, and the hero's death does not bring it back. Resetting the map puts every pack back as it was at load, every member alive.
 
@@ -120,13 +120,13 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 | Hero uses Wane | Aggro drops; enemies return unless already adjacent and attacking |
 | A summoner dies, or the hero with a summon out | Its adds or summons go on the same tick, with no corpse and no experience |
 | Enemy calls adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |
-| Hero nears a dormant pack with the live cap reached | The pack keeps waiting, and is placed on a later tick the hero is near and the cap has room |
+| Hero nears a dormant pack with the live cap reached, or too few free cells within the placement radius | The pack keeps waiting, and is placed on a later tick the hero is near and there is room |
 | Hero leaves a pack that is still walking home, or hurt | It stays awake, and sleeps once every living member is home in Idle at full health and the hero is still past the sleep radius |
 | A pack that lost members sleeps | It keeps its survivors; walking back wakes that many, whole |
 | A summoner's pack sleeps with its adds out | The adds go with it, with no corpse and no experience, and do not come back on waking |
 | Dummy takes lethal damage | Health clamps at 1; damage numbers still show the full amount |
 | Enemy killed while returning | Dies normally, grants experience |
-| Spawn point occupied on Return | The enemy stops at the nearest free spot and idles there |
+| Spawn point occupied on Return | The enemy stops where it meets the unit standing on its spawn point, and idles there |
 | Hero dies with enemies chasing | They turn for home on the next tick, as a leashed enemy does, and none paths toward where the hero will stand up, which on a long map can be a map away. Once it stands up, aggro is read as it always is: a pack home within its aggro radius of the hero takes it up again |
 | Enemy blocked by a pack in a corridor | Pushes, waits, re-paths on its budget; never walks through |
 

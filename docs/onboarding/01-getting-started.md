@@ -49,10 +49,10 @@ pnpm dev
 
 Open the address Vite prints. You should see:
 
-- The arena: a grey-walled square with a handful of grey rectangular obstacles and one narrow corridor.
-- The hero at the centre: a white circle with a triangle pointing the way it faces.
+- The long road: a grey-walled strip running diagonally across the screen, with grey rectangular blocks on the floor and a pale ring around the hero, the first checkpoint, which turns green as the word CHECKPOINT rises.
+- The hero at the spawn: a white circle with a triangle pointing the way it faces.
 - The HUD along the bottom: health and mana bars, three empty orb sockets, six ability squares labelled Q W E R D F, and a level with an experience bar.
-- The developer panel beside the canvas, in plain HTML, with the hero, tuning, enemies, simulation, overlay, and readout groups.
+- The developer panel beside the canvas, in plain HTML, with the hero, tuning, definitions, simulation, units, enemies, zones, overlay, and readout groups. Its **Map** control switches to the arena, the small square test map the runbooks check things in.
 
 Right-click the ground and the hero turns, then walks. Press Q, W, E and orb instances appear around the hero. Press R and slot D fills. If all of that happens, your machine is set up.
 
@@ -72,7 +72,7 @@ Then look at the browser console. The Phaser banner names the renderer:
 Phaser v4.2.1 (WebGL | Web Audio)
 ```
 
-**It must say WebGL.** If it says Canvas, the machine is unsupported: the Canvas renderer boots so the page is not blank, and a warning banner appears over the arena, but nothing is tested against it and the frame budget will not hold. Use a machine with WebGL, or a browser that has not disabled it.
+**It must say WebGL.** If it says Canvas, the machine is unsupported: the Canvas renderer boots so the page is not blank, and a warning banner appears over the game, but nothing is tested against it and the frame budget will not hold. Use a machine with WebGL, or a browser that has not disabled it.
 
 ---
 

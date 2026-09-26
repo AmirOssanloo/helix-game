@@ -15,12 +15,12 @@ Every other architecture page says how code must be shaped. This one says where 
 | --- | --- |
 | Which spells exist | `src/content/spells/` — one file per spell |
 | Which enemy abilities exist | `src/content/abilities/` — one file per ability; the same shape as a spell, without an orb recipe |
-| Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype. A unit's tier is chosen where it spawns: a pack record of a map definition under `src/content/maps/`, or the panel's spawn command |
+| Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype. A unit's tier is chosen where it spawns: a pack of a map definition under `src/content/maps/`, or the panel's spawn command |
 | What a tier multiplies, and the abilities it adds | The tier multipliers in the tuning table in `src/content/`; the elite and boss ability lists are fields of each enemy definition |
 | Which summons exist, and how far each keeps from its owner | `src/content/summons/` — one file per summon; the follow distance is a field of each definition |
 | Which kind a spawned unit is, and what ends it | The spawn primitive under `src/domain/abilities/primitives/` takes the kind from the definition it names; the death system under `src/domain/combat/` ends a unit with an owner when the owner dies or its lifetime runs out |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
-| Which maps exist | `src/content/maps/` — one file per map |
+| Which maps exist, and which one a fresh session starts on | `src/content/maps/` — one file per map, and the index that lists every map and names the one a fresh session starts on |
 | The hero's level cap, experience table, skill points, and the attack every form swings | `src/content/hero.ts` |
 | Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
@@ -49,14 +49,15 @@ Every other architecture page says how code must be shaped. This one says where 
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file, the validator beside it, and the matrix lookup. The matrix itself is data, in `src/content/statuses/disable-matrix.ts` |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union |
-| How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system |
+| How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system; where the hero comes back is the spawn point the checkpoint rule under `src/domain/map/` moves |
 | How a status is applied, expires, and becomes a disable flag, and how a unit takes the statuses its definition carries at spawn | `src/domain/statuses/` — the status rule, the status system, and the carried statuses |
 | How attributes become derived values, how a modifier row changes one, how a unit levels and spends skill points, and how resources regenerate | `src/domain/stats/` — the derivation, the modifier pipeline, the level rule, the regeneration rule, and the stats system |
 | How a unit turns, when it may translate, and how its speed stacks | `src/domain/movement/` — the turn, each unit's own speed and turn rate, the speed stack, the path buffer, and the movement system |
-| How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the pass loop, and the tie-break |
+| How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the share of an overlap the hero takes against the even split, the pass loop, and the tie-break |
 | How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
 | How "what is near" is answered, and what a query returns | The spatial hash under `src/domain/movement/` — the operations, the cell capacity, and the candidate order |
-| How a world is created, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
+| How a world is created, restarts on a seed and a map, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
+| How a session is made on another map or seed, and how a loaded log runs on its own map | `src/app/session.ts` — choosing a map, recreating under a seed, and loading a log; `src/simulation/replay/` names a log's map |
 | How a session is recorded and replayed | `src/simulation/input-log.ts` records it; `src/simulation/replay/` replays it |
 | How many events the ring holds, and how a reader counts what it lost | `src/simulation/event-ring.ts` — the capacity at the top, and the reader's cursor |
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |
@@ -69,12 +70,14 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the HUD draws | `src/presentation/hud/` — the layout, and one view per part; `src/presentation/scenes/hud.scene.ts` binds them |
 | How the shape atlas is baked from the frame list | `src/presentation/atlas/` — the layout, the painter, and the atlas |
 | How draw calls are counted | `src/presentation/render/draw-call-counter.ts` |
-| How many views of each kind the play scene makes, and the live caps they are sized from | `src/presentation/views/view-counts.ts` |
+| How many views of each kind the play scene makes, and what each is sized from: a live cap, a pool's capacity, or what the camera can show | `src/presentation/views/view-counts.ts` |
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
 | The Phaser configuration | `src/app/game-config.ts` |
-| What the developer panel can do | `src/devtools/` — one file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |
+| What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |
+| What a feedback file holds, how it is written and read, and the note the feedback key opens | `src/devtools/feedback-file.ts` and `src/devtools/feedback-note.ts` |
+| How a build knows its commit, and whether its tree was dirty | `src/app/build-stamp.ts`; the stamp is defined in `vite.config.ts` and declared in `src/app/build-flags.d.ts` |
 | Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay |
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
 | Which lint rules enforce the layer table | The layer allow-list in `eslint/matrix.js`, applied per layer by the files under `eslint/layers/` |

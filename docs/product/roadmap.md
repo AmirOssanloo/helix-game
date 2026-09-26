@@ -86,7 +86,7 @@ The rules behind each row are in [Performance standards](../standards/performanc
 - Checkpoints along the road; a hero who dies comes back at the furthest one reached.
 - Packs wake as the hero nears and sleep again once left behind, so the live cap holds on a map holding more enemies than the cap.
 - Elites and bosses pay more experience, so the road reaches about level 10 at its last boss.
-- The hero takes a smaller share of push-out than the unit pressing it, so a crowd cannot carry it out of a choke.
+- The hero takes a smaller push share than the unit pressing it, so a crowd cannot carry it out of a choke.
 - A feedback key in the developer panel saves a note with the session and the build it was played on.
 - Spells that do not suit the game may be swapped for others on the same recipe, from the playtest's feedback.
 
@@ -109,7 +109,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 - **Run scope and map scope are separate lifetimes**, so a map transition never recreates the hero — [Entities and pools](../architecture/entities-and-pools.md)
 - **View pools are sized to the screen** and bound by camera rectangle, not to simulation capacity — [Presentation](../architecture/presentation.md)
 - **Static map geometry is drawn by a tile layer**; the domain map is already a grid and never learns how it is drawn — [Presentation](../architecture/presentation.md)
-- **Simulation cost is bounded by a live cap**; dormant packs activate by proximity — [Movement, collision, and pathing](../architecture/movement-collision-pathing.md)
+- **Simulation cost is bounded by a live cap**; dormant packs wake by proximity — [Entities and pools](../architecture/entities-and-pools.md#dormant-packs)
 - **Stats are modifier-driven**, so items become one more source, and usable items are abilities cast through the same pipeline — [Ability pipeline](../architecture/ability-pipeline.md)
 - **Later modules land in layers that already exist** — progression, items, loot, map generation, an inventory adapter — [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md)
 - **The Phaser-free layers move to a workspace package** on the day a second consumer of the simulation appears — [ADR 0003](../adr/0003-layered-single-package-architecture.md)

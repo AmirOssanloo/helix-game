@@ -142,7 +142,7 @@ Every enemy gets these six; an ability adds one test per effect, as for a spell.
 pnpm dev
 ```
 
-The **Enemies** dropdown reads the registry, so `frost_archer` is already in it. Set **Group size** to 5, click **Spawn at click**, click the far side of the arena. Five light-blue squares appear. Toggle **Attack and aggro ranges** and **Unit state labels**, then walk in: the labels flip from `idle` to `chase`, they stop at range, arrows leave them, and a slow icon appears above the hero when a volley lands. Toggle **Path lines** to watch them kite. Walk away past the leash and watch them return.
+Choose `arena` under the panel's **Map**. The **Enemies** dropdown reads the registry, so `frost_archer` is already in it. Set **Group size** to 5, click **Spawn at click**, click the far side of the arena. Five light-blue squares appear. Toggle **Attack and aggro ranges** and **Unit state labels**, then walk in: the labels flip from `idle` to `chase`, they stop at range, arrows leave them, and a slow icon appears above the hero when a volley lands. Toggle **Path lines** to watch them kite. Walk away past the leash and watch them return.
 
 If the tick readout climbs with five on screen, something in the behaviour is re-pathing every tick; the re-path budget lives in `src/domain/pathing/`.
 

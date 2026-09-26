@@ -4,7 +4,7 @@
 
 ## Overview
 
-Everything the player reads during a fight: the bars, the orbs, the ability squares, floating damage numbers, status icons, and the targeting preview. The HUD reads the simulation and never changes it. Everything on it is drawn from the same atlas of flat shapes as the world.
+Everything the player reads during a fight: the bars, the orbs, the ability squares, floating damage numbers, the checkpoint word, status icons, and the targeting preview. The HUD reads the simulation and never changes it. Everything on it is drawn from the same atlas of flat shapes as the world.
 
 ## The bottom bar
 
@@ -28,6 +28,7 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 - **Hit flash.** A unit that takes damage goes white for a moment, body and facing marker together. Like every flash it ends on a tick, so it holds while the simulation is paused. How long it shows, like every feedback timing on this page, is a tunable the developer panel moves.
 - **Status icons.** A row of small icons above a unit, one per status on it — stun, slow, silence, and the rest — each an outlined square with its own glyph, so two statuses read apart at a glance. An icon is there while the status is and shows no duration.
 - **Damage numbers.** A hit raises a number above the unit it landed on that rises and fades over a second. It shows the amount that landed after mitigation, even where the health it removed was less. Further hits of the same type on that unit inside a short window add to that number instead of raising their own, so damage taken every tick reads as one number a window worth what the window cost; the number keeps the rise it began with, and the hit after it starts a fresh one. Each number takes the colour of its damage type — physical red, magical blue, pure gold — so the window is one per unit per type: a burn and an attack on the same unit rise as two numbers, each in its own colour.
+- **Checkpoint word.** Reaching a checkpoint further along than any before raises the word CHECKPOINT over the hero, in the reached checkpoint's green. It rises and fades like a damage number and shares their pool, and no hit adds to it.
 - **Facing.** The hero's triangle points where the hero faces, which is what the turn rate acts on.
 
 ## Targeting preview
@@ -50,6 +51,8 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Targeting preview | Ring and outline | The spell's colour, red when out of range |
 | Obstacles and walls | Rectangles | Grey |
 | Damage numbers | Bitmap text | Physical red, magical blue, pure gold |
+| Checkpoints | Thin ring as wide as the checkpoint's reach | Pale grey ahead, green once reached |
+| Checkpoint word | Bitmap text | Green |
 | Status icons | Small outlined squares with a glyph | White; the glyph tells them apart |
 | Overlays | The same shapes at low alpha | One per overlay |
 
@@ -57,7 +60,7 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 
 From the bottom up, so a projectile is never hidden by the ground it flies over:
 
-1. Ground effects and zones
+1. Ground effects, zones, and checkpoint rings
 2. Obstacles
 3. Units
 4. Projectiles
@@ -86,7 +89,7 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 ## Deferred
 
 - **A second kit's layout.** The six squares are filled from whatever kit the hero's active form uses; today that is only Invoke. A hotbar form fills the same six squares from its ability list and hides the orb display.
-- **Minimap.** The arena fits on screen.
+- **Minimap.** The arena is small enough to learn by walking it, and the long road runs one way.
 - **Item slots, inventory, and equipment.** No items exist.
 - **Tooltips** on hover for spells and statuses.
 - **Sound cues.** No audio.

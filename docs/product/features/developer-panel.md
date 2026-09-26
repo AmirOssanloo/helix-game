@@ -18,7 +18,8 @@ Every action on the panel that changes the world is a command that goes through 
 | --- | --- |
 | Apply damage | Deals the entered amount as a chosen damage type, through mitigation like any other hit |
 | Drain mana | Removes the entered amount of mana |
-| Heal, restore mana | Sets health or mana to maximum |
+| Heal | Sets health to maximum |
+| Restore mana | Sets mana to maximum |
 | Level up | Grants one level, with its skill point |
 | Set orb levels | Sets Quartz, Whorl, and Ember to chosen levels, 0 to 7 |
 | Infinite mana | Casts never spend mana |
@@ -28,9 +29,9 @@ Every action on the panel that changes the world is a command that goes through 
 | Checkpoint, Jump to checkpoint | Stands the hero on a checkpoint chosen from the current map's list, by its index from 0 in the map's order, with its order cleared. The list follows the map a person or a loaded log chooses. The checkpoint rule reads where the hero stands on the tick the jump lands: one further along than any reached becomes the furthest, and an earlier one changes nothing. A debug command, `jump_to_checkpoint`, in the log like the rest |
 | Begin channel | Puts the hero into the channeling state for a chosen duration, to test what interrupts a channel |
 
-### Tunables
+### Tuning
 
-Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, hold, and pack-activation numbers; the checkpoint reach radius; and the elite and boss health multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
+Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, the push-out passes and the hero's push share, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, and hold numbers, and the packs' activation, sleep, and placement radii; the checkpoint reach radius; and the elite and boss health and experience multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
 
 **Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
@@ -44,29 +45,31 @@ Each slider carries a tuning key, the name its command and the input log use for
 
 | Control | Does |
 | --- | --- |
-| Pause | Stops the clock; the picture stays. Not a command: nothing in the world changes and nothing is logged |
-| Single-step | Runs exactly one tick while paused. Not a command, for the same reason |
+| Pause | Stops the clock; the picture stays, and the button reads Resume until pressed again. Not a command: nothing in the world changes and nothing is logged |
+| Step | Runs exactly one tick while paused. Not a command, for the same reason |
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
 | Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
 | Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one recreates the world on it under the current seed, with the hero at its spawn point: a driver operation like the seed, not a command |
 | Save input log | Downloads the session's seed, map, and commands |
 | Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run. It takes a feedback file too: the log inside replays, the world runs to the note's tick faster than it was played and pauses there, and the note is shown under **Note** |
 | Feedback, or F9 | Opens a note above the panel and pauses the world. **Save** downloads a [feedback file](../vocabulary.md): the note, the tick, the build stamp, the content version, and the input log up to that tick. **Cancel** or Escape closes it unsaved. Either way the pause goes back to what it was. Not a command: feedback changes nothing in the world and nothing of it is in the log |
-| Note | The note of the last feedback file loaded, read-only |
+| Status | What the last log or feedback file loaded is replaying and on which map, or why it cannot run |
+| Note | The note of the last feedback file loaded, read-only; empty after a plain log is loaded |
 | Reset map | Reloads the current map; the hero keeps run scope, and stands at the map's spawn point with no checkpoint reached |
 | Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
+| Download atlas | Downloads the generated shape atlas as a PNG, so anyone can see what every frame looks like |
 
 ### Enemies
 
-A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap, or with too few free cells within the `pack_placement_radius` tunable of the point, is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test. It is refused whole when the unit pool cannot take every one.
+A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap, or with too few free cells within the `pack_placement_radius` tunable of the point, is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing.
+
+### Units
+
+A generic spawn: a count of plain units at a world position, **Spawn units**, for the stress test. It is refused whole when the unit pool cannot take every one.
 
 ### Zones
 
 A spawn that puts one bare circle on the ground at a world position, with a radius, a delay before it comes alive, and a lifetime. It has no ability behind it, so it runs no rules; it is there to drive the zone pool, the zone view, and the spell-areas overlay before a spell casts one.
-
-### The atlas
-
-A button that downloads the generated shape atlas as a PNG, so anyone can see what every frame looks like.
 
 ## Readouts
 
@@ -74,16 +77,16 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 | Readout | Shows |
 | --- | --- |
-| Tick time | Mean and worst over the last second, against the 4 ms budget |
-| Render time | Mean and worst, against the 6 ms budget |
+| Tick ms mean / max | Mean and worst over the last second; the 4 ms budget is the [performance standards'](../../standards/performance.md) |
+| Render ms mean / max | Mean and worst; the budget is 6 ms |
 | Frame rate | Mean over the last second |
-| Draw calls | Per frame, the total and the world's share without the HUD, against the budget of 5 for the world. A dash under the Canvas renderer |
-| Live counts | Units, projectiles, zones, effects |
+| Draw calls total / world | Per frame, the total and the world's share without the HUD; the world's budget is 5. A dash under the Canvas renderer |
+| Units, Projectiles, Zones, Effects | The live count of each, one readout apiece |
 | Pool misses | How many times a simulation pool was asked for more than it holds |
 | View misses | How many times a view pool, an overlay's included, was asked for more than it holds |
 | Event overwrites | How many events a reader of the event ring lost because the ring overwrote them first. Zero at the live cap; a panel that was folded skips what passed meanwhile instead of counting it |
-| Tick number | The simulation's clock |
-| Packs | How many of the loaded map's packs are awake, asleep, and waiting. A pack spawned from the panel is not map data and is not counted |
+| Tick | The simulation's clock |
+| Packs awake / asleep / waiting | How many of the loaded map's packs are awake, asleep, and waiting. A pack spawned from the panel is not map data and is not counted |
 | Last refusal | The reason the last refused command was refused |
 | Last damage | What the last hit landed after mitigation, and its damage type |
 | Last status | The last status to land or end, and the unit it was on |
@@ -96,7 +99,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 Toggles, each drawn over the world in its own colour at low alpha. Like every toggle, turning one on changes nothing in the world and is not in the log.
 
-- Collision discs and bound radii, as two separate circles, because tuning the wrong one is the classic mistake
+- Collision discs, and bound radii as a separate toggle, because tuning the wrong one is the classic mistake
 - Facing and the action cone
 - Attack range and acquire radius on the hero; aggro and leash radius on enemies
 - Path lines, from each moving unit to its destination through its waypoints
@@ -125,7 +128,7 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | A content file edited while a log replays | Refused until the replay ends; a replay runs on the content it was recorded against |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
 | A key typed into the feedback note | Stays in the note: Q is a letter, not an orb, and no key reaches the hero while the note has focus |
-| Load a feedback file written on another commit, or on a tree with uncommitted changes | Loaded and replayed, and the status line says the commit differs and names both builds: the replay may not match what was played |
+| Load a feedback file written on another commit, or on a tree with uncommitted changes | Loaded and replayed, and the status line says the build differs and names both builds, or that the commit is the same but a tree had uncommitted changes: the replay may not match what was played |
 | Pause, or recreate the world, while a loaded feedback file runs to its tick | The run ends where it is |
 | Load a log recorded on a different map | The world is recreated on the log's map, and the map control follows it |
 | Load a log naming a map the content does not register | Refused with a message naming the map's id; the world runs on as it was |

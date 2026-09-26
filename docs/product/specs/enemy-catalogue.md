@@ -8,7 +8,7 @@
 |---|---|
 | Document type | Content specification |
 | Audience | Gameplay programming, combat design |
-| Product context | Single-player. One hero against packs of enemies in the arena |
+| Product context | Single-player. One hero against packs of enemies on a map |
 | Classification | The enemy archetypes and the numbers each definition carries. How enemies behave, the state machine, tiers, and the edge cases are the [enemies page](../features/enemies.md) |
 | Simulation | 30 Hz tick. Every duration here is seconds and becomes whole ticks at load |
 | Reference | The hero's starting values, so every enemy number is set against what the hero can do at level 1 |
@@ -199,7 +199,7 @@ The add a summoner brings. Never placed in a pack of its own; it joins its summo
 | Field | Value | Why |
 |---|---|---|
 | Id | `imp` | |
-| Health · regeneration | 120 · 0 | Two of the hero's attacks after armour, so a pair of adds is a nuisance cleared in a breath, not a second pack |
+| Health · regeneration | 120 · 0 | Three of the hero's attacks, having no armour, so a pair of adds is a nuisance cleared in a breath, not a second pack |
 | Mana · regeneration | 0 · 0 | It casts nothing |
 | Armour · magic resistance | 0 · 0 | Nothing to slow its death |
 | Movement speed · turn rate | 300 · 0.8 | A little faster than the hero, so the adds reach it before their summoner does and are not simply walked away from |
@@ -232,7 +232,7 @@ The hero's level table is `experienceThresholds` in `src/content/hero.ts`: the t
 
 A grunt is the unit of account: 46, a fifth of the first level. The others are priced against it by how long each takes to kill and how much harm it does in that time. Experience is not shared or pooled across a pack; each enemy grants its own on death, as the [enemies page](../features/enemies.md#experience) says.
 
-The numbers here are a normal unit's. An elite grants 3 times its archetype's experience and a boss 10 times, the `elite_experience_multiplier` and `boss_experience_multiplier` tunables, as its health is multiplied: an elite grunt grants 138 and a boss grunt 460, two levels' worth at level 1. The imp and the dummy grant nothing at any tier.
+The numbers here are a normal unit's. An elite grants 3 times its archetype's experience and a boss 10 times, the `elite_experience_multiplier` and `boss_experience_multiplier` tunables, as its health is multiplied: an elite grunt grants 138 and a boss grunt 460, the whole first level twice over. The imp and the dummy grant nothing at any tier.
 
 ---
 
@@ -349,7 +349,7 @@ A quick melee enemy whose every hit slows the hero.
 | Armour · magic resistance | 1 · 0.25 | Light armour, and a quarter off magical damage, so frost reads as its own |
 | Movement speed · turn rate | 290 · 0.7 | Ten faster than the hero, so on its own it gains slowly; once a hit slows the hero it closes fast |
 | Collision · bound · selection radius | 16 · 14 · 20 | The smallest radius class, drawn as the small square |
-| Attack damage · range | 12 · 100 | 10.6 after the hero's armour; the harm is the slow |
+| Attack damage · range | 12 · 100 | 10.5 after the hero's armour; the harm is the slow |
 | Acquire radius | 800 | The aggro radius |
 | Attack point · backswing · base attack time | 0.3 s · 0.3 s · 1.1 s | Quick hits, so the slow is refreshed as soon as its clock allows |
 | Projectile speed · radius | 0 · 0 | Melee |
@@ -405,7 +405,7 @@ A ranged enemy that roots the hero where it stands.
 | Armour · magic resistance | 2 · 0 | The grunt's armour |
 | Movement speed · turn rate | 260 · 0.6 | The archer's pace |
 | Collision · bound · selection radius | 27 · 24 · 32 | The hero's body |
-| Attack damage · range | 16 · 500 | 14.1 after the hero's armour, under the archer's; the net's 700 reaches past its shot |
+| Attack damage · range | 16 · 500 | 14.0 after the hero's armour, under the archer's; the net's 700 reaches past its shot |
 | Acquire radius | 800 | The aggro radius |
 | Attack point · backswing · base attack time | 0.5 s · 0.5 s · 1.8 s | The archer's cadence |
 | Projectile speed · radius | 900 · 10 | The archer's arrow |
@@ -439,7 +439,7 @@ A light ranged enemy that looses a heavy arrow from beyond the hero's reach.
 | Projectile speed · radius | 1000 · 8 | The fastest shot, and the smallest |
 | Projectile frame · tint | `disc` · `0xe07b39` | Its own colour |
 | Aggro · leash radius | 850 · 1800 | It sees the hero first and follows far |
-| Experience | 55 | More than a runner for the same health, because it is hard to reach |
+| Experience | 55 | More than a runner for a little more health, because it is hard to reach |
 | Indestructible · tier | false · normal | |
 | Abilities · behaviour | `arrow` always · `ranged_kiter` | Looses the arrow whenever the clock allows. It is a kiter: it backs away when the hero closes and keeps firing |
 | Statuses | none | |
@@ -461,7 +461,7 @@ A slow, armoured enemy that slams the ground when the hero stands beside it.
 | Armour · magic resistance | 6 · 0.1 | Armour takes 26 % off physical damage, under the tank's 32 % |
 | Movement speed · turn rate | 210 · 0.35 | A little quicker than the tank, still the easiest to walk away from after it |
 | Collision · bound · selection radius | 50 · 44 · 56 | The largest radius class: the corridor is closed to it, as to the tank |
-| Attack damage · range | 30 · 100 | 26.4 after the hero's armour; the slam's 50 and push are its harm beside the hero |
+| Attack damage · range | 30 · 100 | 26.3 after the hero's armour; the slam's 50 and push are its harm beside the hero |
 | Acquire radius | 600 | The aggro radius |
 | Attack point · backswing · base attack time | 0.6 s · 0.6 s · 1.9 s | The tank's heavy swing |
 | Projectile speed · radius | 0 · 0 | Melee |
@@ -489,7 +489,7 @@ A caster that stays back and brings imps on a clock.
 | Armour · magic resistance | 1 · 0.25 | Light armour, and a quarter off magical damage |
 | Movement speed · turn rate | 240 · 0.5 | The grunt's pace, behind its imps' |
 | Collision · bound · selection radius | 27 · 24 · 32 | The hero's body |
-| Attack damage · range | 12 · 550 | 10.6 after the hero's armour; its imps are its harm. The longest range of the roster's shots, still short of the hero's 600 |
+| Attack damage · range | 12 · 550 | 10.5 after the hero's armour; its imps are its harm. The longest range of the roster's shots, still short of the hero's 600 |
 | Acquire radius | 800 | The aggro radius |
 | Attack point · backswing · base attack time | 0.5 s · 0.5 s · 2.0 s | Slow shots |
 | Projectile speed · radius | 800 · 10 | The hexer's shot |
@@ -545,7 +545,7 @@ A hardy melee enemy that heals itself once it is hurt.
 | Armour · magic resistance | 3 · 0.1 | Armour takes 15 % off physical damage |
 | Movement speed · turn rate | 235 · 0.45 | A little slower than the grunt |
 | Collision · bound · selection radius | 27 · 24 · 32 | The hero's body |
-| Attack damage · range | 26 · 100 | 22.9 after the hero's armour |
+| Attack damage · range | 26 · 100 | 22.8 after the hero's armour |
 | Acquire radius | 650 | The aggro radius |
 | Attack point · backswing · base attack time | 0.5 s · 0.5 s · 1.6 s | The brute's swing |
 | Projectile speed · radius | 0 · 0 | Melee |

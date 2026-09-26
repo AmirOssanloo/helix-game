@@ -24,7 +24,8 @@ When two people call the same thing different names, the names leak into the cod
 | A kind of enemy, as a definition | **Archetype** | Type, class, race |
 | Normal, elite, or boss | **Tier** | Rank, rarity |
 | A group of enemies that share aggro | **Pack** | Group, squad, wave, camp |
-| A map's pack held as spawn data, costing no unit: it **wakes** as the hero nears and **sleeps** again once left behind at rest | **Dormant** (asleep), and awake once placed | Despawned, culled, frozen, inactive |
+| A map's pack written to be held as spawn data, costing no unit, until the hero nears | **Dormant**; a pack placed at load is **live** | Despawned, culled, frozen, inactive |
+| Where a map's pack stands now: held as spawn data, placed as units, due to be placed once there is room, or killed to the last member. It **wakes** as the hero nears and **sleeps** again once left behind at rest | **Asleep**, **awake**, **waiting**, **dead** | Dormancy (dormant is how a pack is written), active, spawned |
 | What drives an enemy or a summon each tick, a function the definition names by key | **Behaviour** (AI behaviour) | Brain, controller, script |
 | One of Quartz, Whorl, Ember | **Orb** | Reagent, element, sphere |
 | One held copy of an orb | **Orb instance** | Ball, charge |
@@ -58,11 +59,13 @@ When two people call the same thing different names, the names leak into the cod
 | A unit an ability creates on the hero's side, owned by its caster | **Summon** | Pet, minion |
 | An enemy an ability creates, owned by its caster and in its pack | **Add** | Summon (that is on the hero's side), minion |
 | The typed data describing a spell, enemy, status, or map | **Definition** (`FooDef` in code) | Config, template, blueprint, prefab |
+| The part of an overlap between the hero and another unit that moves the hero, the rest moving the other unit | **Push share** (`hero_push_share` in code) | Push weight, mass, share of push-out |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
 | The hand-authored test map | **The arena** | Test level, sandbox |
 | The hand-authored playtest map the hero walks from level 1 to about level 10 | **The long road** | Campaign, the playtest map, level |
-| A stretch of a map between two chokes, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |
+| A stretch of a map between two chokes, or between a choke and the map's end, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |
+| A wall across the whole width of a map with one opening, where a crowd presses the hero | **Choke** | Gate, bottleneck, chokepoint |
 | A point on a map the hero comes back to after dying: the furthest one it has reached | **Checkpoint** | Save point, waypoint, respawn point, bonfire |
 | State that lives for the whole session: hero, tunables, seed | **Run scope** | Global state, session |
 | State that lives for one map: enemies, projectiles, zones | **Map scope** | Level state |
@@ -70,7 +73,7 @@ When two people call the same thing different names, the names leak into the cod
 | The build published for people to play with: the game as it ships, with the developer panel beside it | **Playtest build** | Demo, preview, staging, dev build |
 | Drawn diagnostics over the world | **Overlay** | Gizmo, debug draw |
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
-| A person's note saved with the input log up to the tick it was written on and the build it was played on | **Feedback file** | Bug report, playtest report, note |
+| A person's note saved with the input log up to the tick it was written on, the content version, and the build it was played on | **Feedback file** | Bug report, playtest report, note |
 | The commit a build was made from, and whether its tree held uncommitted changes | **Build stamp** | Version, build id, revision |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |
 | One named region of the atlas: a baked white shape, or the painted floor tile | **Atlas frame** | Texture, sprite |

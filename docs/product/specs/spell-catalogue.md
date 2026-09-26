@@ -53,7 +53,7 @@ A number written without an orb is the same at every level.
 
 ### 2.3 Units and rounding
 
-Seconds, world units, world units per second, degrees, fractions of one for percentages, and damage in points before mitigation. The registry converts to ticks and radians once at load, rounding to whole ticks. Every duration on this page is a whole number of ticks at 30 Hz except the 0.05 s cast point, which rounds to 2 ticks.
+Seconds, world units, world units per second, degrees, fractions of one for percentages, and damage in points before mitigation. The registry converts to ticks and radians once at load, rounding to whole ticks. Every duration on this page is a whole number of ticks at 30 Hz except the 0.05 s cast point, which rounds to 2 ticks, and the emberling's 1.35 s base attack time, which is 40.5 ticks.
 
 ### 2.4 The cast context
 

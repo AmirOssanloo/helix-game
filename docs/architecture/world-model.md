@@ -55,9 +55,9 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it, if one did, and the unit that cast it. An attack's shot and a zone the panel places name no ability. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
-- A map definition holds spawn data, not units. Units exist only after a pack is placed: a live pack at load, a dormant one when the hero approaches, and a pack left behind at rest goes back to spawn data with its survivors, so a large map costs little away from the hero.
-- Run scope outlives map scope. Loading a map empties every map-scoped pool and leaves the hero, its form records, the tuning state, and the random source untouched.
-- The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it and gives the hero the map's spawn point back; a death clears nothing, so a killed pack stays dead.
+- A map definition holds spawn data, not units. A map's enemies exist only once their pack is placed: a live pack at load, a dormant one when the hero comes within the activation radius, and a pack the world cannot take yet when it can. A pack left behind at rest gives its units back and sleeps as its record in map scope, keeping its survivors, so a large map costs little away from the hero. A pack the panel spawns has no record and never sleeps.
+- Run scope outlives map scope. Loading a map empties every map-scoped pool except the hero's slot in the unit pool, gives the hero the map's spawn point and carries it there with its order cleared, then places the map's live packs. The hero's level, form records, statuses, and clocks, the tuning state, and the random source are untouched.
+- The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it, gives the hero the map's spawn point back, and makes every pack of the map whole again. The hero's death clears neither: the hero comes back at the furthest checkpoint, and a killed pack stays dead.
 
 ---
 

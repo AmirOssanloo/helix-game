@@ -474,7 +474,7 @@ When the document is hidden, pause the simulation clock or keep consuming ticks 
 
 ## 15. Player-Facing Feel Requirements
 
-Thirteen things a person checks by hand in the arena, with the game running under `pnpm dev`. Each row says what to do, what you should see, and what counts as a fail. Where the exact number is beyond what an eye can judge, the row says which acceptance test in section 16 proves it; the walk-through checks only what is visible. Any fail fails the build.
+Thirteen things a person checks by hand in the arena, with the game running under `pnpm dev` and `arena` chosen under the developer panel's **Map**. Each row says what to do, what you should see, and what counts as a fail. Where the exact number is beyond what an eye can judge, the row says which acceptance test in section 16 proves it; the walk-through checks only what is visible. Any fail fails the build.
 
 Six rows need the developer panel: row 3 a spawned unit, rows 8 to 11 every orb at level one or more, which only the panel's orb-level control can give a fresh hero, and row 12 the tunable sliders and the overlays. Until the panel exists, record them as waiting on it, not as pass. The panel's facing overlay and its pause and single-step also make rows 1 and 2 sharper once they exist; until then, judge those by eye.
 

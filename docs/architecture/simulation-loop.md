@@ -86,7 +86,7 @@ Debug commands and tuning changes are commands too, so a session with the develo
 
 The simulation records every command it consumes, with its tick, into an input log. Replay creates a world with the same seed and feeds the log back, tick by tick, with no driver and no Phaser. It runs in Node, which is what makes it a test as well as a debugging tool.
 
-A bug report is a seed and a log. The engineer replays to the failing tick and inspects the world view.
+A bug arrives as a seed and a log, in a feedback file or an input log. The engineer replays to the failing tick and inspects the world view.
 
 ---
 

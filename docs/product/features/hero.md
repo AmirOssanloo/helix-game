@@ -49,6 +49,8 @@ The Whorl movement value is quoted because it is the one the spec insists player
 
 The hero's body numbers are the spec's and are not repeated here: collision radius 27, bound radius 24, base movement speed 280, turn rate 0.6 radians per 0.03 seconds, action cone 11.5 degrees. [Mechanics spec](../specs/character-movement-and-mechanics.md) sections 3, 6, 7, and 8 own them and their meaning.
 
+When the hero's disc overlaps another unit's, the hero takes its push share of the overlap, half by default (`hero_push_share` in `src/content/tuning.ts`), and the other unit the rest. At zero a crowd cannot carry the hero, and the hero still pushes its way through. A push from an ability moves the hero whatever the share.
+
 ## Damage and mitigation
 
 Every hit has one damage type, and the type decides what reduces it.
@@ -73,7 +75,7 @@ When health reaches zero the hero enters a death state at the end of that tick: 
 | Zero mana and R pressed | Invoke is refused at key-down; a HUD flash on the R square; nothing is spent, the orb buffer is untouched |
 | Killed during a cast point | The cast is cancelled; no mana spent, no cooldown started, because both happen at the end of the cast point |
 | Killed while a projectile is in flight | The projectile still lands; damage credited to the hero for experience |
-| Respawn while enemies are aggroed | Enemies went home when the hero died; any whose aggro radius reaches where it stands up take it up again once they are home. The hero gets no grace period. The spawn point is placed so this is survivable on the arena |
+| Respawn while enemies are aggroed | Enemies went home when the hero died; any whose aggro radius reaches where it stands up take it up again once they are home. The hero gets no grace period. The arena's spawn point and every checkpoint of the long road are placed so this is survivable: the arena holds no packs of its own, and each checkpoint stands more than 1000 units from every pack |
 | Skill point unspent | Kept until spent; the HUD shows a marker beside the level number |
 | Regeneration while at full | Nothing; values clamp at maximum |
 

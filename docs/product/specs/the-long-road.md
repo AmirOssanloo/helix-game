@@ -3,7 +3,7 @@
 > **Entry point:** [Product](../README.md)
 > **See also:** [Map and camera](../features/map-and-camera.md) · [Enemies](../features/enemies.md) · [Enemy catalogue](./enemy-catalogue.md)
 
-**Helix — The playtest map as data: the rectangle, the five regions, every pack, the walls, the checkpoints, and the experience that takes the hero from level 1 to level 10**
+**Helix — The long road as data: the rectangle, the five regions, every pack, the walls, the checkpoints, and the experience that takes the hero from level 1 to level 10**
 
 | Field | Value |
 |---|---|
@@ -123,7 +123,7 @@ Thirty-two packs, because the budget decides the number: five boss-tier units at
 
 ### 5.1 The chokes
 
-Each region ends at a wall that runs the whole width of the map, 160 units deep, with one opening centred on `x` 2000. The opening narrows along the road. Every choke is open to all three radius classes: a large unit, 50 in radius, has 124 units of play in the narrowest. The chokes are where a crowd presses the hero, and where the hero's share of push-out is judged in the playtest.
+Each region ends at a wall that runs the whole width of the map, 160 units deep, with one opening centred on `x` 2000. The opening narrows along the road. Every choke is open to all three radius classes: a large unit, 50 in radius, has 124 units of play in the narrowest. The chokes are where a crowd presses the hero, and where the hero's push share is judged in the playtest.
 
 | Choke | Between | West wall | East wall | Opening |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ Each region ends at a wall that runs the whole width of the map, 160 units deep,
 
 ### 5.2 The blocks
 
-Inside a region, blocks break up the open ground so the road is not a straight line and a kiting hero has corners to use. They stand in rows every 384 units along the road, four to a row and three to the next in turn, eight sizes from 160 by 160 to 480 by 160 in rotation. A block that would come within about 280 units of a pack's position or a checkpoint is left out. The gaps between blocks, and between a block and a choke's opening, are open to the large radius class, so every checkpoint and every pack is reachable from the spawn by a unit of every size. [The appendix](#appendix-the-blocks) lists all 127.
+Inside a region, blocks break up the open ground so the road is not a straight line and a kiting hero has corners to use. They stand in rows every 384 units along the road, four to a row and three to the next in turn, eight sizes from 160 by 160 to 480 by 160 in rotation. A block that would come within about 260 units of a pack's position or a checkpoint is left out. The gaps between blocks, and between a block and a choke's opening, are open to the large radius class, so every checkpoint and every pack is reachable from the spawn by a unit of every size. [The appendix](#appendix-the-blocks) lists all 127.
 
 ---
 
@@ -150,7 +150,7 @@ A checkpoint is a point on the road the hero comes back to after dying. The furt
 | 3 | Region 3's entrance, past choke 2 | 2000 | 10240 | 1160, pack 14 |
 | 4 | Region 4's entrance, past choke 3 | 2000 | 15040 | 1160, pack 21 |
 | 5 | Region 5's entrance, past choke 4 | 2000 | 19840 | 1160, pack 28 |
-| 6 | Before the last boss, short of choke 5 | 2000 | 22080 | 1080, pack 31 |
+| 6 | Before the last boss, short of choke 5 | 2000 | 22080 | 1080, pack 28 |
 
 A region's boss stands 1200 units short of the next checkpoint, so a hero that dies to it comes back at the region's own entrance, not past it.
 
@@ -344,7 +344,7 @@ Every block, in order along the road. Coordinates are world units, each on a 32-
 ## Related documentation
 
 - [Map and camera](../features/map-and-camera.md) — what a map holds, the arena beside the long road, and how the camera shows it
-- [Enemies](../features/enemies.md) — packs, tiers, dormancy, and experience as the player sees them
+- [Enemies](../features/enemies.md) — packs, tiers, waking and sleeping, and experience as the player sees them
 - [Enemy catalogue](./enemy-catalogue.md) — every archetype's numbers, the experience this budget adds up
 - [Hero](../features/hero.md) — the level table the budget is set against
 - [ADR 0006 — The isometric view](../../adr/0006-isometric-view-over-a-square-world.md) — why a long strip runs diagonally on screen
