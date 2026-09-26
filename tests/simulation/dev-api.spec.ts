@@ -12,16 +12,27 @@ import type { TuningKey, Unit } from "@domain/public";
 import { definitionFields, readTunable } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
+import type { DeepReadonly } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { contentVersionOf, createEventReader } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;
 
-/** The one map every session here is made on, registered in its registry. */
+/** The map every session here is made on unless it names another, registered in its registry. */
 const MAP = makeMapDef.build();
 
-const registry = makeRegistry({ maps: [MAP] });
+/** Four checkpoints along `x`, each further from the last than the reach radius, the first on the spawn point. */
+const CHECKPOINT_MAP = makeMapDef.build({
+  checkpoints: [
+    { x: 0, y: 0 },
+    { x: 2000, y: 0 },
+    { x: 4000, y: 0 },
+    { x: 6000, y: 0 },
+  ],
+});
+
+const registry = makeRegistry({ maps: [MAP, CHECKPOINT_MAP] });
 
 const STEP_MS = stepMsOf(tuningTable.sim_hz);
 
@@ -46,12 +57,12 @@ type Arranged = {
   overlays: OverlayToggles;
 };
 
-/** The api over a world with the hero at the origin, a real driver on a counting clock, and fresh rings. */
-const arrange = (): Arranged => {
+/** The api over a world on `mapId` with the hero at the origin, a real driver on a counting clock, and fresh rings. */
+const arrange = (mapId: string = MAP.id): Arranged => {
   const session = new Session({
     seed: SEED,
     registry,
-    mapId: MAP.id,
+    mapId,
   });
   const world = session.world;
   const rings = createRings();
@@ -310,6 +321,120 @@ describe("DevApi spawns by archetype", () => {
     const { api } = arrange();
 
     expect(api.archetypes).toContain(trainingDummyDef.id);
+  });
+});
+
+/** The hero of `world`, which every session here has. */
+const heroOf = (world: Simulation): DeepReadonly<Unit> => {
+  const heroId = world.view.run.heroId;
+  const hero = heroId === null ? null : world.view.map.units.resolve(heroId);
+
+  if (hero === null) {
+    throw new Error("The session has no hero");
+  }
+
+  return hero;
+};
+
+describe("DevApi jumps to a checkpoint", () => {
+  it("stands the hero on the checkpoint, makes it the furthest, and lands in the log", () => {
+    const { api, world } = arrange(CHECKPOINT_MAP.id);
+
+    world.tick();
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 3 });
+    world.tick();
+
+    const hero = heroOf(world);
+
+    expect(hero.curr).toEqual(CHECKPOINT_MAP.checkpoints[3]);
+    expect(hero.prev).toEqual(CHECKPOINT_MAP.checkpoints[3]);
+    expect(hero.spawnPoint).toEqual(CHECKPOINT_MAP.checkpoints[3]);
+    expect(world.view.map.furthestCheckpoint).toBe(3);
+    expect(world.log.count).toBe(1);
+    expect(world.log.commandAt(0)).toEqual({
+      kind: "jump_to_checkpoint",
+      checkpoint: 3,
+      tick: 1,
+      timestamp: 1,
+    });
+  });
+
+  it("moves the hero back to an earlier checkpoint and leaves the furthest where it was", () => {
+    const { api, world } = arrange(CHECKPOINT_MAP.id);
+
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 3 });
+    world.tick();
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 1 });
+    world.tick();
+
+    const hero = heroOf(world);
+
+    expect(hero.curr).toEqual(CHECKPOINT_MAP.checkpoints[1]);
+    expect(hero.spawnPoint).toEqual(CHECKPOINT_MAP.checkpoints[3]);
+    expect(world.view.map.furthestCheckpoint).toBe(3);
+  });
+
+  it("replays the jumps from the log to the same place and the same furthest", () => {
+    const { api, world, driver } = arrange(CHECKPOINT_MAP.id);
+
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 3 });
+    world.tick();
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 1 });
+    world.tick();
+    world.tick();
+
+    const position = { ...heroOf(world).curr };
+    const saved = api.saveInputLog();
+
+    expect(api.loadInputLog(saved)).toBeNull();
+    expect(world.view.map.furthestCheckpoint).toBe(-1);
+
+    driver.onFrame(STEP_MS);
+    driver.onFrame(STEP_MS);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(3);
+    expect(heroOf(world).curr).toEqual(position);
+    expect(heroOf(world).spawnPoint).toEqual(CHECKPOINT_MAP.checkpoints[3]);
+    expect(world.view.map.furthestCheckpoint).toBe(3);
+  });
+
+  it("refuses an index the map has no checkpoint at, and leaves the hero where it stands", () => {
+    const { api, world } = arrange(CHECKPOINT_MAP.id);
+
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 4 });
+    world.tick();
+
+    expect(heroOf(world).curr).toEqual(CHECKPOINT_MAP.spawnPoint);
+    expect(world.view.map.furthestCheckpoint).toBe(0);
+    expect(refusals(world)).toContain("unknown_checkpoint");
+  });
+
+  it("refuses an index that is not a whole number of none or more", () => {
+    const { api, world } = arrange(CHECKPOINT_MAP.id);
+
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: -1 });
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 1.5 });
+    world.tick();
+
+    expect(heroOf(world).curr).toEqual(CHECKPOINT_MAP.spawnPoint);
+    expect(refusals(world)).toEqual([
+      "invalid_checkpoint",
+      "invalid_checkpoint",
+    ]);
+  });
+
+  it("refuses a jump while the hero is dead, which reaches nothing", () => {
+    const { api, world } = arrange(CHECKPOINT_MAP.id);
+
+    api.submit({ kind: "kill_hero" });
+    world.tick();
+    api.submit({ kind: "jump_to_checkpoint", checkpoint: 2 });
+    world.tick();
+
+    expect(heroOf(world).state).toBe("dead");
+    expect(world.view.map.furthestCheckpoint).toBe(0);
+    expect(refusals(world)).toContain("dead");
   });
 });
 

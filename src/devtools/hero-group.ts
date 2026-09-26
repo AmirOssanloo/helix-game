@@ -1,10 +1,12 @@
 import type { FolderApi } from "tweakpane";
+import { ListInputBindingApi } from "tweakpane";
 import {
   DAMAGE_TYPES,
   isDamageType,
   ORB_IDS,
   readTunable,
 } from "@domain/public";
+import type { Vec2 } from "@shared/public";
 import { firstOf, optionsOf } from "./bindings";
 import type { DevApi } from "./dev-api";
 import type { PanelGroup } from "./panel-group";
@@ -17,6 +19,26 @@ const CHANNEL_SECONDS = 3;
 const ORB_LEVEL = 1;
 const WHOLE_STEP = 1;
 
+/** What the checkpoint dropdown holds on a map with no checkpoints, so the jump has nothing to send. */
+const NO_CHECKPOINT = "";
+
+/** One entry of the checkpoint dropdown: what a person reads, and the index the jump sends. */
+type CheckpointItem = Readonly<{ text: string; value: string }>;
+
+/** The loaded map's checkpoints as the dropdown lists them: each by its index, the number the readouts name it by, and where it stands. */
+const checkpointItems = (
+  checkpoints: readonly Readonly<Vec2>[],
+): CheckpointItem[] => {
+  if (checkpoints.length === 0) {
+    return [{ text: "none", value: NO_CHECKPOINT }];
+  }
+
+  return checkpoints.map((point, index): CheckpointItem => ({
+    text: `${String(index)} at ${String(point.x)}, ${String(point.y)}`,
+    value: String(index),
+  }));
+};
+
 /** Seconds a person typed, as the whole ticks the command carries, so the log holds what the tick read. */
 const ticksOf = (api: DevApi, seconds: number): number =>
   Math.round(seconds * readTunable(api.view.run.tuning, "sim_hz"));
@@ -28,7 +50,9 @@ const ticksOf = (api: DevApi, seconds: number): number =>
  *
  * The two switches show what the world says on each refresh, so a refused toggle never leaves
  * the box lying. Each compares what it is handed against the world before it sends, so the
- * refresh that writes the world's answer back into the box sends nothing itself.
+ * refresh that writes the world's answer back into the box sends nothing itself. The
+ * checkpoint dropdown lists the loaded map's checkpoints and is listed again on the refresh
+ * after a map is chosen or a log loads another, back on the first of them.
  */
 export const heroGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
   const damage = { amount: DAMAGE_AMOUNT, damageType: firstOf(DAMAGE_TYPES) };
@@ -39,6 +63,10 @@ export const heroGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
     seconds: STATUS_SECONDS,
   };
   const channel = { seconds: CHANNEL_SECONDS };
+  let listed = api.view.map.checkpoints;
+  const jump = {
+    checkpoint: firstOf(checkpointItems(listed).map((item) => item.value)),
+  };
   const debug = { infiniteMana: false, noCooldowns: false };
 
   folder.addBinding(damage, "amount", { label: "Damage", step: WHOLE_STEP });
@@ -122,6 +150,20 @@ export const heroGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
     api.submit({ kind: "kill_hero" });
   });
 
+  const checkpoints = folder.addBinding(jump, "checkpoint", {
+    label: "Checkpoint",
+    options: checkpointItems(listed),
+  });
+
+  folder.addButton({ title: "Jump to checkpoint" }).on("click", (): void => {
+    if (jump.checkpoint !== NO_CHECKPOINT) {
+      api.submit({
+        checkpoint: Number(jump.checkpoint),
+        kind: "jump_to_checkpoint",
+      });
+    }
+  });
+
   folder.addBinding(channel, "seconds", {
     label: "Channel seconds",
     step: WHOLE_STEP,
@@ -136,6 +178,19 @@ export const heroGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
       debug.noCooldowns = api.view.run.debug.noCooldowns;
       infiniteMana.refresh();
       noCooldowns.refresh();
+
+      if (
+        listed !== api.view.map.checkpoints &&
+        checkpoints instanceof ListInputBindingApi
+      ) {
+        listed = api.view.map.checkpoints;
+
+        const items = checkpointItems(listed);
+
+        checkpoints.options = items;
+        jump.checkpoint = firstOf(items.map((item) => item.value));
+        checkpoints.refresh();
+      }
     },
   };
 };

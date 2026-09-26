@@ -239,6 +239,56 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("lists the loaded map's checkpoints and jumps to the one chosen through a command in the log", () => {
+    const arranged = arrange();
+    const select = selectNamed(arranged.host, "Checkpoint");
+
+    expect([...select.options].map((option) => option.text)).toEqual([
+      "0 at 0, 0",
+      "1 at 3000, 0",
+    ]);
+
+    select.value = "1 at 3000, 0";
+    select.dispatchEvent(new Event("change"));
+    buttonNamed(arranged.host, "Jump to checkpoint").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "jump_to_checkpoint",
+      checkpoint: 1,
+    });
+    expect(arranged.world.view.map.furthestCheckpoint).toBe(1);
+
+    arranged.handle.unmount();
+  });
+
+  it("lists the checkpoints again when the map changes, and sends nothing on a map with none", () => {
+    const arranged = arrange();
+
+    arranged.api.driver.chooseMap(SECOND_MAP.id);
+    arranged.handle.refresh();
+
+    const select = selectNamed(arranged.host, "Checkpoint");
+
+    expect([...select.options].map((option) => option.text)).toEqual(["none"]);
+
+    buttonNamed(arranged.host, "Jump to checkpoint").click();
+    arranged.world.tick();
+
+    expect(arranged.world.log.count).toBe(0);
+
+    arranged.api.driver.chooseMap(FIRST_MAP.id);
+    arranged.handle.refresh();
+
+    expect([...select.options].map((option) => option.text)).toEqual([
+      "0 at 0, 0",
+      "1 at 3000, 0",
+    ]);
+    expect(select.value).toBe("0 at 0, 0");
+
+    arranged.handle.unmount();
+  });
+
   it("turns a released slider into a tuning command in the designer's units", () => {
     const arranged = arrange();
 

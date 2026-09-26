@@ -150,6 +150,7 @@ export type DebugCommand =
   | KillAllCommand
   | ClearAllCommand
   | ResetMapCommand
+  | JumpToCheckpointCommand
   | BeginChannelCommand
   | ApplyStatusCommand
   | SpawnZoneCommand;
@@ -283,6 +284,21 @@ export type ResetMapCommand = Readonly<{
 }>;
 
 /**
+ * Stands the hero at checkpoint `checkpoint` of the loaded map, counted from zero in the order
+ * the map lists them, with its order cleared and its previous position written so nothing
+ * interpolates the carry. It reaches nothing itself: the checkpoint rule reads where it stands
+ * later in the same tick, so a checkpoint further along than the furthest becomes the furthest
+ * and an earlier one changes nothing. Refused when the map has no checkpoint at the index and
+ * while the hero is dead.
+ */
+export type JumpToCheckpointCommand = Readonly<{
+  kind: "jump_to_checkpoint";
+  tick: Tick;
+  timestamp: number;
+  checkpoint: number;
+}>;
+
+/**
  * Enters `channeling` for `ticks` through the order state machine, so the abort path an orb
  * press takes is the real one. The only way to channel until an ability does, and the
  * cheapest way to reach the state in a test afterwards. Refused while already channeling.
@@ -361,6 +377,7 @@ const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
   "kill_all",
   "clear_all",
   "reset_map",
+  "jump_to_checkpoint",
   "begin_channel",
   "apply_status",
   "spawn_zone",

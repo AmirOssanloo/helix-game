@@ -90,6 +90,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | Hero dies after reaching a checkpoint | It comes back at the furthest checkpoint reached, with full health and mana. A pack it killed stays dead; dying resets nothing on the map |
 | Hero within reach of two checkpoints at once | The one further along is reached |
 | Dead hero lying within reach of a checkpoint | Nothing is reached until it stands up again |
+| Hero jumped to a checkpoint from the developer panel | Read as a hero standing there: one further along than the furthest is reached on that tick, an earlier one changes nothing |
 
 ## Deferred
 

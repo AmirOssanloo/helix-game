@@ -48,6 +48,7 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "kill_all":
     case "clear_all":
     case "reset_map":
+    case "jump_to_checkpoint":
     case "begin_channel":
     case "apply_status":
     case "set_tuning":

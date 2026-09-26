@@ -1,4 +1,4 @@
-import type { Vec2 } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { placePack } from "../ai/packs";
@@ -16,7 +16,7 @@ import type { World } from "../entities/world-state";
 import { acquireZone } from "../entities/zone";
 import { resetMapScope } from "../map/map-scope";
 import { radiusClassOf } from "../map/walkability";
-import { beginChannel } from "../orders/state-machine";
+import { beginChannel, clearOrder } from "../orders/state-machine";
 import type { RefusalReason } from "../orders/validator";
 import { resolveDestination } from "../pathing/destination";
 import { levelUp } from "../stats/levels";
@@ -245,6 +245,39 @@ const setOrbLevels = (
 };
 
 /**
+ * Stands the living hero on checkpoint `index` of the loaded map: its order cleared, its
+ * previous position written so nothing interpolates the carry, and the spatial hash told. It
+ * reaches nothing here; the checkpoint rule reads where it stands later in the tick. Refused
+ * when the map has no checkpoint at the index, and while the hero is dead, since a dead hero
+ * reaches nothing and stands up at its spawn point wherever it lies.
+ */
+const jumpToCheckpoint = (
+  world: World,
+  hero: Unit,
+  heroId: EntityId,
+  index: number,
+): RefusalReason | null => {
+  const checkpoint = world.map.checkpoints[index];
+
+  if (checkpoint === undefined) {
+    return "unknown_checkpoint";
+  }
+
+  if (hero.state === "dead") {
+    return "dead";
+  }
+
+  clearOrder(hero);
+  hero.curr.x = checkpoint.x;
+  hero.curr.y = checkpoint.y;
+  hero.prev.x = checkpoint.x;
+  hero.prev.y = checkpoint.y;
+  world.map.spatialHash.move(heroId, hero.curr);
+
+  return null;
+};
+
+/**
  * Applies one validated debug command. The switches, the spawns, the kill, the clear, and the reset act
  * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
@@ -303,6 +336,7 @@ export const applyDebugCommand = (
     case "level_up":
     case "set_orb_levels":
     case "kill_hero":
+    case "jump_to_checkpoint":
     case "begin_channel":
     case "apply_status":
       break;
@@ -364,6 +398,9 @@ export const applyDebugCommand = (
       resources.health = 0;
 
       return null;
+
+    case "jump_to_checkpoint":
+      return jumpToCheckpoint(world, hero, heroId, command.checkpoint);
 
     case "begin_channel":
       return beginChannelFor(world, hero, command.ticks);

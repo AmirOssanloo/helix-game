@@ -18,7 +18,7 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * checks on a payload no mapper or panel should produce and a replay file might: a slot
  * outside the six keys, a point that is not finite, an amount below zero, a damage type no
  * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
- * archetype spawns at. The
+ * archetype spawns at, a checkpoint index that is not a whole number of none or more. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -29,8 +29,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * spend, the slot holds no orb skill, the skill is at its cap, or the level is. The last
  * are the debug commands' at apply: no archetype has the id the spawn names, the pack would
  * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
- * free cells for the pack, a channel is already running, or the status rule refused the
- * application.
+ * free cells for the pack, the map has no checkpoint at the index a jump names, a channel is
+ * already running, or the status rule refused the application.
  */
 export type RefusalReason =
   | DisableReason
@@ -43,6 +43,7 @@ export type RefusalReason =
   | "invalid_count"
   | "invalid_duration"
   | "invalid_tier"
+  | "invalid_checkpoint"
   | "orb_not_learned"
   | "buffer_not_full"
   | "no_spell_for_recipe"
@@ -53,6 +54,7 @@ export type RefusalReason =
   | "unknown_archetype"
   | "enemy_cap_reached"
   | "no_free_cells"
+  | "unknown_checkpoint"
   | "ability_not_held"
   | "invalid_target"
   | "target_not_found"
@@ -82,6 +84,10 @@ const isCount = (count: number): boolean =>
 /** A wait in whole ticks, which may be none at all: what a zone's delay is written in. */
 const isDelay = (ticks: number): boolean =>
   Number.isInteger(ticks) && ticks >= 0;
+
+/** An index into a map's checkpoints, counted from zero; whether the map has one there is the handler's to refuse. */
+const isCheckpointIndex = (index: number): boolean =>
+  Number.isInteger(index) && index >= 0;
 
 /** Whether `levels` holds one non-negative integer per orb; the cap is the hero definition's to refuse when the command applies. */
 const areOrbLevels = (levels: readonly number[]): boolean => {
@@ -197,10 +203,11 @@ export const validateCommand = (
 /**
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
  * type the rules know, one non-negative integer level per orb, a count and a duration of at
- * least one, a delay of none or more, and a finite position. No disable and no state refuses
- * a debug command; the panel is not the unit acting. What the world can take, an archetype
- * with the id it names, room in the pool, a level below the cap, an orb level under its cap,
- * no channel running, a status with the id it names, the handler refuses when the command
+ * least one, a delay of none or more, a checkpoint index of none or more, and a finite
+ * position. No disable and no state refuses a debug command; the panel is not the unit acting.
+ * What the world can take, an archetype with the id it names, room in the pool, a level below
+ * the cap, an orb level under its cap, a checkpoint at the index and a living hero to stand on
+ * it, no channel running, a status with the id it names, the handler refuses when the command
  * applies, with the same kind of reason.
  */
 export const validateDebugCommand = (
@@ -251,6 +258,11 @@ export const validateDebugCommand = (
 
     case "begin_channel":
       return isCount(command.ticks) ? "ok" : "invalid_duration";
+
+    case "jump_to_checkpoint":
+      return isCheckpointIndex(command.checkpoint)
+        ? "ok"
+        : "invalid_checkpoint";
 
     case "apply_status":
       return isCount(command.ticks) ? "ok" : "invalid_duration";

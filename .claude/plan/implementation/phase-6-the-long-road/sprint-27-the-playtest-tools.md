@@ -44,7 +44,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | Layer | domain, simulation, devtools, tests, docs |
 | Size | 0.5 |
 | Depends on | P6-S26-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** A debug command that stands the hero at checkpoint N of the current map; it is a command (ADR 0004) and replays. The checkpoint rule reads the jump as reaching it on the next tick if it is further than the furthest. The panel's hero group lists the current map's checkpoints. The [developer panel](../../../../docs/product/features/developer-panel.md) page lists the control and the debug command.
 
@@ -135,7 +135,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | --- | --- |
 | A feedback file saved, reloaded, and stopped at its tick, by hand | |
 | Enemies home while the hero is dead; the checkpoint jump and marker by hand | |
-| Actual days per ticket | T01: 0.25 |
+| Actual days per ticket | T01: 0.25 · T02: 0.25 |
 
 ## Risks in this sprint
 

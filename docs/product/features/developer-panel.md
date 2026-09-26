@@ -25,6 +25,7 @@ Every action on the panel that changes the world is a command that goes through 
 | No cooldowns | Every cooldown reads as ready |
 | Apply status | Puts a chosen status on the hero for a chosen duration, as a row of its status table |
 | Kill hero | Health to zero, to test death and respawn |
+| Checkpoint, Jump to checkpoint | Stands the hero on a checkpoint chosen from the current map's list, by its index from 0 in the map's order, with its order cleared. The list follows the map a person or a loaded log chooses. The checkpoint rule reads where the hero stands on the tick the jump lands: one further along than any reached becomes the furthest, and an earlier one changes nothing. A debug command, `jump_to_checkpoint`, in the log like the rest |
 | Begin channel | Puts the hero into the channeling state for a chosen duration, to test what interrupts a channel |
 
 ### Tunables
@@ -112,6 +113,8 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | --- | --- |
 | Spawn on a blocked cell | The pack is placed at the nearest free cells; nothing spawns inside an obstacle |
 | Spawn past the live cap | Refused with a message naming the cap |
+| Jump to a checkpoint while the hero is dead | Refused: a dead hero reaches nothing and stands up at the furthest checkpoint reached |
+| Jump on a map with no checkpoints | The list reads "none" and the button sends nothing; an index the map has no checkpoint at, from a log or the console, is refused |
 | Tunable changed mid-cast | The running cast keeps the old value; the next cast reads the new one |
 | Pause with the targeting cursor open | The cursor stays open; the click commits when unpaused |
 | A content file edited under the development server, changing only numbers | Taken without a reload: each changed number arrives as a tuning command on the next tick, in the log like a slider's; a number a person moved from its old default keeps theirs |
