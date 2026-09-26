@@ -37,5 +37,8 @@ export const ZONE_VIEW_COUNT = ZONE_CAPACITY;
 /** Obstacle quads: room for a map several times as busy as the arena. Bound per map, not per frame. */
 export const OBSTACLE_VIEW_COUNT = 64;
 
+/** Checkpoint rings: a map's checkpoints stand far enough apart that two show at once at most, so this is room past that. */
+export const CHECKPOINT_VIEW_COUNT = 8;
+
 /** Floor tiles: enough to cover the canvas and its margin in whole tiles. */
 export const FLOOR_TILE_COUNT = 320;

@@ -67,7 +67,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | Layer | presentation, content, tests, docs |
 | Size | 1 |
 | Depends on | P6-S26-T02 |
-| Status | planned |
+| Status | done |
 
 **Build:** A checkpoint marker drawn flat on the floor from an existing atlas frame, a small pool bound by the camera rectangle as the unit views are, and a line on `checkpoint_reached` through the floating-text pool. A reached checkpoint and one not yet reached read apart by tint. No Shape or Graphics, no new texture.
 
@@ -80,6 +80,8 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 - `tests/presentation/checkpoint-view.spec.ts`: bound by camera, the tint, the line on the event.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+Closed 2026-09-26 on what an agent can verify: the markers bound by the camera rectangle with no miss, the tint, and the word on the event, in the spec, with `pnpm check` green. The bench before and after, and a look by eye, wait on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24; the look is Q64.
 
 ---
 
@@ -135,7 +137,7 @@ Press the feedback key mid-fight, type a note while the world stands paused, sav
 | --- | --- |
 | A feedback file saved, reloaded, and stopped at its tick, by hand | |
 | Enemies home while the hero is dead; the checkpoint jump and marker by hand | |
-| Actual days per ticket | T01: 0.25 · T02: 0.25 |
+| Actual days per ticket | T01: 0.25 · T02: 0.25 · T03: 0.25 |
 
 ## Risks in this sprint
 

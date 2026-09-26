@@ -15,7 +15,7 @@ Every map definition holds:
 - **Bounds** — the playable rectangle, walled on every side
 - **Obstacles** — axis-aligned rectangles the hero and enemies cannot enter
 - **Spawn point** — where the hero appears on load, and on respawn until it reaches a checkpoint
-- **Checkpoints** — points in order along the map. A hero within 512 units of one further along than any it has reached makes it the furthest, and comes back there when it dies. Walking back to an earlier one changes nothing. Each stands inside the bounds, outside every obstacle, on ground a hero-sized unit can stand on, or the map is refused when the game starts. A map with none brings the hero back at the spawn point
+- **Checkpoints** — points in order along the map. A hero within 512 units of one further along than any it has reached makes it the furthest, and comes back there when it dies. Walking back to an earlier one changes nothing. Each stands inside the bounds, outside every obstacle, on ground a hero-sized unit can stand on, or the map is refused when the game starts. A map with none brings the hero back at the spawn point. On the floor each checkpoint is a thin ring as wide as its reach, pale grey until the hero reaches it and green from then on, so the ring shows where to step and where the hero comes back; reaching a new furthest raises the word CHECKPOINT over the hero once, the way a damage number rises
 - **Packs** — each an archetype, a tier, a count, the point it stands around, and whether it waits dormant until the hero comes near; see [Enemies](./enemies.md#dormant-packs)
 - **Later:** spawn tables for packs and exits to other maps
 
@@ -91,6 +91,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | Hero within reach of two checkpoints at once | The one further along is reached |
 | Dead hero lying within reach of a checkpoint | Nothing is reached until it stands up again |
 | Hero jumped to a checkpoint from the developer panel | Read as a hero standing there: one further along than the furthest is reached on that tick, an earlier one changes nothing |
+| Hero walks back past a checkpoint it reached | Its ring stays green and no word rises: only a new furthest raises one |
 
 ## Deferred
 

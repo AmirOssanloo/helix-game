@@ -73,6 +73,9 @@ const FIRST_SPAWN = 1;
  * it still leaves on the schedule its first hit set. Who joins what is not the set's to decide:
  * it hands back the label it spawned onto and the spawn running there, and refuses a join
  * naming a spawn that has since been recycled, faded, or released.
+ *
+ * A word, such as the one a reached checkpoint raises, rises through the same set the same
+ * way: it takes the next label, is recycled like a number, and is joined by nothing.
  */
 export class FloatingNumberViews {
   private readonly labels: readonly Label[];
@@ -185,24 +188,66 @@ export class FloatingNumberViews {
       return NO_NUMBER;
     }
 
+    this.amounts[index] = amount;
+    this.start(index, label, x, y, DAMAGE_NUMBER_TINTS[damageType], tick);
+    this.write(index, label);
+    this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
+
+    return index;
+  }
+
+  /**
+   * Starts a word reading `text` in `tint`, rising from (`x`, `y`) at tick `tick` for
+   * `lifeTicks` ticks, on the next label as a number would take it. A word stands for no amount,
+   * so no hit joins it. A set of no labels shows nothing.
+   */
+  spawnWord(
+    x: number,
+    y: number,
+    text: string,
+    tint: number,
+    tick: Tick,
+    lifeTicks: number,
+  ): void {
+    const index = this.cursor;
+    const label = this.labels[index];
+
+    if (label === undefined) {
+      return;
+    }
+
+    this.amounts[index] = 0;
+    this.start(index, label, x, y, tint, tick);
+
+    if (text !== this.shownTexts[index]) {
+      this.shownTexts[index] = text;
+      label.setText(text);
+    }
+
+    this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
+  }
+
+  /** Takes the label at `index` for a new rise from (`x`, `y`) at tick `tick`, counting a recycle, and moves the cursor past it. */
+  private start(
+    index: number,
+    label: Label,
+    x: number,
+    y: number,
+    tint: number,
+    tick: Tick,
+  ): void {
     if (this.rising[index] === true) {
       this.recycleCount += 1;
     }
 
-    this.amounts[index] = amount;
-    this.write(index, label);
-
-    label.tint = DAMAGE_NUMBER_TINTS[damageType];
+    label.tint = tint;
     this.xs[index] = x;
     this.ys[index] = y;
     this.startTicks[index] = tick;
-    this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
     this.rising[index] = true;
     this.spawns[index] = this.nextSpawn;
     this.nextSpawn += 1;
     this.cursor = (index + 1) % this.labels.length;
-
-    return index;
   }
 
   /** Which spawn is running on `index`, to hand back with an `addTo` later. */

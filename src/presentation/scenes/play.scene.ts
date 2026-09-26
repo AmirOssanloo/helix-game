@@ -20,6 +20,12 @@ import type { CameraLens, InputIntents } from "../input/input-ports";
 import { TargetingPreview } from "../input/targeting-preview";
 import { DebugOverlays } from "../overlays/debug-overlays";
 import type { SceneContext } from "../scene-context";
+import type { CheckpointViews } from "../views/checkpoint.view";
+import {
+  CHECKPOINT_FRAME,
+  createCheckpointViews,
+  showCheckpointReached,
+} from "../views/checkpoint.view";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import {
@@ -58,6 +64,7 @@ import {
   unitDefinitionsOf,
 } from "../views/unit.view";
 import {
+  CHECKPOINT_VIEW_COUNT,
   FLOOR_TILE_COUNT,
   OBSTACLE_VIEW_COUNT,
   OUTLINE_VIEW_COUNT,
@@ -95,6 +102,7 @@ type Stage = {
   floor: FloorView;
   voids: VoidViews;
   obstacles: ObstacleViews;
+  checkpoints: CheckpointViews;
   units: UnitViewPool;
   outlines: OutlineViewPool;
   statusIcons: StatusIconViewPool;
@@ -117,9 +125,9 @@ type Stage = {
  * it will ever hold; `update` hands the frame to the driver, then drains the event ring with
  * its own cursor so a hit the ticks just landed shows on this frame, then reads the world view
  * and writes the views: the camera onto the hero, the obstacles, bounds, and void on a map
- * load, the floor under the camera, the zones, the units and their flashes, the outlines of the elites and
+ * load, the floor under the camera, the checkpoints on it, the zones, the units and their flashes, the outlines of the elites and
  * bosses among them, their status icons inside the camera rectangle, the projectiles in
- * flight, the orbs, the numbers rising where hits landed, the targeting preview under the
+ * flight, the orbs, the numbers rising where hits landed and the word over a hero that reached a checkpoint, the targeting preview under the
  * pointer, the debug overlays the toggles ask for, and the view misses into their ring. A
  * cursor the hero may no longer commit is closed before the preview reads it.
  */
@@ -213,6 +221,11 @@ export class PlayScene extends Phaser.Scene {
       voids: createVoidViews(makeQuad),
       preview: new TargetingPreview(makeQuad, frameSizes),
       obstacles: createObstacleViews(OBSTACLE_VIEW_COUNT, makeQuad),
+      checkpoints: createCheckpointViews(
+        CHECKPOINT_VIEW_COUNT,
+        makeQuad,
+        this.context.atlas.frameWidth(CHECKPOINT_FRAME),
+      ),
       units: createUnitViewPool(
         UNIT_VIEW_COUNT,
         makeQuad,
@@ -305,6 +318,7 @@ export class PlayScene extends Phaser.Scene {
 
     const frame = this.frame;
 
+    stage.checkpoints.sync(world, frame.world);
     syncZoneViews(stage.zones, world, frame.world, alpha);
     syncUnitViews(
       stage.units,
@@ -346,6 +360,7 @@ export class PlayScene extends Phaser.Scene {
         stage.projectiles.misses +
         stage.zones.misses +
         stage.obstacles.misses +
+        stage.checkpoints.misses +
         stage.floor.misses +
         stage.overlays.misses,
     );
@@ -382,6 +397,7 @@ export class PlayScene extends Phaser.Scene {
         stage.hitNumbers,
         stage.numbers,
       );
+      showCheckpointReached(event, this.context.world, alpha, stage.numbers);
       event = this.context.events.read(this.reader);
     }
   }

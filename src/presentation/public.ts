@@ -107,6 +107,15 @@ export {
   DEPTH_UNITS,
 } from "./views/depth-bands";
 export {
+  CHECKPOINT_AHEAD_TINT,
+  CHECKPOINT_FRAME,
+  CHECKPOINT_REACHED_TINT,
+  CHECKPOINT_WORD,
+  CheckpointViews,
+  createCheckpointViews,
+  showCheckpointReached,
+} from "./views/checkpoint.view";
+export {
   createFloatingNumberViews,
   DAMAGE_NUMBER_TINTS,
   FLOATING_NUMBER_COUNT,
