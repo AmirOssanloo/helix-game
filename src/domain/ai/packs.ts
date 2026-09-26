@@ -104,7 +104,9 @@ const isOccupied = (
  * into the pack scratch, and returns how many it found. The point first resolves to the
  * nearest legal one; the cells are then taken ring by ring outward from it on a lattice one
  * body across, so the pack stands shoulder to shoulder. A cell is free when the walkability
- * grid lets a body of the radius stand on it and it overlaps no unit already there.
+ * grid lets a body of the radius stand on it and it overlaps no unit already there. The
+ * search stops at the last ring inside the placement radius, or at the map's edge if that
+ * comes first, so a pack with no room near its point costs a bounded search a tick.
  */
 const findPackCells = (
   world: World,
@@ -116,8 +118,13 @@ const findPackCells = (
   const bounds = world.map.bounds;
   const radiusClass = radiusClassOf(grid, radius);
   const spacing = radius + radius;
-  const lastRing = Math.ceil(
-    Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / spacing,
+  const lastRing = Math.min(
+    Math.floor(
+      readTunable(world.run.tuning, "pack_placement_radius") / spacing,
+    ),
+    Math.ceil(
+      Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / spacing,
+    ),
   );
   let placed = 0;
 
@@ -166,7 +173,7 @@ const findPackCells = (
  * and starts in Idle. The one door a pack enters by, from the panel or from a map. Refused,
  * with nothing spawned, when no archetype has the id, when the pack would take the live
  * enemies past the cap, when the pool has no room for it, and when the map has too few free
- * cells near the point.
+ * cells within the placement radius of the point.
  */
 export const placePack = (
   world: World,

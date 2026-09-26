@@ -112,7 +112,9 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | Layer | domain, content, tests, docs |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
+
+> **Note, 2026-09-26, closed:** `findPackCells` stops at the last ring inside `pack_placement_radius`, a new tunable in world units from the pack's resolved point, at 1024, or at the map's edge if that comes first. Before, the search ran to the map's edge, 444 rings for a grunt on the long road. The default holds a pack at the live cap of the largest bodies, 200 tanks of radius 50, on open ground: 10 rings, 441 cells. A pack with no room within the radius is refused `no_free_cells` from the panel and waits as a map pack, tried again each tick the hero is near, at a bounded cost; a retune from the panel lands in the log as `set_tuning` and reaches the next placement. The entities and pools page's dormant-pack section and quick reference, and the developer panel page's spawn line, state the radius. The maps content test places every pack of every registered map on its empty map; the arena has none, so it bites when the long road is registered. The six logs are re-stamped on content version `75013715`, none recorded again, since no stored session places a pack that needs more than the radius. Sized 0.5, actual 0.25.
 
 **Build:** `findPackCells` in `src/domain/ai/packs.ts` searches rings out to a `pack_placement_radius` tunable instead of until it finds room, about 440 rings on a 4000 by 24000 map, and a pack that finds no room within it waits as it does today, at a bounded cost a tick. The [entities and pools](../../../../docs/architecture/entities-and-pools.md) page's dormant-pack section states the radius.
 
@@ -136,7 +138,10 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | The map spec approved by the maintainer | Written by T01, 2026-09-26. The approval waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
 | The corridor carry at the default share, and the six logs on the new version | T02: at a share of 0 the corridor press carries the hero 0 units, tested under 20. The default stays at 0.5 because the overlap bar fails at 0 (0.999 against 0.75), provisionally, as Q59, awaiting the maintainer. The six logs are re-stamped on content version `ce5563f6` |
 | Elites and bosses pay more experience | T03: a grunt pays 46, 138, and 460 at normal, elite, and boss tier, and an imp 0; the six logs are re-stamped on content version `746de978` |
-| Actual days per ticket | T01 0.5 of 1.5 · T02 0.75 of 1.5 · T03 0.25 of 0.5 |
+| A pack's placement search bounded | T04: the search stops at `pack_placement_radius`, 1024 world units; a walled-in pack waits and places once the radius is retuned past its walls; the six logs are re-stamped on content version `75013715` |
+| The playable outcome by hand | The corridor press and the elite grunt from the panel are covered headless by T02's and T03's specs. The look in the arena waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24, and turns on Q59's default |
+| Actual days per ticket | T01 0.5 of 1.5 · T02 0.75 of 1.5 · T03 0.25 of 0.5 · T04 0.25 of 0.5 |
+| Sprint total | Sized 4, with a buffer of 1; done in 1.75, closed 2026-09-26 on the rows an agent can verify |
 
 ## Risks in this sprint
 

@@ -9,6 +9,9 @@ import {
 } from "@domain/public";
 import { createTuningState } from "@domain/public";
 import type { Rect } from "@shared/public";
+import type { EventReader, Simulation } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import { makeWorld, submit } from "../helpers";
 
 const SMALL_CLASS = 0;
 const HERO_CLASS = 1;
@@ -38,6 +41,22 @@ const gridOf = (map: MapDef) => {
     tuningTable.walkability_cell_size,
     readRadiusClasses(tuning),
   );
+};
+
+/** Every refusal reason the reader has not seen, advancing it past everything. */
+const refusalsOf = (world: Simulation, reader: EventReader): string[] => {
+  const found: string[] = [];
+  let event = world.events.read(reader);
+
+  while (event !== null) {
+    if (event.kind === "command_refused") {
+      found.push(String(event.reason));
+    }
+
+    event = world.events.read(reader);
+  }
+
+  return found;
 };
 
 const faultsOf = (id: string) =>
@@ -78,6 +97,34 @@ describe("every map", () => {
           map.spawnPoint.y,
         ),
       ).toBe(false);
+    },
+  );
+
+  it.each(maps.map((map) => [map.id, map] as const))(
+    "%s places each of its packs on its empty map, within the placement radius",
+    (_id, map) => {
+      for (const pack of map.packs) {
+        const world = makeWorld({
+          seed: 1,
+          registry: contentRegistry,
+          map: { ...map, packs: [] },
+        });
+        const reader = createEventReader();
+
+        submit(world, {
+          kind: "spawn_pack",
+          tick: world.view.tick,
+          timestamp: world.view.tick,
+          archetypeId: pack.archetypeId,
+          tier: pack.tier,
+          count: pack.count,
+          position: pack.position,
+        });
+        world.tick();
+
+        expect(refusalsOf(world, reader)).toEqual([]);
+        expect(world.view.map.units.count).toBe(pack.count);
+      }
     },
   );
 

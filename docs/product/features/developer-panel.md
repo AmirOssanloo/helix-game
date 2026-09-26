@@ -54,7 +54,7 @@ Each slider carries a tuning key, the name its command and the input log use for
 
 ### Enemies
 
-A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test. It is refused whole when the unit pool cannot take every one.
+A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap, or with too few free cells within the `pack_placement_radius` tunable of the point, is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing. Beside the archetypes, a generic spawn: a count of plain units at a world position, for the stress test. It is refused whole when the unit pool cannot take every one.
 
 ### Zones
 

@@ -83,6 +83,8 @@ A map definition holds spawn data, not units. A pack is dormant — a record of 
 
 The records are map scope, rebuilt by `loadMap`. A pack not marked dormant is placed by the load itself. A record is placed once; a pack that dies stays dead until the map loads again. A pack the world cannot take, past the live cap or with no room, keeps waiting and is placed on the rule a dormant one is.
 
+A pack's members stand on free cells taken ring by ring outward from its point, one body apart. The search stops at the `pack_placement_radius` tunable, in world units from the point, so a pack walled in with no room within that radius costs a bounded search each tick it is tried, and waits. The default holds a pack at the live cap of the largest bodies on open ground.
+
 ---
 
 ## Anti-patterns
@@ -124,6 +126,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | The hero's definition | Read through the active form every tick; never cached across ticks |
 | Packs | Spawn data until the hero is within the activation radius; then units |
 | A map's pack records | Map scope, rebuilt by `loadMap`; a pack not marked dormant placed by the load; each placed once per load; one the world cannot take keeps waiting |
+| A pack's placement | Free cells ring by ring from its point, no further than `pack_placement_radius`; no room within it, and it waits |
 
 ---
 
