@@ -1,6 +1,11 @@
 /// <reference types="vite/client" />
 import Phaser from "phaser";
-import { atlasFrames, contentRegistry, FLOOR_IMAGE } from "@content/public";
+import {
+  atlasFrames,
+  contentRegistry,
+  FLOOR_IMAGE,
+  startingMap,
+} from "@content/public";
 import type { ContentStatus, PanelHandle } from "@devtools/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
@@ -36,18 +41,12 @@ export const boot: Boot = (): void => {
   // A broken definition stops the game here, with every fault named, before a world exists.
   assertRegistryValid(contentRegistry);
 
-  // The world on the first map the maps index lists, with the hero at its spawn point; a
-  // recreate, a map chosen from the panel, or a loaded log restarts it in place.
-  const [firstMap] = contentRegistry.maps;
-
-  if (firstMap === undefined) {
-    throw new Error("The content registers no map to start a session on");
-  }
-
+  // The world on the map the maps index names to start on, with the hero at its spawn point;
+  // a recreate, a map chosen from the panel, or a loaded log restarts it in place.
   const session = new Session({
     seed: drawSessionSeed(),
     registry: contentRegistry,
-    mapId: firstMap.id,
+    mapId: startingMap.id,
   });
   const world = session.world;
 

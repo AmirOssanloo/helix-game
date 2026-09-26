@@ -4,6 +4,7 @@ import {
   contentRegistry,
   longRoadDef,
   maps,
+  startingMap,
   tuningTable,
 } from "@content/public";
 import type { MapDef } from "@domain/public";
@@ -354,6 +355,12 @@ describe("the long road", () => {
 
   it("is listed", () => {
     expect(maps).toContain(longRoadDef);
+  });
+
+  it("is the map a fresh session starts on, with the arena still in the list", () => {
+    expect(startingMap).toBe(longRoadDef);
+    expect(maps).toContain(startingMap);
+    expect(maps).toContain(arenaDef);
   });
 
   it("is 4000 by 24000 with the spawn point at the first checkpoint, six checkpoints in order along the road", () => {

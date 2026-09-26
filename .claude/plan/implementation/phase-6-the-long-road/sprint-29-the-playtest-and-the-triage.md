@@ -21,7 +21,7 @@ The maintainer's session, saved whole, replays identically; every feedback note 
 | Layer | app, tests, tooling |
 | Size | 0.5 |
 | Depends on | every ticket of sprints 25 to 28 |
-| Status | planned |
+| Status | done |
 
 **Build:** The published playtest build boots on the long road; the panel's map list still reaches the arena. The engineer publishes it and opens a box under Waiting on a person. The maintainer plays from the spawn at level 1 to the last boss, in one sitting or several, with the panel closed but for jumping to a checkpoint after a break, and presses the feedback key whenever something feels wrong or right: the push in a choke (Q31), the early regions, each archetype, each spell. At the end, **Save input log** saves the whole session. The engineer stores the feedback files under `.claude/plan/implementation/notes/`, dated, and the whole session as `tests/simulation/replays/long-road-playtest.json` with a spec.
 
@@ -33,6 +33,8 @@ The maintainer's session, saved whole, replays identically; every feedback note 
 - `tests/simulation/replays/long-road-playtest.spec.ts`: two replays agree at every tick; the level at the last boss's death is read and recorded.
 
 **Definition of done:** Every change.
+
+Closed 2026-09-26 on what an agent can verify: a fresh session starts on `startingMap`, the long road, named in the maps index apart from the order of `maps`, because that order is part of the content version and reordering it refused every recorded log (Q67); the spec replays the session and every long-road feedback file under `notes/`, and is skipped with its owner and condition until the maintainer's log is saved. The maintainer's run, the files, and the level at the kill wait on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24, in STATUS.md.
 
 ---
 
@@ -67,9 +69,9 @@ Tickets P6-S29-T03 onward are written by T02. None exists before the triage, and
 
 | Check | Result |
 | --- | --- |
-| The maintainer's run: reached the last boss, level at its kill, notes filed | |
+| The maintainer's run: reached the last boss, level at its kill, notes filed | Waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24. The build that starts on the long road and the spec that reads the level are in place |
 | Triage: notes by outcome, tickets written, days committed against the appetite | |
-| Actual days per ticket, and the bucket spent | |
+| Actual days per ticket, and the bucket spent | T01: sized 0.5, 0.25 of agent work; the maintainer's run is calendar time outside it |
 
 ## Risks in this sprint
 

@@ -6,7 +6,7 @@
 
 A map is the space the hero plays in: its bounds, what can be walked on, the obstacles, and where things spawn. The camera is how the player sees it: locked on the hero, looking down on a diamond floor, never free. This page covers both, and the two maps that exist: the arena, and the long road.
 
-A map is data. Each map has a definition file under `src/content/maps/`; the arena is `arena.def.ts`, and the long road `long-road.def.ts`. The walkability grid is derived from that file, never hand-edited.
+A map is data. Each map has a definition file under `src/content/maps/`; the arena is `arena.def.ts`, and the long road `long-road.def.ts`. The walkability grid is derived from that file, never hand-edited. The game starts on the long road; the arena is one choice away in the [developer panel](./developer-panel.md)'s map list.
 
 ## A map is data
 

@@ -83,4 +83,5 @@ export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { spawnUnit, type SpawnUnitOptions } from "./world/spawn-unit";
 export { submit } from "./world/submit";
 export { unitIdOf } from "./world/unit-id";
+export { tickDifference } from "./world/tick-difference";
 export { tickUntil } from "./world/tick-until";
