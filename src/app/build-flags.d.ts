@@ -15,3 +15,10 @@ declare const __DEV__: boolean;
  * the panel left in beside it.
  */
 declare const __PANEL__: boolean;
+
+/**
+ * The commit the build was made from and whether the tree was dirty, read by `readBuildStamp`
+ * in src/app/build-stamp.ts when the build or the dev server starts. A test runs under a fixed
+ * stamp. The composition root hands it to the panel, which writes it into a feedback file.
+ */
+declare const __BUILD_STAMP__: Readonly<{ commit: string; dirty: boolean }>;

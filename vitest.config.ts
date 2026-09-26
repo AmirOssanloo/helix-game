@@ -72,6 +72,8 @@ export default defineConfig({
   define: {
     __DEV__: "true",
     __PANEL__: "true",
+    // A fixed stamp, so no spec depends on the checkout it runs in.
+    __BUILD_STAMP__: JSON.stringify({ commit: "test", dirty: false }),
   },
   resolve: {
     alias: {

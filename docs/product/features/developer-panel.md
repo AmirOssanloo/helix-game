@@ -50,7 +50,9 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
 | Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one recreates the world on it under the current seed, with the hero at its spawn point: a driver operation like the seed, not a command |
 | Save input log | Downloads the session's seed, map, and commands |
-| Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run |
+| Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run. It takes a feedback file too: the log inside replays, the world runs to the note's tick faster than it was played and pauses there, and the note is shown under **Note** |
+| Feedback, or F9 | Opens a note above the panel and pauses the world. **Save** downloads a [feedback file](../vocabulary.md): the note, the tick, the build stamp, the content version, and the input log up to that tick. **Cancel** or Escape closes it unsaved. Either way the pause goes back to what it was. Not a command: feedback changes nothing in the world and nothing of it is in the log |
+| Note | The note of the last feedback file loaded, read-only |
 | Reset map | Reloads the current map; the hero keeps run scope, and stands at the map's spawn point with no checkpoint reached |
 | Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
 
@@ -122,6 +124,9 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | A content file edited to change anything but numbers | The page reloads, to a fresh world |
 | A content file edited while a log replays | Refused until the replay ends; a replay runs on the content it was recorded against |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
+| A key typed into the feedback note | Stays in the note: Q is a letter, not an orb, and no key reaches the hero while the note has focus |
+| Load a feedback file written on another commit, or on a tree with uncommitted changes | Loaded and replayed, and the status line says the commit differs and names both builds: the replay may not match what was played |
+| Pause, or recreate the world, while a loaded feedback file runs to its tick | The run ends where it is |
 | Load a log recorded on a different map | The world is recreated on the log's map, and the map control follows it |
 | Load a log naming a map the content does not register | Refused with a message naming the map's id; the world runs on as it was |
 | A panel control or a key used while a log replays | Refused until the recorded ticks have run; then the world is live again |

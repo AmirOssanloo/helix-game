@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, MAX_TICKS_PER_FRAME, stepMsOf } from "@app/public";
+import {
+  FixedStepDriver,
+  MAX_TICKS_PER_FRAME,
+  RUN_TO_FRAME_BUDGET_MS,
+  stepMsOf,
+} from "@app/public";
 import type { AnyCommand } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
@@ -37,6 +42,19 @@ const makeDriver = (
   const driver = new FixedStepDriver({ world, rings, clock });
 
   return { driver, world, rings };
+};
+
+/** A clock that moves one millisecond each time it is read. */
+const creepingClock = (): Clock => {
+  let reads = 0;
+
+  return {
+    now: (): number => {
+      reads += 1;
+
+      return reads;
+    },
+  };
 };
 
 const noop = (): AnyCommand => ({ kind: "noop", tick: 0, timestamp: 0 });
@@ -237,5 +255,77 @@ describe("FixedStepDriver", () => {
     driver.onFrame(stepMsOf(60) * 2);
 
     expect(world.view.tick).toBe(2);
+  });
+
+  it("runs to a tick within one frame when the budget allows, and pauses on it", () => {
+    const { driver, world } = makeDriver();
+
+    driver.runTo(40);
+    driver.onFrame(1);
+
+    expect(world.view.tick).toBe(40);
+    expect(driver.paused).toBe(true);
+    expect(driver.runningTo).toBeNull();
+  });
+
+  it("spends each frame's budget on ticks rather than wall time until it arrives", () => {
+    const { driver, world } = makeDriver(creepingClock());
+
+    driver.runTo(10);
+    driver.onFrame(1);
+
+    // Three reads a tick and one to start: the budget is spent on the tick whose check reaches it.
+    const perFrame = Math.ceil((RUN_TO_FRAME_BUDGET_MS - 1) / 3);
+
+    expect(world.view.tick).toBe(perFrame);
+    expect(driver.paused).toBe(false);
+    expect(driver.runningTo).toBe(10);
+
+    driver.onFrame(1);
+    driver.onFrame(1);
+
+    expect(world.view.tick).toBe(10);
+    expect(driver.paused).toBe(true);
+  });
+
+  it("pauses at once on a world already on the tick it is sent to", () => {
+    const { driver, world } = makeDriver();
+
+    driver.onFrame(STEP_MS * 2);
+    driver.runTo(1);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(2);
+    expect(driver.paused).toBe(true);
+    expect(driver.runningTo).toBeNull();
+  });
+
+  it("ends a run where it is on a pause, or on null without pausing", () => {
+    const { driver, world } = makeDriver(creepingClock());
+
+    driver.runTo(100);
+    driver.setPaused(true);
+    driver.setPaused(false);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(1);
+
+    driver.runTo(100);
+    driver.runTo(null);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(2);
+    expect(driver.paused).toBe(false);
+  });
+
+  it("runs nothing toward its tick while hidden", () => {
+    const { driver, world } = makeDriver();
+
+    driver.runTo(5);
+    driver.setHidden(true);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(0);
+    expect(driver.runningTo).toBe(5);
   });
 });

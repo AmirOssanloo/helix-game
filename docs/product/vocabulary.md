@@ -70,6 +70,8 @@ When two people call the same thing different names, the names leak into the cod
 | The build published for people to play with: the game as it ships, with the developer panel beside it | **Playtest build** | Demo, preview, staging, dev build |
 | Drawn diagnostics over the world | **Overlay** | Gizmo, debug draw |
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
+| A person's note saved with the input log up to the tick it was written on and the build it was played on | **Feedback file** | Bug report, playtest report, note |
+| The commit a build was made from, and whether its tree held uncommitted changes | **Build stamp** | Version, build id, revision |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |
 | One named region of the atlas: a baked white shape, or the painted floor tile | **Atlas frame** | Texture, sprite |
 | The one mapping from a world point to the screen point it is drawn at, a square cell to a 2:1 diamond | **Projection** | Iso transform, camera transform, world-to-screen matrix |

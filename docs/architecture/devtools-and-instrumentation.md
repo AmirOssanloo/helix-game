@@ -19,7 +19,7 @@ A session with the panel open replays exactly, so a bug found while tuning is a 
 
 `devtools/` exposes one object, `DevApi`, on `window` wherever the panel is. A Vite define decides that at build time; there is no runtime flag to turn it back on.
 
-**Two defines, because they answer different questions.** `__DEV__` says how the code behaves — an `assert` throws under it — and is true under the dev server and in tests only. `__PANEL__` says whether the panel is in the build. The two part company in the playtest build, which is the production game, with no development path and no assert that throws, published with the panel beside it for people to play with. A production build has neither: no panel, no `DevApi`, and not the pane either is built from.
+**Two defines, because they answer different questions.** `__DEV__` says how the code behaves — an `assert` throws under it — and is true under the dev server and in tests only. `__PANEL__` says whether the panel is in the build. The two part company in the playtest build, which is the production game, with no development path and no assert that throws, published with the panel beside it for people to play with. A production build has neither: no panel, no `DevApi`, and not the pane either is built from. A third define, `__BUILD_STAMP__`, says which code the build is: the commit the build was made from, read from git when the build or the dev server starts, and whether the tree was dirty. The composition root hands it to `DevApi`, which writes it into a feedback file. Where git cannot run, the CI runner's commit stands in; a test runs under a fixed stamp.
 
 `DevApi` does these things and nothing else:
 
@@ -29,16 +29,19 @@ A session with the panel open replays exactly, so a bug found while tuning is a 
 - **Reads the instrumentation rings.** Timing and counts, for the readouts.
 - **Hands over what the panel lists.** The tuning defaults, every definition number with its key and unit, the archetype ids, the registered map ids, and what the last content reload came to, all read from the registry, so a new archetype or a new number appears in the panel without a code change.
 - **Saves the input log, and downloads the atlas.** Both read; neither changes the world.
+- **Saves and loads feedback.** A feedback file is a person's note, the tick, the build stamp, the content version, and the input log up to that tick, in one document. Saving it reads, like saving the log. Loading one loads its log as a log is loaded, then has the driver run to the note's tick, spending each frame's budget on ticks rather than wall time, and pause there; a pause or a world made again ends the run where it is. Running to a tick is a driver operation, for the reason pause is. A feedback file from another build loads with a line saying so, since a log replays only on the code it was recorded on.
 - **Arms a ground pick.** The next click on the ground hands its world point to the panel instead of ordering anything with it, so a spawn control can place at a clicked point. Like a toggle, it is presentation state and never a command.
 - **Sets the overlay toggles.** One flag per debug overlay, on an object the world scene reads each frame. A toggle is presentation state: it changes nothing in the world, so it is not a command and is not in the log, and a replay draws whatever overlays are on at the time.
 
 ```typescript
-window.DevApi = { submit, driver, view, events, rings, overlays, pickGround, saveInputLog, loadInputLog, /* … */ }
+window.DevApi = { submit, driver, view, events, rings, overlays, pickGround, saveInputLog, loadInputLog, saveFeedback, loadFile, build, /* … */ }
 ```
 
 **The width of the `DebugCommand` union is where the panel's power comes from.** Wanting the panel to do something new means adding a variant and the system code that handles it, which is also what makes the new thing replayable. There is no `world.setFoo()` for the panel to call; [Commands and events](./commands-and-events.md) holds the rule.
 
 The HTML panel itself is outside the canvas and knows nothing about Phaser. It is built from a pane library rather than by hand: a folder per group, and in it a slider, a checkbox, a dropdown, a button, or a read-only line. The pane ships only where the panel does, and the build refuses a production bundle holding either.
+
+**The feedback note is plain DOM above the pane**, a text field with Save and Cancel, and its hotkey is listened for on the window while the panel is mounted. The game's keyboard listens on the window too, so every key event inside the note is stopped there and never reaches the input mapper; the mapper itself knows nothing of the note.
 
 The simulation group carries one line the panel only reads: what the last content reload came to, taken, refused with every fault named, or reloading the page. The composition root writes it; [Content and registries](./content-and-registries.md) has the reload. A slider shows its default beside it, so a reload that is taken builds the panel again over the new defaults.
 
@@ -120,10 +123,13 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | --- | --- |
 | `DevApi` | One object on `window` wherever the panel is; stripped by a Vite define in production |
 | The two defines | `__DEV__` says how the code behaves and gates `assert`; `__PANEL__` says whether the panel is in the build |
+| The build stamp | `__BUILD_STAMP__`: the commit from git at build time and whether the tree was dirty, or the CI runner's commit where git cannot run; handed to `DevApi` by the composition root |
+| Feedback | Not a command: a note saved with the tick, the build stamp, the content version, and the log to that tick. Loading one replays its log and runs the driver to the note's tick, then pauses; another build loads with a line saying so |
+| The feedback note | Plain DOM above the pane; every key event inside it stops there, so none reaches the input mapper on the window |
 | The playtest build | The production game with the panel left in, for people to play with; the build fails if the panel is missing from it |
-| What it does | Submits commands, drives the driver, reads the world view, the event ring, and the instrumentation rings, sets the overlay toggles, hands over the defaults and archetypes the panel lists, saves the log, downloads the atlas, arms a ground pick |
+| What it does | Submits commands, drives the driver, reads the world view, the event ring, and the instrumentation rings, sets the overlay toggles, hands over the defaults and archetypes the panel lists, saves the log, saves and loads feedback, downloads the atlas, arms a ground pick |
 | Panel actions | `DebugCommand` variants and `SetTuning` commands, into the same buffer and log as player input |
-| Pause, single-step, catch-up cap | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
+| Pause, single-step, catch-up cap, run to a tick | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
 | Seed, map, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place. A map is chosen from the registered ones under the current seed; a log loads on its own map. A log from another content version, or one spanning a content reload, is refused with a message naming the versions; a log or a choice naming a map no one registered is refused with its id |
 | A content reload | Reported on the simulation group's content line: taken, refused with its faults, or reloading the page; a reload that is taken builds the panel again over the new defaults |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |

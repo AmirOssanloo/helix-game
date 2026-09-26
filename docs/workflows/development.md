@@ -94,6 +94,17 @@ Two things are a person's, once:
 
 ---
 
+## Filing and reading feedback
+
+A playtest's feedback goes into the build it was played on, as a file.
+
+1. **Filing.** While playing, press **F9** or click **Feedback** in the panel's Simulation group. The world pauses and a note opens above the panel; every key you type stays in it. Write what you think and click **Save**, or **Cancel** or Escape to drop it. The browser downloads `helix-feedback-<seed>-<tick>.json`: the note, the tick it was written on, the build stamp, the content version, and the input log up to that tick. Closing the note puts the pause back as it was.
+2. **The build stamp.** Every build and the dev server read the commit from git when they start, and whether the tree had uncommitted changes. A playtest build from Pages is a clean commit; a dev server with edits in the tree is marked dirty, so feedback filed on it may not replay.
+3. **Reading.** Check out the commit the file names, run `pnpm dev`, and pick the file with **Load input log**. The world is made on the log's map under its seed, runs to the note's tick many times faster than it was played, and pauses there, with the note under **Note**. On another commit, or where either tree was dirty, it loads anyway and the status line says the commit differs and names both builds; the state may not be the one the note was written about. A log from other content is refused, as any log is.
+4. **Triage.** Each note becomes a tuning change, a ticket, or a spell swap by the [adding-a-spell](./adding-a-spell.md) runbook. A note that shows a bug ships with its log as a replay test, as any bug with a log does.
+
+---
+
 ## Where the scripts live
 
 Every command on this page is under `scripts` in the root `package.json`. That file, not this page, is the authority when a command here doesn't exist any more.

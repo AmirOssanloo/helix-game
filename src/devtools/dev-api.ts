@@ -8,6 +8,13 @@ import type {
 } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import type { EventRing, WorldView } from "@simulation/public";
+import type { BuildStamp, FeedbackFile } from "./feedback-file";
+import {
+  buildDifference,
+  isFeedbackRefusal,
+  readFeedbackFile,
+  writeFeedbackFile,
+} from "./feedback-file";
 
 /** One variant without the two stamps the driver writes, so a panel control names only its payload. */
 type Unstamped<C> = C extends AnyCommand
@@ -31,6 +38,10 @@ export type DevDriver = Readonly<{
   setPaused: (paused: boolean) => void;
   step: () => boolean;
   setCatchUpCap: (cap: number) => boolean;
+  /** The tick a run is heading for, or `null` while the driver keeps wall time. */
+  runningTo: Tick | null;
+  /** Runs the world to a tick as fast as frames allow and pauses on it; `null` ends a run where it is. */
+  runTo: (tick: Tick | null) => void;
 }>;
 
 /**
@@ -44,6 +55,8 @@ export type DevSession = Readonly<{
   mapId: string;
   /** The id of every map the content registers, in the order the maps index lists them. */
   mapIds: readonly string[];
+  /** The stamp of the content the world runs on. */
+  contentVersion: string;
   recreate: (seed: number) => void;
   /** The message a person reads when no map has `mapId`, or `null` once the world is made again on it under the current seed. */
   chooseMap: (mapId: string) => string | null;
@@ -76,6 +89,23 @@ export type DriverControls = Readonly<{
   recreate: (seed: number) => void;
   /** Makes the world again on the map registered as `mapId` under the current seed, or returns the message naming an id no map has. */
   chooseMap: (mapId: string) => string | null;
+  /** The tick a run is heading for, or `null` while the driver keeps wall time. */
+  runningTo: Tick | null;
+  /** Runs the world to `tick` as fast as frames allow and pauses on it, or pauses at once on a world already there. */
+  runTo: (tick: Tick) => void;
+}>;
+
+/**
+ * What loading a file came to. A bare input log carries no feedback; a feedback file carries
+ * its note and tick, and says whether it was written on another build.
+ */
+export type FileLoad = Readonly<{
+  /** Why the file cannot run, or `null` once its replay has begun. */
+  refusal: string | null;
+  /** The feedback the file holds, or `null` for a bare input log or a file that could not be read. */
+  feedback: FeedbackFile | null;
+  /** The line saying the feedback was written on another build, or `null` when it was not or the file holds no feedback. */
+  buildDiffers: string | null;
 }>;
 
 /**
@@ -142,6 +172,12 @@ export type DevApi = Readonly<{
   saveInputLog: () => string;
   /** Replays a saved log from its first tick on a world recreated under its seed on its own map, or returns the message saying why it cannot run. */
   loadInputLog: (text: string) => string | null;
+  /** The commit this build was made from, and whether its tree was dirty. */
+  build: BuildStamp;
+  /** A feedback file holding `note`, the tick the world stands on, the build, the content version, and the log up to that tick. Changes nothing. */
+  saveFeedback: (note: string) => string;
+  /** Loads a feedback file or a bare input log. A feedback file's log replays on its own map and the driver runs to the note's tick and pauses there. */
+  loadFile: (text: string) => FileLoad;
   /** The baked shape atlas as a PNG data URL, so a person can save it and look at every frame. */
   downloadAtlas: () => string;
 }>;
@@ -160,6 +196,7 @@ export type DevApiPorts = Readonly<{
   archetypes: readonly string[];
   contentStatus: ContentStatus;
   downloadAtlas: () => string;
+  build: BuildStamp;
 }>;
 
 /** The property `exposeDevApi` defines: `window.DevApi`. */
@@ -167,7 +204,16 @@ export const DEV_API_NAME = "DevApi";
 
 /** The api over `ports`. Nothing here holds a route into world state: commands go through the driver, reads go through the view. */
 export const createDevApi = (ports: DevApiPorts): DevApi => {
-  const { driver, view } = ports;
+  const { driver, session, view } = ports;
+  const loadInputLog = (text: string): string | null => {
+    const refusal = session.loadInputLog(text);
+
+    if (refusal === null) {
+      driver.runTo(null);
+    }
+
+    return refusal;
+  };
   const controls: DriverControls = {
     get paused(): boolean {
       return driver.paused;
@@ -191,9 +237,24 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     step: (): boolean => driver.step(),
     setCatchUpCap: (cap: number): boolean => driver.setCatchUpCap(cap),
     recreate: (seed: number): void => {
-      ports.session.recreate(seed);
+      session.recreate(seed);
+      driver.runTo(null);
     },
-    chooseMap: (mapId: string): string | null => ports.session.chooseMap(mapId),
+    chooseMap: (mapId: string): string | null => {
+      const refusal = session.chooseMap(mapId);
+
+      if (refusal === null) {
+        driver.runTo(null);
+      }
+
+      return refusal;
+    },
+    get runningTo(): Tick | null {
+      return driver.runningTo;
+    },
+    runTo: (tick: Tick): void => {
+      driver.runTo(tick);
+    },
   };
 
   return {
@@ -215,9 +276,47 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     definitionDefaults: ports.definitionDefaults,
     archetypes: ports.archetypes,
     content: ports.contentStatus,
-    saveInputLog: (): string => ports.session.saveInputLog(),
-    loadInputLog: (text: string): string | null =>
-      ports.session.loadInputLog(text),
+    saveInputLog: (): string => session.saveInputLog(),
+    loadInputLog,
+    build: ports.build,
+    saveFeedback: (note: string): string =>
+      writeFeedbackFile({
+        note,
+        tick: view.tick,
+        build: ports.build,
+        contentVersion: session.contentVersion,
+        logText: session.saveInputLog(),
+      }),
+    loadFile: (text: string): FileLoad => {
+      const feedback = readFeedbackFile(text);
+
+      if (feedback === null) {
+        return {
+          refusal: loadInputLog(text),
+          feedback: null,
+          buildDiffers: null,
+        };
+      }
+
+      if (isFeedbackRefusal(feedback)) {
+        return {
+          refusal: feedback.message,
+          feedback: null,
+          buildDiffers: null,
+        };
+      }
+
+      const buildDiffers = buildDifference(feedback.build, ports.build);
+      const refusal = loadInputLog(JSON.stringify(feedback.log));
+
+      if (refusal !== null) {
+        return { refusal, feedback: null, buildDiffers };
+      }
+
+      driver.runTo(feedback.tick);
+
+      return { refusal: null, feedback, buildDiffers };
+    },
     downloadAtlas: ports.downloadAtlas,
   };
 };

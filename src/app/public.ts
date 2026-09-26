@@ -1,9 +1,16 @@
+export {
+  type BuildStamp,
+  type BuildStampSource,
+  readBuildStamp,
+  UNKNOWN_COMMIT,
+} from "./build-stamp";
 export { type ContentReload, reloadContent } from "./content-reload";
 export {
   type Clock,
   FixedStepDriver,
   type FixedStepDriverOptions,
   MAX_TICKS_PER_FRAME,
+  RUN_TO_FRAME_BUDGET_MS,
   stepMsOf,
   wallClock,
 } from "./fixed-step-driver";

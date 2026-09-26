@@ -131,6 +131,7 @@ export const boot: Boot = (): void => {
         archetypes: registry.enemies.map((def): string => def.id),
         contentStatus,
         downloadAtlas: (): string => atlas.download(),
+        build: __BUILD_STAMP__,
       });
 
       exposeDevApi(window, api);

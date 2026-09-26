@@ -15,6 +15,13 @@ export const stepMsOf = (simHz: number): number => MS_PER_SECOND / simHz;
 /** The catch-up cap a driver starts with: ticks one render frame may run before the remaining time is dropped rather than queued. */
 export const MAX_TICKS_PER_FRAME = 3;
 
+/**
+ * Wall milliseconds one frame may spend running ticks toward a tick the driver runs to: enough
+ * to cover a long session many times faster than it was played, little enough that the page
+ * still draws between frames.
+ */
+export const RUN_TO_FRAME_BUDGET_MS = 12;
+
 /** A source of wall milliseconds. The driver takes one so a test can run it in Node with a clock it controls. */
 export type Clock = Readonly<{
   now: () => number;
@@ -38,8 +45,11 @@ export type FixedStepDriverOptions = Readonly<{
  * is hidden it runs nothing and refuses every submit, so a tab that was away for a minute
  * neither replays a minute nor keeps the input that arrived meanwhile.
  *
- * Pause, single-step, and the cap are the developer panel's: they decide whether a frame
- * calls `tick`, never what a tick does, so they are not commands and are not in the log. A
+ * Pause, single-step, the cap, and running to a tick are the developer panel's: they decide
+ * whether a frame calls `tick`, never what a tick does, so they are not commands and are not
+ * in the log. Running to a tick spends each frame's budget on ticks rather than wall time
+ * until the world reaches it, then pauses, so a loaded session lands on a tick without being
+ * watched in real time; the ticks it runs are the ticks a frame would. A
  * paused driver still takes commands; they wait in the buffer for the next tick, as a click
  * during a pause does.
  *
@@ -66,6 +76,9 @@ export class FixedStepDriver {
   private cap = MAX_TICKS_PER_FRAME;
 
   private discardCount = 0;
+
+  /** The tick running to stops and pauses on, or `null` while the driver keeps wall time. */
+  private target: Tick | null = null;
 
   constructor(options: FixedStepDriverOptions) {
     this.world = options.world;
@@ -94,6 +107,11 @@ export class FixedStepDriver {
   /** Ticks one frame may run before the remaining time is dropped. */
   get catchUpCap(): number {
     return this.cap;
+  }
+
+  /** The tick the driver is running to, or `null` when it keeps wall time. */
+  get runningTo(): Tick | null {
+    return this.target;
   }
 
   /** Commands refused because they arrived while hidden, since creation. */
@@ -128,10 +146,27 @@ export class FixedStepDriver {
     this.accumulatorMs = 0;
   }
 
-  /** Stops or restarts the clock. The accumulated time is dropped either way, so resuming never catches up. */
+  /** Stops or restarts the clock. The accumulated time is dropped either way, so resuming never catches up, and any run to a tick ends where it is. */
   setPaused(paused: boolean): void {
     this.isPaused = paused;
     this.accumulatorMs = 0;
+    this.target = null;
+  }
+
+  /**
+   * Runs the world to `tick` as fast as each frame's budget allows and pauses there, or pauses
+   * at once when the world is already on it or past it. `null` ends a run without pausing, as
+   * a world made again does, and the driver keeps wall time from where it is.
+   */
+  runTo(tick: Tick | null): void {
+    if (tick === null) {
+      this.target = null;
+
+      return;
+    }
+
+    this.setPaused(this.world.view.tick >= tick);
+    this.target = this.isPaused ? null : tick;
   }
 
   /** Runs exactly one tick while paused, or none with `false` while running or hidden: a step is a thing the panel does to a stopped clock. */
@@ -170,6 +205,12 @@ export class FixedStepDriver {
       return;
     }
 
+    if (this.target !== null) {
+      this.runTowardTarget(this.target);
+
+      return;
+    }
+
     this.accumulatorMs += frameDeltaMs;
 
     let steps = 0;
@@ -185,6 +226,25 @@ export class FixedStepDriver {
     }
 
     this.fraction = this.accumulatorMs / this.stepMs;
+  }
+
+  /** Ticks toward `target` until the frame's budget is spent, pausing on the tick that reaches it. */
+  private runTowardTarget(target: Tick): void {
+    const start = this.clock.now();
+
+    while (this.world.view.tick < target) {
+      this.runTick();
+
+      if (this.clock.now() - start >= RUN_TO_FRAME_BUDGET_MS) {
+        break;
+      }
+    }
+
+    if (this.world.view.tick >= target) {
+      this.setPaused(true);
+    }
+
+    this.fraction = 0;
   }
 
   private runTick(): void {

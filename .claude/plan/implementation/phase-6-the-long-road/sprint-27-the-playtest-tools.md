@@ -92,7 +92,7 @@ Closed 2026-09-26 on what an agent can verify: the markers bound by the camera r
 | Layer | devtools, app, tests, docs |
 | Size | 1.5 |
 | Depends on | P6-S26-T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** Feedback is not a command: it changes no world state. A **Feedback** button in the panel and a hotkey (proposed F9), both handled under `src/devtools/`, never the input mapper. Opening it pauses the driver and opens a note field; while the field has focus the mapper ignores keys, so typing Q is not an orb. Saving writes one file through `downloadText` in `src/devtools/files.ts`: the note, the tick, the build's commit, the content version, and the `InputLogFile` up to that tick. The build's commit is stamped in the app layer at build time, since a log replays only on its commit (ADR 0009); a development build stamps the commit and whether the tree was dirty. **Load input log** takes a feedback file, unwraps its log, recreates the world on its map (P6-S26-T01), replays, and stops paused at the note's tick with the note shown in the panel. The [developer panel](../../../../docs/product/features/developer-panel.md) page and the [development workflow](../../../../docs/workflows/development.md) say how feedback is filed and read.
 
@@ -106,6 +106,8 @@ Closed 2026-09-26 on what an agent can verify: the markers bound by the camera r
 - `tests/app/build-stamp.spec.ts`: the stamp is present in a build and marks a dirty tree.
 
 **Definition of done:** Every change · A developer-panel control · A documentation change.
+
+Closed 2026-09-26 on what an agent can verify: the file's shape, the pause, the keys held from a window listener by a real key event on the focused field, the unwrap, the run to the note's tick in the state it was written in, and the commit line, in the two specs, with `pnpm check` green. The playable outcome by hand waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24. Loading runs to the tick rather than replaying in real time, which the ticket left open; that, F9, and a file from another commit loading with a warning are Q65, provisional. The driver's run to a tick is covered in `tests/app/fixed-step-driver.spec.ts` as well.
 
 ---
 
@@ -137,7 +139,7 @@ Closed 2026-09-26 on what an agent can verify: the markers bound by the camera r
 | --- | --- |
 | A feedback file saved, reloaded, and stopped at its tick, by hand | |
 | Enemies home while the hero is dead; the checkpoint jump and marker by hand | |
-| Actual days per ticket | T01: 0.25 · T02: 0.25 · T03: 0.25 |
+| Actual days per ticket | T01: 0.25 · T02: 0.25 · T03: 0.25 · T04: 0.5 |
 
 ## Risks in this sprint
 

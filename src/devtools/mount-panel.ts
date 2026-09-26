@@ -5,6 +5,7 @@ import { definitionsGroup } from "./definitions-group";
 import type { DevApi } from "./dev-api";
 import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
 import { enemiesGroup } from "./enemies-group";
+import { mountFeedbackNote } from "./feedback-note";
 import { heroGroup } from "./hero-group";
 import { overlaysGroup } from "./overlays-group";
 import type { PanelGroup } from "./panel-group";
@@ -31,6 +32,8 @@ const PANEL_TITLE = "Helix developer panel";
 const PANEL_STYLE = `
 #devtools { width: 360px; overflow-y: auto; background: #111; }
 #devtools .tp-rotv { --tp-base-width: 100%; }
+#devtools .helix-feedback { padding: 8px; color: #ddd; font: 12px sans-serif; }
+#devtools .helix-feedback textarea { display: block; box-sizing: border-box; width: 100%; margin: 4px 0; }
 `;
 
 /** What `mountPanel` hands back: a refresh a test drives by hand, and the way to take the panel down. */
@@ -51,6 +54,8 @@ export type PanelMount = (
  * second while the panel is open and left alone while it is closed, the rings sampling either
  * way. The readouts' event reader skips to the newest event whenever the panel opens, so what
  * passed while it was closed is not counted as lost. What the panel remembers goes to `store`; nothing about the game does.
+ * The feedback note stands above the pane, and its hotkey is listened for on the window for as
+ * long as the panel is mounted, folded or not.
  */
 export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
   const memory = readPanelMemory(store);
@@ -75,11 +80,12 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     return added;
   };
   const reader = createEventReader();
+  const note = mountFeedbackNote(host, api, window);
   const groups: readonly PanelGroup[] = [
     heroGroup(folder("hero", "Hero"), api),
     tuningGroup(folder("tuning", "Tuning"), api),
     definitionsGroup(folder("definitions", "Definitions"), api),
-    simulationGroup(folder("simulation", "Simulation"), api),
+    simulationGroup(folder("simulation", "Simulation"), api, note),
     unitsGroup(folder("units", "Units"), api, memory, remember),
     enemiesGroup(folder("enemies", "Enemies"), api, memory, remember),
     zonesGroup(folder("zones", "Zones"), api),
@@ -122,6 +128,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     refresh,
     unmount: (): void => {
       schedule(false);
+      note.dispose();
       pane.dispose();
       host.replaceChildren();
       host.hidden = true;

@@ -97,6 +97,7 @@ const arrange = (mapId: string = MAP.id): Arranged => {
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     contentStatus: { message: "" },
     downloadAtlas: (): string => "data:image/png;base64,",
+    build: { commit: "test", dirty: false },
   });
 
   return { api, world, driver, rings, overlays };

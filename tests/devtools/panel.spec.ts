@@ -128,6 +128,7 @@ const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
     archetypes: contentRegistry.enemies.map((def): string => def.id),
     contentStatus: { message: "" },
     downloadAtlas: (): string => "data:image/png;base64,",
+    build: { commit: "test", dirty: false },
   });
   const host = document.createElement("aside");
 

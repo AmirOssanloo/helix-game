@@ -1,5 +1,7 @@
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
+import { type BuildStamp, readBuildStamp } from "./src/app/build-stamp.ts";
 import { DEVTOOLS_SENTINEL } from "./src/devtools/devtools-sentinel.ts";
 
 const LAYERS = [
@@ -21,6 +23,29 @@ export const layerAliases = (): Record<string, string> =>
       fileURLToPath(new URL(`./src/${layer}`, import.meta.url)),
     ]),
   );
+
+/** Git's output for `args`, run in this repository, or `null` when git is missing or fails. */
+const runGit = (args: readonly string[]): string | null => {
+  try {
+    return execFileSync("git", args, {
+      cwd: fileURLToPath(new URL(".", import.meta.url)),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The commit this build is made from, and whether the tree was dirty, read once when the build
+ * or the dev server starts. Where git cannot run, the commit the CI runner names stands in.
+ */
+export const currentBuildStamp = (): BuildStamp =>
+  readBuildStamp({
+    git: runGit,
+    ciCommit: process.env["GITHUB_SHA"] ?? null,
+  });
 
 /** The pane the developer panel is built from, which ships only where the panel does. */
 const PANE_MODULE = /[\\/]tweakpane[\\/]/;
@@ -99,6 +124,7 @@ export default defineConfig(({ mode }) => {
     define: {
       __DEV__: JSON.stringify(development),
       __PANEL__: JSON.stringify(panel),
+      __BUILD_STAMP__: JSON.stringify(currentBuildStamp()),
     },
     resolve: {
       alias: layerAliases(),

@@ -1,6 +1,7 @@
 import type { FolderApi } from "tweakpane";
 import { onCommit, optionsOf, readout } from "./bindings";
-import type { DevApi } from "./dev-api";
+import type { DevApi, FileLoad } from "./dev-api";
+import type { FeedbackNote } from "./feedback-note";
 import { downloadText, downloadUrl, pickTextFile } from "./files";
 import type { PanelGroup } from "./panel-group";
 
@@ -21,6 +22,32 @@ const logFilename = (seed: number, tick: number): string =>
 /** Lines the content readout shows before it scrolls. */
 const CONTENT_ROWS = 4;
 
+/** Lines the note readout shows before it scrolls. */
+const NOTE_ROWS = 4;
+
+/** What the status line says a load came to: why it cannot run, what it is replaying, and whether the build differs. */
+const loadStatus = (load: FileLoad, api: DevApi): string => {
+  const lines: string[] = [];
+
+  if (load.refusal !== null) {
+    lines.push(load.refusal);
+  } else if (load.feedback !== null) {
+    lines.push(
+      `Replaying feedback on map ${api.driver.mapId} to tick ${String(load.feedback.tick)}, where it pauses`,
+    );
+  } else {
+    lines.push(
+      `Replaying on map ${api.driver.mapId} from seed ${String(api.driver.seed)}`,
+    );
+  }
+
+  if (load.buildDiffers !== null) {
+    lines.push(load.buildDiffers);
+  }
+
+  return lines.join(". ");
+};
+
 /** The files the load control offers a person. */
 const LOG_FILE_TYPES = ".json,application/json";
 
@@ -29,7 +56,9 @@ const LOG_FILE_TYPES = ".json,application/json";
  * not in the log; the seed, shown so a person can name the session and editable to recreate the
  * world under another; the map, a dropdown of every registered map that recreates the world on
  * the one chosen under the current seed, a driver operation like the seed; the input log save
- * and load, which replays a log on its own map; the atlas download; the map reset,
+ * and load, which replays a log on its own map; the feedback button, which opens `note`; the
+ * load taking a feedback file too, which replays to the note's tick, pauses there, and shows
+ * the note; the atlas download; the map reset,
  * which is a command like any other; and the line saying what the last content reload came
  * to. A load that cannot run says why in the status line; one that can says what it is
  * replaying.
@@ -38,13 +67,19 @@ const LOG_FILE_TYPES = ".json,application/json";
  * refused and a seed or map a replay changed are all shown as they are. Each compares what it is handed against
  * the driver before it acts, so a refresh never recreates a world.
  */
-export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
+export const simulationGroup = (
+  folder: FolderApi,
+  api: DevApi,
+  note: FeedbackNote,
+): PanelGroup => {
   const driver = {
     catchUpCap: api.driver.catchUpCap,
     seed: api.driver.seed,
     mapId: api.driver.mapId,
   };
   const report = { status: "" };
+  // The note of the last feedback file loaded, shown until another file is.
+  const loaded = { note: "" };
   const pause = folder.addButton({ title: PAUSE_LABEL });
 
   pause.on("click", (): void => {
@@ -121,16 +156,31 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
     pickTextFile(
       LOG_FILE_TYPES,
       (text: string): void => {
-        const refusal = api.loadInputLog(text);
+        const load = api.loadFile(text);
 
-        report.status =
-          refusal ??
-          `Replaying on map ${api.driver.mapId} from seed ${String(api.driver.seed)}`;
+        report.status = loadStatus(load, api);
+
+        if (load.refusal === null) {
+          loaded.note = load.feedback === null ? "" : load.feedback.note;
+          noteLine.refresh();
+        }
       },
       (message: string): void => {
         report.status = message;
       },
     );
+  });
+
+  folder.addButton({ title: "Feedback" }).on("click", (): void => {
+    note.open();
+  });
+
+  const noteLine = folder.addBinding(loaded, "note", {
+    interval: 0,
+    label: "Note",
+    multiline: true,
+    readonly: true,
+    rows: NOTE_ROWS,
   });
 
   folder.addButton({ title: "Reset map" }).on("click", (): void => {
