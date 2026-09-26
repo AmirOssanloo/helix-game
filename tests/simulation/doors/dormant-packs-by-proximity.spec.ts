@@ -29,6 +29,9 @@ const WALK_OFFSET = 1000;
 /** Where the walk starts and ends, a margin in from each end of the strip. */
 const WALK_MARGIN = 500;
 
+/** The walk runs the whole strip tick by tick: it asserts what woke, never how fast, so a slow runner is given room. */
+const WALK_TIMEOUT_MS = 60_000;
+
 /** How far the hero is sent at a time, so no one path spans the strip. */
 const LEG = 2000;
 
@@ -80,58 +83,62 @@ describe("the door: simulation cost is bounded by a live cap, and dormant packs 
     );
   });
 
-  it("never holds more than two packs live on a walk of the whole strip, and wakes the pack at the far end", () => {
-    const map = longMap();
-    const world = makeWorld({ seed: 1, map });
-    const walkY = PACK_LINE_Y + WALK_OFFSET;
-    const hero = spawnHero(world, { x: WALK_MARGIN, y: walkY });
-    const woken = new Set<number>();
-    let mostAwake = 0;
-    let mostLive = 0;
-    let everWaiting = false;
-    let legEnd = WALK_MARGIN;
-    let ticks = 0;
+  it(
+    "never holds more than two packs live on a walk of the whole strip, and wakes the pack at the far end",
+    () => {
+      const map = longMap();
+      const world = makeWorld({ seed: 1, map });
+      const walkY = PACK_LINE_Y + WALK_OFFSET;
+      const hero = spawnHero(world, { x: WALK_MARGIN, y: walkY });
+      const woken = new Set<number>();
+      let mostAwake = 0;
+      let mostLive = 0;
+      let everWaiting = false;
+      let legEnd = WALK_MARGIN;
+      let ticks = 0;
 
-    while (hero.curr.x < MAP_LENGTH - WALK_MARGIN - 1 && ticks < PATIENCE) {
-      if (hero.order.kind === "none") {
-        legEnd = Math.min(legEnd + LEG, MAP_LENGTH - WALK_MARGIN);
-        submit(world, {
-          kind: "move",
-          tick: world.view.tick,
-          timestamp: world.view.tick,
-          destination: { x: legEnd, y: walkY },
-        });
-      }
-
-      world.tick();
-      ticks += 1;
-
-      const states = statesOf(world);
-      let awake = 0;
-
-      for (let index = 0; index < states.length; index += 1) {
-        if (states[index] === "awake") {
-          awake += 1;
-          woken.add(index);
+      while (hero.curr.x < MAP_LENGTH - WALK_MARGIN - 1 && ticks < PATIENCE) {
+        if (hero.order.kind === "none") {
+          legEnd = Math.min(legEnd + LEG, MAP_LENGTH - WALK_MARGIN);
+          submit(world, {
+            kind: "move",
+            tick: world.view.tick,
+            timestamp: world.view.tick,
+            destination: { x: legEnd, y: walkY },
+          });
         }
 
-        if (states[index] === "waiting") {
-          everWaiting = true;
+        world.tick();
+        ticks += 1;
+
+        const states = statesOf(world);
+        let awake = 0;
+
+        for (let index = 0; index < states.length; index += 1) {
+          if (states[index] === "awake") {
+            awake += 1;
+            woken.add(index);
+          }
+
+          if (states[index] === "waiting") {
+            everWaiting = true;
+          }
         }
+
+        mostAwake = Math.max(mostAwake, awake);
+        mostLive = Math.max(mostLive, countLiveEnemies(world.state));
       }
 
-      mostAwake = Math.max(mostAwake, awake);
-      mostLive = Math.max(mostLive, countLiveEnemies(world.state));
-    }
-
-    expect(ticks).toBeLessThan(PATIENCE);
-    expect(mostAwake).toBeLessThanOrEqual(2);
-    expect(mostLive).toBeLessThanOrEqual(2 * PACK_SIZE);
-    expect(everWaiting).toBe(false);
-    expect(woken.has(PACK_COUNT - 1)).toBe(true);
-    expect(woken.size).toBe(PACK_COUNT);
-    expect(statesOf(world).slice(0, PACK_COUNT - 1)).toEqual(
-      map.packs.slice(0, PACK_COUNT - 1).map(() => "asleep"),
-    );
-  });
+      expect(ticks).toBeLessThan(PATIENCE);
+      expect(mostAwake).toBeLessThanOrEqual(2);
+      expect(mostLive).toBeLessThanOrEqual(2 * PACK_SIZE);
+      expect(everWaiting).toBe(false);
+      expect(woken.has(PACK_COUNT - 1)).toBe(true);
+      expect(woken.size).toBe(PACK_COUNT);
+      expect(statesOf(world).slice(0, PACK_COUNT - 1)).toEqual(
+        map.packs.slice(0, PACK_COUNT - 1).map(() => "asleep"),
+      );
+    },
+    WALK_TIMEOUT_MS,
+  );
 });

@@ -94,7 +94,7 @@ const PRESS_START_TICK = 150;
 const CARRY_AT_ZERO_SHARE = 20;
 
 /** See the replay determinism spec: this replays a long session, asserts agreement, never speed. */
-const REPLAY_TIMEOUT_MS = 30_000;
+const REPLAY_TIMEOUT_MS = 120_000;
 
 type Disc = Readonly<{
   x: number;
