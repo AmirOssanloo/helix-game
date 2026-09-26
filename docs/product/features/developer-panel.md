@@ -47,8 +47,9 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Single-step | Runs exactly one tick while paused. Not a command, for the same reason |
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
 | Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
-| Save input log | Downloads the session's seed and commands |
-| Load input log | Replays a saved log from the start. A status line under the controls says what it is replaying, or why the log cannot run |
+| Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one recreates the world on it under the current seed, with the hero at its spawn point: a driver operation like the seed, not a command |
+| Save input log | Downloads the session's seed, map, and commands |
+| Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run |
 | Reset map | Reloads the current map; the hero keeps run scope |
 | Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
 
@@ -116,7 +117,8 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | A content file edited to change anything but numbers | The page reloads, to a fresh world |
 | A content file edited while a log replays | Refused until the replay ends; a replay runs on the content it was recorded against |
 | Load a log recorded on a different content version | Refused with a message; a replay is only valid against the definitions it was recorded with |
-| Load a log recorded on a different map | Refused with a message naming both maps |
+| Load a log recorded on a different map | The world is recreated on the log's map, and the map control follows it |
+| Load a log naming a map the content does not register | Refused with a message naming the map's id; the world runs on as it was |
 | A panel control or a key used while a log replays | Refused until the recorded ticks have run; then the world is live again |
 | Load a log saved after a content hot-reload changed a number | Refused with a message naming every version the log spans; recreating the session starts a log that replays |
 | Panel closed | Every readout keeps sampling; only the display stops |

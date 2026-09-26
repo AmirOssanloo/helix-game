@@ -1,5 +1,5 @@
 import type { FolderApi } from "tweakpane";
-import { onCommit, readout } from "./bindings";
+import { onCommit, optionsOf, readout } from "./bindings";
 import type { DevApi } from "./dev-api";
 import { downloadText, downloadUrl, pickTextFile } from "./files";
 import type { PanelGroup } from "./panel-group";
@@ -27,17 +27,23 @@ const LOG_FILE_TYPES = ".json,application/json";
 /**
  * The simulation group: the three driver operations, which change nothing in the world and are
  * not in the log; the seed, shown so a person can name the session and editable to recreate the
- * world under another; the input log save and load; the atlas download; the map reset,
+ * world under another; the map, a dropdown of every registered map that recreates the world on
+ * the one chosen under the current seed, a driver operation like the seed; the input log save
+ * and load, which replays a log on its own map; the atlas download; the map reset,
  * which is a command like any other; and the line saying what the last content reload came
  * to. A load that cannot run says why in the status line; one that can says what it is
  * replaying.
  *
- * The cap and the seed are read back from the driver on each refresh, so a value it refused and
- * a seed a replay changed are both shown as they are. Each compares what it is handed against
+ * The cap, the seed, and the map are read back from the driver on each refresh, so a value it
+ * refused and a seed or map a replay changed are all shown as they are. Each compares what it is handed against
  * the driver before it acts, so a refresh never recreates a world.
  */
 export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
-  const driver = { catchUpCap: api.driver.catchUpCap, seed: api.driver.seed };
+  const driver = {
+    catchUpCap: api.driver.catchUpCap,
+    seed: api.driver.seed,
+    mapId: api.driver.mapId,
+  };
   const report = { status: "" };
   const pause = folder.addButton({ title: PAUSE_LABEL });
 
@@ -61,6 +67,11 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
     step: WHOLE_STEP,
   });
 
+  const map = folder.addBinding(driver, "mapId", {
+    label: "Map",
+    options: optionsOf(api.driver.maps),
+  });
+
   onCommit(cap, (value): void => {
     if (value !== api.driver.catchUpCap && !api.driver.setCatchUpCap(value)) {
       driver.catchUpCap = api.driver.catchUpCap;
@@ -82,6 +93,22 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
     api.driver.recreate(value);
     report.status = `Recreated under seed ${String(value)}`;
   });
+  onCommit(map, (value): void => {
+    if (value === api.driver.mapId) {
+      return;
+    }
+
+    const refusal = api.driver.chooseMap(value);
+
+    if (refusal !== null) {
+      driver.mapId = api.driver.mapId;
+      map.refresh();
+    }
+
+    report.status =
+      refusal ??
+      `Recreated on map ${value} under seed ${String(api.driver.seed)}`;
+  });
 
   folder.addButton({ title: "Save input log" }).on("click", (): void => {
     downloadText(
@@ -97,7 +124,8 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
         const refusal = api.loadInputLog(text);
 
         report.status =
-          refusal ?? `Replaying from seed ${String(api.driver.seed)}`;
+          refusal ??
+          `Replaying on map ${api.driver.mapId} from seed ${String(api.driver.seed)}`;
       },
       (message: string): void => {
         report.status = message;
@@ -137,6 +165,11 @@ export const simulationGroup = (folder: FolderApi, api: DevApi): PanelGroup => {
       if (!seed.element.contains(document.activeElement)) {
         driver.seed = api.driver.seed;
         seed.refresh();
+      }
+
+      if (driver.mapId !== api.driver.mapId) {
+        driver.mapId = api.driver.mapId;
+        map.refresh();
       }
 
       if (!cap.element.contains(document.activeElement)) {

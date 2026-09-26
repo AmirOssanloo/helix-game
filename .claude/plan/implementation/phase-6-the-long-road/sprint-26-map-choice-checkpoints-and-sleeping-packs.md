@@ -21,7 +21,7 @@ On a test map with checkpoints and dormant packs, chosen from the panel: walk pa
 | Layer | app, simulation, devtools, tests, docs |
 | Size | 1 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/app/main.ts` no longer names the arena; the session takes a map id and resolves it from the maps index under `src/content/maps/`. Choosing a map is a driver operation on `DevApi` beside the seed (Q12, Q19): it makes a world rather than mutating one, so it is not a command. The panel's simulation group lists every registered map and recreates the world on the one chosen under the current seed. **Load input log** recreates the world on the log's `mapId` instead of refusing a log from another map; an id no map has is refused with a message naming it. The [developer panel](../../../../docs/product/features/developer-panel.md) page and the devtools architecture page list the operation.
 
@@ -97,7 +97,7 @@ On a test map with checkpoints and dormant packs, chosen from the panel: walk pa
 | --- | --- |
 | Map choice and a log loaded on its map, by hand | |
 | Respawn at the furthest checkpoint; the live count falls behind the hero | |
-| Actual days per ticket | |
+| Actual days per ticket | T01 0.5 of 1 |
 
 ## Risks in this sprint
 

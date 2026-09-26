@@ -56,6 +56,26 @@ export const checkReplayable = (
 };
 
 /**
+ * The map in `registry` that `file` was recorded on, or the refusal naming its id when no map
+ * has it. A session loads a log on the log's own map, whichever one the world runs now.
+ */
+export const mapOfLog = (
+  file: InputLogFile,
+  registry: Registry,
+): MapDef | ReplayRefusal => {
+  for (const map of registry.maps) {
+    if (map.id === file.mapId) {
+      return map;
+    }
+  }
+
+  return {
+    reason: "map",
+    message: `The log was recorded on map "${file.mapId}", which no map in this build has`,
+  };
+};
+
+/**
  * A recorded session fed back into a world, tick by tick, with no driver: each tick submits
  * the records the recording consumed on that tick, then ticks the world. Input from anywhere
  * else is refused until the recorded ticks have run, since a command the record did not

@@ -15,10 +15,12 @@ import {
   contentVersionOf,
   createSessionWorld,
   isReplayRefusal,
+  mapOfLog,
   parseInputLogFile,
   Replay,
   serializeInputLog,
 } from "@simulation/public";
+import type { MakeRegistryOptions } from "../helpers";
 import { makeMapDef, makeRegistry, submit } from "../helpers";
 
 const SEED = 5;
@@ -29,6 +31,18 @@ const registry = makeRegistry();
 const RECORDED_MAP_ID = "recorded_map";
 
 const recordedMap = (): MapDef => makeMapDef.build({ id: RECORDED_MAP_ID });
+
+/** A second map a session can be made on, spawning away from the origin so a spec can tell the two apart. */
+const OTHER_MAP_ID = "other_map";
+
+const OTHER_SPAWN = { x: 400, y: -300 };
+
+const otherMap = (): MapDef =>
+  makeMapDef.build({ id: OTHER_MAP_ID, spawnPoint: OTHER_SPAWN });
+
+/** A registry over the content layer's with the two maps above, the one every session here is made from. */
+const sessionRegistry = (options: MakeRegistryOptions = {}): Registry =>
+  makeRegistry({ maps: [recordedMap(), otherMap()], ...options });
 
 /** A log of two ticks with one command on the first, saved from a real session world and parsed back. */
 const recordedLog = (): InputLogFile => {
@@ -248,7 +262,7 @@ describe("a replay is refused", () => {
 
 /** The content registry with the grunt's health at `health`, as a save of its file would assemble it. */
 const withGruntHealth = (health: number): Registry =>
-  makeRegistry({
+  sessionRegistry({
     enemies: contentRegistry.enemies.map((def): EnemyDef =>
       def.id === meleeGruntDef.id ? { ...def, health } : def,
     ),
@@ -258,8 +272,8 @@ const withGruntHealth = (health: number): Registry =>
 const arrangeSession = (): { session: Session; stamps: CommandStamps } => {
   const session = new Session({
     seed: SEED,
-    registry: makeRegistry(),
-    map: recordedMap(),
+    registry: sessionRegistry(),
+    mapId: RECORDED_MAP_ID,
   });
   const stamps: CommandStamps = {
     get nextTick(): number {
@@ -397,7 +411,7 @@ describe("a session's saved log", () => {
 
     const middle = session.contentVersion;
 
-    reloadContent(session, stamps, makeRegistry());
+    reloadContent(session, stamps, sessionRegistry());
     session.tick();
 
     expect(session.contentVersion).toBe(before);
@@ -409,12 +423,122 @@ describe("a session's saved log", () => {
   it("marks nothing when a reload changed no number", () => {
     const { session, stamps } = arrangeSession();
 
-    reloadContent(session, stamps, makeRegistry());
+    reloadContent(session, stamps, sessionRegistry());
     session.tick();
 
     expect(JSON.parse(session.saveInputLog())).toMatchObject({
       contentReloads: [],
     });
     expect(session.loadInputLog(session.saveInputLog())).toBeNull();
+  });
+});
+
+/** Where the hero of `view` stands. */
+const heroAt = (view: WorldView): Readonly<{ x: number; y: number }> => {
+  const heroId = view.run.heroId;
+  const hero = heroId === null ? null : view.map.units.resolve(heroId);
+
+  if (hero === null) {
+    throw new Error("The session has no hero");
+  }
+
+  return { x: hero.curr.x, y: hero.curr.y };
+};
+
+describe("a log loaded into a session", () => {
+  it("replays on its own map when the session runs another", () => {
+    const { session } = arrangeSession();
+
+    expect(session.chooseMap(OTHER_MAP_ID)).toBeNull();
+    expect(session.mapId).toBe(OTHER_MAP_ID);
+
+    play(session, 40);
+
+    const text = session.saveInputLog();
+    const recorded = snapshotOf(session.view);
+    const { session: replaying } = arrangeSession();
+
+    expect(JSON.parse(text)).toMatchObject({ mapId: OTHER_MAP_ID });
+    expect(replaying.mapId).toBe(RECORDED_MAP_ID);
+    expect(replaying.loadInputLog(text)).toBeNull();
+    expect(replaying.mapId).toBe(OTHER_MAP_ID);
+    expect(replaying.view.map.mapId).toBe(OTHER_MAP_ID);
+    expect(heroAt(replaying.view)).toEqual(OTHER_SPAWN);
+
+    while (replaying.replaying) {
+      replaying.tick();
+    }
+
+    expect(snapshotOf(replaying.view)).toBe(recorded);
+  });
+
+  it("is refused with its map's id when no map has it, and the world keeps running", () => {
+    const { session } = arrangeSession();
+
+    play(session, 5);
+
+    const text = JSON.stringify({
+      ...JSON.parse(session.saveInputLog()),
+      mapId: "no_such_map",
+    });
+
+    expect(session.loadInputLog(text)).toBe(
+      'The log was recorded on map "no_such_map", which no map in this build has',
+    );
+    expect(session.replaying).toBe(false);
+    expect(session.mapId).toBe(RECORDED_MAP_ID);
+    expect(session.view.tick).toBe(5);
+
+    session.tick();
+
+    expect(session.view.tick).toBe(6);
+  });
+
+  it("is refused by mapOfLog, which finds only a registered map", () => {
+    const file = recordedLog();
+    const found = mapOfLog(file, sessionRegistry());
+
+    expect(isReplayRefusal(found) ? null : found.id).toBe(RECORDED_MAP_ID);
+    expect(mapOfLog({ ...file, mapId: "gone" }, sessionRegistry())).toEqual({
+      reason: "map",
+      message:
+        'The log was recorded on map "gone", which no map in this build has',
+    });
+  });
+});
+
+describe("choosing a map", () => {
+  it("makes the world again on it under the current seed, the hero at its spawn point, with nothing in the log", () => {
+    const { session } = arrangeSession();
+
+    play(session, 10);
+
+    expect(session.chooseMap(OTHER_MAP_ID)).toBeNull();
+    expect(session.view.tick).toBe(0);
+    expect(session.seed).toBe(SEED);
+    expect(session.log.count).toBe(0);
+    expect(session.view.map.mapId).toBe(OTHER_MAP_ID);
+    expect(heroAt(session.view)).toEqual(OTHER_SPAWN);
+
+    session.recreate(SEED + 1);
+
+    expect(session.mapId).toBe(OTHER_MAP_ID);
+    expect(heroAt(session.view)).toEqual(OTHER_SPAWN);
+  });
+
+  it("refuses an id no map has, naming it, and leaves the session as it was", () => {
+    const { session } = arrangeSession();
+
+    play(session, 3);
+
+    expect(session.chooseMap("nowhere")).toBe('No map has the id "nowhere"');
+    expect(session.mapId).toBe(RECORDED_MAP_ID);
+    expect(session.view.tick).toBe(3);
+  });
+
+  it("lists every registered map in the order the registry holds them", () => {
+    const { session } = arrangeSession();
+
+    expect(session.mapIds).toEqual([RECORDED_MAP_ID, OTHER_MAP_ID]);
   });
 });

@@ -1,3 +1,4 @@
+import type { MapDef } from "@domain/public";
 import { acquireHero } from "@domain/public";
 import type { CreateWorldOptions, Simulation } from "./world";
 import { createWorld } from "./world";
@@ -25,8 +26,12 @@ export const createSessionWorld = (options: CreateWorldOptions): Simulation => {
   return world;
 };
 
-/** `world` restarted under `seed` with the hero entered again: in place, the world `createSessionWorld` makes under that seed. */
-export const restartSessionWorld = (world: Simulation, seed: number): void => {
-  world.restart(seed);
+/** `world` restarted under `seed` on `map` with the hero entered again: in place, the world `createSessionWorld` makes under that seed on that map. */
+export const restartSessionWorld = (
+  world: Simulation,
+  seed: number,
+  map: MapDef,
+): void => {
+  world.restart(seed, map);
   enterHero(world);
 };

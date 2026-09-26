@@ -18,6 +18,11 @@ import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;
 
+/** The one map every session here is made on, registered in its registry. */
+const MAP = makeMapDef.build();
+
+const registry = makeRegistry({ maps: [MAP] });
+
 const STEP_MS = stepMsOf(tuningTable.sim_hz);
 
 /** A clock counting one per read, so an arrival stamp is a number a spec can predict. */
@@ -45,8 +50,8 @@ type Arranged = {
 const arrange = (): Arranged => {
   const session = new Session({
     seed: SEED,
-    registry: makeRegistry(),
-    map: makeMapDef.build(),
+    registry,
+    mapId: MAP.id,
   });
   const world = session.world;
   const rings = createRings();
@@ -328,7 +333,7 @@ describe("DevApi reads", () => {
 
     expect(JSON.parse(api.saveInputLog())).toEqual({
       seed: SEED,
-      contentVersion: contentVersionOf(makeRegistry()),
+      contentVersion: contentVersionOf(registry),
       contentReloads: [],
       mapId: world.view.map.mapId,
       ticks: 3,
@@ -384,7 +389,7 @@ describe("DevApi session operations", () => {
 
   it("refuses a log from another content version with a message naming both, and leaves the session as it was", () => {
     const { api, world } = arrange();
-    const current = contentVersionOf(makeRegistry());
+    const current = contentVersionOf(registry);
 
     world.tick();
 

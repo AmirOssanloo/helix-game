@@ -176,8 +176,8 @@ export class Simulation {
   /** Every consumed command with its tick. */
   readonly log: InputLog;
 
-  /** The map the world was created on, which a restart returns it to. A map load changes the loaded map, never this. */
-  readonly mapDef: MapDef;
+  /** The map the world was created or last restarted on, which a restart without another map returns it to. A map load changes the loaded map, never this. */
+  private startingMap: MapDef;
 
   /** What a restart builds run scope from: the registry the world was created from, or the last one it adopted. */
   private registry: Registry;
@@ -193,7 +193,7 @@ export class Simulation {
     const run = createRunScope(options.registry, options.seed);
 
     this.registry = options.registry;
-    this.mapDef = options.map;
+    this.startingMap = options.map;
     this.buffer = new CommandBuffer();
     this.events = new EventRing();
     this.state = {
@@ -206,6 +206,11 @@ export class Simulation {
     this.log = new InputLog();
     this.tickCompleted = createDomainEvent();
     placeMapPacks(this.state);
+  }
+
+  /** The map the world was created or last restarted on, whose spawn point a session enters the hero at. */
+  get mapDef(): MapDef {
+    return this.startingMap;
   }
 
   /** The live state under its read-only type. The same object; no copy. */
@@ -307,21 +312,22 @@ export class Simulation {
   }
 
   /**
-   * Puts the world back to what creation made under `seed`: run scope and map scope rebuilt
-   * from the same registry on the map it was created on, every waiting command, event, and
+   * Puts the world back to what creation made under `seed` on `map`: run scope and map scope
+   * rebuilt from the same registry on `map`, which later restarts return to, every waiting command, event, and
    * log record forgotten, and the tick count at zero. The world object, its ring, and its log
    * keep their identity, so everything holding a reference to one reads the new session. The
    * door a driver operation recreates a session through; never a command, since it makes a
    * session rather than changing one, and a replay begins on a world that has never ticked.
    */
-  restart(seed: number): void {
+  restart(seed: number, map: MapDef): void {
     assert(!this.isDisposed, "A disposed world does not restart");
 
     const world = this.state;
 
+    this.startingMap = map;
     world.tick = 0;
     world.run = createRunScope(this.registry, seed);
-    world.map = createMapScope(this.mapDef, world.run.tuning);
+    world.map = createMapScope(map, world.run.tuning);
     placeMapPacks(world);
     this.buffer.clear();
     this.events.clear();

@@ -10,15 +10,23 @@ import type {
 } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import { contentVersionOf } from "@simulation/public";
+import type { MakeRegistryOptions } from "../helpers";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 5;
 
 const GRUNT_HEALTH = "def:enemy:melee_grunt:health";
 
+/** The one map every session here runs on, registered in every registry a reload hands it, so a reload changes numbers and nothing else. */
+const MAP = makeMapDef.build();
+
+/** A registry over the content layer's, with `MAP` its only map. */
+const sessionRegistry = (options: MakeRegistryOptions = {}): Registry =>
+  makeRegistry({ maps: [MAP], ...options });
+
 /** The content registry with the grunt rewritten by `change`, as a save of its file would assemble it. */
 const withGrunt = (change: Partial<EnemyDef>): Registry =>
-  makeRegistry({
+  sessionRegistry({
     enemies: contentRegistry.enemies.map((def): EnemyDef =>
       def.id === meleeGruntDef.id ? { ...def, ...change } : def,
     ),
@@ -27,8 +35,8 @@ const withGrunt = (change: Partial<EnemyDef>): Registry =>
 const arrange = (): { session: Session; stamps: CommandStamps } => {
   const session = new Session({
     seed: SEED,
-    registry: makeRegistry(),
-    map: makeMapDef.build(),
+    registry: sessionRegistry(),
+    mapId: MAP.id,
   });
   const stamps: CommandStamps = {
     get nextTick(): number {

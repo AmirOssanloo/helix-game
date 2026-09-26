@@ -21,6 +21,14 @@ import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 3;
 
+/** The map a session starts on, and a second one with the hero spawning away from the origin, so a recreate on it shows. */
+const FIRST_MAP = makeMapDef.build({ id: "first_map" });
+
+const SECOND_MAP = makeMapDef.build({
+  id: "second_map",
+  spawnPoint: { x: 250, y: -125 },
+});
+
 const countingClock = (): Clock => {
   let reads = 0;
 
@@ -61,8 +69,8 @@ type Arranged = {
 const arrange = (store: MemoryRecorder = new MemoryRecorder()): Arranged => {
   const session = new Session({
     seed: SEED,
-    registry: makeRegistry(),
-    map: makeMapDef.build(),
+    registry: makeRegistry({ maps: [FIRST_MAP, SECOND_MAP] }),
+    mapId: FIRST_MAP.id,
   });
   const world = session.world;
   const rings = createRings();
@@ -470,6 +478,59 @@ describe("the developer panel", () => {
     expect(arranged.world.view.run.random.seed).toBe(42);
     expect(arranged.world.view.tick).toBe(0);
     expect(arranged.world.log.count).toBe(0);
+
+    arranged.handle.unmount();
+  });
+
+  it("lists every registered map and recreates the world on the one chosen under the current seed, with nothing in the log", () => {
+    const arranged = arrange();
+    const select = selectNamed(arranged.host, "Map");
+
+    expect([...select.options].map((option) => option.value)).toEqual([
+      FIRST_MAP.id,
+      SECOND_MAP.id,
+    ]);
+    expect(select.value).toBe(FIRST_MAP.id);
+
+    arranged.world.tick();
+    select.value = SECOND_MAP.id;
+    select.dispatchEvent(new Event("change"));
+
+    const view = arranged.world.view;
+    const heroId = view.run.heroId;
+    const hero = heroId === null ? null : view.map.units.resolve(heroId);
+
+    expect(arranged.api.driver.mapId).toBe(SECOND_MAP.id);
+    expect(view.map.mapId).toBe(SECOND_MAP.id);
+    expect(view.run.random.seed).toBe(SEED);
+    expect(view.tick).toBe(0);
+    expect(arranged.world.log.count).toBe(0);
+    expect(hero?.curr).toEqual(SECOND_MAP.spawnPoint);
+
+    arranged.handle.unmount();
+  });
+
+  it("follows a map a loaded log changed, and refuses a log naming a map no one registered", () => {
+    const arranged = arrange();
+
+    arranged.api.driver.chooseMap(SECOND_MAP.id);
+    arranged.world.tick();
+
+    const saved = arranged.api.saveInputLog();
+
+    arranged.api.driver.chooseMap(FIRST_MAP.id);
+
+    expect(arranged.api.loadInputLog(saved)).toBeNull();
+
+    arranged.handle.refresh();
+
+    expect(selectNamed(arranged.host, "Map").value).toBe(SECOND_MAP.id);
+    expect(
+      arranged.api.loadInputLog(saved.replace(SECOND_MAP.id, "lost_map")),
+    ).toBe(
+      'The log was recorded on map "lost_map", which no map in this build has',
+    );
+    expect(arranged.api.driver.mapId).toBe(SECOND_MAP.id);
 
     arranged.handle.unmount();
   });

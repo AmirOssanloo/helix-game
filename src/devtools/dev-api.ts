@@ -35,12 +35,18 @@ export type DevDriver = Readonly<{
 
 /**
  * What the panel needs of the session: the operations that make a world rather than change
- * one. Recreating under a seed and loading a log to replay restart the world in place; a
- * save reads the log. None is a command, and none is in the log. The composition root
- * supplies the real one.
+ * one. Recreating under a seed, choosing a map, and loading a log to replay restart the world
+ * in place; a save reads the log. None is a command, and none is in the log. The composition
+ * root supplies the real one.
  */
 export type DevSession = Readonly<{
+  /** The id of the map the current world was made on. */
+  mapId: string;
+  /** The id of every map the content registers, in the order the maps index lists them. */
+  mapIds: readonly string[];
   recreate: (seed: number) => void;
+  /** The message a person reads when no map has `mapId`, or `null` once the world is made again on it under the current seed. */
+  chooseMap: (mapId: string) => string | null;
   saveInputLog: () => string;
   /** The message a person reads when the log cannot run, or `null` once the replay has begun. */
   loadInputLog: (text: string) => string | null;
@@ -52,16 +58,24 @@ export type DevSession = Readonly<{
  * the world has no state for them to change and the log never sees them. The seed is shown
  * so a person can name the session; choosing another recreates the world under it, which
  * makes a session rather than changing one and is a driver operation for the same reason.
+ * The map is chosen the same way: from every registered map, the world made again on the one
+ * chosen under the current seed.
  */
 export type DriverControls = Readonly<{
   paused: boolean;
   catchUpCap: number;
   seed: number;
+  /** The id of the map the current world was made on. */
+  mapId: string;
+  /** The id of every registered map, which `chooseMap` takes. */
+  maps: readonly string[];
   pause: () => void;
   resume: () => void;
   step: () => boolean;
   setCatchUpCap: (cap: number) => boolean;
   recreate: (seed: number) => void;
+  /** Makes the world again on the map registered as `mapId` under the current seed, or returns the message naming an id no map has. */
+  chooseMap: (mapId: string) => string | null;
 }>;
 
 /**
@@ -126,7 +140,7 @@ export type DevApi = Readonly<{
   content: Readonly<ContentStatus>;
   /** The session so far as one JSON document: the seed, the content version, the versions a content reload moved it to, the map, the ticks run, and every consumed command with its tick. */
   saveInputLog: () => string;
-  /** Replays a saved log from its first tick on a world recreated under its seed, or returns the message saying why it cannot run. */
+  /** Replays a saved log from its first tick on a world recreated under its seed on its own map, or returns the message saying why it cannot run. */
   loadInputLog: (text: string) => string | null;
   /** The baked shape atlas as a PNG data URL, so a person can save it and look at every frame. */
   downloadAtlas: () => string;
@@ -164,6 +178,10 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     get seed(): number {
       return view.run.random.seed;
     },
+    get mapId(): string {
+      return ports.session.mapId;
+    },
+    maps: ports.session.mapIds,
     pause: (): void => {
       driver.setPaused(true);
     },
@@ -175,6 +193,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     recreate: (seed: number): void => {
       ports.session.recreate(seed);
     },
+    chooseMap: (mapId: string): string | null => ports.session.chooseMap(mapId),
   };
 
   return {

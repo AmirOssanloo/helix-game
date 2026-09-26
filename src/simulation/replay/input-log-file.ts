@@ -36,8 +36,8 @@ export type ReplayRefusal = Readonly<{
 }>;
 
 /** Whether `value` is a refusal rather than the thing that was asked for. */
-export const isReplayRefusal = (
-  value: InputLogFile | ReplayRefusal,
+export const isReplayRefusal = <T extends object>(
+  value: T | ReplayRefusal,
 ): value is ReplayRefusal => "reason" in value;
 
 /**

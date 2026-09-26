@@ -19,6 +19,7 @@ export {
 export {
   beginReplay,
   checkReplayable,
+  mapOfLog,
   Replay,
   type ReplayOptions,
 } from "./replay/replay";

@@ -279,7 +279,7 @@ describe("set_tuning on a definition key", () => {
 
     submit(world, retune("def:enemy:melee_grunt:health", 900));
     world.tick();
-    world.restart(1);
+    world.restart(1, world.mapDef);
 
     expect(world.view.run.units.get(GRUNT)?.def.health).toBe(
       meleeGruntDef.health,

@@ -355,7 +355,7 @@ describe("replay", () => {
     });
 
     play(restarted);
-    restartSessionWorld(restarted, LIVE_SEED);
+    restartSessionWorld(restarted, LIVE_SEED, arenaDef);
 
     expect(snapshot(restarted.view)).toBe(snapshot(fresh.view));
 

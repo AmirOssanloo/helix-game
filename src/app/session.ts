@@ -18,18 +18,30 @@ import {
   contentVersionOf,
   createSessionWorld,
   isReplayRefusal,
+  mapOfLog,
   parseInputLogFile,
   Replay,
   restartSessionWorld,
   serializeInputLog,
 } from "@simulation/public";
 
-/** What a session is made from: the seed of its first world, the content, and the map. */
+/** What a session is made from: the seed of its first world, the content, and the id of the map in it the first world runs on. */
 export type SessionOptions = Readonly<{
   seed: number;
   registry: Registry;
-  map: MapDef;
+  mapId: string;
 }>;
+
+/** The map `registry` holds under `mapId`, or `null` when none does. */
+const mapNamed = (registry: Registry, mapId: string): MapDef | null => {
+  for (const map of registry.maps) {
+    if (map.id === mapId) {
+      return map;
+    }
+  }
+
+  return null;
+};
 
 /** The stamps a command built now carries: the driver's, so a reload's commands sort among a click's. */
 export type CommandStamps = Readonly<{
@@ -46,9 +58,9 @@ export type SessionRetune = Readonly<{
 /**
  * The one world of a running game and the replay that may be feeding it. The driver steps
  * the session; the scenes and the panel hold the world's view, ring, and log, which keep
- * their identity across every recreate, so nothing rebinds. Recreating under a seed and
- * loading a log are the two driver operations that make a session rather than change one:
- * neither is a command, and neither is in the log.
+ * their identity across every recreate, so nothing rebinds. Recreating under a seed,
+ * choosing a map, and loading a log are the driver operations that make a session rather
+ * than change one: none is a command, and none is in the log.
  */
 export class Session implements Steppable {
   readonly world: Simulation;
@@ -63,17 +75,24 @@ export class Session implements Steppable {
   /** The stamp each content reload taken since the current world was created moved it to, in order. */
   private readonly reloads: string[] = [];
 
-  private readonly map: MapDef;
-
   private replay: Replay | null = null;
 
   /** Keys a retune submitted a command for that no tick has applied yet: each holds the registry's default once it does. */
   private readonly pendingRetunes = new Set<string>();
 
   constructor(options: SessionOptions) {
+    const map = mapNamed(options.registry, options.mapId);
+
+    if (map === null) {
+      throw new Error(`The content registers no map "${options.mapId}"`);
+    }
+
     this.registry = options.registry;
-    this.map = options.map;
-    this.world = createSessionWorld(options);
+    this.world = createSessionWorld({
+      seed: options.seed,
+      registry: options.registry,
+      map,
+    });
     this.version = contentVersionOf(options.registry);
     this.createdVersion = this.version;
   }
@@ -98,6 +117,16 @@ export class Session implements Steppable {
   /** The seed the current world was created under. */
   get seed(): number {
     return this.world.view.run.random.seed;
+  }
+
+  /** The id of the map the current world was made on. */
+  get mapId(): string {
+    return this.world.mapDef.id;
+  }
+
+  /** The id of every map the content registers, in the order the maps index lists them: what a session can be made on. */
+  get mapIds(): readonly string[] {
+    return this.registry.maps.map((map): string => map.id);
   }
 
   /** Whether a loaded log is still feeding the world. */
@@ -129,11 +158,31 @@ export class Session implements Steppable {
     }
   }
 
-  /** A fresh session under `seed`, any replay dropped. */
+  /** A fresh session under `seed` on the map the world runs, any replay dropped. */
   recreate(seed: number): void {
+    this.restartOn(seed, this.world.mapDef);
+  }
+
+  /**
+   * A fresh session on the map registered as `mapId`, under the seed the world runs, any
+   * replay dropped; or the session as it is and the message naming an id no map has.
+   */
+  chooseMap(mapId: string): string | null {
+    const map = mapNamed(this.registry, mapId);
+
+    if (map === null) {
+      return `No map has the id "${mapId}"`;
+    }
+
+    this.restartOn(this.seed, map);
+
+    return null;
+  }
+
+  private restartOn(seed: number, map: MapDef): void {
     this.replay = null;
     this.pendingRetunes.clear();
-    restartSessionWorld(this.world, seed);
+    restartSessionWorld(this.world, seed, map);
     this.beginVersion();
   }
 
@@ -207,8 +256,9 @@ export class Session implements Steppable {
   }
 
   /**
-   * Restarts the world under the log's seed and replays `text` into it from the first tick,
-   * or leaves the session as it is and returns the reason the log cannot run.
+   * Restarts the world under the log's seed on the log's map and replays `text` into it from
+   * the first tick, or leaves the session as it is and returns the reason the log cannot run:
+   * among them a map id no map in the content has.
    */
   loadInputLog(text: string): string | null {
     const file = parseInputLogFile(text);
@@ -217,13 +267,19 @@ export class Session implements Steppable {
       return file.message;
     }
 
-    const refusal = checkReplayable(file, this.registry, this.map);
+    const map = mapOfLog(file, this.registry);
+
+    if (isReplayRefusal(map)) {
+      return map.message;
+    }
+
+    const refusal = checkReplayable(file, this.registry, map);
 
     if (refusal !== null) {
       return refusal.message;
     }
 
-    restartSessionWorld(this.world, file.seed);
+    restartSessionWorld(this.world, file.seed, map);
     this.pendingRetunes.clear();
     this.beginVersion();
     this.replay = new Replay(this.world, file);
