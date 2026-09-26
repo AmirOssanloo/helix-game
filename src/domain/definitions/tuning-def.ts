@@ -54,6 +54,8 @@ export type TuningKey =
   | "pack_activation_radius"
   | "elite_health_multiplier"
   | "boss_health_multiplier"
+  | "elite_experience_multiplier"
+  | "boss_experience_multiplier"
   | "hit_flash_duration"
   | "refusal_flash_duration"
   | "damage_number_rise"
@@ -124,6 +126,8 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   pack_activation_radius: "world_units",
   elite_health_multiplier: "as_written",
   boss_health_multiplier: "as_written",
+  elite_experience_multiplier: "as_written",
+  boss_experience_multiplier: "as_written",
   hit_flash_duration: "seconds",
   refusal_flash_duration: "seconds",
   damage_number_rise: "pixels",

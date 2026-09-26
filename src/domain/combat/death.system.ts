@@ -2,6 +2,7 @@ import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { clearAiRecord, enterDead } from "../ai/ai-state";
+import type { EnemyTier } from "../definitions/enemy-def";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
@@ -37,10 +38,28 @@ const announceDied = (world: World, unitId: EntityId): void => {
 };
 
 /**
- * An enemy's death pays its definition's experience to the hero, whoever landed the hit, so a
- * summon's kill and a projectile landing after the hero fell both count. Each enemy pays its
- * own; nothing is shared across a pack. The hero is paid dead or alive, and the level rule
- * stops the experience at the cap.
+ * What `tier` multiplies an archetype's experience by: nothing for a normal unit, and the elite
+ * or the boss tunable otherwise. Read at the death, so a retune reaches the next one.
+ */
+const experienceMultiplierOf = (world: World, tier: EnemyTier): number => {
+  switch (tier) {
+    case "normal":
+      return 1;
+
+    case "elite":
+      return readTunable(world.run.tuning, "elite_experience_multiplier");
+
+    case "boss":
+      return readTunable(world.run.tuning, "boss_experience_multiplier");
+  }
+};
+
+/**
+ * An enemy's death pays its definition's experience, times its tier's multiplier, to the hero,
+ * whoever landed the hit, so a summon's kill and a projectile landing after the hero fell both
+ * count. Each enemy pays its own; nothing is shared across a pack. An archetype worth nothing
+ * pays nothing at any tier. The hero is paid dead or alive, and the level rule stops the
+ * experience at the cap.
  */
 const grantReward = (world: World, unit: Readonly<Unit>): void => {
   const definitionId = unit.definitionId;
@@ -54,7 +73,11 @@ const grantReward = (world: World, unit: Readonly<Unit>): void => {
     return;
   }
 
-  grantExperience(hero.progression, record.def.experience, world.run.hero);
+  grantExperience(
+    hero.progression,
+    record.def.experience * experienceMultiplierOf(world, unit.tier),
+    world.run.hero,
+  );
 };
 
 /**

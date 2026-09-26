@@ -11,7 +11,8 @@ import type { TuningDef } from "@domain/public";
  * path at most once every re-path interval, in seconds, and a ranged one stands the hold
  * margin inside its reach, in world units, a dormant pack spawns once the hero is inside
  * the activation radius of it, in world units, an elite's and a boss's health are the
- * definition's times the tier's multiplier, read at spawn, the three radii, the two cell sizes, and
+ * definition's times the tier's multiplier, read at spawn, and the experience it pays is the
+ * definition's times the tier's own experience multiplier, read at its death, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
  * counts per tick, the hero's push share is the fraction of an overlap with a unit that is not
  * the hero that moves the hero, the rest moving the other, and the orb tables hold what one held instance grants at each level:
@@ -59,6 +60,8 @@ export const tuningTable = {
   pack_activation_radius: 1600,
   elite_health_multiplier: 3,
   boss_health_multiplier: 10,
+  elite_experience_multiplier: 3,
+  boss_experience_multiplier: 10,
   hit_flash_duration: 0.133,
   refusal_flash_duration: 0.333,
   damage_number_rise: 56,

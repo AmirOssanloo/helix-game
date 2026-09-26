@@ -77,13 +77,13 @@ Enemies path with the same grid A* the hero uses and push each other apart rathe
 
 ## Tiers
 
-| Tier | Health | Abilities | Look |
-| --- | --- | --- | --- |
-| Normal | The definition's | The definition's list | Its archetype's shape, no outline |
-| Elite | 3 times the definition's | The definition's list, then its one elite ability | An outline around the body |
-| Boss | 10 times the definition's | The definition's list, then its boss abilities | A larger outline, so its line reads thicker |
+| Tier | Health | Experience | Abilities | Look |
+| --- | --- | --- | --- | --- |
+| Normal | The definition's | The definition's | The definition's list | Its archetype's shape, no outline |
+| Elite | 3 times the definition's | 3 times the definition's | The definition's list, then its one elite ability | An outline around the body |
+| Boss | 10 times the definition's | 10 times the definition's | The definition's list, then its boss abilities | A larger outline, so its line reads thicker |
 
-A tier is chosen when a pack spawns, from the panel or from a map's pack; any archetype spawns at any of the three. An imp a summoner brings is always normal, whatever its summoner's tier. A tier multiplies health alone: an elite or a boss grants its archetype's experience. It does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The two multipliers are tunables, read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was. The tier's abilities come after the definition's own in the order the selection rule tries them.
+A tier is chosen when a pack spawns, from the panel or from a map's pack; any archetype spawns at any of the three. An imp a summoner brings is always normal, whatever its summoner's tier. A tier multiplies health and experience, so an elite pays for the time it takes to kill; an archetype worth nothing is worth nothing at any tier. It does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The four multipliers are tunables. The health multipliers are read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was; the experience multipliers are read when a unit dies, so a retune reaches the next death, a unit already standing included. The tier's abilities come after the definition's own in the order the selection rule tries them.
 
 ## Enemy abilities
 
@@ -101,7 +101,7 @@ An enemy chooses an ability when it is off cooldown, in range, and the enemy's s
 
 ## Experience
 
-An enemy that dies grants its definition's experience reward to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy and the imp grant none.
+An enemy that dies grants its definition's experience reward, times its tier's multiplier, to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy and the imp grant none.
 
 ## Dormant packs
 

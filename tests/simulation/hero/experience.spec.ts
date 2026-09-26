@@ -397,6 +397,34 @@ describe("the hero's experience", () => {
     );
   });
 
+  it("reaches level 2 from two elite grunts, each paying its multiplied experience", () => {
+    const { world, hero } = arrange();
+
+    submit(world, {
+      kind: "spawn_pack",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      archetypeId: meleeGruntDef.id,
+      tier: "elite",
+      count: 2,
+      position: { x: FAR, y: 0 },
+    });
+    world.tick();
+    run(world, "kill_all");
+
+    expect(hero.progression.experience).toBe(276);
+    expect(hero.progression.level).toBe(2);
+  });
+
+  it("does not reach level 2 from two normal grunts", () => {
+    const { world, hero } = arrange();
+
+    killRow(world, meleeGruntDef.id, 2);
+
+    expect(hero.progression.experience).toBe(92);
+    expect(hero.progression.level).toBe(1);
+  });
+
   it("does not reach level 2 from four", () => {
     const { world, hero } = arrange();
 

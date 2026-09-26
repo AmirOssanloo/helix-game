@@ -60,7 +60,7 @@ export const frostArcherDef = {
 } as const satisfies EnemyDef
 ```
 
-Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
+Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable, grants its `experience` times the `elite_experience_multiplier` or `boss_experience_multiplier` tunable on its death, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
 
 ---
 

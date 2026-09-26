@@ -86,7 +86,9 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | Layer | domain, content, tests, docs |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
+
+> **Note, 2026-09-26, closed:** `grantReward` in the death system multiplies the definition's experience by the dying unit's tier, read at the death from `elite_experience_multiplier` at 3 and `boss_experience_multiplier` at 10 in the tuning table, as the health multipliers are read at spawn. A grunt pays 46, 138, and 460; an imp pays 0 at every tier, since its archetype is worth nothing. A retune from the panel lands in the log as `set_tuning` and reaches the next death, a unit spawned before it included. The enemies page's tiers table gains an experience column and its experience section follows; sections 4 and 7.4 of the enemy catalogue and the adding-an-enemy runbook state the multipliers. The long road spec already read them. No stored log asserts experience from an elite or a boss, so the six are re-stamped on content version `746de978`, none recorded again. Sized 0.5, actual 0.25.
 
 **Build:** `elite_experience_multiplier` at 3 and `boss_experience_multiplier` at 10 as tunables, read by `grantReward` from the dying unit's tier the way the health multipliers are read at spawn (Q54). An add still grants nothing. The [enemies](../../../../docs/product/features/enemies.md) page's tiers table and sections 4 and 7.4 of the enemy catalogue state it.
 
@@ -133,7 +135,8 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | --- | --- |
 | The map spec approved by the maintainer | Written by T01, 2026-09-26. The approval waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
 | The corridor carry at the default share, and the six logs on the new version | T02: at a share of 0 the corridor press carries the hero 0 units, tested under 20. The default stays at 0.5 because the overlap bar fails at 0 (0.999 against 0.75), provisionally, as Q59, awaiting the maintainer. The six logs are re-stamped on content version `ce5563f6` |
-| Actual days per ticket | T01 0.5 of 1.5 · T02 0.75 of 1.5 |
+| Elites and bosses pay more experience | T03: a grunt pays 46, 138, and 460 at normal, elite, and boss tier, and an imp 0; the six logs are re-stamped on content version `746de978` |
+| Actual days per ticket | T01 0.5 of 1.5 · T02 0.75 of 1.5 · T03 0.25 of 0.5 |
 
 ## Risks in this sprint
 

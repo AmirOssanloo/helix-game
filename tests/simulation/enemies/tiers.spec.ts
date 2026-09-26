@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { meleeGruntDef, tuningTable } from "@content/public";
+import { impDef, meleeGruntDef, tuningTable } from "@content/public";
 import type { EnemyTier, TuningKey, Unit } from "@domain/public";
 import { applyDamage, holdsAbility } from "@domain/public";
 import type { EntityId } from "@shared/public";
@@ -62,9 +62,10 @@ const arrange = (): Simulation => {
   return world;
 };
 
-/** One grunt at `tier` at `position`, by the panel's door, consumed by one tick; returns it. */
-const spawnGrunt = (
+/** One unit of `archetypeId` at `tier` at `position`, by the panel's door, consumed by one tick; returns it. */
+const spawnOne = (
   world: Simulation,
+  archetypeId: string,
   tier: EnemyTier,
   position: Readonly<{ x: number; y: number }>,
 ): Unit => {
@@ -72,7 +73,7 @@ const spawnGrunt = (
     kind: "spawn_pack",
     tick: world.view.tick,
     timestamp: world.view.tick,
-    archetypeId: meleeGruntDef.id,
+    archetypeId,
     tier,
     count: 1,
     position,
@@ -84,12 +85,49 @@ const spawnGrunt = (
   for (let index = units.end - 1; index >= 0; index -= 1) {
     const unit = units.at(index);
 
-    if (unit !== null && unit.definitionId === meleeGruntDef.id) {
+    if (unit !== null && unit.definitionId === archetypeId) {
       return unit;
     }
   }
 
-  throw new Error("The pack spawned a grunt");
+  throw new Error(`The pack spawned a unit of ${archetypeId}`);
+};
+
+/** One grunt at `tier` at `position`, by the panel's door, consumed by one tick; returns it. */
+const spawnGrunt = (
+  world: Simulation,
+  tier: EnemyTier,
+  position: Readonly<{ x: number; y: number }>,
+): Unit => spawnOne(world, meleeGruntDef.id, tier, position);
+
+/** The experience the hero gains when `unit` takes a hit that empties it, on the tick that resolves the death. */
+const experienceFromKill = (
+  world: Simulation,
+  unit: Readonly<Unit>,
+): number => {
+  const heroId = world.state.run.heroId;
+  const hero = heroId === null ? null : world.state.map.units.resolve(heroId);
+
+  if (hero === null) {
+    throw new Error("The hero stands in the world");
+  }
+
+  const before = hero.progression.experience;
+
+  applyDamage(
+    world.state,
+    unitIdOf(world, unit),
+    unit.stats.maxHealth * 10,
+    "pure",
+    null,
+  );
+  world.tick();
+
+  if (unit.state !== "dead") {
+    throw new Error("The hit killed the unit");
+  }
+
+  return hero.progression.experience - before;
 };
 
 /** Retunes `key` to `value` by the panel's door, consumed by one tick. */
@@ -166,6 +204,55 @@ describe("a tier's health", () => {
 
     expect(before.stats.maxHealth).toBe(meleeGruntDef.health * 10);
     expect(after.stats.maxHealth).toBe(meleeGruntDef.health * 4);
+  });
+});
+
+describe("a tier's experience", () => {
+  it.each([
+    ["normal", 46],
+    ["elite", 138],
+    ["boss", 460],
+  ] as const)("a %s grunt pays %d on its death", (tier, experience) => {
+    const world = arrange();
+    const grunt = spawnGrunt(world, tier, AFAR);
+
+    expect(experienceFromKill(world, grunt)).toBe(experience);
+  });
+
+  it.each(["normal", "elite", "boss"] as const)(
+    "an imp at %s tier pays nothing",
+    (tier) => {
+      const world = arrange();
+      const imp = spawnOne(world, impDef.id, tier, AFAR);
+
+      expect(experienceFromKill(world, imp)).toBe(0);
+    },
+  );
+
+  it("puts an elite at triple and a boss at ten times, as the tunables stand by default", () => {
+    expect(tuningTable.elite_experience_multiplier).toBe(3);
+    expect(tuningTable.boss_experience_multiplier).toBe(10);
+  });
+
+  it("reads a retuned multiplier at the next death, a unit spawned before the retune included", () => {
+    const world = arrange();
+    const grunt = spawnGrunt(world, "elite", AFAR);
+
+    retune(world, "elite_experience_multiplier", 5);
+
+    expect(experienceFromKill(world, grunt)).toBe(230);
+  });
+
+  it("lands a retuned multiplier in the log as set_tuning", () => {
+    const world = arrange();
+
+    retune(world, "boss_experience_multiplier", 4);
+
+    expect(world.log.commandAt(world.log.count - 1)).toMatchObject({
+      kind: "set_tuning",
+      key: "boss_experience_multiplier",
+      value: 4,
+    });
   });
 });
 

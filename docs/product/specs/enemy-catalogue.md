@@ -232,6 +232,8 @@ The hero's level table is `experienceThresholds` in `src/content/hero.ts`: the t
 
 A grunt is the unit of account: 46, a fifth of the first level. The others are priced against it by how long each takes to kill and how much harm it does in that time. Experience is not shared or pooled across a pack; each enemy grants its own on death, as the [enemies page](../features/enemies.md#experience) says.
 
+The numbers here are a normal unit's. An elite grants 3 times its archetype's experience and a boss 10 times, the `elite_experience_multiplier` and `boss_experience_multiplier` tunables, as its health is multiplied: an elite grunt grants 138 and a boss grunt 460, two levels' worth at level 1. The imp and the dummy grant nothing at any tier.
+
 ---
 
 ## 5. What the numbers do in a fight
@@ -579,7 +581,7 @@ A hardy melee enemy that heals itself once it is hurt.
 | A crusher, a troll, and a trapper | 250 | Level 2 and a little over |
 | A lancer, two frost raiders, and a skirmisher | 196 | Short of level 2 |
 
-A roster archetype is priced as the four are: by how long it takes to kill and how much harm it does in that time, and a disable counts as harm. An elite or a boss grants what its archetype grants; a tier multiplies health alone.
+A roster archetype is priced as the four are: by how long it takes to kill and how much harm it does in that time, and a disable counts as harm. The table is a normal unit's; an elite grants 3 times its archetype's experience and a boss 10 times, as section 4 says, so an elite brute grants 270 and a boss troll 850.
 
 ### 7.5 Frames the roster adds
 
