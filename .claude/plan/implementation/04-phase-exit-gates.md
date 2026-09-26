@@ -22,7 +22,7 @@ Every gate includes the bar. It is repeated once here so no gate can forget a ro
 | Stress test | 300 units (phase 1) or 200 enemies plus 100 projectiles (phase 3 on) hold the tick budget | `pnpm test -t "stress"` green |
 | Render benchmark | Passes per ADR 0001 | `pnpm bench` numbers recorded in the phase README |
 
-The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles.
+The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles; phase 6, the same 200 on the long road, woken and put to sleep by the hero's walk.
 
 ---
 
@@ -114,3 +114,21 @@ The live cap per phase: phase 0 none; phase 1, 300 units with random orders; pha
 | The docs are in sync: world model rows, where-to-look pointers, feature pages, any ADR taken during the phases | The docs-sync ticket's checklist |
 | The reference-laptop rows carried from phases 1 to 4 hold | Every row under [Deferred](./backlog/deferred.md) that waits on this gate is recorded with numbers: the phase 1 and phase 2 bars, the phase 3 and phase 4 browser and by-hand rows, M1's bench, and the benches deferred since sprint 12 |
 | The bar | Every row |
+
+---
+
+## Phase 6 gate
+
+Added 2026-09-26. The long road is a playtest map, so the gate holds the map, the cap on it, the push rule the maintainer asked to test, and the playtest itself. The bar's browser rows are the maintainer's, with the figures written down this time rather than approved in words, as the retrospective's governance change asks.
+
+| Row | Holds when |
+| --- | --- |
+| The hero can walk the long road from the spawn at level 1 to the last boss and reach about level 10 | `tests/content/maps.spec.ts`: a path for the hero's radius class through every checkpoint in order to the last boss; `tests/content/catalogues.spec.ts`: the map's experience at each tier's multiplier reaches 5550 at the last boss's kill and stays under 6520; the maintainer's session in `tests/simulation/replays/long-road-playtest.json` reached the last boss, with the level at its kill recorded |
+| Every pack on the long road places | `tests/content/maps.spec.ts`: every pack places on the empty map within the placement radius |
+| Live enemies never pass the cap, and no pack is refused silently | The long-road case of `tests/simulation/stress.spec.ts` green under `pnpm test:budget`: at or under 200 at every tick of a full walk, no `enemy_cap_reached`, the packs behind asleep; `tests/content/maps.spec.ts`: no point on the road has more enemies within the sleep radius than the spec's bound |
+| The hero takes the smaller share of push-out (Q31) | `tests/domain/movement/collision.spec.ts` green, the even split pinned at 0.5; `tests/simulation/corridor-200.spec.ts`: at the default share of 0 the press carries the hero less than 20 units in fifteen seconds (Q57), with the overlap bar kept |
+| Death comes back at the furthest checkpoint; packs sleep and wake with their survivors | `tests/domain/map/checkpoint.spec.ts`, `tests/simulation/hero/death.spec.ts`, `tests/simulation/enemies/dormancy.spec.ts` green |
+| The playtest session replays identically | `tests/simulation/replays/long-road-playtest.spec.ts` green on the final content version; every feedback file loads and stops at its tick on the playtest's commit |
+| The maintainer has played the long road and filed feedback, and it is triaged | The dated feedback files and the triage note under `notes/`; every note has an outcome; the bucket's days spent and what went to Deferred are in the phase README |
+| The docs are in sync | P6-S30-T02's checklist |
+| The bar | Every row, at 200 enemies on the long road: the tick headless from the long-road stress case in a production build; frame rate, sync, render, and world draw calls at the densest choke in Chrome, and in Firefox, Safari, and Edge on the reference laptop, written as figures in the phase README |

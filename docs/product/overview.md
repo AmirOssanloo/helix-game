@@ -46,7 +46,7 @@ The mechanism behind steps 1 to 4 is in the [mechanics spec](./specs/character-m
 
 ## What it looks like
 
-Isometric: the floor is a classic 2:1 diamond grid and the camera looks down on it at one fixed scale, with no zoom. Through the first five phases the art is flat-colour geometry lying on that floor: the hero is a white disc with a triangle for facing, enemies are coloured squares, projectiles are discs, obstacles are grey rectangles, each drawn flat on the floor, so a disc reads as an ellipse. The projection and why the world under it stays square are in [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md). Real sprite art is a later content swap, not a code change. There is no audio and no save system until then.
+Isometric: the floor is a classic 2:1 diamond grid and the camera looks down on it at one fixed scale, with no zoom. Until real art arrives, the art is flat-colour geometry lying on that floor: the hero is a white disc with a triangle for facing, enemies are coloured squares, projectiles are discs, obstacles are grey rectangles, each drawn flat on the floor, so a disc reads as an ellipse. The projection and why the world under it stays square are in [ADR 0006](../adr/0006-isometric-view-over-a-square-world.md). Real sprite art is a later content swap, not a code change. There is no audio and no save system until then.
 
 ---
 

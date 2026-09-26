@@ -1,6 +1,6 @@
 # Status
 
-**Updated:** 2026-09-25 · **By:** the delivery lead, on the maintainer's delegation
+**Updated:** 2026-09-26 · **By:** the delivery strategist, planning phase 6 from the maintainer's goal and the engineering architect's brief of the same day
 
 Where the plan is right now. One screen. Update it in the same commit as the ticket whose status changed, and move the date.
 
@@ -8,9 +8,9 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 
 | | |
 | --- | --- |
-| **Active phase** | [5 — The full enemy roster](./phase-5-full-enemy-roster/README.md), its gate closed and its last sprint closed. The five phases are built and every person row is closed; what remains is shaping and funding the next bet |
-| **Active sprint** | none; [22 — The phase gate and handover](./phase-5-full-enemy-roster/sprint-22-phase-gate-and-handover.md) closed 2026-09-25 |
-| **Next ticket** | none in this plan. The next bet is being shaped; the hero's smaller share of push-out (Q31), in [Deferred](./backlog/deferred.md), is its first ticket |
+| **Active phase** | [6 — The long road](./phase-6-the-long-road/README.md), planned 2026-09-26: a hand-authored playtest map the hero walks from level 1 to about level 10, chosen by the maintainer before *one floor*. Sprints 25 to 30, 23 sized days, 4 of them the triage bucket's appetite |
+| **Active sprint** | [25 — The map spec and the push rule](./phase-6-the-long-road/sprint-25-the-map-spec-and-the-push-rule.md), not yet started |
+| **Next ticket** | [P6-S25-T01](./phase-6-the-long-road/sprint-25-the-map-spec-and-the-push-rule.md) — The long road: the map spec. P6-S25-T02, the hero's smaller share of push-out (Q31), may run beside it |
 | **In progress** | none |
 | **Last closed ticket** | P5-S22-T07 — A waiting charger closes on a hero inside its hold point, 2026-09-25, unplanned, from Q47 as answered on the delivery lead's walk: a lancer behind a wall no longer stands pinned for its whole clock. Before it, P5-S22-T06 — the HUD greys while the hero is dead, from Q49; P5-S22-T04 — the [retrospective and account for leadership](../2026-09-25-retrospective-and-account.md); P5-S22-T03 — six door tests, all green, with one finding for the engineering architect: the `Kit` interface never hands a kit its form's ability list. `pnpm check` green on a quiet machine, 3404 tests, the stress tier included, and CI green on `ba88032` |
 | **Last closed sprint** | [22 — The phase gate and handover](./phase-5-full-enemy-roster/sprint-22-phase-gate-and-handover.md), 2026-09-25. The full gate, the docs sync with three decision records, the door tests, the account for leadership, and three unplanned tickets. Sized 4.4 and done in 1.65. Before it, [21 — Tiers, the roster, and the boss encounter](./phase-5-full-enemy-roster/sprint-21-tiers-roster-and-boss-encounter.md), 2026-09-25 |
@@ -22,6 +22,10 @@ Where the plan is right now. One screen. Update it in the same commit as the tic
 ## Waiting on a person
 
 Nothing an agent can do moves these rows. Each one says what to do, where the result goes, and what it unblocks.
+
+- [x] **Phase 6: the provisional answers Q50 to Q57.** Answered by the maintainer, 2026-09-26: Q50 to Q56 as proposed; Q57 changed, the hero's push share starts at 0, so enemies never push the hero back unless an ability knocks it, still a tunable for the playtest. Was: Read Q50 to Q57 in [Open questions](./backlog/open-questions.md), written by the delivery strategist on 2026-09-26 as the plan's working answers: the diagonal road accepted, the furthest checkpoint, killed packs stay dead, a sleeping pack keeps its survivors and heals only as Return does, elites and bosses pay 3 and 10 times the experience, no per-pack scaling, the words "pack", "region", and "checkpoint", and the hero's push share at 0.25 with a carry under 150. Confirm each or change it in its row. A changed answer edits the ticket it blocks before that ticket starts. It unblocks P6-S25-T01 and T02 on the answers as written; nothing waits on it to start.
+
+- [ ] **Phase 6: approve the long road's spec, after P6-S25-T01.** When T01 is done, read `docs/product/specs/the-long-road.md`: the regions, the pack list, the checkpoints, and the experience budget against the level table. Approve it as written or name what to change, in a note under P6-S25-T01 in the [sprint 25 file](./phase-6-the-long-road/sprint-25-the-map-spec-and-the-push-rule.md). It unblocks P6-S28-T01, which writes the map from the page as approved.
 
 - [x] **The hardware sitting: every browser readout and bench still owed.** Run by the maintainer on the reference laptop in Chrome, Firefox, Safari, and Edge, 2026-09-25, and approved: the performance matched the Apple M1 figures. No per-browser figures were written down, so the exit records say approved rather than quoting numbers. The CI run of `ba88032` ran the stress tier green. The M1 corridor recording is covered by the same approval. Q9 settled: the cap stays 200. Was: Collected by the delivery lead on 2026-09-25 from the boxes below and the by-hand rows walked that day, whose behaviour is confirmed; what is left needs a visible browser window, and all but the last need the reference laptop. On the reference laptop, with nothing else running: the four boxes below (the phase 5 gate, the phase 4 gate, sprint 18's two, the phase 3 gate) and the sprint 15 stress test in CI and on the laptop; the frame rate, render ms, and draw calls of the sprint 21 boss encounter per browser, into the phase 5 README's "Boss encounter readouts, per browser" row; `pnpm bench` in Chrome on this commit and on `2ad2ef2` (sprint 19, the `icon_charge` frame), `c9499fe` (sprint 16, T03), and `5b0cec8` (sprint 16, T02), each's fps, render ms, draw calls, and heap under its ticket's note; and the worst browser's max tick for Q9. On the Apple M1 laptop with Chrome in front: two hundred chasing through the corridor for thirty seconds with the performance panel and the allocation sampler, the figures under the P3-S15-T01 note. Nothing an agent can run moves these rows.
 

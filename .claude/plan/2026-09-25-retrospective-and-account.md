@@ -169,6 +169,8 @@ The roadmap's "beyond phase 5" list, sized **in the plan's unit** (engineer-days
 
 ## 8. The recommended next bet: one floor
 
+**2026-09-26:** the maintainer chose the playtest map, the long road, before one floor, which now waits behind its playtest; planned as [phase 6](./implementation/phase-6-the-long-road/README.md).
+
 **The bet.** One generated dungeon floor that the hero fights through, picks up equipment on, and leaves by stairs for a deeper floor generated from the next seed. It is the smallest loop that turns an arena into a game: **move, fight, loot, descend**. It spends four of the six tested doors (run and map scope, tile layer, dormant packs, modifier source) exactly where they were built to pay off. It needs no Kit fix, no ADR change, no art, no audio, and no saves.
 
 **Appetite:** 24 sized days, six sprints, plus each sprint's buffer. At the plan's recorded ratios that is 8 to 20 engineer-days of effort. The calendar depends on the playtests.

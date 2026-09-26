@@ -27,7 +27,12 @@ toolchain and layers (S00)
                           → readability and damage-type matrix (S14)
                             → 200 enemies and profiling (S15)  ══ phase 3 gate
                               → displacement and death edges (S16) → tuning surface (S17) → profile and headroom (S18)  ══ phase 4 gate
-                                → enemy abilities (S19) → disable matrix (S20) → tiers, roster, boss (S21) → gate and handover (S22)
+                                → enemy abilities (S19) → disable matrix (S20) → tiers, roster, boss (S21) → gate and handover (S22)  ══ phase 5 gate
+                                  → map spec, hero push share, tier experience, bounded placement (S25)
+                                    → map choice, checkpoints, packs that sleep again (S26)
+                                      → enemies home while the hero is dead, checkpoint jump and marker, feedback file, replace-a-spell (S27)
+                                        → the long road, obstacle views by camera, the cap on the road (S28)
+                                          → the maintainer's playtest, triage, bucket (S29) → bucket, gate (S30)  ══ phase 6 gate
 ```
 
 ---
@@ -62,6 +67,16 @@ toolchain and layers (S00)
 | The tuning surface (S17) precedes the balance pass (S17, next ticket) and phase 5's numbers | Phase 5 archetypes are tuned through the same surface |
 | Enemy abilities (S19) precede the disable matrix (S20) | The matrix tests the hero suffering every status; the abilities are how it suffers them |
 | The disable matrix (S20) precedes tiers and the roster (S21) | A boss that silences is only correct once the matrix says what silence does |
+| The long road's spec (S25) precedes its definition (S28) | Regions, packs, checkpoints, and the experience budget are decided and approved on paper before 150 rectangles and fifty packs are typed; a budget found wrong in data is a map rewritten |
+| The tier experience multiplier (S25) precedes the spec's approval and the map (S28) | The budget's arithmetic reads elite and boss kills at 3 and 10; without it an elite pays a grunt's experience and the road cannot reach level 10 at the numbers the spec shows |
+| The hero's push share (S25) precedes everything after it in the phase | It records five stored logs again; every later ticket that moves the content version re-stamps on top of it rather than under it, and the maintainer tests it in the playtest |
+| The bounded placement search (S25) precedes sleeping packs (S26) and the map (S28) | A pack that cannot place retries every tick; on a 4000 by 24000 map an unbounded search is some 440 rings a tick, and the map's placement test needs a radius to test against |
+| Packs that sleep again (S26) precede the map (S28) | With activation one way, live enemies ratchet to 200 along the road and a region's boss is refused with `enemy_cap_reached`; the map's live-near-point test reads the sleep radius |
+| Map choice as a driver operation (S26) precedes the feedback file (S27) and the map (S28) | A feedback file and the playtest log load on their own map; the panel is how the long road is chosen |
+| Checkpoints (S26) precede the jump, the marker (S27), and the map (S28) | The jump and the marker read the map's checkpoint list; the map's path test runs through the checkpoints in order |
+| Enemies going home while the hero is dead (S27) precedes the playtest (S29) | Without it every chaser paths the length of the map to the respawn point after a death, which is R4's cost at once and a crowd waiting at the checkpoint |
+| Every playtest tool (S27) and the map (S28) precede the playtest (S29) | The maintainer plays once, thoroughly; a tool missing on that day is feedback lost |
+| The triage (S29) precedes every bucket ticket (S29, S30) | Tickets are sized after the notes are read, not before |
 
 ---
 
@@ -76,6 +91,7 @@ Only relevant if a second engineer appears. With one engineer the order above is
 | AI state machine and behaviours (S12) | Enemy views, overlays, damage numbers at scale (S13, S14) | Sprint 12 |
 | AI, death, and experience (S12, S13) | The isometric view (S23, S24) | Sprint 12 |
 | Enemy abilities (S19) | Roster definitions and catalogue (S21) | Sprint 19 |
+| Map choice, checkpoints, sleeping packs (S26) | The feedback file and obstacle views by camera (S27, S28) | Sprint 26 |
 
 A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 
@@ -87,3 +103,6 @@ A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 - **The HUD does not depend on spells.** It draws slot descriptors. Phase 1 stubs fill them.
 - **The developer panel does not depend on enemies.** Sprint 06 ships a generic spawn-unit debug command for the stress test; the archetype dropdown arrives with archetypes in sprint 12.
 - **Replay does not depend on the panel.** The log is recorded from sprint 01. The panel adds a save and load button.
+- **The playtest tools do not depend on the long road.** Checkpoints, sleeping packs, the jump, and the feedback file are built and tested on fixture maps and the arena; the long road is only their first real user.
+- **Spell swaps do not depend on refactoring the shared specs.** A swap moves only the named spells' fixture uses; nothing is refactored ahead of the feedback that names them.
+- **The obstacle views do not depend on the map.** Binding by the camera is tested on a fixture with more obstacles than the pool.

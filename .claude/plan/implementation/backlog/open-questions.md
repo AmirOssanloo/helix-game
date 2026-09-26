@@ -1,6 +1,6 @@
 # Open questions
 
-**Written:** 2026-09-20 · **Updated:** 2026-09-25 · **Kept current by:** whoever answers one
+**Written:** 2026-09-20 · **Updated:** 2026-09-26 · **Kept current by:** whoever answers one
 
 Decisions the plan needed and the documentation did not settle. Each has a proposed answer the plan is built on and the ticket that depends on it. Answering one differently means editing that ticket.
 
@@ -66,3 +66,11 @@ Move a row here with the date and who answered it when it is settled.
 | Q24 | Keep both words, and the vocabulary says which is which: an effect list is what a cast does, and the visual pool keeps its name | 2026-09-25 | The delivery lead, on the maintainer's delegation of 2026-09-25 |
 | Q23 | As built, and the plan's assumption is dropped: the form definition's radii are the hero's, reached as `def:form:skein:…` keys, and a retune reaches the next hero, not the one standing there; the tuning table's three radius keys are for units with no definition. Unifying them waits for a second form | 2026-09-25 | The delivery lead, on the maintainer's delegation of 2026-09-25 |
 | Q9 | 200. The maintainer ran the reference-laptop session in Chrome, Firefox, Safari, and Edge on 2026-09-25 and reported the performance matched the Apple M1 figures, whose worst tick leaves more than the 1 ms the rule asks; the Q9 formula lowers nothing. No per-browser max tick was written down, so a future cap change reads the laptop again rather than this row | 2026-09-25 | The maintainer |
+| Q50 | The road runs diagonally on screen, as the maintainer meant by a long rectangle | 2026-09-26 | The maintainer |
+| Q51 | A dead hero comes back at the furthest checkpoint reached | 2026-09-26 | The maintainer |
+| Q52 | No. A killed pack stays dead when the hero dies | 2026-09-26 | The maintainer |
+| Q53 | A pack that sleeps again keeps its survivors and heals only as Return does, with no leash heal | 2026-09-26 | The maintainer |
+| Q54 | Yes: elites pay 3 times their archetype's experience and bosses 10 times, as tunables | 2026-09-26 | The maintainer |
+| Q55 | No per-pack or per-level strength scaling in this phase; a region's difficulty is its archetypes, tiers, and counts | 2026-09-26 | The maintainer |
+| Q56 | "Pack" stays the word, and "camp" goes in the vocabulary's "not" column; a stretch of the road is a region; "checkpoint" and "the long road" become terms | 2026-09-26 | The maintainer |
+| Q57 | `hero_push_share` starts at 0: an enemy never pushes the hero back, as in Diablo, unless an ability such as a slam knocks it; the hero still pushes enemies out of its way. The corridor press may carry the hero less than 20 units in fifteen seconds. The share stays a tunable, and the playtest's chokes settle the final value, recorded here at triage | 2026-09-26 | The maintainer |

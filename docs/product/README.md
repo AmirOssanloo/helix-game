@@ -12,7 +12,7 @@ These pages use **real names and real numbers** — Quartz, Hoarfrost, 280 units
 
 - [Product overview](./overview.md) — what Helix is, who plays it, and how a fight goes
 - [Product vocabulary](./vocabulary.md) — the words we use, and the ones we don't
-- [Roadmap](./roadmap.md) — the five phases, what each ships, and the bar every phase is held to
+- [Roadmap](./roadmap.md) — the phases, what each ships, and the bar every phase is held to
 
 ## The specification
 

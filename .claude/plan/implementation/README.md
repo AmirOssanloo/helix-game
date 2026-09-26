@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 5
+**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26
 **Status of this document:** a dated plan. It captures a moment. The `docs/` pages describe the target; this folder describes the order and cost of reaching it.
 
 ---
@@ -97,6 +97,7 @@ implementation/
 ├── phase-3-enemies/                   # Sprints 12–15, and 23–24 run between 13 and 14
 ├── phase-4-combat-feel-and-tuning/    # Sprints 16–18
 ├── phase-5-full-enemy-roster/         # Sprints 19–22
+├── phase-6-the-long-road/             # Sprints 25–30
 └── backlog/
     ├── deferred.md                    # Cut items, the phase they were cut from, the door they wait behind
     └── open-questions.md              # Decisions still needed, each with a proposed answer

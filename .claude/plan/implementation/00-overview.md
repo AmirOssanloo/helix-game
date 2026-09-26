@@ -2,7 +2,7 @@
 
 **Written:** 2026-09-20 · **For:** leadership and the engineer running the plan
 
-One engineer, twenty-five one-week sprints, six phases, one playable build at the end of every phase. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
+One engineer, thirty-one one-week sprints, seven phases, one playable build at the end of every phase. Phase 6 was added on 2026-09-26, after phase 5 closed. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
 
 ---
 
@@ -24,9 +24,10 @@ Every phase ends with a build the person at the keyboard can play, tests that ar
 | 3 · Enemies | 12–15, 23–24 | 6 | Four archetypes spawn in packs from the panel, aggro, chase, attack, leash, die, and give experience, in a 2:1 isometric view at one fixed scale; two hundred of them chase the hero within budget |
 | 4 · Combat feel and tuning | 16–18 | 3 | Fighting reads clearly, every exposed number retunes from the panel with no code change, and the profile shows headroom on every row of the bar |
 | 5 · Full enemy roster | 19–22 | 4 | A long roster with abilities, elites, bosses, and the disable matrix; a boss encounter runs within budget |
-| **Total** | **25** | **25** | |
+| 6 · The long road | 25–30 | 6 | A hand-authored map 4000 by 24000 the hero walks from level 1 to about level 10 through five regions of rising difficulty, with checkpoints, packs that wake and sleep, the hero's smaller share of push-out, and a feedback key; the maintainer has played it and the feedback is triaged |
+| **Total** | **31** | **31** | |
 
-Twenty-five sprints is about six calendar months for one engineer at full allocation. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
+Twenty-five sprints was planned as about six calendar months for one engineer at full allocation; phases 0 to 5 closed in six calendar days (the [retrospective](../2026-09-25-retrospective-and-account.md)). Phase 6's calendar is set by the maintainer's playtest and approvals, not by engineering days. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
 
 ---
 
@@ -43,6 +44,8 @@ Twenty-five sprints is about six calendar months for one engineer at full alloca
 | M6 · Phase 3 gate | end of 15 | Two hundred enemies chasing within budget, in four browsers, in the isometric view |
 | M7 · Phase 4 gate | end of 18 | A designer retunes a spell with no code change; headroom table recorded |
 | M8 · Phase 5 gate | end of 22 | Boss encounter within budget; disable matrix green; roster complete |
+| M9 · The long road playable | end of 28 | The long road chosen from the panel and walked from the spawn to the last boss; every pack places; the cap holds on a full walk headless |
+| M10 · Phase 6 gate | end of 30 | The maintainer has played the long road and filed feedback; the triage is built or deferred; the playtest session replays identically |
 
 ---
 
@@ -56,6 +59,7 @@ What each phase deliberately does not include, so that nobody adds it by habit. 
 - **Phase 3** ships four archetypes and the dummy, and the isometric view with flat geometry. No enemy abilities, no tiers beyond the field existing, no loot, nothing tall to sort.
 - **Phase 4** adds no new content. It tunes what exists and proves headroom.
 - **Phase 5** adds no items, no dungeons, no save, no art, no audio.
+- **Phase 6** adds one hand-authored map and what playing it needs. No loot, no minimap, no generator or *one floor*, no per-level or per-pack enemy scaling, no art, no audio, no saves, no eleventh spell. What the playtest asks for is built only inside a bucket of four sized days; the rest is deferred.
 
 Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile.
 

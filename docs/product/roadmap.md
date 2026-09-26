@@ -4,7 +4,7 @@
 
 What arrives when. This is the one page in the documentation that says "phase"; every other page describes the finished target, and this one says the order we reach it in.
 
-Five phases, all played on [the arena](./features/map-and-camera.md#the-arena). Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
+Six phases: the first five played on [the arena](./features/map-and-camera.md#the-arena), the sixth on the long road, a hand-authored map for playtesting. Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
 
 ---
 
@@ -78,9 +78,23 @@ The rules behind each row are in [Performance standards](../standards/performanc
 
 **Done when** every enemy ability reuses the hero's ability pipeline, the disable matrix tests pass, and a boss encounter runs within budget.
 
+## Phase 6: the long road
+
+**Goal:** a real map to play from level 1 to about level 10, so the hero, the enemies, and the early game can be playtested and judged.
+
+- The long road: one hand-authored rectangle, 4000 by 24000, in five regions of rising difficulty built from the existing archetypes, simple enemies first, elite packs through each region and a boss-tier pack closing it.
+- Checkpoints along the road; a hero who dies comes back at the furthest one reached.
+- Packs wake as the hero nears and sleep again once left behind, so the live cap holds on a map holding more enemies than the cap.
+- Elites and bosses pay more experience, so the road reaches about level 10 at its last boss.
+- The hero takes a smaller share of push-out than the unit pressing it, so a crowd cannot carry it out of a choke.
+- A feedback key in the developer panel saves a note with the session and the build it was played on.
+- Spells that do not suit the game may be swapped for others on the same recipe, from the playtest's feedback.
+
+**Done when** the hero can walk the long road from level 1 and reach about level 10, every pack on it places, live enemies never pass the cap and no pack is refused unseen, a crowd no longer carries the hero out of a choke, a recorded playtest replays identically, and the maintainer has played the road and filed feedback.
+
 ---
 
-## Beyond phase 5
+## Beyond phase 6
 
 Items and inventory, equipment as modifier sources, loot tables and drops on death, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, isometric sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the classic loot-driven action RPGs.
 
@@ -90,7 +104,7 @@ Not at any point: multiplayer, hero selection, quick-cast, order queues, mobile.
 
 ## Doors kept open
 
-Recorded so that no decision inside the five phases closes them. Each page named owns the rule.
+Recorded so that no decision inside the phases closes them. Each page named owns the rule.
 
 - **Run scope and map scope are separate lifetimes**, so a map transition never recreates the hero — [Entities and pools](../architecture/entities-and-pools.md)
 - **View pools are sized to the screen** and bound by camera rectangle, not to simulation capacity — [Presentation](../architecture/presentation.md)
@@ -109,6 +123,7 @@ Recorded so that no decision inside the five phases closes them. Each page named
 | [Spell catalogue](./specs/spell-catalogue.md) | The ten spells, adapted numbers, effect definitions | Phase 2 |
 | [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
+| The long road | Its regions, packs, checkpoints, and experience budget | Phase 6 |
 
 ---
 
@@ -124,7 +139,7 @@ The brief raised 47 questions. Four went to discussion and became decision recor
 | Repository layout | Single package, one `src/` with eight layers, enforced by lint and an architecture test | [ADR 0003](../adr/0003-layered-single-package-architecture.md), [Architecture](../architecture/README.md) |
 | How state changes | All mutation, including developer-panel operations, enters as commands | [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) |
 | How content names behaviour | Definitions reference effects and behaviours by string key | [ADR 0005](../adr/0005-content-references-by-string-key.md) |
-| Phase numbering | Five phases, with phase 4 as combat feel and tuning | This page |
+| Phase numbering | Six phases, with phase 4 as combat feel and tuning and phase 6 as the long road | This page |
 | Working title | Helix | [Product overview](./overview.md) |
 
 ---

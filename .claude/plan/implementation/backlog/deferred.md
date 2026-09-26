@@ -1,6 +1,6 @@
 # Deferred
 
-**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S22-T01 and on 2026-09-25 from the delivery lead's walk · **Kept current by:** whoever cuts something
+**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S22-T01 and on 2026-09-25 from the delivery lead's walk; on 2026-09-26 at the phase 6 plan, the Q31 row moved into P6-S25-T02 · **Kept current by:** whoever cuts something
 
 Everything the plan deliberately leaves out, with the phase it was cut from and the door it waits behind. A missing capability that is a decision reads differently from one that is an oversight; this page is what makes the difference visible.
 
@@ -15,10 +15,14 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | Damage-number crit styling | Sprint 16 | No crit exists | Colour per type is enough for the balance pass |
 | Non-numeric definition fields on the tuning surface | Sprint 17 | A designer asks for one | Numeric covers every number the roadmap wants retuned |
 | What the isometric view needs once art is tall: sorting by screen position inside the units and obstacles bands, obstacles split per tile so they hide the right things, picking a unit by its sprite, walls that fade near the hero, and sprites drawn in eight or sixteen directions | Sprint 23 | Sprite art, beyond phase 5 | While the art is flat geometry nothing is tall, so the fixed depth bands hold. ADR 0006 names what changes when it is not |
-| The hero takes a smaller share of push-out than the unit walking into it, a tunable share, so a pressing crowd cannot carry the hero out of the corridor: an ADR 0002 amendment, the movement page, and the corridor, stress, boss, and balance replays recorded again | Sprint 22, from Q31 on 2026-09-25 | The first sprint of the next bet | A behaviour change behind a closed phase gate would move the gate's recorded replays; it is the first ticket of the next bet instead |
 | The elite and boss outline in a colour that reads on a red body: the thick red outline barely shows on a grunt | Sprint 22, from Q45 on 2026-09-25 | The art pass | Cosmetic; the boss's wider outline reads, and health and behaviour tell an elite apart in play |
 | A summoner turning to the hero before its first summon, so the imps stand between them rather than behind it | Sprint 22, from Q42 on 2026-09-25 | The next pass on enemy behaviours | Cosmetic, first cast only; the imps run at the hero either way |
-| The hero's attack growing with level, a new attribute conversion rather than a number | Sprint 22, from Q38 on 2026-09-25 | The next bet's balance pass | The balance pass's four goals hold without it; a pack of five is a fight for spells at every level by design until then |
+| The hero's attack growing with level, a new attribute conversion rather than a number | Sprint 22, from Q38 on 2026-09-25 | The next bet's balance pass; the long road's triage may take it into the bucket if the playtest asks | The balance pass's four goals hold without it; a pack of five is a fight for spells at every level by design until then |
+| *One floor*: a generated floor, loot, equipment, and stairs down, the bet the [retrospective](../../2026-09-25-retrospective-and-account.md#8-the-recommended-next-bet-one-floor) recommended | Phase 6, by the maintainer's choice on 2026-09-26 | The long road's playtest and triage | The maintainer chose a hand-authored playtest map first, to test the push rule, the early game, and the mechanics before anything is built on them |
+| Enemy strength scaled per pack or by the hero's level | Phase 6, Q55 | A difficulty design | A region's difficulty is its archetypes, tiers, and counts; scaling would hide what the playtest is meant to measure |
+| A map editor | Phase 6 | A second hand-authored map | One map is typed from its spec and held by content tests |
+| An eleventh spell | Phase 6 | A kit redesign by the engineering architect | Three orbs give exactly ten recipes; a new spell takes over a recipe through the replace-a-spell runbook |
+| Loot, items, the town, sprite art, audio, and saves on the long road | Phase 6 | *One floor* and the list after it | The long road is a playtest of fighting and progression; each of these is its own bet |
 
 ---
 
@@ -85,7 +89,7 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 | Stat growth past 30, prestige | Hero | Never in the five phases |
 | Potions | Hero | Items |
 | A second kit's HUD layout | HUD | A second form; tested by a door test |
-| Minimap | HUD, Map and camera | A map larger than the arena |
+| Minimap | HUD, Map and camera | A map larger than the arena. The long road is one, and it is cut from phase 6: the road is one direction, so progress reads without it. The first item above the line if the playtest shows the maintainer lost |
 | Item slots, inventory, equipment | HUD | Items |
 | Tooltips | HUD | A settings or polish pass |
 | Sound cues | HUD, Orbs and Invoke, Spells | Audio |
@@ -93,7 +97,7 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 | Procedural dungeons, acts, biomes | Map and camera | The generator; the map format is ready |
 | Exits, portals, transitions | Map and camera | The dungeon loop; run and map scope are ready and tested by a door test |
 | Tile art | Map and camera | Art; the tile-layer view kind is tested by a door test |
-| Fog of war | Map and camera | A map larger than the arena |
+| Fog of war | Map and camera | A map larger than the arena. Cut from phase 6: the long road hides nothing worth finding |
 | A day-night clock | Map and camera | Never in the five phases |
 | A third slot | Orbs and Invoke | Never |
 | Levelling Invoke | Orbs and Invoke | Never |
