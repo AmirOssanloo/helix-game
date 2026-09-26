@@ -44,6 +44,7 @@ export { skeinDef } from "./forms/skein.def";
 export { heroDef } from "./hero";
 export { contentRegistry } from "./index";
 export { arenaDef } from "./maps/arena.def";
+export { longRoadDef } from "./maps/long-road.def";
 export { maps } from "./maps/index";
 export { spells } from "./spells/index";
 export { bashDef } from "./statuses/bash.def";

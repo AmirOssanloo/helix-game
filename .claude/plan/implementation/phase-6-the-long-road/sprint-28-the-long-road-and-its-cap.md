@@ -21,7 +21,7 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 | Layer | content, tests, docs |
 | Size | 2 |
 | Depends on | P6-S25-T01 approved, P6-S25-T03, P6-S25-T04, P6-S26-T01, P6-S26-T02, P6-S26-T03 |
-| Status | planned |
+| Status | done |
 
 **Build:** `src/content/maps/long-road.def.ts`, id `long_road`, written from the spec, `docs/product/specs/the-long-road.md`, as approved: bounds, about 150 obstacles, the spawn point, every pack dormant, the checkpoints in order. Registered in the maps index so the panel lists it. Adding it moves the content version, so the six stored logs are re-stamped ([testing standards](../../../../docs/standards/testing.md)). The walkability grid is about 125 by 750 cells a radius class, and A* at this size is expected to hold; P6-S28-T03 measures it.
 
@@ -39,6 +39,8 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 **Definition of done:** Every change · A documentation change.
 
 > **Note, 2026-09-26:** P6-S26-T03 built the live-near-any-point check in `tests/content/maps.spec.ts` for every registered map, at the tuned `pack_sleep_radius`, reading each map's bound from a table keyed by map id; a map with no row fails. This ticket adds `long_road: 40`, the spec's section 8.
+
+> **Note, 2026-09-26:** Done. The ticket's "about 150 obstacles" is the planning estimate; the spec as written holds 137, two walls at each of five chokes and 127 blocks, and the file follows the spec. `src/content/maps/long-road.def.ts` holds the spec's bounds, obstacles, spawn point, six checkpoints, and 32 dormant packs in its order, and the maps index lists it after the arena. The content version moved from `ea0a5f07` to `1dd59515`; the six stored logs run on the arena and assert nothing the new map decides, so they are re-stamped. `tests/content/maps.spec.ts` places every pack on the empty road, reaches every checkpoint and every pack from the spawn on all three radius classes' layers, stands each pack 256 from every obstacle and 1080 from every checkpoint, and holds the live-near bound at 40, with the spec's peaks of 14 within 2000 and 22 within 3200. `tests/content/catalogues.spec.ts` holds the spec's pack table, each pack's experience, section 7.2 row by row, and the checks of section 7.3 to the file. `tests/content/abilities.spec.ts` builds its registries on the arena alone, since the road's packs name the shipped roster those registries replace. `pnpm check` green, 3583 tests, the stress tier included. The spec's approval by the maintainer is still a box under Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24; a change named there is made in the page and the file together, and the content tests fail until both agree.
 
 ---
 
@@ -97,7 +99,7 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 | The long-road stress case: mean, worst, heaviest tick, A* expansions | |
 | The bench and the densest choke's readouts in Chrome | |
 | Milestone M9 | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 |
 
 ## Risks in this sprint
 

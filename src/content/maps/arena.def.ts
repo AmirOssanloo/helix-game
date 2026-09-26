@@ -1,7 +1,7 @@
 import type { MapDef } from "@domain/public";
 
 /**
- * The one hand-authored map: a 4000 by 4000 walled square to test movement, spells, and
+ * The test map: a 4000 by 4000 walled square to test movement, spells, and
  * enemies in. Ten rectangles of varied size stand in it, and two of them, the pair east of the
  * centre, leave a corridor 96 units wide between them: three cells, open to a small or
  * hero-sized unit and closed to a large one. Every edge sits on a 32-unit cell boundary so the

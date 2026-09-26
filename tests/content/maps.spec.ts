@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { arenaDef, contentRegistry, maps, tuningTable } from "@content/public";
+import {
+  arenaDef,
+  contentRegistry,
+  longRoadDef,
+  maps,
+  tuningTable,
+} from "@content/public";
 import type { MapDef } from "@domain/public";
 import {
   deriveWalkabilityGrid,
@@ -66,6 +72,7 @@ const refusalsOf = (world: Simulation, reader: EventReader): string[] => {
  */
 const LIVE_NEAR_BOUND: Readonly<Record<string, number>> = {
   arena: 0,
+  long_road: 40,
 };
 
 /**
@@ -104,6 +111,69 @@ const mostEnemiesNear = (map: MapDef, radius: number): number => {
 
   return most;
 };
+
+/** The index of the cell of `grid` under the world point, row by row. */
+const cellOf = (
+  grid: ReturnType<typeof gridOf>,
+  x: number,
+  y: number,
+): number =>
+  Math.floor((y - grid.originY) / grid.cellSize) * grid.columns +
+  Math.floor((x - grid.originX) / grid.cellSize);
+
+/**
+ * Every cell of `map`'s grid a unit of `radiusClass` reaches from the spawn point by steps to
+ * the four neighbouring open cells, as a flag per cell, row by row. Pathing may also step
+ * diagonally, so a cell reached here is one A* reaches too.
+ */
+const reachableFromSpawn = (map: MapDef, radiusClass: number): Uint8Array => {
+  const grid = gridOf(map);
+  const reached = new Uint8Array(grid.columns * grid.rows);
+  const open = (column: number, row: number): boolean =>
+    column >= 0 &&
+    column < grid.columns &&
+    row >= 0 &&
+    row < grid.rows &&
+    !isBlockedAt(
+      grid,
+      radiusClass,
+      grid.originX + (column + 0.5) * grid.cellSize,
+      grid.originY + (row + 0.5) * grid.cellSize,
+    );
+  const start = cellOf(grid, map.spawnPoint.x, map.spawnPoint.y);
+  const queue: number[] = [start];
+
+  reached[start] = 1;
+
+  for (let next = 0; next < queue.length; next += 1) {
+    const cell = queue[next] ?? 0;
+    const column = cell % grid.columns;
+    const row = Math.floor(cell / grid.columns);
+
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const) {
+      const neighbour = (row + dy) * grid.columns + column + dx;
+
+      if (open(column + dx, row + dy) && reached[neighbour] === 0) {
+        reached[neighbour] = 1;
+        queue.push(neighbour);
+      }
+    }
+  }
+
+  return reached;
+};
+
+/** How far the point stands from the nearest edge of `rect`, or 0 inside it. */
+const distanceToRect = (rect: Readonly<Rect>, x: number, y: number): number =>
+  Math.hypot(
+    Math.max(rect.minX - x, 0, x - rect.maxX),
+    Math.max(rect.minY - y, 0, y - rect.maxY),
+  );
 
 const faultsOf = (id: string) =>
   validateRegistry(contentRegistry).filter((fault) =>
@@ -276,6 +346,100 @@ describe("the arena", () => {
     expect(isBlockedAt(grid, SMALL_CLASS, corridorX, corridorY)).toBe(false);
     expect(isBlockedAt(grid, HERO_CLASS, corridorX, corridorY)).toBe(false);
     expect(isBlockedAt(grid, LARGE_CLASS, corridorX, corridorY)).toBe(true);
+  });
+});
+
+describe("the long road", () => {
+  const cellSize = tuningTable.walkability_cell_size;
+
+  it("is listed", () => {
+    expect(maps).toContain(longRoadDef);
+  });
+
+  it("is 4000 by 24000 with the spawn point at the first checkpoint, six checkpoints in order along the road", () => {
+    expect(longRoadDef.bounds).toEqual({
+      minX: 0,
+      minY: 0,
+      maxX: 4000,
+      maxY: 24000,
+    });
+    expect(longRoadDef.checkpoints).toHaveLength(6);
+    expect(longRoadDef.checkpoints[0]).toEqual(longRoadDef.spawnPoint);
+
+    const ys = longRoadDef.checkpoints.map((checkpoint) => checkpoint.y);
+
+    expect(ys).toEqual([...ys].sort((a, b) => a - b));
+  });
+
+  it("has 137 obstacles, every edge on a cell boundary", () => {
+    expect(longRoadDef.obstacles).toHaveLength(137);
+
+    for (const obstacle of longRoadDef.obstacles) {
+      expect(obstacle.minX % cellSize).toBe(0);
+      expect(obstacle.minY % cellSize).toBe(0);
+      expect(obstacle.maxX % cellSize).toBe(0);
+      expect(obstacle.maxY % cellSize).toBe(0);
+    }
+  });
+
+  it("holds 32 packs of 54 enemies, every one dormant", () => {
+    expect(longRoadDef.packs).toHaveLength(32);
+    expect(longRoadDef.packs.reduce((sum, pack) => sum + pack.count, 0)).toBe(
+      54,
+    );
+    expect(longRoadDef.packs.every((pack) => pack.dormant)).toBe(true);
+  });
+
+  it("stands every pack at least 256 from every obstacle and at least 1080 from every checkpoint", () => {
+    for (const pack of longRoadDef.packs) {
+      const { x, y } = pack.position;
+
+      for (const obstacle of longRoadDef.obstacles) {
+        expect(distanceToRect(obstacle, x, y)).toBeGreaterThanOrEqual(256);
+      }
+
+      for (const checkpoint of longRoadDef.checkpoints) {
+        expect(
+          Math.hypot(checkpoint.x - x, checkpoint.y - y),
+        ).toBeGreaterThanOrEqual(1080);
+      }
+    }
+  });
+
+  it.each([
+    ["small", SMALL_CLASS],
+    ["hero", HERO_CLASS],
+    ["large", LARGE_CLASS],
+  ] as const)(
+    "lets a %s unit walk from the spawn to every checkpoint in order and on to the last boss's pack",
+    (_name, radiusClass) => {
+      const grid = gridOf(longRoadDef);
+      const reached = reachableFromSpawn(longRoadDef, radiusClass);
+      const lastBoss = longRoadDef.packs[longRoadDef.packs.length - 1];
+
+      for (const checkpoint of longRoadDef.checkpoints) {
+        expect(reached[cellOf(grid, checkpoint.x, checkpoint.y)]).toBe(1);
+      }
+
+      expect(lastBoss?.tier).toBe("boss");
+      expect(
+        reached[
+          cellOf(grid, lastBoss?.position.x ?? 0, lastBoss?.position.y ?? 0)
+        ],
+      ).toBe(1);
+
+      for (const pack of longRoadDef.packs) {
+        expect(reached[cellOf(grid, pack.position.x, pack.position.y)]).toBe(1);
+      }
+    },
+  );
+
+  it("keeps the live-near bound for any sleep radius up to 3200, peaking at 14 within 2000 and 22 within 3200", () => {
+    expect(mostEnemiesNear(longRoadDef, 2000)).toBe(14);
+    expect(mostEnemiesNear(longRoadDef, 3200)).toBe(22);
+    expect(mostEnemiesNear(longRoadDef, 3200)).toBeLessThanOrEqual(
+      LIVE_NEAR_BOUND.long_road ?? 0,
+    );
   });
 });
 

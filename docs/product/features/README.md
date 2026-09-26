@@ -30,7 +30,7 @@ These pages describe behaviour, not implementation. Numbers are quoted once as t
 ## The world
 
 - [Enemies](./enemies.md) — archetypes, packs, aggro and leash, tiers, enemy abilities
-- [Map and camera](./map-and-camera.md) — the map as data, the arena, the locked camera
+- [Map and camera](./map-and-camera.md) — the map as data, the arena, the long road, the locked camera
 
 ## The screen
 

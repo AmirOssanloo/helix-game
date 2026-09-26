@@ -1,13 +1,22 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { enemies, spells } from "@content/public";
-import type { EnemyDef, SpellDef } from "@domain/public";
+import {
+  enemies,
+  heroDef,
+  longRoadDef,
+  spells,
+  tuningTable,
+} from "@content/public";
+import type { EnemyDef, EnemyTier, PackDef, SpellDef } from "@domain/public";
 import { REPOSITORY_ROOT } from "../helpers";
 
 /** The two content specifications whose tables restate what the definition files hold. */
 const ENEMY_CATALOGUE = "docs/product/specs/enemy-catalogue.md";
 const SPELL_CATALOGUE = "docs/product/specs/spell-catalogue.md";
+
+/** The long road's spec, whose pack table and experience budget restate its map file. */
+const LONG_ROAD_SPEC = "docs/product/specs/the-long-road.md";
 
 const linesOf = (path: string): string[] =>
   readFileSync(join(REPOSITORY_ROOT, path), "utf8").split("\n");
@@ -205,4 +214,192 @@ describe("the spell catalogue", () => {
       expect(numbersIn(mana ?? "")).toEqual(firstAndLast(def.manaCost));
     },
   );
+});
+
+/** One row of the long road's pack table: the pack's number, region, and role beside the fields. */
+type PackRow = Readonly<{
+  region: number;
+  archetypeId: string;
+  tier: string;
+  count: number;
+  x: number;
+  y: number;
+  role: string;
+  experience: number;
+}>;
+
+/** How many cells the pack table's rows hold. */
+const PACK_ROW_WIDTH = 9;
+
+/** The long road's pack table, in its order: every row of nine cells whose first is a number. */
+const packRows = (): PackRow[] =>
+  linesOf(LONG_ROAD_SPEC).flatMap((line) => {
+    const cells = cellsOf(line);
+
+    if (
+      cells === null ||
+      cells.length !== PACK_ROW_WIDTH ||
+      !/^\d+$/.test(cells[0] ?? "")
+    ) {
+      return [];
+    }
+
+    const [, region, archetype, tier, count, x, y, role, experience] = cells;
+
+    return [
+      {
+        region: Number(region),
+        archetypeId: idIn(archetype ?? "") ?? "",
+        tier: tier ?? "",
+        count: Number(count),
+        x: Number(x),
+        y: Number(y),
+        role: role ?? "",
+        experience: Number(experience),
+      },
+    ];
+  });
+
+/** The per-region budget table's rows, by the name in their first cell, as their numbers. */
+const budgetRows = (): Map<string, number[]> => {
+  const rows = new Map<string, number[]>();
+
+  for (const line of linesOf(LONG_ROAD_SPEC)) {
+    const cells = cellsOf(line);
+
+    if (
+      cells !== null &&
+      cells.length === 8 &&
+      /^(?:\*\*)?(?:\d ·|The last boss|Full clear)/.test(cells[0] ?? "")
+    ) {
+      rows.set(
+        (cells[0] ?? "").replace(/\*\*/g, ""),
+        cells.slice(1).map((cell) => numbersIn(cell)[0] ?? Number.NaN),
+      );
+    }
+  }
+
+  return rows;
+};
+
+const TIER_MULTIPLIERS: Readonly<Record<EnemyTier, number>> = {
+  normal: 1,
+  elite: tuningTable.elite_experience_multiplier,
+  boss: tuningTable.boss_experience_multiplier,
+};
+
+/** The experience a full kill of `pack` pays: the archetype's, times its tier's multiplier, times the count. */
+const experienceOf = (pack: PackDef): number => {
+  const def = enemies.find((enemy) => enemy.id === pack.archetypeId);
+
+  if (def === undefined) {
+    throw new Error(`The roster holds ${pack.archetypeId}`);
+  }
+
+  return def.experience * TIER_MULTIPLIERS[pack.tier] * pack.count;
+};
+
+/** The level the hero stands at with `experience`: every threshold it has reached. */
+const levelAt = (experience: number): number =>
+  heroDef.experienceThresholds.filter((threshold) => threshold <= experience)
+    .length;
+
+const sum = (values: readonly number[]): number =>
+  values.reduce((total, value) => total + value, 0);
+
+describe("the long road's spec", () => {
+  const rows = packRows();
+  const packs = longRoadDef.packs;
+  const lastBoss = packs.length - 1;
+
+  it("lists every pack the map holds, in its order, as the file writes it", () => {
+    expect(
+      rows.map(({ archetypeId, tier, count, x, y }) => ({
+        archetypeId,
+        tier,
+        count,
+        position: { x, y },
+      })),
+    ).toEqual(
+      packs.map(({ archetypeId, tier, count, position }) => ({
+        archetypeId,
+        tier,
+        count,
+        position,
+      })),
+    );
+    expect(rows[lastBoss]?.role).toBe("last boss");
+  });
+
+  it("writes each pack's experience as its archetype, tier, and count pay it", () => {
+    expect(rows.map((row) => row.experience)).toEqual(packs.map(experienceOf));
+  });
+
+  it("writes each region's budget, the running total, and the level at its end as the packs add up", () => {
+    const budget = budgetRows();
+    const regionOf = (index: number): string =>
+      index === lastBoss ? "The last boss" : String(rows[index]?.region);
+    let running = 0;
+
+    expect(budget.size).toBe(7);
+
+    for (const [
+      name,
+      [packCount, normal, elite, boss, total, runningTotal, level],
+    ] of [...budget].filter(([name]) => name !== "Full clear")) {
+      const key = name === "The last boss" ? name : name.slice(0, 1);
+      const inRegion = packs.filter((_pack, index) => regionOf(index) === key);
+      const byTier = (tier: EnemyTier): number =>
+        sum(inRegion.filter((pack) => pack.tier === tier).map(experienceOf));
+
+      running += sum(inRegion.map(experienceOf));
+
+      expect([
+        packCount,
+        normal,
+        elite,
+        boss,
+        total,
+        runningTotal,
+        level,
+      ]).toEqual([
+        inRegion.length,
+        byTier("normal"),
+        byTier("elite"),
+        byTier("boss"),
+        sum(inRegion.map(experienceOf)),
+        running,
+        levelAt(running),
+      ]);
+    }
+
+    expect(budget.get("Full clear")?.slice(0, 5)).toEqual([
+      packs.length,
+      sum(packs.filter((pack) => pack.tier === "normal").map(experienceOf)),
+      sum(packs.filter((pack) => pack.tier === "elite").map(experienceOf)),
+      sum(packs.filter((pack) => pack.tier === "boss").map(experienceOf)),
+      sum(packs.map(experienceOf)),
+    ]);
+    expect(budget.get("Full clear")?.[6]).toBe(levelAt(running));
+  });
+
+  it("reaches level 10 with the last boss's kill, not before, and stays under level 11", () => {
+    const beforeLastBoss = sum(packs.slice(0, lastBoss).map(experienceOf));
+    const fullClear = sum(packs.map(experienceOf));
+
+    expect(levelAt(beforeLastBoss)).toBeLessThan(10);
+    expect(levelAt(fullClear)).toBe(10);
+    expect(fullClear).toBeLessThan(heroDef.experienceThresholds[10] ?? 0);
+  });
+
+  it("reaches level 9 before the last boss with the five costliest normal packs skipped", () => {
+    const beforeLastBoss = packs.slice(0, lastBoss);
+    const normals = beforeLastBoss
+      .filter((pack) => pack.tier === "normal")
+      .map(experienceOf)
+      .sort((a, b) => b - a);
+    const skipped = sum(normals.slice(0, Math.ceil(normals.length / 5)));
+
+    expect(levelAt(sum(beforeLastBoss.map(experienceOf)) - skipped)).toBe(9);
+  });
 });

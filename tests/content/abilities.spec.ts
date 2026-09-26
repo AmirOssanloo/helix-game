@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   abilities as contentAbilities,
+  arenaDef,
   contentRegistry,
   enemies,
   tuningTable,
@@ -40,6 +41,13 @@ const FROST_ARCHER = makeEnemyDef.build({
   id: "frost_archer",
   abilities: [always(FROST_VOLLEY.id)],
 });
+
+/**
+ * A registry built from `options` over the shipped content, with the arena as its one map:
+ * the other maps' packs name the shipped roster, which most registries here replace.
+ */
+const registryOf = (options: Parameters<typeof makeRegistry>[0]) =>
+  makeRegistry({ maps: [arenaDef], ...options });
 
 const onlyFault = (faults: readonly RegistryFault[]): RegistryFault => {
   const [first] = faults;
@@ -91,7 +99,7 @@ describe("the enemy abilities", () => {
 
 describe("an enemy ability", () => {
   it("validates as a spell does, without a recipe: the runbook's volley passes", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [FROST_VOLLEY],
       enemies: [FROST_ARCHER],
     });
@@ -100,7 +108,7 @@ describe("an enemy ability", () => {
   });
 
   it("is refused with a recipe, which only the hero's spells carry", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [
         ...contentRegistry.abilities,
         { ...FROST_VOLLEY, recipe: ["quartz", "quartz", "quartz"] } as never,
@@ -114,7 +122,7 @@ describe("an enemy ability", () => {
   });
 
   it("is refused with a table shorter than the orb cap, as a spell is", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [
         ...contentRegistry.abilities,
         { ...FROST_VOLLEY, cooldownSeconds: [6, 6] },
@@ -128,7 +136,7 @@ describe("an enemy ability", () => {
   });
 
   it("is refused when it names a status the registry does not hold", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [
         {
           ...FROST_VOLLEY,
@@ -152,7 +160,7 @@ describe("an enemy ability", () => {
   });
 
   it("shares the spells' id space: one named as a spell is refused", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       spells: [
         ...contentRegistry.spells,
         makeSpellDef.build({
@@ -173,7 +181,7 @@ describe("an enemy ability", () => {
   });
 
   it("is refused when an archetype names one that does not exist", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [makeAbilityDef.build({ id: "frost_nova" })],
       enemies: [FROST_ARCHER],
     });
@@ -187,7 +195,7 @@ describe("an enemy ability", () => {
   it.each([0, 1, -0.5, 1.5, Number.NaN])(
     "is refused when an entry's health fraction is %s, outside the open range from 0 to 1",
     (fraction) => {
-      const registry = makeRegistry({
+      const registry = registryOf({
         abilities: [FROST_VOLLEY],
         enemies: [
           makeEnemyDef.build({
@@ -212,7 +220,7 @@ describe("an enemy ability", () => {
   it.each([0, -100, Number.POSITIVE_INFINITY])(
     "is refused when an entry's target distance is %s, not a distance greater than 0",
     (distance) => {
-      const registry = makeRegistry({
+      const registry = registryOf({
         abilities: [FROST_VOLLEY],
         enemies: [
           makeEnemyDef.build({
@@ -235,7 +243,7 @@ describe("an enemy ability", () => {
   );
 
   it("passes an entry of each condition kind whose number can be met", () => {
-    const registry = makeRegistry({
+    const registry = registryOf({
       abilities: [FROST_VOLLEY],
       enemies: [
         makeEnemyDef.build({

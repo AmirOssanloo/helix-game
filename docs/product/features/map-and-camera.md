@@ -25,7 +25,7 @@ The world is square and every distance is in world units. The body numbers apply
 
 ## The arena
 
-The one hand-authored map. It exists to test movement, spells, and enemies, not to be fun.
+The test map. It exists to test movement, spells, and enemies, not to be fun.
 
 | Property | Value |
 | --- | --- |
@@ -45,7 +45,7 @@ The playtest map: a long strip the hero walks from level 1 at the spawn to about
 | Size | 4000 by 24000 units, enclosed by walls. The road runs along the long axis, so on screen it runs diagonally, from upper right to lower left |
 | Regions | Five, each harder than the last and each adding archetypes the hero has not met, each closed by a boss-tier pack at a choke |
 | Chokes | A wall across the whole width between regions, with one opening that narrows along the road from 416 units to 224, open to every unit size |
-| Obstacles | About 150 rectangles: the choke walls, and blocks that break up each region's open ground |
+| Obstacles | 137 rectangles: two walls at each of the five chokes, and 127 blocks that break up each region's open ground |
 | Spawn point | One end of the road, the first checkpoint |
 | Checkpoints | Six in order along the road: the spawn, each region's entrance, and one before the last boss. A hero who dies comes back at the furthest one it has reached |
 | Enemies | Every pack dormant, waking as the hero nears and sleeping again once it is left behind, so the live count follows the hero |
