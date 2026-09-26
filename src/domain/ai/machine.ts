@@ -20,6 +20,11 @@ import {
   issueMove,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
+import {
+  DRAW_PURPOSE,
+  KEYED_DRAW_RANGE,
+  keyedDraw,
+} from "../random/keyed-draw";
 import { regenerate } from "../stats/regeneration";
 import { isCasting, selectAbility } from "./ability-selection";
 import type { MachineBehaviour } from "./behaviour";
@@ -32,11 +37,16 @@ import { resolveBehaviour } from "./behaviours/index";
  */
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
+/** The shortest halt as a share of the halt seconds: a halt lasts between half and all of them. */
+const SHORTEST_HALT_SHARE = 0.5;
+
 /** What the machine reads from the tuning table, filled once per tick. */
 type MachineTuning = {
   wanderRadius: number;
   wanderTicks: number;
   repathTicks: number;
+  haltChance: number;
+  haltTicks: number;
   holdMargin: number;
   epsilon: number;
 };
@@ -46,6 +56,8 @@ const tuning: MachineTuning = {
   wanderRadius: 0,
   wanderTicks: 0,
   repathTicks: 0,
+  haltChance: 0,
+  haltTicks: 0,
   holdMargin: 0,
   epsilon: 0,
 };
@@ -66,6 +78,8 @@ export const readMachineTuning = (world: World): void => {
   tuning.wanderRadius = readTunable(table, "wander_radius");
   tuning.wanderTicks = readTunable(table, "wander_interval");
   tuning.repathTicks = readTunable(table, "chase_repath_interval");
+  tuning.haltChance = readTunable(table, "chase_halt_chance");
+  tuning.haltTicks = readTunable(table, "chase_halt_seconds");
   tuning.holdMargin = readTunable(table, "ranged_hold_margin");
   tuning.epsilon = readTunable(table, "arrival_epsilon");
 };
@@ -96,11 +110,41 @@ const canSee = (hero: Readonly<Unit> | null): hero is Unit =>
 const isLost = (hero: Readonly<Unit> | null): hero is null =>
   hero === null || hero.state === "dead" || hero.disables.untargetable;
 
-/** Whether the unit stands further from its own spawn point than its leash reaches. */
+/** Whether the unit stands further from its leash anchor than its leash reaches. */
 const isPastLeash = (unit: Readonly<Unit>, record: UnitRecord): boolean => {
   const leash = record.def.leashRadius;
 
-  return distanceSquared(unit.curr, unit.spawnPoint) > leash * leash;
+  return distanceSquared(unit.curr, unit.ai.leashAnchor) > leash * leash;
+};
+
+/** The leash measured from the spawn point again. */
+const anchorAtHome = (unit: Unit): void => {
+  unit.ai.leashAnchor.x = unit.spawnPoint.x;
+  unit.ai.leashAnchor.y = unit.spawnPoint.y;
+};
+
+/**
+ * The leash measured from where the unit stands as a hit wakes it on its way home, brought
+ * onto the circle of its leash radius round the spawn point if it stands beyond it, so however
+ * often a returning unit is pulled again it follows no further than twice its leash from home.
+ */
+const anchorWhereWoken = (unit: Unit, record: UnitRecord): void => {
+  const leash = record.def.leashRadius;
+  const home = unit.spawnPoint;
+  const anchor = unit.ai.leashAnchor;
+  const away = distanceSquared(unit.curr, home);
+
+  anchor.x = unit.curr.x;
+  anchor.y = unit.curr.y;
+
+  if (away <= leash * leash) {
+    return;
+  }
+
+  const share = leash / Math.sqrt(away);
+
+  anchor.x = home.x + (unit.curr.x - home.x) * share;
+  anchor.y = home.y + (unit.curr.y - home.y) * share;
 };
 
 /**
@@ -127,29 +171,69 @@ const walkTo = (world: World, unit: Unit, x: number, y: number): void => {
   assert(result === "ok", "A living unit takes the walk its machine asks for");
 };
 
+/** Lets go of whatever order the unit holds, so it stands where it is. */
+const stand = (unit: Unit): void => {
+  if (unit.order.kind !== "none") {
+    const result = clearOrder(unit);
+
+    assert(result === "ok", "A living unit stops where it stands");
+  }
+};
+
+/**
+ * Whether a chasing unit that would walk halts instead, and if it does, the halt begun: with
+ * the halt chance, drawn on the unit's own id at this tick, it lets go of its order and stands
+ * for between half and all of the halt ticks, the length a second draw. A unit whose slot
+ * holds no id, or a halt chance or length of zero, never halts, and a draw writes nothing, so
+ * with either at zero the chase is exactly what it is without the halt.
+ */
+const startsHalt = (world: World, unit: Unit, index: number): boolean => {
+  const unitId = world.map.units.idAt(index);
+
+  if (
+    unitId === null ||
+    tuning.haltTicks <= 0 ||
+    keyedDraw(world, unitId, DRAW_PURPOSE.chaseHalt) >=
+      tuning.haltChance * KEYED_DRAW_RANGE
+  ) {
+    return false;
+  }
+
+  const shortest = Math.ceil(tuning.haltTicks * SHORTEST_HALT_SHARE);
+  const lengths = tuning.haltTicks - shortest + 1;
+  const drawn = keyedDraw(world, unitId, DRAW_PURPOSE.chaseHaltLength);
+
+  unit.ai.haltUntilTick =
+    world.tick + shortest + Math.floor((drawn * lengths) / KEYED_DRAW_RANGE);
+  stand(unit);
+
+  return true;
+};
+
 /**
  * Walks to where the behaviour wants to stand, the scratch point, resolved to somewhere the
  * unit may stand; a unit already there stops instead, letting go of whatever order it held, so
  * one that waits where it is neither asks for a path to its own feet nor walks at the hero
- * under an attack order.
+ * under an attack order. A chasing unit, `index` being its slot, may halt instead of walking;
+ * a unit backing away passes `null` and never does.
  */
-const standOrWalk = (world: World, unit: Unit): void => {
+const standOrWalk = (world: World, unit: Unit, index: number | null): void => {
   resolveDestinationFor(world, unit, standing.x, standing.y, destination);
 
   if (
     distanceSquared(destination, unit.curr) >
     tuning.epsilon * tuning.epsilon
   ) {
+    if (index !== null && startsHalt(world, unit, index)) {
+      return;
+    }
+
     walkTo(world, unit, destination.x, destination.y);
 
     return;
   }
 
-  if (unit.order.kind !== "none") {
-    const result = clearOrder(unit);
-
-    assert(result === "ok", "A living unit stops where it wants to stand");
-  }
+  stand(unit);
 };
 
 /** Into Return: the fight is dropped, whatever point was under way is cancelled, and the unit walks home. A projectile already fired flies on. */
@@ -160,11 +244,12 @@ const enterReturn = (world: World, unit: Unit): void => {
   walkTo(world, unit, unit.spawnPoint.x, unit.spawnPoint.y);
 };
 
-/** Into Idle at home: the wander is scheduled afresh from here, and anything that hit it on the way home is forgotten. */
+/** Into Idle at home: the wander is scheduled afresh from here, the leash is measured from the spawn point again, and anything that hit it as it arrived is forgotten. */
 const enterIdle = (unit: Unit): void => {
   unit.ai.state = "idle";
   unit.ai.provoked = false;
   unit.ai.wanderAtTick = null;
+  anchorAtHome(unit);
 };
 
 /** Into Attack: the unit takes the hero as its attack target, and the attack rule faces, swings, and fires exactly as it does for the hero's own attack. */
@@ -183,12 +268,14 @@ const enterAttack = (unit: Unit, heroId: EntityId): void => {
 /**
  * One tick of Chase: a lost hero, a hidden one, or a leash passed sends the unit home; a cast
  * of its own under way is left to run; an ability the selection rule takes is cast; a hero in
- * reach turns it to Attack; otherwise, at most once a re-path interval, it walks to where its
- * behaviour wants to stand, or to the hero's spawn point for a unit with no attack.
+ * reach turns it to Attack; a halted unit stands until its halt ends; otherwise, at most once
+ * a re-path interval, it walks to where its behaviour wants to stand, or to the hero's spawn
+ * point for a unit with no attack, or halts instead of walking. `index` is its slot.
  */
 const chase = (
   world: World,
   unit: Unit,
+  index: number,
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
@@ -222,26 +309,29 @@ const chase = (
     return;
   }
 
-  if (world.tick < unit.ai.repathAtTick) {
+  if (world.tick < unit.ai.haltUntilTick || world.tick < unit.ai.repathAtTick) {
     return;
   }
 
   unit.ai.repathAtTick = world.tick + tuning.repathTicks;
 
   if (swing === null) {
-    walkTo(world, unit, hero.spawnPoint.x, hero.spawnPoint.y);
+    if (!startsHalt(world, unit, index)) {
+      walkTo(world, unit, hero.spawnPoint.x, hero.spawnPoint.y);
+    }
 
     return;
   }
 
   behaviour.standAt(world, unit, hero, swing, tuning.holdMargin, standing);
-  standOrWalk(world, unit);
+  standOrWalk(world, unit, index);
 };
 
-/** Into Chase, with a path asked for on this tick rather than at the next re-path. */
+/** Into Chase, unhalted, with a path asked for on this tick rather than at the next re-path. */
 const enterChase = (
   world: World,
   unit: Unit,
+  index: number,
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
@@ -249,7 +339,8 @@ const enterChase = (
 ): void => {
   unit.ai.state = "chase";
   unit.ai.repathAtTick = world.tick;
-  chase(world, unit, record, behaviour, hero, heroId);
+  unit.ai.haltUntilTick = world.tick;
+  chase(world, unit, index, record, behaviour, hero, heroId);
 };
 
 /**
@@ -294,23 +385,46 @@ const backAway = (
 
   unit.ai.repathAtTick = world.tick + tuning.repathTicks;
   behaviour.standAt(world, unit, hero, record, tuning.holdMargin, standing);
-  standOrWalk(world, unit);
+  standOrWalk(world, unit, null);
 };
+
+/**
+ * Whether the unit is in a melee attack's backswing, which it neither walks nor casts out of,
+ * so a melee unit finishes its swing before it follows or casts. A ranged unit's backswing is
+ * not held, since leaving it is how a kiter backs away and casting in it is how a caster fights.
+ */
+const isInMeleeBackswing = (
+  unit: Readonly<Unit>,
+  swing: AttackRecord | null,
+): boolean =>
+  unit.state === "attack_backswing" && swing !== null && isMelee(swing);
+
+/**
+ * Whether the unit is inside a swing it may not walk out of: any attack point it has begun,
+ * and a melee attack's backswing, so a melee unit stands for the whole swing before it follows.
+ */
+const isMidSwing = (
+  unit: Readonly<Unit>,
+  swing: AttackRecord | null,
+): boolean => unit.state === "attack_windup" || isInMeleeBackswing(unit, swing);
 
 /**
  * One tick of Attack: a lost hero, a dead one included, or a leash passed sends the unit home,
  * cancelling the point under way. A hidden hero sends it home too, unless it is
  * adjacent, a melee attacker in reach, which swings on; an archer firing from range drops the
  * hero with the rest, and an arrow already in the air lands. A cast of its own under way is
- * left to run, and an ability the selection rule takes on a hero it can see is cast. In reach
+ * left to run, and an ability the selection rule takes on a hero it can see is cast, except in
+ * a melee backswing, which it casts from on the first tick after instead. In reach
  * it keeps the hero as its attack target, unless it kites, the hero has closed on it, and its
  * attack is on its clock, when it backs away and turns to fire again once the clock allows; an
  * attack point it has begun is never cut short for it. Out of reach it keeps an attack point it
- * has begun, and chases otherwise.
+ * has begun, and a melee unit its backswing too, and chases on the tick after; otherwise it
+ * chases at once.
  */
 const fight = (
   world: World,
   unit: Unit,
+  index: number,
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
@@ -338,6 +452,7 @@ const fight = (
 
   if (
     !hero.disables.aggroHidden &&
+    !isInMeleeBackswing(unit, swing) &&
     selectAbility(world, unit, record, hero, heroId)
   ) {
     return;
@@ -362,16 +477,18 @@ const fight = (
     return;
   }
 
-  if (unit.state === "attack_windup") {
+  if (isMidSwing(unit, swing)) {
     return;
   }
 
-  enterChase(world, unit, record, behaviour, hero, heroId);
+  enterChase(world, unit, index, record, behaviour, hero, heroId);
 };
 
 /**
- * Every idle member of the unit's pack that fights goes through Aggro into Chase on this
- * tick, whichever slot each holds, so a pack partly inside the aggro radius comes whole.
+ * Every idle or returning member of the unit's pack that fights goes through Aggro into Chase
+ * on this tick, whichever slot each holds, so a pack partly inside the aggro radius, or partly
+ * on its way home, comes whole. An idle member's leash is measured from its spawn point, and a
+ * returning one's from where it stands, as a hit would have woken it.
  */
 const alertPack = (
   world: World,
@@ -393,7 +510,7 @@ const alertPack = (
       member === null ||
       member === unit ||
       member.packId !== packId ||
-      member.ai.state !== "idle" ||
+      (member.ai.state !== "idle" && member.ai.state !== "return") ||
       member.state === "dead"
     ) {
       continue;
@@ -408,9 +525,15 @@ const alertPack = (
       continue;
     }
 
+    if (member.ai.state === "return") {
+      anchorWhereWoken(member, record);
+    } else {
+      anchorAtHome(member);
+    }
+
     member.ai.state = "aggro";
     member.ai.provoked = false;
-    enterChase(world, member, record, behaviour, hero, heroId);
+    enterChase(world, member, index, record, behaviour, hero, heroId);
   }
 };
 
@@ -489,9 +612,10 @@ const rest = (
     return;
   }
 
+  anchorAtHome(unit);
   unit.ai.state = "aggro";
   alertPack(world, unit, hero, heroId);
-  enterChase(world, unit, record, behaviour, hero, heroId);
+  enterChase(world, unit, index, record, behaviour, hero, heroId);
 };
 
 /**
@@ -538,14 +662,36 @@ const isBlockedAtHome = (world: World, unit: Readonly<Unit>): boolean => {
 };
 
 /**
- * One tick of Return: the unit regenerates at its definition's rates and walks home ignoring
- * the hero and whatever hits it. It idles on arriving, or where it stands when another unit
- * holds its spawn point and it has reached that unit. Every re-path interval it asks for its
- * path home again from where it stands, as a chase does, so a pack pushed off its waypoints at
- * a corridor's mouth finds its way in, and a walk a stun or a root took away is given back.
+ * One tick of Return: the unit walks home ignoring the hero, unless the hero hit it and it
+ * can see the hero, when it wakes: its leash is measured from where it stands, and it and its
+ * pack go through Aggro into Chase on this tick. Otherwise it regenerates at its definition's
+ * rates. It idles on arriving, or where it stands when another unit holds its spawn point and
+ * it has reached that unit. Every re-path interval it asks for its path home again from where
+ * it stands, as a chase does, so a pack pushed off its waypoints at a corridor's mouth finds
+ * its way in, and a walk a stun or a root took away is given back.
  */
-const goHome = (world: World, unit: Unit): void => {
+const goHome = (
+  world: World,
+  unit: Unit,
+  index: number,
+  record: UnitRecord,
+  behaviour: MachineBehaviour,
+  hero: Unit | null,
+  heroId: EntityId | null,
+): void => {
+  const provoked = unit.ai.provoked;
+
   unit.ai.provoked = false;
+
+  if (provoked && behaviour.engages && canSee(hero)) {
+    anchorWhereWoken(unit, record);
+    unit.ai.state = "aggro";
+    alertPack(world, unit, hero, heroId);
+    enterChase(world, unit, index, record, behaviour, hero, heroId);
+
+    return;
+  }
+
   regenerate(unit.resources, unit.stats);
 
   if (unit.order.kind === "move" && isBlockedAtHome(world, unit)) {
@@ -598,18 +744,18 @@ export const runMachine = (
     case "aggro":
     case "chase":
       unit.ai.provoked = false;
-      chase(world, unit, record, behaviour, hero, heroId);
+      chase(world, unit, index, record, behaviour, hero, heroId);
 
       return;
 
     case "attack":
       unit.ai.provoked = false;
-      fight(world, unit, record, behaviour, hero, heroId);
+      fight(world, unit, index, record, behaviour, hero, heroId);
 
       return;
 
     case "return":
-      goHome(world, unit);
+      goHome(world, unit, index, record, behaviour, hero, heroId);
 
       return;
 

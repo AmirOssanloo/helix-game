@@ -13,7 +13,14 @@ import {
   tickUntil,
 } from "../helpers";
 
+/** The hero's collision radius: how close its body comes to a wall. */
 const HULL = 27;
+
+/**
+ * The radius of the class the hero paths on, wider than its body: a click past a wall or the
+ * bounds stops the hero this far inside, where the class's layer is open.
+ */
+const PATHING_RADIUS = 32;
 
 /** A wall standing across x 1000 to 1200. */
 const WALL = { minX: 1000, minY: -1000, maxX: 1200, maxY: 1000 };
@@ -135,11 +142,11 @@ describe("map: click on an obstacle", () => {
 
     world.tick();
 
-    expect(hero.order.destination).toEqual({ x: 1000 - HULL, y: 0 });
+    expect(hero.order.destination).toEqual({ x: 1000 - PATHING_RADIUS, y: 0 });
 
     tickUntil(world, () => hero.state === "idle", 200);
 
-    expect(hero.curr).toEqual({ x: 1000 - HULL, y: 0 });
+    expect(hero.curr).toEqual({ x: 1000 - PATHING_RADIUS, y: 0 });
   });
 });
 
@@ -157,7 +164,10 @@ describe("map: click outside the map", () => {
 
     world.tick();
 
-    expect(hero.order.destination).toEqual({ x: 1000 - HULL, y: 300 });
+    expect(hero.order.destination).toEqual({
+      x: 1000 - PATHING_RADIUS,
+      y: 300,
+    });
   });
 });
 

@@ -52,9 +52,8 @@ const WALL_DRAG = 400;
 /** The index of the prepared entry slot D throws. */
 const FIRST_PREPARED = 0;
 
-/** The first orb level and the cap, which every case below is cast at. */
+/** The first orb level, which every case below is cast at. */
 const FIRST_LEVEL = 1;
-const CAP_LEVEL = 7;
 
 /** A hit the spec lands only to wake Hoarfrost's hook, pure so no armour reads it. */
 const NUDGE = 1;
@@ -68,27 +67,37 @@ const PATIENCE = 600;
 /** Glacier's slow at Quartz level one, as the fraction it takes off. */
 const GLACIER_SLOW_AT_FIRST = 0.2;
 
-/** Clarion at the cap: the magical damage its Quartz table gives, and what lands of it through the tank's 0.25. */
-const CLARION_AT_CAP = 280;
-const CLARION_ON_TANK_AT_CAP = 210;
+/** Clarion at the first level: the magical damage its Quartz table gives, and what lands of it through the tank's 0.25. */
+const CLARION_AT_FIRST = 40;
+const CLARION_ON_TANK_AT_FIRST = 30;
+
+/** A health no source below empties, so a target stands until the hit a case measures has landed. */
+const DEEP_HEALTH = 100000;
 
 /** How many of the spirit's shots the fight with a grunt waits for. */
 const SPIRIT_SHOTS = 3;
 
 /**
  * The content registry with each archetype driven by the stationary behaviour, so it stands on
- * its mark and never engages while the matrix lands hits on it. Health, armour, and magic
- * resistance are the archetype's own: those are what the matrix reads.
+ * its mark and never engages while the matrix lands hits on it, with a health no source
+ * empties, so a runner lives to take Bolide's burn after its roll. Armour and magic resistance
+ * are the archetype's own: those are what the matrix reads.
  */
 const heldStill = makeRegistry({
   enemies: contentRegistry.enemies.map((def) => ({
     ...def,
+    health: DEEP_HEALTH,
     behaviour: "stationary",
   })),
 });
 
-/** The content registry as it ships, with no wander, so an idle enemy stands on its mark. */
-const live = makeRegistry({ tuning: { wander_radius: 0 } });
+/**
+ * The content registry as it ships, with no wander, so an idle enemy stands on its mark, and
+ * no halt in a chase, so every member of a chasing pack walks through the wall.
+ */
+const live = makeRegistry({
+  tuning: { wander_radius: 0, chase_halt_chance: 0 },
+});
 
 type Arranged = Readonly<{
   world: Simulation;
@@ -458,7 +467,7 @@ const gap = (a: Readonly<Unit>, b: Readonly<Unit>): number =>
 
 describe("the damage types against live archetypes", () => {
   it("leaves the tank standing under the Clarion that kills the runner beside it", () => {
-    const { world, reader } = arrange(live, CAP_LEVEL);
+    const { world, reader } = arrange(live, FIRST_LEVEL);
     const runner = spawnEnemy(world, {
       definitionId: RUNNER,
       x: TARGET_AT.x,
@@ -477,8 +486,8 @@ describe("the damage types against live archetypes", () => {
 
     world.tick();
 
-    expect(onTank).toBeCloseTo(CLARION_ON_TANK_AT_CAP, PLACES);
-    expect(fastRunnerDef.health).toBeLessThan(CLARION_AT_CAP);
+    expect(onTank).toBeCloseTo(CLARION_ON_TANK_AT_FIRST, PLACES);
+    expect(fastRunnerDef.health).toBeLessThan(CLARION_AT_FIRST);
     expect(runner.state).toBe("dead");
     expect(tank.state).not.toBe("dead");
     expect(tank.resources.health).toBeGreaterThan(0);

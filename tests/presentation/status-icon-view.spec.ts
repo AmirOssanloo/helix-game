@@ -169,7 +169,7 @@ describe("the status icons above a unit", () => {
     }
 
     expect((first.x + second.x) / 2).toBeCloseTo(HERO_X);
-    expect(first.y).toBeLessThan(HERO_Y - arranged.hero.collisionRadius);
+    expect(first.y).toBeLessThan(HERO_Y - arranged.hero.boundRadius);
     expect(first.y).toBe(second.y);
     expect(first.scale).toBeGreaterThan(0);
   });
@@ -213,7 +213,7 @@ describe("the status icons above a unit", () => {
     // One icon is its scale times the frame's width across; the next starts past it.
     expect(second.x - first.x).toBeGreaterThan(first.scale * FRAME_WIDTH);
     expect((first.x + second.x) / 2).toBeCloseTo(grunt.curr.x);
-    expect(first.y).toBeLessThan(GRUNT_Y - grunt.collisionRadius);
+    expect(first.y).toBeLessThan(GRUNT_Y - grunt.boundRadius);
   });
 
   it("put every icon at the floating-text band", () => {
@@ -326,7 +326,7 @@ describe("the status icons in the isometric view", () => {
       expect(second.x).toBeGreaterThan(first.x);
       expect((first.x + second.x) / 2).toBeCloseTo(drawn.x);
       expect(first.y).toBeLessThan(
-        drawn.y - projection.riseOf(arranged.hero.collisionRadius),
+        drawn.y - projection.riseOf(arranged.hero.boundRadius),
       );
       rises.push(first.y - drawn.y);
     }

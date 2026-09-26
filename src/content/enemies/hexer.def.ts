@@ -9,21 +9,21 @@ import type { EnemyDef } from "@domain/public";
  */
 export const hexerDef = {
   id: "hexer",
-  health: 260, // tunable
-  healthRegen: 0.5, // tunable
+  health: 65, // tunable
+  healthRegen: 0.1, // tunable
   mana: 400, // tunable
   manaRegen: 1, // tunable
   armour: 0, // tunable
   magicResistance: 0.35, // tunable
-  movementSpeed: 250, // tunable
+  movementSpeed: 210, // tunable
   turnRate: 0.6, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 14, // tunable
+    damage: 30, // tunable
     range: 450, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.5, // tunable

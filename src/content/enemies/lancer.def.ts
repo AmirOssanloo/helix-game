@@ -2,7 +2,7 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The lancer: a melee enemy that charges across the gap to the hero, so distance is not safety. The
- * hero's body, slower than the hero on foot, a medium swing a little longer than a grunt's. It
+ * hero's size, slower than the hero on foot, a medium swing a little longer than a grunt's. It
  * waits at range while its charge is on its clock and closes to swing on a hero that comes
  * inside that range. Once the charge is ready it closes, the charge carrying it the last of the
  * way. An elite also slams beside the hero; a boss throws a net first, then slams. Every
@@ -10,21 +10,21 @@ import type { EnemyDef } from "@domain/public";
  */
 export const lancerDef = {
   id: "lancer",
-  health: 450, // tunable
-  healthRegen: 1, // tunable
+  health: 55, // tunable
+  healthRegen: 0.1, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 3, // tunable
   magicResistance: 0,
-  movementSpeed: 250, // tunable
+  movementSpeed: 225, // tunable
   turnRate: 0.5, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 24, // tunable
+    damage: 38, // tunable
     range: 120, // tunable
     acquireRadius: 750, // tunable
     pointSeconds: 0.4, // tunable

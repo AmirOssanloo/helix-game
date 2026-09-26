@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ContentTuningCommand, ContentTuningKey } from "@content/public";
-import { arenaDef, contentRegistry, meleeGruntDef } from "@content/public";
+import {
+  arenaDef,
+  contentRegistry,
+  meleeGruntDef,
+  tuningTable,
+} from "@content/public";
 import type { SetTuningCommand, SpawnPackCommand, Unit } from "@domain/public";
 import { definitionFields, readTunable, TUNING_KEYS } from "@domain/public";
 import type { EntityId } from "@shared/public";
@@ -17,6 +22,7 @@ import {
 import {
   makeRegistry,
   makeWorld,
+  spawnEnemy,
   spawnHero,
   spawnUnit,
   submit,
@@ -79,6 +85,99 @@ describe("set_tuning", () => {
 
     expect(readTunable(world.view.run.tuning, "base_ms")).toBeCloseTo(280 / 30);
   });
+});
+
+describe("set_tuning on a chase's halt", () => {
+  /** A grunt east of the hero, chasing it at a halt chance of 0, and the hero walking away west. */
+  const chasing = (): Readonly<{ world: Simulation; grunt: Unit }> => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        tuning: { wander_radius: 0, chase_halt_chance: 0 },
+      }),
+    });
+
+    spawnHero(world);
+
+    const grunt = spawnEnemy(world, {
+      definitionId: meleeGruntDef.id,
+      x: 600,
+      y: 0,
+    });
+
+    submit(world, {
+      kind: "move",
+      tick: 0,
+      timestamp: 0,
+      destination: { x: -5000, y: 0 },
+    });
+    tickUntil(world, () => grunt.ai.state === "chase", 10);
+
+    return { world, grunt };
+  };
+
+  it("halts a chasing unit at its next re-path once the chance is raised, and lands in the log", () => {
+    const { world, grunt } = chasing();
+    const command: SetTuningCommand = {
+      kind: "set_tuning",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      key: "chase_halt_chance",
+      value: 1,
+    };
+
+    submit(world, command);
+    world.tick();
+
+    expect(readTunable(world.view.run.tuning, "chase_halt_chance")).toBe(1);
+    expect(world.log.commandAt(world.log.count - 1)).toBe(command);
+
+    const repath = tuningTable.chase_repath_interval * tuningTable.sim_hz + 1;
+
+    tickUntil(world, () => grunt.order.kind === "none", repath);
+
+    expect(grunt.ai.state).toBe("chase");
+    expect(grunt.ai.haltUntilTick).toBeGreaterThan(world.view.tick);
+  });
+
+  it("converts the halt seconds into ticks on the tick that consumes it", () => {
+    const { world } = chasing();
+
+    submit(world, {
+      kind: "set_tuning",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      key: "chase_halt_seconds",
+      value: 2,
+    });
+    world.tick();
+
+    expect(readTunable(world.view.run.tuning, "chase_halt_seconds")).toBe(
+      2 * tuningTable.sim_hz,
+    );
+  });
+});
+
+describe("set_tuning on a tier's damage", () => {
+  it.each(["elite_damage_multiplier", "boss_damage_multiplier"] as const)(
+    "retunes %s as written and lands in the log",
+    (key) => {
+      const world = makeWorld({ seed: 1 });
+      const command: SetTuningCommand = {
+        kind: "set_tuning",
+        tick: 0,
+        timestamp: 0,
+        key,
+        value: 1.5,
+      };
+
+      submit(world, command);
+      world.tick();
+
+      expect(readTunable(world.view.run.tuning, key)).toBe(1.5);
+      expect(world.log.commandAt(world.log.count - 1)).toBe(command);
+    },
+  );
 });
 
 /** The spell, the archetype, and the level-one table index the definition keys below name. */

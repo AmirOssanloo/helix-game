@@ -70,7 +70,7 @@ const alphaOf = (kind: UnitKind): number =>
   kind === "summon" ? SUMMON_ALPHA : OPAQUE;
 
 /**
- * One unit on screen: a body quad at the collision radius, and a triangle over it pointing
+ * One unit on screen: a body quad at the bound radius, and a triangle over it pointing
  * where the unit faces. Binding sets what the unit's definition decides once, its frame and
  * colour, with the depth; the hero is a white disc and a body with no definition a square; the sync writes the seven fields from the entity every frame, the position
  * interpolated from the previous tick's by the driver's fraction, so a view bound this
@@ -136,7 +136,7 @@ export class UnitView {
   sync(unit: DeepReadonly<Unit>, alpha: number, flashing: boolean): void {
     const x = interpolate(unit.prev.x, unit.curr.x, alpha);
     const y = interpolate(unit.prev.y, unit.curr.y, alpha);
-    const diameter = unit.collisionRadius * DIAMETERS_PER_RADIUS;
+    const diameter = unit.boundRadius * DIAMETERS_PER_RADIUS;
 
     this.body.x = x;
     this.body.y = y;
@@ -302,7 +302,7 @@ export class OutlineView {
 
   sync(unit: DeepReadonly<Unit>, alpha: number): void {
     const width =
-      unit.collisionRadius * DIAMETERS_PER_RADIUS * outlineShareOf(unit.tier);
+      unit.boundRadius * DIAMETERS_PER_RADIUS * outlineShareOf(unit.tier);
 
     this.quad.x = interpolate(unit.prev.x, unit.curr.x, alpha);
     this.quad.y = interpolate(unit.prev.y, unit.curr.y, alpha);

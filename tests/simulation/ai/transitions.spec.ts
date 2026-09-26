@@ -32,6 +32,9 @@ const HEALTH_REGEN = 3;
 /** The melee enemy's reach, centre to centre before both bound radii. */
 const MELEE_RANGE = 100;
 
+/** The melee enemy's backswing in ticks: the attack factory's 0.3 seconds at 30 Hz. */
+const CHASER_BACKSWING_TICKS = 9;
+
 /** The ranged enemy's reach, well inside the aggro radius so it has somewhere to hold. */
 const RANGED_RANGE = 300;
 
@@ -166,7 +169,10 @@ const FIGHTERS = [
 
 type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
 
-/** A world with the enemies and the two statuses, the hero at the origin, and no wander unless a case asks for one. */
+/**
+ * A world with the enemies and the two statuses, the hero at the origin, no wander unless a
+ * case asks for one, and no halt in a chase, so a unit that stops has reached where it stands.
+ */
 const arrange = (wanderRadius = 0): Arranged => {
   const world = makeWorld({
     seed: 1,
@@ -181,7 +187,7 @@ const arrange = (wanderRadius = 0): Arranged => {
         STANDER,
       ],
       statuses: [...contentRegistry.statuses, HIDDEN, UNTOUCHABLE],
-      tuning: { wander_radius: wanderRadius },
+      tuning: { wander_radius: wanderRadius, chase_halt_chance: 0 },
     }),
   });
   const hero = spawnHero(world);
@@ -434,7 +440,7 @@ describe.each(FIGHTERS)(
     });
 
     describe("Attack", () => {
-      it("chases again when the hero walks out of its reach", () => {
+      it("chases again when the hero walks out of its reach during a swing", () => {
         const { world } = arrange();
         const enemy = spawnEnemy(world, {
           definitionId: def.id,
@@ -442,7 +448,7 @@ describe.each(FIGHTERS)(
           y: 0,
         });
 
-        tickUntil(world, () => enemy.ai.state === "attack", PATIENCE);
+        tickUntil(world, () => enemy.state === "attack_windup", PATIENCE);
         walkHero(world, -LEASH_RADIUS / 2, 0);
         tickUntil(world, () => enemy.ai.state === "chase", PATIENCE);
 
@@ -459,6 +465,7 @@ describe.each(FIGHTERS)(
 
         tickUntil(world, () => enemy.state === "attack_windup", PATIENCE);
         enemy.spawnPoint.x = 3 * LEASH_RADIUS;
+        enemy.ai.leashAnchor.x = 3 * LEASH_RADIUS;
         world.tick();
 
         expect([
@@ -563,7 +570,82 @@ describe.each(FIGHTERS)(
         expect(fromHome(enemy)).toBeLessThanOrEqual(enemy.collisionRadius);
       });
 
-      it("ignores a hit from the hero on the way home", () => {
+      it("chases the hero on the tick after a hit on the way home, and brings its returning and idle pack with it", () => {
+        const { world, heroId } = arrange();
+        const members = [AGGRO_RADIUS - 50, AGGRO_RADIUS].map((x) =>
+          spawnEnemy(world, { definitionId: def.id, x, y: 0, packId: PACK }),
+        );
+        const [struck] = members;
+
+        if (struck === undefined) {
+          throw new Error("The case spawned a pack");
+        }
+
+        world.tick();
+        walkHero(world, -3 * LEASH_RADIUS, 0);
+        tickUntil(
+          world,
+          () => members.every((member) => member.ai.state === "return"),
+          PATIENCE,
+        );
+
+        const resting = spawnEnemy(world, {
+          definitionId: def.id,
+          x: 3 * LEASH_RADIUS,
+          y: 0,
+          packId: PACK,
+        });
+
+        world.tick();
+        hit(world, struck, heroId);
+        world.tick();
+
+        expect([...members, resting].map((unit) => unit.ai.state)).toEqual([
+          "chase",
+          "chase",
+          "chase",
+        ]);
+      });
+
+      it("stays in the fight with the hero just beyond its old leash, never turning home between", () => {
+        const { world, heroId } = arrange();
+        const reach = range + HERO_BOUND + ENEMY_BOUND;
+        const enemy = spawnEnemy(world, {
+          definitionId: def.id,
+          x: LEASH_RADIUS + reach + 60,
+          y: 0,
+        });
+
+        hit(world, enemy, heroId);
+        tickUntil(world, () => enemy.ai.state === "return", PATIENCE);
+
+        for (let tick = 0; tick < 5; tick += 1) {
+          world.tick();
+        }
+
+        hit(world, enemy, heroId);
+
+        const states = new Set<string>();
+
+        for (let tick = 0; tick < SETTLE; tick += 1) {
+          world.tick();
+          states.add(enemy.ai.state);
+        }
+
+        expect(states.has("return")).toBe(false);
+        expect(states.has("chase") || states.has("attack")).toBe(true);
+      });
+
+      it("stays on its way home after a hit from nobody", () => {
+        const { world, enemy } = leashed();
+
+        applyDamage(world.state, unitIdOf(world, enemy), 1, "pure", null);
+        world.tick();
+
+        expect(enemy.ai.state).toBe("return");
+      });
+
+      it("stays on its way home after a hit while the hero is hidden", () => {
         const { world, enemy } = leashed();
         const heroId = world.state.run.heroId;
 
@@ -571,10 +653,78 @@ describe.each(FIGHTERS)(
           throw new Error("The hero is live");
         }
 
+        statusHero(world, HIDDEN.id);
+        world.tick();
         hit(world, enemy, heroId);
         world.tick();
 
         expect(enemy.ai.state).toBe("return");
+      });
+
+      it("stays on its way home after a hit while the hero is dead", () => {
+        const { world, enemy } = leashed();
+        const heroId = world.state.run.heroId;
+        const hero =
+          heroId === null ? null : world.state.map.units.resolve(heroId);
+
+        if (heroId === null || hero === null) {
+          throw new Error("The hero is live");
+        }
+
+        killHero(world);
+        world.tick();
+
+        expect(hero.state).toBe("dead");
+
+        hit(world, enemy, heroId);
+        world.tick();
+
+        expect(enemy.ai.state).toBe("return");
+      });
+
+      it("pulled home again and again, anchors its leash no further than the leash from its spawn point", () => {
+        const { world, enemy } = leashed();
+        const heroId = world.state.run.heroId;
+
+        if (heroId === null) {
+          throw new Error("The hero is live");
+        }
+
+        let wakes = 0;
+        let returningFor = 0;
+        let furthestAnchor = 0;
+        let furthest = 0;
+
+        for (let tick = 0; tick < PATIENCE; tick += 1) {
+          const wasReturning = enemy.ai.state === "return";
+
+          returningFor = wasReturning ? returningFor + 1 : 0;
+
+          if (returningFor % 5 === 0 && wasReturning) {
+            hit(world, enemy, heroId);
+          }
+
+          world.tick();
+
+          if (wasReturning && enemy.ai.state !== "return") {
+            wakes += 1;
+          }
+
+          const anchor = enemy.ai.leashAnchor;
+
+          furthestAnchor = Math.max(
+            furthestAnchor,
+            Math.hypot(
+              anchor.x - enemy.spawnPoint.x,
+              anchor.y - enemy.spawnPoint.y,
+            ),
+          );
+          furthest = Math.max(furthest, fromHome(enemy));
+        }
+
+        expect(wakes).toBeGreaterThan(2);
+        expect(furthestAnchor).toBeLessThanOrEqual(LEASH_RADIUS + EPSILON);
+        expect(furthest).toBeLessThanOrEqual(2 * LEASH_RADIUS + ENEMY_BOUND);
       });
 
       it("rests beside a unit standing on its spawn point", () => {
@@ -636,6 +786,23 @@ describe("the machine under melee_chaser", () => {
     }
 
     expect([enemy.ai.state, enemy.order.targetId]).toEqual(["attack", heroId]);
+  });
+
+  it("stands through its backswing when the hero walks out of its reach, and chases on the tick after it ends", () => {
+    const { world } = arrange();
+    const enemy = spawnEnemy(world, {
+      definitionId: CHASER.id,
+      x: AGGRO_RADIUS - 50,
+      y: 0,
+    });
+
+    tickUntil(world, () => enemy.state === "attack_windup", PATIENCE);
+    walkHero(world, -LEASH_RADIUS / 2, 0);
+    tickUntil(world, () => enemy.state === "attack_backswing", PATIENCE);
+
+    const ticks = tickUntil(world, () => enemy.ai.state === "chase", PATIENCE);
+
+    expect(ticks).toBe(CHASER_BACKSWING_TICKS + 1);
   });
 
   it("closes to contact with a hero standing still", () => {

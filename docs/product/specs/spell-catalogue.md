@@ -368,7 +368,7 @@ A status definition says what the status does; the applier says how long. A spel
 | `disarm` | Clarion, the panel | disarmed | none | none | Refresh | `icon_disarm` |
 | `knockback` | Clarion's push, the panel | displaced | none | none | Ignore | `icon_knockback` |
 
-Damage per second is taken from health every tick, magical, credited to the unit that applied the status. A status may instead restore a rate of health per second every tick, never past the maximum and never to a holder at zero, announcing nothing and crediting nobody; no hero spell applies one, and an enemy's `self_heal` does, 40 a second. The other four generic definitions, `silence`, `root`, `slow`, and `lift`, exist for the panel and for enemy abilities with flat tables; no hero spell applies them. `lift` sets the same flags as `updraft_lift` and has no expiry list.
+Damage per second is taken from health every tick, magical, credited to the unit that applied the status. A status may instead restore a rate of health per second every tick, never past the maximum and never to a holder at zero, announcing nothing and crediting nobody; no hero spell applies one, and an enemy's `self_heal` does, 10 a second. The other four generic definitions, `silence`, `root`, `slow`, and `lift`, exist for the panel and for enemy abilities with flat tables; no hero spell applies them. `lift` sets the same flags as `updraft_lift` and has no expiry list.
 
 ---
 
@@ -475,25 +475,25 @@ A projectile fired by a spell, a pull, a damage-dealt hook, a silence, a root, a
 
 ## 8. What the spells do to a pack
 
-What the entries above do to a pack of five grunts, the baseline archetype, measured in a session recorded with the developer panel and kept as an input log, `tests/simulation/replays/balance-spells.json`, which `tests/simulation/replays/balance.spec.ts` replays and checks. A log is valid only on the content version it was recorded on, so a change to any number here means recording it again and moving this section with it. The enemy catalogue holds [the other two sessions](./enemy-catalogue.md#5-what-the-numbers-do-in-a-fight).
+What the entries above do to a pack of five grunts, the baseline archetype, measured in a session kept as an input log, `tests/simulation/replays/balance-spells.json`, played by the driver in `tests/helpers/recording/balance-sessions.ts`, which sends only what the panel and a player send, and replayed and checked by `tests/simulation/replays/balance.spec.ts`. A log is valid only on the content version it was recorded on, so a change to any number here means recording it again and moving this section with it. The enemy catalogue holds [the other two sessions](./enemy-catalogue.md#5-what-the-numbers-do-in-a-fight).
 
-Each spell is thrown once, at every orb level 1, 4, and 7 with the hero at level 3, 12, and 21, under the panel's infinite mana and no cooldowns, at the pack's centre a second and a half after it engaged the hero. The table is the damage the pack took in the eight seconds after the throw, of its 2000 health. For Hoarfrost, Emberling, and Quicken the hero attacks through the eight seconds, the frosted grunt for Hoarfrost, so the number holds the attack; for the rest the hero stands and does nothing else.
+Each spell is thrown once, at every orb level 1, 4, and 7, with the hero levelled to 3, 12, and 21 before each level's fights, under the panel's infinite mana and no cooldowns, at the pack's centre a second and a half after it spawned, and at the grunt nearest the centre for Hoarfrost. The table is the damage the pack took in the eight seconds after the throw, every hit counted in full, the one that kills included, so a number past the pack's 475 health is overkill; and how many of the five died. For Hoarfrost, Emberling, and Quicken the hero attacks through the eight seconds once the throw commits, the frosted grunt for Hoarfrost, so the number holds the attack; for the rest the hero stands and does nothing else. Kills inside a level's fights may carry the hero a level on, as they carry it to 13 before Quicken at orb 4.
 
 | Spell | Orb 1 | Orb 4 | Orb 7 | Reads |
 |---|---|---|---|---|
-| Hoarfrost, with the attack | 241 | 353 | 543 | Kills one grunt at 7 |
-| Glacier | 61 | 443 | 773 | Weak at 1, where a segment lasts 3 s and burns 6 a second |
+| Hoarfrost, with the attack | 129, one dead | 139, one dead | 187, one dead | The frosted grunt dies at every level |
+| Glacier | 24, none | 106, none | 256, none | Weak at 1, where a segment lasts 3 s and burns 6 a second |
 | Siphon | 0 | 0 | 0 | A grunt carries no mana |
-| Siphon, at five archers | 250 | 813 | 1375 | The whole burn at every level: 50, 162.5, and 275 each |
-| Updraft | 350 | 800 | 1250 | The drop on every one of the five |
-| Zenith | 100 | 287 | 475 | Its split leaves it the least against a pack; one grunt in the circle takes it all |
-| Bolide | 303 | 757 | 1211 | The meteor lands on the pack, rolls through it, and leaves the burn |
-| Clarion | 200 | 800 | 1400 | The blast on every one of the five, and the most of any at 4 and 7 |
-| Emberling, with the attack | 375 | 632 | 964 | Kills one grunt at 4 and two at 7 |
-| Quicken, with the attack | 356 | 729 | 1181 | Kills one grunt at 4 and two at 7 |
+| Siphon, at five archers | 250, none | 813, all five | 1375, all five | The whole burn at every level: 50, 162.5, and 275 each |
+| Updraft | 350, none | 800, all five | 1250, all five | The drop on every one of the five |
+| Zenith | 100, none | 287, one dead | 475, three dead | Its split leaves it the least against a pack; one grunt in the circle takes it all |
+| Bolide | 149, none | 448, three dead | 480, all five | The meteor lands on the pack, rolls through it, and leaves the burn |
+| Clarion | 200, none | 800, all five | 1400, all five | The blast on every one of the five |
+| Emberling, with the attack | 375, three dead | 586, all five | 741, all five | The spirit and the attack together |
+| Quicken, with the attack | 305, three dead | 729, four dead | 656, all five | The pack dies sooner at 7, so it takes less in all |
 | Wane | 0 | 0 | 0 | It hides and slows; it deals nothing |
 
-Every damaging spell deals more at each level than at the one before, and none alone kills a grunt at orb level 1. The hero never falls, healed by the panel each second.
+Every damaging spell does more at each level than at the one before: it kills more of the pack, or as many and deals more. No spell thrown alone kills a grunt at orb level 1; with the attack beside it, Hoarfrost kills one and Emberling and Quicken three. From orb level 4 Updraft, Clarion, and Emberling clear the pack, since a grunt dies to three of the hero's attacks. The hero never falls, healed by the panel each second.
 
 ---
 

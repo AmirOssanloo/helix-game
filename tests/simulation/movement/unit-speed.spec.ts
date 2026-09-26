@@ -48,12 +48,15 @@ const slowedDef = makeEnemyDef.build({
   behaviour: "melee_chaser",
 });
 
-/** The content registry with the two test archetypes beside it, and no wander, so an enemy at rest stands still. */
+/**
+ * The content registry with the two test archetypes beside it, no wander, so an enemy at rest
+ * stands still, and no halt in a chase, so a chasing enemy walks every tick it is measured.
+ */
 const makeArena = (tuning: Readonly<Record<string, number>> = {}): Simulation =>
   makeWorld({
     seed: 1,
     registry: makeRegistry({
-      tuning: { wander_radius: 0, ...tuning },
+      tuning: { wander_radius: 0, chase_halt_chance: 0, ...tuning },
       enemies: [...contentRegistry.enemies, crawlerDef, slowedDef],
     }),
   });
@@ -276,7 +279,7 @@ describe("a pack of different speeds", () => {
 
   it.each([
     ["gains on a grunt by the difference in speed", meleeGruntDef],
-    ["loses ground to a runner by the difference in speed", fastRunnerDef],
+    ["gains on a runner by the difference in speed", fastRunnerDef],
   ])("the hero walking away %s", (_, def) => {
     const world = makeArena();
     const hero = spawnHero(world, { facing: 0 });

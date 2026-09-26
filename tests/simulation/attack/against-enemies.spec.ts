@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { meleeGruntDef } from "@content/public";
+import { contentRegistry, meleeGruntDef } from "@content/public";
 import type { Unit } from "@domain/public";
 import { applyDamage, applyStatus } from "@domain/public";
 import type { EntityId } from "@shared/public";
@@ -34,11 +34,37 @@ const LETHAL = 100000;
 /** Long enough for the walk, the grunt's approach, and a few shots. */
 const PATIENCE = 600;
 
+/** Hits the hero lands on a grunt that is swinging back at it. */
+const HITS_WHILE_FIGHTING = 3;
+
 /** The content registry with no wander, so an idle grunt stands on its mark. */
 const arrange = (): Readonly<{ world: Simulation; hero: Unit }> => {
   const world = makeWorld({
     seed: 1,
     registry: makeRegistry({ tuning: { wander_radius: 0 } }),
+  });
+
+  return { world, hero: spawnHero(world) };
+};
+
+/**
+ * A grunt's health for the fight that lasts until it fights back: the hero's attack kills a
+ * content grunt before it closes, so this one outlasts the walk in and the hits after it.
+ */
+const HARDY_GRUNT_HEALTH = 1000;
+
+/** As `arrange`, with a grunt that outlasts three of the hero's hits and its own walk in. */
+const arrangeHardy = (): Readonly<{ world: Simulation; hero: Unit }> => {
+  const world = makeWorld({
+    seed: 1,
+    registry: makeRegistry({
+      tuning: { wander_radius: 0 },
+      enemies: contentRegistry.enemies.map((def) =>
+        def.id === meleeGruntDef.id
+          ? { ...def, health: HARDY_GRUNT_HEALTH }
+          : def,
+      ),
+    }),
   });
 
   return { world, hero: spawnHero(world) };
@@ -171,7 +197,7 @@ describe("an attack on a grunt", () => {
   });
 
   it("keeps hitting it as it fights back", () => {
-    const { world, hero } = arrange();
+    const { world, hero } = arrangeHardy();
     const reader = createEventReader();
 
     spawnGrunts(world, 1, GRUNT_AT);
@@ -182,12 +208,14 @@ describe("an attack on a grunt", () => {
     let hits = 0;
 
     attack(world, gruntId);
+    tickUntil(world, () => grunt.ai.state === "attack", PATIENCE);
+    hitsOn(world, reader, heroId, gruntId);
     tickUntil(
       world,
       () => {
         hits += hitsOn(world, reader, heroId, gruntId);
 
-        return hits >= 3;
+        return hits >= HITS_WHILE_FIGHTING;
       },
       PATIENCE,
     );

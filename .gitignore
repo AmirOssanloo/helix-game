@@ -63,3 +63,6 @@ reference-*
 # Vite transpiles vite.config.ts to a sibling .mjs and normally unlinks it;
 # an interrupted run leaves it behind, where a bare `eslint` run then lints it.
 vite.config.ts.timestamp-*
+
+# Raw playtest downloads. A session worth keeping is copied under tests/simulation/replays/
+input-logs/

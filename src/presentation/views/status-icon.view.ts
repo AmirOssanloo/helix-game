@@ -100,7 +100,7 @@ export class StatusIconView {
     const x = drawn.x;
     const y =
       drawn.y -
-      this.placement.riseOf(unit.collisionRadius) -
+      this.placement.riseOf(unit.boundRadius) -
       ICON_MARGIN -
       ICON_SIZE * HALF;
     const spacing = ICON_SIZE + ICON_GAP;

@@ -65,6 +65,23 @@ const healthMultiplierOf = (world: World, tier: EnemyTier): number => {
   }
 };
 
+/**
+ * What `tier` multiplies an archetype's attack damage by: nothing for a normal unit, and the
+ * elite or the boss tunable otherwise. Read at spawn and held on the unit, as the health one is.
+ */
+const damageMultiplierOf = (world: World, tier: EnemyTier): number => {
+  switch (tier) {
+    case "normal":
+      return 1;
+
+    case "elite":
+      return readTunable(world.run.tuning, "elite_damage_multiplier");
+
+    case "boss":
+      return readTunable(world.run.tuning, "boss_damage_multiplier");
+  }
+};
+
 /** Scratch for the point the pack's centre resolves to. */
 const landing: Vec2 = { x: 0, y: 0 };
 
@@ -222,6 +239,7 @@ export const placePack = (
 
   const packId = world.map.nextPackId;
   const healthMultiplier = healthMultiplierOf(world, tier);
+  const damageMultiplier = damageMultiplierOf(world, tier);
 
   world.map.nextPackId += 1;
 
@@ -240,6 +258,7 @@ export const placePack = (
     );
     wearDefinition(unit, record);
     unit.tier = tier;
+    unit.attackDamageMultiplier = damageMultiplier;
     fillFromDefinition(unit, record, healthMultiplier);
     unit.packId = packId;
     applyLifetimeStatuses(world, id, record);

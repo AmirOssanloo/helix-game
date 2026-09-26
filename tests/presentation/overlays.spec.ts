@@ -98,12 +98,12 @@ const FAR_OUTSIDE = 5000;
 const WAITING_AREA_ALPHA = 0.3;
 const ACTIVE_AREA_ALPHA = 0.8;
 
-/** Where a grunt the ranges cases spawn stands, where its home is moved to, and how far off one the labels case spawns stands. */
+/** Where a grunt the ranges cases spawn stands, where its leash anchor is moved to, and how far off one the labels case spawns stands. */
 const GRUNT_X = -150;
 const GRUNT_HOME_X = -400;
 const GRUNT_FAR_X = 1000;
 
-/** Far enough past any leash that a grunt whose home moves this far is past its own. */
+/** Far enough past any leash that a grunt whose leash anchor moves this far is past its own. */
 const BEYOND_LEASH = 4000;
 
 /** How long a labels case waits for a state before it fails with a count. */
@@ -381,7 +381,7 @@ describe("the debug overlays", () => {
     expect(diameters[1]).toBeCloseTo(attack.acquireRadius);
   });
 
-  it("ring each enemy's aggro radius around it and its leash radius around its spawn point, and nothing for a zero radius", () => {
+  it("ring each enemy's aggro radius around it and its leash radius around its leash anchor, and nothing for a zero radius", () => {
     const arranged = arrange();
     const grunt = spawnEnemy(arranged.world, {
       definitionId: "melee_grunt",
@@ -394,7 +394,7 @@ describe("the debug overlays", () => {
       y: GRUNT_X,
     });
 
-    grunt.spawnPoint.x = GRUNT_HOME_X;
+    grunt.ai.leashAnchor.x = GRUNT_HOME_X;
     arranged.hash.ids = [
       unitIdOf(arranged.world, grunt),
       unitIdOf(arranged.world, dummy),
@@ -442,7 +442,7 @@ describe("the debug overlays", () => {
     record();
     tickUntil(arranged.world, () => grunt.ai.state === "attack", MAX_TICKS);
     record();
-    grunt.spawnPoint.x = grunt.curr.x + BEYOND_LEASH;
+    grunt.ai.leashAnchor.x = grunt.curr.x + BEYOND_LEASH;
     tickUntil(arranged.world, () => grunt.ai.state === "return", MAX_TICKS);
     record();
 
@@ -553,7 +553,7 @@ describe("the debug labels in the isometric view", () => {
       projection.toScreen(dummy.prev.x, dummy.prev.y, drawn);
       expect(label.x).toBeCloseTo(drawn.x);
       expect(label.y).toBeLessThan(
-        drawn.y - projection.riseOf(dummy.collisionRadius),
+        drawn.y - projection.riseOf(dummy.boundRadius),
       );
 
       return label.y - drawn.y;

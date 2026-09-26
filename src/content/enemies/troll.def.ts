@@ -2,27 +2,27 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The troll: a hardy melee enemy that heals itself once it is below half its health, so it has to
- * be finished, not worn down. The hero's body, slower than the hero, high regeneration. An elite
+ * be finished, not worn down. The hero's body, slower than the hero, the highest regeneration. An elite
  * also slams beside the hero; a boss slams and charges. Every number is a starting value design
  * retunes here.
  */
 export const trollDef = {
   id: "troll",
-  health: 650, // tunable
-  healthRegen: 3, // tunable
+  health: 125, // tunable
+  healthRegen: 0.6, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 3, // tunable
   magicResistance: 0.1, // tunable
-  movementSpeed: 235, // tunable
+  movementSpeed: 225, // tunable
   turnRate: 0.45, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 26, // tunable
+    damage: 64, // tunable
     range: 100, // tunable
     acquireRadius: 650, // tunable
     pointSeconds: 0.5, // tunable

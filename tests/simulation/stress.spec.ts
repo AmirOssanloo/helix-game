@@ -825,6 +825,15 @@ describe("stress", () => {
 
     expect(world.view.map.units.count).toBe(ENEMY_LIVE_CAP + 1);
 
+    // No halts: a timing budget measures the worst case, a halted enemy costs less per tick than a walking one, and halts are covered by chase-halts.spec.ts.
+    submit(world, {
+      kind: "set_tuning",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      key: "chase_halt_chance",
+      value: 0,
+    });
+
     for (let tick = 0; tick < CHASE_WARM_UP_TICKS; tick += 1) {
       drive(chase, leg);
       world.tick();

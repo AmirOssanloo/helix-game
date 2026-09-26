@@ -141,8 +141,11 @@ tests/helpers/
 ├── factories/        # defineFactory: the counter-backed builder every makeFooDef is written with
 ├── doubles/          # makeWorldView and the Phaser stub the test runner aliases in
 ├── assertions/       # expectAccepted and expectRefused, for a command result
+├── recording/        # Drivers that play a stored session to record its log again: the one kind that simulates
 └── architecture/     # One file per rule the architecture tier checks: a collect function and a describe function
 ```
+
+A recording driver is the exception to arranging: it plays a whole session the way a person at the panel would, reacting to the world and sending only commands, and returns the input log file. A spec that asserts on the world never calls one; the recording spec beside the stored logs runs them, only when asked, to write the logs again.
 
 A factory counts, never randomises: the third `makeFooDef()` in a test has the same id every run. An architecture rule exports the function that collects violations beside the `describe` that mounts them, so a test can assert on the message a rule prints.
 
@@ -189,7 +192,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Worlds | Small: a factory-made registry of the definitions the test needs |
 | Focused and skipped | None focused; skipped only with an owner and condition. No retries |
 | A flaky test | A determinism bug, treated as one the day it flakes |
-| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition |
+| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition; a recording driver plays a session only to record its log again |
 | Where helpers live | `tests/helpers/`, one folder per kind; a spec imports from the barrel only; factories count, never randomise; an architecture rule exports its collect function beside its describe |
 
 ---

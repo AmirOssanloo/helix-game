@@ -66,7 +66,10 @@ type WaitingLancer = Readonly<{
   unit: Unit;
 }>;
 
-/** A lancer at `x` on the x axis with the hero at the origin, on `map`, its charge's clock just started. */
+/**
+ * A lancer at `x` on the x axis with the hero at the origin, on `map`, its charge's clock just
+ * started, and no halt in its chase, so a lancer that stops has reached where it waits.
+ */
 const arrangeWaiting = (
   x: number,
   map: MapDef = makeMapDef.build(),
@@ -74,7 +77,9 @@ const arrangeWaiting = (
   const world = makeWorld({
     seed: 1,
     map,
-    registry: makeRegistry({ tuning: { wander_radius: 0 } }),
+    registry: makeRegistry({
+      tuning: { wander_radius: 0, chase_halt_chance: 0 },
+    }),
   });
   const hero = spawnHero(world);
   const unit = spawnEnemy(world, { definitionId: DEF.id, x, y: 0 });

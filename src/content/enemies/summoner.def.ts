@@ -8,21 +8,21 @@ import type { EnemyDef } from "@domain/public";
  */
 export const summonerDef = {
   id: "summoner",
-  health: 350, // tunable
-  healthRegen: 0.5, // tunable
+  health: 60, // tunable
+  healthRegen: 0.1, // tunable
   mana: 500, // tunable
   manaRegen: 1, // tunable
   armour: 1, // tunable
   magicResistance: 0.25, // tunable
-  movementSpeed: 240, // tunable
+  movementSpeed: 210, // tunable
   turnRate: 0.5, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 12, // tunable
+    damage: 46, // tunable
     range: 550, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.5, // tunable

@@ -113,6 +113,7 @@ describe("unit pool", () => {
     unit.activeFormIndex = 1;
     unit.packId = 9;
     unit.spawnPoint.y = 10;
+    unit.ai.leashAnchor.y = 10;
     unit.ownerId = 11;
     unit.expiresAtTick = 12;
     pool.release(id);

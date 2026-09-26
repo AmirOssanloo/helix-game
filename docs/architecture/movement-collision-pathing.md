@@ -22,7 +22,7 @@ Every unit carries three radii, and they are never collapsed into one:
 | Radius | Used by |
 | --- | --- |
 | Collision | Pathing and unit-to-unit blocking; two units may not rest closer than the sum of theirs |
-| Bound | Range checks; attack reach and cast range add the attacker's and the target's |
+| Bound | Range checks, where attack reach and cast range add the attacker's and the target's; and the size the presentation draws the unit at, so a collision radius wider than the bound keeps space between drawn bodies |
 | Selection | The presentation's click test; not a simulation value |
 
 ---
@@ -141,7 +141,7 @@ A point-in-disc check at the end of the tick. A fast projectile passes clean thr
 | Rule | Do |
 | --- | --- |
 | Physics engine | None; movement and collision are plain arithmetic in `domain/movement/` |
-| Three radii | Collision for blocking and pathing, bound for range, selection for clicks; never collapsed |
+| Three radii | Collision for blocking and pathing, bound for range and the drawn size, selection for clicks; never collapsed |
 | Turning | Shortest arc at the unit's turn rate times the step, with a short ramp; translation only inside the action cone |
 | Moving | `min(speed × dt, remaining)` along the path; no acceleration, no overshoot |
 | Speed | A stack of base, modifiers, and clamps, recomputed every tick |

@@ -8,8 +8,8 @@ import type { EnemyDef } from "@domain/public";
  */
 export const crusherDef = {
   id: "crusher",
-  health: 1000, // tunable
-  healthRegen: 2, // tunable
+  health: 110, // tunable
+  healthRegen: 0.2, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 6, // tunable
@@ -17,12 +17,12 @@ export const crusherDef = {
   movementSpeed: 210, // tunable
   turnRate: 0.35, // tunable
   body: {
-    collisionRadius: 50, // tunable
+    collisionRadius: 64, // tunable
     boundRadius: 44, // tunable
     selectionRadius: 56, // tunable
   },
   attack: {
-    damage: 30, // tunable
+    damage: 62, // tunable
     range: 100, // tunable
     acquireRadius: 600, // tunable
     pointSeconds: 0.6, // tunable

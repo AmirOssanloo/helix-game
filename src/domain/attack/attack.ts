@@ -24,14 +24,19 @@ export const attackOf = (
 };
 
 /**
- * What `unit`'s next shot lands before mitigation: the attack's damage with every modifier
- * row for it, so an Ember instance out now, a Quicken running now, and later an item are all
- * in this shot and none of them in the one already flying.
+ * What `unit`'s next shot lands before mitigation: the attack's damage times the unit's tier
+ * multiplier, then every modifier row for it, so an Ember instance out now, a Quicken running
+ * now, and later an item are all in this shot and none of them in the one already flying.
  */
 export const attackDamageOf = (
   unit: Readonly<Unit>,
   record: AttackRecord,
-): number => modifiedValue(record.def.damage, unit.modifiers, "attack_damage");
+): number =>
+  modifiedValue(
+    record.def.damage * unit.attackDamageMultiplier,
+    unit.modifiers,
+    "attack_damage",
+  );
 
 /**
  * Whether `unit` reaches `target` from where it stands: the attack's range plus the

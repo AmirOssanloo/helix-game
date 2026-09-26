@@ -165,7 +165,7 @@ describe("what a drained hit shows", () => {
 
     expect(number.text).toBe(String(HIT_AMOUNT));
     expect(number.x).toBe(DUMMY_X);
-    expect(number.y).toBeLessThan(DUMMY_Y - arranged.dummy.collisionRadius);
+    expect(number.y).toBeLessThan(DUMMY_Y - arranged.dummy.boundRadius);
   });
 
   it("raises the flash on the unit that took the hit, for the length of a flash", () => {

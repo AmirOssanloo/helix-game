@@ -563,6 +563,12 @@ export {
   type SkillPointResult,
   spendSkillPoint,
 } from "./stats/levels";
+export {
+  DRAW_PURPOSE,
+  type DrawPurpose,
+  KEYED_DRAW_RANGE,
+  keyedDraw,
+} from "./random/keyed-draw";
 export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
 export { regenerate, restoreHealth } from "./stats/regeneration";
 export { refreshStats, statsSystem } from "./stats/stats.system";

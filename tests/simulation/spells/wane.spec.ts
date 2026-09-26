@@ -367,12 +367,14 @@ describe("Wane against a pack that has the hero's scent", () => {
   /**
    * The hero at the origin with Wane prepared at the first level, two grunts chasing from
    * across the room and one already swinging from behind, all in one pack, on the content
-   * registry with no wander.
+   * registry with no wander and no halt in a chase, so the two close together while Wane lands.
    */
   const arrangePack = () => {
     const world = makeWorld({
       seed: 1,
-      registry: makeRegistry({ tuning: { wander_radius: 0 } }),
+      registry: makeRegistry({
+        tuning: { wander_radius: 0, chase_halt_chance: 0 },
+      }),
     });
     const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
     const form = world.state.run.forms[0];

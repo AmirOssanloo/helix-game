@@ -228,6 +228,8 @@ export type Unit = {
   ai: AiRecord;
   /** The tier it was spawned at: the selection rule reads the tier's abilities from it and the view draws an elite's and a boss's outline from it. Its health was multiplied at spawn. */
   tier: EnemyTier;
+  /** What its attack's damage is multiplied by before the modifier rows: its tier's multiplier, read once at spawn, so a retune reaches the units spawned after it. 1 for the hero, a normal unit, and a summon. */
+  attackDamageMultiplier: number;
   ownerId: EntityId | null;
   /** The tick a summon expires on; `null` for a unit that lives until it dies. */
   expiresAtTick: Tick | null;
@@ -368,6 +370,7 @@ const createUnit = (): Unit => {
     spawnPoint: { x: 0, y: 0 },
     ai: createAiRecord(),
     tier: "normal",
+    attackDamageMultiplier: 1,
     ownerId: null,
     expiresAtTick: null,
   };
@@ -441,6 +444,7 @@ const clearUnit = (unit: Unit): void => {
   unit.spawnPoint.y = 0;
   clearAiRecord(unit.ai);
   unit.tier = "normal";
+  unit.attackDamageMultiplier = 1;
   unit.ownerId = null;
   unit.expiresAtTick = null;
 };
@@ -450,10 +454,10 @@ export const createUnitPool = (): Pool<Unit> =>
 
 /**
  * The one way a unit enters the world: a slot from the pool, standing at the position with its
- * previous position and spawn point there too, wearing the hull the tuning table gives a unit
- * with no definition, indexed in the spatial hash. A spawn from a definition writes that
- * definition's radii over the hull; the hero wears its active form's body. Returns the id, or
- * `null` when the pool is full; the caller decides what a spawn that does not happen means.
+ * previous position, spawn point, and leash anchor there too, wearing the hull the tuning table
+ * gives a unit with no definition, indexed in the spatial hash. A spawn from a definition writes
+ * that definition's radii over the hull; the hero wears its active form's body. Returns the id,
+ * or `null` when the pool is full; the caller decides what a spawn that does not happen means.
  */
 export const acquireUnit = (
   world: World,
@@ -480,6 +484,8 @@ export const acquireUnit = (
   unit.prev.y = y;
   unit.spawnPoint.x = x;
   unit.spawnPoint.y = y;
+  unit.ai.leashAnchor.x = x;
+  unit.ai.leashAnchor.y = y;
   unit.collisionRadius = readTunable(world.run.tuning, "collision_radius");
   unit.boundRadius = readTunable(world.run.tuning, "bound_radius");
   unit.selectionRadius = readTunable(world.run.tuning, "selection_radius");

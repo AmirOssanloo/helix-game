@@ -9,21 +9,21 @@ import type { EnemyDef } from "@domain/public";
  */
 export const rangedArcherDef = {
   id: "ranged_archer",
-  health: 300, // tunable
-  healthRegen: 0.5, // tunable
+  health: 100, // tunable
+  healthRegen: 0.2, // tunable
   mana: 550, // tunable; balance pass 1
   manaRegen: 1, // tunable
   armour: 1, // tunable
   magicResistance: 0,
-  movementSpeed: 260, // tunable
+  movementSpeed: 225, // tunable
   turnRate: 0.6, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 20, // tunable
+    damage: 24, // tunable
     range: 500, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.5, // tunable

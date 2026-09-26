@@ -2,28 +2,28 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The brute: a heavy melee enemy whose swing stuns the hero on a rhythm, so standing beside it
- * costs the kit for a moment every few seconds. Slower than the hero, the hero's body, nearly twice
- * a grunt's health, and worth nearly two. An elite slams once the hero is inside the slam's
+ * costs the kit for a moment every few seconds. Slower than the hero, drawn the hero's size,
+ * three of the hero's attacks like a grunt but a heavier hit, and worth nearly two. An elite slams once the hero is inside the slam's
  * circle; a boss also brings adds and charges the hero, so a boss brute is a bash, a slam, adds,
  * and a charge. Every number is a starting value design retunes here.
  */
 export const bruteDef = {
   id: "brute",
-  health: 700, // tunable
-  healthRegen: 1.5, // tunable
+  health: 85, // tunable
+  healthRegen: 0.2, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 4, // tunable
   magicResistance: 0,
-  movementSpeed: 230, // tunable
+  movementSpeed: 225, // tunable
   turnRate: 0.4, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 28, // tunable
+    damage: 46, // tunable
     range: 100, // tunable
     acquireRadius: 650, // tunable
     pointSeconds: 0.5, // tunable

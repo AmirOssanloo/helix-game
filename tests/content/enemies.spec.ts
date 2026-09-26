@@ -14,6 +14,7 @@ import {
   lancerDef,
   meleeGruntDef,
   rangedArcherDef,
+  skeinDef,
   skirmisherDef,
   summonerDef,
   tankDef,
@@ -95,23 +96,6 @@ describe("the four archetypes", () => {
       expect(shapeOf(def)).toEqual(shapeOf(trainingDummyDef));
     },
   );
-
-  it("each stand on one of the three radius classes pathing plans for", () => {
-    const classes = [
-      tuningTable["radius_class:0"],
-      tuningTable["radius_class:1"],
-      tuningTable["radius_class:2"],
-    ];
-
-    for (const def of ARCHETYPES) {
-      expect(classes).toContain(def.body.collisionRadius);
-    }
-  });
-
-  it("put the grunt below the hero's speed and the runner above it", () => {
-    expect(meleeGruntDef.movementSpeed).toBeLessThan(tuningTable.base_ms);
-    expect(fastRunnerDef.movementSpeed).toBeGreaterThan(tuningTable.base_ms);
-  });
 
   it("leave the archer short of the hero's range, firing a projectile", () => {
     expect(rangedArcherDef.attack.range).toBeLessThan(heroDef.attack.range);
@@ -299,18 +283,6 @@ describe("the long roster", () => {
     );
   });
 
-  it("stands each archetype on one of the three radius classes pathing plans for", () => {
-    const classes = [
-      tuningTable["radius_class:0"],
-      tuningTable["radius_class:1"],
-      tuningTable["radius_class:2"],
-    ];
-
-    for (const def of ROSTER) {
-      expect(classes).toContain(def.body.collisionRadius);
-    }
-  });
-
   it("is normal, can die, and grants experience", () => {
     for (const def of ROSTER) {
       expect(def.tier).toBe("normal");
@@ -369,5 +341,62 @@ describe("the long roster", () => {
         def === crusherDef,
       );
     }
+  });
+});
+
+/**
+ * How much wider than it is drawn an enemy's body is, as its collision radius over its bound
+ * radius, the drawn size: at least the medium class's 32 over 24, the widest a body drawn at
+ * 24 can be and still path through the arena's 96-unit corridor on cells of 32, and at most
+ * half as wide again.
+ */
+const NARROWEST_BODY_SHARE = 32 / 24;
+const WIDEST_BODY_SHARE = 1.5;
+
+/** Every enemy that swings in melee: no projectile and some reach, so not the dummy. */
+const SWINGING = enemies.filter(
+  (def) => def.attack.projectileSpeed === 0 && def.attack.range > 0,
+);
+
+describe("every enemy's body", () => {
+  it.each(enemies.map((def) => [def.id, def] as const))(
+    "%s is wider than it is drawn, by a third to a half of its drawn radius, so two side by side part before their shapes touch",
+    (_id, def) => {
+      const share = def.body.collisionRadius / def.body.boundRadius;
+
+      expect(share).toBeGreaterThanOrEqual(NARROWEST_BODY_SHARE);
+      expect(share).toBeLessThanOrEqual(WIDEST_BODY_SHARE);
+    },
+  );
+
+  it("stands on one of the three radius classes pathing plans for", () => {
+    const classes = [
+      tuningTable["radius_class:0"],
+      tuningTable["radius_class:1"],
+      tuningTable["radius_class:2"],
+    ];
+
+    for (const def of enemies) {
+      expect(classes).toContain(def.body.collisionRadius);
+    }
+  });
+
+  it.each(SWINGING.map((def) => [def.id, def] as const))(
+    "%s pressed against the hero's body is inside its reach",
+    (_id, def) => {
+      const contact = skeinDef.body.collisionRadius + def.body.collisionRadius;
+      const reach =
+        def.attack.range + skeinDef.body.boundRadius + def.body.boundRadius;
+
+      expect(contact).toBeLessThanOrEqual(reach);
+    },
+  );
+});
+
+describe("every fighting archetype", () => {
+  it.each(
+    [...ARCHETYPES, ...ROSTER, impDef].map((def) => [def.id, def] as const),
+  )("%s is slower than the hero, so walking away from it works", (_id, def) => {
+    expect(def.movementSpeed).toBeLessThan(tuningTable.base_ms);
   });
 });

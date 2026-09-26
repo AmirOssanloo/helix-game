@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { impDef, meleeGruntDef, tuningTable } from "@content/public";
+import {
+  impDef,
+  meleeGruntDef,
+  rangedArcherDef,
+  tuningTable,
+} from "@content/public";
 import type { EnemyTier, TuningKey, Unit } from "@domain/public";
-import { applyDamage, holdsAbility } from "@domain/public";
+import {
+  addModifier,
+  applyDamage,
+  attackDamageOf,
+  attackOf,
+  holdsAbility,
+  mitigate,
+} from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
 import {
   makeRegistry,
   makeWorld,
@@ -189,21 +202,191 @@ describe("a tier's health", () => {
     },
   );
 
-  it("puts an elite at triple and a boss at ten times, as the tunables stand by default", () => {
+  it("puts an elite at triple and a boss at four times, as the tunables stand by default", () => {
     expect(tuningTable.elite_health_multiplier).toBe(3);
-    expect(tuningTable.boss_health_multiplier).toBe(10);
+    expect(tuningTable.boss_health_multiplier).toBe(4);
   });
 
   it("reads a retuned multiplier at the next spawn and leaves a unit already standing as it was", () => {
     const world = arrange();
     const before = spawnGrunt(world, "boss", AFAR);
 
-    retune(world, "boss_health_multiplier", 4);
+    retune(world, "boss_health_multiplier", 10);
 
     const after = spawnGrunt(world, "boss", { x: -AFAR.x, y: 0 });
 
-    expect(before.stats.maxHealth).toBe(meleeGruntDef.health * 10);
-    expect(after.stats.maxHealth).toBe(meleeGruntDef.health * 4);
+    expect(before.stats.maxHealth).toBe(meleeGruntDef.health * 4);
+    expect(after.stats.maxHealth).toBe(meleeGruntDef.health * 10);
+  });
+});
+
+describe("a tier's attack damage", () => {
+  /** Off 1, and apart from each other, so a case that reads the wrong tier's number fails. */
+  const ELITE_DAMAGE = 2;
+  const BOSS_DAMAGE = 3;
+
+  /** Inside the archer's reach and aggro radius, so it holds and shoots. */
+  const IN_BOW_REACH = { x: 400, y: 0 };
+
+  /** Long enough for a unit to aggro, close, swing, and for a shot to fly home. */
+  const FIRST_HIT_PATIENCE = 240;
+
+  /** A cooldown no case runs out, so a unit swings its attack and casts nothing. */
+  const NEVER = 1_000_000;
+
+  /** The content's registry with both damage multipliers off 1, the hero at the origin, and nothing wandering. */
+  const arrangeRetuned = (): Simulation => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        tuning: {
+          wander_radius: 0,
+          elite_damage_multiplier: ELITE_DAMAGE,
+          boss_damage_multiplier: BOSS_DAMAGE,
+        },
+      }),
+    });
+
+    spawnHero(world, { orbLevels: [1, 1, 1] });
+
+    return world;
+  };
+
+  /**
+   * Puts every ability `unit`'s tier could give it on a cooldown no case runs out, then
+   * provokes it from the hero with a hit of 1, so it wakes with nothing to cast but its swing.
+   */
+  const silenceAndProvoke = (world: Simulation, unit: Unit): void => {
+    for (const id of EVERY_TIER_ABILITY) {
+      unit.cooldowns.set(id, NEVER);
+    }
+
+    applyDamage(
+      world.state,
+      unitIdOf(world, unit),
+      1,
+      "pure",
+      world.state.run.heroId,
+    );
+  };
+
+  /** The amount of the first hit `unit` lands on the hero, after mitigation, ticking until it does. */
+  const firstHitOnHero = (world: Simulation, unit: Readonly<Unit>): number => {
+    const reader = createEventReader();
+    const unitId = unitIdOf(world, unit);
+    const heroId = world.state.run.heroId;
+
+    for (let ticks = 0; ticks < FIRST_HIT_PATIENCE; ticks += 1) {
+      world.tick();
+
+      for (
+        let event = world.events.read(reader);
+        event !== null;
+        event = world.events.read(reader)
+      ) {
+        if (
+          event.kind === "unit_damaged" &&
+          event.sourceId === unitId &&
+          event.unitId === heroId
+        ) {
+          return event.amount;
+        }
+      }
+    }
+
+    throw new Error("The unit landed a hit on the hero");
+  };
+
+  /** What `amount` of physical damage lands on the hero as it stands. */
+  const onHero = (world: Simulation, amount: number): number => {
+    const heroId = world.state.run.heroId;
+    const hero = heroId === null ? null : world.state.map.units.resolve(heroId);
+
+    if (hero === null) {
+      throw new Error("The hero stands in the world");
+    }
+
+    return mitigate(
+      amount,
+      "physical",
+      hero.stats,
+      tuningTable.armour_constant,
+    );
+  };
+
+  it.each([
+    ["normal", 1],
+    ["elite", ELITE_DAMAGE],
+    ["boss", BOSS_DAMAGE],
+  ] as const)(
+    "a %s grunt's swing lands %d times the definition's damage on the hero",
+    (tier, multiplier) => {
+      const world = arrangeRetuned();
+      const grunt = spawnGrunt(world, tier, AFAR);
+
+      silenceAndProvoke(world, grunt);
+
+      expect(firstHitOnHero(world, grunt)).toBeCloseTo(
+        onHero(world, meleeGruntDef.attack.damage * multiplier),
+        6,
+      );
+    },
+  );
+
+  it.each([
+    ["elite", ELITE_DAMAGE],
+    ["boss", BOSS_DAMAGE],
+  ] as const)(
+    "a %s archer's shot carries %d times the definition's damage to the hero",
+    (tier, multiplier) => {
+      const world = arrangeRetuned();
+      const archer = spawnOne(world, rangedArcherDef.id, tier, IN_BOW_REACH);
+
+      expect(firstHitOnHero(world, archer)).toBeCloseTo(
+        onHero(world, rangedArcherDef.attack.damage * multiplier),
+        6,
+      );
+    },
+  );
+
+  it("puts a modifier row on top of the tier's multiplier", () => {
+    const world = arrangeRetuned();
+    const grunt = spawnGrunt(world, "boss", AFAR);
+    const record = attackOf(world.state, grunt);
+
+    if (record === null) {
+      throw new Error("A grunt swings an attack");
+    }
+
+    addModifier(grunt.modifiers, "item", "attack_damage", 5, 0.5);
+
+    expect(attackDamageOf(grunt, record)).toBe(
+      (meleeGruntDef.attack.damage * BOSS_DAMAGE + 5) * 1.5,
+    );
+  });
+
+  it("puts both at one and a half, so an elite or a boss lands half again its archetype's hit, as the tunables stand by default", () => {
+    expect(tuningTable.elite_damage_multiplier).toBe(1.5);
+    expect(tuningTable.boss_damage_multiplier).toBe(1.5);
+  });
+
+  it("reads a retuned multiplier at the next spawn and leaves a unit already standing as it was", () => {
+    const world = arrangeRetuned();
+    const before = spawnGrunt(world, "elite", AFAR);
+
+    retune(world, "elite_damage_multiplier", 4);
+
+    const after = spawnGrunt(world, "elite", { x: -AFAR.x, y: 0 });
+    const record = attackOf(world.state, before);
+
+    if (record === null) {
+      throw new Error("A grunt swings an attack");
+    }
+
+    expect(attackDamageOf(before, record)).toBe(
+      meleeGruntDef.attack.damage * ELITE_DAMAGE,
+    );
+    expect(attackDamageOf(after, record)).toBe(meleeGruntDef.attack.damage * 4);
   });
 });
 

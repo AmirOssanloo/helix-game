@@ -50,6 +50,8 @@ export type TuningKey =
   | "wander_radius"
   | "wander_interval"
   | "chase_repath_interval"
+  | "chase_halt_chance"
+  | "chase_halt_seconds"
   | "ranged_hold_margin"
   | "pack_activation_radius"
   | "pack_sleep_radius"
@@ -57,6 +59,8 @@ export type TuningKey =
   | "checkpoint_reach_radius"
   | "elite_health_multiplier"
   | "boss_health_multiplier"
+  | "elite_damage_multiplier"
+  | "boss_damage_multiplier"
   | "elite_experience_multiplier"
   | "boss_experience_multiplier"
   | "hit_flash_duration"
@@ -125,6 +129,8 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   wander_radius: "world_units",
   wander_interval: "seconds",
   chase_repath_interval: "seconds",
+  chase_halt_chance: "fraction",
+  chase_halt_seconds: "seconds",
   ranged_hold_margin: "world_units",
   pack_activation_radius: "world_units",
   pack_sleep_radius: "world_units",
@@ -132,6 +138,8 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   checkpoint_reach_radius: "world_units",
   elite_health_multiplier: "as_written",
   boss_health_multiplier: "as_written",
+  elite_damage_multiplier: "as_written",
+  boss_damage_multiplier: "as_written",
   elite_experience_multiplier: "as_written",
   boss_experience_multiplier: "as_written",
   hit_flash_duration: "seconds",

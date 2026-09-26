@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { arenaDef } from "@content/public";
+import { arenaDef, meleeGruntDef } from "@content/public";
 import { collisionSystem } from "@domain/public";
 import type { Rect } from "@shared/public";
 import type { InputLogFile, Replay, WorldView } from "@simulation/public";
@@ -16,19 +16,22 @@ const RECORDED_SESSION = "corridor-200";
 
 const registry = makeRegistry();
 
-/** The tick the lift lands on: the last tick of the press, with the corridor as full as it gets. */
-const PRESS_END_TICK = 600;
+/** The tick the lift lands on: the last tick of the press, with a column still in the corridor. */
+const PRESS_END_TICK = 405;
 
 /**
  * Ticks the session runs: the press, and the walk home after it. The last of the two hundred
- * squeezes home past the ones already standing at theirs a little before tick 1240.
+ * squeezes home past the ones already standing at theirs a little before tick 1300, and the log
+ * ends about five seconds later. The lift holds the hero out of reach for 900 ticks at a grunt
+ * speed of 240, scaled as the settle bar is to the grunt's speed, 1394 at 155, since it exists
+ * to give the pack time to walk home; it lands the hero after the log ends.
  */
-const SESSION_TICKS = 1260;
+const SESSION_TICKS = 1440;
 
 /** Ten grunt packs and ten runner packs, the enemy live cap between them. */
 const PACK_COUNT = 20;
 
-/** Enemies the corridor holds at the press's end at the least: a column the width of it, grunts in single file, runners three abreast. */
+/** Enemies the corridor holds at the press's end at the least: a column the width of it, grunts in single file, runners two abreast. */
 const CORRIDOR_COLUMN = 15;
 
 /** The corridor between the two blocks east of the centre, 96 units wide, as the arena lays it. */
@@ -48,12 +51,24 @@ const SETTLED_OVERLAP = 1e-3;
 
 /**
  * How long the press's pile takes to settle once nothing walks, in ticks of passes: under a
- * world unit within a second and a half, touching within three. A column of grunts in the
- * corridor settles slowest, since a hull 54 wide in a corridor 96 wide zig-zags against both
- * walls and every push loses its sideways half to them.
+ * world unit within a second and a half, and touching within the ticks a grunt at the
+ * reference speed walks in three seconds. A column of grunts in the corridor settles slowest,
+ * since a hull 64 wide in a corridor 96 wide zig-zags against both walls and every push loses
+ * its sideways half to them.
  */
 const VISIBLE_TICKS = 45;
-const SETTLE_TICKS = 90;
+
+/**
+ * The touching bar is a settle distance, not a time: three seconds of a grunt walking at 240,
+ * the speed it was set at. Passes push the pile apart about as far as a grunt pressed into it
+ * each tick, so a slower grunt settles over proportionally more ticks; the bar scales with the
+ * grunt's speed to keep the same distance.
+ */
+const SETTLE_REFERENCE_TICKS = 90;
+const SETTLE_REFERENCE_GRUNT_SPEED = 240;
+const SETTLE_TICKS =
+  (SETTLE_REFERENCE_TICKS * SETTLE_REFERENCE_GRUNT_SPEED) /
+  meleeGruntDef.movementSpeed;
 
 /** The most ticks of passes the frozen pile is given to settle before the test gives up on it. */
 const SETTLE_LIMIT_TICKS = 600;
@@ -66,7 +81,7 @@ const SETTLE_LIMIT_TICKS = 600;
  */
 const DEEPEST_PRESS_SHARE = 0.75;
 
-/** A grunt's hull across: the furthest the passes may carry a unit while settling the pile. */
+/** The furthest the passes may carry a unit while settling the pile, in world units: less than a grunt's hull across. */
 const HULL = 54;
 
 /** Where the session's clicks send the hero, and hold it once it is there. */

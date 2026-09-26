@@ -1,11 +1,11 @@
-import type { EntityId } from "@shared/public";
+import type { EntityId, Vec2 } from "@shared/public";
 import type { Tick } from "../tick";
 
 /**
  * Where a unit its behaviour drives stands in the shared enemy state machine. Idle stands at
  * home and wanders; Aggro is the tick it notices the hero and alerts its pack, and is left on
  * that same tick; Chase walks toward where it wants to stand; Attack swings; Return walks home
- * ignoring the hero; Dead is the corpse. This is the fight the unit is in, not the step of its
+ * ignoring the hero unless the hero hits it; Dead is the corpse. This is the fight the unit is in, not the step of its
  * order: the order state says whether it is turning, walking, or in an attack point, and the
  * machine issues the orders that put it there.
  */
@@ -16,7 +16,11 @@ export type AiState = "idle" | "aggro" | "chase" | "attack" | "return" | "dead";
  * door when something hit the unit and read on the unit's next driving tick. The wander tick
  * is `null` until the machine schedules the first wander after an arrival at home, which is
  * where each unit's cadence is staggered from its neighbours'; the re-path tick is when a
- * chase may ask for a path again.
+ * chase may ask for a path again; the halt tick is when a chasing unit that halted at a
+ * re-path may walk again, a tick already past for one that is not halted. The leash anchor is
+ * the point the leash is measured from: the spawn point, but for a unit a hit woke on its way
+ * home, where it stood when it woke, brought no further than its leash radius from the spawn
+ * point. A fresh slot's anchor is the origin until the unit is placed.
  */
 export type AiRecord = {
   state: AiState;
@@ -24,6 +28,8 @@ export type AiRecord = {
   wanderAtTick: Tick | null;
   wanders: number;
   repathAtTick: Tick;
+  haltUntilTick: Tick;
+  leashAnchor: Vec2;
 };
 
 /** A record at home and at rest, which is what a fresh slot holds. */
@@ -33,6 +39,8 @@ export const createAiRecord = (): AiRecord => ({
   wanderAtTick: null,
   wanders: 0,
   repathAtTick: 0,
+  haltUntilTick: 0,
+  leashAnchor: { x: 0, y: 0 },
 });
 
 /** Every field back to the value a fresh slot has. */
@@ -42,6 +50,9 @@ export const clearAiRecord = (ai: AiRecord): void => {
   ai.wanderAtTick = null;
   ai.wanders = 0;
   ai.repathAtTick = 0;
+  ai.haltUntilTick = 0;
+  ai.leashAnchor.x = 0;
+  ai.leashAnchor.y = 0;
 };
 
 /**

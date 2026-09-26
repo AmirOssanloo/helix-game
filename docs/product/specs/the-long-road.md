@@ -123,7 +123,7 @@ Thirty-two packs, because the budget decides the number: five boss-tier units at
 
 ### 5.1 The chokes
 
-Each region ends at a wall that runs the whole width of the map, 160 units deep, with one opening centred on `x` 2000. The opening narrows along the road. Every choke is open to all three radius classes: a large unit, 50 in radius, has 124 units of play in the narrowest. The chokes are where a crowd presses the hero, and where the hero's push share is judged in the playtest.
+Each region ends at a wall that runs the whole width of the map, 160 units deep, with one opening centred on `x` 2000. The opening narrows along the road. Every choke is open to all three radius classes: a large unit, 64 in radius, has 96 units of play in the narrowest. The chokes are where a crowd presses the hero, and where the hero's push share is judged in the playtest.
 
 | Choke | Between | West wall | East wall | Opening |
 |---|---|---|---|---|

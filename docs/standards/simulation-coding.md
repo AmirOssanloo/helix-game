@@ -11,7 +11,7 @@ How code under `src/domain/` and `src/simulation/` is written so that a tick is 
 
 **No Phaser, no DOM, no `window`, no clock.** These two layers see plain state and nothing else. A type from Phaser is as banned as a runtime import.
 
-**`Math.random`, `Date.now`, and `performance.now` are banned by lint** under both folders. Randomness comes from the world's seeded source; time is the tick count. The reason is replay: a session recorded as an input log must reproduce the same state on another machine, tick for tick, or a bug report cannot be reproduced. [ADR 0002](../adr/0002-custom-fixed-step-simulation.md) holds the argument.
+**`Math.random`, `Date.now`, and `performance.now` are banned by lint** under both folders. Randomness comes from the world's seeded source; time is the tick count. A rule draws through the keyed draw, with a purpose of its own from the one purpose list and a second purpose for a second draw on the same key and tick, and scales its integer result with local arithmetic; [Simulation loop](../architecture/simulation-loop.md#determinism) says what the draw is. The reason is replay: a session recorded as an input log must reproduce the same state on another machine, tick for tick, or a bug report cannot be reproduced. [ADR 0002](../adr/0002-custom-fixed-step-simulation.md) holds the argument.
 
 **No `async` anywhere.** A tick runs to completion. Nothing in the simulation waits for anything.
 
@@ -130,6 +130,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | --- | --- |
 | Outside world | No Phaser, DOM, `window`, or clock in `domain/` or `simulation/`, not even as types |
 | Randomness and time | The world's seeded source and the tick count. `Math.random`, `Date.now`, `performance.now` are lint failures |
+| A rule's draw | The keyed draw, with its own purpose from the one list, a second purpose for a second draw on one key and tick; the integer result scaled locally |
 | Asynchrony | None. A tick runs to completion |
 | Durations | Integer ticks, converted from seconds once at definition load. A system never multiplies by the tick rate |
 | Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch vectors from `shared/`; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |

@@ -87,6 +87,7 @@ Correcting a small detail in an accepted record is fine — edit it. Changing wh
 | [0007](./0007-a-spawned-unit-ends-with-its-owner.md) | A unit an ability spawns ends on the tick its owner dies | Why killing a summoner clears its adds, why they grant nothing, and why the death system runs a second pass |
 | [0008](./0008-damage-hooks-are-status-capabilities.md) | Doing something on damage is a hook on a status, written as an effect list | Where a bash or a mark lives, why a hook has no key of its own, and why hook damage runs no hooks |
 | [0009](./0009-definition-tuning-key-is-the-field-path.md) | A definition number's tuning key is its field path, verbatim | How a slider, a log, and a test name one number on a definition, and what a rename costs |
+| [0010](./0010-a-rules-random-draw-is-a-keyed-hash.md) | A rule's random draw is a hash of the seed, a key, the tick, and a purpose | Where a rule gets a random number, and why a draw in one rule never moves another's |
 
 ---
 

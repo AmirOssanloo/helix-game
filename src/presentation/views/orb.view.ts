@@ -50,7 +50,7 @@ export class OrbViews {
 
     const centreX = interpolate(hero.prev.x, hero.curr.x, alpha);
     const centreY = interpolate(hero.prev.y, hero.curr.y, alpha);
-    const radius = hero.collisionRadius + ORBIT_MARGIN;
+    const radius = hero.boundRadius + ORBIT_MARGIN;
     const base = (world.tick + alpha) * ORBIT_RATE;
     const step = FULL_TURN / this.quads.length;
 

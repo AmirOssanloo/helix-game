@@ -8,13 +8,15 @@ import type { TuningDef } from "@domain/public";
  * the respawn delay and the corpse delay are seconds, the armour constant is what one point
  * of armour is worth before the curve flattens it, an enemy at rest wanders the wander radius
  * around its spawn point once every wander interval, in seconds, a chasing one asks for a
- * path at most once every re-path interval, in seconds, and a ranged one stands the hold
+ * path at most once every re-path interval, in seconds, and at each re-path halts instead of
+ * walking with the halt chance, a fraction of one, for between half and all of the halt
+ * seconds, and a ranged one stands the hold
  * margin inside its reach, in world units, a dormant pack spawns once the hero is inside
  * the activation radius of it, in world units, and an awake one sleeps again once the hero is
  * past the sleep radius of it and its members rest at home, in world units, and a pack looks for free cells no further than
  * the placement radius from its point, in world units, a hero within the checkpoint reach
- * radius of a checkpoint reaches it, in world units, an elite's and a boss's health are the
- * definition's times the tier's multiplier, read at spawn, and the experience it pays is the
+ * radius of a checkpoint reaches it, in world units, an elite's and a boss's health and
+ * attack damage are the definition's times the tier's multipliers, read at spawn, and the experience it pays is the
  * definition's times the tier's own experience multiplier, read at its death, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
  * counts per tick, the hero's push share is the fraction of an overlap with a unit that is not
@@ -59,13 +61,17 @@ export const tuningTable = {
   wander_radius: 64,
   wander_interval: 4,
   chase_repath_interval: 0.5,
+  chase_halt_chance: 0.08,
+  chase_halt_seconds: 1,
   ranged_hold_margin: 50,
   pack_activation_radius: 1600,
   pack_sleep_radius: 2000,
   pack_placement_radius: 1024,
   checkpoint_reach_radius: 512,
   elite_health_multiplier: 3,
-  boss_health_multiplier: 10,
+  boss_health_multiplier: 4,
+  elite_damage_multiplier: 1.5,
+  boss_damage_multiplier: 1.5,
   elite_experience_multiplier: 3,
   boss_experience_multiplier: 10,
   hit_flash_duration: 0.133,
@@ -74,9 +80,9 @@ export const tuningTable = {
   damage_number_fade_duration: 1,
   cooldown_wedge_steps: 64,
   camera_follow_lerp: 0.1,
-  "radius_class:0": 16,
-  "radius_class:1": 27,
-  "radius_class:2": 50,
+  "radius_class:0": 20,
+  "radius_class:1": 32,
+  "radius_class:2": 64,
   "quartz_regen_per_instance:0": 1,
   "quartz_regen_per_instance:1": 2,
   "quartz_regen_per_instance:2": 3,

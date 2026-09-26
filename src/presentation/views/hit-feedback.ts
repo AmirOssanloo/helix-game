@@ -212,7 +212,7 @@ export const showHit = (
   hitNumbers.show(
     event.unitId,
     interpolate(unit.prev.x, unit.curr.x, alpha),
-    interpolate(unit.prev.y, unit.curr.y, alpha) - unit.collisionRadius,
+    interpolate(unit.prev.y, unit.curr.y, alpha) - unit.boundRadius,
     event.amount,
     event.damageType,
     event.tick,

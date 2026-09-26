@@ -77,8 +77,8 @@ These are the body numbers the product starts from. Use 280 base movement speed 
 
 Three sizes exist and must not be collapsed into one radius.
 
-- **Collision size 27** is the impassable body used by pathing and unit-unit blocking. Minimum center distance between two non-phased units is the sum of their collision sizes.
-- **Bound radius 24** is the coordinate buffer added to attack range, unit-targeted cast range, and many effect radii. Actual attack reach ≈ attack range + attacker bound + target bound.
+- **Collision size 27** is the impassable body used by pathing and unit-unit blocking. Minimum center distance between two non-phased units is the sum of their collision sizes. Pathing plans for it on the smallest of the three radius classes that holds it, the hero-sized class of 32.
+- **Bound radius 24** is the coordinate buffer added to attack range, unit-targeted cast range, and many effect radii. Actual attack reach ≈ attack range + attacker bound + target bound. It is also the size a unit is drawn at, so a body wider than its bound keeps space around its drawn shape.
 - **Selection size** is the clickable box in screen space. It may scale with the rendered model. It is not a physics value.
 
 Every hero form shares the same hull (collision 27, bound 24). Phased or flying movement, if the product later adds it, ignores collision against other units but not against buildings or trees. Until then, treat every ground unit as a solid disc.

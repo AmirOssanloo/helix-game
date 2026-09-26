@@ -180,7 +180,7 @@ describe("a unit view", () => {
     expect(marker.x).toBe(HERO_X + 30);
   });
 
-  it("scales the body to the collision diameter and turns the marker to the facing", () => {
+  it("scales the body to the bound diameter, the drawn size, and turns the marker to the facing", () => {
     const size = 1;
     const arranged = arrange(size);
     const { body, marker } = firstView(arranged, size);
@@ -189,7 +189,7 @@ describe("a unit view", () => {
 
     arranged.sync(AROUND_HERO, 0);
 
-    expect(body.scale).toBe((arranged.hero.collisionRadius * 2) / FRAME_WIDTH);
+    expect(body.scale).toBe((arranged.hero.boundRadius * 2) / FRAME_WIDTH);
     expect(body.rotation).toBe(0);
     expect(marker.rotation).toBe(Math.PI / 2);
     expect(body.visible).toBe(true);
@@ -386,7 +386,7 @@ describe("an elite's and a boss's outline", () => {
     expect(outline?.tint).toBe(0xe05a4f);
     expect(outline?.x).toBe(enemy.curr.x);
     expect(outline?.scale).toBeGreaterThan(
-      (enemy.collisionRadius * 2) / FRAME_WIDTH,
+      (enemy.boundRadius * 2) / FRAME_WIDTH,
     );
   });
 

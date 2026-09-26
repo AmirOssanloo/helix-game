@@ -6,7 +6,10 @@ import { loadInputLog, makeRegistry } from "../../helpers";
 
 const registry = makeRegistry();
 
-/** The three sessions of the first balance pass, recorded with the panel, one log each. */
+/**
+ * The three sessions of the balance pass, one log each, played by the drivers in the helpers,
+ * which say how to record them again.
+ */
 const HERO_SESSION = "balance-hero";
 const SPELLS_SESSION = "balance-spells";
 const ARCHETYPES_SESSION = "balance-archetypes";
@@ -73,26 +76,30 @@ const STANDING_OUTCOMES: Record<
   readonly { killed: number; heroDied: boolean }[]
 > = {
   melee_grunt: [
-    { killed: 0, heroDied: true },
-    { killed: 1, heroDied: true },
-    { killed: 3, heroDied: false },
+    { killed: 2, heroDied: true },
+    { killed: 5, heroDied: false },
+    { killed: 5, heroDied: false },
   ],
   fast_runner: [
-    { killed: 1, heroDied: true },
+    { killed: 5, heroDied: false },
     { killed: 5, heroDied: false },
     { killed: 5, heroDied: false },
   ],
   ranged_archer: [
-    { killed: 1, heroDied: true },
-    { killed: 3, heroDied: true },
-    { killed: 4, heroDied: false },
+    { killed: 2, heroDied: true },
+    { killed: 5, heroDied: false },
+    { killed: 5, heroDied: false },
   ],
   tank: [
-    { killed: 0, heroDied: true },
-    { killed: 0, heroDied: true },
-    { killed: 0, heroDied: true },
+    { killed: 1, heroDied: true },
+    { killed: 3, heroDied: true },
+    { killed: 5, heroDied: false },
   ],
 };
+
+/** The hero's attacks a runner takes to die, and a tank: the one hit and the four the catalogue gives them. */
+const RUNNER_HITS = 1;
+const TANK_HITS = 4;
 
 /** How long the archetypes session walks the hero round the ring away from the runner and from the archer. */
 const WALK_SECONDS = 20;
@@ -103,10 +110,10 @@ const TICKS_PER_SECOND = 30;
 /** How much faster an archer takes health from a hero that stands and trades than from one that walks away, at the least. */
 const STANDING_PENALTY = 1.5;
 
-/** The four spells the tank rotation throws, in order, at every orb level 7. */
-const TANK_ROTATION = ["updraft", "zenith", "bolide", "clarion"];
+/** The spells thrown with the attack beside them; the rest are thrown alone. */
+const WITH_THE_ATTACK = ["hoarfrost", "emberling", "quicken"];
 
-/** The five spells thrown alone at a fresh tank after the rotation. */
+/** The five spells thrown alone at a fresh tank at every orb level 7. */
 const TANK_SINGLES = ["updraft", "zenith", "bolide", "clarion", "glacier"];
 
 /** See the replay determinism spec: these replay long sessions and assert what happened, never how fast. */
@@ -126,6 +133,7 @@ type Fight = {
   heroDeaths: number;
   heroDamage: number;
   enemyDamage: number;
+  enemyHits: number;
 };
 
 /** The replay of `file` on a fresh world, failing loudly on a refusal so the test names it. */
@@ -183,6 +191,7 @@ const fightsOf = (name: string): Fight[] => {
         heroDeaths: 0,
         heroDamage: 0,
         enemyDamage: 0,
+        enemyHits: 0,
       };
       fights.push(fight);
     }
@@ -211,6 +220,7 @@ const fightsOf = (name: string): Fight[] => {
             fight.heroDamage += event.amount;
           } else {
             fight.enemyDamage += event.amount;
+            fight.enemyHits += 1;
           }
         }
       }
@@ -233,9 +243,38 @@ const fightAt = (fights: readonly Fight[], index: number): Fight => {
   return fight;
 };
 
+/** What a spell did to a grunt pack: how many it killed, and the damage the pack took. */
+type Dealt = Readonly<{ killed: number; damage: number }>;
+
+const NOTHING: Dealt = { killed: 0, damage: 0 };
+
+/**
+ * Whether `higher` is the stronger outcome: more of the pack killed, or as many and more
+ * damage. A pack that dies sooner takes less in all, so kills come first.
+ */
+const isStronger = (higher: Dealt, lower: Dealt): boolean =>
+  higher.killed > lower.killed ||
+  (higher.killed === lower.killed && higher.damage > lower.damage);
+
+/**
+ * The level a fight starts at: the block's own for its first fight, and at least that after,
+ * since the sessions only level the hero up between blocks and kills inside one may carry it on.
+ */
+const expectLevelFrom = (
+  fight: Readonly<Fight>,
+  level: number,
+  indexInBlock: number,
+): void => {
+  if (indexInBlock === 0) {
+    expect(fight.heroLevel).toBe(level);
+  } else {
+    expect(fight.heroLevel).toBeGreaterThanOrEqual(level);
+  }
+};
+
 describe("the balance pass", () => {
   it(
-    "replays the hero session: a hero that only stands and attacks, at levels 1, 10, and 20, against a pack of each archetype",
+    "replays the hero session: a hero that only stands and attacks, from levels 1, 10, and 20, against a pack of each archetype",
     () => {
       const fights = fightsOf(HERO_SESSION);
 
@@ -251,12 +290,16 @@ describe("the balance pass", () => {
 
           expect(fight.archetypeId).toBe(archetypeId);
           expect(fight.count).toBe(PACK_SIZE);
-          expect(fight.heroLevel).toBe(level);
+          expectLevelFrom(fight, level, archetypeIndex);
           expect(fight.casts).toEqual([]);
           expect({
             killed: fight.enemyDeaths,
             heroDied: fight.heroDeaths > 0,
           }).toEqual(outcome);
+
+          if (archetypeId === "fast_runner") {
+            expect(fight.enemyHits).toBe(fight.enemyDeaths * RUNNER_HITS);
+          }
         });
       });
     },
@@ -267,7 +310,7 @@ describe("the balance pass", () => {
     "replays the spells session: every spell at a pack at orb levels 1, 4, and 7",
     () => {
       const fights = fightsOf(SPELLS_SESSION);
-      const dealt = new Map<string, number[]>();
+      const dealt = new Map<string, Dealt[]>();
 
       expect(fights).toHaveLength(ORB_LEVELS.length * SPELL_FIGHTS.length);
 
@@ -280,13 +323,16 @@ describe("the balance pass", () => {
 
           expect(fight.archetypeId).toBe(archetypeId);
           expect(fight.count).toBe(PACK_SIZE);
-          expect(fight.heroLevel).toBe(hero);
+          expectLevelFrom(fight, hero, spellIndex);
           expect(fight.orbLevel).toBe(orb);
           expect(fight.casts).toEqual([spell]);
           expect(fight.heroDeaths).toBe(0);
 
           if (archetypeId === "melee_grunt") {
-            dealt.set(spell, [...(dealt.get(spell) ?? []), fight.enemyDamage]);
+            dealt.set(spell, [
+              ...(dealt.get(spell) ?? []),
+              { killed: fight.enemyDeaths, damage: fight.enemyDamage },
+            ]);
           }
 
           if (spell === "siphon") {
@@ -311,26 +357,27 @@ describe("the balance pass", () => {
             );
           }
 
-          if (orb === 1) {
+          if (orb === 1 && !WITH_THE_ATTACK.includes(spell)) {
             expect(fight.enemyDeaths, spell).toBe(0);
           }
         });
       });
 
       for (const spell of DAMAGING_SPELLS) {
-        const [first = 0, middle = 0, last = 0] = dealt.get(spell) ?? [];
+        const [first = NOTHING, middle = NOTHING, last = NOTHING] =
+          dealt.get(spell) ?? [];
 
-        expect(middle, spell).toBeGreaterThan(first);
-        expect(last, spell).toBeGreaterThan(middle);
+        expect(isStronger(middle, first), spell).toBe(true);
+        expect(isStronger(last, middle), spell).toBe(true);
       }
 
-      expect(dealt.get("wane")).toEqual([0, 0, 0]);
+      expect(dealt.get("wane")).toEqual([NOTHING, NOTHING, NOTHING]);
     },
     REPLAY_TIMEOUT_MS,
   );
 
   it(
-    "replays the archetypes session: the grunt is kited, the runner is not, the archer punishes standing still, and the tank takes a combo",
+    "replays the archetypes session: the grunt is kited, the runner is walked away from, the archer punishes standing still, and the tank falls to four attacks and to any spell alone",
     () => {
       const fights = fightsOf(ARCHETYPES_SESSION);
       const [
@@ -338,7 +385,7 @@ describe("the balance pass", () => {
         runner,
         archerStanding,
         archerWalking,
-        tankRotation,
+        tankStanding,
         ...tankSingles
       ] = fights;
 
@@ -351,7 +398,7 @@ describe("the balance pass", () => {
 
       expect(runner?.archetypeId).toBe("fast_runner");
       expect(runner?.enemyDeaths).toBe(0);
-      expect(runner?.heroDamage).toBeGreaterThan(0);
+      expect(runner?.heroDamage).toBe(0);
 
       if (
         archerStanding?.clearedTick === null ||
@@ -373,18 +420,23 @@ describe("the balance pass", () => {
       expect(walkingRate).toBeGreaterThan(0);
       expect(standingRate).toBeGreaterThan(STANDING_PENALTY * walkingRate);
 
-      expect(tankRotation?.archetypeId).toBe("tank");
-      expect(tankRotation?.orbLevel).toBe(7);
-      expect(tankRotation?.casts).toEqual(TANK_ROTATION);
-      expect(tankRotation?.enemyDeaths).toBe(1);
-      expect(tankRotation?.enemyDamage).toBeGreaterThanOrEqual(tankDef.health);
+      expect(tankStanding?.archetypeId).toBe("tank");
+      expect(tankStanding?.heroLevel).toBe(1);
+      expect(tankStanding?.casts).toEqual([]);
+      expect(tankStanding?.enemyDeaths).toBe(1);
+      expect(tankStanding?.heroDeaths).toBe(0);
+      expect(tankStanding?.enemyHits).toBe(TANK_HITS);
 
       TANK_SINGLES.forEach((spell, index) => {
         const single = tankSingles[index];
 
+        expect(single?.archetypeId, spell).toBe("tank");
+        expect(single?.orbLevel, spell).toBe(7);
         expect(single?.casts, spell).toEqual([spell]);
-        expect(single?.enemyDeaths, spell).toBe(0);
-        expect(single?.enemyDamage, spell).toBeLessThan(tankDef.health / 2);
+        expect(single?.enemyDeaths, spell).toBe(1);
+        expect(single?.enemyDamage, spell).toBeGreaterThanOrEqual(
+          tankDef.health,
+        );
       });
     },
     REPLAY_TIMEOUT_MS,

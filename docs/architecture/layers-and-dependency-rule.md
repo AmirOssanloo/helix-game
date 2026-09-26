@@ -11,7 +11,7 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 
 | Layer | Job | Holds |
 | --- | --- | --- |
-| `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids |
+| `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids, an integer hash |
 | `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and `public.ts` |
 | `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, and `public.ts` |
 | `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
@@ -77,6 +77,7 @@ Most placement questions come down to one: **does it decide, orchestrate, descri
 | A new command or event variant | `domain/commands/`, `domain/events/` |
 | A named effect a spell references | `domain/abilities/effects/` |
 | An AI behaviour an enemy references | `domain/ai/behaviours/` |
+| A random draw in a rule | The keyed draw in `domain/random/`, with a new entry in its purpose list |
 | A spell, enemy, status, or map | `content/<kind>/` |
 | A number design will retune | The tuning table in `content/`, read through world state |
 | Anything that draws or reads input | `presentation/` |

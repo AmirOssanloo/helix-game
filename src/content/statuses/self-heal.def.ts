@@ -12,7 +12,7 @@ export const selfHealDef = {
   modifiers: [],
   damageOverTime: null,
   healOverTime: {
-    perSecond: { orb: "quartz", byLevel: [40, 40, 40, 40, 40, 40, 40] }, // tunable
+    perSecond: { orb: "quartz", byLevel: [10, 10, 10, 10, 10, 10, 10] }, // tunable
   },
   onDamageTaken: null,
   onDamageDealt: null,

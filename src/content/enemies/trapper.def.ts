@@ -2,27 +2,27 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The trapper: a ranged enemy that throws a net to root the hero where it stands, holding it for
- * the rest of its pack. The archer's body and pace, a little tougher, a lighter shot. An elite also
+ * the rest of its pack. The archer's body and toughness, a little slower, a heavier shot. An elite also
  * looses a heavy arrow; a boss looses the arrow and brings adds. Every number is a starting value
  * design retunes here.
  */
 export const trapperDef = {
   id: "trapper",
-  health: 320, // tunable
-  healthRegen: 0.5, // tunable
+  health: 95, // tunable
+  healthRegen: 0.1, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 2, // tunable
   magicResistance: 0,
-  movementSpeed: 260, // tunable
+  movementSpeed: 210, // tunable
   turnRate: 0.6, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 16, // tunable
+    damage: 30, // tunable
     range: 500, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.5, // tunable

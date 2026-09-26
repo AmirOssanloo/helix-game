@@ -29,16 +29,16 @@ export const frostArcherDef = {
   id: 'frost_archer',
   name: 'Frost Archer',
   tier: 'normal',                       // 'normal' | 'elite' | 'boss'
-  health: 320,
-  healthRegen: 0.5,                     // Per second; the pipeline converts to per tick
+  health: 95,
+  healthRegen: 0.1,                     // Per second; the pipeline converts to per tick
   armour: 2,
   magicResistance: 0.25,
-  moveSpeed: 300,
+  moveSpeed: 225,
   turnRate: 0.7,                        // Radians per 0.03 s, as the hero's
-  collisionRadius: 24,
-  boundRadius: 24,
+  collisionRadius: 32,                  // A radius class, wider than the body is drawn
+  boundRadius: 24,                      // The drawn size, and what reach is measured on
   attack: {
-    damage: 28,
+    damage: 30,
     damageType: 'physical',
     range: 550,
     projectileSpeed: 900,
@@ -60,7 +60,9 @@ export const frostArcherDef = {
 } as const satisfies EnemyDef
 ```
 
-Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable, grants its `experience` times the `elite_experience_multiplier` or `boss_experience_multiplier` tunable on its death, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
+Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable and its attack's damage times the `elite_damage_multiplier` or `boss_damage_multiplier` tunable, grants its `experience` times the `elite_experience_multiplier` or `boss_experience_multiplier` tunable on its death, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
+
+The numbers are set as the [enemy catalogue](../product/specs/enemy-catalogue.md#1-purpose) sets every archetype's, against a monster of Diablo II's first act: a fighting archetype dies to one to four of the hero's basic attacks after its armour, and walks slower than the hero. The content tier checks both. The Frost Archer's 95 behind armour 2 is three of the hero's attacks, and its 225 is under the hero's 280.
 
 ---
 
@@ -82,7 +84,7 @@ export const rangedCirclerBehaviour: MachineBehaviour = {
 }
 ```
 
-Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves the point to somewhere the map allows, walks there on the chase re-path interval, and swings through the hero's attack code once the hero is in reach. A standing rule allocates nothing, changes nothing in the world it may read, and gets every number from the attack record, the unit, the unit's definition, and the margin it is handed. A driver that should not run the machine at all, as a summon's does not, is `kind: 'driver'` with a `drive` function that issues orders.
+Register the key in `src/domain/ai/behaviours/index.ts`. The machine resolves the point to somewhere the map allows, walks there on the chase re-path interval, halting now and then instead as the [enemies page](../product/features/enemies.md#behaviour) says, and swings through the hero's attack code once the hero is in reach. A standing rule allocates nothing, changes nothing in the world it may read, and gets every number from the attack record, the unit, the unit's definition, and the margin it is handed. A driver that should not run the machine at all, as a summon's does not, is `kind: 'driver'` with a `drive` function that issues orders.
 
 ---
 
@@ -109,7 +111,7 @@ export const enemies = [meleeGruntDef, fastRunnerDef, rangedArcherDef, tankDef, 
 pnpm test tests/content/
 ```
 
-You should see `frost_archer` validate, `ranged_kiter` resolve, `frost_volley` resolve, and `square` found in the atlas. A wrong key fails here with the key named.
+You should see `frost_archer` validate, `ranged_kiter` resolve, `frost_volley` resolve, `square` found in the atlas, and the archer die to one to four of the hero's attacks and walk slower than the hero. A wrong key fails here with the key named.
 
 ---
 

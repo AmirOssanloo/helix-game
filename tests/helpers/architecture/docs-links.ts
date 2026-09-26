@@ -116,7 +116,7 @@ const slugOf = (heading: string): string =>
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s_-]/gu, "")
     .trim()
-    .replace(/\s+/g, "-");
+    .replace(/\s/g, "-");
 
 /** Every heading anchor in a Markdown file, with GitHub's `-1`, `-2` suffixes for repeats. */
 const collectAnchors = (content: string): Set<string> => {

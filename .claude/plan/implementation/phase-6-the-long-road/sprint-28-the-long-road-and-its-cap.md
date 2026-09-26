@@ -105,10 +105,10 @@ Choose the long road from the panel and walk it from level 1: grunts and runners
 
 | Check | Result |
 | --- | --- |
-| The long road walked by hand from the spawn to the last boss | Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24: a box in STATUS.md. Headless, the long-road stress case walks it from the spawn to the last boss's kill in 8524 ticks |
+| The long road walked by hand from the spawn to the last boss | Yes, 2026-09-26, by the maintainer's clean playtest, which the plan lets stand for this walk: from the spawn at level 1 to the last boss's kill on tick 12961 at level 10, seed 3742014961, with no place the road could not be walked; 2 heals and 8 mana restores from the panel, no `level_up`. Played with the panel closed, so the live count rising ahead and falling behind was not watched by eye; the long-road stress case holds it headless. Was: waiting on a person; headless, the stress case walks it in 8524 ticks |
 | The long-road stress case: mean, worst, heaviest tick, A* expansions | Production build in plain Node, twenty walks: mean 0.019 to 0.026 ms, worst 0.62 to 3.49 ms (median 1.43), heaviest tick 13 events, most A* expansions in a tick 1576 at 0.62 to 0.65 ms warm; at most 10 enemies live, no pack refused, none awake behind at the end. No A* cap, Q66 |
 | The bench and the densest choke's readouts in Chrome | Waiting on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24: the P6-S28-T02 box in STATUS.md |
-| Milestone M9 | Reached 2026-09-26 on the rows an agent can verify: the long road in the panel's map list, every pack placing on the empty road (T01), and the cap holding on a full walk headless (T03). The walk chosen from the panel by hand waits on a person, deferred |
+| Milestone M9 | Reached 2026-09-26 on the rows an agent can verify: the long road in the panel's map list, every pack placing on the empty road (T01), and the cap holding on a full walk headless (T03). Confirmed by hand 2026-09-26 by the maintainer's clean playtest of the long road, level 10 at the last boss's kill |
 | Actual days per ticket | T01: 0.5 · T02: 0.5 · T03: 0.5. Sized 4, done in 1.5 |
 
 ## Risks in this sprint

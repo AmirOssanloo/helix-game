@@ -75,6 +75,12 @@ export {
 export { describeKiting } from "./world/describe-kiting";
 export { greyedSlots } from "./world/greyed-slots";
 export { loadInputLog } from "./world/load-input-log";
+export {
+  recordArchetypesSession,
+  recordHeroSession,
+  recordSpellsSession,
+  saveInputLog,
+} from "./recording/balance-sessions";
 export { makeCast, type MakeCastOptions } from "./world/make-cast";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";

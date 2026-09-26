@@ -883,7 +883,7 @@ const layRing = (
  * The ranges the fight is decided by. On the hero, its attack range as far as a target's edge,
  * the range and its bound radius, and the acquire radius an attack-move searches; on each
  * enemy on screen with a definition, the aggro radius around where it stands and the leash
- * radius around its spawn point, which is what the machine measures each from. A radius of
+ * radius around its leash anchor, which is what the machine measures each from. A radius of
  * zero, the training dummy's, draws nothing.
  */
 class UnitRanges {
@@ -980,8 +980,8 @@ class UnitRanges {
     );
     this.ring(
       this.leash,
-      unit.spawnPoint.x,
-      unit.spawnPoint.y,
+      unit.ai.leashAnchor.x,
+      unit.ai.leashAnchor.y,
       record.def.leashRadius,
       LEASH_TINT,
     );
@@ -1080,7 +1080,7 @@ class StateLabels {
       label.x = this.drawn.x;
       label.y =
         this.drawn.y -
-        this.placement.riseOf(unit.collisionRadius) -
+        this.placement.riseOf(unit.boundRadius) -
         STATE_LABEL_MARGIN;
       label.tint = LABEL_TINT;
       label.alpha = OPAQUE;

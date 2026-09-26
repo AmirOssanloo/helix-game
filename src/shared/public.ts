@@ -2,6 +2,7 @@ export { bearing, shortestArc, wrapAngle } from "./angle";
 export { assert } from "./assert";
 export { clamp } from "./clamp";
 export type { DeepReadonly } from "./deep-readonly";
+export { HASH_RANGE, hash4 } from "./hash";
 export {
   type EntityId,
   GENERATION_BITS,

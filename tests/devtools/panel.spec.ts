@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
 import { FixedStepDriver, Session } from "@app/public";
-import { contentRegistry, meleeGruntDef, tuningTable } from "@content/public";
+import {
+  contentRegistry,
+  fastRunnerDef,
+  meleeGruntDef,
+  tuningTable,
+} from "@content/public";
 import type {
   DevApi,
   MemoryStore,
@@ -20,6 +25,10 @@ import type { Simulation } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 3;
+
+/** The definitions folder labels a number with its content default: the grunt's health, and the runner's, which a search for the grunt's hides. */
+const GRUNT_HEALTH = `health (${String(meleeGruntDef.health)})`;
+const RUNNER_HEALTH = `health (${String(fastRunnerDef.health)})`;
 
 /** The map a session starts on, and a second one with the hero spawning away from the origin, so a recreate on it shows. */
 /** The first map, with one checkpoint off the spawn point for the readout to report, and two dormant packs: one inside the activation radius of the spawn point and outside a grunt's aggro radius, one far off. */
@@ -371,8 +380,10 @@ describe("the developer panel", () => {
       "def:enemy:melee_grunt:health",
     );
 
-    expect(numberFieldNamed(arranged.host, "health (400)").value).toBe("400");
-    expect(() => rowNamed(arranged.host, "health (220)")).toThrow();
+    expect(Number(numberFieldNamed(arranged.host, GRUNT_HEALTH).value)).toBe(
+      meleeGruntDef.health,
+    );
+    expect(() => rowNamed(arranged.host, RUNNER_HEALTH)).toThrow();
 
     arranged.handle.unmount();
   });
@@ -384,7 +395,7 @@ describe("the developer panel", () => {
       numberFieldOrTextNamed(arranged.host, "search"),
       "def:enemy:melee_grunt:health",
     );
-    typeInto(numberFieldNamed(arranged.host, "health (400)"), "900");
+    typeInto(numberFieldNamed(arranged.host, GRUNT_HEALTH), "900");
     buttonNamed(arranged.host, "Reset definitions").click();
     arranged.world.tick();
 
@@ -392,9 +403,11 @@ describe("the developer panel", () => {
     expect(arranged.world.log.commandAt(1)).toMatchObject({
       kind: "set_tuning",
       key: "def:enemy:melee_grunt:health",
-      value: 400,
+      value: meleeGruntDef.health,
     });
-    expect(numberFieldNamed(arranged.host, "health (400)").value).toBe("400");
+    expect(Number(numberFieldNamed(arranged.host, GRUNT_HEALTH).value)).toBe(
+      meleeGruntDef.health,
+    );
 
     arranged.handle.unmount();
   });

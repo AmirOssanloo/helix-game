@@ -9,6 +9,7 @@ import {
   tuningTable,
 } from "@content/public";
 import type { EnemyDef, EnemyTier, PackDef, SpellDef } from "@domain/public";
+import { mitigate } from "@domain/public";
 import { REPOSITORY_ROOT } from "../helpers";
 
 /** The two content specifications whose tables restate what the definition files hold. */
@@ -192,6 +193,54 @@ describe("the enemy catalogue", () => {
   );
 });
 
+/** The fewest and the most of the hero's basic attacks a normal fighting archetype dies to, as a Diablo II first-act monster does. */
+const FEWEST_HITS = 1;
+const MOST_HITS = 4;
+
+/** What the hero's basic attack lands on `def` after its armour. */
+const heroHitOn = (def: EnemyDef): number =>
+  mitigate(
+    heroDef.attack.damage,
+    "physical",
+    {
+      maxHealth: def.health,
+      healthRegen: def.healthRegen,
+      maxMana: def.mana,
+      manaRegen: def.manaRegen,
+      armour: def.armour,
+      attackSpeed: 0,
+      magicResistance: def.magicResistance,
+    },
+    tuningTable.armour_constant,
+  );
+
+/** Every archetype that fights: all but the indestructible dummy. */
+const FIGHTING = enemies.filter((def) => !def.indestructible);
+
+describe("the enemy catalogue's ratios", () => {
+  it.each(FIGHTING.map((def): [string, EnemyDef] => [def.id, def]))(
+    "%s dies to one to four of the hero's basic attacks after its armour",
+    (_id, def) => {
+      const hits = Math.ceil(def.health / heroHitOn(def));
+
+      expect(hits).toBeGreaterThanOrEqual(FEWEST_HITS);
+      expect(hits).toBeLessThanOrEqual(MOST_HITS);
+    },
+  );
+
+  it("puts an elite at three times a normal's health and a boss at four, both landing half again its hit", () => {
+    expect(tuningTable.elite_health_multiplier).toBe(3);
+    expect(tuningTable.boss_health_multiplier).toBe(4);
+    expect(tuningTable.elite_damage_multiplier).toBe(1.5);
+    expect(tuningTable.boss_damage_multiplier).toBe(1.5);
+  });
+
+  it("pays an elite three times a normal's experience and a boss ten, as the level budget is set against", () => {
+    expect(tuningTable.elite_experience_multiplier).toBe(3);
+    expect(tuningTable.boss_experience_multiplier).toBe(10);
+  });
+});
+
 describe("the spell catalogue", () => {
   const summary = spellSummary();
 
@@ -304,6 +353,9 @@ const levelAt = (experience: number): number =>
   heroDef.experienceThresholds.filter((threshold) => threshold <= experience)
     .length;
 
+/** The experience the long road pays before the last boss and with it: the spec's budget, which no enemy retune moves. */
+const LEVEL_BUDGET = [5408, 6308];
+
 const sum = (values: readonly number[]): number =>
   values.reduce((total, value) => total + value, 0);
 
@@ -387,6 +439,7 @@ describe("the long road's spec", () => {
     const beforeLastBoss = sum(packs.slice(0, lastBoss).map(experienceOf));
     const fullClear = sum(packs.map(experienceOf));
 
+    expect([beforeLastBoss, fullClear]).toEqual(LEVEL_BUDGET);
     expect(levelAt(beforeLastBoss)).toBeLessThan(10);
     expect(levelAt(fullClear)).toBe(10);
     expect(fullClear).toBeLessThan(heroDef.experienceThresholds[10] ?? 0);

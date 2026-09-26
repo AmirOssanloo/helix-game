@@ -82,6 +82,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
 | Which lint rules enforce the layer table | The layer allow-list in `eslint/matrix.js`, applied per layer by the files under `eslint/layers/` |
 | Which lint rules ban the clock and unseeded random | `eslint/rules/no-ambient-time-in-simulation.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/` |
+| How a rule draws a random number, and which draw purposes exist | `src/domain/random/` — the keyed draw and the one purpose list; the integer hash under it is in `src/shared/`, and the sequential generator the simulation keeps is `src/simulation/random.ts` |
 | Which rules the architecture test enforces | `tests/architecture.spec.ts` |
 | Which files the documentation link test walks | `tests/docs-links.spec.ts` — the folder list at the top of the file |
 | Which acceptance tests mirror the mechanics spec | `tests/simulation/` — one spec per group of the spec's acceptance tests, prefixed `at-` |

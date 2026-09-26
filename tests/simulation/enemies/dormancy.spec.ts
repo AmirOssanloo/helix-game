@@ -7,6 +7,7 @@ import {
   tuningTable,
 } from "@content/public";
 import type { MapDef, PackDef, Unit } from "@domain/public";
+import { applyDamage } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
   beginReplay,
@@ -22,6 +23,7 @@ import {
   spawnHero,
   submit,
   tickUntil,
+  unitIdOf,
 } from "../../helpers";
 
 /** Where the pack stands: straight out along +X, past the sleep radius from the origin. */
@@ -238,6 +240,79 @@ describe("a pack placed from a map's record", () => {
 
     expect(sawAwayAndFar).toBe(true);
     expect(sawHurtAtHomeAndFar).toBe(true);
+    expect(packOf(world).state).toBe("asleep");
+    expect(packOf(world).survivors).toBe(PACK_COUNT);
+  });
+
+  it("woken by a hit on its way home, fights again, then sleeps whole with no leash heal", () => {
+    const world = arrangeAwake(gruntPack(PACK_COUNT));
+    const heroId = world.state.run.heroId;
+
+    if (heroId === null) {
+      throw new Error("The session has a hero");
+    }
+
+    walkTo(world, IN_AGGRO);
+    tickUntil(
+      world,
+      () => gruntsOf(world).every((grunt) => grunt.ai.state !== "idle"),
+      PATIENCE,
+    );
+
+    const grunts = gruntsOf(world);
+
+    for (const grunt of grunts) {
+      grunt.resources.health = grunt.stats.maxHealth - HURT;
+    }
+
+    moveTo(world, FAR);
+    tickUntil(
+      world,
+      () => grunts.every((grunt) => grunt.ai.state === "return"),
+      PATIENCE,
+    );
+
+    const [struck] = grunts;
+
+    if (struck === undefined) {
+      throw new Error("The pack stands");
+    }
+
+    applyDamage(world.state, unitIdOf(world, struck), 1, "pure", heroId);
+    world.tick();
+
+    expect(grunts.map((grunt) => grunt.ai.state)).toEqual(
+      grunts.map(() => "chase"),
+    );
+    expect(
+      grunts.every((grunt) => grunt.resources.health < grunt.stats.maxHealth),
+    ).toBe(true);
+
+    const perTick = meleeGruntDef.healthRegen / tuningTable.sim_hz;
+    let before = grunts.map((grunt) => grunt.resources.health);
+    let largestGain = 0;
+
+    tickUntil(
+      world,
+      () => {
+        if (packOf(world).state !== "awake") {
+          return true;
+        }
+
+        grunts.forEach((grunt, member) => {
+          largestGain = Math.max(
+            largestGain,
+            grunt.resources.health - (before[member] ?? 0),
+          );
+        });
+        before = grunts.map((grunt) => grunt.resources.health);
+
+        return false;
+      },
+      PATIENCE,
+    );
+
+    expect(largestGain).toBeLessThanOrEqual(perTick + 1e-9);
     expect(packOf(world).state).toBe("asleep");
     expect(packOf(world).survivors).toBe(PACK_COUNT);
   });

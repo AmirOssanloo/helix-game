@@ -1,30 +1,30 @@
 import type { EnemyDef } from "@domain/public";
 
 /**
- * The melee grunt: the baseline enemy, slower than the hero so walking away from it works, the
- * hero's size so a pack of them queues through the arena's corridor one at a time, and worth a
- * fifth of the first level so five of them are one. It closes to contact and hits at the end of
- * its attack point, with no projectile. An elite slams once the hero is inside the slam's
- * circle; a boss also heals itself below half its health, slams, and charges the hero.
- * Every number is a starting value design retunes here.
+ * The melee grunt: the baseline enemy, slower than the hero so walking away from it works, drawn
+ * the hero's size with the widest body that paths through the arena's corridor, so a pack of
+ * them queues through it one at a time, and worth a fifth of the first level so five of them are
+ * one. It closes to contact and hits at the end of its attack point, with no projectile. An
+ * elite slams once the hero is inside the slam's circle; a boss also heals itself below half its
+ * health, slams, and charges the hero. Every number is a starting value design retunes here.
  */
 export const meleeGruntDef = {
   id: "melee_grunt",
-  health: 400, // tunable
-  healthRegen: 1, // tunable
+  health: 95, // tunable
+  healthRegen: 0.2, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 2, // tunable
   magicResistance: 0,
-  movementSpeed: 240, // tunable
+  movementSpeed: 155, // tunable
   turnRate: 0.5, // tunable
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },
   attack: {
-    damage: 20, // tunable
+    damage: 26, // tunable
     range: 100, // tunable
     acquireRadius: 700, // tunable
     pointSeconds: 0.4, // tunable

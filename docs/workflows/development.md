@@ -58,6 +58,7 @@ pnpm test --project simulation           # One tier: unit, simulation, content, 
 pnpm test -t "replay"                    # The determinism test
 pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders, the long road
 pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
+HELIX_RECORD=balance pnpm test tests/simulation/replays/record-balance.spec.ts  # Record the balance hero, spells, and archetypes sessions again, overwriting their logs
 ```
 
 The acceptance tests from the [mechanics spec](../product/specs/character-movement-and-mechanics.md) are named by their identifiers — `AT-M1` to `AT-I9` — so a failure in review can be pointed at by name.

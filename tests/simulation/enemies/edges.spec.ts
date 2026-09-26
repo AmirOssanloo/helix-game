@@ -106,9 +106,10 @@ const hit = (
   applyDamage(world.state, unitIdOf(world, target), amount, "pure", source);
 };
 
-/** Stands in for whatever carries a unit past its leash mid-point: its home moved beyond reach, which the machine reads the same way. */
+/** Stands in for whatever carries a unit past its leash mid-point: its home, and the anchor its leash is measured from, moved beyond reach, which the machine reads the same way. */
 const leashNow = (unit: Unit): void => {
   unit.spawnPoint.x = unit.curr.x + BEYOND_LEASH;
+  unit.ai.leashAnchor.x = unit.spawnPoint.x;
 };
 
 /** The unit at `index`, which the case spawned. */

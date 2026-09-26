@@ -19,7 +19,7 @@ export const trainingDummyDef = {
   movementSpeed: 0,
   turnRate: 0,
   body: {
-    collisionRadius: 27, // tunable
+    collisionRadius: 32, // tunable
     boundRadius: 24, // tunable
     selectionRadius: 32, // tunable
   },

@@ -2,28 +2,28 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The imp: the add a summoner brings, never placed in a pack of its own. Small, quick, and
- * frail, it runs at the hero beside its summoner and dies to two of the hero's attacks. It
+ * frail, it runs at the hero beside its summoner and dies to one of the hero's attacks. It
  * grants no experience, so a summoner cannot be farmed for what it brings, and it leaves with
  * its summoner or when its lifetime runs out. Every number is a starting value design retunes
  * here.
  */
 export const impDef = {
   id: "imp",
-  health: 120, // tunable
+  health: 25, // tunable
   healthRegen: 0,
   mana: 0,
   manaRegen: 0,
   armour: 0,
   magicResistance: 0,
-  movementSpeed: 300, // tunable
+  movementSpeed: 265, // tunable
   turnRate: 0.8, // tunable
   body: {
-    collisionRadius: 16, // tunable
+    collisionRadius: 20, // tunable
     boundRadius: 14, // tunable
     selectionRadius: 20, // tunable
   },
   attack: {
-    damage: 8, // tunable
+    damage: 20, // tunable
     range: 100, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.3, // tunable

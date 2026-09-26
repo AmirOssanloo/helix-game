@@ -110,7 +110,7 @@ describe("the orbs around the hero", () => {
     expect(distances).toHaveLength(SLOTS);
 
     for (const distance of distances) {
-      expect(distance).toBeGreaterThan(arranged.hero.collisionRadius);
+      expect(distance).toBeGreaterThan(arranged.hero.boundRadius);
       expect(distance).toBeCloseTo(distances[0] ?? Number.NaN);
     }
 

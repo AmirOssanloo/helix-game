@@ -10,20 +10,20 @@ Every archetype owns a definition file under `src/content/enemies/`, one per arc
 
 ## Archetypes
 
-The first four cover the four things a spell has to deal with: something slow that hits hard, something fast, something at range, and something that does not die quickly. The other nine each bring one enemy ability to the fight, so every status the hero can suffer has an archetype that causes it. Those thirteen are the roster; the training dummy and the imp stand outside it.
+The first four cover the four things a spell has to deal with: something slow that walks up and hits, something quick that arrives first, something at range, and something that takes the most to kill. Every one of them dies to one to four of the hero's basic attacks and walks slower than the hero, as the monsters of Diablo II's first act do; the [enemy catalogue](../specs/enemy-catalogue.md) has the numbers and the monster each is set against. The other nine each bring one enemy ability to the fight, so every status the hero can suffer has an archetype that causes it. Those thirteen are the roster; the training dummy and the imp stand outside it.
 
 | Archetype | Role | Shape |
 | --- | --- | --- |
-| Melee grunt | Slow, medium health, walks up and hits | Square |
-| Fast runner | Low health, fast, reaches the hero before the grunt does | Small square |
+| Melee grunt | The slowest, three hits to kill; walks up and hits | Square |
+| Fast runner | One hit to kill, quick; reaches the hero before the grunt does | Small square |
 | Ranged archer | Stays at range, fires a projectile | Square with a dot |
-| Tank | High health, high armour, slow | Large square |
+| Tank | Heavy armour and heavy hits, slow; the most hits to kill | Large square |
 | Training dummy | Never moves, never attacks, never dies. Takes and shows damage | Square with an outline |
 | Brute | Heavy melee; its swing stuns on a rhythm | Square, dark red |
 | Frost raider | Quick melee; every hit slows the hero | Small square, ice blue |
 | Hexer | Stands off and silences the hero | Square with a dot, indigo |
 | Trapper | Throws a net that roots the hero | Square with a dot, teal |
-| Skirmisher | Light and fast; looses a heavy arrow from beyond the hero's reach | Small square with a dot, orange |
+| Skirmisher | Light and quick; looses a heavy arrow from beyond the hero's reach, though its own shot falls short of it | Small square with a dot, orange |
 | Crusher | Slow and armoured; slams the ground beside it | Large square, slate |
 | Summoner | Stays back and brings imps until it dies | Square with a dot, dark violet |
 | Lancer | Charges across the gap to the hero | Square, steel blue |
@@ -64,26 +64,26 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 | --- | --- | --- |
 | Idle | Stands at its spawn point, or wanders 64 units from it every few seconds, regenerating | The hero enters its aggro radius, or it takes damage |
 | Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
-| Chase | Paths toward the hero, re-pathing on a budget | In attack range, into Attack; or past its leash radius, or the hero dead, untargetable, or hidden from aggro, into Return |
-| Attack | Turns to face, runs its attack point, hits, repeats | Target out of range, into Chase; or the hero dead, target lost, hidden, or past its leash radius, into Return |
-| Return | Paths back to its spawn point, ignoring the hero, regenerating | Arrives, into Idle |
+| Chase | Paths toward the hero, re-pathing on a budget. Now and then it halts: at each re-path it stands where it is instead of walking, with the halt chance, 8% (`chase_halt_chance`), for between half and all of the halt time, 1 second (`chase_halt_seconds`), each unit on its own draw, so a pack comes on in fits rather than as one swarm | In attack range, into Attack, halted or not; or past its leash radius, or the hero dead, untargetable, or hidden from aggro, into Return, halted or not |
+| Attack | Turns to face, runs its attack point, hits, repeats. A melee enemy neither walks after the hero nor casts until its whole swing, attack point and backswing, is over | Target out of range, into Chase, once any attack point it began has landed and, for a melee enemy, its backswing has ended; or the hero dead, target lost, hidden, or past its leash radius, into Return at once |
+| Return | Paths back to its spawn point, regenerating, ignoring the hero unless the hero hits it | Arrives, into Idle; or hit by the hero while it can see the hero, through Aggro into Chase, its pack with it |
 | Dead | Gives experience, clears statuses, releases its slot after a short delay | Never |
 
-**Aggro is shared across a pack.** One enemy seeing or being hit by the hero puts its whole pack into Aggro on the same tick. A pack is whatever was spawned together.
+**Aggro is shared across a pack.** One enemy seeing or being hit by the hero puts its whole pack into Aggro on the same tick, the members resting at home and those walking home alike. A pack is whatever was spawned together.
 
-**Leash** is measured from each enemy's own spawn point. An enemy past its leash radius returns regardless of what the rest of its pack does.
+**Leash** is measured from each enemy's own spawn point, except for an enemy woken on its way home: its leash is measured from where it stood when it woke, brought in to its leash radius from its spawn point if it stood further, until it is home in Idle again. So a woken enemy does not turn for home on the next tick, and however often a pack is pulled back on its way home it follows no further than twice its leash from its spawn point. An enemy past its leash radius returns regardless of what the rest of its pack does.
 
 Enemies path with the same grid A* the hero uses and push each other apart rather than steering around one another, so a pack in a corridor forms a queue, not a line.
 
 ## Tiers
 
-| Tier | Health | Experience | Abilities | Look |
-| --- | --- | --- | --- | --- |
-| Normal | The definition's | The definition's | The definition's list | Its archetype's shape, no outline |
-| Elite | 3 times the definition's | 3 times the definition's | The definition's list, then its one elite ability | An outline around the body |
-| Boss | 10 times the definition's | 10 times the definition's | The definition's list, then its boss abilities | A larger outline, so its line reads thicker |
+| Tier | Health | Attack damage | Experience | Abilities | Look |
+| --- | --- | --- | --- | --- | --- |
+| Normal | The definition's | The definition's | The definition's | The definition's list | Its archetype's shape, no outline |
+| Elite | 3 times the definition's | 1.5 times the definition's, the elite damage multiplier | 3 times the definition's | The definition's list, then its one elite ability | An outline around the body |
+| Boss | 4 times the definition's | 1.5 times the definition's, the boss damage multiplier | 10 times the definition's | The definition's list, then its boss abilities | A larger outline, so its line reads thicker |
 
-A tier is chosen when a pack spawns, from the panel or from a map's pack; any archetype spawns at any of the three. An imp a summoner brings is always normal, whatever its summoner's tier. A tier multiplies health and experience, so an elite pays for the time it takes to kill; an archetype worth nothing is worth nothing at any tier. It does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The four multipliers are tunables. The health multipliers are read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was; the experience multipliers are read when a unit dies, so a retune reaches the next death, a unit already standing included. The tier's abilities come after the definition's own in the order the selection rule tries them.
+A tier is chosen when a pack spawns, from the panel or from a map's pack; any archetype spawns at any of the three. An imp a summoner brings is always normal, whatever its summoner's tier. A tier multiplies health, attack damage, and experience, so an elite or a boss lasts longer, hits harder, and pays for the time it takes to kill; an archetype worth nothing is worth nothing at any tier. The damage multiplier is the attack's alone: a melee swing and a shot both carry it, before any modifier on the unit, while an ability's damage, the slam, the charge, the arrow, is its own and does not move with the tier. It does not change the rules. A boss is stunned by Hoarfrost like a grunt is. The six multipliers are tunables. The health and damage multipliers are read when a unit spawns, so a retune reaches the next spawn and leaves a unit already standing as it was; the experience multipliers are read when a unit dies, so a retune reaches the next death, a unit already standing included. The tier's abilities come after the definition's own in the order the selection rule tries them.
 
 ## Enemy abilities
 
@@ -116,7 +116,12 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 | State | What happens |
 | --- | --- |
 | Leashed mid-attack | The attack point is cancelled and the enemy returns; a projectile already fired still lands |
+| Hero walks out of a melee enemy's reach mid-swing | The enemy stands where it swung until its backswing ends, and follows on the next tick, so a hero who walks away as the hit lands gains the backswing's distance. A stun in the backswing ends the swing, and the enemy follows on the tick the stun ends |
+| A melee enemy's ability comes ready in its backswing | It finishes the backswing first and casts on the next tick, so a slam or a charge never cuts a swing short and a charge never carries it off the tick its hit lands. A cast it began before the swing runs to its end |
+| A chasing enemy halts | Only its walk stops. It still casts, turns to Attack the tick the hero is in reach, and turns for home the tick it passes its leash or loses the hero. Every member draws its own halts from the run's seed, its own id, and the tick, so a replay halts it on the same ticks and a pack never halts as one |
+| Hero closes on a kiter in its backswing | The kiter backs away at once, leaving its backswing, and casts in it when an ability is ready; only a melee enemy finishes its backswing |
 | Pack partially in aggro radius | The whole pack aggroes on the first member that sees or is hit |
+| Hero hits an enemy walking home | It turns on the next tick, through Aggro into Chase, and its pack with it, resting or walking home. It keeps the health its walk home gave it and no more, since there is no leash heal. A hit from nobody, or one while the hero is dead or hidden from aggro, leaves it walking home |
 | Hero uses Wane | Aggro drops; enemies return unless already adjacent and attacking |
 | A summoner dies, or the hero with a summon out | Its adds or summons go on the same tick, with no corpse and no experience |
 | Enemy calls adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |

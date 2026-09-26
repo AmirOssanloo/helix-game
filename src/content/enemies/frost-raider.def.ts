@@ -2,27 +2,27 @@ import type { EnemyDef } from "@domain/public";
 
 /**
  * The frost raider: a quick melee enemy whose every hit slows the hero, so walking away from it
- * stops working once it lands one. A little faster than the hero, the small body, light hits. An
+ * stops working once it lands one. A little slower than the hero until then, the small body. An
  * elite charges the gap; a boss also heals itself below half its health. Every number is a
  * starting value design retunes here.
  */
 export const frostRaiderDef = {
   id: "frost_raider",
-  health: 280, // tunable
-  healthRegen: 0.5, // tunable
+  health: 60, // tunable
+  healthRegen: 0.1, // tunable
   mana: 0,
   manaRegen: 0,
   armour: 1, // tunable
   magicResistance: 0.25, // tunable
-  movementSpeed: 290, // tunable
+  movementSpeed: 240, // tunable
   turnRate: 0.7, // tunable
   body: {
-    collisionRadius: 16, // tunable
+    collisionRadius: 20, // tunable
     boundRadius: 14, // tunable
     selectionRadius: 20, // tunable
   },
   attack: {
-    damage: 12, // tunable
+    damage: 30, // tunable
     range: 100, // tunable
     acquireRadius: 800, // tunable
     pointSeconds: 0.3, // tunable

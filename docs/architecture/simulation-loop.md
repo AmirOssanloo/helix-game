@@ -74,6 +74,7 @@ This is what makes a replay exact: two runs that receive the same commands at th
 **The same seed and the same input log produce the same world state, tick for tick.** That is the contract every system is written against.
 
 - The world owns a seeded random source. Nothing under `domain/` or `simulation/` reads `Math.random`, `Date.now`, or `performance.now`; lint bans them.
+- A rule draws a keyed number: a pure hash of the run's seed, an integer key such as the unit's id, the tick, and a purpose from the one purpose list in `domain/`. It reads the seed and writes nothing, so a draw in one rule never moves another's. The sequential generator on run scope is the simulation's, for orchestration that draws in sequence; a system never advances it. [ADR 0010](../adr/0010-a-rules-random-draw-is-a-keyed-hash.md) is why.
 - Iteration order is fixed. Pools iterate by index; the spatial hash returns candidates in cell-then-index order.
 - Every command carries the tick it applies to, and the ordering rule in [Commands and events](./commands-and-events.md) settles ties.
 - Floating-point arithmetic is fine. The contract is same-machine, same-build replay, not cross-platform bit equality.
@@ -119,6 +120,7 @@ A system holding a module-level variable — a cached list, a counter — that i
 | A system | A plain function over world state; reads the world, the tick count, the consumed commands, and the world's random source; allocates nothing in steady state |
 | Time in the domain | A tick count; seconds in a definition become ticks at load |
 | Random | The world's seeded source only; `Math.random`, `Date.now`, `performance.now` are banned by lint |
+| A rule's draw | Keyed: a hash of the seed, a key, the tick, and a purpose from the one list; writes nothing. The sequential generator is the simulation's, never advanced by a system |
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |
 | Determinism contract | Same seed and input log give the same state, same machine, same build |
 | Input log | Every consumed command with its tick, including debug and tuning commands |
