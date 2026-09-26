@@ -23,7 +23,7 @@ When two people call the same thing different names, the names leak into the cod
 | A hostile unit | **Enemy** | Monster, mob, creep, NPC |
 | A kind of enemy, as a definition | **Archetype** | Type, class, race |
 | Normal, elite, or boss | **Tier** | Rank, rarity |
-| A group of enemies that share aggro | **Pack** | Group, squad, wave |
+| A group of enemies that share aggro | **Pack** | Group, squad, wave, camp |
 | What drives an enemy or a summon each tick, a function the definition names by key | **Behaviour** (AI behaviour) | Brain, controller, script |
 | One of Quartz, Whorl, Ember | **Orb** | Reagent, element, sphere |
 | One held copy of an orb | **Orb instance** | Ball, charge |
@@ -60,6 +60,9 @@ When two people call the same thing different names, the names leak into the cod
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
 | The hand-authored test map | **The arena** | Test level, sandbox |
+| The hand-authored playtest map the hero walks from level 1 to about level 10 | **The long road** | Campaign, the playtest map, level |
+| A stretch of a map between two chokes, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |
+| A point on a map the hero comes back to after dying: the furthest one it has reached | **Checkpoint** | Save point, waypoint, respawn point, bonfire |
 | State that lives for the whole session: hero, tunables, seed | **Run scope** | Global state, session |
 | State that lives for one map: enemies, projectiles, zones | **Map scope** | Level state |
 | The HTML panel for spawning, tuning, and instrumentation | **Developer panel** | Debug menu, cheats, admin |

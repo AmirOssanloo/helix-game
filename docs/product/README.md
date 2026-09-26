@@ -20,6 +20,7 @@ These pages use **real names and real numbers** — Quartz, Hoarfrost, 280 units
 - [Spell catalogue](./specs/spell-catalogue.md) — the ten spells as data: recipe, targeting, cast point, range, cooldown and mana by level, effect lists, statuses, shapes, frames, and the pieces the pipeline needs to cast them. Authoritative on the shape; the definition files own the numbers
 - [Enemy catalogue](./specs/enemy-catalogue.md) — the archetypes as data: every field of an enemy definition with a starting value and why it starts there, set against the level-1 hero, and what a pack is worth in experience. The definition files own the numbers
 - [Disable matrix](./specs/disable-matrix.md) — every status against Q, W, E, R, D, F, the four orders, a cast point in progress, and the two cursors, one answer per cell with a note where it is not obvious. Authoritative over the status effects page's table; the data file mirrors it cell for cell
+- [The long road](./specs/the-long-road.md) — the playtest map as data: the rectangle, five regions, every pack with its archetype, tier, count, and position, the chokes and blocks, the checkpoints, and the experience budget from level 1 to level 10 at the last boss. The map definition is written from it
 
 ## The surfaces
 

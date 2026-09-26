@@ -4,9 +4,9 @@
 
 ## Overview
 
-A map is the space the hero plays in: its bounds, what can be walked on, the obstacles, and where things spawn. The camera is how the player sees it: locked on the hero, looking down on a diamond floor, never free. This page covers both, and the one map that exists, the arena.
+A map is the space the hero plays in: its bounds, what can be walked on, the obstacles, and where things spawn. The camera is how the player sees it: locked on the hero, looking down on a diamond floor, never free. This page covers both, and the two maps that exist: the arena, and the long road.
 
-A map is data. Each map has a definition file under `src/content/maps/`; the arena is `arena.def.ts`. The walkability grid is derived from that file, never hand-edited.
+A map is data. Each map has a definition file under `src/content/maps/`; the arena is `arena.def.ts`, and the long road `long-road.def.ts`. The walkability grid is derived from that file, never hand-edited.
 
 ## A map is data
 
@@ -33,6 +33,20 @@ The one hand-authored map. It exists to test movement, spells, and enemies, not 
 | Corridor | One passage 96 units wide, between two blocks east of the centre: open to a small or hero-sized unit, closed to a large one, to test pathing and pack queueing |
 | Spawn point | The centre |
 | Enemies | None on load; spawned from the [developer panel](./developer-panel.md) |
+
+## The long road
+
+The playtest map: a long strip the hero walks from level 1 at the spawn to about level 10 at the last boss, meeting the roster a few archetypes at a time. [The long road spec](../specs/the-long-road.md) holds every pack, wall, and checkpoint, and the experience budget they add up to.
+
+| Property | Value |
+| --- | --- |
+| Size | 4000 by 24000 units, enclosed by walls. The road runs along the long axis, so on screen it runs diagonally, from upper right to lower left |
+| Regions | Five, each harder than the last and each adding archetypes the hero has not met, each closed by a boss-tier pack at a choke |
+| Chokes | A wall across the whole width between regions, with one opening that narrows along the road from 416 units to 224, open to every unit size |
+| Obstacles | About 150 rectangles: the choke walls, and blocks that break up each region's open ground |
+| Spawn point | One end of the road, the first checkpoint |
+| Checkpoints | Six in order along the road: the spawn, each region's entrance, and one before the last boss. A hero who dies comes back at the furthest one it has reached |
+| Enemies | Every pack dormant, waking as the hero nears and sleeping again once it is left behind, so the live count follows the hero |
 
 ## The hero persists, the map does not
 
@@ -76,7 +90,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 - **Procedural dungeons**, acts, and biomes. The map format is designed for generation; the generator does not exist.
 - **Exits, portals, and map transitions.** Run scope and map scope are already separate so this costs no rewrite.
 - **Obstacle art.** Obstacles are grey rectangles on the painted floor; art replaces them when it arrives.
-- **Minimap and fog of war.** The arena is small enough to learn by walking it.
+- **Minimap and fog of war.** The arena is small enough to learn by walking it, and the long road runs one way.
 - **A day-night clock** and its speed bonus. The spec keeps the option; the game does not use it.
 
 ---

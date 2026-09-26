@@ -63,7 +63,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 
 **Getting set up and shipping** — [onboarding](./onboarding/README.md) · [development workflow](./workflows/development.md) · [definition of done](./workflows/definition-of-done.md) · [adding a spell](./workflows/adding-a-spell.md) · [adding an enemy](./workflows/adding-an-enemy.md)
 
-**Product** — [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md) · [enemy catalogue](./product/specs/enemy-catalogue.md) · [disable matrix](./product/specs/disable-matrix.md)
+**Product** — [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md) · [enemy catalogue](./product/specs/enemy-catalogue.md) · [disable matrix](./product/specs/disable-matrix.md) · [the long road](./product/specs/the-long-road.md)
 
 ---
 

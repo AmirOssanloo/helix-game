@@ -21,7 +21,9 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 | Layer | docs |
 | Size | 1.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
+
+> **Note, 2026-09-26, closed:** [the long road spec](../../../../docs/product/specs/the-long-road.md) written: bounds 4000 by 24000; five regions, the approach, the line, the hexes, the heavies, and the hall, each adding archetypes the hero has not met, all thirteen roster archetypes placed; 32 dormant packs, 54 enemies, 5 of them elite and 5 boss; 137 obstacles, 10 choke walls with openings narrowing 416, 352, 288, 288, 224, and 127 blocks; 6 checkpoints, each more than 1000 from every pack. The budget: 5408 before the last boss, level 9, and 6308 after its 900, level 10 and 212 short of 11; with the five costliest of the 22 normal packs skipped, 4672, level 9. Live enemies near any point: bound 40 for any sleep radius up to 3200; the list peaks at 14 within 2000 and 22 within 3200. Checked by a script, not by eye: every pack and checkpoint reachable from the spawn for radii 16, 27, and 50 on the 32-unit grid, no two obstacles overlapping, every pack at least 256 from any obstacle. Fewer packs than the fifty expected, because the budget decides and five bosses at ten times take half of it: [Q58](../backlog/open-questions.md), decided provisionally and awaiting the maintainer. The vocabulary gains the long road, region, and checkpoint, and "camp" beside pack; the map and camera page gains the long road; the product README and the docs index link the spec. The maintainer's approval waits under Waiting on a person in STATUS.md, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24. Sized 1.5, actual 0.5.
 
 **Build:** `docs/product/specs/the-long-road.md`, a product spec shaped like the [enemy catalogue](../../../../docs/product/specs/enemy-catalogue.md), with real names and numbers. It holds:
 
@@ -127,9 +129,9 @@ In the arena's corridor, two hundred chasers press the hero and the hero holds i
 
 | Check | Result |
 | --- | --- |
-| The map spec approved by the maintainer | |
+| The map spec approved by the maintainer | Written by T01, 2026-09-26. The approval waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
 | The corridor carry at the default share, and the six logs on the new version | |
-| Actual days per ticket | |
+| Actual days per ticket | T01 0.5 of 1.5 |
 
 ## Risks in this sprint
 
