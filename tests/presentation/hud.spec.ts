@@ -619,6 +619,7 @@ describe("refusal flashes", () => {
         projectileId: null,
         amount: 0,
         damageType: null,
+        checkpoint: -1,
       },
       arranged.view,
     );

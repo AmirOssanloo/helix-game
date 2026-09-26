@@ -29,7 +29,7 @@ Every action on the panel that changes the world is a command that goes through 
 
 ### Tunables
 
-Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, hold, and pack-activation numbers; and the elite and boss health multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
+Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, hold, and pack-activation numbers; the checkpoint reach radius; and the elite and boss health multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
 
 **Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
@@ -50,7 +50,7 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one recreates the world on it under the current seed, with the hero at its spawn point: a driver operation like the seed, not a command |
 | Save input log | Downloads the session's seed, map, and commands |
 | Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run |
-| Reset map | Reloads the current map; the hero keeps run scope |
+| Reset map | Reloads the current map; the hero keeps run scope, and stands at the map's spawn point with no checkpoint reached |
 | Content | What the last edit to a content file came to under the development server: taken, with how many numbers it retuned and which it kept as a person tuned them; refused, with every fault a line each; or a page reload on its way |
 
 ### Enemies
@@ -85,6 +85,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last status | The last status to land or end, and the unit it was on |
 | Last zone | The last zone to go down or expire |
 | Last projectile | The last projectile to land, and whom it landed on, or to expire |
+| Last checkpoint | The index of the last checkpoint the hero reached, from 0 in the map's order, and the tick it reached it on |
 | Deaths | How many units have died while the panel was open |
 
 ## Overlays

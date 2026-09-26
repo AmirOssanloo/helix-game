@@ -53,6 +53,7 @@ export type TuningKey =
   | "ranged_hold_margin"
   | "pack_activation_radius"
   | "pack_placement_radius"
+  | "checkpoint_reach_radius"
   | "elite_health_multiplier"
   | "boss_health_multiplier"
   | "elite_experience_multiplier"
@@ -126,6 +127,7 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   ranged_hold_margin: "world_units",
   pack_activation_radius: "world_units",
   pack_placement_radius: "world_units",
+  checkpoint_reach_radius: "world_units",
   elite_health_multiplier: "as_written",
   boss_health_multiplier: "as_written",
   elite_experience_multiplier: "as_written",

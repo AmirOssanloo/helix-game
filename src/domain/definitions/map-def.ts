@@ -16,14 +16,17 @@ export type PackDef = Readonly<{
 
 /**
  * One map, as `loadMap` receives it: its id, the walled rectangle it plays in, the axis-aligned
- * rectangles nothing walks through, where the hero stands on load, and the packs it holds. Every
- * obstacle lies inside the bounds; the spawn point lies inside the bounds and outside every
- * obstacle. The walkability grid is derived from these, never written by hand.
+ * rectangles nothing walks through, where the hero stands on load, the checkpoints in order
+ * along the map, and the packs it holds. Every obstacle lies inside the bounds; the spawn point
+ * lies inside the bounds and outside every obstacle, and so does every checkpoint, on a cell
+ * open to the hero's radius class. A map with no checkpoint brings a dead hero back at the
+ * spawn point. The walkability grid is derived from these, never written by hand.
  */
 export type MapDef = Readonly<{
   id: string;
   bounds: Readonly<Rect>;
   obstacles: readonly Rect[];
   spawnPoint: Readonly<Vec2>;
+  checkpoints: readonly Readonly<Vec2>[];
   packs: readonly PackDef[];
 }>;

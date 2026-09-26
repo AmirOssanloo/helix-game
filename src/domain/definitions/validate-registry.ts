@@ -1,7 +1,14 @@
+import type { Rect } from "@shared/public";
 import { resolveNamedEffect } from "../abilities/effects/index";
 import { BEHAVIOUR_KEYS, resolveBehaviour } from "../ai/behaviours/index";
 import { ENEMY_LIVE_CAP } from "../entities/unit";
 import { KIT_KEYS } from "../kits/kit-registry";
+import {
+  deriveWalkabilityGrid,
+  HERO_RADIUS_CLASS,
+  isBlockedAt,
+  RADIUS_CLASS_KEYS,
+} from "../map/walkability";
 import type { AbilityDef } from "./ability-def";
 import type { LevelledSchemas } from "./definition-schemas";
 import {
@@ -16,9 +23,11 @@ import type { DisableMatrixDef } from "./disable-matrix-def";
 import { COMMAND_COLUMNS, DISABLE_COLUMNS } from "./disable-matrix-def";
 import type { EffectDef } from "./effect-def";
 import type { EnemyAbilityEntryDef, EnemyDef } from "./enemy-def";
+import type { MapDef } from "./map-def";
 import type { Registry } from "./registry";
 import type { Schema, SchemaFault } from "./schema";
 import type { StatusDef } from "./status-def";
+import type { TuningDef } from "./tuning-def";
 
 /**
  * The most statuses an archetype may carry for its life. Each takes a row of the unit's table
@@ -720,6 +729,70 @@ const checkDisableMatrix = (
   }
 };
 
+const isInsideRect = (rect: Readonly<Rect>, x: number, y: number): boolean =>
+  x >= rect.minX && x <= rect.maxX && y >= rect.minY && y <= rect.maxY;
+
+/**
+ * Every checkpoint of `map` stands inside the bounds, outside every obstacle, and on a cell
+ * open to the hero's radius class of the grid the tuning table derives, so a hero brought back
+ * there can stand and walk. The grid is derived only for a map that has checkpoints and bounds
+ * with area, and each checkpoint is refused for the first of the three it breaks.
+ */
+const checkCheckpoints = (
+  faults: RegistryFault[],
+  file: string,
+  map: MapDef,
+  tuning: TuningDef,
+): void => {
+  const bounds = map.bounds;
+
+  if (
+    map.checkpoints.length === 0 ||
+    bounds.maxX <= bounds.minX ||
+    bounds.maxY <= bounds.minY
+  ) {
+    return;
+  }
+
+  const grid = deriveWalkabilityGrid(
+    bounds,
+    map.obstacles,
+    tuning.walkability_cell_size,
+    RADIUS_CLASS_KEYS.map((key) => tuning[key]),
+  );
+
+  for (let index = 0; index < map.checkpoints.length; index += 1) {
+    const checkpoint = map.checkpoints[index];
+
+    if (checkpoint === undefined) {
+      continue;
+    }
+
+    const path = `checkpoints[${String(index)}]`;
+    const { x, y } = checkpoint;
+
+    if (!isInsideRect(bounds, x, y)) {
+      faults.push({
+        file,
+        path,
+        message: "expected a point inside the bounds",
+      });
+    } else if (map.obstacles.some((obstacle) => isInsideRect(obstacle, x, y))) {
+      faults.push({
+        file,
+        path,
+        message: "expected a point outside every obstacle",
+      });
+    } else if (isBlockedAt(grid, HERO_RADIUS_CLASS, x, y)) {
+      faults.push({
+        file,
+        path,
+        message: "expected a point on a cell open to the hero's radius class",
+      });
+    }
+  }
+};
+
 /**
  * Every fault in `registry`, or none when it is sound. The hero and the tuning table are
  * checked first, since the orb level cap fixes every table's length; then every definition
@@ -885,6 +958,8 @@ export const validateRegistry = (registry: Registry): RegistryFault[] => {
   }
 
   for (const { file, def } of maps) {
+    checkCheckpoints(faults, file, def, registry.tuning);
+
     for (let index = 0; index < def.packs.length; index += 1) {
       const pack = def.packs[index];
 

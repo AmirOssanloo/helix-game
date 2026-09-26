@@ -56,7 +56,7 @@ The command system beside the validator runs first in the system order. It walks
 
 ## Events
 
-An event is a plain value announcing something that happened inside a tick: a unit was damaged, a unit died, a spell was invoked, a projectile spawned, an orb was added.
+An event is a plain value announcing something that happened inside a tick: a unit was damaged, a unit died, a spell was invoked, a projectile spawned, an orb was added, the hero reached a checkpoint.
 
 **The event ring is preallocated.** Systems write into the next free slot; nothing is constructed per event. There is no emitter, no listener registration, no closure. A full ring overwrites the oldest entry. An event overwritten before a reader read it is counted when that reader next reads, so a reader that falls behind loses events visibly; an event every reader has read is overwritten without a count. The ring is sized so neither reader loses one at the live cap, and the stress test holds it to that.
 

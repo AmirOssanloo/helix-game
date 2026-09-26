@@ -7,7 +7,8 @@ import type { MapDef } from "@domain/public";
  * hero-sized unit and closed to a large one. Every edge sits on a 32-unit cell boundary so the
  * grid reads the rectangles exactly. The hero spawns at the centre, and the map holds no
  * pack: the panel spawns what a session fights. A pack listed here is written live, not
- * dormant, since the whole arena is near the hero.
+ * dormant, since the whole arena is near the hero. It has no checkpoint: a hero who dies
+ * comes back at the spawn point.
  */
 export const arenaDef = {
   id: "arena",
@@ -35,5 +36,6 @@ export const arenaDef = {
     { minX: 3520, minY: 1920, maxX: 3680, maxY: 2080 },
   ],
   spawnPoint: { x: 2000, y: 2000 },
+  checkpoints: [],
   packs: [],
 } as const satisfies MapDef;

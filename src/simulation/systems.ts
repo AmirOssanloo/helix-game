@@ -3,6 +3,7 @@ import {
   aiSystem,
   attackSystem,
   castSystem,
+  checkpointSystem,
   collisionSystem,
   commandSystem,
   deathSystem,
@@ -34,7 +35,9 @@ export type System = (world: World) => void;
  * follows, so an order consumed this tick has its path before movement reads
  * it. Movement follows, so an order consumed this tick turns or translates this tick.
  * Collision runs after movement, so every unit is pushed out of every other unit and every
- * obstacle where this tick's moves left it. Projectiles fly after collision, so a sweep reads
+ * obstacle where this tick's moves left it. The checkpoint rule reads where collision left the
+ * hero, so a hero pushed into reach reaches it this tick and a hero that dies later in the
+ * tick has already taken the checkpoint it stood on. Projectiles fly after collision, so a sweep reads
  * where the tick's pushes and walks left every unit it could touch. Zones run after them, so
  * a zone's rules read the same settled positions, and a zone that travels moves before it
  * touches anything. Death resolves last, once, so every hit the tick
@@ -53,6 +56,7 @@ export const systems: readonly System[] = [
   pathingSystem,
   movementSystem,
   collisionSystem,
+  checkpointSystem,
   projectileSystem,
   zoneSystem,
   deathSystem,

@@ -11,7 +11,7 @@ import { createTuningState } from "@domain/public";
 import type { Rect } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
-import { makeWorld, submit } from "../helpers";
+import { makeMapDef, makeRegistry, makeWorld, submit } from "../helpers";
 
 const SMALL_CLASS = 0;
 const HERO_CLASS = 1;
@@ -128,6 +128,25 @@ describe("every map", () => {
     },
   );
 
+  it.each(maps.map((map) => [map.id, map] as const))(
+    "%s stands every checkpoint inside the bounds, outside every obstacle, on a cell open to the hero",
+    (_id, map) => {
+      const grid = gridOf(map);
+
+      for (const checkpoint of map.checkpoints) {
+        expect(contains(map.bounds, checkpoint.x, checkpoint.y)).toBe(true);
+        expect(
+          map.obstacles.some((obstacle) =>
+            contains(obstacle, checkpoint.x, checkpoint.y),
+          ),
+        ).toBe(false);
+        expect(isBlockedAt(grid, HERO_CLASS, checkpoint.x, checkpoint.y)).toBe(
+          false,
+        );
+      }
+    },
+  );
+
   it("has an id no other map shares", () => {
     const ids = maps.map((map) => map.id);
 
@@ -171,5 +190,67 @@ describe("the arena", () => {
     expect(isBlockedAt(grid, SMALL_CLASS, corridorX, corridorY)).toBe(false);
     expect(isBlockedAt(grid, HERO_CLASS, corridorX, corridorY)).toBe(false);
     expect(isBlockedAt(grid, LARGE_CLASS, corridorX, corridorY)).toBe(true);
+  });
+});
+
+/** A wall east of the origin; its west face stands at `x = 1000`. */
+const WALL: Readonly<Rect> = { minX: 1000, minY: -500, maxX: 1500, maxY: 500 };
+
+/** The faults the registry finds in the checkpoints of a map holding `checkpoints` beside `WALL`. */
+const checkpointFaultsOf = (
+  checkpoints: readonly Readonly<{ x: number; y: number }>[],
+) =>
+  validateRegistry(
+    makeRegistry({
+      maps: [makeMapDef.build({ obstacles: [WALL], checkpoints })],
+    }),
+  ).filter((fault) => fault.path.startsWith("checkpoints"));
+
+describe("a map's checkpoints in the registry", () => {
+  it("accepts checkpoints on open ground", () => {
+    expect(
+      checkpointFaultsOf([
+        { x: 0, y: 0 },
+        { x: 2000, y: 0 },
+      ]),
+    ).toEqual([]);
+  });
+
+  it("refuses a checkpoint outside the bounds", () => {
+    expect(
+      checkpointFaultsOf([
+        { x: 0, y: 0 },
+        { x: 9000, y: 0 },
+      ]),
+    ).toMatchObject([
+      { path: "checkpoints[1]", message: "expected a point inside the bounds" },
+    ]);
+  });
+
+  it("refuses a checkpoint inside an obstacle", () => {
+    expect(checkpointFaultsOf([{ x: 1200, y: 0 }])).toMatchObject([
+      {
+        path: "checkpoints[0]",
+        message: "expected a point outside every obstacle",
+      },
+    ]);
+  });
+
+  it("refuses a checkpoint too close to a wall for the hero's radius class", () => {
+    const tooClose = 1000 - tuningTable["radius_class:1"] / 2;
+
+    expect(checkpointFaultsOf([{ x: tooClose, y: 0 }])).toMatchObject([
+      {
+        path: "checkpoints[0]",
+        message: "expected a point on a cell open to the hero's radius class",
+      },
+    ]);
+  });
+
+  it("names the map's file in every fault", () => {
+    const faults = checkpointFaultsOf([{ x: 9000, y: 9000 }]);
+
+    expect(faults).toHaveLength(1);
+    expect(faults[0]?.file).toMatch(/maps\/map-\d+\.def\.ts$/);
   });
 });

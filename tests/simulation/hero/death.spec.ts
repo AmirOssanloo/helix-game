@@ -7,9 +7,19 @@ import {
   startCooldown,
   UNIT_CAPACITY,
 } from "@domain/public";
+import type { Vec2 } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
-import { createEventReader } from "@simulation/public";
 import {
+  beginReplay,
+  contentVersionOf,
+  createEventReader,
+  createSessionWorld,
+  isReplayRefusal,
+  parseInputLogFile,
+  serializeInputLog,
+} from "@simulation/public";
+import {
+  makeEnemyDef,
   makeFormDef,
   makeMapDef,
   makeRegistry,
@@ -404,5 +414,196 @@ describe("the hero's states", () => {
 
     expect(form.resources.health).toBe(hero.stats.maxHealth);
     expect(form.resources.mana).toBe(hero.stats.maxMana);
+  });
+});
+
+/** Three checkpoints along +X from the spawn point, and a pack far off the road. */
+const CHECKPOINTS: readonly Readonly<Vec2>[] = [
+  { x: 0, y: 0 },
+  { x: 2000, y: 0 },
+  { x: 4000, y: 0 },
+];
+
+/** Where the live pack stands: far from every checkpoint and the road between them. */
+const PACK_AT: Readonly<Vec2> = { x: 0, y: 6000 };
+
+const packEnemy = makeEnemyDef.build();
+
+const checkpointRegistry = makeRegistry({
+  hero: { ...heroDef, forms: [regenerating.id] },
+  forms: [regenerating],
+  enemies: [packEnemy],
+});
+
+const checkpointMap = makeMapDef.build({
+  checkpoints: CHECKPOINTS,
+  packs: [
+    {
+      archetypeId: packEnemy.id,
+      tier: "normal",
+      count: 3,
+      position: PACK_AT,
+      dormant: false,
+    },
+  ],
+});
+
+/** How long the hero may take to walk from one checkpoint to the next at the base speed. */
+const WALK_TICKS = 600;
+
+/** Walks the hero to (`x`, `y`) and runs ticks until it stands there. */
+const walkTo = (world: Simulation, x: number, y: number): void => {
+  moveTo(world, x, y);
+  tickUntil(
+    world,
+    (view) => {
+      const hero = view.map.units.resolve(view.run.heroId ?? -1);
+
+      return hero !== null && hero.curr.x === x && hero.curr.y === y;
+    },
+    WALK_TICKS,
+  );
+};
+
+const enemiesOf = (world: Simulation): number => world.view.map.units.count - 1;
+
+describe("respawn at a checkpoint", () => {
+  it("comes back at the furthest reached: past 1 and 2 and back to 1, the hero respawns at 2 with full resources", () => {
+    const world = createSessionWorld({
+      seed: 1,
+      registry: checkpointRegistry,
+      map: checkpointMap,
+    });
+    const hero = world.state.map.units.resolve(world.view.run.heroId ?? -1);
+    const form = world.state.run.forms[0];
+
+    if (hero === null || form === undefined) {
+      throw new Error("The session has a hero with a form");
+    }
+
+    walkTo(world, 2000, 0);
+    walkTo(world, 4000, 0);
+    walkTo(world, 2000, 0);
+
+    expect(world.view.map.furthestCheckpoint).toBe(2);
+
+    kill(world);
+    world.tick();
+    tickUntil(world, () => hero.state === "idle", 200);
+
+    expect(hero.curr).toEqual({ x: 4000, y: 0 });
+    expect(hero.prev).toEqual({ x: 4000, y: 0 });
+    expect(form.resources.health).toBe(hero.stats.maxHealth);
+    expect(form.resources.mana).toBe(hero.stats.maxMana);
+    expect(world.view.map.furthestCheckpoint).toBe(2);
+  });
+
+  it("keeps a killed pack dead when the hero dies and respawns", () => {
+    const world = createSessionWorld({
+      seed: 1,
+      registry: checkpointRegistry,
+      map: checkpointMap,
+    });
+    const hero = world.state.map.units.resolve(world.view.run.heroId ?? -1);
+
+    if (hero === null) {
+      throw new Error("The session has a hero");
+    }
+
+    expect(enemiesOf(world)).toBe(3);
+
+    submit(world, {
+      kind: "kill_all",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+    });
+    world.tick();
+    tickUntil(world, () => enemiesOf(world) === 0, 200);
+
+    expect(enemiesOf(world)).toBe(0);
+
+    walkTo(world, 2000, 0);
+    kill(world);
+    world.tick();
+    tickUntil(world, () => hero.state === "idle", 200);
+    world.tick();
+
+    expect(hero.curr).toEqual({ x: 2000, y: 0 });
+    expect(enemiesOf(world)).toBe(0);
+  });
+
+  it("replays a session with checkpoints and a death to the state the recording ended in", () => {
+    const recorder = createSessionWorld({
+      seed: 7,
+      registry: checkpointRegistry,
+      map: checkpointMap,
+    });
+
+    walkTo(recorder, 2000, 0);
+    walkTo(recorder, 4000, 0);
+    kill(recorder);
+    recorder.tick();
+
+    for (let tick = 0; tick < 120; tick += 1) {
+      recorder.tick();
+    }
+
+    const file = parseInputLogFile(
+      serializeInputLog(
+        recorder.view,
+        recorder.log,
+        contentVersionOf(checkpointRegistry),
+        [],
+      ),
+    );
+
+    if (isReplayRefusal(file)) {
+      throw new Error(file.message);
+    }
+
+    const replay = beginReplay(file, {
+      registry: checkpointRegistry,
+      map: checkpointMap,
+    });
+
+    if (isReplayRefusal(replay)) {
+      throw new Error(replay.message);
+    }
+
+    const reader = createEventReader();
+    const reached: number[] = [];
+
+    while (!replay.done) {
+      replay.tick();
+
+      let event = replay.events.read(reader);
+
+      while (event !== null) {
+        if (event.kind === "checkpoint_reached") {
+          reached.push(event.checkpoint);
+        }
+
+        event = replay.events.read(reader);
+      }
+    }
+
+    const recorded = recorder.view.map.units.resolve(
+      recorder.view.run.heroId ?? -1,
+    );
+    const replayed = replay.view.map.units.resolve(
+      replay.view.run.heroId ?? -1,
+    );
+
+    if (recorded === null || replayed === null) {
+      throw new Error("Both sessions have a hero");
+    }
+
+    expect(reached).toEqual([0, 1, 2]);
+    expect(replay.view.tick).toBe(recorder.view.tick);
+    expect(replay.view.map.furthestCheckpoint).toBe(2);
+    expect(replayed.curr).toEqual(recorded.curr);
+    expect(replayed.curr).toEqual({ x: 4000, y: 0 });
+    expect(replayed.spawnPoint).toEqual({ x: 4000, y: 0 });
+    expect(replayed.state).toBe(recorded.state);
   });
 });

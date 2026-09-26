@@ -6,8 +6,8 @@ import type { Tick } from "../tick";
 /**
  * The fields every event carries, so a ring slot is one shape and a write copies values,
  * never objects. A kind reads the fields its docblock names; the rest hold their neutral
- * value: `-1` for an orb, `0` for a slot or an amount, `null` for an id, a reason, or a
- * damage type.
+ * value: `-1` for an orb or a checkpoint, `0` for a slot or an amount, `null` for an id, a
+ * reason, or a damage type.
  */
 type EventFields = {
   tick: Tick;
@@ -30,6 +30,8 @@ type EventFields = {
   /** Health, after mitigation. */
   amount: number;
   damageType: DamageType | null;
+  /** A checkpoint's index in the loaded map's list, from 0. */
+  checkpoint: number;
 };
 
 /**
@@ -51,7 +53,8 @@ export type DomainEvent =
   | ZoneExpiredEvent
   | ProjectileSpawnedEvent
   | ProjectileHitEvent
-  | ProjectileExpiredEvent;
+  | ProjectileExpiredEvent
+  | CheckpointReachedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -102,6 +105,11 @@ export type ProjectileExpiredEvent = EventFields & {
   kind: "projectile_expired";
 };
 
+/** The hero `unitId` came within reach of checkpoint `checkpoint`, further along the map than any it had reached, and will come back there when it dies. Announced once per new furthest. */
+export type CheckpointReachedEvent = EventFields & {
+  kind: "checkpoint_reached";
+};
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -125,6 +133,7 @@ export const createDomainEvent = (): EventSlot => ({
   projectileId: null,
   amount: 0,
   damageType: null,
+  checkpoint: -1,
 });
 
 /** Writes `source`'s fields into `target`, so the ring stores an event without allocating. */
@@ -145,6 +154,7 @@ export const copyDomainEvent = (
   target.projectileId = source.projectileId;
   target.amount = source.amount;
   target.damageType = source.damageType;
+  target.checkpoint = source.checkpoint;
 };
 
 /** Puts every field back to its neutral value, so an announcer that fills only what its kind needs never carries the last event's fields. */
@@ -162,4 +172,5 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.projectileId = null;
   event.amount = 0;
   event.damageType = null;
+  event.checkpoint = -1;
 };

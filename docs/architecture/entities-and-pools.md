@@ -69,7 +69,7 @@ The world has two scopes, and every pool belongs to one.
 | **Run** | The hero, the tuning state, the random source, and later inventory and progression | Never during a session |
 | **Map** | Enemies, summons, projectiles, zones, effects, and later ground items | A map is loaded |
 
-`loadMap` releases every map-scoped entity and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. The hero's position is set by the new map's spawn point; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
+`loadMap` releases every map-scoped entity and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. The hero's position and spawn point are set by the new map's spawn point, and no checkpoint is reached; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
 
 Nothing may assume the hero is recreated per map.
 
@@ -119,7 +119,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Status table | Per unit, fixed size, entries reference a status definition |
 | Run scope | Hero, tuning state, random source; never reset during a session |
 | Map scope | Enemies, summons, projectiles, zones, effects; released by `loadMap` |
-| `loadMap` | Resets map scope, rebuilds the grid and the spatial hash, leaves run scope alone |
+| `loadMap` | Resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |
 | The hero across maps | Never recreated |
 | The hero's forms | Run-scoped records: definition, resources, kit state, armory; the unit holds the active index |
 | A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |

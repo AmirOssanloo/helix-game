@@ -22,7 +22,14 @@ import { makeMapDef, makeRegistry } from "../helpers";
 const SEED = 3;
 
 /** The map a session starts on, and a second one with the hero spawning away from the origin, so a recreate on it shows. */
-const FIRST_MAP = makeMapDef.build({ id: "first_map" });
+/** The first map, with one checkpoint off the spawn point for the readout to report. */
+const FIRST_MAP = makeMapDef.build({
+  id: "first_map",
+  checkpoints: [
+    { x: 0, y: 0 },
+    { x: 3000, y: 0 },
+  ],
+});
 
 const SECOND_MAP = makeMapDef.build({
   id: "second_map",
@@ -684,6 +691,21 @@ describe("the developer panel", () => {
 
     expect(readoutNamed(arranged.host, "Last damage")).toBe("60.0 pure");
     expect(readoutNamed(arranged.host, "Deaths")).toBe("1");
+
+    arranged.handle.unmount();
+  });
+
+  it("shows the last checkpoint the hero reached, by its index and tick", () => {
+    const arranged = arrange();
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last checkpoint")).toBe("none");
+
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last checkpoint")).toBe("0 at tick 0");
 
     arranged.handle.unmount();
   });

@@ -34,7 +34,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour, and the index that registers each under its key |
 | How a unit's behaviour is chosen and run each tick, the states an enemy moves through, and which ability it casts | `src/domain/ai/` — the registry, the shared state machine, the ability selection rule, and the pass over it |
 | How a pack is placed, from the panel or a map, and when a dormant one wakes | `src/domain/ai/packs.ts` — the one door a pack enters by, and the activation rule the AI pass ends with |
-| The walkability grid a unit is placed and paths on, and what a map load resets | `src/domain/map/` — the grid and its radius classes, and the map-scope reset |
+| The walkability grid a unit is placed and paths on, what a map load resets, and when a checkpoint is reached | `src/domain/map/` — the grid and its radius classes, the map-scope reset, and the checkpoint rule |
 | How a unit attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
 | How a content edit reaches a running session, and when it asks for a page reload | `src/app/content-reload.ts`, and the content-change rule under `src/domain/definitions/` |

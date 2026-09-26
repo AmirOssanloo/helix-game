@@ -117,4 +117,64 @@ describe("the door: run scope and map scope are separate lifetimes", () => {
     expect(record.kit.prepared[0]).toBe(qwe.id);
     expect(hero.cooldowns.get(INVOKE_ID)).toBe(invokeReadyAt);
   });
+
+  it("gives the hero the new map's spawn point on a load, with no checkpoint reached, where the old map's checkpoint had moved it", () => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        hero: { ...heroDef, forms: [form.id] },
+        forms: [form],
+        spells: [qwe],
+      }),
+      map: makeMapDef.build({ checkpoints: [{ x: 3000, y: 0 }] }),
+    });
+    const hero = spawnHero(world);
+
+    hero.curr.x = 3000;
+    world.tick();
+
+    expect(world.view.map.furthestCheckpoint).toBe(0);
+    expect(hero.spawnPoint).toEqual({ x: 3000, y: 0 });
+
+    world.loadMap(secondMap);
+    world.tick();
+
+    expect(world.view.map.furthestCheckpoint).toBe(-1);
+    expect(hero.spawnPoint).toEqual({ x: 1600, y: 800 });
+    expect(hero.curr).toEqual({ x: 1600, y: 800 });
+
+    submit(world, {
+      kind: "kill_hero",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+    });
+
+    for (let tick = 0; tick < 200 && hero.state !== "idle"; tick += 1) {
+      world.tick();
+    }
+
+    expect(hero.state).toBe("idle");
+    expect(hero.curr).toEqual({ x: 1600, y: 800 });
+  });
+
+  it("clears the checkpoint on the panel's map reset, which stands the hero at the map's spawn point", () => {
+    const world = makeWorld({
+      seed: 1,
+      map: makeMapDef.build({ checkpoints: [{ x: 3000, y: 0 }] }),
+    });
+    const hero = spawnHero(world);
+
+    hero.curr.x = 3000;
+    world.tick();
+    submit(world, {
+      kind: "reset_map",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+    });
+    world.tick();
+
+    expect(world.view.map.furthestCheckpoint).toBe(-1);
+    expect(hero.spawnPoint).toEqual({ x: 0, y: 0 });
+    expect(hero.curr).toEqual({ x: 0, y: 0 });
+  });
 });

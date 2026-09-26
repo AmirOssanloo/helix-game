@@ -33,7 +33,6 @@ import {
   readRadiusClasses,
   readTunable,
   resetMapScope,
-  resolveHero,
   walkabilityCovers,
 } from "@domain/public";
 import { assert } from "@shared/public";
@@ -91,7 +90,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, and a waiting record per pack the map lists. Nothing is placed until the world is whole. */
+/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, a waiting record per pack the map lists, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
   const walkability = deriveGrid(map, tuning);
 
@@ -108,6 +107,9 @@ const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
     pathSearch: createPathSearch(cellCount(walkability)),
     packs: createPackRecords(map.packs),
     nextPackId: 0,
+    spawnPoint: map.spawnPoint,
+    checkpoints: map.checkpoints,
+    furthestCheckpoint: -1,
   };
 };
 
@@ -280,16 +282,15 @@ export class Simulation {
 
   /**
    * Takes `map` as the loaded one: derives the walkability grid for the map's bounds and
-   * obstacles with the path search fitted to it, gives the hero the map's spawn point, and
-   * resets map scope around it: every map-scoped entity but the hero released, the hero
-   * carried to the spawn point with its order cleared, the spatial hash rebuilt over what is
+   * obstacles with the path search fitted to it, takes the map's spawn point and checkpoints, and
+   * resets map scope around it: every map-scoped entity but the hero released, no checkpoint
+   * reached, the hero given the map's spawn point and carried to it with its order cleared, the spatial hash rebuilt over what is
    * left, the map's live packs placed, and its dormant ones kept as records. Run scope is untouched; the hero is never recreated. Anything standing on
    * the spawn point is pushed off by collision on the first tick.
    */
   loadMap(map: MapDef): void {
     const world = this.state;
     const scope = world.map;
-    const hero = resolveHero(world);
 
     scope.mapId = map.id;
     scope.bounds = map.bounds;
@@ -302,12 +303,8 @@ export class Simulation {
     );
     fitPathSearch(scope.pathSearch, cellCount(scope.walkability));
     scope.packs = createPackRecords(map.packs);
-
-    if (hero !== null) {
-      hero.spawnPoint.x = map.spawnPoint.x;
-      hero.spawnPoint.y = map.spawnPoint.y;
-    }
-
+    scope.spawnPoint = map.spawnPoint;
+    scope.checkpoints = map.checkpoints;
     resetMapScope(world);
   }
 

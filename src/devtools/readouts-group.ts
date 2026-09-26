@@ -73,12 +73,14 @@ export const readoutsGroup = (
   const status = readout(folder, "Last status");
   const zone = readout(folder, "Last zone");
   const projectile = readout(folder, "Last projectile");
+  const checkpoint = readout(folder, "Last checkpoint");
   const deaths = readout(folder, "Deaths");
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
   let lastStatus = NOTHING_YET;
   let lastZone = NOTHING_YET;
   let lastProjectile = NOTHING_YET;
+  let lastCheckpoint = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -117,6 +119,10 @@ export const readoutsGroup = (
         lastProjectile = `${String(event.projectileId)} gone`;
       }
 
+      if (event.kind === "checkpoint_reached") {
+        lastCheckpoint = `${String(event.checkpoint)} at tick ${String(event.tick)}`;
+      }
+
       if (event.kind === "unit_died") {
         deathCount += 1;
       }
@@ -152,6 +158,7 @@ export const readoutsGroup = (
       status.show(lastStatus);
       zone.show(lastZone);
       projectile.show(lastProjectile);
+      checkpoint.show(lastCheckpoint);
       deaths.show(String(deathCount));
     },
   };

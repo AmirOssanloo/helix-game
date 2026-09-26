@@ -11,7 +11,8 @@ import type { TuningDef } from "@domain/public";
  * path at most once every re-path interval, in seconds, and a ranged one stands the hold
  * margin inside its reach, in world units, a dormant pack spawns once the hero is inside
  * the activation radius of it, in world units, and a pack looks for free cells no further than
- * the placement radius from its point, in world units, an elite's and a boss's health are the
+ * the placement radius from its point, in world units, a hero within the checkpoint reach
+ * radius of a checkpoint reaches it, in world units, an elite's and a boss's health are the
  * definition's times the tier's multiplier, read at spawn, and the experience it pays is the
  * definition's times the tier's own experience multiplier, read at its death, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
@@ -60,6 +61,7 @@ export const tuningTable = {
   ranged_hold_margin: 50,
   pack_activation_radius: 1600,
   pack_placement_radius: 1024,
+  checkpoint_reach_radius: 512,
   elite_health_multiplier: 3,
   boss_health_multiplier: 10,
   elite_experience_multiplier: 3,

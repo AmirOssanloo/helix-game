@@ -370,6 +370,7 @@ export {
 } from "./entities/zone";
 export {
   type CastCommittedEvent,
+  type CheckpointReachedEvent,
   type CommandRefusedEvent,
   copyDomainEvent,
   createDomainEvent,
@@ -477,6 +478,7 @@ export {
   SpatialHash,
   type SpatialHashView,
 } from "./movement/spatial-hash";
+export { checkpointSystem } from "./map/checkpoint.system";
 export { resetMapScope } from "./map/map-scope";
 export { movementSpeed } from "./movement/speed-stack";
 export { NO_CONTACT, sweepDisc } from "./movement/sweep";

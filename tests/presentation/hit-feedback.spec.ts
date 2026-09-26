@@ -143,6 +143,7 @@ const damageEvent = (
   projectileId: null,
   amount,
   damageType,
+  checkpoint: -1,
 });
 
 /** The labels showing something this frame. */

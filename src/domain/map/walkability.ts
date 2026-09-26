@@ -10,6 +10,9 @@ export const RADIUS_CLASS_KEYS: readonly RadiusClassKey[] = [
   "radius_class:2",
 ];
 
+/** The class a hero's body paths on, the middle of the three: where a checkpoint must be open. */
+export const HERO_RADIUS_CLASS = 1;
+
 const OPEN = 0;
 
 const BLOCKED = 1;

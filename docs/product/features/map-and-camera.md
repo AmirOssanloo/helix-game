@@ -14,7 +14,8 @@ Every map definition holds:
 
 - **Bounds** — the playable rectangle, walled on every side
 - **Obstacles** — axis-aligned rectangles the hero and enemies cannot enter
-- **Spawn point** — where the hero appears on load and on respawn
+- **Spawn point** — where the hero appears on load, and on respawn until it reaches a checkpoint
+- **Checkpoints** — points in order along the map. A hero within 512 units of one further along than any it has reached makes it the furthest, and comes back there when it dies. Walking back to an earlier one changes nothing. Each stands inside the bounds, outside every obstacle, on ground a hero-sized unit can stand on, or the map is refused when the game starts. A map with none brings the hero back at the spawn point
 - **Packs** — each an archetype, a tier, a count, the point it stands around, and whether it waits dormant until the hero comes near; see [Enemies](./enemies.md#dormant-packs)
 - **Later:** spawn tables for packs and exits to other maps
 
@@ -32,6 +33,7 @@ The one hand-authored map. It exists to test movement, spells, and enemies, not 
 | Obstacles | Ten rectangles of varied sizes |
 | Corridor | One passage 96 units wide, between two blocks east of the centre: open to a small or hero-sized unit, closed to a large one, to test pathing and pack queueing |
 | Spawn point | The centre |
+| Checkpoints | None: a hero who dies comes back at the centre |
 | Enemies | None on load; spawned from the [developer panel](./developer-panel.md) |
 
 ## The long road
@@ -84,6 +86,10 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | Click outside the map | A move order to the nearest point inside the bounds |
 | Window resized | The canvas rescales to fit; the world does not change |
 | Map loaded while enemies are aggroed | Map scope is discarded; nothing carries over |
+| Map loaded, or reset from the panel, after a checkpoint was reached | No checkpoint is reached any more; the hero stands at the map's spawn point and comes back there until it reaches one |
+| Hero dies after reaching a checkpoint | It comes back at the furthest checkpoint reached, with full health and mana. A pack it killed stays dead; dying resets nothing on the map |
+| Hero within reach of two checkpoints at once | The one further along is reached |
+| Dead hero lying within reach of a checkpoint | Nothing is reached until it stands up again |
 
 ## Deferred
 

@@ -1,4 +1,4 @@
-import type { EntityId, Rect } from "@shared/public";
+import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
@@ -123,6 +123,12 @@ export type MapScope = {
   packs: PackRecord[];
   /** The id the next pack spawned is given. Counts up from zero on every map load, so no two live packs share one. */
   nextPackId: number;
+  /** The loaded map's spawn point, which a map reset gives the hero back. */
+  spawnPoint: Readonly<Vec2>;
+  /** The loaded map's checkpoints, in order along it. */
+  checkpoints: readonly Readonly<Vec2>[];
+  /** The index of the furthest checkpoint the hero has reached on this map, or `-1` for none. Only ever rises until a map reset clears it. */
+  furthestCheckpoint: number;
 };
 
 /**

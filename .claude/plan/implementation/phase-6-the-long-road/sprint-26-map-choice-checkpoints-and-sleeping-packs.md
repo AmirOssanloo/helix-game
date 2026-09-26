@@ -45,7 +45,7 @@ On a test map with checkpoints and dormant packs, chosen from the panel: walk pa
 | Layer | domain, simulation, content, tests, docs |
 | Size | 1.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** `checkpoints`, an ordered list of points, on `MapDef`; the arena's is empty, since every field is required. A `checkpoint_reach_radius` tunable. The furthest checkpoint reached is map-scope state. A small rule under `src/domain/map/`, registered after collision and before death: a hero within reach of a checkpoint further along the list than the furthest reached makes it the furthest, writes it to the hero's spawn point, which the death system already respawns at, and announces `checkpoint_reached` with its index. Walking back to an earlier checkpoint changes nothing (Q51). `resetMapScope` restores the hero's spawn point to the map's and clears the furthest, so a map load starts at the map's spawn. A pack killed stays dead when the hero dies (Q52), because death does not reset map scope; a test holds it. The registry refuses a checkpoint outside the bounds, inside an obstacle, or unwalkable for the hero's radius class. The [world model](../../../../docs/architecture/world-model.md), [where to look](../../../../docs/architecture/where-to-look.md), the commands-and-events page's event list, and the [map and camera](../../../../docs/product/features/map-and-camera.md) page state checkpoints.
 
@@ -62,6 +62,8 @@ On a test map with checkpoints and dormant packs, chosen from the panel: walk pa
 - `tests/simulation/doors/run-scope-outlives-map-scope.spec.ts`: still green, the spawn restored on load.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
+
+The reach radius has no default in the docs: 512, decided provisionally as Q60. The new event needed a reader by the definition of done's row for a new event, so the panel's readouts group gained **Last checkpoint**, and the world view shows the map's spawn point, checkpoints, and the furthest reached.
 
 ---
 
@@ -97,7 +99,7 @@ On a test map with checkpoints and dormant packs, chosen from the panel: walk pa
 | --- | --- |
 | Map choice and a log loaded on its map, by hand | |
 | Respawn at the furthest checkpoint; the live count falls behind the hero | |
-| Actual days per ticket | T01 0.5 of 1 |
+| Actual days per ticket | T01 0.5 of 1 · T02 0.5 of 1.5 |
 
 ## Risks in this sprint
 

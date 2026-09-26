@@ -9,7 +9,7 @@ import type {
   WalkabilityView,
   Zone,
 } from "@domain/public";
-import type { DeepReadonly, Rect } from "@shared/public";
+import type { DeepReadonly, Rect, Vec2 } from "@shared/public";
 
 /**
  * A compile-time read-only view over the live world: read by reference during sync, never
@@ -29,5 +29,8 @@ export type WorldView = DeepReadonly<{
     bounds: Readonly<Rect>;
     obstacles: readonly Rect[];
     spatialHash: SpatialHashView;
+    spawnPoint: Readonly<Vec2>;
+    checkpoints: readonly Readonly<Vec2>[];
+    furthestCheckpoint: number;
   };
 }>;

@@ -262,12 +262,13 @@ export const tuningSchema: Schema<TuningDef> = objectOf<TuningDef>(
   ) as FieldSchemas<TuningDef>,
 );
 
-/** One map: its id, bounds, obstacles, spawn point, and packs. How many a pack may hold is a check the registry makes against the live cap. */
+/** One map: its id, bounds, obstacles, spawn point, checkpoints, and packs. How many a pack may hold is a check the registry makes against the live cap, and where a checkpoint may stand one it makes against the bounds, the obstacles, and the grid. */
 export const mapSchema: Schema<MapDef> = objectOf<MapDef>({
   id: idSchema,
   bounds: rectSchema,
   obstacles: arrayOf(rectSchema),
   spawnPoint: vec2Schema,
+  checkpoints: arrayOf(vec2Schema),
   packs: arrayOf(
     objectOf<PackDef>({
       archetypeId: idSchema,

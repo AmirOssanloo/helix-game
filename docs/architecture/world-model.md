@@ -40,7 +40,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
 | Disable matrix | `content/statuses/disable-matrix.ts`, typed in `domain/definitions` | Every status against every key, order, cast in progress, and cursor: one row per group of statuses, one answer per cell | Content |
 | Summon definition | `content/summons/`, typed in `domain/definitions` | A unit an ability spawns: enemy-shaped, with the distance it keeps from its owner | Content |
-| Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, the hero's spawn point, and the packs of one map | Content |
+| Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, the hero's spawn point, the checkpoints in order, and the packs of one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 
@@ -57,6 +57,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
 - A map definition holds spawn data, not units. Units exist only after a pack is placed: a live pack at load, a dormant one when the hero approaches, so a large map costs little until the hero comes near.
 - Run scope outlives map scope. Loading a map empties every map-scoped pool and leaves the hero, its form records, the tuning state, and the random source untouched.
+- The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it and gives the hero the map's spawn point back; a death clears nothing, so a killed pack stays dead.
 
 ---
 
