@@ -45,7 +45,7 @@ Closed 2026-09-26 on what an agent can verify: a fresh session starts on `starti
 | Layer | docs (plan) |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** The delivery strategist and the maintainer read each note at its tick, by loading its file, and give it one of five outcomes: a bug, a tuning change, a spell swap, a map edit, or no change; anything that asks for a new system goes to Deferred. Q31's share is settled from what the chokes felt like, and Q57 answered. Each accepted item is written as a ticket in this sprint or the next with the next free number and a note saying it came from triage, sized on the plan's scale, in [the bucket's order](./README.md#the-triage-bucket) until the appetite is spent. The rest goes to [Deferred](../backlog/deferred.md) or [Open questions](../backlog/open-questions.md). A dated triage note under `notes/` lists every feedback note and its outcome.
 
@@ -56,6 +56,8 @@ Closed 2026-09-26 on what an agent can verify: a fresh session starts on `starti
 **Tests:** none.
 
 **Definition of done:** Every change.
+
+Closed 2026-09-26 on what an agent can verify: no feedback file exists yet, so [the triage note](../notes/2026-09-26-long-road-triage.md) lists no note, writes no ticket, and commits no day of the appetite, and carries Q57's final value and Q59 to Q67 to the triage with the steps for when the files arrive (Q68, provisional). The triage with the maintainer, the notes read at their ticks, and any spell swap's approval wait on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24, in STATUS.md.
 
 ---
 
@@ -70,8 +72,8 @@ Tickets P6-S29-T03 onward are written by T02. None exists before the triage, and
 | Check | Result |
 | --- | --- |
 | The maintainer's run: reached the last boss, level at its kill, notes filed | Waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24. The build that starts on the long road and the spec that reads the level are in place |
-| Triage: notes by outcome, tickets written, days committed against the appetite | |
-| Actual days per ticket, and the bucket spent | T01: sized 0.5, 0.25 of agent work; the maintainer's run is calendar time outside it |
+| Triage: notes by outcome, tickets written, days committed against the appetite | No note filed yet, so none triaged; no ticket written; 0 of the sprint's 2.5 days committed, unspent while the triage waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24. The [triage note](../notes/2026-09-26-long-road-triage.md) holds the table to fill (Q68) |
+| Actual days per ticket, and the bucket spent | T01: sized 0.5, 0.25 of agent work; the maintainer's run is calendar time outside it. T02: sized 1, 0.25 of agent work; the triage with the maintainer is outside it. Bucket: 0 of 2.5 spent. Sprint: sized 4, done in 0.5, closed 2026-09-26 on what an agent can verify |
 
 ## Risks in this sprint
 
