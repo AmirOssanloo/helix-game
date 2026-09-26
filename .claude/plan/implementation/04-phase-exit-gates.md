@@ -22,7 +22,7 @@ Every gate includes the bar. It is repeated once here so no gate can forget a ro
 | Stress test | 300 units (phase 1) or 200 enemies plus 100 projectiles (phase 3 on) hold the tick budget | `pnpm test -t "stress"` green |
 | Render benchmark | Passes per ADR 0001 | `pnpm bench` numbers recorded in the phase README |
 
-The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles; phase 6, the same 200 on the long road, woken and put to sleep by the hero's walk.
+The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles; phase 6, the same 200 on the long road, woken and put to sleep by the hero's walk; phases 7 and 8, the same, with the ground-item pool at its capacity.
 
 ---
 
@@ -132,3 +132,37 @@ Added 2026-09-26. The long road is a playtest map, so the gate holds the map, th
 | The maintainer has played the long road and filed feedback, and it is triaged | The dated feedback files and the triage note under `notes/`; every note has an outcome; the bucket's days spent and what went to Deferred are in the phase README |
 | The docs are in sync | P6-S30-T02's checklist |
 | The bar | Every row, at 200 enemies on the long road: the tick headless from the long-road stress case in a production build; frame rate, sync, render, and world draw calls at the densest choke in Chrome, and in Firefox, Safari, and Edge on the reference laptop, written as figures in the phase README |
+
+---
+
+## Phase 7 gate
+
+Added 2026-09-26. Loot is measured against the one number the clean run gave: 2 `heal` and 8 `restore_mana` to finish the road. The gate holds the road finished without them, by play and headless, and holds the rest of loot to its tests. A rarity is proved at its weight by rolls, not by one run, since the road holds 54 kills (Q95).
+
+| Row | Holds when |
+| --- | --- |
+| The hero walks the long road from level 1 to the last boss's kill with no panel heal or mana | `tests/simulation/replays/long-road-loot-playtest.spec.ts`: the maintainer's session holds no `heal`, `restore_mana`, `level_up`, toggle, or grant, and reaches the last boss's kill, the level at the kill recorded; `tests/simulation/replays/balance-loot.spec.ts`: the driver's walk on seed 3742014961 does the same with the catalogue's margin |
+| Every drop kind appears and is taken by walking over it | Both sessions hold at least one pickup each of gold, a health globe, a mana globe, and an item; `tests/simulation/loot/pickup.spec.ts` green; `tests/domain/loot/roll.spec.ts` and `tests/domain/loot/rarity.spec.ts`: every rarity at its weight over 10 000 rolls per enemy tier, elites always and bosses Rare or better, no active item |
+| Items equip and change derived stats | `tests/simulation/items/armory-commands.spec.ts`, `tests/simulation/items/armory-stats.spec.ts`, `tests/domain/combat/spell-damage.spec.ts`, and `tests/simulation/items/orb-bonus.spec.ts` green; the maintainer's session holds an `equip_item` |
+| The store buys and sells at a checkpoint | `tests/simulation/store/store.spec.ts` green; the maintainer's session holds a `buy_item` and a `sell_item` |
+| A recorded session with loot replays identically, and loot never moves a fight | The maintainer's session and `balance-loot.json` each replay into two worlds that agree at every tick; `tests/simulation/loot/drop-on-death.spec.ts`: the xorshift stream reads the same at every tick with every loot table on and emptied; every stored log green on the final content version, `long-road-playtest.json` included |
+| The bar holds with drops on the ground | The long-road case of `tests/simulation/stress.spec.ts` under `pnpm test:budget` with the ground-item pool full; `tests/presentation/doors/view-pools-sized-to-the-screen.spec.ts` with a full pool and no view or label miss |
+| The maintainer has played it and filed feedback, and it is triaged | The dated feedback files and the triage note under `notes/`; every note has an outcome; the bucket's days spent and what went to Deferred in the phase README |
+| The docs are in sync | P7-S38-T02's checklist |
+| The bar | Every row, at 200 enemies on the long road with the ground-item pool full: the tick headless; frame rate, sync, render, and world draw calls at the densest choke with drops on the ground and a screen open, in Chrome, Firefox, Safari, and Edge on the reference laptop, written as figures in the phase README |
+
+---
+
+## Phase 8 gate
+
+Added 2026-09-26 as an outline; its rows are written in full with phase 8's sprint files.
+
+| Row | Holds when |
+| --- | --- |
+| Every active item is an ability cast through the pipeline; nothing item-specific was added to it | Review of `domain/abilities/` since phase 7; a simulation test per active at its catalogue numbers |
+| The disable matrix covers the six keys | One test per cell of the new column |
+| The six keys resolve in the extended tie-break order, and Space never scrolls the page | Mapper tests; by hand in four browsers |
+| Active items drop at their weight and sell at their price | Roll tests over 10 000 rolls; the store test |
+| The maintainer has played the long road with active items, the session replays identically, and the feedback is triaged | The stored session and its spec; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, as phase 7's |

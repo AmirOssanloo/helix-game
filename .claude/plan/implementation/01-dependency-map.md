@@ -33,6 +33,15 @@ toolchain and layers (S00)
                                       → enemies home while the hero is dead, checkpoint jump and marker, feedback file, replace-a-spell (S27)
                                         → the long road, obstacle views by camera, the cap on the road (S28)
                                           → the maintainer's playtest, triage, bucket (S29) → bucket, gate (S30)  ══ phase 6 gate
+                                            → item catalogue, the architect's placement and first-screen decision, item schema (S31)
+                                              → ground item kind and pool, loot on death on a draw of its own, item level, font (S32)
+                                                → run-scope inventory and armory commands, walk-over pickup, ground views and labels (S33)
+                                                  → armory as a modifier source, the first screen, the inventory and armory screen (S34)
+                                                    → rarity and affixes, +1 to an orb, the bases (S35)
+                                                      → tooltips, the store and its screen, panel loot controls (S36)
+                                                        → drop-rate balance, the maintainer's playtest, bucket (S37) → docs, gate (S38)  ══ phase 7 gate
+                                                          → the active-item bank and keys, the disable column, the eight actives (S39–S42, sketched)  ══ phase 8 gate
+                                                            → the generated floor and stairs, a bet of its own
 ```
 
 ---
@@ -77,6 +86,21 @@ toolchain and layers (S00)
 | Enemies going home while the hero is dead (S27) precedes the playtest (S29) | Without it every chaser paths the length of the map to the respawn point after a death, which is R4's cost at once and a crowd waiting at the checkpoint |
 | Every playtest tool (S27) and the map (S28) precede the playtest (S29) | The maintainer plays once, thoroughly; a tool missing on that day is feedback lost |
 | The triage (S29) precedes every bucket ticket (S29, S30) | Tickets are sized after the notes are read, not before |
+| The item catalogue (S31) precedes the schema (S31) and every item ticket | The catalogue decides which slots, stats, affixes, and drop rules exist; a schema written first is a schema rewritten, R7's lesson |
+| The architect's placement and first-screen decision (S31) precede the schema, the ground item, and every screen | Where an item lives across run and map scope, how the loot draw is keyed, and whether a screen is Phaser or DOM each change three or more tickets downstream |
+| The ground item (S32) precedes the loot roll (S32) | A drop is a ground item; the roll has nowhere to put what it rolls without the pool |
+| Loot on death on its own draw (S32) precedes pickup (S33) | Determinism is proved while no stored log can pick anything up, so a replay failure in S32 is the draw and never a fight moved by a globe |
+| Item level on the pack (S32) precedes the armory commands (S33) | An equip is refused on the requirement, which reads the item level |
+| The font's space (S32) precedes the labels (S33) | A label is the item's name, and every base's name has a space |
+| The inventory and the armory commands (S33) precede pickup (S33) | An item taken from the ground goes into an inventory cell |
+| The armory commands (S33) precede the armory as a modifier source (S34) | A source is added by an equip and removed by an unequip |
+| The first screen's frame (S34) precedes the inventory screen (S34), tooltips, and the store's screen (S36) | Each is drawn in the frame and relies on its click claim |
+| The armory's modifier source (S34) precedes affixes (S35) | An affix is a row the source adds; testing one needs the source |
+| Affixes (S35) precede the +1 to an orb (S35) | The +1 is an affix at Mythical |
+| The catalogue's approval (S31) precedes the bases (S35) | Twenty bases are typed from the approved page |
+| Rarity (S35) precedes the store (S36) | A price is a base's value by its rarity's multiplier |
+| Every loot ticket (S31–S36) precedes the balance (S37), and the balance precedes the playtest (S37) | The maintainer plays once, thoroughly, on rates already tuned headless to the clean run's route |
+| Phase 7's gate precedes phase 8 | An active item is a Legendary item: it drops, sits in the inventory, sells, and is worn through what phase 7 builds |
 
 ---
 
@@ -92,6 +116,7 @@ Only relevant if a second engineer appears. With one engineer the order above is
 | AI, death, and experience (S12, S13) | The isometric view (S23, S24) | Sprint 12 |
 | Enemy abilities (S19) | Roster definitions and catalogue (S21) | Sprint 19 |
 | Map choice, checkpoints, sleeping packs (S26) | The feedback file and obstacle views by camera (S27, S28) | Sprint 26 |
+| Loot, inventory, armory stats, rarity, the store's rules (S32–S36, domain) | The font, ground views and labels, the first screen, the inventory, tooltips, the store's screen (S32–S36, presentation) | Sprint 32, once the architect's decision holds |
 
 A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 
@@ -106,3 +131,7 @@ A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 - **The playtest tools do not depend on the long road.** Checkpoints, sleeping packs, the jump, and the feedback file are built and tested on fixture maps and the arena; the long road is only their first real user.
 - **Spell swaps do not depend on refactoring the shared specs.** A swap moves only the named spells' fixture uses; nothing is refactored ahead of the feedback that names them.
 - **The obstacle views do not depend on the map.** Binding by the camera is tested on a fixture with more obstacles than the pool.
+- **Loot does not depend on a generated floor.** Drops, pickup, and the store run on the long road; the floor, when it comes, is one more map with packs.
+- **The store does not depend on a town.** It is a rule on a checkpoint the map already has.
+- **Phase 7 does not depend on the Kit fix.** Nothing it builds is cast from a key; phase 8's bank beside the kit is how that phase avoids it too, and its architect ticket says if it cannot.
+- **Rarity does not depend on the bases.** Affixes are rolled and tested on the fixture bases; the twenty real ones come after, from the approved page.

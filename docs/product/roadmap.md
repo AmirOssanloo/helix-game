@@ -4,7 +4,7 @@
 
 What arrives when. This is the one page in the documentation that says "phase"; every other page describes the finished target, and this one says the order we reach it in.
 
-Six phases: the first five played on [the arena](./features/map-and-camera.md#the-arena), the sixth on the long road, a hand-authored map for playtesting. Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
+Eight phases: the first five played on [the arena](./features/map-and-camera.md#the-arena), the sixth to the eighth on the long road, a hand-authored map for playtesting. Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
 
 ---
 
@@ -92,13 +92,35 @@ The rules behind each row are in [Performance standards](../standards/performanc
 
 **Done when** the hero can walk the long road from level 1 and reach about level 10, every pack on it places, live enemies never pass the cap and no pack is refused unseen, a crowd no longer carries the hero out of a choke, a recorded playtest replays identically, and the maintainer has played the road and filed feedback.
 
+## Phase 7: loot and the store
+
+**Goal:** enemies on the long road drop what the hero needs, so the road is finished without the developer panel's heal and mana.
+
+- Enemies drop gold, health globes, mana globes, and equipment on the ground; an elite always drops something, a boss something Rare or better. Drops roll on a draw of their own, so a drop never changes a fight's outcome and a replay drops the same things.
+- The hero takes everything by walking over it. Ground items carry labels in their rarity's colour; Alt shows every label.
+- Ten armory slots, about twenty one-handed bases, seven rarities from Common to Legendary with rolled affixes, an item level from the road's region with a level requirement, spell damage %, and a +1 to an orb at the top rarities.
+- An inventory and armory screen, the game's first, and tooltips.
+- A store at each checkpoint, opened by standing on its ring and clicking it, that sells equipment and buys items for gold.
+
+**Done when** the hero walks the long road from level 1 to the last boss's kill with no heal or mana from the panel, every kind of drop appears and is taken by walking over it, a worn item changes the hero's derived stats, the store buys and sells at a checkpoint, a recorded session with loot replays identically, the frame budget holds with drops on the ground, and the maintainer has played it and filed feedback.
+
+## Phase 8: active items
+
+**Goal:** the rarest drops are items the hero uses, each an ability cast through the same pipeline as a spell.
+
+- Eight Legendary active items: Gyre Sceptre, Scorchglass, Slipknife, Rimeward, Skyfall Maul, Mainspring, Fetter Bolas, and Veilblade. They drop very rarely and sell in the store at a steep price.
+- Six keys in a 3 by 2 grid beside the Skein kit: T, X, V above, C, G, Space below, with a row on the HUD.
+- The disable matrix gains the six keys.
+
+**Done when** each active item is cast through the ability pipeline with nothing item-specific added to it, the disable matrix covers the six keys, and the maintainer has played the long road with them and filed feedback.
+
 ---
 
-## Beyond phase 6
+## Beyond phase 8
 
-Items and inventory, equipment as modifier sources, loot tables and drops on death, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, isometric sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the classic loot-driven action RPGs.
+A generated floor with stairs down, first, then procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, isometric sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the classic loot-driven action RPGs.
 
-Not at any point: multiplayer, hero selection, quick-cast, order queues, mobile.
+Not at any point: multiplayer, hero selection, quick-cast, order queues, mobile, crafting.
 
 ---
 
@@ -124,6 +146,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 | [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
 | The long road | Its regions, packs, checkpoints, and experience budget | Phase 6 |
+| Item catalogue | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 7 and 8 |
 
 ---
 
@@ -139,7 +162,7 @@ The brief raised 47 questions. Four went to discussion and became decision recor
 | Repository layout | Single package, one `src/` with eight layers, enforced by lint and an architecture test | [ADR 0003](../adr/0003-layered-single-package-architecture.md), [Architecture](../architecture/README.md) |
 | How state changes | All mutation, including developer-panel operations, enters as commands | [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) |
 | How content names behaviour | Definitions reference effects and behaviours by string key | [ADR 0005](../adr/0005-content-references-by-string-key.md) |
-| Phase numbering | Six phases, with phase 4 as combat feel and tuning and phase 6 as the long road | This page |
+| Phase numbering | Eight phases, with phase 4 as combat feel and tuning, phase 6 as the long road, phase 7 as loot and the store, and phase 8 as active items | This page |
 | Working title | Helix | [Product overview](./overview.md) |
 
 ---

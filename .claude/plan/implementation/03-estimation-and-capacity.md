@@ -37,7 +37,9 @@ Then judgment: anything touching Phaser gets a half-day added for the things the
 | 4 | 12 | 3 | 4.0 |
 | 5 | 16 | 4 | 4.0 |
 | 6 | 23: 19 in tickets, 4 of bucket appetite | 6 | 3.8 |
-| **Total** | **121.5** | **31** | |
+| 7 | 29: 27 in tickets, 2 of bucket appetite | 8 | 3.6 |
+| 8, sketched | 14.5 | 4 | 3.6 |
+| **Total** | **165** | **43** | |
 
 Ninety-two sized days in twenty-three sprints of five days is 115 calendar days, of which 23 are buffer. That is a 25% contingency held inside the sprints rather than as a block at the end, so it is spent where the slip happens and is visible per sprint.
 
@@ -62,6 +64,12 @@ Not every ticket is equally uncertain. These are the ones whose size could be of
 | P6-S28-T01 · The long road as a map definition | 150 rectangles and fifty packs typed by coordinate; errors are caught by content tests, but each one caught is a round trip | Sprint 28's buffer; T02 runs first |
 | P6-S27-T04 · The feedback file | A key reaching two listeners, a build-time stamp, and a load that stops at a tick | Sprint 27 loses its buffer |
 | The phase 6 bucket | Sized after triage by definition; sprint 11's precedent is 5.75 days from one walk | Nothing: the appetite is fixed at four and the surplus is deferred |
+| P7-S31-T02 · Where items live, and the first screen | Two structural decisions in one ticket, one of them the revisit condition of ADR 0003's three-scene rule | Sprint 31's buffer; the schema starts a day late |
+| P7-S34-T02 · The first screen's frame and click claim | The first screen in the game, first of its kind and touching Phaser or the DOM | Sprint 34 loses its buffer; sprint 35 starts a day late |
+| P7-S33-T03 · Ground views, labels, and Alt | Label overlap placed with no allocation in the sync | The overlap pass goes to Deferred rather than the sprint slipping |
+| P7-S35-T01 · Rarity and affixes | The largest ticket in the phase: seven tiers, pools per slot, ranges by item level, all on the loot draw's sequence | T03, the bases, moves to sprint 36's buffer |
+| P7-S37-T01 · The drop-rate balance | A recording driver and tuning against one route; the rates may not cover the sustain at values that still read as rare | Q95 opens: the road changes or the rates read generous |
+| The phase 7 bucket | Sized after triage; phase 6's ran 5.25 against 4 | Nothing: the appetite is fixed at two and the surplus is deferred |
 
 If every one of phases 0 to 5's rows doubles, the plan is 29 sprints. If none does, it is 21, because some gate buffers go unused. The honest band is **21 to 29 sprints**, with 23 as the plan.
 
@@ -74,6 +82,7 @@ If every one of phases 0 to 5's rows doubles, the plan is 29 sprints. If none do
 - **Design decisions taking longer than their tickets.** The spell catalogue (1 day), the enemy catalogue (0.5 day plus 2 days in phase 5), and the disable matrix (0.5 day) are sized as writing tasks. If they become discussions, they become calendar time outside the sprint.
 - **Sprints 23 and 24.** The isometric view was added to phase 3 on 2026-09-23 at 6.5 sized days in two sprints, after the phase 2 close. The totals above include them; the prose above this list still counts the original 92 days in 23 sprints.
 - **Phase 6.** Added on 2026-09-26 at 23 sized days in six sprints: 19 in tickets on the same anchors, and 4 held as an appetite for what the playtest's triage accepts, written as tickets only after the triage. Most of the phase extends shapes that exist (a map field, a tunable, an activation rule, a stress case), which ran at about 0.35 in phases 3 to 5; the feedback file, the obstacle views, and the map's authoring are closer to new ground, which ran at about 0.8. Read the 19 as roughly 8 to 14 engineer-days of effort. The calendar is set by the maintainer's approval of the spec and the playtest, not by these days. The re-cut rule applies both ways, as the [retrospective](../2026-09-25-retrospective-and-account.md) asks: a ratio under 0.6 for two sprints re-cuts the remaining calendar, as one over 1.3 does.
+- **Phases 7 and 8.** Added on 2026-09-26, after phase 6 closed, on the same anchors. The brief the maintainer saw sized phase 7 at 24.5 in about six sprints; that does not fit six sprints of at most four, and the plan's rules add 4.5: the first screen's decision split from the placement brief (0.5 more, the ticket at 1.5), the item level on every pack split out (0.5), the +1 to an orb as a ticket of its own since it reaches the kit (1, against the brief's optional 0.5), the maintainer's playtest and triage (0.5), and a bucket of two days for what it finds. The brief's 2.5-day inventory screen and store are each split in two to stay on the scale, at the same total. Phase 7 is 29 in eight sprints. Most of it is new ground, a new entity kind, the first screen, an economy, so expect nearer phase 1 and 2's ratio of about 0.8 than phase 3 to 5's 0.35: read the 27 in tickets as roughly 12 to 22 engineer-days. Phase 8 is sketched at 14.5 against the brief's 12: the architect's decision at 1, a catalogue section before any active, the drops turned on, and the playtest and docs sync; its eight actives extend the pipeline and should run nearer 0.35. The calendar of both is set by the catalogue's approval and the maintainer's playtests.
 - **Actuals.** Sprint 00 gained an unplanned one-day ticket, T00, before it opened: the entry points and agent configuration the plan assumed were there. The table above keeps the original sizing; the sprint file carries the total of 5. The engineer records the actual days beside each ticket's size when the sprint closes. After sprint 06, compare. If actuals run more than 30% over sized days, re-cut phases 2 to 5 before starting phase 2, not after.
 
 ---

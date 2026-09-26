@@ -1,6 +1,6 @@
 # The long road's feedback triage
 
-**Written:** 2026-09-26 · **By:** the P6-S29-T02 run; filled the same day by the delivery strategist from the triage with the maintainer, and again from the clean run · **Updated when:** the maintainer answers Q57 and Q59 to Q67
+**Written:** 2026-09-26 · **By:** the P6-S29-T02 run; filled the same day by the delivery strategist from the triage with the maintainer, again from the clean run, and again from the maintainer's answers to Q57 and Q59 to Q67 · **Updated when:** Q58 is answered
 
 The triage of the maintainer's playtest of the long road. It lists every feedback note and its outcome, the questions the playtest was to settle, and what the bucket committed.
 
@@ -92,6 +92,24 @@ No note spoke to the chokes, the checkpoints, the sleeping packs, the feedback f
 | Q66 | Open; no panel reading of the tick was taken during the run |
 | Q67 | Open; the session started on the long road as provisionally decided, with no note |
 | Q70 | The halts at 0.08 and 1 s, answered; the five notes "feel much better", which reads as no retune wanted, but the maintainer did not name the halts |
+
+### The maintainer's answers, 2026-09-26
+
+The maintainer answered every question above but Q58 the same day, after phase 7 was planned. Each row is moved to Answered in [Open questions](../backlog/open-questions.md). One changes the build.
+
+| Question | Answer | Outcome |
+| --- | --- | --- |
+| Q57, Q59 | `hero_push_share` settled at 0.5, the value played on the clean run; Q57's recorded 0 is superseded | No change: the build is at 0.5 |
+| Q60 | `checkpoint_reach_radius` from 512 to 256: the ring sits on the path out of the choke's gap, the checkpoint 480 past the wall, and is a sensible size to click for phase 7's store | A tuning change, written as the unplanned ticket [P7-S31-T04](../phase-7-loot-and-the-store/sprint-31-the-item-catalogue-and-where-it-lives.md#p7-s31-t04--the-checkpoint-reach-radius-at-256), 0.5, first in sprint 31: one line in `src/content/tuning.ts`, the ring following, the stored logs re-stamped, the checkpoint tests checked. The phase 6 bucket is spent, so it is phase 7's unplanned work |
+| Q61 | Kept, 2000 | No change |
+| Q62 | Kept, regenerating in Idle as well as in Return | No change |
+| Q63 | Kept, the jump refused while the hero is dead | No change |
+| Q64 | Kept, the thin ring and the word CHECKPOINT; the ring's width follows the reach, so 256 after P7-S31-T04 | No change beyond T04 |
+| Q65 | Kept as built: the maintainer loaded a feedback file by hand, and it fast-forwards quickly, pauses at the exact F9 moment, and shows the status line and the note as documented | No change; the feedback-file box by hand is walked |
+| Q66 | Kept, no A* expansion cap | No change |
+| Q67 | Kept, every build starts on the long road | No change |
+
+Q58, the long road's 32 packs and the spec's approval, was not in the answers and stays open; its box is folded into the phase 6 bar box in STATUS.md.
 
 ## When the clean run's files arrive
 
