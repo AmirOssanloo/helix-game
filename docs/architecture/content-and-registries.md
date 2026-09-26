@@ -11,7 +11,7 @@ How spells, enemies, statuses, and maps are described as data, how that data fin
 
 **A definition is immutable data. An entity holds only what changes. The two meet by id.**
 
-Adding the eleventh spell or the fortieth enemy is a new file under `content/`, a new named effect if the spell does something no primitive covers, and a test. No new class, no new system.
+Replacing a spell or adding the fortieth enemy is a new file under `content/`, a new named effect if the spell does something no primitive covers, and a test. No new class, no new system.
 
 ---
 

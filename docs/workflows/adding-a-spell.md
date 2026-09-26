@@ -4,7 +4,7 @@
 
 **Purpose:** add one ability to the game — a hero spell, or an enemy ability, which goes through the same pipeline — from definition file to a green check and a cast in the arena. In order; each step says what you type and what you should see.
 
-The example below adds a made-up spell called **Frost Lance**: a point-targeted bolt that damages and slows. It exists only on this page.
+The example below adds a made-up spell called **Frost Lance**: a point-targeted bolt that damages and slows. It exists only on this page. Three orbs give exactly ten recipes and the hero has ten spells, so a new hero spell always takes the recipe of one it replaces: Frost Lance takes Wane's. Steps 1 to 9 write and prove the new spell; [Replacing a spell](#replacing-a-spell) is the rest of the swap. An enemy ability has no recipe and replaces nothing.
 
 ---
 
@@ -97,7 +97,7 @@ Reload the page and click **Download atlas PNG** in the developer panel to confi
 
 ```typescript
 // src/content/spells/index.ts
-export const spells = [hoarfrostDef, /* … */, frostLanceDef]
+export const spells = [hoarfrostDef, frostLanceDef, /* … */]   // In the place of the spell it replaces
 ```
 
 The registry assembles this list at startup, validates every definition against the schema, and fails loudly on an unresolved key or a missing frame.
@@ -152,6 +152,22 @@ In the developer panel: **Infinite mana** on, **No cooldowns** on, choose **trai
 ## 9. Definition of done
 
 Walk the "A new spell, effect, or enemy ability" rows in the [definition of done](./definition-of-done.md). The two that are easy to miss: the test covers orb levels 1 and 7, and the [spells and attack](../product/features/spells-and-attack.md) page describes the new behaviour if a player can tell it apart from the others.
+
+---
+
+## Replacing a spell
+
+Every recipe is one spell's, and the content tier holds it: `tests/content/spells.spec.ts` fails when two spells compose one recipe or a recipe composes none, and names the recipe. So a swap is a removal and an addition in the same change, never an eleventh spell. A spell that needs a recipe of its own is a redesign of the Skein, not content; take it to the engineering architect. In order, with Frost Lance replacing Wane:
+
+1. **The definition files.** Write `src/content/spells/frost-lance.def.ts` by steps 2 to 4, with Wane's recipe in any order, and delete `src/content/spells/wane.def.ts`. Delete what only the old spell used: its statuses under `src/content/statuses/` and their lines in that folder's `index.ts`, their glyphs in `STATUS_ICON_GLYPHS` in `src/content/atlas-frames.ts`, a named effect under `src/domain/abilities/effects/` and its key, a summon under `src/content/summons/`, a frame no one else draws with. `grep -rn "wane" src/` lists them. A status or frame another definition names stays.
+2. **The spell list.** In `src/content/spells/index.ts`, `frostLanceDef` goes where `waneDef` was, and the import with it.
+3. **The form's ability list.** In `src/content/forms/skein.def.ts`, `frost_lance` goes where `wane` was in `abilities`. The content tier fails when the form lists a spell the list does not hold, or leaves one out.
+4. **The disable matrix.** Every status definition sits in exactly one row of `src/content/statuses/disable-matrix.ts`. Take the old spell's statuses out of their rows and put each new one in the row that answers for it, and change the table in the [disable matrix spec](../product/specs/disable-matrix.md) cell for cell in the same change. `tests/content/disable-matrix.spec.ts` fails on a status in no row or two.
+5. **The spell catalogue.** In the [spell catalogue](../product/specs/spell-catalogue.md), the new entry replaces the old one under the same recipe heading in section 3, with the statuses it applies in section 4, its frames in section 6, and any new piece in section 7. `tests/content/catalogues.spec.ts` holds the entry's tables to the definition file. The [spells and attack](../product/features/spells-and-attack.md) page, the [mechanics spec](../product/specs/character-movement-and-mechanics.md), and the [vocabulary](../product/vocabulary.md) name the spells; `grep -rln "Wane" docs/` finds each line to change.
+6. **The content tier.** `pnpm test tests/content/` is green: the recipe check, the form's list, the matrix, and the catalogue.
+7. **The specs that used the old spell.** `grep -rln "wane" tests/` lists them. The old spell's own spec under `tests/simulation/spells/` is deleted, and the new one from step 7 above takes its place. A shared spec that used the old spell only as a real spell to hand, a status spec casting it for its slow or a tuning spec reading its cooldown, moves onto a test-only fixture spell built with `makeSpellDef` from `tests/helpers/`, carrying the one field the spec is about. Nothing else in that spec changes, and no spec is moved that does not name the old spell.
+8. **The balance session.** `tests/simulation/replays/balance-spells.json` was recorded with the old spell's keys, which now compose the new one. Record the session again with the developer panel as section 8 of the catalogue describes it, save it over the old file with **Save input log**, and move the section's table, and the fights and numbers `tests/simulation/replays/balance.spec.ts` checks, with it. Any other log under `tests/simulation/replays/` that casts the old spell names it by id in its cast commands, and `grep -l '"abilityId":"wane"' tests/simulation/replays/*.json` lists it; record each one again the same way, under the session its spec describes.
+9. **The check.** `pnpm check` is green. Then walk the "A new spell, effect, or enemy ability" rows in the [definition of done](./definition-of-done.md) for the new spell, and play it in the arena by step 8.
 
 ---
 

@@ -118,7 +118,7 @@ Closed 2026-09-26 on what an agent can verify: the file's shape, the pause, the 
 | Layer | docs, tests |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Build:** A "Replacing a spell" section in the [adding-a-spell runbook](../../../../docs/workflows/adding-a-spell.md). Three orbs give exactly ten recipes, so a new spell takes over the recipe of the one it replaces; an eleventh is a kit redesign for the engineering architect. The section's steps: the definition files, the form's ability list, the spell's row of the disable matrix in `src/content/statuses/disable-matrix.ts`, the spell catalogue, the shared specs that use the replaced spell as a fixture moved onto test-only fixture spells, and `balance-spells.json` recorded again. A content test: each of the ten recipes is used by exactly one spell. No domain code, and no spec is refactored ahead of feedback.
 
@@ -131,15 +131,17 @@ Closed 2026-09-26 on what an agent can verify: the file's shape, the pause, the 
 
 **Definition of done:** Every change · A documentation change.
 
+Closed 2026-09-26. The section is the last of the runbook, walked with Frost Lance replacing Wane, and step 5 now puts a new spell in the place of the one it replaces rather than at the end. The check names the recipe at fault as its keys, `QQQ is composed by hoarfrost and frost_lance` or `QQW is composed by no spell`, and four cases prove it on made-up lists: a swap passes, two on one recipe and a recipe with none fail, and an eleventh spell fails on the recipe it shares. The runbook also names what the ticket did not: the statuses, glyphs, named effects, and summon only the old spell used, and every stored log whose cast commands name it by id, since a cast command carries the ability's id. The content and registries page says replacing a spell where it said adding the eleventh.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| A feedback file saved, reloaded, and stopped at its tick, by hand | |
-| Enemies home while the hero is dead; the checkpoint jump and marker by hand | |
-| Actual days per ticket | T01: 0.25 · T02: 0.25 · T03: 0.25 · T04: 0.5 |
+| A feedback file saved, reloaded, and stopped at its tick, by hand | Headless in T04's feedback and build-stamp specs: the file's shape, the pause, the keys held from the window, the unwrap, the run to the note's tick in the same state, and the commit line. The walk by hand waits on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
+| Enemies home while the hero is dead; the checkpoint jump and marker by hand | Headless: T01's transitions and death specs turn every chaser home and path none toward the respawn point; T02's dev-api and panel specs jump, keep the furthest, and replay; T03's checkpoint-view spec binds the markers by the camera and says the word once. The walks by hand, the look, and the bench wait on a person, deferred until phase 6 is done by the maintainer's standing instruction of 2026-09-24 |
+| Actual days per ticket | T01 0.25 of 0.5 · T02 0.25 of 0.5 · T03 0.25 of 1 · T04 0.5 of 1.5 · T05 0.25 of 0.5. Sprint 1.5 of 4 sized days; the buffer untouched |
 
 ## Risks in this sprint
 

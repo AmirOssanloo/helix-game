@@ -20,6 +20,7 @@ import {
   ORB_IDS,
   validateRegistry,
 } from "@domain/public";
+import { makeSpellDef } from "../helpers";
 
 const SPELL_COUNT = 10;
 
@@ -30,24 +31,52 @@ const CAST_POINT_MAX = 0.1;
 /** Every spell's backswing, in seconds. */
 const BACKSWING_SECONDS = 0.1;
 
-/** A recipe as a count of each orb in slot-key order, so two arrangements of one multiset read the same. */
-const countsOf = (recipe: readonly OrbId[]): string =>
-  ORB_IDS.map(
-    (orb) => recipe.filter((candidate) => candidate === orb).length,
-  ).join(",");
+/** The key each orb is pressed with, in slot-key order, so a recipe reads as the player types it. */
+const ORB_KEYS = ["Q", "W", "E"];
 
-/** Every multiset of three drawn from the three orbs: ten of them. */
-const everyMultiset = (): string[] => {
+/** A recipe as the keys that compose it in slot-key order, so two arrangements of one multiset read the same. */
+const keysOf = (recipe: readonly OrbId[]): string =>
+  ORB_IDS.map((orb, index) =>
+    (ORB_KEYS[index] ?? "").repeat(
+      recipe.filter((candidate) => candidate === orb).length,
+    ),
+  ).join("");
+
+/** Every multiset of three drawn from the three orbs, as its keys, the most Quartz first: ten of them. */
+const everyRecipe = (): string[] => {
   const found: string[] = [];
 
-  for (let a = 0; a <= 3; a += 1) {
-    for (let b = 0; b <= 3 - a; b += 1) {
-      found.push([a, b, 3 - a - b].join(","));
+  for (let q = 3; q >= 0; q -= 1) {
+    for (let w = 3 - q; w >= 0; w -= 1) {
+      found.push("Q".repeat(q) + "W".repeat(w) + "E".repeat(3 - q - w));
     }
   }
 
   return found;
 };
+
+/**
+ * What is wrong with how `listed` covers the ten recipes: each recipe two or more spells
+ * compose, naming them, and each recipe no spell composes. Empty when every recipe is used by
+ * exactly one spell, which is the only way a new spell enters the kit: in the place of the
+ * spell whose recipe it takes.
+ */
+const recipeFaultsOf = (
+  listed: readonly Pick<SpellDef, "id" | "recipe">[],
+): string[] =>
+  everyRecipe().flatMap((recipe) => {
+    const composers = listed
+      .filter((spell) => keysOf(spell.recipe) === recipe)
+      .map((spell) => spell.id);
+
+    if (composers.length === 0) {
+      return [`${recipe} is composed by no spell`];
+    }
+
+    return composers.length > 1
+      ? [`${recipe} is composed by ${composers.join(" and ")}`]
+      : [];
+  });
 
 const isNonIncreasing = (values: readonly number[]): boolean =>
   values.every((value, index) => {
@@ -144,10 +173,9 @@ describe("the spells", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("cover every multiset of three orbs exactly once", () => {
-    const recipes = spells.map((spell) => countsOf(spell.recipe));
-
-    expect([...recipes].sort()).toEqual(everyMultiset().sort());
+  it("use each of the ten recipes exactly once", () => {
+    expect(everyRecipe()).toHaveLength(SPELL_COUNT);
+    expect(recipeFaultsOf(spells)).toEqual([]);
   });
 
   it("are every ability the skein form lists, and nothing else", () => {
@@ -160,6 +188,46 @@ describe("the spells", () => {
     const tints = spells.map((spell) => spell.tint);
 
     expect(new Set(tints).size).toBe(tints.length);
+  });
+});
+
+describe("the recipe check", () => {
+  const replaced = spells.filter((spell) => spell.id !== "wane");
+
+  it("passes a swap: a new spell on the recipe of the one it replaces, in any order", () => {
+    const frostLance = makeSpellDef.build({
+      id: "frost_lance",
+      recipe: ["whorl", "quartz", "quartz"],
+    });
+
+    expect(recipeFaultsOf([...replaced, frostLance])).toEqual([]);
+  });
+
+  it("fails two spells on one recipe, and names the recipe left with none", () => {
+    const frostLance = makeSpellDef.build({
+      id: "frost_lance",
+      recipe: ["quartz", "quartz", "quartz"],
+    });
+
+    expect(recipeFaultsOf([...replaced, frostLance])).toEqual([
+      "QQQ is composed by hoarfrost and frost_lance",
+      "QQW is composed by no spell",
+    ]);
+  });
+
+  it("fails a recipe with no spell", () => {
+    expect(recipeFaultsOf(replaced)).toEqual(["QQW is composed by no spell"]);
+  });
+
+  it("fails an eleventh spell, which shares a recipe with one of the ten", () => {
+    const frostLance = makeSpellDef.build({
+      id: "frost_lance",
+      recipe: ["ember", "whorl", "quartz"],
+    });
+
+    expect(recipeFaultsOf([...spells, frostLance])).toEqual([
+      "QWE is composed by clarion and frost_lance",
+    ]);
   });
 });
 
