@@ -1,6 +1,6 @@
 # Deferred
 
-**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S22-T01 and on 2026-09-25 from the delivery lead's walk; on 2026-09-26 at the phase 6 plan, the Q31 row moved into P6-S25-T02, at the phase 6 gate, at the long road's triage, at Q71's answer, and at the clean run; at the phase 7 and 8 plan, the loot rows taken into them · **Kept current by:** whoever cuts something
+**Written:** 2026-09-20 · **Reviewed:** 2026-09-25, at the phase 4 close; updated at P5-S22-T01 and on 2026-09-25 from the delivery lead's walk; on 2026-09-26 at the phase 6 plan, the Q31 row moved into P6-S25-T02, at the phase 6 gate, at the long road's triage, at Q71's answer, and at the clean run; at the phase 7 and 8 plan, the loot rows taken into them; on 2026-09-27 at the answers to Q58 and Q84, then to Q87 to Q93 and the standing instructions · **Kept current by:** whoever cuts something
 
 Everything the plan deliberately leaves out, with the phase it was cut from and the door it waits behind. A missing capability that is a decision reads differently from one that is an oversight; this page is what makes the difference visible.
 
@@ -17,23 +17,22 @@ Sources: the "Deferred" section of every feature page under `docs/product/featur
 | What the isometric view needs once art is tall: sorting by screen position inside the units and obstacles bands, obstacles split per tile so they hide the right things, picking a unit by its sprite, walls that fade near the hero, and sprites drawn in eight or sixteen directions | Sprint 23 | Sprite art, beyond phase 5 | While the art is flat geometry nothing is tall, so the fixed depth bands hold. ADR 0006 names what changes when it is not |
 | The elite and boss outline in a colour that reads on a red body: the thick red outline barely shows on a grunt | Sprint 22, from Q45 on 2026-09-25 | The art pass | Cosmetic; the boss's wider outline reads, and health and behaviour tell an elite apart in play |
 | A summoner turning to the hero before its first summon, so the imps stand between them rather than behind it | Sprint 22, from Q42 on 2026-09-25 | The next pass on enemy behaviours | Cosmetic, first cast only; the imps run at the hero either way |
-| The phase 6 gate's person row left: the bar at the densest choke in Chrome, Firefox, Safari, and Edge on the reference laptop, written as figures in the phase README | Phase 6 gate, sprint 30 | The maintainer, once phase 6 is done, by the standing instruction of 2026-09-24 | An agent cannot read a GPU browser; an open box in STATUS.md with its steps. The playtest, its replay, and its triage held on the clean run of 2026-09-26: level 10 at the last boss's kill, the session replaying identically, every note given an outcome |
 | The hero's attack growing with level, a new attribute conversion rather than a number | Sprint 22, from Q38 on 2026-09-25 | The next bet's balance pass; the long road's triage may take it into the bucket if the playtest asks | The balance pass's four goals hold without it; a pack of five is a fight for spells at every level by design until then |
-| *One floor*: a generated floor, loot, equipment, and stairs down, the bet the [retrospective](../../2026-09-25-retrospective-and-account.md#8-the-recommended-next-bet-one-floor) recommended | Phase 6, by the maintainer's choice on 2026-09-26; split on 2026-09-26 (Q73) | The generated floor and stairs: phases 7 and 8, then a bet of their own, phase 9 or later. Its loot and equipment half is [phase 7](../phase-7-loot-and-the-store/README.md), below | The maintainer chose a hand-authored playtest map first, then split the bet: loot and the store, then active items, both on the long road, before a generator |
-| Enemy strength scaled per pack or by the hero's level | Phase 6, Q55 | A difficulty design | A region's difficulty is its archetypes, tiers, and counts; scaling would hide what the playtest is meant to measure |
+| **The descent**: about a hundred generated levels in Diablo I's style, each its own map reached by stairs down, with a checkpoint at each level's start, growing harder with depth through deeper and different enemy types, bosses, tiers, and density, never by scaling an enemy's stats. It replaces *one floor*, the bet the [retrospective](../../2026-09-25-retrospective-and-account.md#8-the-recommended-next-bet-one-floor) recommended, and "procedural dungeons with acts and biomes" | Phase 6, by the maintainer's choice on 2026-09-26; split on 2026-09-26 (Q73); reshaped on 2026-09-27 (Q89) | Phases 7 and 8, then a bet of its own, phase 9 or later, shaped first. Its loot and equipment half is [phase 7](../phase-7-loot-and-the-store/README.md), and each map's level, which an item's level is, is P7-S39-T02 | The maintainer chose a hand-authored playtest map first, then split the bet, then chose Diablo I's structure: item level is the map's level, and difficulty is the roster, not stat scaling. Its hidden cost, a roster large enough to make a hundred levels harder without scaling, is R34 |
 | A map editor | Phase 6 | A second hand-authored map | One map is typed from its spec and held by content tests |
 | An eleventh spell | Phase 6 | A kit redesign by the engineering architect | Three orbs give exactly ten recipes; a new spell takes over a recipe through the replace-a-spell runbook |
 | The town, sprite art, audio, and saves on the long road | Phase 6 | The list after phase 8 | The long road is a playtest of fighting and progression; each of these is its own bet. Loot and items were on this row until the maintainer took them as phase 7 (Q73) |
 | The hero's side toward Diablo II curves: hero health from strength, the attribute gains per level, the Dota experience table, spell scaling, and the long road's levelling budget moved with them | Phase 6, the long road's triage, 2026-09-26 | A decision to take it as a bet; the clean run of 2026-09-26 reached level 10 at the last boss on the enemy retune alone, and named no hero-side gap | A bet of its own, a week or more: it moves every balance log, the level table, and the spec's budget (Q58). The triage retuned the enemy side only, so the clean run shows how far that alone goes |
 | A dedicated last boss: its own archetype definition with the brute's kit and about 1450 health, Andariel's ratio to a Catacombs normal (about 17 times) on the retuned brute's 85, experience 90 so that 10 times still pays 900; the registry, the enemy catalogue, the long road spec's pack 32, and the content version move with it | Phase 6, P6-S30-T03, by the maintainer's answer to Q71 on 2026-09-26 | The next bet's choice; the clean run of 2026-09-26 killed the last boss with no note on it | The five bosses share `boss_health_multiplier`, so the last boss, a boss-tier brute, lands at 340 health and about 11 of the hero's basic attacks; the gap is written in the ratios note, and the clean run says whether it matters. Content only, about 0.5 to 1 |
 | Two-handed weapons | Phase 7, by the maintainer's decision of 2026-09-26 (Q75) | A design for what a two-handed item does to the off-hand, and a reason to want it | One-handed bases keep the ten armory slots independent: no equip ever empties a second slot |
-| A pickup order: click an item to walk to it and take it | Phase 7, by the maintainer's decision of 2026-09-26 (Q74) | A playtest that finds walk-over pickup wrong | Walk-over pickup needs no new order kind and no disable-matrix column for one; a click-to-pick-up would |
 | A death penalty: gold or items lost on death, or a corpse to run back to | Phase 7, by the maintainer's decision of 2026-09-26 (Q79) | Saves, since a penalty on a run that a reload ends means little | A hero who dies keeps everything and comes back at the furthest checkpoint, as today |
-| A sized inventory grid, where an item takes more than one cell, and a stash | Phase 7, Q88 | A playtest that finds forty equal cells too few or too flat; the stash waits on saves and a town | One item a cell is a list; a sized grid is a packing problem and a screen of its own |
+| A stash | Phase 7, Q88 | Saves and a town | Nothing outlives a session to store. The sized inventory grid this row once held is phase 7's, by Q88's answer of 2026-09-27 |
+| Rearranging the inventory to make room for an item | Phase 7, Q88 | A playtest that asks | Placement is first fit in reading order; a refusal by fit leaves the player to move items by hand |
 | A store that restocks, or that sells back what it bought | Phase 7, Q90 | A town, or a playtest that asks | A stock rolled once per checkpoint is deterministic on one key and needs no clock |
 | Comparing an item with the one worn, in its tooltip | Phase 7, sprint 36 | A playtest that asks | The tooltip reads one item; a comparison reads two and their difference on the stack |
 | Sets, sockets, and item lifesteal | Phase 7 | A second loot bet, after phase 8 | Seven rarities and rolled affixes are the loot depth this bet tests |
-| The eight active items dropping and in the store | Phase 7, Q84 | [Phase 8](../phase-8-active-items/README.md), which turns their drop weight and store listing on | They are Legendary items with a weight of zero until they can be used |
+| The eight active items in the store | Phase 7, Q84 | [Phase 8](../phase-8-active-items/README.md), which lists them in the store's Misc tab | They cannot be used until phase 8. By Q84's answer of 2026-09-27 they have no rarity and never drop, so no loot table ever holds them |
+| The item catalogue at scale: about a thousand items from Common to Legendary, each with exact stats, dropped at the right times, Diablo II style | Phase 7, by Q84's answer, 2026-09-27 | A research ticket into how Diablo II generates items: treasure classes, monster and area level, quality level, affix level, and the quality roll from unique through set and rare to magic | Phase 7 keeps a small catalogue of about twenty bases, three Legendaries, and a short affix table on a basic version of that model (Q89); the full model is its own bet, and the research comes before its catalogue as every catalogue here came before its schema |
 
 ---
 
@@ -47,9 +46,12 @@ A row of the tables on this page moves here when a phase's plan takes it, with t
 | Loot and drops | The enemies page | Phase 7: P7-S32-T02, rarity P7-S35-T01 |
 | Items as modifier sources | The hero page | Phase 7: P7-S34-T01 |
 | Item slots, inventory, equipment | The HUD page | Phase 7: P7-S33-T01, the screen P7-S34-T03 |
-| Spell amplification (lifesteal stays below) | The spells page | Phase 7: spell damage %, P7-S34-T01 |
+| Spell amplification (lifesteal stays below) | The spells page | Phase 7: magic damage %, P7-S34-T01, amplifying all magical damage the hero deals (Q93) |
+| A pickup order: click an item to walk to it and take it | Phase 7, Q74 | Phase 7: P7-S40-T01, by Q87's answer of 2026-09-27; items are picked up only this way, gold and globes still on walk-over |
+| A sized inventory grid, where an item takes more than one cell | Phase 7, Q88 | Phase 7: P7-S33-T01 and P7-S35-T04, by Q88's answer of 2026-09-27 |
 | Tooltips, for items | The HUD page | Phase 7: P7-S36-T01. Tooltips on spells and statuses stay below |
 | Usable items as abilities | The retrospective's items sizing | Phase 8, sketched |
+| More packs on the long road, the row "Q58" pointed at if the road felt empty | Phase 6, Q58 | Phase 7: P7-S39-T01, the long road at Diablo II density, by Q58's answer of 2026-09-27 |
 
 ---
 
@@ -118,7 +120,7 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 | Tooltips on spells and statuses | HUD | A settings or polish pass; item tooltips are phase 7's |
 | Sound cues | HUD, Orbs and Invoke, Spells | Audio |
 | Animated art | HUD | The sprite atlas |
-| Procedural dungeons, acts, biomes | Map and camera | The generator; the map format is ready |
+| The descent, about a hundred generated levels (was "procedural dungeons, acts, biomes") | Map and camera | The generator; the map format is ready. The row above holds the shape |
 | Exits, portals, transitions | Map and camera | The dungeon loop; run and map scope are ready and tested by a door test |
 | Tile art | Map and camera | Art; the tile-layer view kind is tested by a door test |
 | Fog of war | Map and camera | A map larger than the arena. Cut from phase 6: the long road hides nothing worth finding |
@@ -127,7 +129,7 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 | Levelling Invoke | Orbs and Invoke | Never |
 | A last-invoked indicator | Orbs and Invoke | Never |
 | Ally targeting | Spells | There are no allies |
-| Spell lifesteal | Spells | A later loot bet; amplification is phase 7's spell damage % |
+| Spell lifesteal | Spells | A later loot bet; amplification is phase 7's magic damage % |
 | Enemy summons stealing Emberling aggro | Spells | Never in the five phases |
 | Named-spell art and sound | Spells | Art, audio |
 | Dispels | Status effects | A design that needs them |
@@ -142,3 +144,10 @@ Cost: the pipeline is finished across a phase boundary while the AI module is in
 Multiplayer, hero selection, quick-cast, order queues, mobile. The overview and the mechanics spec each state why.
 
 Crafting, by the maintainer's word of 2026-09-26: "No crafting in the game" (Q80). The roadmap's "Not at any point" says so.
+
+By the maintainer's word of 2026-09-27:
+
+- **Measuring the bar in Firefox, Safari, Edge, or on a reference laptop.** The maintainer has no reference laptop and will never run a per-browser check; the bar is measured by an agent in Chrome on the development machine. Every such row that stood open, the phase 6 gate's bar per browser last, is dropped rather than deferred.
+- **A benchmark run by hand.** The render benchmark is an agent's, in Chrome through browser automation.
+- **A +1 to an orb on any item** (Q92).
+- **An enemy's stats scaled by a level**, of the map or of the hero (Q55, confirmed for the whole game): a level drives only loot. This row stood above as "enemy strength scaled per pack or by the hero's level", waiting on a difficulty design.

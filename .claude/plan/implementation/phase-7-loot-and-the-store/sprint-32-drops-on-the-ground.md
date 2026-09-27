@@ -4,7 +4,7 @@
 
 ## Goal
 
-A dying enemy rolls its tier's loot table on a draw of its own and leaves gold, globes, and items on walkable ground as a new entity kind, the same on every replay, without moving a single combat number. Every item carries the item level of the pack that dropped it. The atlas font can write an item's name.
+A dying enemy rolls its tier's loot table on a draw of its own and leaves gold, globes, and items on walkable ground as a new entity kind, the same on every replay, without moving a single combat number. Every item carries an item level, the level of the map it dropped on. The atlas font can write an item's name.
 
 ## Playable outcome
 
@@ -23,7 +23,9 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Depends on | P7-S31-T02, P7-S31-T03 |
 | Status | planned |
 
-**Build:** the ground item as an entity kind where P7-S31-T02 placed it: gold with an amount, a health or mana globe, or an item instance; its position; whether the hero dropped it and has not yet stepped off it (Q87). A pool of the capacity the brief set, in map scope, released whole when a map is loaded, with generational ids and the rule the brief chose for a drop past capacity, counted as a pool miss if it refuses. The panel's readouts gain **Ground items** live over capacity. The [world model](../../../../docs/architecture/world-model.md), [entities and pools](../../../../docs/architecture/entities-and-pools.md), and where-to-look pages state the kind.
+> **Note, 2026-09-27, later:** the flag for an item the hero dropped and has not stepped off is gone: items are picked up by a right click, not by walking over them (Q87).
+
+**Build:** the ground item as an entity kind where P7-S31-T02 placed it: gold with an amount, a health or mana globe, or an item instance; its position. A pool of the capacity the brief set, in map scope, released whole when a map is loaded, with generational ids and the rule the brief chose for a drop past capacity, counted as a pool miss if it refuses. The panel's readouts gain **Ground items** live over capacity. The [world model](../../../../docs/architecture/world-model.md), [entities and pools](../../../../docs/architecture/entities-and-pools.md), and where-to-look pages state the kind.
 
 **Acceptance:**
 - A ground item is taken and released without allocating after warm-up; a stale id resolves to nothing.
@@ -45,17 +47,20 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | --- | --- |
 | Layer | domain, simulation, content, tests, docs |
 | Size | 1.5 |
-| Depends on | T01 |
+| Depends on | T01, P7-S39-T01 |
 | Status | planned |
 
-**Build:** the loot roll where P7-S31-T02 placed it, on the keyed draw it chose. The death system's reward step, beside the experience grant, rolls the dying enemy's tier table: gold, a health globe and a mana globe each by its chance, and an item of a rarity by its weight, from the bases the table names. An elite always drops an item; a boss always drops one Rare or better; an add drops nothing. Drops are placed on walkable cells near the body by a bounded search, as a pack's placement is, and each announces an `item_dropped` event. Rarity is rolled but affixes are not yet: every item is its base until P7-S35-T01. The content version moves and the seven logs are re-stamped; no stored log picks anything up yet, so no fight moves.
+> **Note, 2026-09-27:** Legendary equipment drops only from its named boss, and active items are in no loot table (Q84); six logs, not seven. The size stays 1.5: the boss's table is one more table on the same roll.
+
+**Build:** the loot roll where P7-S31-T02 placed it, on the keyed draw it chose. The death system's reward step, beside the experience grant, rolls the dying enemy's tier table: gold, a health globe and a mana globe each by its chance, and an item of a rarity by its weight, from the bases the table names. An elite always drops an item; a boss always drops one Rare or better; an add drops nothing. The three bosses P7-S39-T01's spec names also roll their Legendary at its low rate, by whichever link from boss pack to table the architect's brief chose, a pack field or a table keyed by map and pack; no other enemy drops a Legendary, and no table holds an active item. Drops are placed on walkable cells near the body by a bounded search, as a pack's placement is, and each announces an `item_dropped` event. Rarity is rolled but affixes are not yet: every item is its base until P7-S35-T01. The content version moves and the six logs are re-stamped; no stored log picks anything up yet, so no fight moves.
 
 **Acceptance:**
 - The same key rolls the same drops; two replays of the boss encounter log agree at every tick, drops included.
 - The simulation's xorshift stream reads the same at every tick of the boss encounter log with every loot table on and with every table emptied: a drop never moves a combat outcome.
 - Over 10 000 rolls per tier, each outcome lands within a stated tolerance of its weight; every elite roll holds an item and every boss roll one Rare or better; an imp drops nothing.
 - Every drop lands on a walkable cell within the search radius of its body, or is refused and counted if none is free.
-- The seven stored logs replay on the new content version.
+- Over 10 000 rolls, a named boss drops its Legendary at its rate, and every other enemy never does.
+- The six stored logs replay on the new content version.
 
 **Tests:**
 - `tests/domain/loot/roll.spec.ts`: weights over 10 000 rolls, the elite and boss guarantees, the add, the same key giving the same roll.
@@ -66,27 +71,29 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 ---
 
-### P7-S32-T03 — Item level from the pack, and level requirements
+### P7-S32-T03 — Item level from the map level, quality levels, and level requirements
 
 | Field | Value |
 | --- | --- |
-| Layer | domain, content, tests, docs |
+| Layer | domain, tests, docs |
 | Size | 0.5 |
-| Depends on | T02 |
+| Depends on | T02, P7-S39-T02 |
 | Status | planned |
 
-> **Note, 2026-09-26:** split out of the loot ticket, which the brief the maintainer saw sized at 1.5 with it. It is a content-format change: the map's packs gain a field, and a required field means every pack of every map is edited.
+> **Note, 2026-09-26:** split out of the loot ticket, which the brief the maintainer saw sized at 1.5 with it.
 
-**Build:** every map pack gains an `itemLevel` field (Q89): the long road's 32 packs by their region, 1 to 5, as the catalogue's table says, and any pack on the arena at 1. A pack spawned from the panel drops at the item level of the hero's furthest checkpoint's region, so no command changes shape and no stored log is refused. A drop carries its item level; the level requirement is the catalogue's rule applied to it, read by the equip command in P7-S33-T01. The [long road spec](../../../../docs/product/specs/the-long-road.md)'s pack table gains the column. The content version moves; the seven logs are re-stamped.
+> **Note, 2026-09-27:** rewritten for Q89's recommendation, then again the same day for its answer, Diablo I's structure: item level is the map's level, with no region and no tier offset. Titles were "Item level from the pack, and level requirements" and "Item level from the area level, quality levels, and level requirements".
+
+**Build:** a drop's **item level** is the current map's level (P7-S39-T02), whichever enemy dropped it, a panel-spawned one included; an elite or a boss drops more and at better rarity through its table, never at a higher item level. The roll draws a base only if the item level reaches the base's **quality level**. The **level requirement** is the highest of the base's requirement and its affixes' requirements; affixes arrive with P7-S35-T01, which applies their **affix level** the same way. The equip command reads the requirement in P7-S33-T01. Enemies have no level for their stats (Q55). The content version does not move unless the catalogue's fixture bases change.
 
 **Acceptance:**
-- Every pack of every map names an item level from 1 to 5; the long road's match the spec's regions.
-- A drop's item level is its pack's; a panel pack's is the furthest checkpoint's region.
-- The level requirement of each item level matches the catalogue.
+- A normal, an elite, and a boss dying on a map of level 3 each drop at item level 3; after `set_map_level` to 7, at 7.
+- A base whose quality level is above the item level never drops, over 10 000 rolls.
+- A base's level requirement is the item's; with affixes, the highest of them.
 
 **Tests:**
-- `tests/content/maps.spec.ts`: every pack's item level, and the long road's against the spec.
-- `tests/domain/loot/roll.spec.ts`: the item level carried; the requirement rule.
+- `tests/domain/loot/roll.spec.ts`: the item level from the map level, the quality-level filter, the requirement rule.
+- `tests/simulation/loot/drop-on-death.spec.ts`: drops after `set_map_level` take the new level.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
@@ -107,7 +114,7 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 - Every character of every base's name, every rarity's name, and every affix line the catalogue can write is in the font.
 - A label with a space draws one quad fewer than its characters.
 - The atlas still bakes into one texture with `maxTextures: 1`.
-- The render benchmark in Chrome on this commit and the one before it, a box under Waiting on a person in STATUS.md.
+- The render benchmark in Chrome on this commit, run by an agent through browser automation, its figures in the sprint exit (standing instruction of 2026-09-27; edited that day from a box under Waiting on a person).
 
 **Tests:**
 - `tests/presentation/shape-atlas.spec.ts`: the new glyphs and frames present; the space draws no quad.
@@ -123,7 +130,7 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | --- | --- |
 | Ground items pooled in map scope, released by a map load | |
 | Drops the same on two replays, the combat stream unmoved | |
-| Item level from the pack on every map | |
+| Item level from the map level; the quality-level filter | |
 | The font writes an item's name | |
 | The render benchmark after the atlas grew | |
 | Actual days per ticket | |
@@ -131,6 +138,6 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 ## Risks in this sprint
 
-- T02 re-stamps the seven logs; run T03 after it and re-stamp once more on top rather than twice in parallel.
+- T02 re-stamps the six logs; run T03 after it, on top rather than in parallel.
 - The loot draw's local sequence is a new use of ADR 0010. If the architect's brief supersedes that record, T02 builds on the new one and the determinism tests name it.
 - The ground-item pool's capacity is a guess until the balance. P7-S38-T01's stress case fills it; a capacity that proves wrong is a one-line change and a re-stamp.

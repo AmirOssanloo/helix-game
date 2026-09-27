@@ -41,9 +41,9 @@ Nothing needs to be up for any of this. No containers, no database. `pnpm test` 
 | Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
 | Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table, asserted a second time; a wrong-direction import fails here and in lint. Every relative link and anchor in the documentation resolves |
 | Presentation | `tests/presentation/`, `tests/devtools/` | jsdom  | `pnpm test` | Input mapping, view binding, and the panel, with Phaser stubbed. Few, and small |
-| Benchmark    | `bench/`                        | A browser   | `pnpm bench`, by hand | Render time, draw calls, heap over 30 seconds. Never in `check` |
+| Benchmark    | `bench/`                        | Chrome      | `pnpm bench`, by an agent through browser automation | Render time, draw calls, heap over 30 seconds. Never in `check` |
 
-The benchmark is deliberately outside `pnpm check`: it needs a GPU and a human reading a performance panel, and it answers a different question — not "is the code right" but "does it still hold frame time on the reference laptop". Run it after touching the atlas, the views, or upgrading Phaser, and put the numbers in the change description.
+The benchmark is deliberately outside `pnpm check`: it needs a GPU, and it answers a different question — not "is the code right" but "does it still hold frame time". An agent runs it in Chrome on the development machine, an Apple M1 laptop, through browser automation, and reads the readout; nobody runs it by hand. The agent's way is headless Chrome driven over the DevTools protocol, 30 seconds after a warm-up, counting draw calls by wrapping the WebGL draw methods: a visible tab behind other windows reports itself hidden and renders nothing, so a headed run on this machine measures nothing. Firefox, Safari, Edge, and a separate reference laptop are not measured. Run it after touching the atlas, the views, or upgrading Phaser, and put the numbers in the change description.
 
 ---
 

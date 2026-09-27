@@ -1,17 +1,17 @@
 # Phase 8 — Active items
 
-**Sprints:** 39–42, sketched · **Sized days:** 14.5, sketched · **Gate:** [Phase 8 gate](../04-phase-exit-gates.md#phase-8-gate), an outline
+**Sprints:** 41–44, sketched; moved on 2026-09-27 from 39–42, then 40–43, as phase 7's re-cuts took 39 and 40 · **Sized days:** 14.5, sketched · **Gate:** [Phase 8 gate](../04-phase-exit-gates.md#phase-8-gate), an outline
 **Written:** 2026-09-26 · **Author:** delivery strategist role, from the maintainer's decisions of 2026-09-26
 
 **Status of this page:** a sketch. The sprint files are written when phase 7's gate holds, from what its triage found; ticket IDs are assigned then, so none is reserved here. The sizes below are the plan's first estimate and may move when the sprints are cut.
 
 ## Goal
 
-The eight Legendary active items drop, very rarely, and sell in the store at a steep price. The hero holds up to six in a bank beside the Skein kit, each on its own key in a 3 by 2 grid, and uses each through the ability pipeline: an ability like any other, with a cast point, a cooldown, and a mana cost where the item has one. Played on the long road.
+The eight active items are sold only in the store, in its Misc tab, at a steep price; they have no rarity, never drop, and wear an emerald-green label (Q84, answered 2026-09-27, superseding Q74's "very rarely" drops). The hero holds up to six in a bank beside the Skein kit, each on its own key in a 3 by 2 grid, and uses each through the ability pipeline: an ability like any other, with a cast point, a cooldown, and a mana cost where the item has one. Played on the long road.
 
 ## The maintainer's decisions it builds on
 
-Recorded in [Open questions](../backlog/open-questions.md): the eight actives and what each does (Q81), and their keys (Q82), top row T, X, V and bottom row C, G, Space, with G a provisional choice the maintainer can overturn. The word for an item's usable power and for using it is Q85, settled in this phase's first ticket.
+Recorded in [Open questions](../backlog/open-questions.md): the eight actives and what each does (Q81), and their keys (Q82), top row T, X, V and bottom row C, G, Space, with G a provisional choice the maintainer can overturn. The words are settled by Q85 and Q94, answered 2026-09-27: an **active item**, used by **activating** it; the first ticket writes them into the vocabulary rather than choosing them.
 
 | Active item | Model | What it needs that does not exist |
 | --- | --- | --- |
@@ -28,35 +28,35 @@ Recorded in [Open questions](../backlog/open-questions.md): the eight actives an
 
 | Sprint | Ticket | Size |
 | --- | --- | --- |
-| 39 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground; how it relates to the retrospective's Kit finding; and the word for an item's usable power and for using it (Q85), owned by the vocabulary page | 1 |
-| 39 | The item catalogue's section on the eight actives: each one's effect list, numbers, cooldown, mana cost, drop weight, and store price, approved by the maintainer | 0.5 |
-| 39 | Six bank slots, the keys T, X, V, C, G, and Space, a HUD row laid out as the grid, Space's browser default (page scroll) suppressed, and the same-tick tie-break order Q W E R D F extended with T X V C G Space | 2 |
-| 40 | The disable matrix's column for the six keys, one test per cell | 1 |
-| 40 | Scorchglass | 0.5 |
-| 40 | Fetter Bolas | 0.5 |
-| 40 | Mainspring | 1 |
-| 40 | Slipknife | 1 |
-| 41 | Gyre Sceptre | 1 |
-| 41 | Rimeward | 1 |
-| 41 | Skyfall Maul | 1 |
-| 41 | Active items turned on: their drop weight above zero and their store listing at the catalogue's price; the balance log recorded again | 0.5 |
-| 42 | Veilblade | 1.5 |
-| 42 | The maintainer's playtest and the triage | 0.5 |
-| 42 | Documentation sync | 0.5 |
-| 42 | The phase gate | 1 |
+| 41 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground; how it relates to the retrospective's Kit finding; and the words of Q85 written into the vocabulary page | 1 |
+| 41 | The item catalogue's section on the eight actives: each one's effect list, numbers, cooldown, mana cost, and store price, approved by the maintainer | 0.5 |
+| 41 | Six bank slots, the keys T, X, V, C, G, and Space, a HUD row laid out as the grid, Space's browser default (page scroll) suppressed, and the same-tick tie-break order Q W E R D F extended with T X V C G Space | 2 |
+| 42 | The disable matrix's column for the six keys, one test per cell | 1 |
+| 42 | Scorchglass, its magical damage amplified by magic damage % (Q93) | 0.5 |
+| 42 | Fetter Bolas | 0.5 |
+| 42 | Mainspring | 1 |
+| 42 | Slipknife | 1 |
+| 43 | Gyre Sceptre | 1 |
+| 43 | Rimeward | 1 |
+| 43 | Skyfall Maul | 1 |
+| 43 | Active items listed in the store's Misc tab at the catalogue's price, with the emerald label; they stay out of every loot table | 0.5 |
+| 44 | Veilblade | 1.5 |
+| 44 | The maintainer's playtest and the triage | 0.5 |
+| 44 | Documentation sync | 0.5 |
+| 44 | The phase gate | 1 |
 | | **Total** | **14.5** |
 
-The brief the maintainer saw sized the phase at about 12. The difference: the architect's decision at 1 rather than 0.5, since it carries the Kit finding and a vocabulary word; the catalogue section, 0.5, since no active is written before its effects are, as every catalogue here came first; turning the drops and the store on, 0.5; and the playtest and the docs sync, 0.5 each, which the governance change of the [retrospective](../../2026-09-25-retrospective-and-account.md) asks of every phase. A triage bucket's appetite is set when the sprint files are written, from what phase 7's playtest found.
+The brief the maintainer saw sized the phase at about 12. The difference: the architect's decision at 1 rather than 0.5, since it carries the Kit finding and a vocabulary word; the catalogue section, 0.5, since no active is written before its effects are, as every catalogue here came first; listing them in the store, 0.5; and the playtest and the docs sync, 0.5 each, which the governance change of the [retrospective](../../2026-09-25-retrospective-and-account.md) asks of every phase. A triage bucket's appetite is set when the sprint files are written, from what phase 7's playtest found.
 
 ## Cut-line, sketched
 
-**In:** the eight actives, six keys, the HUD row, the disable-matrix column, the drops and the store turned on.
+**In:** the eight actives, six keys, the HUD row, the disable-matrix column, the actives listed in the store's Misc tab.
 
-**Out:** key rebinding (Deferred, a settings menu); potions on a belt; a second kit; any active beyond the eight; charges and stacking items; the generated floor, which comes after this phase.
+**Out:** key rebinding (Deferred, a settings menu); potions on a belt; a second kit; any active beyond the eight; charges and stacking items; the descent, which comes after this phase.
 
 ## Gate, outlined
 
-Written as rows in [Phase exit gates](../04-phase-exit-gates.md#phase-8-gate): each active cast through the pipeline with nothing item-specific added to it; the disable-matrix column tested per cell; the keys in the tie-break order; Space not scrolling the page in any of the four browsers; the maintainer's playtest with actives, replayed and triaged; the docs; the bar.
+Written as rows in [Phase exit gates](../04-phase-exit-gates.md#phase-8-gate): each active cast through the pipeline with nothing item-specific added to it; the disable-matrix column tested per cell; the keys in the tie-break order; Space not scrolling the page in Chrome, checked by an agent (standing instruction of 2026-09-27; no other browser); the actives bought in the store and never dropped; the maintainer's playtest with actives, replayed and triaged; the docs; the bar.
 
 ## Risks the sketch already sees
 

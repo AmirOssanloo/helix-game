@@ -94,12 +94,12 @@ Open the address it prints, open the browser's performance panel, and record 30 
 
 | Measure       | Pass                          |
 | ------------- | ----------------------------- |
-| Frame rate    | 60, steady, in Chrome and Safari |
+| Frame rate    | 60, steady, in Chrome             |
 | Render time   | Under 6 ms                    |
 | Draw calls    | Under 5 per frame, from the readout |
 | Heap          | Flat after warm-up            |
 
-Run it after every Phaser upgrade, and after any change to the atlas or the views. Put the before and after numbers in the change description.
+Run it after every Phaser upgrade, and after any change to the atlas or the views. An agent runs it in Chrome on the development machine through browser automation; it is never a person's step, and no other browser or machine is measured. Put the before and after numbers in the change description.
 
 If it fails, the fix is inside Phaser, never a different engine: draw calls over 5 means something broke the batch; render over budget with draw calls fine means an allocation in the sync layer or a stray `Text` update.
 

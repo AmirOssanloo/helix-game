@@ -109,7 +109,7 @@ The maintainer answered every question above but Q58 the same day, after phase 7
 | Q66 | Kept, no A* expansion cap | No change |
 | Q67 | Kept, every build starts on the long road | No change |
 
-Q58, the long road's 32 packs and the spec's approval, was not in the answers and stays open; its box is folded into the phase 6 bar box in STATUS.md.
+Q58, the long road's 32 packs and the spec's approval, was not in the answers and stayed open. **Answered 2026-09-27** by the delivery lead on the maintainer's delegation: the road grows to Diablo II density, about 100 to 130 enemies, with bosses paying 5 times rather than 10 and the last boss's kill at about level 11 to 13, as the unplanned [P7-S39-T01](../phase-7-loot-and-the-store/sprint-39-the-long-road-at-diablo-ii-density.md), which also retires the clean run's log, since it cannot replay on the new road.
 
 ## When the clean run's files arrive
 

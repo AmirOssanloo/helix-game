@@ -2,7 +2,7 @@
 
 **Written:** 2026-09-20 · **For:** leadership and the engineer running the plan
 
-One engineer, forty-three one-week sprints, nine phases, one playable build at the end of every phase. Phase 6 was added on 2026-09-26, after phase 5 closed; phases 7 and 8 the same day, after phase 6 closed, with phase 8 sketched. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
+One engineer, forty-five one-week sprints, nine phases, one playable build at the end of every phase. Phase 6 was added on 2026-09-26, after phase 5 closed; phases 7 and 8 the same day, after phase 6 closed, with phase 8 sketched; phase 7 re-cut twice on 2026-09-27, with sprint 39, the long road grown, run first, and sprint 40, the pick-up order, run after 33. This page is the whole plan at one screen's altitude. The sprint files hold the detail.
 
 ---
 
@@ -25,9 +25,9 @@ Every phase ends with a build the person at the keyboard can play, tests that ar
 | 4 · Combat feel and tuning | 16–18 | 3 | Fighting reads clearly, every exposed number retunes from the panel with no code change, and the profile shows headroom on every row of the bar |
 | 5 · Full enemy roster | 19–22 | 4 | A long roster with abilities, elites, bosses, and the disable matrix; a boss encounter runs within budget |
 | 6 · The long road | 25–30 | 6 | A hand-authored map 4000 by 24000 the hero walks from level 1 to about level 10 through five regions of rising difficulty, with checkpoints, packs that wake and sleep, the hero's smaller share of push-out, and a feedback key; the maintainer has played it and the feedback is triaged |
-| 7 · Loot and the store | 31–38 | 8 | Enemies on the long road drop gold, health and mana globes, and equipment in seven rarities, taken by walking over them; ten armory slots worn from the first UI screen change the hero's stats; a store at each checkpoint buys and sells; the road is finished from level 1 to the last boss with no heal or mana from the panel, and the maintainer has played it |
-| 8 · Active items, sketched | 39–42 | 4 | Eight Legendary active items drop very rarely and sell in the store; six keys in a grid beside the kit use them through the ability pipeline |
-| **Total** | **43** | **43** | |
+| 7 · Loot and the store | 39, 31–33, 40, 34–38 | 10 | The long road grown to Diablo II density, about 100 to 130 enemies, pressing the hero far less; enemies on it drop gold and health and mana globes, taken by walking past them, and equipment in seven rarities, picked up by a right click into a 10 by 4 inventory of sized items; ten armory slots worn from the first UI screen change the hero's stats; a store at each checkpoint buys and sells; the road is finished from level 1 to the last boss with no heal or mana from the panel, and the maintainer has played it |
+| 8 · Active items, sketched | 41–44 | 4 | Eight active items, sold only in the store's Misc tab; six keys in a grid beside the kit use them through the ability pipeline |
+| **Total** | **45** | **45** | |
 
 Twenty-five sprints was planned as about six calendar months for one engineer at full allocation; phases 0 to 5 closed in six calendar days (the [retrospective](../2026-09-25-retrospective-and-account.md)). The calendar of phases 6 to 8 is set by the maintainer's playtests and approvals, not by engineering days. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
 
@@ -50,7 +50,7 @@ Twenty-five sprints was planned as about six calendar months for one engineer at
 | M10 · Phase 6 gate | end of 30 | The maintainer has played the long road and filed feedback; the triage is built or deferred; the playtest session replays identically |
 | M11 · Loot worn | end of 34 | A pack killed on the long road drops an item, the hero walks over it, opens the inventory, wears it, and a derived stat moves; no click on the screen walks the hero |
 | M12 · Phase 7 gate | end of 38 | The long road finished from level 1 to the last boss with no heal or mana from the panel; the store used; the session replays identically; the feedback triaged |
-| M13 · Phase 8 gate | end of 42 | Every active item cast through the pipeline from its key; the maintainer has played with them |
+| M13 · Phase 8 gate | end of 44 | Every active item cast through the pipeline from its key; the maintainer has played with them |
 
 ---
 
@@ -65,8 +65,8 @@ What each phase deliberately does not include, so that nobody adds it by habit. 
 - **Phase 4** adds no new content. It tunes what exists and proves headroom.
 - **Phase 5** adds no items, no dungeons, no save, no art, no audio.
 - **Phase 6** adds one hand-authored map and what playing it needs. No loot, no minimap, no generator or *one floor*, no per-level or per-pack enemy scaling, no art, no audio, no saves, no eleventh spell. What the playtest asks for is built only inside a bucket of four sized days; the rest is deferred.
-- **Phase 7** adds loot, the inventory and armory, and a store, on the long road as it stands. No active item in the drops or the store, no two-handed weapon, no click-to-pick-up, no sized grid or stash, no restock, no death penalty, no saves, no generated floor, no town, no art, no audio. What the playtest asks for is built only inside a bucket of two sized days.
-- **Phase 8** adds the eight active items and their keys. No rebinding, no potions on a belt, no second kit, no generated floor.
+- **Phase 7** grows the long road to Diablo II density, then adds loot, the inventory and armory, and a store on it. No active item in the drops or the store, no +1 to an orb, no catalogue at Diablo II's scale, no two-handed weapon, no stash, no restock, no death penalty, no saves, no descent, no town, no art, no audio. What the playtest asks for is built only inside a bucket of two sized days.
+- **Phase 8** adds the eight active items, bought only in the store, and their keys. No rebinding, no potions on a belt, no second kit, no descent.
 
 Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile, crafting.
 
@@ -76,7 +76,7 @@ Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile,
 
 - One engineer, full time, working with the architect and game-engineer roles for drafting and review.
 - Sprints are one week. A sprint holds at most four days of sized work and one day of buffer.
-- The reference laptop exists and has Chrome, Firefox, Safari, and Edge installed, because four gates need it.
+- The bar is measured by an agent in Chrome on the development machine, an Apple M1 laptop, and headless in Node, by the maintainer's standing instruction of 2026-09-27. There is no reference laptop, and Firefox, Safari, and Edge are not measured. Was: the reference laptop exists with the four browsers, because four gates need it.
 - Design decisions inside the plan (spell numbers, archetype numbers, the disable matrix) are made by the same person, in sized tickets, not by a separate designer on a separate timeline.
 
 ---

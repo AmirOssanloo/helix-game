@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; phase 7 in sprint files and phase 8 sketched, added 2026-09-26
+**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; phase 7 in sprint files and phase 8 sketched, added 2026-09-26, phase 7 re-cut 2026-09-27
 **Status of this document:** a dated plan. It captures a moment. The `docs/` pages describe the target; this folder describes the order and cost of reaching it.
 
 ---
@@ -66,6 +66,14 @@ Layer names follow `docs/architecture/layers-and-dependency-rule.md`: `shared`, 
 
 A phase closes only when every row of its gate in [Phase exit gates](./04-phase-exit-gates.md) holds, with numbers recorded in the phase `README.md`. A phase does not close on a promise.
 
+### Standing instructions
+
+The maintainer's standing instructions bind every ticket, gate, and box until withdrawn, and no agent asks about them again. [Status](./STATUS.md#standing-instructions) holds the dated list. As of 2026-09-27:
+
+- **The frame-time bar is measured by an agent in Chrome on the development machine**, an Apple M1 laptop, with the tick budget and the stress tiers headless as before. Firefox, Safari, Edge, and a reference laptop are never measured, and no plan text asks a person for them.
+- **The render benchmark is an agent's job**, `pnpm bench` in Chrome through browser automation. No ticket asks a person to run a bench.
+Neither changes what is still asked of the maintainer: a playtest once per phase where only play can judge, as the retrospective's governance change asks.
+
 ---
 
 ## Keeping it current
@@ -98,8 +106,8 @@ implementation/
 ├── phase-4-combat-feel-and-tuning/    # Sprints 16–18
 ├── phase-5-full-enemy-roster/         # Sprints 19–22
 ├── phase-6-the-long-road/             # Sprints 25–30
-├── phase-7-loot-and-the-store/        # Sprints 31–38
-├── phase-8-active-items/              # Sprints 39–42, sketched in its README until phase 7's gate holds
+├── phase-7-loot-and-the-store/        # Sprints 31–38, with 39 run first and 40 run after 33
+├── phase-8-active-items/              # Sprints 41–44, sketched in its README until phase 7's gate holds
 └── backlog/
     ├── deferred.md                    # Cut items, the phase they were cut from, the door they wait behind, and those a phase has taken
     └── open-questions.md              # Decisions still needed, each with a proposed answer

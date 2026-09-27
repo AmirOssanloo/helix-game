@@ -4,17 +4,17 @@
 
 ## Goal
 
-A worn item changes the hero's derived stats through the modifier stack, spell damage % amplifies the ten spells, and the first real UI screen shows the inventory and the armory and moves items by clicking, with no click ever walking the hero.
+A worn item changes the hero's derived stats through the modifier stack, magic damage % amplifies the magical damage the hero deals, and the first real UI screen shows the inventory, its items at their size, and the armory, and moves items by clicking, with no click ever walking the hero.
 
 ## Playable outcome
 
-Kill packs until a helm drops, walk over it, press I, click the helm to wear it, and see armour rise in the hero's readouts; click it again to take it off. Click anywhere on the screen and the hero does not move. Milestone M11.
+Kill packs until a helm drops, right-click it to pick it up, press I, click the helm to wear it, and see armour rise in the hero's readouts; click it again to take it off. Click anywhere on the screen and the hero does not move. Milestone M11.
 
 ---
 
 ## Tickets
 
-### P7-S34-T01 — Equipment as a modifier source, and spell damage
+### P7-S34-T01 — Equipment as a modifier source, and magic damage
 
 | Field | Value |
 | --- | --- |
@@ -23,18 +23,20 @@ Kill packs until a helm drops, walk over it, press I, click the helm to wear it,
 | Depends on | P7-S33-T01 |
 | Status | planned |
 
-**Build:** each armory slot adds its item's rows, the base's implicit stat now and its affixes from P7-S35-T01, to the stats modifier stack as one source, removed whole when the item comes off. The derived stats move on the tick the command is consumed. A new stat, spell damage %, applied where P7-S31-T02 placed it, to damage from the hero's ten spells as Q93 reads it. The P5-S22-T03 door test for items as a modifier source becomes a test of the real armory. The [hero](../../../../docs/product/features/hero.md) page's derived-values table and the [spells and attack](../../../../docs/product/features/spells-and-attack.md) page state the new stat; the Deferred row for spell amplification moves to built.
+> **Note, 2026-09-27, later:** the stat is magic damage %, not spell damage % (Q93): it amplifies every magical instance the hero deals, never physical or pure. Title was "Equipment as a modifier source, and spell damage".
+
+**Build:** each armory slot adds its item's rows, the base's implicit stat now and its affixes from P7-S35-T01, to the stats modifier stack as one source, removed whole when the item comes off. The derived stats move on the tick the command is consumed. A new stat, **magic damage %**, applied where P7-S31-T02 placed it, to every instance of magical damage the hero deals: a spell's initial hit and its burns, and later an active item's magical damage (Q93). It never amplifies physical damage, so neither the hero's attack nor Emberling's attack, both physical, and pure damage is not magical. The P5-S22-T03 door test for items as a modifier source becomes a test of the real armory. The [hero](../../../../docs/product/features/hero.md) page's derived-values table and the [spells and attack](../../../../docs/product/features/spells-and-attack.md) page state the new stat, and the [vocabulary](../../../../docs/product/vocabulary.md) gains it; the Deferred row for spell amplification moves to built.
 
 **Acceptance:**
 - Wearing and removing an item moves each derived stat it names by its value, on the same tick, and leaves the stack as it was on removal.
 - Two items naming one stat add as the stack's flat and percentage rules say.
-- Spell damage % raises a spell's damage by its value and leaves the attack, Emberling's attacks, and enemy abilities alone.
+- Magic damage % raises every magical hit and burn the hero deals by its value, and leaves physical and pure damage, the attack, Emberling's attack, and enemy abilities alone.
 - No allocation in the stats system in steady state.
 
 **Tests:**
 - `tests/domain/stats/modifiers.spec.ts`: the armory source added and removed.
 - `tests/simulation/items/armory-stats.spec.ts`: equip and unequip against each derived stat.
-- `tests/domain/combat/spell-damage.spec.ts`: amplification of each damage type from a spell, and none from the attack or a summon.
+- `tests/domain/combat/magic-damage.spec.ts`: amplification of a magical hit and a magical burn; none of physical or pure damage, the attack, or a summon's attack.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
@@ -73,19 +75,21 @@ Kill packs until a helm drops, walk over it, press I, click the helm to wear it,
 | --- | --- |
 | Layer | presentation, tests, docs |
 | Size | 1.5 |
-| Depends on | T02, P7-S33-T01 |
+| Depends on | T02, P7-S33-T01, P7-S40-T01 |
 | Status | planned |
 
-**Build:** the inventory and armory screen inside the frame: the ten armory slots laid out as a figure, the 40 inventory cells, and gold. Each item is its icon in its rarity's tint. A left click on an inventory item sends `equip_item`; a left click on a worn item sends `unequip_item`; a right click on an inventory item sends `drop_item` (Q91). A refused command flashes the item as a refused key flashes its square. The screen reads the world view and sums nothing, as the HUD does. The items and loot page states each gesture.
+> **Note, 2026-09-27, later:** the grid is 10 by 4 with items drawn at their size in cells (Q88). Moving an item within the grid by picking it up onto the pointer and placing it is split out as P7-S35-T04, 1 day, so this ticket stays 1.5.
+
+**Build:** the inventory and armory screen inside the frame: the ten armory slots laid out as a figure, the 10 by 4 inventory grid with each item drawn across the cells it takes, and gold. Each item is its icon in its rarity's tint, scaled to its cells. A left click on an inventory item sends `equip_item`; a left click on a worn item sends `unequip_item`; a right click on an inventory item sends `drop_item` (Q91). A refused command flashes the item as a refused key flashes its square. The screen reads the world view and sums nothing, as the HUD does. The items and loot page states each gesture.
 
 **Acceptance:**
 - Every gesture sends its command and nothing else.
 - The screen shows what run scope holds after each command, on the next frame.
 - An item whose requirement is above the hero's level flashes on a click and stays where it was.
-- The render benchmark in Chrome with the screen open, a box under Waiting on a person in STATUS.md.
+- The render benchmark in Chrome with the screen open, run by an agent through browser automation, its figures in the sprint exit (standing instruction of 2026-09-27).
 
 **Tests:**
-- `tests/presentation/inventory-screen.spec.ts`: layout, each gesture to its command, the refusal flash, the view read with no arithmetic.
+- `tests/presentation/inventory-screen.spec.ts`: layout, items drawn across their cells, each gesture to its command, the refusal flash, the view read with no arithmetic.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
 
@@ -96,7 +100,7 @@ Kill packs until a helm drops, walk over it, press I, click the helm to wear it,
 | Check | Result |
 | --- | --- |
 | A worn item moves its derived stats and leaves cleanly | |
-| Spell damage % on spells alone | |
+| Magic damage % on magical damage alone | |
 | No click on a screen reaches the ground | |
 | The inventory and armory screen, by hand | |
 | The render benchmark with the screen open | |

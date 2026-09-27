@@ -95,7 +95,7 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 
 ## Deferred
 
-- **Procedural dungeons**, acts, and biomes. The map format is designed for generation; the generator does not exist.
+- **The descent.** About a hundred generated levels, each its own map reached by stairs, harder with depth through its enemy types, tiers, and density, never by scaling an enemy's stats. The map format is designed for generation; the generator does not exist.
 - **Exits, portals, and map transitions.** Run scope and map scope are already separate so this costs no rewrite.
 - **Obstacle art.** Obstacles are grey rectangles on the painted floor; art replaces them when it arrives.
 - **Minimap and fog of war.** The arena is small enough to learn by walking it, and the long road runs one way.

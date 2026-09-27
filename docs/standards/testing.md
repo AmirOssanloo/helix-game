@@ -31,7 +31,7 @@ The reason is that the build compiles `src/` and excludes `tests/`, so a spec un
 
 Answer in order. The first yes decides.
 
-1. Does it boot Phaser, or need a GPU? → **benchmark**, under `bench/`, manual
+1. Does it boot Phaser, or need a GPU? → **benchmark**, under `bench/`, run by an agent in Chrome
 2. Does it need a DOM? → **presentation**, jsdom
 3. Does it need a world? → **simulation**
 4. Does it read the content registry? → **content**
@@ -45,7 +45,7 @@ Answer in order. The first yes decides.
 | **content** | builds the real registry and validates every definition | Node | under 200 ms for the suite |
 | **presentation** | drives the input mapper or view binding with a fake world view | jsdom | under 20 ms |
 | **architecture** | asserts the layer import table and the determinism bans against the source tree | Node | seconds |
-| **benchmark** | drives the render path at the caps under a real Phaser game | Browser | thirty seconds, read by a person |
+| **benchmark** | drives the render path at the caps under a real Phaser game | Chrome, through browser automation | thirty seconds, read by an agent |
 
 Nothing draws in a test. The presentation tier tests the logic around Phaser — what a click becomes, which entity a view binds to — never what a pixel looks like.
 
@@ -95,7 +95,7 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 
 - **The same rule at two tiers.** A rule is tested once, in unit. The simulation test asserts the join once.
 - **Call order, call counts, private functions, internal state.**
-- **Phaser.** Its input, its batcher, its scenes. The benchmark is where Phaser is exercised, by a person.
+- **Phaser.** Its input, its batcher, its scenes. The benchmark is where Phaser is exercised, by an agent in Chrome.
 - **Reference-game numbers.** A test that asserts `fooDef`'s cooldown value is a copy of the definition. Test the table's length and the rule that reads it.
 - **Types, constants, barrels, the composition root, the tuning table's values.**
 
@@ -180,7 +180,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Acceptance tests | Every one in the mechanics spec, by its name, in the simulation tier |
 | Determinism | The replay test runs on every change under `domain/` or `simulation/` |
 | Stress test | Simulation tier, in CI, owned by performance standards |
-| Benchmark | `bench/`, manual, read by a person |
+| Benchmark | `bench/`, run and read by an agent in Chrome on the development machine through browser automation, never by hand |
 | Per layer | [The table above](#per-layer): tier, what to test, what not to, how many |
 | Zero tests | Scenes, types, constants, barrels, the composition root, tuning values |
 | Always tested | Every acceptance test, determinism, every refusal, every disable against every blocked action, every transition, anything that failed once |

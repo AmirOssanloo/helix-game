@@ -46,10 +46,12 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 | Depends on | P7-S33-T01, P7-S35-T01, P7-S31-T04 |
 | Status | planned |
 
-**Build:** `open_store` is taken only while the hero stands alive within a checkpoint's reach radius, 256 since Q60's answer; on the first opening at that checkpoint it rolls the stock on the keyed draw of the checkpoint (Q90), at its region's item level, in the rarities and count the catalogue gives, held in map scope. `buy_item` takes the price in gold and moves the item to the first free cell; `sell_item` gives the sell price and the item is gone. `close_store`, and the store closes itself when the hero leaves the ring or dies. No active item is stocked in this phase. Each is a command under ADR 0004 with named refusals: not on a ring, not enough gold, no free cell, the store closed. The world keeps running while the store is open (Q90). The disable matrix's armory column from P7-S33-T01 covers the store commands. The content version moves; the seven logs are re-stamped.
+> **Note, 2026-09-27:** Q90 answered as proposed, made a basic Diablo II store: the stock is at the hero's level when the store first opens, as Diablo II's vendors stock (Q89), not at the region's; each stocked base sits in the tab the catalogue gives it. Six logs, not seven.
+
+**Build:** `open_store` is taken only while the hero stands alive within a checkpoint's reach radius, 256 since Q60's answer; on the first opening at that checkpoint it rolls the stock on the keyed draw of the checkpoint (Q90), at an item level of the hero's level on that tick, 12 items from Common to Rare, each in its tab, Armour, Weapons, or Misc, held in map scope and never restocked. `buy_item` takes the price in gold and moves the item into the inventory where it fits by its size (Q88, edited 2026-09-27); `sell_item` gives the sell price and the item is gone. `close_store`, and the store closes itself when the hero leaves the ring or dies. No active item is stocked in this phase. Each is a command under ADR 0004 with named refusals: not on a ring, not enough gold, no place the item fits, the store closed. The world keeps running while the store is open (Q90). The disable matrix's armory column from P7-S33-T01 covers the store commands. The content version moves; the six logs are re-stamped.
 
 **Acceptance:**
-- The same seed and checkpoint stock the same items; a second opening shows what the first left.
+- The same seed, checkpoint, and hero level stock the same items, at the hero's level; a second opening shows what the first left, whatever the hero's level is by then.
 - Buying and selling move gold and items as stated, land in the log, and replay; each refusal names its reason and changes nothing.
 - Walking off the ring or dying closes the store on that tick.
 - Loading a map clears every store's stock.
@@ -67,18 +69,20 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 | --- | --- |
 | Layer | presentation, tests, docs |
 | Size | 1.5 |
-| Depends on | T02, P7-S34-T03 |
+| Depends on | T02, P7-S34-T03, T01 |
 | Status | planned |
 
-**Build:** a left click on the checkpoint ring the hero stands in sends `open_store` instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory: the stock as icons with prices, gold shown. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
+> **Note, 2026-09-27:** Q90 answered: as close to a basic Diablo II store as possible, with three tabs, a grid, and prices on hover. The tabs are three views of one grid, so the size stays 1.5.
+
+**Build:** a left click on the checkpoint ring the hero stands in sends `open_store` instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory, as a Diablo II vendor's does: three tabs, **Armour**, **Weapons**, and **Misc**, the last empty until phase 8 lists the active items in it; each tab a grid of item icons in their rarity's tint; the price shown on hover in the item's tooltip (T01); gold shown. A left click on a tab shows it and sends nothing. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
 
 **Acceptance:**
 - A click on the ring the hero stands in opens the store; the same click one unit outside the ring does not.
 - Buy and sell gestures send their commands and nothing else; a refused one flashes.
-- The render benchmark in Chrome with both screens open, a box under Waiting on a person in STATUS.md.
+- The render benchmark in Chrome with both screens open, run by an agent through browser automation, its figures in the sprint exit (standing instruction of 2026-09-27).
 
 **Tests:**
-- `tests/presentation/store-screen.spec.ts`: layout, each gesture to its command, the flash.
+- `tests/presentation/store-screen.spec.ts`: the tabs and their grids, the price on hover, each gesture to its command, the flash.
 - `tests/presentation/input-mapper.spec.ts`: the ring click inside and outside the ring.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
@@ -94,7 +98,7 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 | Depends on | P7-S35-T03, T02 |
 | Status | planned |
 
-**Build:** a **Loot** group in the panel. **Grant item**: a base, a rarity, and an item level, sent as the `grant_item` debug command, rolled on its own key and put in the first free cell. **Grant gold**: an amount, as `grant_gold`. **Preview loot table**: an enemy tier and a count, rolling the table that many times on scratch keys outside the world and showing the counts by kind and rarity; it changes nothing, so it sends no command. The [developer panel](../../../../docs/product/features/developer-panel.md) page lists the controls and the debug commands.
+**Build:** a **Loot** group in the panel. **Grant item**: a base, a rarity, and an item level, sent as the `grant_item` debug command, rolled on its own key and put in the inventory where it fits. **Grant gold**: an amount, as `grant_gold`. **Preview loot table**: an enemy tier and a count, rolling the table that many times on scratch keys outside the world and showing the counts by kind and rarity; it changes nothing, so it sends no command. The [developer panel](../../../../docs/product/features/developer-panel.md) page lists the controls and the debug commands.
 
 **Acceptance:**
 - A grant lands in the log and replays.

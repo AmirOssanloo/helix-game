@@ -61,7 +61,7 @@ Isometric: the floor is a classic 2:1 diamond grid and the camera looks down on 
 
 ## Where it's going
 
-A game as rich as the classic loot-driven action RPGs: items and inventory, loot, procedural dungeons with acts and biomes, a town with vendors, difficulty tiers, real art, audio, saves. Each arrives in its own phase, and each is gated on the previous phase playing well and holding frame time. The [roadmap](./roadmap.md) says what arrives when.
+A game as rich as the classic loot-driven action RPGs: items and inventory, loot, a descent through about a hundred generated levels, each harder than the last, a town with vendors, difficulty tiers, real art, audio, saves. Each arrives in its own phase, and each is gated on the previous phase playing well and holding frame time. The [roadmap](./roadmap.md) says what arrives when.
 
 ---
 
