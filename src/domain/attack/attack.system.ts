@@ -20,6 +20,7 @@ import {
   disengageTarget,
   engageTarget,
   finishBackswing,
+  setApproachPoint,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
 import { nearestEnemy } from "./acquire";
@@ -134,9 +135,9 @@ const approach = (
     return;
   }
 
-  unit.order.destination.x = approachPoint.x;
-  unit.order.destination.y = approachPoint.y;
-  unit.needsPath = true;
+  const result = setApproachPoint(unit, approachPoint.x, approachPoint.y);
+
+  assert(result === "ok", "An attack walks to its approach point");
 };
 
 /**

@@ -20,10 +20,14 @@ export type ShapeDef =
 export type EffectTargetDef =
   Readonly<{ kind: "target" }> | Readonly<{ kind: "zone" }> | ShapeDef;
 
-/** Whether a damage amount lands once or is a per-second rate, which is legal only in a zone's each-tick list. */
-export type DamageRate = "once" | "per_second";
+/**
+ * Whether a damage amount lands once or is a rate, which is legal only in a zone's each-tick
+ * list. Content writes a rate per second; run scope converts it once, when a world is
+ * created, into a rate per tick, so the primitive that deals it reads ticks only.
+ */
+export type DamageRate = "once" | "per_second" | "per_tick";
 
-/** Every damage rate, for content validation to check an entry against. */
+/** Every damage rate content may write, for content validation to check an entry against. A rate per tick is run scope's, never content's. */
 export const DAMAGE_RATES: readonly DamageRate[] = ["once", "per_second"];
 
 /** Where a zone is placed: at the context's anchor, or on the caster so it moves with the caster. */

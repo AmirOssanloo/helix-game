@@ -40,3 +40,11 @@ export type Order = {
   destination: Vec2;
   targetId: EntityId | null;
 };
+
+/** Every field of `order` back to holding nothing: a pool slot's reset, and the order a lift put aside forgotten. */
+export const resetOrder = (order: Order): void => {
+  order.kind = "none";
+  order.destination.x = 0;
+  order.destination.y = 0;
+  order.targetId = null;
+};

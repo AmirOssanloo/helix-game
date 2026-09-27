@@ -1,7 +1,7 @@
 import type { Vec2 } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
-import type { Command, DebugCommand } from "../commands/command";
+import type { AnyCommand, Command } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
@@ -33,7 +33,7 @@ const refused = createDomainEvent();
 /** Announces that `command` was refused for `reason`, naming the slot key or the spell when it had one so the view can flash the square. */
 const announceRefusal = (
   world: World,
-  command: Command | DebugCommand,
+  command: AnyCommand,
   reason: RefusalReason,
 ): void => {
   resetDomainEvent(refused);
@@ -147,7 +147,8 @@ const applyCommand = (
  * other command goes to the hero, validated against it as it is at that moment, so an
  * earlier command in the same tick shapes what a later one may do, and the last legal order
  * wins. A refused command is dropped, changes nothing, and is announced with its reason,
- * whether the validator, the kit, the cast pipeline, or the debug handler refused it. A
+ * whether the tuning check, the validator, the kit, the cast pipeline, or the debug handler
+ * refused it. A
  * world with no hero drops every command that needs one, silently: there is nothing to flash.
  */
 export const commandSystem = (world: World): void => {
@@ -161,12 +162,14 @@ export const commandSystem = (world: World): void => {
     }
 
     if (command.kind === "set_tuning") {
-      if (validateTuning(world.run.tuning, command) === "ok") {
-        if (isDefinitionKey(command.key)) {
-          setDefinitionTunable(world.run, command.key, command.value);
-        } else {
-          setTunable(world.run.tuning, command.key, command.value);
-        }
+      const validation = validateTuning(world.run.tuning, command);
+
+      if (validation !== "ok") {
+        announceRefusal(world, command, validation);
+      } else if (isDefinitionKey(command.key)) {
+        setDefinitionTunable(world.run, command.key, command.value);
+      } else {
+        setTunable(world.run.tuning, command.key, command.value);
       }
 
       continue;

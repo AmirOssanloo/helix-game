@@ -1,6 +1,7 @@
 import type { DamageType } from "../combat/damage";
 import type { Stat } from "../entities/unit";
 import type { EffectDef } from "./effect-def";
+import { effectsPerTick } from "./effect-state";
 import { ORB_IDS } from "./orb-id";
 import type {
   StatusDef,
@@ -35,8 +36,9 @@ export type StatusHealRecord = Readonly<{
 }>;
 
 /**
- * One damage hook as run scope holds it: the list the runner runs, and the internal cooldown
- * in ticks, one entry per orb level, converted from the definition's seconds.
+ * One damage hook as run scope holds it: the list the runner runs, with each rate per second a
+ * rate per tick, and the internal cooldown in ticks, one entry per orb level, converted from
+ * the definition's seconds.
  */
 export type StatusHookRecord = Readonly<{
   orbIndex: number;
@@ -47,13 +49,15 @@ export type StatusHookRecord = Readonly<{
 /**
  * One status as run scope holds it: the definition as content wrote it, its modifier tables
  * with the orb each names resolved to an index, its damage and heal over time in health per
- * tick, and
- * its two damage hooks with their cooldowns in ticks. This is the one conversion for a status,
+ * tick, its expiry list and its two damage hooks with every rate per tick, and the hooks'
+ * cooldowns in ticks. This is the one conversion for a status,
  * run once per status when a world is created, so no system ever multiplies by the tick rate
  * or searches the orb list.
  */
 export type StatusRecord = Readonly<{
   def: StatusDef;
+  /** The list that runs when the status ends: the definition's, with each rate per second a rate per tick. */
+  onExpiry: readonly EffectDef[];
   modifiers: readonly StatusModifierRecord[];
   damageOverTime: StatusDamageRecord | null;
   healOverTime: StatusHealRecord | null;
@@ -159,7 +163,7 @@ const createHookRecord = (
   return {
     orbIndex: ORB_IDS.indexOf(hook.cooldownSeconds.orb),
     byLevel,
-    effects: hook.effects,
+    effects: effectsPerTick(hook.effects, simHz),
   };
 };
 
@@ -169,6 +173,7 @@ export const createStatusRecord = (
   simHz: number,
 ): StatusRecord => ({
   def,
+  onExpiry: effectsPerTick(def.onExpiry, simHz),
   modifiers: createModifierRecords(def),
   damageOverTime: createDamageRecord(def, simHz),
   healOverTime: createHealRecord(def, simHz),

@@ -1,16 +1,21 @@
 import { assert } from "@shared/public";
 import type { AbilityDef } from "./ability-def";
+import type { EffectDef } from "./effect-def";
+import { effectsPerTick } from "./effect-state";
 import type { OrbId } from "./orb-id";
 import type { SpellDef } from "./spell-def";
 import { readTunable } from "./tuning-state";
 
 /**
- * One spell as run scope holds it: the definition as content wrote it, and every duration
- * on it converted into whole ticks. This is the one conversion for a spell, run once per
- * spell when a world is created, so no system ever multiplies by the tick rate.
+ * One spell as run scope holds it: the definition as content wrote it, every duration on it
+ * converted into whole ticks, and its effect list with every rate converted to per tick.
+ * This is the one conversion for a spell, run once per spell when a world is created, so no
+ * system ever multiplies or divides by the tick rate.
  */
 export type SpellRecord = Readonly<{
   def: SpellDef;
+  /** The list the commit runs: the definition's, with each rate per second a rate per tick. */
+  effects: readonly EffectDef[];
   castPointTicks: number;
   backswingTicks: number;
   /** Indexed by level from zero, one entry per entry of the definition's cooldown table. */
@@ -51,6 +56,7 @@ export const createSpellRecord = (
 
   return {
     def,
+    effects: effectsPerTick(def.effects, simHz),
     castPointTicks: toTicks(def.castPointSeconds, simHz),
     backswingTicks: toTicks(def.backswingSeconds, simHz),
     cooldownTicks,

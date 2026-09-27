@@ -5,8 +5,11 @@ import { makeSpellDef } from "../../helpers";
 
 const RANGE = 600;
 
+const def = makeSpellDef.build({ range: RANGE });
+
 const record: SpellRecord = {
-  def: makeSpellDef.build({ range: RANGE }),
+  def,
+  effects: def.effects,
   castPointTicks: 3,
   backswingTicks: 3,
   cooldownTicks: [300, 300, 300, 300, 300, 300, 300],

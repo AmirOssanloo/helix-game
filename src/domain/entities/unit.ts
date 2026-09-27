@@ -10,6 +10,7 @@ import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import { clearDisableFlags, createDisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
+import { resetOrder } from "../orders/order";
 import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
@@ -327,14 +328,6 @@ export const clearPush = (push: Push): void => {
   push.ticksLeft = 0;
 };
 
-/** Forgets the order a lift took away, so nothing is given back when the lift ends. */
-export const clearSuspendedOrder = (order: Order): void => {
-  order.kind = "none";
-  order.destination.x = 0;
-  order.destination.y = 0;
-  order.targetId = null;
-};
-
 /** Forgets the waypoints. The points keep their last values; `count` says which ones are live. */
 export const clearPath = (path: Path): void => {
   path.count = 0;
@@ -415,15 +408,12 @@ const clearUnit = (unit: Unit): void => {
   unit.boundRadius = 0;
   unit.selectionRadius = 0;
   unit.turnTicks = 0;
-  unit.order.kind = "none";
-  unit.order.destination.x = 0;
-  unit.order.destination.y = 0;
-  unit.order.targetId = null;
+  resetOrder(unit.order);
   unit.state = "idle";
   clearPath(unit.path);
   unit.needsPath = false;
   clearPush(unit.push);
-  clearSuspendedOrder(unit.suspended);
+  resetOrder(unit.suspended);
   unit.cast.abilityId = null;
   unit.cast.targetKind = "none";
   unit.cast.position.x = 0;

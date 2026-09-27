@@ -298,7 +298,7 @@ const runExpiries = (
       continue;
     }
 
-    if (record.def.onExpiry.length === 0) {
+    if (record.onExpiry.length === 0) {
       continue;
     }
 
@@ -312,7 +312,7 @@ const runExpiries = (
       unitId,
     );
 
-    runEffects(world, cast, record.def.onExpiry);
+    runEffects(world, cast, record.onExpiry);
   }
 };
 

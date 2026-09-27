@@ -390,6 +390,51 @@ describe("a broken definition", () => {
     expect(fault.path).toBe("effects[0].eachTick[0].statusId");
   });
 
+  it("fails on a per-second damage rate in a zone's each-tick list under a named effect's fields, which world creation does not convert", () => {
+    const registry = makeRegistry({
+      spells: withSpells(
+        makeSpellDef.build({
+          id: "frost_lance",
+          effects: [
+            {
+              kind: "named",
+              key: "glacier_place",
+              fields: {
+                segments: 3,
+                spacing: 100,
+                zone: {
+                  kind: "spawn_zone",
+                  shape: { kind: "rectangle", length: 100, width: 50 },
+                  anchor: "anchor",
+                  delaySeconds: 0,
+                  lifetime: { kind: "seconds", seconds: 1 },
+                  motion: { kind: "still" },
+                  onActivate: [],
+                  eachTick: [
+                    {
+                      kind: "damage_area",
+                      target: { kind: "zone" },
+                      damageType: "magical",
+                      amount: { orb: "quartz", byLevel: [1, 2, 3, 4, 5, 6, 7] },
+                      rate: "per_second",
+                      split: false,
+                    },
+                  ],
+                  atlasFrame: "square",
+                  tint: 0xffffff,
+                },
+              },
+            },
+          ],
+        }),
+      ),
+    });
+
+    const fault = onlyFault(validateRegistry(registry));
+
+    expect(fault.path).toBe("effects[0].fields.zone.eachTick[0].rate");
+  });
+
   it("fails on a per-second damage rate outside a zone's each-tick list", () => {
     const registry = makeRegistry({
       spells: withSpells(

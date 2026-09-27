@@ -17,6 +17,7 @@ import {
   clearOrder,
   endChannel,
   finishBackswing,
+  setApproachPoint,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";
 import { castLevelOf, isInCastRange, orbLevelsOf, resourcesOf } from "./cast";
@@ -148,9 +149,9 @@ const approachTarget = (world: World, unit: Unit, epsilon: number): void => {
     unit.cast.position.x = aim.x;
     unit.cast.position.y = aim.y;
     resolveDestinationFor(world, unit, aim.x, aim.y, approach);
-    unit.order.destination.x = approach.x;
-    unit.order.destination.y = approach.y;
-    unit.needsPath = true;
+    const result = setApproachPoint(unit, approach.x, approach.y);
+
+    assert(result === "ok", "A cast order walks to its approach point");
 
     return;
   }
@@ -267,11 +268,7 @@ const commit = (
       snapshotCooldownSources(unit.modifiers, snapshot),
     ),
   );
-  runEffects(
-    world,
-    contextOf(world, unit, casterId, record),
-    record.def.effects,
-  );
+  runEffects(world, contextOf(world, unit, casterId, record), record.effects);
   announceCommitted(world, record.def.id);
 
   const result = beginCastBackswing(unit);

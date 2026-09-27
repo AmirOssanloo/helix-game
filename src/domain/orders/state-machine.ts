@@ -1,8 +1,10 @@
 import type { EntityId } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
 import type { Unit } from "../entities/unit";
-import { clearPath, clearSuspendedOrder } from "../entities/unit";
+import { clearPath } from "../entities/unit";
 import type { OrderKind } from "./order";
+import { resetOrder } from "./order";
+import { clearCast, dropOrder, takeOrder } from "./order-steps";
 
 /** Why a transition did not happen. Each names the state or order the transition needed and did not find. */
 export type TransitionRefusal =
@@ -12,6 +14,7 @@ export type TransitionRefusal =
   | "no_attack_in_progress"
   | "no_cast_in_progress"
   | "no_order_to_face"
+  | "no_order_to_approach"
   | "not_in_attack_windup"
   | "not_in_cast_point"
   | "not_in_backswing"
@@ -27,7 +30,8 @@ export type TransitionResult = "ok" | TransitionRefusal;
 /**
  * The order state machine: every way a unit's order and state change, one function each, all
  * pure over the unit. A system decides when a transition is due; this file decides whether it
- * is legal and writes the result. Nothing else writes `order` or `state`.
+ * is legal and writes the result, through the shared steps beside it. Nothing outside
+ * `domain/orders/` writes `order` or `state`, and the architecture test holds the order to it.
  *
  * Two rules shape the table. A unit holds one order, and a new legal order replaces it whole
  * on the tick that consumes the command, before movement runs, so the first translation can
@@ -47,40 +51,6 @@ export type TransitionResult = "ok" | TransitionRefusal;
 /** Whether the unit is holding for an attack point or a cast point, over which a second point may not begin. */
 const isInCastPoint = (unit: Readonly<Unit>): boolean =>
   unit.state === "attack_windup" || unit.state === "ability_cast_point";
-
-/** Forgets the cast that was pending, so nothing of it is spent or aimed. */
-const clearCast = (unit: Unit): void => {
-  unit.cast.abilityId = null;
-  unit.cast.targetKind = "none";
-  unit.cast.position.x = 0;
-  unit.cast.position.y = 0;
-  unit.cast.targetId = null;
-  unit.cast.direction = null;
-};
-
-/** Forgets the order, its path, and its turn, and leaves the unit idle where it stands, facing where it faced. */
-const dropOrder = (unit: Unit): void => {
-  unit.order.kind = "none";
-  unit.order.destination.x = 0;
-  unit.order.destination.y = 0;
-  unit.order.targetId = null;
-  unit.state = "idle";
-  unit.turnTicks = 0;
-  clearPath(unit.path);
-  unit.needsPath = false;
-};
-
-/** The step shared by every order: the previous order, its path, its turn, and any cast pending under it are gone, and the unit faces before it acts. */
-const takeOrder = (unit: Unit): void => {
-  unit.order.targetId = null;
-  unit.order.destination.x = 0;
-  unit.order.destination.y = 0;
-  unit.state = "turning";
-  unit.turnTicks = 0;
-  clearPath(unit.path);
-  unit.needsPath = false;
-  clearCast(unit);
-};
 
 /**
  * Replaces the current order with a move to (`x`, `y`) and asks the pathing system for the
@@ -234,6 +204,34 @@ export const beginFacing = (unit: Unit): TransitionResult => {
   unit.state = "turning";
   clearPath(unit.path);
   unit.needsPath = false;
+
+  return "ok";
+};
+
+/**
+ * The walk goal toward what the order aims at moves to (`x`, `y`): the approach point, the
+ * legal point nearest a target out of reach, which the attack rule and the cast rule refresh
+ * as the target moves. It is where the unit walks, not what the order is aimed at, so the
+ * target stays as it was, and a path there is asked for. Legal while the order is a cast, an
+ * attack on a unit, or an attack-move that has acquired one.
+ */
+export const setApproachPoint = (
+  unit: Unit,
+  x: number,
+  y: number,
+): TransitionResult => {
+  const aimsAtSomething =
+    unit.order.kind === "cast" ||
+    unit.order.kind === "attack_target" ||
+    (unit.order.kind === "attack_move" && unit.order.targetId !== null);
+
+  if (!aimsAtSomething) {
+    return "no_order_to_approach";
+  }
+
+  unit.order.destination.x = x;
+  unit.order.destination.y = y;
+  unit.needsPath = true;
 
   return "ok";
 };
@@ -428,7 +426,7 @@ export const die = (unit: Unit): TransitionResult => {
 
   dropOrder(unit);
   clearCast(unit);
-  clearSuspendedOrder(unit.suspended);
+  resetOrder(unit.suspended);
   unit.state = "dead";
 
   return "ok";
@@ -494,7 +492,7 @@ export const resumeOrder = (unit: Unit): TransitionResult => {
   unit.order.destination.y = unit.suspended.destination.y;
   unit.order.targetId = unit.suspended.targetId;
   unit.needsPath = unit.suspended.kind !== "attack_target";
-  clearSuspendedOrder(unit.suspended);
+  resetOrder(unit.suspended);
 
   return "ok";
 };

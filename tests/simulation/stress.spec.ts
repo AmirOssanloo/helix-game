@@ -449,7 +449,7 @@ const commit = (world: Simulation, hero: Unit, record: SpellRecord): void => {
       y: hero.curr.y + reach * Math.sin(hero.facing),
       facing: hero.facing,
     }),
-    record.def.effects,
+    record.effects,
   );
 };
 
@@ -667,7 +667,7 @@ const commitAt = (walk: Walk, foe: Unit): void => {
       y: atFoe ? foe.curr.y : hero.curr.y,
       facing,
     }),
-    record.def.effects,
+    record.effects,
   );
 };
 

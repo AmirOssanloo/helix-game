@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
 import type {
   DamageAreaEffectDef,
+  EffectDef,
   EffectTargetDef,
   Unit,
 } from "@domain/public";
-import { runPrimitive } from "@domain/public";
+import { effectsPerTick, runPrimitive } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
 /** The health every unit in the fixture starts with, well above anything the spec deals. */
 const HEALTH = 10000;
+
+/** The step rate the fixture's world runs at, which a rate per second is divided by. */
+const SIM_HZ = 30;
 
 /** The amount every entry below deals, whole or divided. */
 const AMOUNT = 600;
@@ -177,7 +181,7 @@ describe("the damage-area primitive's amount", () => {
     expect(losses(enemies)[1]).toBe(30);
   });
 
-  it("takes this tick's share of a per-second amount", () => {
+  it("takes this tick's share of a per-second amount, read from the converted definition", () => {
     const { world, enemies } = arrange();
     const perSecond: DamageAreaEffectDef = {
       kind: "damage_area",
@@ -187,10 +191,55 @@ describe("the damage-area primitive's amount", () => {
       rate: "per_second",
       split: false,
     };
+    const [converted] = effectsPerTick([perSecond], SIM_HZ);
 
-    runPrimitive(world.state, makeCast(world), perSecond);
+    expect(converted).toEqual({
+      ...perSecond,
+      amount: { orb: "quartz", byLevel: [30 / SIM_HZ] },
+      rate: "per_tick",
+    });
+
+    if (converted?.kind !== "damage_area") {
+      throw new Error("The converted list holds the one damage-area entry");
+    }
+
+    runPrimitive(world.state, makeCast(world), converted);
 
     expect(losses(enemies)[1]).toBe(1);
+  });
+
+  it("converts a rate at any depth and leaves a list with none uncopied", () => {
+    const perSecond: DamageAreaEffectDef = {
+      kind: "damage_area",
+      target: { kind: "zone" },
+      damageType: "magical",
+      amount: { orb: "ember", byLevel: [60, 120] },
+      rate: "per_second",
+      split: false,
+    };
+    const once = entry({ kind: "circle", radius: 100 });
+    const plain = [once];
+    const zone: EffectDef = {
+      kind: "spawn_zone",
+      shape: { kind: "circle", radius: 100 },
+      anchor: "anchor",
+      delaySeconds: 0,
+      lifetime: { kind: "seconds", seconds: 1 },
+      motion: { kind: "still" },
+      onActivate: plain,
+      eachTick: [perSecond],
+      atlasFrame: "zone",
+      tint: 0,
+    };
+    const [converted] = effectsPerTick([zone], SIM_HZ);
+
+    expect(effectsPerTick(plain, SIM_HZ)).toBe(plain);
+    expect(converted).toMatchObject({
+      onActivate: plain,
+      eachTick: [
+        { rate: "per_tick", amount: { byLevel: [60 / SIM_HZ, 120 / SIM_HZ] } },
+      ],
+    });
   });
 
   it("spends a split amount on nobody when the shape finds nobody", () => {

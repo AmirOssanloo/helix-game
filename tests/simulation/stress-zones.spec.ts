@@ -163,7 +163,7 @@ const commit = (
       y: aim.curr.y,
       facing: FACING_WEST,
     }),
-    record.def.effects,
+    record.effects,
   );
 };
 

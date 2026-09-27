@@ -7,6 +7,7 @@ import type {
   DisableReason,
 } from "../definitions/disable-matrix-def";
 import { ENEMY_TIERS } from "../definitions/enemy-def";
+import type { TuningRefusal } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import { ORB_COUNT } from "../entities/world-state";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
@@ -31,7 +32,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * are the debug commands' at apply: no archetype has the id the spawn names, the pack would
  * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
  * free cells for the pack, the map has no checkpoint at the index a jump names, a channel is
- * already running, or the status rule refused the application.
+ * already running, or the status rule refused the application. A tuning change is refused
+ * when its value is not finite, its key is the fixed step rate, or no key of the table has it.
  */
 export type RefusalReason =
   | DisableReason
@@ -64,7 +66,8 @@ export type RefusalReason =
   | LevelUpRefusal
   | "pool_full"
   | "already_channeling"
-  | StatusRefusal;
+  | StatusRefusal
+  | TuningRefusal;
 
 /** What validation returns: the command may apply, or the reason it may not. */
 export type ValidationResult = "ok" | RefusalReason;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EffectDef, SpawnZoneEffectDef, Unit } from "@domain/public";
-import { readTunable, runPrimitive } from "@domain/public";
+import { effectsPerTick, readTunable, runPrimitive } from "@domain/public";
 import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
@@ -105,8 +105,16 @@ const arrange = (): Arranged => {
   };
 };
 
+/** Spawns the zone `entry` names from its list as run scope holds one, with every rate per second converted to per tick. */
 const spawn = (world: Simulation, entry: SpawnZoneEffectDef): void => {
-  runPrimitive(world.state, makeCast(world), entry);
+  const simHz = readTunable(world.state.run.tuning, "sim_hz");
+  const [converted] = effectsPerTick([entry], simHz);
+
+  if (converted?.kind !== "spawn_zone") {
+    throw new Error("A zone entry converts to a zone entry");
+  }
+
+  runPrimitive(world.state, makeCast(world), converted);
 };
 
 const tickTimes = (world: Simulation, ticks: number): void => {

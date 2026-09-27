@@ -51,6 +51,9 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "unknown_status":
     case "target_untargetable":
     case "status_table_full":
+    case "invalid_tuning_value":
+    case "fixed_tuning_key":
+    case "unknown_tuning_key":
       return "refused";
   }
 };

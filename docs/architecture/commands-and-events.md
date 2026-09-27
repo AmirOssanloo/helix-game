@@ -50,7 +50,7 @@ A command is a request. The validator in `domain/orders/` decides whether the un
 
 ### Application
 
-The command system beside the validator runs first in the system order. It walks the commands the tick consumed, validates each against the hero as it is at that moment, and applies the ones that pass: an order command replaces the current order through the state machine, and the last legal order in a tick wins. A tuning change is validated against the tuning state instead and applied to run scope, hero or no hero. A world with no hero drops every other command. Nothing else reads the consumed commands to change state.
+The command system beside the validator runs first in the system order. It walks the commands the tick consumed, validates each against the hero as it is at that moment, and applies the ones that pass: an order command replaces the current order through the state machine, and the last legal order in a tick wins. A tuning change is validated against the tuning state instead and applied to run scope, hero or no hero; a refused one is announced like any other refusal. A world with no hero drops every other command. Nothing else reads the consumed commands to change state.
 
 ---
 
@@ -104,6 +104,7 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Ordering | By timestamp; ties by Q, W, E, R, D, F, a skill-point spend sorting as the slot it names, then arrival order |
 | Validation | `domain/orders/` decides per tick from the unit's state and its disable flags, derived by the previous tick's status pass and read against the disable matrix; the active kit and the ability pipeline refuse a slot key or a cast over its ability, clock, cost, and target when it is applied; a tuning change is checked against the tuning state in `domain/definitions/`; a skill-point spend is checked for its slot alone and refused by no disable; a debug command is checked for its shape in `domain/orders/` and refused by its handler in `domain/debug/` over what the world can take; a refusal is dropped and announced as a refused-command event with its reason |
 | Application | The command system in `domain/orders/`, first in the system order, applies each consumed command that passes validation in the one order the buffer gave them: a tuning change to run scope, a debug command to its handler, every other to the hero; the last legal order in a tick wins |
+| Order writes | Only the state machine in `domain/orders/` writes an order's fields; a command, a behaviour, the attack, and the cast ask it for the transition, the approach point toward a target included. The architecture test fails on a write anywhere else |
 | Debug operations | `DebugCommand` variants, recorded in the input log |
 | Tuning changes | A `SetTuning` command carrying a key of the tuning table or a definition key, `def:<kind>:<id>:<field path>[:<index>]`, and a value in the designer's units, recorded in the input log, converted once when applied |
 | A mutating method on the world | Never |

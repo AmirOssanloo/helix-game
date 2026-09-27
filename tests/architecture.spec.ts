@@ -5,6 +5,7 @@ import {
   describeGameConfig,
   describeLayerImports,
   describeNoSpecUnderSrc,
+  describeOrderWritesOnlyInOrders,
   describePresentationFieldsUnread,
   SOURCE_DIR,
 } from "./helpers";
@@ -12,6 +13,11 @@ import {
 describeLayerImports({ srcDir: SOURCE_DIR, layerImports: LAYER_IMPORTS });
 
 describeNoSpecUnderSrc({ srcDir: SOURCE_DIR });
+
+describeOrderWritesOnlyInOrders({
+  srcDir: SOURCE_DIR,
+  ownerDir: "domain/orders",
+});
 
 describeGameConfig({
   configFile: join(SOURCE_DIR, "app", "game-config.ts"),

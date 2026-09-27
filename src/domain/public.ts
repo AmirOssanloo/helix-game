@@ -182,6 +182,7 @@ export {
   type ZoneLifetimeDef,
   type ZoneMotionDef,
 } from "./definitions/effect-def";
+export { effectsPerTick } from "./definitions/effect-state";
 export {
   type AbilityConditionDef,
   ENEMY_TIERS,

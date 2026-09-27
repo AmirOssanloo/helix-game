@@ -32,6 +32,13 @@ export {
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
 export {
+  collectOrderWriteViolations,
+  describeOrderWritesOnlyInOrders,
+  findOrderWrites,
+  type OrderWriteViolation,
+  type OrderWritesOptions,
+} from "./architecture/order-writes";
+export {
   collectPresentationFieldReads,
   describePresentationFieldsUnread,
   type PresentationFieldsOptions,

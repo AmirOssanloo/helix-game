@@ -67,11 +67,20 @@ type IdSpaces = Readonly<{
 
 /**
  * Where an effect list sits: a cast's own list, run once at commit; a zone's each-tick list;
- * or any other list nested inside something, which runs later and more than once. A per-second
- * rate is legal only in the second, and a spawn of an archetype only in the first, since that
- * is the one list the cast pipeline counts against the live enemy cap before it commits.
+ * any other list nested inside something, which runs later and more than once; or anywhere
+ * under a named effect's fields. A per-second rate is legal only in the second, and a spawn
+ * of an archetype only in the first, since that is the one list the cast pipeline counts
+ * against the live enemy cap before it commits.
  */
-type EffectPlace = "cast" | "each_tick" | "nested";
+type EffectPlace = "cast" | "each_tick" | "nested" | "named";
+
+/**
+ * The place of a list inside a list at `place`: under a named effect's fields it stays there
+ * at any depth, since world creation converts no rate per second inside a named effect's
+ * fields, so none is legal there, even in a zone's each-tick list.
+ */
+const within = (place: EffectPlace, next: EffectPlace): EffectPlace =>
+  place === "named" ? "named" : next;
 
 /** The content file a definition of kind `folder` with `id` lives in. */
 const fileOf = (folder: string, id: unknown, index: number): string =>
@@ -252,7 +261,8 @@ const checkEffect = (
         faults.push({
           file,
           path: `${at}.rate`,
-          message: "a per-second rate is legal only in a zone's each-tick list",
+          message:
+            "a per-second rate is legal only in a zone's each-tick list, and never under a named effect's fields",
         });
       }
 
@@ -278,7 +288,7 @@ const checkEffect = (
         effect.onHit,
         spaces,
         effectSchema,
-        "nested",
+        within(place, "nested"),
       );
 
       break;
@@ -292,7 +302,7 @@ const checkEffect = (
         effect.onActivate,
         spaces,
         effectSchema,
-        "nested",
+        within(place, "nested"),
       );
       checkEffects(
         faults,
@@ -301,7 +311,7 @@ const checkEffect = (
         effect.eachTick,
         spaces,
         effectSchema,
-        "each_tick",
+        within(place, "each_tick"),
       );
 
       break;
@@ -371,7 +381,7 @@ const checkEffect = (
             nested.entry,
             spaces,
             effectSchema,
-            "nested",
+            "named",
           );
         } else {
           report(faults, file, inner);
