@@ -67,7 +67,7 @@ export const tuningTable = {
   pack_activation_radius: 1600,
   pack_sleep_radius: 2000,
   pack_placement_radius: 1024,
-  checkpoint_reach_radius: 512,
+  checkpoint_reach_radius: 256,
   elite_health_multiplier: 3,
   boss_health_multiplier: 4,
   elite_damage_multiplier: 1.5,

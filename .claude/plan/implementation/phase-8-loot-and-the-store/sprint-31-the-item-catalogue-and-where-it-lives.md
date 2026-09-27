@@ -152,11 +152,13 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 | Layer | content, tests, docs |
 | Size | 0.5 |
 | Depends on | none; Q60 answered |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** unplanned, from the maintainer's answer to Q60 the same day, a phase 6 value changed after phase 6 closed. It runs first in the sprint, before T01: it settles the last phase 6 number in the build, so every re-stamp of phase 8 lands on top of it rather than under it, and it sets the ring P8-S36-T03 makes clickable. The sprint's sized total is 4.5 by this ticket, as the plan's rules allow for unplanned work.
 
 > **Note, 2026-09-27:** sprint 39, the new road, now runs before this sprint, so this ticket checks the reach on the new road; the phase 6 playtest log is retired by then, so its acceptance row is gone and six logs are re-stamped.
+
+> **Note, 2026-09-28, built:** the checkpoint rule and the ring already read the tunable, and the checkpoint, death, dev-api, and view specs already read the table's value, so the one-line change moved them all to the edge at 256 with no edit; the stress spec's long-road walk gained the check that every checkpoint is reached in order. The logs' checksums were recorded again with `pnpm restamp --checksums`, since the tuning table is hashed from tick 0.
 
 **Build:** `checkpoint_reach_radius` in `src/content/tuning.ts` from 512 to 256. The checkpoint ring in `src/presentation/views/checkpoint.view.ts` draws as wide as the radius (Q64); if it reads the tunable it follows with no edit, and if it holds its own size the ticket makes it read the tunable. The pages that state the radius, the [map and camera](../../../../docs/product/features/map-and-camera.md) and [developer panel](../../../../docs/product/features/developer-panel.md) pages among them, say 256. The content version moves, so the six stored logs are re-stamped by `pnpm restamp`.
 
@@ -182,8 +184,8 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 | The item catalogue approved by the maintainer | Drafted 2026-09-28 by P8-S31-T01, every agent-checkable acceptance row holding: [the item catalogue](../../../../docs/product/specs/item-catalogue.md) and [items and loot](../../../../docs/product/features/items-and-loot.md). The approval waits on the maintainer, deferred until phase 8 is done by the standing instruction of 2026-09-24, a box in STATUS.md; Q103 with it |
 | The architect's brief and its decision records | |
 | The schema refuses what it should, and the six logs re-stamped | |
-| The checkpoint reach at 256, every checkpoint reached on the long-road walk | |
-| Actual days per ticket | T01: 0.5 against 1.5 |
+| The checkpoint reach at 256, every checkpoint reached on the long-road walk | Done 2026-09-28 by P8-S31-T04: the walk reaches checkpoints 0 to the last in order in 4338 ticks with no hero death; the six logs on content version a486c35a |
+| Actual days per ticket | T01: 0.5 against 1.5; T04: 0.25 against 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

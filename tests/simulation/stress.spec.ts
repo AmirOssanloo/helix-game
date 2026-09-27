@@ -998,7 +998,7 @@ describe("stress", () => {
     expect(world.view.map.units.misses).toBe(0);
     expect(world.view.map.projectiles.misses).toBe(0);
   });
-  it("holds the live cap and the mean tick under the budget with the hero walking the long road from the spawn to the last boss", () => {
+  it("holds the live cap and the mean tick under the budget with the hero walking the long road from the spawn to the last boss, reaching every checkpoint in order", () => {
     const walk = arrangeWalk();
     const { world, hero } = walk;
     const packs = world.state.map.packs;
@@ -1026,6 +1026,8 @@ describe("stress", () => {
     let mostBehind = 0;
     let heroDeaths = 0;
     let wasDead = false;
+    const reader = createEventReader();
+    const reached: number[] = [];
 
     while (!isBeaten(world, lastPack) && ticks < WALK_LIMIT_TICKS) {
       walkOn(walk);
@@ -1060,6 +1062,16 @@ describe("stress", () => {
 
       heroDeaths += dead && !wasDead ? 1 : 0;
       wasDead = dead;
+
+      let event = world.events.read(reader);
+
+      while (event !== null) {
+        if (event.kind === "checkpoint_reached") {
+          reached.push(event.checkpoint);
+        }
+
+        event = world.events.read(reader);
+      }
     }
 
     const meanMs = totalMs / ticks;
@@ -1069,6 +1081,7 @@ describe("stress", () => {
     );
 
     expect(isBeaten(world, lastPack)).toBe(true);
+    expect(reached).toEqual(longRoadDef.checkpoints.map((_, index) => index));
     expect(mostLive).toBeLessThanOrEqual(ENEMY_LIVE_CAP - LARGEST_SPAWN);
     expect(waited).toBe(0);
     expect(lastBehind).toBe(0);
