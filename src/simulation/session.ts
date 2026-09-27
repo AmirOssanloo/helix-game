@@ -5,9 +5,9 @@ import type {
   Registry,
   Tick,
 } from "@domain/public";
-import { contentChangeOf, mapNamed } from "@domain/public";
+import { contentChangeOf, mapNamed } from "@domain/rules";
 import { assert } from "@shared/public";
-import type { EventRing } from "./event-ring";
+import type { EventRing, EventRingView } from "./event-ring";
 import type { InputLog } from "./input-log";
 import {
   contentVersionOf,
@@ -277,3 +277,16 @@ export class Session implements Steppable {
     return null;
   }
 }
+
+/**
+ * A session as the layers past the simulation's door hold it: every operation the driver, the
+ * panel, and a content reload call, the world's view, and the event ring's read port. It
+ * never reaches the live world, so nothing outside the simulation can change state but by a
+ * command.
+ */
+export type SessionHandle = Omit<Session, "world" | "events"> &
+  Readonly<{ events: EventRingView }>;
+
+/** A session on `options`' seed, content, and map, as its handle. The composition root makes the one a game runs. */
+export const createSession = (options: SessionOptions): SessionHandle =>
+  new Session(options);

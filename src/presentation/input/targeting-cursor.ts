@@ -2,9 +2,9 @@ import type { RefusalReason, TargetingKind } from "@domain/public";
 import {
   createAbilityRequest,
   createSlotDescriptor,
-  resolveKit,
   slotReadiness,
-} from "@domain/public";
+} from "@domain/queries";
+import { resolveKitSlots } from "@domain/queries";
 import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { WorldView } from "@simulation/public";
@@ -144,7 +144,7 @@ export const pressSlotKey = (
     return "send";
   }
 
-  const kit = resolveKit(form.def.kit);
+  const kit = resolveKitSlots(form.def.kit);
 
   assert(kit !== null, "The content tier resolves every form's kit key");
   kit.describeSlot(

@@ -8,6 +8,7 @@ import type {
   TuningState,
   World,
 } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import {
   cellCount,
   copyTunableDefinitions,
@@ -29,10 +30,10 @@ import {
   createZonePool,
   deriveMapGrid,
   placeMapPacks,
-  readTunable,
-} from "@domain/public";
+} from "@domain/rules";
 import { assert } from "@shared/public";
 import { CommandBuffer } from "./command-buffer";
+import type { EventRingView } from "./event-ring";
 import { EventRing } from "./event-ring";
 import { InputLog } from "./input-log";
 import { createRandomState } from "./random";
@@ -109,7 +110,7 @@ const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
  */
 export type Steppable = Readonly<{
   view: WorldView;
-  events: EventRing;
+  events: EventRingView;
   submit: (command: AnyCommand) => boolean;
   tick: () => void;
 }>;
@@ -157,8 +158,9 @@ const copyPreviousPositions = (world: World): void => {
  * included, since it enters as a command. The one method that changes it outside a tick is
  * `restart`, which makes a new session rather than changing one.
  *
- * `state` is the live world a system is handed and a test helper arranges. The presentation
- * and the developer panel are given `view`, never `state`.
+ * `state` is the live world a system is handed and a test helper arranges. The class is not
+ * in the simulation's door: the layers past it hold a session's handle, which reaches `view`
+ * and the ring's read port and never `state`.
  */
 export class Simulation {
   readonly state: World;

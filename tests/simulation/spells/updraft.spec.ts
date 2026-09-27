@@ -5,9 +5,9 @@ import type {
   SpawnProjectileEffectDef,
   Unit,
 } from "@domain/public";
-import { runPrimitive } from "@domain/public";
+import { runPrimitive } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeCast,
   makeWorld,

@@ -1,11 +1,12 @@
 /** One block: the presentation layer. eslint.config.js orders it against the rest. */
 
 import { forbiddenFor } from "../matrix.js";
-import { DOMAIN_FACADE, SIMULATION_FACADE } from "../rules/facades.js";
+import { doorsFor, NO_TESTING_DOOR } from "../rules/facades.js";
 
 /**
- * Adapts. The one layer that imports Phaser, so the Phaser ban is absent. It enters the two
- * inner layers only through their public doors.
+ * Adapts. The one layer that imports Phaser, so the Phaser ban is absent. It enters each
+ * layer it may import only through the doors open to it: the domain's types and queries,
+ * never its rules.
  *
  * The Shape, Graphics, and `Text` factory bans it lives under come from ../src-files.js; this
  * block does not set `no-restricted-syntax`, so that array stays in force. ./boot-scene.js
@@ -19,8 +20,8 @@ export const presentationLayer = {
       {
         patterns: [
           forbiddenFor("presentation"),
-          DOMAIN_FACADE,
-          SIMULATION_FACADE,
+          ...doorsFor("presentation"),
+          NO_TESTING_DOOR,
         ],
       },
     ],

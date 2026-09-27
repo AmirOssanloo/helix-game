@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { arenaDef, rangedArcherDef, tankDef } from "@content/public";
-import type { InputLogFile, Replay } from "@simulation/public";
-import { beginReplay, createEventReader } from "@simulation/public";
+import type { InputLogFile } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import type { Replay } from "@simulation/testing";
+import { beginReplay } from "@simulation/testing";
 import { loadInputLog, makeRegistry } from "../../helpers";
 
 const registry = makeRegistry();

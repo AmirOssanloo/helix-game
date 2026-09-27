@@ -8,7 +8,7 @@ import {
   CURSOR_ANSWERS,
   DISABLE_COLUMNS,
   validateRegistry,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeRegistry } from "../helpers";
 
 const FILE = "statuses/disable-matrix.ts";

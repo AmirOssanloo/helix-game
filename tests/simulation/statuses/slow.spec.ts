@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeStatusDef,

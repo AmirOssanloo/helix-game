@@ -6,7 +6,7 @@ import {
   nextWaypoint,
   passWaypoint,
   setStraightPath,
-} from "@domain/public";
+} from "@domain/rules";
 
 /** A fresh unit's empty path. */
 const emptyPath = (): Path => {

@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { WalkabilityGrid } from "@domain/public";
+import { columnOf, isCellBlocked, radiusClassOf, rowOf } from "@domain/queries";
 import {
-  columnOf,
   deriveWalkabilityGrid,
   isBlockedAt,
-  isCellBlocked,
-  radiusClassOf,
-  rowOf,
   walkabilityCovers,
-} from "@domain/public";
+} from "@domain/rules";
 import type { Rect } from "@shared/public";
 
 const CELL = 32;

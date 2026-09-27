@@ -32,11 +32,11 @@ why `rules/` exports constants to drop into each block rather than blocks to ext
 
 Import patterns are matched by the `ignore` package, which follows gitignore rules.
 
-**Keep the `/**` at the end of a folder pattern.** `DOMAIN_FACADE` in `rules/facades.js`
-blocks the domain folder, then lets the door back in:
+**Keep the `/**` at the end of a folder pattern.** `doorsFor` in `rules/facades.js` blocks
+each layer folder, then lets its doors back in. For the presentation and the domain:
 
 ```js
-group: ["@domain/**", "!@domain/public", "**/domain/**", "!**/domain/public"]
+group: ["@domain/**", "!@domain/public", "!@domain/queries", "**/domain/**", "!**/domain/public", "!**/domain/queries"]
 ```
 
 Shorten `**/domain/**` to `**/domain` and the negation stops working, because gitignore will

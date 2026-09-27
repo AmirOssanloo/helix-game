@@ -9,9 +9,9 @@
  * - tests/architecture.spec.ts walks src/ against `LAYER_IMPORTS` too, so a re-export or a
  *   dynamic import that lint cannot see is caught by the same table.
  *
- * Two rules the table does not carry live in ./rules/facades.js: presentation, devtools, and
- * content enter domain and simulation only through `public.ts`, and content may take domain
- * types only.
+ * `LAYER_DOORS` below names the files under a layer an outer layer may import, and
+ * ./rules/facades.js turns it into patterns. Content's type-only view of the domain lives
+ * there too.
  */
 
 const DOCS = "docs/architecture/layers-and-dependency-rule.md";
@@ -44,6 +44,41 @@ export const LAYER_IMPORTS = {
 };
 
 const LAYERS = Object.keys(LAYER_IMPORTS);
+
+/**
+ * The doors of each layer: the files under it, by name without the extension, that an outer
+ * layer imports it through, and the layers each is open to. A layer not listed has one door,
+ * `public`, open to every layer whose row names it. A door open to a layer its row does not
+ * name stays shut: the row is checked first.
+ *
+ * The domain has two audiences, so three doors. The simulation needs its systems,
+ * constructors, and mutators; the presentation and the developer panel need types and reads,
+ * and are never handed a mutator to pass a view into.
+ *
+ * `testing` is no layer's door. It is the door tests take past `public`, and nothing under
+ * src/ imports it.
+ */
+export const LAYER_DOORS = {
+  domain: {
+    // Types only. The architecture test holds the file to that.
+    public: ["simulation", "content", "presentation", "devtools", "app"],
+    // Pure reads and the constants they read by.
+    queries: ["simulation", "presentation", "devtools", "app"],
+    // Systems, constructors, mutators, and the content checks.
+    rules: ["simulation", "app"],
+  },
+};
+
+/** The doors of `target` open to `layer`, in the table's order. */
+export const doorsOpenTo = (layer, target) => {
+  const doors = LAYER_DOORS[target];
+
+  if (doors === undefined) {
+    return ["public"];
+  }
+
+  return Object.keys(doors).filter((door) => doors[door].includes(layer));
+};
 
 // `foo/, bar/ or baz/`, the list the messages read best with.
 const listFolders = (layers) => {

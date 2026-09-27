@@ -7,6 +7,7 @@ import type {
   Registry,
   RunScope,
 } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import {
   checkReference,
   copyTunableDefinitionsOf,
@@ -16,11 +17,10 @@ import {
   idSchema,
   numberSchema,
   objectOf,
-  readTunable,
   setDefinitionTunable,
   validateRegistry,
   validateRegistryOf,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeWorld } from "../../helpers";
 
 /** A definition of a kind the game does not have: a number to tune and a status it names. */

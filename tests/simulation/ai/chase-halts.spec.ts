@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry, meleeGruntDef, tuningTable } from "@content/public";
 import type { TuningDef, Unit } from "@domain/public";
-import { attackOf, isInAttackRange } from "@domain/public";
+import { attackOf, isInAttackRange } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

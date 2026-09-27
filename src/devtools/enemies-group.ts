@@ -1,6 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import type { EnemyTier } from "@domain/public";
-import { ENEMY_TIERS } from "@domain/public";
+import { ENEMY_TIERS } from "@domain/queries";
 import { firstOf, optionsOf } from "./bindings";
 import type { DevApi } from "./dev-api";
 import type { PanelGroup } from "./panel-group";

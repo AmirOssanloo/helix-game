@@ -17,15 +17,16 @@ import {
   readFeedbackFile,
 } from "@devtools/public";
 import type { PoolView, Registry } from "@domain/public";
-import { definitionFields } from "@domain/public";
+import { definitionFields } from "@domain/rules";
 import { createRings } from "@instrumentation/public";
 import type { Id } from "@shared/public";
-import type { Simulation, WorldView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   contentVersionOf,
   strictContentVersionOf,
   Session,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 5;

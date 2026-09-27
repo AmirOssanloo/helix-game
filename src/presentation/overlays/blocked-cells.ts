@@ -6,7 +6,7 @@ import {
   isCellBlocked,
   radiusClassOf,
   rowOf,
-} from "@domain/public";
+} from "@domain/queries";
 import type { Rect, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { ScreenPlacement } from "../camera/projection";

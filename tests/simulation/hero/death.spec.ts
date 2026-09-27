@@ -1,23 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { heroDef, tuningTable } from "@content/public";
 import type { DomainEvent, FormRecord, Unit } from "@domain/public";
-import {
-  createCandidateBuffer,
-  orbAt,
-  startCooldown,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { createCandidateBuffer, orbAt, UNIT_CAPACITY } from "@domain/queries";
+import { startCooldown } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
+import {
+  createEventReader,
+  isReplayRefusal,
+  parseInputLogFile,
+} from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   beginReplay,
   contentVersionOf,
-  createEventReader,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import {
   idOf,
   makeEnemyDef,

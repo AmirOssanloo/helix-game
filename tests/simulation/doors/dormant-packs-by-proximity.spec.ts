@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tuningTable } from "@content/public";
 import type { MapDef, PackDef, PackState } from "@domain/public";
-import { countLiveEnemies, ENEMY_LIVE_CAP } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
+import { countLiveEnemies } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef, makeWorld, spawnHero, submit } from "../../helpers";
 
 /** How many packs the long map holds, how far apart they stand, and how many each holds. */

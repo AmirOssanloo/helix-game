@@ -74,6 +74,9 @@ export type Kit = Readonly<{
   ) => void;
 }>;
 
+/** The part of a kit that reads a slot and writes only into a record its caller owns: what the HUD and the cursor are given. */
+export type KitSlots = Pick<Kit, "key" | "resolveSlot" | "describeSlot">;
+
 /** One request record, at its neutral value, for a caller to fill. */
 export const createAbilityRequest = (): AbilityRequest => ({
   kind: "empty",

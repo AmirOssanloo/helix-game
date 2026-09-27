@@ -1,5 +1,6 @@
 import type { SpatialHashView } from "@domain/public";
-import type { Simulation, WorldView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * A view over `world` with its spatial hash replaced by `spatialHash`, so a sync test decides

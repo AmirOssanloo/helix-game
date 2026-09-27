@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { SpawnProjectileEffectDef, Unit, UnitId } from "@domain/public";
-import { readTunable, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { readTunable } from "@domain/queries";
+import { runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeCast,
   makeWorld,

@@ -6,8 +6,8 @@ import {
   applyDamage,
   remainingCooldownTicks,
   startCooldown,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeAttackDef,
   makeEnemyDef,

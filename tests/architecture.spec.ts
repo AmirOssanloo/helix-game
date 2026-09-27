@@ -1,17 +1,27 @@
 import { join } from "node:path";
-import { PRESENTATION_FIELDS } from "@simulation/public";
-import { LAYER_IMPORTS } from "../eslint/matrix.js";
+import { PRESENTATION_FIELDS } from "@simulation/testing";
+import { doorsOpenTo, LAYER_IMPORTS } from "../eslint/matrix.js";
 import {
   describeGameConfig,
+  describeLayerDoors,
   describeLayerImports,
   describeNoModuleState,
   describeNoSpecUnderSrc,
   describeOrderWritesOnlyInOrders,
   describePresentationFieldsUnread,
+  describeTypesOnlyDoor,
   SOURCE_DIR,
 } from "./helpers";
 
 describeLayerImports({ srcDir: SOURCE_DIR, layerImports: LAYER_IMPORTS });
+
+describeLayerDoors({
+  srcDir: SOURCE_DIR,
+  layerImports: LAYER_IMPORTS,
+  doorsOpenTo,
+});
+
+describeTypesOnlyDoor({ file: join(SOURCE_DIR, "domain", "public.ts") });
 
 describeNoSpecUnderSrc({ srcDir: SOURCE_DIR });
 

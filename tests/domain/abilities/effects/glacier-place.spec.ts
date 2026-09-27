@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { EffectDef, SpawnZoneEffectDef, Zone } from "@domain/public";
-import { runEffects } from "@domain/public";
+import { runEffects } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero } from "../../../helpers";
 
 /** The effect under test, by the key the registry holds it under. */

@@ -1,5 +1,5 @@
 import type { MapDef } from "@domain/public";
-import { acquireHero } from "@domain/public";
+import { acquireHero } from "@domain/rules";
 import type { CreateWorldOptions, Simulation } from "./world";
 import { createWorld } from "./world";
 

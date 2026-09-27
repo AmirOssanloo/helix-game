@@ -1,5 +1,5 @@
 import type { RefusalReason, SlotDescriptor, Tick } from "@domain/public";
-import { ORB_IDS } from "@domain/public";
+import { ORB_IDS } from "@domain/queries";
 import { clamp } from "@shared/public";
 import type { FrameSizes, Label, Quad, QuadFactory } from "../views/quad";
 import { SQUARE_SIZE } from "./hud-layout";

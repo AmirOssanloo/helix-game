@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { DomainEvent, Unit } from "@domain/public";
-import { checkpointSystem } from "@domain/public";
+import { checkpointSystem } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef, makeWorld, spawnHero, submit } from "../../helpers";
 
 /** The shipped reach radius, which every case but the retune runs under. */

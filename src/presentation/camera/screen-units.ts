@@ -1,5 +1,5 @@
 import type { UnitId } from "@domain/public";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
+import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/queries";
 import type { Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 

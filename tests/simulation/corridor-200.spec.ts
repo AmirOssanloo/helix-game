@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { arenaDef, meleeGruntDef } from "@content/public";
-import { collisionSystem } from "@domain/public";
+import { collisionSystem } from "@domain/rules";
 import type { Rect } from "@shared/public";
-import type { InputLogFile, Replay, WorldView } from "@simulation/public";
-import { beginReplay } from "@simulation/public";
+import type { InputLogFile, WorldView } from "@simulation/public";
+import type { Replay } from "@simulation/testing";
+import { beginReplay } from "@simulation/testing";
 import { loadInputLog, makeRegistry, tickUntil } from "../helpers";
 
 /**

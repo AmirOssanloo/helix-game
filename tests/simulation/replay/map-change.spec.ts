@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef } from "@content/public";
 import type { Registry } from "@domain/public";
-import type { InputLogFile, StateChecksum } from "@simulation/public";
+import type { InputLogFile } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
+import type { StateChecksum } from "@simulation/testing";
 import {
   beginReplay,
   CHECKSUM_INTERVAL,
   checksumMismatch,
   createHasher,
-  isReplayRefusal,
-  parseInputLogFile,
   recordChecksums,
   Replay,
   Session,
   stateChecksum,
   stateDifference,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { makeMapDef, makeRegistry } from "../../helpers";
 
 const SEED = 11;

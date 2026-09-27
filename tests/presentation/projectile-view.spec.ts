@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Projectile } from "@domain/public";
-import { acquireProjectile } from "@domain/public";
+import { acquireProjectile } from "@domain/rules";
 import type { ProjectileViewPool } from "@presentation/public";
 import {
   createProjectileViewPool,
@@ -8,7 +8,7 @@ import {
   syncProjectileViews,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { frameAround, makeWorld, QuadRecorder, SYNC_FIELDS } from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a world size over it. */

@@ -1,6 +1,6 @@
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * The id `unit` holds in `world`'s pool, for a spec that arranged a unit and now has to name

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { spellLevelOf } from "@domain/public";
+import { spellLevelOf } from "@domain/rules";
 
 describe("spellLevelOf", () => {
   it("reads one orb's level when the recipe is that orb three times", () => {

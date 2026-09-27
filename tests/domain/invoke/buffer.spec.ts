@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { KitState } from "@domain/public";
+import { orbAt } from "@domain/queries";
 import {
   addOrb,
   countOrbs,
   isBufferFull,
-  orbAt,
   orbCapacity,
   pressOrb,
-} from "@domain/public";
+} from "@domain/rules";
 
 const QUARTZ = 0;
 const WHORL = 1;

@@ -12,8 +12,8 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 | Layer | Job | Holds |
 | --- | --- | --- |
 | `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids, an integer hash |
-| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and `public.ts` |
-| `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, the session that owns the world and switches it between live play and a replay, and `public.ts` |
+| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and three doors: `public.ts`, `queries.ts`, and `rules.ts` |
+| `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, the session that owns the world and switches it between live play and a replay, `public.ts`, and `testing.ts` |
 | `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
 | `instrumentation/` | Measures | Preallocated sample rings: tick time, render time, live counts, pool misses, frame rate |
 | `presentation/` | **Adapts.** Where Phaser is used | Scenes, the shape atlas, pooled views, input mapping, camera, HUD, debug overlays |
@@ -32,12 +32,12 @@ Imports run one way. The lint configuration states this as an allow-list, and a 
 | --- | --- |
 | `shared` | nothing under `src/` |
 | `domain` | `shared` |
-| `simulation` | `domain`, `shared` |
-| `content` | `domain` types, `shared` |
+| `simulation` | `domain/public`, `domain/queries`, `domain/rules`, `shared` |
+| `content` | `domain/public` types, `shared` |
 | `instrumentation` | `shared` |
-| `presentation` | `simulation/public`, `domain/public`, `shared`, Phaser |
-| `devtools` | `simulation/public`, `domain/public`, `instrumentation`, `shared` |
-| `app` | everything |
+| `presentation` | `simulation/public`, `domain/public`, `domain/queries`, `shared`, Phaser |
+| `devtools` | `simulation/public`, `domain/public`, `domain/queries`, `instrumentation`, `shared` |
+| `app` | every layer, through the doors open to it |
 
 Three things follow from the table:
 
@@ -49,12 +49,19 @@ Three things follow from the table:
 
 ## The public doors
 
-Everything outside a layer enters it through its `public.ts`.
+Everything outside a layer enters it through a door: a file at the layer's root that exports what outer layers use and nothing more. Most layers have one, `public.ts`. The domain has two audiences, so it has three:
 
-- **`domain/public.ts`** exports the types other layers need to name things: entity state shapes, the command and event unions, definition types.
-- **`simulation/public.ts`** exports the simulation API — create a world, load a map, submit commands, `tick`, dispose — and a `Readonly` view of world state. The view is a compile-time type over the live state and costs nothing at runtime; the presentation reads it by reference during sync and copies nothing.
+| Door | Holds | Imported by |
+| --- | --- | --- |
+| `domain/public.ts` | Types only: entity state shapes, the command and event unions, definition types | `simulation`, `content`, `presentation`, `devtools`, `app` |
+| `domain/queries.ts` | Pure reads and the constants they read by. Each takes its arguments read-only, writes only into an `out` record its caller owns, and allocates nothing; the `create` functions here make such a record once | `simulation`, `presentation`, `devtools`, `app` |
+| `domain/rules.ts` | Systems, pool and record constructors, mutators, and the content checks | `simulation`, `app` |
 
-Only the composition root reaches past a door.
+- **Why a mutator is behind its own door.** A `Readonly` view does not stop view data being passed into a function that writes it; TypeScript accepts the call. So the presentation and the developer panel are never given a mutator to call. A reader that needs a piece of a rule gets a query for that piece alone, such as a behaviour's kind or a kit's slot reads, never the rule itself.
+- **`simulation/public.ts`** exports a session's handle — make one, submit commands, `tick`, recreate, save and load its log — the `Readonly` view of world state, and the event ring's read port. The view is a compile-time type over the live state and costs nothing at runtime; the presentation reads it by reference during sync and copies nothing. The read port reads events and moves the caller's own reader, and has no write and no clear. The world itself, its systems, its command buffer, its random source, and the replay are behind the door.
+- **`testing.ts`**, beside a `public.ts` that needs one, is the door for tests: what is behind `public.ts`, for a spec to arrange a world and step it. Nothing under `src/` imports one.
+
+The composition root enters each layer through its doors like every other layer. Lint states the doors as a table in `eslint/matrix.js`, and the architecture test holds every module reference to it, re-exports and dynamic imports included. It also holds `domain/public.ts` to types.
 
 ```typescript
 // presentation reads through the door and never past it
@@ -99,6 +106,10 @@ A cooldown computed from `Date.now()`. It works on the author's machine, drifts 
 
 A view that checks whether a unit is stunned and skips drawing its facing. The rule now lives in two places and the second one is invisible to tests. The domain sets a flag; the view reads it.
 
+### A view handed to a mutator
+
+A HUD click handler that imports a rule to spend the hero's mana and passes it the unit from the world view. It compiles, since `Readonly` does not survive assignment, and it changes world state outside a tick, so a replay diverges. The rules door is shut to the presentation; the handler submits a command.
+
 ### Content that calls the domain
 
 A spell definition importing an effect function and calling it. The registry can no longer validate the key, the content test needs the whole domain, and a rename breaks silently. Content names the effect; the domain looks it up.
@@ -112,12 +123,12 @@ A spell definition importing an effect function and calling it. The registry can
 | The split | Rules in `domain/`, orchestration in `simulation/`, data in `content/`, drawing in `presentation/`, wiring in `app/` |
 | `shared` may import | Nothing under `src/` |
 | `domain` may import | `shared` |
-| `simulation` may import | `domain`, `shared` |
-| `content` may import | `domain` types only, `shared` |
+| `simulation` may import | `domain/public`, `domain/queries`, `domain/rules`, `shared` |
+| `content` may import | `domain/public` types only, `shared` |
 | `instrumentation` may import | `shared` |
-| `presentation` may import | `simulation/public`, `domain/public`, `shared`, Phaser |
-| `devtools` may import | `simulation/public`, `domain/public`, `instrumentation`, `shared` |
-| `app` may import | Everything. It is the one place that knows concrete wiring |
+| `presentation` may import | `simulation/public`, `domain/public`, `domain/queries`, `shared`, Phaser |
+| `devtools` may import | `simulation/public`, `domain/public`, `domain/queries`, `instrumentation`, `shared` |
+| `app` may import | Every layer, through the doors open to it. It is the one place that knows concrete wiring |
 | Phaser | Used in `presentation`; imported in `app` only to construct the game; a build failure anywhere else |
 | Clock, DOM, `window` | Never in `domain` or `simulation` |
 | `Math.random`, `Date.now`, `performance.now`, `new Date()` | Banned by lint under `domain` and `simulation` in every spelling: read, destructured, computed, or through `globalThis`, `self`, or `window` |
@@ -126,7 +137,10 @@ A spell definition importing an effect function and calling it. The registry can
 | File size | At most 500 raw lines per file under `src/`, blank and comment lines counted as `wc -l` counts them. Map definitions are exempt as data; every other file over it is listed in `eslint/size-limit.js` with its reason, and leaves the list when it is split |
 | Time in the domain | A tick count |
 | Content and the domain | The domain never imports content; content references effects and behaviours by string key |
-| Entering a layer | Through its `public.ts`; only the composition root reaches past it |
+| Entering a layer | Through a door open to the importing layer: `public.ts`, or the domain's `queries.ts` or `rules.ts`. Lint and the architecture test hold it |
+| The domain's doors | `public.ts` types only; `queries.ts` pure reads; `rules.ts` systems, constructors, and mutators, for `simulation` and `app` only |
+| `testing.ts` | Tests only; nothing under `src/` imports it |
+| The event ring outside the simulation | Its read port: read and skip, never write or clear |
 | The world view | A `Readonly` type over live state, read by reference during sync, never copied |
 | A function that decides and draws | Split it |
 

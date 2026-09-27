@@ -6,8 +6,8 @@ import type {
   EffectTargetDef,
   Unit,
 } from "@domain/public";
-import { effectsPerTick, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { effectsPerTick, runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
 /** The health every unit in the fixture starts with, well above anything the spec deals. */

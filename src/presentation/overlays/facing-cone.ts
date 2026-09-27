@@ -1,4 +1,4 @@
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 import type { Quad } from "../views/quad";
 import { interpolate } from "../views/quad";

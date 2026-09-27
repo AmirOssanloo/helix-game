@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ModifierEntry } from "@domain/public";
-import { movementSpeed } from "@domain/public";
+import { movementSpeed } from "@domain/rules";
 
 /** A modifier table with the given rows live and the rest empty. */
 const table = (...rows: Partial<ModifierEntry>[]): ModifierEntry[] => {

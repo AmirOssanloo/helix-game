@@ -1,5 +1,5 @@
 import type { FolderApi } from "tweakpane";
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import type { DevApi } from "./dev-api";
 import type { PanelGroup } from "./panel-group";
 import { NO_REFRESH } from "./panel-group";

@@ -1,5 +1,5 @@
 import type { AiState, OrderState, Unit } from "@domain/public";
-import { resolveBehaviour } from "@domain/public";
+import { behaviourKindOf } from "@domain/queries";
 import type { DeepReadonly, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { ScreenPlacement } from "../camera/projection";
@@ -151,10 +151,8 @@ const labelOf = (world: WorldView, unit: DeepReadonly<Unit>): string => {
     unit.kind !== "enemy" || definitionId === null
       ? undefined
       : world.run.units.get(definitionId);
-  const behaviour =
-    record === undefined ? null : resolveBehaviour(record.def.behaviour);
+  const kind =
+    record === undefined ? null : behaviourKindOf(record.def.behaviour);
 
-  return behaviour !== null && behaviour.kind === "machine"
-    ? AI_STATE_LABELS[unit.ai.state]
-    : NO_TEXT;
+  return kind === "machine" ? AI_STATE_LABELS[unit.ai.state] : NO_TEXT;
 };

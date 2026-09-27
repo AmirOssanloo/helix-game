@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
-import { acquireUnit, PATH_CAPACITY, setStraightPath } from "@domain/public";
+import { acquireUnit, PATH_CAPACITY, setStraightPath } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
 import {
   arrangeOverlays,

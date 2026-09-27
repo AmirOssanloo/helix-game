@@ -14,9 +14,9 @@ import {
   attackOf,
   holdsAbility,
   mitigate,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

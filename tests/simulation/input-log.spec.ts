@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnyCommand } from "@domain/public";
-import { InputLog } from "@simulation/public";
+import { InputLog } from "@simulation/testing";
 import { makeWorld, submit } from "../helpers";
 
 const noop = (timestamp: number): AnyCommand => ({

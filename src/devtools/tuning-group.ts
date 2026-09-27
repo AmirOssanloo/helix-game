@@ -1,6 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import type { TuningKey } from "@domain/public";
-import { TUNING_KEYS, TUNING_UNITS } from "@domain/public";
+import { TUNING_KEYS, TUNING_UNITS } from "@domain/queries";
 import type { Binding } from "./bindings";
 import { onCommit } from "./bindings";
 import type { DevApi } from "./dev-api";

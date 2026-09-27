@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DamageType } from "@domain/public";
-import { DAMAGE_TYPES } from "@domain/public";
+import { DAMAGE_TYPES } from "@domain/queries";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,

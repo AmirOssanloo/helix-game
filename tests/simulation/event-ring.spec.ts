@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { DomainEvent } from "@domain/public";
-import { createDomainEvent } from "@domain/public";
+import { createDomainEvent } from "@domain/rules";
 import type { EventReader } from "@simulation/public";
-import {
-  createEventReader,
-  EVENT_RING_CAPACITY,
-  EventRing,
-} from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import { EVENT_RING_CAPACITY, EventRing } from "@simulation/testing";
 
 const CAPACITY = 3;
 

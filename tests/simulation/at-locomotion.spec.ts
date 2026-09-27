@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { FixedStepDriver } from "@app/public";
-import { acquireUnit, movementSpeed, readTunable } from "@domain/public";
 import type { Unit } from "@domain/public";
+import { readTunable } from "@domain/queries";
+import { acquireUnit, movementSpeed } from "@domain/rules";
 import { createRings } from "@instrumentation/public";
 import { shortestArc } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry, makeWorld, spawnHero, submit } from "../helpers";
 
 /** Ticks per second, as the world converts every duration. */

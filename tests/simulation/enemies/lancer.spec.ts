@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { chargeDef, lancerDef, tuningTable } from "@content/public";
 import type { MapDef, Unit } from "@domain/public";
-import { startCooldown } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { startCooldown } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   arrangeArchetype,
   describeArchetype,

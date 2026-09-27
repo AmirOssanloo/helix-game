@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { arenaDef } from "@content/public";
-import type { Replay } from "@simulation/public";
+import { isReplayRefusal } from "@simulation/public";
+import type { Replay } from "@simulation/testing";
 import {
   beginReplay,
   createHasher,
-  isReplayRefusal,
   stateChecksum,
   stateDifference,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { loadInputLog, makeRegistry } from "../helpers";
 
 /**

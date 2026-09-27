@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { HeroDef, Progression } from "@domain/public";
+import { experienceProgress } from "@domain/queries";
 import {
-  experienceProgress,
   grantExperience,
   levelForExperience,
   levelUp,
   spendSkillPoint,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeAttackDef } from "../../helpers";
 
 /** A four-level curve a boundary is easy to read on. */

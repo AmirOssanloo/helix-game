@@ -1,4 +1,4 @@
-import { orbAt } from "@domain/public";
+import { orbAt } from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 import { orbTint } from "../hud/palette";
 import { DEPTH_AIR } from "./depth-bands";

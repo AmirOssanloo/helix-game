@@ -89,7 +89,13 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.ts"],
       // Barrels and ambient declarations carry no executable code of their own.
-      exclude: ["src/**/public.ts", "src/**/*.d.ts"],
+      exclude: [
+        "src/**/public.ts",
+        "src/**/testing.ts",
+        "src/domain/queries.ts",
+        "src/domain/rules.ts",
+        "src/**/*.d.ts",
+      ],
       thresholds: COVERAGE_FLOORS,
     },
     projects: [

@@ -7,8 +7,9 @@ import type {
   Registry,
   SpawnPackCommand,
 } from "@domain/public";
-import type { Simulation, CommandStamps } from "@simulation/public";
-import { contentVersionOf, Session } from "@simulation/public";
+import type { CommandStamps } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
+import { contentVersionOf, Session } from "@simulation/testing";
 import type { MakeRegistryOptions } from "../helpers";
 import { makeMapDef, makeRegistry } from "../helpers";
 

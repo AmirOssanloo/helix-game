@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
 
 /** Short enough that a spec ticks past the end of the knockback. */

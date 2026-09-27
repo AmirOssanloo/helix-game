@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { frostAttackDef, statuses, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { EnemyDef, Unit } from "@domain/public";
-import { applyDamage, STATUS_NEVER_ENDS } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage, STATUS_NEVER_ENDS } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   greyedSlots,
   makeAttackDef,

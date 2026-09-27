@@ -24,7 +24,7 @@ import {
   MODIFIER_TABLE_SIZE,
   STAT_SOURCES,
   statSource,
-} from "@domain/public";
+} from "@domain/rules";
 import { idOf, makeEnemyDef } from "../../helpers";
 
 /** The tuning table at 30 Hz, in simulation units. */

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { addOrb } from "@domain/public";
+import { addOrb } from "@domain/rules";
 import type { OrbViews } from "@presentation/public";
 import { createOrbViews, DEPTH_AIR, ORB_TINTS } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, QuadRecorder, spawnHero } from "../helpers";
 
 /** Every frame the test atlas holds is this wide. */

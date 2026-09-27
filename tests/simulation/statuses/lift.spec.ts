@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
 
 /** A lift long enough to outlast the root a spec puts under it. */

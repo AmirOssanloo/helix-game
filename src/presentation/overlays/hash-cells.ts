@@ -1,5 +1,5 @@
 import type { HashCell } from "@domain/public";
-import { createHashCell } from "@domain/public";
+import { createHashCell } from "@domain/queries";
 import type { Rect, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { ScreenPlacement } from "../camera/projection";

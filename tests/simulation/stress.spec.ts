@@ -15,25 +15,22 @@ import type {
   Unit,
   UnitId,
 } from "@domain/public";
+import { ENEMY_LIVE_CAP, readTunable } from "@domain/queries";
 import {
   applyDamage,
   countLiveEnemies,
-  ENEMY_LIVE_CAP,
   issueMove,
-  readTunable,
   resolveDestinationFor,
   resourcesOf,
   runEffects,
   runPrimitive,
-} from "@domain/public";
+} from "@domain/rules";
 import type { Vec2 } from "@shared/public";
 import { distanceSquared } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
-import {
-  createEventReader,
-  createSessionWorld,
-  nextFloat,
-} from "@simulation/public";
+import type { EventReader } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
+import { createSessionWorld, nextFloat } from "@simulation/testing";
 import { makeCast, makeRegistry, submit } from "../helpers";
 
 /** The live cap the performance standard sizes the tick budget for, plus the headroom the stress test asks. */

@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { disableMatrix, tuningTable } from "@content/public";
 import type { DisableFlags, KitState } from "@domain/public";
+import { createAbilityRequest, createSlotDescriptor } from "@domain/queries";
 import {
-  createAbilityRequest,
   createDisableFlags,
-  createSlotDescriptor,
   createSpellTable,
   createTuningState,
   invokeKit,
   KIT_KEYS,
   resolveKit,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeSpellDef } from "../../helpers";
 
 const TUNING = createTuningState({

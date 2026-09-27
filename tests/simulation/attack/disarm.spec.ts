@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeWorld,
   spawnHero,

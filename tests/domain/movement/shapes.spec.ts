@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  circleCovers,
-  coneCovers,
-  coneHalfAngle,
-  rectangleCovers,
-} from "@domain/public";
+import { coneHalfAngle } from "@domain/queries";
+import { circleCovers, coneCovers, rectangleCovers } from "@domain/rules";
 
 /** A quarter turn, which is what every spec here places a shape at when it is not facing +X. */
 const QUARTER_TURN = Math.PI / 2;

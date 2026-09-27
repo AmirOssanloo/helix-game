@@ -1,5 +1,5 @@
 import type { Projectile, ProjectileId } from "@domain/public";
-import { PROJECTILE_CAPACITY } from "@domain/public";
+import { PROJECTILE_CAPACITY } from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";

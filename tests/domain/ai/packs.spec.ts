@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tankDef, tuningTable } from "@content/public";
 import type { MapDef, PackDef, TuningKey } from "@domain/public";
-import { ENEMY_LIVE_CAP } from "@domain/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
 import type { Rect, Vec2 } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef, makeWorld, spawnHero, submit } from "../../helpers";
 
 /** Half the side of the open pocket at the origin: a few grunts fit in it, a pack of thirty does not. */

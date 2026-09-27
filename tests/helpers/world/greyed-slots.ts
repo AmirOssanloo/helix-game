@@ -1,11 +1,7 @@
 import type { Unit } from "@domain/public";
-import {
-  activeFormOf,
-  createSlotDescriptor,
-  resolveKit,
-  SLOT_COUNT,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { createSlotDescriptor, SLOT_COUNT } from "@domain/queries";
+import { activeFormOf, resolveKit } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * The slot keys, 1 to 6, that the HUD draws greyed for `hero` this tick: each one its kit

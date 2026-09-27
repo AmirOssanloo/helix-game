@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Path, PathSearch, WalkabilityGrid } from "@domain/public";
+import { isCellBlocked } from "@domain/queries";
 import {
   cellIndex,
   createNearestCell,
@@ -8,12 +9,11 @@ import {
   deriveWalkabilityGrid,
   fitPathSearch,
   hasLineOfSight,
-  isCellBlocked,
   resolveDestination,
   searchPath,
   segmentCrossesRect,
   writeSmoothedPath,
-} from "@domain/public";
+} from "@domain/rules";
 import type { Rect } from "@shared/public";
 
 const CELL = 32;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
-import { amountAtOrbLevel, createStatusTable } from "@domain/public";
+import { amountAtOrbLevel, createStatusTable } from "@domain/rules";
 import { makeStatusDef } from "../../helpers";
 
 /** The orb level cap every table in this spec is written to. */

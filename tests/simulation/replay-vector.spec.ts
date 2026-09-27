@@ -2,20 +2,15 @@ import { describe, expect, it } from "vitest";
 import { arenaDef } from "@content/public";
 import type { PoolView } from "@domain/public";
 import type { Id } from "@shared/public";
-import type {
-  InputLogFile,
-  Replay,
-  Simulation,
-  WorldView,
-} from "@simulation/public";
+import type { InputLogFile, WorldView } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
+import type { Replay, Simulation } from "@simulation/testing";
 import {
   beginReplay,
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { makeRegistry, submit } from "../helpers";
 
 const registry = makeRegistry();

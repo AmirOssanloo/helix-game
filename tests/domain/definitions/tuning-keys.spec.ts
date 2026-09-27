@@ -4,7 +4,7 @@ import {
   definitionFields,
   definitionFieldUnit,
   isDefinitionKey,
-} from "@domain/public";
+} from "@domain/rules";
 import {
   makeEnemyDef,
   makeFormDef,

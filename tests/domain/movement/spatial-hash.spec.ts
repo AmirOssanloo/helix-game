@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { HashCell, SpatialHash } from "@domain/public";
 import {
-  CELL_CAPACITY,
   createCandidateBuffer,
   createHashCell,
+  UNIT_CAPACITY,
+} from "@domain/queries";
+import {
+  CELL_CAPACITY,
   createSpatialHash,
   createUnitPool,
-  UNIT_CAPACITY,
-} from "@domain/public";
+} from "@domain/rules";
 import { packId } from "@shared/public";
 import { idOf } from "../../helpers";
 

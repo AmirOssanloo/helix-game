@@ -7,7 +7,7 @@ import {
   createProjectilePool,
   createUnitPool,
   createZonePool,
-} from "@domain/public";
+} from "@domain/rules";
 import type { Id } from "@shared/public";
 import {
   GENERATION_BITS,

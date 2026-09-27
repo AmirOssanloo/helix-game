@@ -22,3 +22,7 @@ export const BEHAVIOUR_KEYS: readonly string[] = [...behaviours.keys()];
 /** The behaviour registered under `key`, or `null` when none is. */
 export const resolveBehaviour = (key: string): Behaviour | null =>
   behaviours.get(key) ?? null;
+
+/** Which kind of behaviour is registered under `key`, or `null` when none is: all a reader outside the rules may know of one. */
+export const behaviourKindOf = (key: string): Behaviour["kind"] | null =>
+  behaviours.get(key)?.kind ?? null;

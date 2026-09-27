@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { EffectDef, Unit } from "@domain/public";
-import { holdsStatus, releaseUnit, runEffects } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { holdsStatus, releaseUnit, runEffects } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnUnit, unitIdOf } from "../../../helpers";
 
 /** The effect under test, by the key the registry holds it under, and the status content registers for it. */

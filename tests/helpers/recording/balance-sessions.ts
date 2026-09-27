@@ -14,15 +14,16 @@ import type {
   SpellDef,
   Unit,
 } from "@domain/public";
-import { ORB_IDS } from "@domain/public";
+import { ORB_IDS } from "@domain/queries";
 import type { Vec2 } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   contentVersionOf,
-  createEventReader,
   createSessionWorld,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { submit } from "../world/submit";
 
 /**

@@ -9,7 +9,7 @@ import {
   tuningTable,
 } from "@content/public";
 import type { EnemyDef, EnemyTier, PackDef, SpellDef } from "@domain/public";
-import { mitigate } from "@domain/public";
+import { mitigate } from "@domain/rules";
 import { REPOSITORY_ROOT } from "../helpers";
 
 /** The two content specifications whose tables restate what the definition files hold. */

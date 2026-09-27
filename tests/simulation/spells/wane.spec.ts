@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
-import { issueMove, setStraightPath } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { issueMove, setStraightPath } from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

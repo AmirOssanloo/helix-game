@@ -15,14 +15,11 @@ import type {
   PanelHandle,
 } from "@devtools/public";
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
-import {
-  createDomainEvent,
-  definitionFields,
-  ENEMY_LIVE_CAP,
-} from "@domain/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
+import { createDomainEvent, definitionFields } from "@domain/rules";
 import { createRings } from "@instrumentation/public";
-import { Session } from "@simulation/public";
-import type { Simulation } from "@simulation/public";
+import { Session } from "@simulation/testing";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 3;

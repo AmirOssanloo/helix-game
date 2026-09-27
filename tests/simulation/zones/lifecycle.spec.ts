@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { SpawnZoneEffectDef, Unit } from "@domain/public";
-import { readTunable, runPrimitive, ZONE_CAPACITY } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { readTunable, ZONE_CAPACITY } from "@domain/queries";
+import { runPrimitive } from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
 
 /** The area every zone below covers, wide enough to hold the enemy standing beside the hero. */

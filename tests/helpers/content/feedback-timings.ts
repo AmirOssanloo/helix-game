@@ -1,5 +1,6 @@
 import { contentRegistry } from "@content/public";
-import { createTuningState, readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
+import { createTuningState } from "@domain/rules";
 
 /** The content layer's tuning table as a world holds it: every key converted into simulation units. */
 const DEFAULT_TUNING = createTuningState(contentRegistry.tuning);

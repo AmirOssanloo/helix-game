@@ -9,7 +9,7 @@ import {
 import type { AnyCommand } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry, makeWorld } from "../helpers";
 
 const SEED = 7;

@@ -4,25 +4,20 @@ import { describe, expect, it } from "vitest";
 import { arenaDef, contentRegistry } from "@content/public";
 import type { PoolView, Unit } from "@domain/public";
 import type { Id } from "@shared/public";
-import type {
-  InputLogFile,
-  Replay,
-  Simulation,
-  WorldView,
-} from "@simulation/public";
+import type { InputLogFile, WorldView } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
+import type { Replay, Simulation } from "@simulation/testing";
 import {
   beginReplay,
   CHECKSUM_INTERVAL,
   checksumMismatch,
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
   mapOfLog,
-  parseInputLogFile,
   recordChecksums,
   restartSessionWorld,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import {
   loadInputLog,
   makeRegistry,

@@ -6,10 +6,11 @@ import {
   trainingDummyDef,
 } from "@content/public";
 import type { DebugCommand, EnemyTier } from "@domain/public";
-import { ENEMY_LIVE_CAP, UNIT_CAPACITY } from "@domain/public";
+import { ENEMY_LIVE_CAP, UNIT_CAPACITY } from "@domain/queries";
 import type { Rect } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeMapDef,
   makeRegistry,

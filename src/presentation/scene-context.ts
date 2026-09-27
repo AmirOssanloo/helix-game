@@ -1,6 +1,7 @@
 import type { AnyCommand, Tick } from "@domain/public";
 import type { RingBuffer } from "@shared/public";
-import type { EventRing, WorldView } from "@simulation/public";
+import type { EventRingView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
 import type { SlotFlashes } from "./hud/slot-flashes";
 import type { GroundPick } from "./input/ground-pick";
@@ -45,7 +46,7 @@ export type SceneContext = Readonly<{
   atlas: ShapeAtlas;
   driver: FrameDriver;
   world: WorldView;
-  events: EventRing;
+  events: EventRingView;
   rings: SceneRings;
   flashes: SlotFlashes;
   overlays: Readonly<OverlayToggles>;

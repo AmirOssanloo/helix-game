@@ -12,14 +12,14 @@ import type {
   SpellDef,
   TargetingKind,
 } from "@domain/public";
+import { ORB_IDS } from "@domain/queries";
 import {
   createSpellTable,
   createTuningState,
   entryAtLevel,
   ID_SHAPE,
-  ORB_IDS,
   validateRegistry,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeSpellDef } from "../helpers";
 
 const SPELL_COUNT = 10;

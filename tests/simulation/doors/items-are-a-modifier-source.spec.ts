@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
-import { addModifier, applyStatus, removeModifiers } from "@domain/public";
+import { addModifier, applyStatus, removeModifiers } from "@domain/rules";
 import {
   makeFormDef,
   makeRegistry,

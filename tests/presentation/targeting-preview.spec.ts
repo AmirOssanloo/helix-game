@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import { requestCast } from "@domain/public";
+import { requestCast } from "@domain/rules";
 import type { TargetingCursor } from "@presentation/public";
 import {
   closeCursor,
@@ -12,7 +12,7 @@ import {
   RETICLE_SIZE,
   TargetingPreview,
 } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
   makeRegistry,

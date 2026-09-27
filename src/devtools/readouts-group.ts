@@ -1,6 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import type { PackRecord, PackState, RefusalReason } from "@domain/public";
-import { ENEMY_LIVE_CAP, readTunable } from "@domain/public";
+import { ENEMY_LIVE_CAP, readTunable } from "@domain/queries";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
 import { readout } from "./bindings";

@@ -1,5 +1,5 @@
 import type { DomainEvent, EventSlot } from "@domain/public";
-import { copyDomainEvent, createDomainEvent } from "@domain/public";
+import { copyDomainEvent, createDomainEvent } from "@domain/rules";
 import { assert } from "@shared/public";
 
 /**
@@ -161,3 +161,20 @@ export class EventRing {
     return slot;
   }
 }
+
+/**
+ * The ring as a reader outside the simulation holds it: the presentation and the developer
+ * panel read events and move their own readers, and can neither write an event nor clear the
+ * ring. The same object as the ring; no copy.
+ */
+export type EventRingView = Pick<
+  EventRing,
+  | "capacity"
+  | "cursor"
+  | "oldest"
+  | "overwrites"
+  | "at"
+  | "pending"
+  | "read"
+  | "skip"
+>;

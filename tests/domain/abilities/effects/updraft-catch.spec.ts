@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId, ZoneId } from "@domain/public";
 import type { EffectDef, SpawnZoneEffectDef, Unit, Zone } from "@domain/public";
+import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/queries";
 import {
-  createCandidateBuffer,
   createCastRecord,
   fillZoneCast,
   hasTakenHit,
   holdsStatus,
   runEffects,
   runPrimitive,
-  UNIT_CAPACITY,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeCast,

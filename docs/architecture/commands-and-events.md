@@ -85,7 +85,7 @@ A new kind reuses a field before it adds one, when the field already means the s
 The presentation reads world state through a `Readonly` type exported from `simulation/public.ts`. It is a compile-time view over the live pools: no copy, no snapshot, no allocation. Two rules keep that safe:
 
 - The presentation reads only during its sync, after the ticks for this frame are done.
-- The presentation never writes through the view. Lint sees a `Readonly` type; the architecture test sees no import past the door.
+- The presentation never writes through the view. Lint sees a `Readonly` type; the architecture test sees no import past the door, and the domain's mutators are behind a door the presentation cannot import, so a view is never handed to one.
 
 ---
 

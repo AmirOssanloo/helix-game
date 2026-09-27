@@ -11,9 +11,10 @@ import {
   issueMove,
   nearestEnemy,
   runPrimitive,
-} from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeCast,
   makeMapDef,

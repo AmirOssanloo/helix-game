@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import { acquireUnit, applyStatus } from "@domain/public";
+import { acquireUnit, applyStatus } from "@domain/rules";
 import type { GroundPick } from "@presentation/public";
 import {
   createGroundPick,
@@ -12,7 +12,7 @@ import {
   Projection,
   RIGHT_BUTTON,
 } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   CommandRecorder,
   FixedLens,

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Pool, Unit, UnitId } from "@domain/public";
+import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/queries";
 import {
   createDisableFlags,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   PATH_CAPACITY,
-  STATUS_TABLE_SIZE,
-  UNIT_CAPACITY,
-} from "@domain/public";
+} from "@domain/rules";
 import { idOf } from "../../helpers";
 
 const fillPool = (pool: Pool<Unit, UnitId>): void => {

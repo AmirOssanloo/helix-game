@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DisplaceEffectDef, MapDef, Unit } from "@domain/public";
-import { issueMove, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { issueMove, runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeCast,

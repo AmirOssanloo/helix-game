@@ -1,6 +1,6 @@
 import type { Unit, UnitKind } from "@domain/public";
-import { acquireUnit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { acquireUnit } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * Where a unit stands, what it is, and what a hit finds on it. Everything defaults to an

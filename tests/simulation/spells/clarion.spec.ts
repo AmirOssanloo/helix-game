@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { MapDef, Unit } from "@domain/public";
-import { holdsStatus } from "@domain/public";
+import { holdsStatus } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeMapDef,
   makeWorld,

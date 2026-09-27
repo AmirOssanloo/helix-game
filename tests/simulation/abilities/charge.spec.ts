@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { chargeDef, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { EnemyDef, MapDef, Unit } from "@domain/public";
-import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyStatus, remainingCooldownTicks } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeAttackDef,
   makeEnemyDef,

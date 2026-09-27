@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { SpawnProjectileEffectDef, Unit } from "@domain/public";
-import { applyDamage, applyStatus, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage, applyStatus, runPrimitive } from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeCast,
   makeRegistry,

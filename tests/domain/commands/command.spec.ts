@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { Command, DebugCommand } from "@domain/public";
-import { DEBUG_COMMAND_KINDS, isDebugCommand } from "@domain/public";
+import { DEBUG_COMMAND_KINDS, isDebugCommand } from "@domain/rules";
 
 /**
  * Every player command kind. The record's type takes exactly the union's kinds, so a player

@@ -1,4 +1,4 @@
-import { ZONE_CAPACITY } from "@domain/public";
+import { ZONE_CAPACITY } from "@domain/queries";
 
 /**
  * How many views of each kind the play scene makes at `create`: what the fixed view can show at

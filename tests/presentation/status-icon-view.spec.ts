@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { statusIconFrame } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import { applyStatus, STATUS_TABLE_SIZE } from "@domain/public";
+import { STATUS_TABLE_SIZE } from "@domain/queries";
+import { applyStatus } from "@domain/rules";
 import type { ScreenPlacement, StatusIconViewPool } from "@presentation/public";
 import {
   createStatusIconViewPool,
@@ -11,7 +12,7 @@ import {
   syncStatusIconViews,
 } from "@presentation/public";
 import type { Rect, Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   FLAT_PLACEMENT,
   frameAround,

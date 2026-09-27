@@ -6,9 +6,9 @@ import type {
   SpellRecord,
   Unit,
 } from "@domain/public";
-import { runEffects, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
-import { createSessionWorld } from "@simulation/public";
+import { runEffects, runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
+import { createSessionWorld } from "@simulation/testing";
 import { makeCast, makeRegistry, submit } from "../helpers";
 
 /** The concurrent zones the spell load is held to: every spell of the mix in the air at once. */

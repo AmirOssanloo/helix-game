@@ -7,7 +7,8 @@ import type {
   TuningDef,
 } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
-import type { EventRing, WorldView } from "@simulation/public";
+import type { EventRingView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
 import type { BuildStamp, FeedbackFile } from "./feedback-file";
 import {
   buildDifference,
@@ -158,7 +159,7 @@ export type DevApi = Readonly<{
   submit: (command: PanelCommand) => boolean;
   driver: DriverControls;
   view: WorldView;
-  events: EventRing;
+  events: EventRingView;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   /** Arms the next ground click: the play scene hands its world point to `onPick` instead of ordering anything with it. Arming again replaces what was waiting. */
@@ -189,7 +190,7 @@ export type DevApiPorts = Readonly<{
   driver: DevDriver;
   session: DevSession;
   view: WorldView;
-  events: EventRing;
+  events: EventRingView;
   rings: InstrumentationRings;
   overlays: OverlayToggles;
   groundPick: GroundPick;

@@ -1,8 +1,8 @@
 import { arenaDef, contentRegistry, longRoadDef } from "@content/public";
 import type { AbilityDef, EffectDef, ShapeDef, World } from "@domain/public";
-import { acquireProjectile, acquireUnit, acquireZone } from "@domain/public";
-import type { Leaf, LeafKind, Simulation } from "@simulation/public";
-import { createSessionWorld } from "@simulation/public";
+import { acquireProjectile, acquireUnit, acquireZone } from "@domain/rules";
+import type { Leaf, LeafKind, Simulation } from "@simulation/testing";
+import { createSessionWorld } from "@simulation/testing";
 import { idOf } from "./ids";
 
 /** A cooldown key the arranged hero holds, so its table has an entry to change. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { atlasFrames, contentRegistry, statusIconFrame } from "@content/public";
-import { ID_SHAPE, validateRegistry } from "@domain/public";
+import { ID_SHAPE, validateRegistry } from "@domain/rules";
 
 /** The statuses as the registry holds them, typed as any status rather than as the literal each file writes. */
 const { statuses } = contentRegistry;

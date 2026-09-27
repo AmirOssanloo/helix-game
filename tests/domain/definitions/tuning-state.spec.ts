@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SetTuningCommand, TuningKey, TuningState } from "@domain/public";
-import {
-  createTuningState,
-  readTunable,
-  setTunable,
-  validateTuning,
-} from "@domain/public";
+import { readTunable } from "@domain/queries";
+import { createTuningState, setTunable, validateTuning } from "@domain/rules";
 import { makeRegistry } from "../../helpers";
 
 /** A tuning state at 30 Hz from the content table, with any override on top. */

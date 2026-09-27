@@ -9,16 +9,14 @@ import {
 import type { DevApi, GroundPick, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
 import type { TuningKey, Unit } from "@domain/public";
-import { definitionFields, readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
+import { definitionFields } from "@domain/rules";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { DeepReadonly } from "@shared/public";
-import type { Simulation } from "@simulation/public";
-import {
-  contentVersionOf,
-  createEventReader,
-  Session,
-} from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
+import { contentVersionOf, Session } from "@simulation/testing";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;

@@ -9,16 +9,17 @@ import {
   tuningTable,
 } from "@content/public";
 import type { DebugCommand, DomainEvent, Unit } from "@domain/public";
+import { experienceProgress } from "@domain/queries";
 import {
   acquireUnit,
   applyDamage,
-  experienceProgress,
   fillFromDefinition,
   grantExperience,
   wearDefinition,
-} from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeEnemyDef,
   makeRegistry,

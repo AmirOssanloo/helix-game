@@ -5,7 +5,7 @@ import {
   isDamageType,
   ORB_IDS,
   readTunable,
-} from "@domain/public";
+} from "@domain/queries";
 import type { Vec2 } from "@shared/public";
 import { firstOf, optionsOf } from "./bindings";
 import type { DevApi } from "./dev-api";

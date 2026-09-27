@@ -9,9 +9,9 @@ import {
 } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { EnemyDef, EnemyTier, Unit } from "@domain/public";
-import { applyStatus } from "@domain/public";
+import { applyStatus } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   arrangeArchetype,
   makeRegistry,

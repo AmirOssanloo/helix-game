@@ -1,5 +1,5 @@
 import type { KitState } from "@domain/public";
-import { orbAt } from "@domain/public";
+import { orbAt } from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
 import type { FrameSizes, Quad, QuadFactory } from "../views/quad";
 import { ORB_SQUARE_SIZE } from "./hud-layout";

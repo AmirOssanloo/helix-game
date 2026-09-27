@@ -6,8 +6,8 @@ import {
   addModifier,
   grantExperience,
   removeModifiers,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeFormDef, makeRegistry, makeWorld, spawnHero } from "../helpers";
 
 /** A form regenerating 30 health and 15 mana a second: one and a half per tick at 30 Hz. */

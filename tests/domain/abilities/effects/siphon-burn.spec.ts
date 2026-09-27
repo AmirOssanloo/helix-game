@@ -6,8 +6,8 @@ import {
   fillZoneCast,
   runEffects,
   runPrimitive,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeCast,

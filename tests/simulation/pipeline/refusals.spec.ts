@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { DomainEvent, Unit, UnitId } from "@domain/public";
-import { acquireUnit, releaseUnit } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { acquireUnit, releaseUnit } from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
   makeRegistry,

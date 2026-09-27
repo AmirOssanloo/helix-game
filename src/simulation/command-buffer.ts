@@ -1,5 +1,5 @@
 import type { AnyCommand, CommandOrder } from "@domain/public";
-import { compareCommandOrder, slotOf } from "@domain/public";
+import { compareCommandOrder, slotOf } from "@domain/rules";
 import { assert } from "@shared/public";
 
 /** Commands one tick can hold. Input arrives a few per frame; the panel's bursts stay well under this. */

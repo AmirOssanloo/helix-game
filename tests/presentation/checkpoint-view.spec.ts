@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { Unit } from "@domain/public";
-import { checkpointSystem } from "@domain/public";
+import { checkpointSystem } from "@domain/rules";
 import type { CheckpointViews } from "@presentation/public";
 import {
   CHECKPOINT_AHEAD_TINT,
@@ -14,8 +14,9 @@ import {
   showCheckpointReached,
 } from "@presentation/public";
 import type { Rect, Vec2 } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   FLAT_PLACEMENT,
   LabelRecorder,

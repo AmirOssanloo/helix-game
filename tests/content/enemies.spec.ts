@@ -24,7 +24,7 @@ import {
   tuningTable,
 } from "@content/public";
 import type { EnemyDef } from "@domain/public";
-import { BEHAVIOUR_KEYS, ID_SHAPE, validateRegistry } from "@domain/public";
+import { BEHAVIOUR_KEYS, ID_SHAPE, validateRegistry } from "@domain/rules";
 import { makeEnemyDef, makeRegistry } from "../helpers";
 
 /** Every fault the content tier finds in the file `id` is written in. */

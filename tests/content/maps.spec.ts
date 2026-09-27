@@ -13,11 +13,12 @@ import {
   isBlockedAt,
   readRadiusClasses,
   validateRegistry,
-} from "@domain/public";
-import { createTuningState } from "@domain/public";
+} from "@domain/rules";
+import { createTuningState } from "@domain/rules";
 import type { Rect } from "@shared/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef, makeRegistry, makeWorld, submit } from "../helpers";
 
 const SMALL_CLASS = 0;

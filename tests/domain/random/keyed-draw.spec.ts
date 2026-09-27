@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
+import type { DrawPurpose } from "@domain/public";
 import {
   DRAW_INDEX_LIMIT,
   DRAW_PURPOSE,
-  type DrawPurpose,
   KEYED_DRAW_RANGE,
   keyedDraw,
   PURPOSE_STRIDE,
-} from "@domain/public";
+} from "@domain/rules";
 import { hash4 } from "@shared/public";
 import { makeWorld } from "../../helpers";
 

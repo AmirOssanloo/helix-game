@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef } from "@content/public";
 import type { DefinitionKey } from "@domain/public";
-import { addModifier, removeModifiers, statsSystem } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { addModifier, removeModifiers, statsSystem } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry, makeWorld, spawnEnemy, submit } from "../../helpers";
 
 /** Where the spec stands its grunts: apart, with no hero to aggro on. */

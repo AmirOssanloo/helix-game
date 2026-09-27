@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { resolveKit } from "@domain/public";
+import { resolveKitSlots } from "@domain/queries";
 import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
@@ -50,7 +50,7 @@ export class HudScene extends Phaser.Scene {
       makeQuad,
       makeLabel,
       frameSizes: (frame) => this.context.atlas.frameWidth(frame),
-      kits: resolveKit,
+      kits: resolveKitSlots,
       flashes: this.context.flashes,
       driver: this.context.driver,
       wedgeSteps: this.context.atlas.wedgeSteps,

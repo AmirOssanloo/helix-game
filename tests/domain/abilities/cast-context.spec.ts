@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AbilityDef } from "@domain/public";
-import { createCastRecord, fillCast } from "@domain/public";
+import { createCastRecord, fillCast } from "@domain/rules";
 import { idOf, makeSpellDef } from "../../helpers";
 
 const ability: AbilityDef = makeSpellDef.build({});

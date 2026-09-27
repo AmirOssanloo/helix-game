@@ -5,7 +5,7 @@ import {
   composeSpell,
   createSpellTable,
   createTuningState,
-} from "@domain/public";
+} from "@domain/rules";
 import { makeSpellDef } from "../../helpers";
 
 const tuning = createTuningState(tuningTable);

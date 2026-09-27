@@ -1,5 +1,5 @@
 import type { ShapeDef, Zone } from "@domain/public";
-import { shapeExtent } from "@domain/public";
+import { shapeExtent } from "@domain/queries";
 import type { DeepReadonly, Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { FrameSizes, Quad } from "../views/quad";

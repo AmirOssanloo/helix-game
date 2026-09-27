@@ -118,7 +118,7 @@ domain/
 ├── entities/      # Entity kinds, their pools, and their state shapes
 │   └── foo.ts
 ├── commands/      # The command union and its ordering rule
-└── public.ts      # The one door into the domain from other layers
+└── public.ts      # The domain's types door
 ```
 
 A tree that mirrors real folders is the single biggest source of drift in a documentation set.

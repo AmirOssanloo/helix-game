@@ -9,7 +9,7 @@ import {
 import type { ContentStatus, PanelHandle } from "@devtools/public";
 import { createDevApi, exposeDevApi, mountPanel } from "@devtools/public";
 import type { Registry } from "@domain/public";
-import { assertRegistryValid, definitionFields } from "@domain/public";
+import { assertRegistryValid, definitionFields } from "@domain/rules";
 import { createRings } from "@instrumentation/public";
 import type { SceneContext } from "@presentation/public";
 import {
@@ -24,7 +24,7 @@ import {
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
-import { Session } from "@simulation/public";
+import { createSession } from "@simulation/public";
 import { reloadContent } from "./content-reload";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
@@ -45,12 +45,11 @@ export const boot: Boot = (): void => {
 
   // The world on the map the maps index names to start on, with the hero at its spawn point;
   // a recreate, a map chosen from the panel, or a loaded log restarts it in place.
-  const session = new Session({
+  const session = createSession({
     seed: drawSessionSeed(),
     registry: contentRegistry,
     mapId: startingMap.id,
   });
-  const world = session.world;
 
   const rings = createRings();
   const driver = new FixedStepDriver({
@@ -70,8 +69,8 @@ export const boot: Boot = (): void => {
   const context: SceneContext = {
     atlas,
     driver,
-    world: world.view,
-    events: world.events,
+    world: session.view,
+    events: session.events,
     rings: { viewMisses: rings.viewMisses, renderTime: rings.renderTime },
     flashes: new SlotFlashes(),
     overlays,
@@ -126,8 +125,8 @@ export const boot: Boot = (): void => {
       const api = createDevApi({
         driver,
         session,
-        view: world.view,
-        events: world.events,
+        view: session.view,
+        events: session.events,
         rings,
         overlays,
         groundPick,

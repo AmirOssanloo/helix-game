@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tuningTable } from "@content/public";
-import { loadMap } from "@domain/public";
 import type { MapDef, PackDef, Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { loadMap } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeMapDef,
   makeWorld,

@@ -1,7 +1,7 @@
 import type { UnitId } from "@domain/public";
 import type { AbilityDef, Cast } from "@domain/public";
-import { createCastRecord, fillCast } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { createCastRecord, fillCast } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeSpellDef } from "../content/make-spell-def";
 import { idOf } from "./ids";
 

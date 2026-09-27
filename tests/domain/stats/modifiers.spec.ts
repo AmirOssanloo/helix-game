@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
 import type { ModifierEntry, ModifierTable, Stat, Stats } from "@domain/public";
+import { STATUS_TABLE_SIZE } from "@domain/queries";
 import {
   addModifier,
   applyModifiers,
   MODIFIER_TABLE_SIZE,
   modifiedValue,
   removeModifiers,
-  STATUS_TABLE_SIZE,
-} from "@domain/public";
+} from "@domain/rules";
 
 /** A modifier table with the given rows live and the rest empty. */
 const table = (

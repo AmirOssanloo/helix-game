@@ -41,7 +41,8 @@ export type LayerImportViolation = Readonly<{
   message: string;
 }>;
 
-type ModuleReference = Readonly<{
+/** One module specifier a file names, with its line and how it is reached. */
+export type ModuleReference = Readonly<{
   specifier: string;
   line: number;
   kind: ModuleReferenceKind;
@@ -63,14 +64,14 @@ const isSourceFile = (path: string): boolean =>
   MODULE_EXTENSIONS.some((extension) => path.endsWith(extension));
 
 /** Loaded on first use, so a spec that imports the helpers barrel does not pay for the compiler. */
-const loadTypeScript = async (): Promise<typeof TypeScript> => {
+export const loadTypeScript = async (): Promise<typeof TypeScript> => {
   const module = await import("typescript");
 
   return module.default;
 };
 
 /** Every module specifier in one file, with its line and how it is reached. */
-const collectModuleReferences = (
+export const collectModuleReferences = (
   ts: typeof TypeScript,
   sourceFile: TypeScript.SourceFile,
 ): ModuleReference[] => {
@@ -134,7 +135,7 @@ const collectModuleReferences = (
 };
 
 /** The layer a specifier lands in, by alias or by relative path, or null when it leaves `src/`. */
-const layerOfSpecifier = (
+export const layerOfSpecifier = (
   specifier: string,
   fileDir: string,
   srcDir: string,

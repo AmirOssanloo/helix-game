@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NO_CONTACT, sweepDisc } from "@domain/public";
+import { NO_CONTACT, sweepDisc } from "@domain/rules";
 
 /** The segment every case sweeps along, unless it says another: a hundred units east of the origin. */
 const LENGTH = 100;

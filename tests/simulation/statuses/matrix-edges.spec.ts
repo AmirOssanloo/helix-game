@@ -15,10 +15,11 @@ import {
   applyDamage,
   applyStatus,
   remainingCooldownTicks,
-} from "@domain/public";
+} from "@domain/rules";
 import { createGroundPick, InputMapper } from "@presentation/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   always,
   CommandRecorder,

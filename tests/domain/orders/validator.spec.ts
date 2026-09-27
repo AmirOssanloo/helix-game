@@ -11,7 +11,7 @@ import {
   createUnitPool,
   validateCommand,
   validateDebugCommand,
-} from "@domain/public";
+} from "@domain/rules";
 import { idOf } from "../../helpers";
 
 /** What the validator decides on: every player command; a tuning change and a debug command never reach a unit. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Attributes, ModifierEntry, Stats } from "@domain/public";
-import { attributesAt, deriveStats } from "@domain/public";
+import { attributesAt, deriveStats } from "@domain/rules";
 import { makeFormDef } from "../../helpers";
 
 /** Round numbers a row is checked against by hand: every point of strength is 20 health and 0.1 regeneration, every point of intelligence 10 mana and 0.05 regeneration. */

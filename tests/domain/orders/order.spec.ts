@@ -11,7 +11,7 @@ import {
   issueMove,
   resumeOrder,
   suspendOrder,
-} from "@domain/public";
+} from "@domain/rules";
 import { idOf } from "../../helpers";
 
 /** The unit the orders in these specs are aimed at; no pool minted it, and none resolves it. */

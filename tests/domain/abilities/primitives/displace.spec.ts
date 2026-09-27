@@ -6,8 +6,8 @@ import type {
   PushDirection,
   Unit,
 } from "@domain/public";
-import { runPrimitive, statusSystem } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { runPrimitive, statusSystem } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
 /** The step rate the world runs at, which is what a duration in seconds becomes ticks under. */

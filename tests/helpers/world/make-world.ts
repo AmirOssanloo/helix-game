@@ -1,6 +1,6 @@
 import type { MapDef, Registry } from "@domain/public";
-import type { Simulation } from "@simulation/public";
-import { createWorld } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
+import { createWorld } from "@simulation/testing";
 import { makeMapDef } from "../content/make-map-def";
 import { makeRegistry } from "../content/make-registry";
 

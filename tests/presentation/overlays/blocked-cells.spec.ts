@@ -5,7 +5,7 @@ import {
   cellCentreY,
   isCellBlocked,
   radiusClassOf,
-} from "@domain/public";
+} from "@domain/queries";
 import { createOverlayToggles, Projection } from "@presentation/public";
 import type { Rect, Vec2 } from "@shared/public";
 import {

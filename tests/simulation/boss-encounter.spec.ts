@@ -8,9 +8,11 @@ import {
   tuningTable,
 } from "@content/public";
 import type { UnitId } from "@domain/public";
-import { ENEMY_LIVE_CAP } from "@domain/public";
-import type { Replay, WorldView } from "@simulation/public";
-import { beginReplay, createEventReader } from "@simulation/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
+import type { WorldView } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
+import type { Replay } from "@simulation/testing";
+import { beginReplay } from "@simulation/testing";
 import { loadInputLog, makeRegistry } from "../helpers";
 
 /**

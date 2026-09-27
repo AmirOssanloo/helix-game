@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { crusherDef, slamDef, tuningTable } from "@content/public";
-import { mitigate } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { mitigate } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { arrangeArchetype, describeArchetype, tickUntil } from "../../helpers";
 
 /** The archetype under test, as content writes it. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Effect, EffectId, Pool } from "@domain/public";
-import { createEffectPool, EFFECT_CAPACITY } from "@domain/public";
+import { createEffectPool, EFFECT_CAPACITY } from "@domain/rules";
 import { idOf } from "../../helpers";
 
 const fillPool = (pool: Pool<Effect, EffectId>): void => {

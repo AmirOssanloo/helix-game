@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { WalkabilityView } from "@domain/public";
-import { isCellBlocked, loadMap } from "@domain/public";
+import { isCellBlocked } from "@domain/queries";
+import { loadMap } from "@domain/rules";
 import type { WorldView } from "@simulation/public";
 import { makeMapDef, makeWorld } from "../../helpers";
 

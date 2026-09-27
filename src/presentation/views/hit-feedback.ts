@@ -1,6 +1,6 @@
 import type { UnitId } from "@domain/public";
 import type { DamageType, DomainEvent, Tick } from "@domain/public";
-import { DAMAGE_TYPES, readTunable, UNIT_CAPACITY } from "@domain/public";
+import { DAMAGE_TYPES, readTunable, UNIT_CAPACITY } from "@domain/queries";
 import { unpackIndex } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { FloatingNumberViews } from "./floating-number.view";

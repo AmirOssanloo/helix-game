@@ -17,7 +17,7 @@ import {
   createTuningState,
   ID_SHAPE,
   validateRegistry,
-} from "@domain/public";
+} from "@domain/rules";
 import {
   always,
   FROST_VOLLEY,

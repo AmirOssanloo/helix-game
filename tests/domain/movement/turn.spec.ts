@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isInsideCone, turnToward } from "@domain/public";
+import { isInsideCone, turnToward } from "@domain/rules";
 
 const TWO_PI = Math.PI * 2;
 

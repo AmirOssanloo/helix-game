@@ -1,4 +1,4 @@
-import { SLOT_COUNT } from "@domain/public";
+import { SLOT_COUNT } from "@domain/queries";
 import type { Rect } from "@shared/public";
 
 /**

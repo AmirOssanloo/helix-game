@@ -1,6 +1,7 @@
 import type { Registry } from "@domain/public";
-import { describeRegistryFaults, validateRegistry } from "@domain/public";
-import type { CommandStamps, Session } from "@simulation/public";
+import { describeRegistryFaults, validateRegistry } from "@domain/rules";
+import type { CommandStamps } from "@simulation/public";
+import type { SessionHandle } from "@simulation/public";
 
 /**
  * What a content reload came to: taken into the running session, refused with the session on
@@ -24,7 +25,7 @@ const plural = (count: number, noun: string): string =>
  * changes that no tuning command has moved becomes a `set_tuning` command for the next tick.
  */
 export const reloadContent = (
-  session: Session,
+  session: SessionHandle,
   stamps: CommandStamps,
   next: Registry,
 ): ContentReload => {

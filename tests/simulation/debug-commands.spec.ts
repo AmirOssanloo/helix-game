@@ -6,9 +6,10 @@ import type {
   FormRecord,
   Unit,
 } from "@domain/public";
-import { applyStatus, createDisableFlags, startCooldown } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { applyStatus, createDisableFlags, startCooldown } from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeFormDef,

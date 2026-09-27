@@ -1,6 +1,6 @@
 import type {
   DomainEvent,
-  Kit,
+  KitSlots,
   RefusalReason,
   SlotDescriptor,
   Tick,
@@ -13,7 +13,7 @@ import {
   skillPointRefusal,
   SLOT_COUNT,
   slotReadiness,
-} from "@domain/public";
+} from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 import type { CommandDriver } from "../scene-context";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
@@ -48,7 +48,7 @@ import type { SlotFlashes } from "./slot-flashes";
 import { refusalFlashTicks } from "./slot-flashes";
 
 /** The kit registered under a form's kit key, or `null`. The scene hands the domain registry's; a test hands a fake. */
-export type KitResolver = (key: string) => Kit | null;
+export type KitResolver = (key: string) => KitSlots | null;
 
 /** Everything the bar is built over. It holds these and its views, and nothing else. */
 export type HudPorts = Readonly<{

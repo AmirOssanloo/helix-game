@@ -6,7 +6,7 @@ import {
   skeinDef,
   tuningTable,
 } from "@content/public";
-import { KIT_KEYS, ORB_COUNT } from "@domain/public";
+import { KIT_KEYS, ORB_COUNT } from "@domain/rules";
 
 const ID_SHAPE = /^[a-z][a-z0-9_]*$/;
 

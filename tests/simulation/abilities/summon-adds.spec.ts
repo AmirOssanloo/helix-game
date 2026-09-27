@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { impDef, summonAddsDef, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { EnemyDef, Unit } from "@domain/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
 import {
   applyDamage,
   applyStatus,
-  ENEMY_LIVE_CAP,
   isHostile,
   remainingCooldownTicks,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeAttackDef,
   makeEnemyDef,

@@ -7,14 +7,12 @@ import type {
   Unit,
 } from "@domain/public";
 import {
-  castReadiness,
   createAbilityRequest,
-  createUnitPool,
   isInCastRange,
-  requestCast,
   slotReadiness,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/queries";
+import { castReadiness, createUnitPool, requestCast } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
   makeRegistry,

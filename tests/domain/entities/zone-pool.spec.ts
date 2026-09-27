@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pool, Zone, ZoneId } from "@domain/public";
-import { createZonePool, ZONE_CAPACITY } from "@domain/public";
+import { ZONE_CAPACITY } from "@domain/queries";
+import { createZonePool } from "@domain/rules";
 import { idOf, makeSpellDef } from "../../helpers";
 
 const fillPool = (pool: Pool<Zone, ZoneId>): void => {

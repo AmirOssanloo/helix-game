@@ -78,7 +78,7 @@ type DebugCommand =
 
 Enforced by:
 
-- The layer allow-list in the ESLint flat config: `presentation` and `devtools` import `simulation/public` only, which exports the command submission function and the `Readonly` world view and nothing mutable.
+- The layer allow-list and the door table in the ESLint flat config: `presentation` and `devtools` import `simulation/public`, which exports the command submission function, the `Readonly` world view, and the event ring's read port and nothing mutable, and the domain's types and queries doors, never its rules. The architecture test holds the same doors.
 - The lint rule banning casts away from the `Readonly` world view outside `src/simulation`.
 - The command and debug-command unions under `src/domain/commands/`, which are the complete list of ways the world can change; a `SetTuning` key outside the tuning table is a type error.
 - The replay determinism test under `tests/simulation/`, which fails if any write reaches the world without passing through the log.

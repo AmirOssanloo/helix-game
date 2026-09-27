@@ -1,5 +1,5 @@
 import type { RefusalReason, Tick } from "@domain/public";
-import { readTunable, SLOT_COUNT } from "@domain/public";
+import { readTunable, SLOT_COUNT } from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 
 /** What a square flashes for: mana is red, a clock grey, a disable or death striped, and any other refusal a plain white blink. */

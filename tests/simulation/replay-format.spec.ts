@@ -5,18 +5,17 @@ import {
   copyTunableDefinitions,
   createDefinitionSlots,
   definitionFields,
-} from "@domain/public";
+} from "@domain/rules";
 import type { InputLogFile } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
 import {
   beginReplay,
   checkReplayable,
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   Replay,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import { makeMapDef, makeRegistry, submit } from "../helpers";
 
 const SEED = 5;

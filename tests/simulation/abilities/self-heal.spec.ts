@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { selfHealDef, statuses, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { DomainEvent, EnemyDef, Unit } from "@domain/public";
-import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { applyStatus, remainingCooldownTicks } from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeAttackDef,
   makeEnemyDef,

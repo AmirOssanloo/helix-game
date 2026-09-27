@@ -7,17 +7,16 @@ import type {
   InputLogFile,
   WorldView,
 } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
 import {
   beginReplay,
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
   mapOfLog,
-  parseInputLogFile,
   Replay,
   serializeInputLog,
   Session,
-} from "@simulation/public";
+} from "@simulation/testing";
 import type { MakeRegistryOptions } from "../helpers";
 import { makeMapDef, makeRegistry, submit } from "../helpers";
 

@@ -1,5 +1,5 @@
 import type { ShapeDef, Zone, ZoneId } from "@domain/public";
-import { shapeExtent, ZONE_CAPACITY } from "@domain/public";
+import { shapeExtent, ZONE_CAPACITY } from "@domain/queries";
 import type { DeepReadonly, Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "./depth-bands";

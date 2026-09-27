@@ -7,16 +7,15 @@ import {
   tuningTable,
 } from "@content/public";
 import type { MapDef, PackDef, Unit } from "@domain/public";
-import { applyDamage } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage } from "@domain/rules";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   beginReplay,
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import {
   idOf,
   makeMapDef,

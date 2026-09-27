@@ -1,6 +1,6 @@
 import type { Unit } from "@domain/public";
-import { acquireHero, activeFormOf } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { acquireHero, activeFormOf } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * Where the hero stands, which way it faces, and the level of each orb skill on its first

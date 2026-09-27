@@ -10,14 +10,14 @@ import type {
   Unit,
   UnitId,
 } from "@domain/public";
+import { isClosed } from "@domain/queries";
 import {
   answerOf,
-  isClosed,
   SLOT_COLUMNS,
   slotRefusal,
   validateCommand,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
   makeRegistry,

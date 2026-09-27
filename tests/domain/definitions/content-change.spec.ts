@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry, meleeGruntDef } from "@content/public";
 import type { EnemyDef, Registry } from "@domain/public";
-import { contentChangeOf, createTuningState } from "@domain/public";
+import { contentChangeOf, createTuningState } from "@domain/rules";
 import { makeRegistry, makeWorld } from "../../helpers";
 
 const GRUNT_HEALTH = "def:enemy:melee_grunt:health";

@@ -12,16 +12,16 @@ import {
 } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { AnyCommand, DomainEvent, Unit } from "@domain/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
 import {
   acquireUnit,
   applyDamage,
-  ENEMY_LIVE_CAP,
   fillFromDefinition,
   remainingCooldownTicks,
   wearDefinition,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeEnemyDef,
   makeRegistry,

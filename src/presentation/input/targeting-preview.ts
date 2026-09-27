@@ -10,7 +10,7 @@ import {
   isInCastRange,
   scalarAtOrbLevels,
   UNIT_CAPACITY,
-} from "@domain/public";
+} from "@domain/queries";
 import type { DeepReadonly, Vec2 } from "@shared/public";
 import { bearing } from "@shared/public";
 import type { WorldView } from "@simulation/public";

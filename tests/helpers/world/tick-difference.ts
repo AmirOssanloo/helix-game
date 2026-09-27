@@ -1,6 +1,6 @@
 import type { World } from "@domain/public";
 import type { DeepReadonly } from "@shared/public";
-import { stateDifference } from "@simulation/public";
+import { stateDifference } from "@simulation/testing";
 
 /**
  * The first thing the two worlds disagree on this tick, with both values, or `null`: the full

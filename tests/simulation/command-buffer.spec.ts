@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AnyCommand } from "@domain/public";
-import { COMMAND_BUFFER_CAPACITY, CommandBuffer } from "@simulation/public";
+import { COMMAND_BUFFER_CAPACITY, CommandBuffer } from "@simulation/testing";
 
 const CAPACITY = 3;
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { FormRecord, Unit } from "@domain/public";
-import { INVOKE_ID, loadMap } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { INVOKE_ID, loadMap } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeFormDef,

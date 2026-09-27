@@ -1,13 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
-import {
-  acquireUnit,
-  createCandidateBuffer,
-  releaseUnit,
-  UNIT_CAPACITY,
-  loadMap,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/queries";
+import { acquireUnit, releaseUnit, loadMap } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeMapDef,
   makeRegistry,

@@ -1,19 +1,16 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { meleeGruntDef } from "@content/public";
 import type { Unit } from "@domain/public";
+import { readTunable, UNIT_CAPACITY } from "@domain/queries";
+import { walkabilityCovers, loadMap } from "@domain/rules";
+import { createEventReader } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
 import {
-  readTunable,
-  UNIT_CAPACITY,
-  walkabilityCovers,
-  loadMap,
-} from "@domain/public";
-import {
-  createEventReader,
   createSessionWorld,
   nextFloat,
   serializeInputLog,
-} from "@simulation/public";
-import type { Simulation, WorldView } from "@simulation/public";
+} from "@simulation/testing";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeMapDef,

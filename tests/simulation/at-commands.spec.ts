@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { arenaDef, heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
   makeMapDef,

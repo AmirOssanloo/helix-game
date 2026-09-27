@@ -1,6 +1,6 @@
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry } from "../content/make-registry";
 import { makeWorld } from "./make-world";
 import { spawnEnemy } from "./spawn-enemy";

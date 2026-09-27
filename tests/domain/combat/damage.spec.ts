@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { DamageType, Unit } from "@domain/public";
-import { addModifier, applyDamage, releaseUnit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { addModifier, applyDamage, releaseUnit } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry, makeWorld, spawnUnit } from "../../helpers";
 
 /** The health the target starts with, well above anything the spec deals. */

@@ -8,17 +8,20 @@ import {
 } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { SetTuningCommand, SpawnPackCommand, Unit } from "@domain/public";
-import { definitionFields, readTunable, TUNING_KEYS } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { readTunable, TUNING_KEYS } from "@domain/queries";
+import { definitionFields } from "@domain/rules";
+import {
+  createEventReader,
+  isReplayRefusal,
+  parseInputLogFile,
+} from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   beginReplay,
   contentVersionOf,
-  createEventReader,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

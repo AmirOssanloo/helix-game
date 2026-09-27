@@ -19,7 +19,7 @@ import {
   WorldCamera,
 } from "@presentation/public";
 import type { Rect, Vec2 } from "@shared/public";
-import { createRandomState, nextFloat } from "@simulation/public";
+import { createRandomState, nextFloat } from "@simulation/testing";
 import { Readout } from "./readout";
 
 /**

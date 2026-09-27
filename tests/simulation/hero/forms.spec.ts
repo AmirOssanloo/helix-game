@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeFormDef,

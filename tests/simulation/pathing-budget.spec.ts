@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { acquireUnit, issueMove } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { acquireUnit, issueMove } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeMapDef,
   makeRegistry,

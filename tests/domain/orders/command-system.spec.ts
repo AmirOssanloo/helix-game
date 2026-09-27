@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DomainEvent, TuningKey } from "@domain/public";
-import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnHero, submit } from "../../helpers";
 
 /** Submits a tuning change of `key` to `value` for the world's current tick. */

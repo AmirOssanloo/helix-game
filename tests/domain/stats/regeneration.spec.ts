@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Resources, Stats } from "@domain/public";
-import { regenerate, restoreHealth } from "@domain/public";
+import { regenerate, restoreHealth } from "@domain/rules";
 
 const stats = (overrides: Partial<Stats> = {}): Stats => ({
   maxHealth: 100,

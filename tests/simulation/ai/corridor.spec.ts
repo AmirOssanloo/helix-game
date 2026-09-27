@@ -6,8 +6,8 @@ import {
   meleeGruntDef,
 } from "@content/public";
 import type { Unit } from "@domain/public";
-import { applyDamage } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

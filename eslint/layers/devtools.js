@@ -1,12 +1,12 @@
 /** One block: the devtools layer. eslint.config.js orders it against the rest. */
 
 import { forbiddenFor } from "../matrix.js";
-import { DOMAIN_FACADE, SIMULATION_FACADE } from "../rules/facades.js";
+import { doorsFor, NO_TESTING_DOOR } from "../rules/facades.js";
 import { NO_PHASER_IMPORT } from "../rules/no-phaser-import.js";
 
 /**
  * The developer panel: plain DOM outside the canvas that submits commands and reads the view
- * and the rings. It enters the two inner layers only through their public doors, and it may
+ * and the rings. It enters each layer it may import only through the doors open to it, and it may
  * warn and error to the console because a panel failure has nowhere else to go.
  */
 export const devtoolsLayer = {
@@ -18,8 +18,8 @@ export const devtoolsLayer = {
       {
         patterns: [
           forbiddenFor("devtools"),
-          DOMAIN_FACADE,
-          SIMULATION_FACADE,
+          ...doorsFor("devtools"),
+          NO_TESTING_DOOR,
           NO_PHASER_IMPORT,
         ],
       },

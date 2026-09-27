@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import { applyDamage, applyStatus, releaseUnit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage, applyStatus, releaseUnit } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnUnit, tickUntil } from "../../helpers";
 
 /** Long enough that nothing this spec ticks reaches the end of a status. */

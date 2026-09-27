@@ -7,9 +7,9 @@ import {
   pushOutOfRect,
   separateDiscs,
   separateFromHeld,
-} from "@domain/public";
+} from "@domain/rules";
 import type { Rect, Vec2 } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

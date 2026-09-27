@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { DamageType, DomainEvent, Unit } from "@domain/public";
-import { acquireUnit, releaseUnit } from "@domain/public";
+import { acquireUnit, releaseUnit } from "@domain/rules";
 import type { FloatingNumberViews } from "@presentation/public";
 import {
   createFloatingNumberViews,
@@ -13,7 +13,7 @@ import {
   HitNumbers,
   showHit,
 } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   FEEDBACK_TIMINGS,
   FLAT_PLACEMENT,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { DamageType, Stats } from "@domain/public";
-import { mitigate } from "@domain/public";
+import { mitigate } from "@domain/rules";
 
 /** The armour curve's constant as content tunes it, which is what the game mitigates under. */
 const CONSTANT = tuningTable.armour_constant;

@@ -1,6 +1,7 @@
 /** One block: the simulation layer. eslint.config.js orders it against the rest. */
 
 import { forbiddenFor } from "../matrix.js";
+import { doorsFor, NO_TESTING_DOOR } from "../rules/facades.js";
 import { NO_AMBIENT_TIME_IN_SIMULATION } from "../rules/no-ambient-time-in-simulation.js";
 import { NO_DOM_GLOBALS } from "../rules/no-dom-in-simulation.js";
 import { NO_PHASER_IMPORT } from "../rules/no-phaser-import.js";
@@ -31,7 +32,14 @@ export const simulationLayer = {
     "no-restricted-globals": ["error", ...NO_DOM_GLOBALS],
     "@typescript-eslint/no-restricted-imports": [
       "error",
-      { patterns: [forbiddenFor("simulation"), NO_PHASER_IMPORT] },
+      {
+        patterns: [
+          forbiddenFor("simulation"),
+          ...doorsFor("simulation"),
+          NO_TESTING_DOOR,
+          NO_PHASER_IMPORT,
+        ],
+      },
     ],
   },
 };

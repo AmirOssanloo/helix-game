@@ -1,5 +1,5 @@
 import type { AnyCommand } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 
 /** Submits `command` and fails loudly if the world refuses it, so a full buffer or a disposed world is never silent in a test. */
 export const submit = (world: Simulation, command: AnyCommand): void => {

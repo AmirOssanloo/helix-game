@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
 import { CameraFrame } from "../camera/camera-frame";
 import { GroundLayer } from "../camera/ground-layer";

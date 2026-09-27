@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Zone } from "@domain/public";
-import { acquireZone } from "@domain/public";
+import { acquireZone } from "@domain/rules";
 import type { ZoneViewPool } from "@presentation/public";
 import {
   createZoneViewPool,
@@ -8,7 +8,7 @@ import {
   syncZoneViews,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, QuadRecorder, SYNC_FIELDS } from "../helpers";
 
 /** Every frame the test atlas holds is this wide, so a scale reads as a world size over it. */

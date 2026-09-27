@@ -1,5 +1,5 @@
 import type { DomainEvent } from "@domain/public";
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { VIEW_SCREEN_MARGIN } from "../camera/camera-frame";

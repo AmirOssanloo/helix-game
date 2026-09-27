@@ -63,7 +63,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a session is made under another seed, how a loaded log runs on its own map, and how a map change keeps the run | `src/simulation/session.ts` — recreating under a seed, loading a log, and saving one that names its starting map; `src/domain/map/load-map.ts` — what a `load_map` command does |
 | How a session is recorded and replayed | `src/simulation/input-log.ts` records it; `src/simulation/replay/` replays it |
 | How many events the ring holds, and how a reader counts what it lost | `src/simulation/event-ring.ts` — the capacity at the top, and the reader's cursor |
-| What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |
+| What other layers may see of the simulation | `src/simulation/public.ts`, `src/domain/public.ts`, and `src/domain/queries.ts` — the exports are the whole surface; `src/domain/rules.ts` adds what the simulation and the composition root call |
+| Which doors each layer may import | `LAYER_DOORS` in `eslint/matrix.js` |
 | Which scenes exist | `src/presentation/scenes/` — one `*.scene.ts` file per scene |
 | Which steps the play scene's frame runs, in what order, and what they share | `src/presentation/scenes/play-view-syncers.ts` — the order table and the list the composition root registers; `play-stage.ts` is what the steps share, and `view-syncers.ts` the list that makes and walks them |
 | How a world point becomes a screen point, and the scale the ground is drawn at | `src/presentation/camera/projection.ts` — the projection and its scale constant |

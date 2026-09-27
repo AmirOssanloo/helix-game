@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { HeroDef } from "@domain/public";
-import {
-  createFormRecords,
-  createTuningState,
-  ORB_COUNT,
-} from "@domain/public";
+import { createFormRecords, createTuningState, ORB_COUNT } from "@domain/rules";
 import { makeAttackDef, makeFormDef } from "../../helpers";
 
 /** The tuning table at 30 Hz, three orbs, and two prepared slots, in simulation units. */

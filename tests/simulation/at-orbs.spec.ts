@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { DomainEvent } from "@domain/public";
-import { orbAt } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { orbAt } from "@domain/queries";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnHero, submit } from "../helpers";
 
 const QUARTZ = 0;

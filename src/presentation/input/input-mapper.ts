@@ -1,6 +1,10 @@
 import type { UnitId } from "@domain/public";
 import type { AnyCommand, CastTarget } from "@domain/public";
-import { createCandidateBuffer, isClosed, UNIT_CAPACITY } from "@domain/public";
+import {
+  createCandidateBuffer,
+  isClosed,
+  UNIT_CAPACITY,
+} from "@domain/queries";
 import type { Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";

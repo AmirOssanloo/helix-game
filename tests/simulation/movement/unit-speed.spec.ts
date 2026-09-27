@@ -7,10 +7,10 @@ import {
   tuningTable,
 } from "@content/public";
 import type { EnemyDef, Unit } from "@domain/public";
-import { addModifier } from "@domain/public";
+import { addModifier } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
 import { distanceSquared, shortestArc } from "@shared/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeEnemyDef,
   makeRegistry,

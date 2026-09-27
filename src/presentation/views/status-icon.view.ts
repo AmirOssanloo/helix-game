@@ -1,6 +1,6 @@
 import type { UnitId } from "@domain/public";
 import type { StatusRecord, Unit } from "@domain/public";
-import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/public";
+import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/queries";
 import type { DeepReadonly, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";

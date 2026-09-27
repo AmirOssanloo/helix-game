@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CommandOrder } from "@domain/public";
-import { compareCommandOrder, slotOf } from "@domain/public";
+import { compareCommandOrder, slotOf } from "@domain/rules";
 
 const order = (
   timestamp: number,

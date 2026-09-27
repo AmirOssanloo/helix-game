@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
-import { createTuningState, createUnitTable } from "@domain/public";
+import { createTuningState, createUnitTable } from "@domain/rules";
 import { makeEnemyDef, makeSummonDef } from "../../helpers";
 
 /** The tuning table at 30 Hz, in simulation units. */

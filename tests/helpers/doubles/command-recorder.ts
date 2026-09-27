@@ -1,6 +1,6 @@
 import type { AnyCommand } from "@domain/public";
 import type { InputDriver } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 
 /**
  * A driver for an input test: stamps commands with the world's tick and a clock that counts

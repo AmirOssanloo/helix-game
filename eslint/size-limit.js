@@ -21,8 +21,6 @@ const MAP_DEFINITIONS = "src/content/maps/**/*.ts";
 export const OVER_THE_LIMIT = {
   "src/domain/movement/spatial-hash.ts":
     "the grid, its queries, and their scratch in one module; splits by query",
-  "src/domain/public.ts":
-    "the domain's door re-exports every module; shrinks when the door is narrowed",
 };
 
 export const sizeLimit = [

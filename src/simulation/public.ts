@@ -1,56 +1,29 @@
-export { COMMAND_BUFFER_CAPACITY, CommandBuffer } from "./command-buffer";
+/**
+ * The simulation's door: what the layers past it hold of a running world. A session's handle
+ * to make, step, and save one, the world's read-only view, and the event ring's read port.
+ * The world itself, its systems, its command buffer, its random source, and the replay are
+ * behind the door, and only tests reach them, through ./testing.ts.
+ *
+ * @see docs/architecture/layers-and-dependency-rule.md#the-public-doors
+ */
 export {
   createEventReader,
-  EVENT_RING_CAPACITY,
   type EventReader,
-  EventRing,
+  type EventRingView,
 } from "./event-ring";
-export { InputLog } from "./input-log";
-export { createRandomState, nextFloat, nextInt, seedRandom } from "./random";
-export {
-  contentVersionOf,
-  PRESENTATION_FIELDS,
-  strictContentVersionOf,
-} from "./replay/content-version";
 export {
   type InputLogFile,
   type InputLogRecord,
   isReplayRefusal,
   parseInputLogFile,
   type ReplayRefusal,
-  serializeInputLog,
 } from "./replay/input-log-file";
-export type { ExcludedPath, Leaf, LeafKind } from "./replay/field-list";
-export { createHasher, type Hasher } from "./replay/hash-words";
-export {
-  checksumMismatch,
-  CHECKSUM_INTERVAL,
-  recordChecksums,
-  type StateChecksum,
-  STATE_EXCLUDED,
-  STATE_LEAVES,
-  stateChecksum,
-  stateDifference,
-} from "./replay/state-checksum";
-export {
-  beginReplay,
-  checkReplayable,
-  mapOfLog,
-  Replay,
-  type ReplayOptions,
-} from "./replay/replay";
 export {
   type CommandStamps,
-  Session,
+  createSession,
+  type SessionHandle,
   type SessionOptions,
   type SessionRetune,
 } from "./session";
-export { createSessionWorld, restartSessionWorld } from "./session-world";
-export { type System, systems } from "./systems";
-export {
-  type CreateWorldOptions,
-  createWorld,
-  Simulation,
-  type Steppable,
-} from "./world";
+export type { Steppable } from "./world";
 export type { WorldView } from "./world-view";

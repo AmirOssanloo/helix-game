@@ -1,6 +1,6 @@
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import { setStraightPath } from "@domain/public";
+import { setStraightPath } from "@domain/rules";
 import type { OverlayToggles, ScreenPlacement } from "@presentation/public";
 import {
   createOverlayToggles,
@@ -8,7 +8,8 @@ import {
   ScreenUnits,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
-import type { Simulation, WorldView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeMapDef } from "../content/make-map-def";
 import { FixedHash } from "../doubles/fixed-hash";
 import { FLAT_PLACEMENT } from "../doubles/flat-placement";

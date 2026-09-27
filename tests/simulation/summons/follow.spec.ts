@@ -7,8 +7,8 @@ import type {
   SummonDef,
   Unit,
 } from "@domain/public";
-import { runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   makeAttackDef,
   makeCast,

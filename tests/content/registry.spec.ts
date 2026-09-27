@@ -9,12 +9,12 @@ import type {
   StatusDef,
   SummonDef,
 } from "@domain/public";
+import { ENEMY_LIVE_CAP } from "@domain/queries";
 import {
   assertRegistryValid,
-  ENEMY_LIVE_CAP,
   MAX_CARRIED_STATUSES,
   validateRegistry,
-} from "@domain/public";
+} from "@domain/rules";
 import {
   makeAbilityDef,
   makeEnemyDef,

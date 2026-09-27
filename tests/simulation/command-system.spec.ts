@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeWorld,
   spawnHero,

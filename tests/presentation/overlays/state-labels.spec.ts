@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acquireUnit, applyDamage } from "@domain/public";
+import { acquireUnit, applyDamage } from "@domain/rules";
 import { Projection } from "@presentation/public";
 import type { Vec2 } from "@shared/public";
 import {

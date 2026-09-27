@@ -1,14 +1,14 @@
 import type { Registry } from "@domain/public";
-import type { InputLogFile, StateChecksum } from "@simulation/public";
+import type { InputLogFile } from "@simulation/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
+import type { StateChecksum } from "@simulation/testing";
 import {
   beginReplay,
   checksumMismatch,
   contentVersionOf,
-  isReplayRefusal,
   mapOfLog,
-  parseInputLogFile,
   recordChecksums,
-} from "@simulation/public";
+} from "@simulation/testing";
 
 /** One stored log as it sits on disk: its file name and its text. */
 export type StoredLog = Readonly<{

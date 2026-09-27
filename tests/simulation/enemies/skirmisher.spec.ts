@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { arrowDef, skirmisherDef, tuningTable } from "@content/public";
-import { mitigate } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { mitigate } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import {
   arrangeArchetype,
   describeArchetype,

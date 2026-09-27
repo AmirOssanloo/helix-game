@@ -4,7 +4,7 @@ import {
   nextFloat,
   nextInt,
   seedRandom,
-} from "@simulation/public";
+} from "@simulation/testing";
 
 describe("random source", () => {
   it("produces the same sequence from the same seed", () => {

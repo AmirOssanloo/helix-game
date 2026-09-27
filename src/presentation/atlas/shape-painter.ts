@@ -1,5 +1,5 @@
 import type { AtlasFrameDef, AtlasShape } from "@domain/public";
-import { coneHalfAngle } from "@domain/public";
+import { coneHalfAngle } from "@domain/queries";
 import {
   type AtlasLayout,
   FRAME_GUTTER,

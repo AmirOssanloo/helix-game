@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { UnitId } from "@domain/public";
 import type { ApplyStatusEffectDef, Unit } from "@domain/public";
-import { runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { runPrimitive } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
 /** The step rate the world runs at, which is what a duration in seconds becomes ticks under. */

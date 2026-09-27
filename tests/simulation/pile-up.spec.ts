@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { acquireUnit } from "@domain/public";
-import type { Simulation, WorldView } from "@simulation/public";
+import { acquireUnit } from "@domain/rules";
+import type { WorldView } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, tickUntil } from "../helpers";
 
 /** A unit as the view shows it: read-only at every depth. */

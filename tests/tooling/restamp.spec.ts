@@ -3,13 +3,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { arenaDef, contentRegistry } from "@content/public";
 import type { Registry } from "@domain/public";
+import { isReplayRefusal, parseInputLogFile } from "@simulation/public";
 import {
   contentVersionOf,
   createSessionWorld,
-  isReplayRefusal,
-  parseInputLogFile,
   serializeInputLog,
-} from "@simulation/public";
+} from "@simulation/testing";
 import type { StoredLog } from "../../tooling/restamp-logs";
 import { restampLogs } from "../../tooling/restamp-logs";
 import { makeRegistry, REPOSITORY_ROOT, submit } from "../helpers";

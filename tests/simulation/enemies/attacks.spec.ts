@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { meleeGruntDef, rangedArcherDef, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { DomainEvent, EnemyDef, Unit } from "@domain/public";
-import { applyStatus, mitigate } from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+import { applyStatus, mitigate } from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeRegistry,
   makeWorld,

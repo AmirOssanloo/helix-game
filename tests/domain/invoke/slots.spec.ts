@@ -4,7 +4,7 @@ import {
   indexOfPrepared,
   insertPrepared,
   promotePrepared,
-} from "@domain/public";
+} from "@domain/rules";
 
 /** Two prepared slots holding `prepared`, newest first. */
 const slots = (prepared: (string | null)[]): KitState => ({

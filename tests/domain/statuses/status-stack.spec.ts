@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StackRule, StatusEntry, UnitId } from "@domain/public";
-import { createUnitPool, STATUS_TABLE_SIZE, writeStatus } from "@domain/public";
+import { STATUS_TABLE_SIZE } from "@domain/queries";
+import { createUnitPool, writeStatus } from "@domain/rules";
 import { idOf } from "../../helpers";
 
 /** The tick every first application in this spec ends on, and the later one a second gives. */

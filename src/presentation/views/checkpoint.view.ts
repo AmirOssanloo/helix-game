@@ -1,5 +1,5 @@
 import type { DomainEvent } from "@domain/public";
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import type { Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "./depth-bands";

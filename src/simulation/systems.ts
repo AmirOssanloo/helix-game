@@ -14,7 +14,7 @@ import {
   statsSystem,
   statusSystem,
   zoneSystem,
-} from "@domain/public";
+} from "@domain/rules";
 
 /** A per-tick pass over world state. It reads the world, the tick count, and the random source, and nothing else. */
 export type System = (world: World) => void;

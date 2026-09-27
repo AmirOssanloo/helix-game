@@ -7,9 +7,9 @@ import type {
   SummonDef,
   Unit,
 } from "@domain/public";
-import { runPrimitive, STATUS_NEVER_ENDS } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { runPrimitive, STATUS_NEVER_ENDS } from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeCast,
   makeRegistry,

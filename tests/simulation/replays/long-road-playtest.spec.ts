@@ -4,8 +4,9 @@ import { longRoadDef } from "@content/public";
 import type { FeedbackFile } from "@devtools/public";
 import { isFeedbackRefusal, readFeedbackFile } from "@devtools/public";
 import type { PackRecord } from "@domain/public";
-import type { InputLogFile, Replay } from "@simulation/public";
-import { beginReplay } from "@simulation/public";
+import type { InputLogFile } from "@simulation/public";
+import type { Replay } from "@simulation/testing";
+import { beginReplay } from "@simulation/testing";
 import { loadInputLog, makeRegistry, tickDifference } from "../../helpers";
 
 /**

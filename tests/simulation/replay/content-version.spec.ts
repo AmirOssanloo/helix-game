@@ -5,7 +5,7 @@ import {
   contentVersionOf,
   PRESENTATION_FIELDS,
   strictContentVersionOf,
-} from "@simulation/public";
+} from "@simulation/testing";
 
 /** One value in a definition that is not an object or a list, with where it sits. */
 type Leaf = Readonly<{

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Pool, Projectile, ProjectileId } from "@domain/public";
-import { createProjectilePool, PROJECTILE_CAPACITY } from "@domain/public";
+import { PROJECTILE_CAPACITY } from "@domain/queries";
+import { createProjectilePool } from "@domain/rules";
 import { idOf, makeSpellDef } from "../../helpers";
 
 const fillPool = (pool: Pool<Projectile, ProjectileId>): void => {

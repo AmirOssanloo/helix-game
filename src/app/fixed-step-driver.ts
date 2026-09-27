@@ -1,5 +1,5 @@
 import type { AnyCommand, Tick } from "@domain/public";
-import { readTunable } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import type { InstrumentationRings } from "@instrumentation/public";
 import type { Steppable } from "@simulation/public";
 

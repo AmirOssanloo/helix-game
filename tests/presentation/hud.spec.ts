@@ -7,13 +7,8 @@ import type {
   SlotDescriptor,
   Unit,
 } from "@domain/public";
-import {
-  applyStatus,
-  createAbilityRequest,
-  resolveKit,
-  slotReadiness,
-  validateRegistry,
-} from "@domain/public";
+import { createAbilityRequest, slotReadiness } from "@domain/queries";
+import { applyStatus, resolveKit, validateRegistry } from "@domain/rules";
 import type { KitResolver } from "@presentation/public";
 import {
   flashKindOf,
@@ -24,7 +19,8 @@ import {
   squareCentreX,
   SQUARES_CENTRE_Y,
 } from "@presentation/public";
-import type { Simulation, WorldView } from "@simulation/public";
+import type { WorldView } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   CommandRecorder,
   FEEDBACK_TIMINGS,

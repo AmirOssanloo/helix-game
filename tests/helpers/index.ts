@@ -12,6 +12,15 @@ export {
   type MarkdownSource,
 } from "./architecture/docs-links";
 export {
+  collectDoorViolations,
+  collectTypesOnlyViolations,
+  describeLayerDoors,
+  describeTypesOnlyDoor,
+  type DoorViolation,
+  type LayerDoorsOptions,
+  type TypesOnlyDoorOptions,
+} from "./architecture/doors";
+export {
   collectGameConfigViolations,
   describeGameConfig,
   type GameConfigOptions,

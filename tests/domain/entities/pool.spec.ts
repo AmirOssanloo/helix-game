@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Pool } from "@domain/public";
+import { Pool } from "@domain/rules";
 import type { Id } from "@shared/public";
 import { unpackGeneration, unpackIndex } from "@shared/public";
 

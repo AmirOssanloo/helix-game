@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
+import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/queries";
 import { pickUnit } from "@presentation/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeWorld, spawnUnit, unitIdOf } from "../helpers";
 
 /** Where the unit stood last tick and where it stands this one: a stride along x. */

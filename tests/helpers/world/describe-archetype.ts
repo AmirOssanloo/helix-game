@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
 import type { EnemyDef, Unit } from "@domain/public";
-import { applyDamage } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { applyDamage } from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 import { makeRegistry } from "../content/make-registry";
 import { makeWorld } from "./make-world";
 import { spawnEnemy } from "./spawn-enemy";

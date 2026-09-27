@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeWorld,
   spawnHero,

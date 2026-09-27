@@ -4,8 +4,8 @@ import {
   applyLifetimeStatuses,
   fillFromDefinition,
   wearDefinition,
-} from "@domain/public";
-import type { Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { Simulation } from "@simulation/testing";
 
 /** Which archetype, where it stands, which is its spawn point too, and the pack it belongs to; `null` for a unit spawned alone. */
 export type SpawnEnemyOptions = Readonly<{

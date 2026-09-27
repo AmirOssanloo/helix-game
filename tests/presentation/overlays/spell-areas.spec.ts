@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acquireZone } from "@domain/public";
+import { acquireZone } from "@domain/rules";
 import {
   arrangeOverlays,
   OVERLAY_FRAME_WIDTH,

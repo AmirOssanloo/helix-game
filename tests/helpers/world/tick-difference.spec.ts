@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { World } from "@domain/public";
-import { STATE_EXCLUDED, STATE_LEAVES } from "@simulation/public";
+import { STATE_EXCLUDED, STATE_LEAVES } from "@simulation/testing";
 import {
   arrangeEveryRecord,
   isPoolLike,

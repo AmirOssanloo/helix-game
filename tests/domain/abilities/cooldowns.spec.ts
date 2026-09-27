@@ -18,7 +18,7 @@ import {
   removeModifiers,
   snapshotCooldownSources,
   startCooldown,
-} from "@domain/public";
+} from "@domain/rules";
 
 const SIM_HZ = 30;
 

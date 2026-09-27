@@ -1,6 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import type { DefinitionField, DefinitionKind } from "@domain/public";
-import { definitionKindTitle } from "@domain/public";
+import { definitionKindTitle } from "@domain/queries";
 import type { Binding } from "./bindings";
 import { onCommit } from "./bindings";
 import type { DevApi } from "./dev-api";

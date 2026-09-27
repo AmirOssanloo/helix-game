@@ -19,7 +19,7 @@ import {
   issueCast,
   issueMove,
   respawn,
-} from "@domain/public";
+} from "@domain/rules";
 import { idOf, targetUnitOf } from "../../helpers";
 
 /** The unit an order is aimed at in these specs; no pool minted it, and none resolves it. */

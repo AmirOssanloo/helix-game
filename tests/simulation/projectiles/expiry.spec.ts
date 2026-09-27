@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { SpawnProjectileEffectDef } from "@domain/public";
-import { PROJECTILE_CAPACITY, readTunable, runPrimitive } from "@domain/public";
-import type { Simulation } from "@simulation/public";
+import { PROJECTILE_CAPACITY, readTunable } from "@domain/queries";
+import { runPrimitive } from "@domain/rules";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
 
 /** Nine hundred world units a second, thirty a tick. */

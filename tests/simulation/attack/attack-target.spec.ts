@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { heroDef, trainingDummyDef, tuningTable } from "@content/public";
 import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
+import { readTunable } from "@domain/queries";
 import {
   attackTicks,
   BASE_ATTACK_SPEED,
   createAttackRecord,
-  readTunable,
-} from "@domain/public";
-import type { EventReader, Simulation } from "@simulation/public";
+} from "@domain/rules";
+import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
+import type { Simulation } from "@simulation/testing";
 import {
   makeWorld,
   spawnHero,
