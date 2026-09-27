@@ -87,6 +87,8 @@ export const fooSystem = (world: World): void => {
 
 **Failures are values.** A rule returns a result with a reason; nothing under these two layers throws for a game outcome. Throwing is for a broken invariant, not for "not enough mana".
 
+**Every switch is exhaustive.** A switch over a union ends in `default: return assertNever(foo);`, from `shared/`, whose parameter is `never`. A command, event, order, or definition kind added to its union and not handled then fails the typecheck at every switch that misses it, rather than falling through and doing nothing. Lint requires the `default` in both layers; it has no type information, so the typecheck is what checks the union. A comparison over anything that is not a finite union is written as `if` statements. A set of kinds that must match a union is a `Record` over the union's kinds, not a `Set`, for the same reason.
+
 ---
 
 ## Invariants
@@ -139,6 +141,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | A rule | A pure function over plain state, testable without a world |
 | Commands | Validated before any mutation; a refusal changes nothing and is announced as one event with its reason |
 | Failures | Returned as values with a reason. Throwing is for broken invariants only |
+| Switches | Over a union only, ending in `default: return assertNever(foo);`; a lint failure without it, a type failure when a member is not handled. A list of a union's kinds is a `Record` over them |
 | Boundary checks | Always on: command validation, content validation, pool acquire, map load |
 | Inner asserts | Development only, stripped from production |
 | Numbers | From the tuning table or a definition. No literal but `0`, `1`, and identities in a system |

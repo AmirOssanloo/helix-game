@@ -1,3 +1,4 @@
+import { assertNever } from "@shared/public";
 import type { AnyCommand } from "./command";
 
 /**
@@ -53,6 +54,9 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "apply_status":
     case "set_tuning":
       return null;
+
+    default:
+      return assertNever(command);
   }
 };
 

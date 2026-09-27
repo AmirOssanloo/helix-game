@@ -1,4 +1,4 @@
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import type { RunScope, TuningState } from "../entities/world-state";
 import type { AbilityDef } from "./ability-def";
 import { createAttackRecord } from "./attack-state";
@@ -163,6 +163,9 @@ const rebuildRecord = (
       );
 
       return;
+
+    default:
+      return assertNever(slot.kind);
   }
 };
 

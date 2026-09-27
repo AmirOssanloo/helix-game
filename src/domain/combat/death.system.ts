@@ -1,5 +1,5 @@
 import type { EntityId } from "@shared/public";
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { clearAiRecord, enterDead } from "../ai/ai-state";
 import type { EnemyTier } from "../definitions/enemy-def";
@@ -51,6 +51,9 @@ const experienceMultiplierOf = (world: World, tier: EnemyTier): number => {
 
     case "boss":
       return readTunable(world.run.tuning, "boss_experience_multiplier");
+
+    default:
+      return assertNever(tier);
   }
 };
 

@@ -1,5 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
-import { assert, distanceSquared } from "@shared/public";
+import { assert, assertNever, distanceSquared } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
 import {
   attackOf,
@@ -761,5 +761,8 @@ export const runMachine = (
 
     case "dead":
       return;
+
+    default:
+      return assertNever(unit.ai.state);
   }
 };

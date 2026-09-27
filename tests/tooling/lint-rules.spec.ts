@@ -5,6 +5,7 @@ import { builtinRules } from "eslint/use-at-your-own-risk";
 import { describe, expect, it } from "vitest";
 import { NO_AMBIENT_TIME_IN_SIMULATION } from "../../eslint/rules/no-ambient-time-in-simulation.js";
 import { NO_DOM_GLOBALS } from "../../eslint/rules/no-dom-in-simulation.js";
+import { SWITCH_NEEDS_NEVER_CHECK } from "../../eslint/rules/switch-needs-never-check.js";
 import { MAX_LINES_PER_FILE, OVER_THE_LIMIT } from "../../eslint/size-limit.js";
 import { REPOSITORY_ROOT } from "../helpers";
 
@@ -46,6 +47,31 @@ const AMBIENT_TIME = [
 ];
 
 const DOM_GLOBAL_NAMES = NO_DOM_GLOBALS.map((entry) => entry.name);
+
+/** Switches the never-check entries allow: a `default` whose one statement is the check. */
+const CHECKED_SWITCHES = [
+  'switch (foo.kind) { case "bar": return 1; default: return assertNever(foo); }',
+  'switch (foo) { case "bar": break; default: assertNever(foo); }',
+  'switch (foo) { default: return assertNever(foo); case "bar": return 1; }',
+  'switch (foo) { case "bar": switch (baz) { default: return assertNever(baz); } default: return assertNever(foo); }',
+];
+
+/** Switches they refuse, each once: no default, or a default that is not the check alone. */
+const UNCHECKED_SWITCHES = [
+  'switch (foo) { case "bar": return 1; }',
+  'switch (foo) { case "bar": return 1; default: return 0; }',
+  'switch (foo) { case "bar": return 1; default: break; }',
+  'switch (foo) { case "bar": return 1; default: return assertNever(); }',
+  'switch (foo) { case "bar": return 1; default: return baz.assertNever(foo); }',
+  'switch (foo) { case "bar": return 1; default: return bar(assertNever(foo)); }',
+  'switch (foo) { case "bar": return 1; default: { return assertNever(foo); } }',
+  'switch (foo) { case "bar": return 1; default: assertNever(foo); break; }',
+  'switch (foo) { case "bar": switch (baz) { default: return assertNever(baz); } }',
+];
+
+/** `body` as the body of a function, so a `return` in it parses. */
+const inFunction = (body: string): string =>
+  `export const f = (foo: never, baz: never): unknown => { ${body} };\n`;
 
 /** The folders whose files must refuse each form, and the one that must allow it. */
 const REFUSED_IN = ["src/domain", "src/simulation"];
@@ -111,7 +137,51 @@ describe("the host globals", () => {
   );
 });
 
+describe("the switch never-check entries", () => {
+  new RuleTester().run(
+    "no-restricted-syntax",
+    coreRule("no-restricted-syntax"),
+    {
+      valid: CHECKED_SWITCHES.map((code) => ({
+        code: `function f() { ${code} }`,
+        options: SWITCH_NEEDS_NEVER_CHECK,
+      })),
+      invalid: UNCHECKED_SWITCHES.map((code) => ({
+        code: `function f() { ${code} }`,
+        options: SWITCH_NEEDS_NEVER_CHECK,
+        errors: 1,
+      })),
+    },
+  );
+});
+
 describe("the layer blocks in the real config", () => {
+  it.each(UNCHECKED_SWITCHES)(
+    "refuses `%s` under domain and simulation and allows it in presentation",
+    async (code) => {
+      for (const folder of REFUSED_IN) {
+        expect(
+          await ruleIdsAt(`${folder}/probe.ts`, inFunction(code)),
+        ).toContain("no-restricted-syntax");
+      }
+
+      expect(
+        await ruleIdsAt(`${ALLOWED_IN}/probe.ts`, inFunction(code)),
+      ).not.toContain("no-restricted-syntax");
+    },
+  );
+
+  it.each(CHECKED_SWITCHES)(
+    "allows `%s` under domain and simulation",
+    async (code) => {
+      for (const folder of REFUSED_IN) {
+        expect(
+          await ruleIdsAt(`${folder}/probe.ts`, inFunction(code)),
+        ).not.toContain("no-restricted-syntax");
+      }
+    },
+  );
+
   it.each(AMBIENT_TIME)(
     "refuses `%s` under domain and simulation and allows it in presentation",
     async (line) => {

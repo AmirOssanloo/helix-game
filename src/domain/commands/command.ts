@@ -360,29 +360,34 @@ export type SetTuningCommand = Readonly<{
 /** Anything the buffer accepts: a player command, a debug command, or a tuning change. */
 export type AnyCommand = Command | DebugCommand | SetTuningCommand;
 
-/** The kinds of the debug union, so the command system can tell a panel intent from a player's without a field for it. */
-const DEBUG_COMMAND_KINDS: ReadonlySet<string> = new Set<DebugCommand["kind"]>([
-  "debug_noop",
-  "apply_damage",
-  "drain_mana",
-  "heal",
-  "restore_mana",
-  "level_up",
-  "set_orb_levels",
-  "toggle_infinite_mana",
-  "toggle_no_cooldowns",
-  "kill_hero",
-  "spawn_units",
-  "spawn_pack",
-  "kill_all",
-  "clear_all",
-  "reset_map",
-  "jump_to_checkpoint",
-  "begin_channel",
-  "apply_status",
-  "spawn_zone",
-]);
+/**
+ * The kinds of the debug union, so the command system can tell a panel intent from a player's
+ * without a field for it. A record over the union's kinds, not a set, so a debug command added
+ * to the union and not here fails the typecheck.
+ */
+export const DEBUG_COMMAND_KINDS: Readonly<Record<DebugCommand["kind"], true>> =
+  {
+    debug_noop: true,
+    apply_damage: true,
+    drain_mana: true,
+    heal: true,
+    restore_mana: true,
+    level_up: true,
+    set_orb_levels: true,
+    toggle_infinite_mana: true,
+    toggle_no_cooldowns: true,
+    kill_hero: true,
+    spawn_units: true,
+    spawn_pack: true,
+    kill_all: true,
+    clear_all: true,
+    reset_map: true,
+    jump_to_checkpoint: true,
+    begin_channel: true,
+    apply_status: true,
+    spawn_zone: true,
+  };
 
 /** Whether `command` is a developer-panel intent. */
 export const isDebugCommand = (command: AnyCommand): command is DebugCommand =>
-  DEBUG_COMMAND_KINDS.has(command.kind);
+  Object.hasOwn(DEBUG_COMMAND_KINDS, command.kind);

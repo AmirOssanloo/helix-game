@@ -1,4 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
+import { assertNever } from "@shared/public";
 import { isInCastRange, requestCast, resourcesOf } from "../abilities/cast";
 import { isCooldownReady } from "../abilities/cooldowns";
 import type { CastTarget } from "../commands/command";
@@ -52,6 +53,9 @@ const aimAt = (
     case "direction":
     case "vector":
       return null;
+
+    default:
+      return assertNever(kind);
   }
 };
 
@@ -83,6 +87,9 @@ const meetsCondition = (
 
       return dx * dx + dy * dy <= condition.distance * condition.distance;
     }
+
+    default:
+      return assertNever(condition);
   }
 };
 

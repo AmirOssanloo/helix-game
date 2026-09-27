@@ -1,4 +1,4 @@
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import type {
   ApplyStatusEffectDef,
   DamageAreaEffectDef,
@@ -109,5 +109,8 @@ export const runPrimitive = (
       call(primitives.displace, world, cast, entry);
 
       break;
+
+    default:
+      return assertNever(entry);
   }
 };

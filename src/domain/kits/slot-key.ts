@@ -1,4 +1,4 @@
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
 import type { CastTarget } from "../commands/command";
 import { activeFormOf } from "../entities/hero";
@@ -105,6 +105,9 @@ const applyInvoke = (
     case "on_cooldown":
     case "not_enough_mana":
       return outcome;
+
+    default:
+      return assertNever(outcome);
   }
 };
 
@@ -151,6 +154,9 @@ export const applySlotKey = (
 
     case "empty":
       return "empty_slot";
+
+    default:
+      return assertNever(request.kind);
   }
 };
 

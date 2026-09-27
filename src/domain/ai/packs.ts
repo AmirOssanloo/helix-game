@@ -1,5 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
-import { assert, distanceSquared } from "@shared/public";
+import { assert, assertNever, distanceSquared } from "@shared/public";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { PackDef } from "../definitions/map-def";
 import { readTunable } from "../definitions/tuning-state";
@@ -62,6 +62,9 @@ const healthMultiplierOf = (world: World, tier: EnemyTier): number => {
 
     case "boss":
       return readTunable(world.run.tuning, "boss_health_multiplier");
+
+    default:
+      return assertNever(tier);
   }
 };
 
@@ -79,6 +82,9 @@ const damageMultiplierOf = (world: World, tier: EnemyTier): number => {
 
     case "boss":
       return readTunable(world.run.tuning, "boss_damage_multiplier");
+
+    default:
+      return assertNever(tier);
   }
 };
 

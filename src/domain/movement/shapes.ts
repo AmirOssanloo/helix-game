@@ -1,4 +1,4 @@
-import { shortestArc } from "@shared/public";
+import { assertNever, shortestArc } from "@shared/public";
 import type { ShapeDef } from "../definitions/effect-def";
 
 /**
@@ -107,5 +107,8 @@ export const shapeExtent = (shape: ShapeDef): number => {
 
     case "cone":
       return shape.length;
+
+    default:
+      return assertNever(shape);
   }
 };

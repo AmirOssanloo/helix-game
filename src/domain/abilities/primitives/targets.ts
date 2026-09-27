@@ -1,5 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import { isHostile } from "../../combat/sides";
 import type { EffectTargetDef, ShapeDef } from "../../definitions/effect-def";
 import type { Unit } from "../../entities/unit";
@@ -106,6 +106,9 @@ const shapeCovers = (
         x,
         y,
       );
+
+    default:
+      return assertNever(shape);
   }
 };
 

@@ -1,4 +1,4 @@
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import type { SetTuningCommand } from "../commands/command";
 import type { TuningState } from "../entities/world-state";
 import type { TuningDef, TuningKey, TuningUnit } from "./tuning-def";
@@ -59,6 +59,9 @@ export const convertTunable = (
     case "hertz":
     case "pixels":
       return value;
+
+    default:
+      return assertNever(unit);
   }
 };
 

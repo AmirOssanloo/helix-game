@@ -1,4 +1,5 @@
 import type { Rect } from "@shared/public";
+import { assertNever } from "@shared/public";
 import { resolveNamedEffect } from "../abilities/effects/index";
 import { BEHAVIOUR_KEYS, resolveBehaviour } from "../ai/behaviours/index";
 import { ENEMY_LIVE_CAP } from "../entities/unit";
@@ -207,6 +208,9 @@ const checkAbilityEntry = (
       }
 
       return;
+
+    default:
+      return assertNever(condition);
   }
 };
 
@@ -376,6 +380,9 @@ const checkEffect = (
 
       break;
     }
+
+    default:
+      return assertNever(effect);
   }
 };
 

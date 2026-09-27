@@ -1,5 +1,5 @@
 import type { Vec2 } from "@shared/public";
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
 import type { Command, DebugCommand } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
@@ -131,6 +131,9 @@ const applyCommand = (
 
     case "noop":
       break;
+
+    default:
+      return assertNever(command);
   }
 
   return null;

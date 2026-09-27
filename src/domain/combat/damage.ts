@@ -1,4 +1,5 @@
 import type { EntityId } from "@shared/public";
+import { assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { provoke } from "../ai/ai-state";
 import type { Stats } from "../definitions/form-def";
@@ -73,6 +74,11 @@ const mitigateRecord = (
 
     case "pure":
       record.landed = Math.max(0, record.amount);
+
+      return;
+
+    default:
+      return assertNever(type);
   }
 };
 

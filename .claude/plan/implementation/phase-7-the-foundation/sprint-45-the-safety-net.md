@@ -171,7 +171,7 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | Layer | tooling, domain, tests |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a verified violation, and a seam. Phase 8 adds command, event, order, and definition kinds, and every one must fail the build where it is not handled.
 
@@ -202,6 +202,8 @@ None in the browser: the build plays as phase 6 left it. Headless:
 
 > **Architect review, 2026-09-27:** type-aware `switch-exhaustiveness-check` replaced with a never-check the typecheck enforces and a syntactic rule that requires it. Turning on type-aware lint would reverse the config's standing choice and slow every commit hook for one rule. Size unchanged.
 
+> **Built, 2026-09-27:** `assertNever` is `src/shared/assert-never.ts`, behind the shared door; it throws in every build, since a value typed `never` that arrives is a broken invariant. The rule is `eslint/rules/switch-needs-never-check.js`, two `no-restricted-syntax` entries in the domain and simulation blocks: a switch with no `default` of its own, and a `default` whose one statement is not `return assertNever(x);` or `assertNever(x);` with one argument. Two entries, because esquery's `:has` does not follow a chain of child combinators, so one selector could not tell a switch's own `default` from a nested switch's. The rule found 25 switches, all under `src/domain/` and none under `src/simulation/`: the four the Build names and 21 more, every one over a union, so each got the check and none became `if` statements. A switch on a discriminant passes the narrowed union itself (`assertNever(command)`); three whose union is not discriminated by that field pass the field (`slot.kind`, `request.kind`, `unit.order.kind`). Two lines changed besides: `mitigateRecord` in `combat/damage.ts` gained the `return` its last case lacked, which `no-fallthrough` asked for once a `default` followed it, and `isInCastRange` declares `reach` without its dead `= 0`. `DEBUG_COMMAND_KINDS` is exported through the domain door for its spec, and `isDebugCommand` reads it with `Object.hasOwn`, so an inherited key is not a kind. Shown on the tree and reverted: a player member and a debug member added to the unions failed `pnpm typecheck` at `command.system.ts`, both switches in `validator.ts`, `ordering.ts`, `debug-commands.ts`, and the record, and at the player-kind record in the spec. The rule is stated in the [simulation coding standards](../../../../docs/standards/simulation-coding.md#quick-reference) and [where to look](../../../../docs/architecture/where-to-look.md), so the documentation rows were walked too. Behaviour is unchanged: `pnpm restamp` wrote nothing and every stored log matched its checksums.
+
 ---
 
 ## Sprint exit
@@ -214,8 +216,9 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | The seven logs match their checksums | Yes (T02): recorded once by `pnpm restamp --checksums`, 0 stamps moved; `tests/simulation/replay-determinism.spec.ts` replays each to every stored checksum |
 | Each widened lint rule shown failing on a branch | Yes, 2026-09-27 (T03): one planted file under `src/domain/` with every form on its own line and every banned global, linted by `eslint`: 33 `no-restricted-syntax` on 33 lines and 30 `no-restricted-globals`; the same file under `src/presentation/`, none of either; a 501-line file under `src/domain/`, one `max-lines`. Deleted afterwards. `tests/tooling/lint-rules.spec.ts` holds the same, 125 cases, and fails when a destructure selector or an exception path is broken |
 | Real hits the widened rules found | None (T03): `pnpm lint` and the DOM-free typecheck were green on the tree as it was |
-| Actual days per ticket | T01: 0.5 · T02: 1 · T03: 0.5 |
-| Sprint total | |
+| Each switch without the never-check shown failing lint | Yes, 2026-09-27 (T04): the rule refused the 25 switches under `src/domain/` before the fix, and a member added to the command unions failed the typecheck at every switch over them; `tests/tooling/lint-rules.spec.ts` holds nine refused shapes and four allowed, in the real config under domain and simulation and not under presentation |
+| Actual days per ticket | T01: 0.5 · T02: 1 · T03: 0.5 · T04: 0.5 |
+| Sprint total | Closed 2026-09-27: sized 4 with 1 of buffer, done in 2.5; the buffer unspent. No unplanned ticket, no deferral, no open question |
 
 ## Risks in this sprint
 

@@ -1,4 +1,4 @@
-import { assert, bearing } from "@shared/public";
+import { assert, assertNever, bearing } from "@shared/public";
 import type { CastTarget } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
 import type { TargetingKind } from "../definitions/ability-def";
@@ -107,7 +107,7 @@ export const isInCastRange = (
   y: number,
   targetBound: number,
 ): boolean => {
-  let reach = 0;
+  let reach: number;
 
   switch (kind) {
     case "none":
@@ -124,6 +124,9 @@ export const isInCastRange = (
       reach = record.def.range + unit.boundRadius + targetBound;
 
       break;
+
+    default:
+      return assertNever(kind);
   }
 
   const dx = x - unit.curr.x;
@@ -208,6 +211,9 @@ export const requestCast = (
 
     case "none":
       break;
+
+    default:
+      return assertNever(target);
   }
 
   if (

@@ -1,5 +1,5 @@
 import type { EntityId, Vec2 } from "@shared/public";
-import { assert } from "@shared/public";
+import { assert, assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { placePack } from "../ai/packs";
 import { applyDamage } from "../combat/damage";
@@ -340,6 +340,9 @@ export const applyDebugCommand = (
     case "begin_channel":
     case "apply_status":
       break;
+
+    default:
+      return assertNever(command);
   }
 
   const hero = resolveHero(world);
@@ -417,5 +420,8 @@ export const applyDebugCommand = (
 
       return result === "ok" ? null : result;
     }
+
+    default:
+      return assertNever(command);
   }
 };

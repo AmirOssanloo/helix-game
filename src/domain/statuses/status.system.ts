@@ -1,4 +1,5 @@
 import type { EntityId } from "@shared/public";
+import { assertNever } from "@shared/public";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
 import type { DamageRecord } from "../combat/damage";
@@ -339,6 +340,8 @@ const activityColumn = (unit: Readonly<Unit>): DisableColumn | null => {
       return "attackMove";
     case "none":
       return null;
+    default:
+      return assertNever(unit.order.kind);
   }
 };
 

@@ -71,6 +71,7 @@ export {
   type CastTarget,
   type ClearAllCommand,
   type Command,
+  DEBUG_COMMAND_KINDS,
   type DebugCommand,
   type DebugNoopCommand,
   type DrainManaCommand,

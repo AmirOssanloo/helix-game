@@ -5,6 +5,7 @@ import { NO_AMBIENT_TIME_IN_SIMULATION } from "../rules/no-ambient-time-in-simul
 import { NO_DOM_GLOBALS } from "../rules/no-dom-in-simulation.js";
 import { NO_PHASER_IMPORT } from "../rules/no-phaser-import.js";
 import { NO_WORLD_VIEW_CAST } from "../rules/no-world-view-cast.js";
+import { SWITCH_NEEDS_NEVER_CHECK } from "../rules/switch-needs-never-check.js";
 import { SRC_SYNTAX } from "../src-files.js";
 
 /** The world-view cast ban is dropped here: the simulation owns the live world the view is a type over. */
@@ -16,7 +17,7 @@ const SIMULATION_SYNTAX = SRC_SYNTAX.filter(
  * Orchestrates. Owns a world and steps it, in Node with no screen and no clock.
  *
  * Setting `no-restricted-syntax` here replaces the src-wide array for these files, which is
- * why the src list is spread back in before the determinism bans are added.
+ * why the src list is spread back in before the determinism bans and the never-check are added.
  */
 export const simulationLayer = {
   files: ["src/simulation/**/*.ts"],
@@ -25,6 +26,7 @@ export const simulationLayer = {
       "error",
       ...SIMULATION_SYNTAX,
       ...NO_AMBIENT_TIME_IN_SIMULATION,
+      ...SWITCH_NEEDS_NEVER_CHECK,
     ],
     "no-restricted-globals": ["error", ...NO_DOM_GLOBALS],
     "@typescript-eslint/no-restricted-imports": [

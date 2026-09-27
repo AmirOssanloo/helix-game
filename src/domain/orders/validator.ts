@@ -1,3 +1,4 @@
+import { assertNever } from "@shared/public";
 import { isDamageType } from "../combat/damage";
 import type { Command, DebugCommand } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
@@ -197,6 +198,9 @@ export const validateCommand = (
 
     case "noop":
       return "ok";
+
+    default:
+      return assertNever(command);
   }
 };
 
@@ -294,5 +298,8 @@ export const validateDebugCommand = (
     case "clear_all":
     case "reset_map":
       return "ok";
+
+    default:
+      return assertNever(command);
   }
 };

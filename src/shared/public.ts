@@ -1,5 +1,6 @@
 export { bearing, shortestArc, wrapAngle } from "./angle";
 export { assert } from "./assert";
+export { assertNever } from "./assert-never";
 export { clamp } from "./clamp";
 export type { DeepReadonly } from "./deep-readonly";
 export { HASH_RANGE, hash4 } from "./hash";
