@@ -20,8 +20,11 @@ import {
 
 const HULL = 27;
 
-/** The share at which a pair splits its overlap evenly, which is how two units that are not the hero separate. */
+/** The share at which a pair splits its overlap evenly, which is how two units that are not the hero and not ranked apart separate. */
 const EVEN = 0.5;
+
+/** The hero's push share in the tuning table: a tenth of a pair's overlap. */
+const DEFAULT_SHARE = 0.1;
 
 /** The rectangle every push-out case stands against: 200 wide from x 100, 400 tall from y 0. */
 const WALL: Rect = { minX: 100, minY: 0, maxX: 300, maxY: 400 };
@@ -160,8 +163,8 @@ describe("the collision system's hero share", () => {
     expect(hero.curr).toEqual({ x: -7, y: 0 });
   });
 
-  it("splits a hero pair evenly at the default share, as today", () => {
-    expect(tuningTable.hero_push_share).toBe(EVEN);
+  it("gives the hero a tenth of a pair's overlap at the default share, and the other unit the rest", () => {
+    expect(tuningTable.hero_push_share).toBe(DEFAULT_SHARE);
 
     const world = makeWorld({ seed: 1 });
     const hero = spawnHero(world, { x: 0, y: 0 });
@@ -169,8 +172,8 @@ describe("the collision system's hero share", () => {
 
     collisionSystem(world.state);
 
-    expect(hero.curr).toEqual({ x: -7, y: 0 });
-    expect(enemy.curr).toEqual({ x: 47, y: 0 });
+    expect(hero.curr.x).toBeCloseTo(-1.4);
+    expect(enemy.curr.x).toBeCloseTo(52.6);
   });
 
   it("at a share of zero, leaves the hero where it stands and moves the enemy the whole overlap", () => {
@@ -230,6 +233,125 @@ describe("the collision system's hero share", () => {
 
     expect(first.curr).toEqual({ x: -7, y: 0 });
     expect(second.curr).toEqual({ x: 47, y: 0 });
+  });
+});
+
+describe("the collision system's contact rank", () => {
+  /** A world at `share` with one pass, so a pair is separated once and its shares read plainly. */
+  const worldAt = (share: number): Simulation =>
+    makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        tuning: { hero_push_share: share, push_out_passes: 1 },
+      }),
+    });
+
+  it("gives the enemy touching the hero the hero's share of its overlap with an enemy pressing it from behind", () => {
+    const world = worldAt(DEFAULT_SHARE);
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const front = spawnUnit(world, { x: 54, y: 0 });
+    const behind = spawnUnit(world, { x: 94, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(hero.curr).toEqual({ x: 0, y: 0 });
+    expect(front.curr.x).toBeCloseTo(52.6);
+    expect(behind.curr.x).toBeCloseTo(106.6);
+  });
+
+  it("ranks by contact, not by the order the pool holds the units in", () => {
+    const world = worldAt(DEFAULT_SHARE);
+    const behind = spawnUnit(world, { x: 94, y: 0 });
+
+    spawnUnit(world, { x: 54, y: 0 });
+    spawnHero(world, { x: 0, y: 0 });
+    collisionSystem(world.state);
+
+    expect(behind.curr.x).toBeCloseTo(106.6);
+  });
+
+  it("carries the rank down a column: each enemy presses the one ahead of it as the front one presses the hero", () => {
+    const world = worldAt(DEFAULT_SHARE);
+
+    spawnHero(world, { x: 0, y: 0 });
+    spawnUnit(world, { x: 54, y: 0 });
+    const second = spawnUnit(world, { x: 108, y: 0 });
+    const third = spawnUnit(world, { x: 148, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(second.curr.x).toBeCloseTo(106.6);
+    expect(third.curr.x).toBeCloseTo(160.6);
+  });
+
+  it("at a share of one half, separates a ranked pair exactly as the even split, to the bit", () => {
+    const world = worldAt(EVEN);
+    const front = at(54, 0);
+    const behind = at(94, 0);
+
+    spawnHero(world, { x: 0, y: 0 });
+    const ranked = [
+      spawnUnit(world, { x: 54, y: 0 }),
+      spawnUnit(world, { x: 94, y: 0 }),
+    ];
+
+    collisionSystem(world.state);
+    separateDiscs(front, HULL, behind, HULL, 0, EVEN);
+
+    expect(ranked[0]?.curr).toEqual(front);
+    expect(ranked[1]?.curr).toEqual(behind);
+  });
+
+  it("splits a pair evenly when neither is in contact with the hero", () => {
+    const world = worldAt(DEFAULT_SHARE);
+
+    spawnHero(world, { x: 0, y: 0 });
+    const first = spawnUnit(world, { x: 500, y: 0 });
+    const second = spawnUnit(world, { x: 540, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(first.curr).toEqual({ x: 493, y: 0 });
+    expect(second.curr).toEqual({ x: 547, y: 0 });
+  });
+
+  it("breaks the chain at a lifted unit: the pair beyond it splits evenly", () => {
+    const world = worldAt(DEFAULT_SHARE);
+
+    spawnHero(world, { x: 0, y: 0 });
+    const lifted = spawnUnit(world, { x: 54, y: 0 });
+    const first = spawnUnit(world, { x: 108, y: 0 });
+    const second = spawnUnit(world, { x: 148, y: 0 });
+
+    lifted.disables.lifted = true;
+    collisionSystem(world.state);
+
+    expect(first.curr).toEqual({ x: 101, y: 0 });
+    expect(second.curr).toEqual({ x: 155, y: 0 });
+  });
+
+  it("splits every pair evenly when there is no hero", () => {
+    const world = worldAt(DEFAULT_SHARE);
+    const first = spawnUnit(world, { x: 54, y: 0 });
+    const second = spawnUnit(world, { x: 94, y: 0 });
+
+    collisionSystem(world.state);
+
+    expect(first.curr).toEqual({ x: 47, y: 0 });
+    expect(second.curr).toEqual({ x: 101, y: 0 });
+  });
+
+  it("seeds no rank from a dead hero, so the pair behind it splits evenly", () => {
+    const world = worldAt(DEFAULT_SHARE);
+    const hero = spawnHero(world, { x: 0, y: 0 });
+    const first = spawnUnit(world, { x: 54, y: 0 });
+    const second = spawnUnit(world, { x: 94, y: 0 });
+
+    hero.state = "dead";
+    collisionSystem(world.state);
+
+    expect(first.curr).toEqual({ x: 47, y: 0 });
+    expect(second.curr).toEqual({ x: 101, y: 0 });
   });
 });
 

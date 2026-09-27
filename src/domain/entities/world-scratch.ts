@@ -27,6 +27,8 @@ import type { EventSlot } from "../events/domain-event";
 import { createDomainEvent } from "../events/domain-event";
 import type { AbilityRequest } from "../kits/kit";
 import { createAbilityRequest } from "../kits/kit";
+import type { CollisionScratch } from "../movement/collision.system";
+import { createCollisionScratch } from "../movement/collision.system";
 import { createCandidateBuffer } from "../movement/spatial-hash";
 import type { NearestCell } from "../pathing/destination";
 import { createNearestCell } from "../pathing/destination";
@@ -75,6 +77,8 @@ export type WorldScratch = {
   acquireCandidates: UnitId[];
   /** The ids a circle query returns to the collision pass. */
   collisionCandidates: UnitId[];
+  /** The collision pass's contact ranks and the queue its walk runs through. */
+  collision: CollisionScratch;
   /** The vector from a unit to its waypoint. */
   toWaypoint: Vec2;
   /** The legal point a clicked destination resolves to. */
@@ -110,6 +114,7 @@ export const createWorldScratch = (): WorldScratch => ({
   attack: createAttackScratch(),
   acquireCandidates: createCandidateBuffer(UNIT_CAPACITY),
   collisionCandidates: createCandidateBuffer(UNIT_CAPACITY),
+  collision: createCollisionScratch(),
   toWaypoint: { x: 0, y: 0 },
   resolvedDestination: { x: 0, y: 0 },
   nearestCell: createNearestCell(),

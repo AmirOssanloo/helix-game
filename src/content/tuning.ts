@@ -45,7 +45,7 @@ export const tuningTable = {
   bound_radius: 24,
   selection_radius: 32,
   push_out_passes: 4,
-  hero_push_share: 0.5,
+  hero_push_share: 0.1,
   repath_budget: 8,
   hash_cell_size: 128,
   walkability_cell_size: 32,

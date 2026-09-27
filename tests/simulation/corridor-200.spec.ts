@@ -94,6 +94,16 @@ const PRESS_START_TICK = 150;
 /** The furthest the press may carry the hero off its hold point when the hero takes none of the push-out, clicks back every half second included. */
 const CARRY_AT_ZERO_SHARE = 20;
 
+/**
+ * The carry at the default share over the carry at one half, at most. A tenth of each overlap
+ * damps the press once per rank of the column behind the hero, so the press carries the hero
+ * far less than a fifth as far: it measured 0.019 units against 431.
+ */
+const CARRY_SHARE_AT_DEFAULT = 0.2;
+
+/** A share of one half: the hero and the enemy pressed against it take half each, and so does every rank of the column behind. */
+const EVEN_SHARE = 0.5;
+
 /** See the replay determinism spec: this replays a long session, asserts agreement, never speed. */
 const REPLAY_TIMEOUT_MS = 120_000;
 
@@ -466,6 +476,17 @@ describe("two hundred enemies chasing the hero into the corridor", () => {
     "carry the hero less than twenty units off its hold point over the press when the hero takes none of the push-out",
     () => {
       expect(farthestCarry(withHeroShare(0))).toBeLessThan(CARRY_AT_ZERO_SHARE);
+    },
+    REPLAY_TIMEOUT_MS,
+  );
+
+  it(
+    "carry the hero at the default share at most a fifth as far as at one half, where the whole column presses through",
+    () => {
+      const atDefault = farthestCarry(loadInputLog(RECORDED_SESSION));
+      const atHalf = farthestCarry(withHeroShare(EVEN_SHARE));
+
+      expect(atDefault).toBeLessThanOrEqual(atHalf * CARRY_SHARE_AT_DEFAULT);
     },
     REPLAY_TIMEOUT_MS,
   );

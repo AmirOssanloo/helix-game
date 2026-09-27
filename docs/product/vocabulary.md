@@ -62,7 +62,8 @@ When two people call the same thing different names, the names leak into the cod
 | An enemy an ability creates, owned by its caster and in its pack | **Add** | Summon (that is on the hero's side), minion |
 | The typed data describing a spell, enemy, status, or map | **Definition** (`FooDef` in code) | Config, template, blueprint, prefab |
 | A file another layer imports a layer through: its `public.ts`, the domain's `queries.ts` for pure reads and `rules.ts` for systems and mutators, or a `testing.ts` only tests may import | **Door** | Barrel, index, API, entry point |
-| The part of an overlap between the hero and another unit that moves the hero, the rest moving the other unit | **Push share** (`hero_push_share` in code) | Push weight, mass, share of push-out |
+| The part of an overlap between the hero and another unit that moves the hero, the rest moving the other unit; in a crowd pressed against the hero, the part that moves the unit nearer the hero | **Push share** (`hero_push_share` in code) | Push weight, mass, share of push-out |
+| How many touching units stand between a unit and the hero: the hero zero, a unit touching it one, a unit touching that one two | **Contact rank** | Depth, layer, row |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
 | How deep a map is in the descent, which an item's level is read from and nothing else | **Map level** | Area level, dungeon level, depth, difficulty |

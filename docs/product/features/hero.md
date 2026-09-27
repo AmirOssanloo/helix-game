@@ -49,7 +49,7 @@ The Whorl movement value is quoted because it is the one the spec insists player
 
 The hero's body numbers are the spec's and are not repeated here: collision radius 27, bound radius 24, base movement speed 280, turn rate 0.6 radians per 0.03 seconds, action cone 11.5 degrees. [Mechanics spec](../specs/character-movement-and-mechanics.md) sections 3, 6, 7, and 8 own them and their meaning.
 
-When the hero's disc overlaps another unit's, the hero takes its push share of the overlap, half by default (`hero_push_share` in `src/content/tuning.ts`), and the other unit the rest. At zero a crowd cannot carry the hero, and the hero still pushes its way through. A push from an ability moves the hero whatever the share.
+When the hero's disc overlaps another unit's, the hero takes its push share of the overlap, a tenth by default (`hero_push_share` in `src/content/tuning.ts`), and the other unit the rest. In a crowd pressed against the hero, each enemy takes the same share of its overlap with the one behind it, so the press damps rank by rank and a crowd barely carries the hero, while the hero still pushes its way through. At zero a crowd cannot carry the hero at all. A push from an ability moves the hero whatever the share.
 
 ## Damage and mitigation
 
