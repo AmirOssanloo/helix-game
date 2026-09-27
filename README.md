@@ -15,4 +15,4 @@ The repository and the product are both **Helix**. Skein is the name of the hero
 
 ## State of the repository
 
-There is no source code yet. The documentation describes the target, the plan describes the order and cost of reaching it, and [STATUS.md](./.claude/plan/implementation/STATUS.md) says where we are.
+The game is playable, and built phase by phase. The documentation describes the target the code is held to, the plan describes the order and cost of reaching it, and [STATUS.md](./.claude/plan/implementation/STATUS.md) says where we are.

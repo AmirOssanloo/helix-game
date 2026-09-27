@@ -10,7 +10,7 @@
 
 **TypeScript, strict mode, ES modules.**
 
-Strict matters more here than in most projects: entity ids are generational numbers, absence is `Type | null` rather than an optional property, and every per-tick system takes a typed world. The compiler is the first line of the layer boundary — a Phaser type reaching the domain is a type error before it is a lint error.
+Strict matters more here than in most projects: entity ids are generational numbers tagged by the pool they came from, so a projectile's id handed where a unit's is wanted is a type error, absence is `Type | null` rather than an optional property, and every per-tick system takes a typed world. The compiler is the first line of the layer boundary — a Phaser type reaching the domain is a type error before it is a lint error. `pnpm typecheck` compiles twice: the whole project, then `src/shared/`, `src/domain/`, and `src/simulation/` again through `tsconfig.dom-free.json`, with no DOM library, so `document` or `setTimeout` there fails to compile.
 
 ---
 
@@ -48,7 +48,7 @@ It is the only runtime dependency besides Phaser, and the only one a production 
 
 **Vitest.** The Node environment for everything under `src/domain/`, `src/simulation/`, and `src/content/` — no canvas, no DOM, no Phaser. That is not a convenience; it is the proof that the simulation has no hidden dependency on the screen. Only presentation adapter tests use jsdom, and there are few of them.
 
-Three test files are unusual enough to mention: `tests/architecture.spec.ts` asserts the layer import table a second time, the replay determinism test replays a recorded input log and asserts identical state, and the stress test ticks 300 units and asserts the mean tick under 4 ms. All three run in `pnpm test`.
+Three test files are unusual enough to mention: `tests/architecture.spec.ts` asserts the layer import table and each layer's doors a second time, and refuses a writable binding at module scope in the domain or the simulation, the replay determinism test replays a recorded input log and asserts identical state, and the stress test ticks 300 units and asserts the mean tick under 4 ms. All three run in `pnpm test`.
 
 ---
 
@@ -56,10 +56,12 @@ Three test files are unusual enough to mention: `tests/architecture.spec.ts` ass
 
 **ESLint, flat config, and Prettier with defaults.**
 
-Lint carries three rules that hold the architecture up:
+Lint carries the rules that hold the architecture up:
 
-- The layer import allow-list from [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md). A wrong-direction import fails the build.
-- The determinism bans: `Math.random`, `Date.now`, and `performance.now` are errors under `src/domain/` and `src/simulation/`.
+- The layer import allow-list from [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md), with each layer's doors. A wrong-direction import, or one that goes around a door, fails the build.
+- The determinism bans: `Math.random`, `Date.now`, and `performance.now`, in every spelling, and the host's globals, are errors under `src/domain/` and `src/simulation/`.
+- Every switch under `src/domain/` and `src/simulation/` ends in a `default` that calls `assertNever`, so a union member left unhandled fails the typecheck.
+- The size limit: 500 lines per file under `src/`, with the few files over it listed with their reason in `eslint/size-limit.js`.
 - The presentation bans: `this.add.graphics`, `this.add.circle`, `this.add.rectangle`, and the other Shape factories are errors everywhere, because every visible thing is a tinted quad from the atlas.
 
 Prettier runs on save and in the commit hook. Nobody argues about formatting in review.

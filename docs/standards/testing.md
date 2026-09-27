@@ -25,6 +25,8 @@ A test earns its place if **it would fail for a reason you want to know about, a
 
 The reason is that the build compiles `src/` and excludes `tests/`, so a spec under `src/` is one exclude pattern away from shipping. It also makes the mirrored path the index.
 
+**A spec enters a layer through its public door, and goes past it only through the layer's `testing.ts` door.** Only specs, helpers, and the scripts under `tooling/` import a testing door; nothing under `src/` does, and lint and the architecture test both refuse it. [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#the-public-doors) owns the doors.
+
 ---
 
 ## The tiers
@@ -45,7 +47,7 @@ Answer in order. The first yes decides.
 | **simulation** | creates a real world with a small registry, submits commands, ticks, asserts state and events | Node | under 50 ms; the stress test is the exception |
 | **content** | builds the real registry and validates every definition | Node | under 200 ms for the suite |
 | **presentation** | drives the input mapper or view binding with a fake world view | jsdom | under 20 ms |
-| **architecture** | asserts the layer import table and the determinism bans against the source tree | Node | seconds |
+| **architecture** | asserts the layer import table, each layer's doors, and the structural rules lint cannot see, such as no module-level state, against the source tree | Node | seconds |
 | **tooling** | runs a script's logic or a lint rule over inputs the test builds, never over the files the script writes | Node | seconds |
 | **benchmark** | drives the render path at the caps under a real Phaser game | Chrome, through browser automation | thirty seconds, read by an agent |
 
@@ -122,7 +124,7 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 | Kind | Name | Use when |
 | --- | --- | --- |
 | Definition factory | `makeFooDef(overrides)` | A simulation test needs a definition with known numbers |
-| World factory | `makeWorld({ seed, defs, map })` | A simulation test needs a world; the default map is a bare rectangle |
+| World factory | `makeWorld({ seed, registry, map })` | A simulation test needs a world; the default map is a bare rectangle |
 | Entity spawner | `spawnFoo(world, overrides)` | A test needs a unit or projectile already live |
 | Command helper | `submit(world, command)` and `tickUntil(world, predicate, maxTicks)` | Driving a scenario without hand-counting ticks |
 | Recorded log | `loadInputLog(name)` | A replay test, from `tests/simulation/replays/` |
@@ -133,9 +135,11 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 
 **`pnpm restamp` is the only way a stamp is rewritten.** It replays every log under `tests/simulation/replays/` under the new stamp, rewrites the stamp and not one other character, and prints each file's old and new stamp. If any log does not replay to its last tick, or misses a state checksum it holds, it writes nothing. Nobody edits a stored log's stamp by hand.
 
-**Every stored log holds the state checksum at every 30th tick and at its last.** The checksum hashes the whole of world state a tick decides — every pool slot, run scope, and map scope — over a fixed sequence of named field paths in `src/simulation/replay/state-fields.ts`, each read through an accessor, so a change of layout moves no checksum. Each record's list is typed against the record's keys, so a field added and not listed fails the typecheck; what is left out is listed with its reason: caches derived from hashed state, content the stamp fixes, the art copied from a presentation-only field, and the world's scratch, which no tick leaves anything in. Floats are hashed by their bits, so the checksum is exact, and it runs only in the replay verifier, the re-stamp tool, and tests. The replay determinism spec replays every stored log to its checksums, and the full-state comparison, `tickDifference`, walks the same lists to name the first field two worlds disagree on.
+**Every stored log holds the state checksum at every 30th tick and at its last.** The checksum hashes the whole of world state a tick decides — every pool slot, run scope, and map scope — over a fixed sequence of named field paths in the field lists under `src/simulation/replay/`, each read through an accessor, so a change of layout moves no checksum. Each record's list is typed against the record's keys, so a field added and not listed fails the typecheck; what is left out is listed with its reason: caches derived from hashed state, content the stamp fixes, the art copied from a presentation-only field, the tick's commands and events, and the world's scratch, which no tick leaves anything in. Floats are hashed by their bits, so the checksum is exact. It is reached only through the simulation's testing door, so it runs only in tests and the re-stamp tool. The replay determinism spec replays every stored log to its checksums, and the full-state comparison, `tickDifference`, walks the same lists to name the first field two worlds disagree on.
 
 **`pnpm restamp --checksums` is the only way a checksum is rewritten, and a change runs it only when it means to change behaviour.** It records every log's checksums from its replay, and the stamp with them. A refactor that moves a checksum is a defect in the refactor, not a reason to record again. A log saved from the panel holds no checksum; this records them when the log is promoted to a stored log.
+
+**A double is built from the real type, by a helper.** Never `as any` or `as unknown as`, which let a double survive a change to the type it stands in for, and never `vi.mock`: Phaser is swapped for a stub by the test runner's alias, not mocked. Lint refuses all three.
 
 A helper **arranges**; it never simulates. It does not branch on its parameters, carry state between calls, or re-implement a production rule. `tickUntil` has a maximum and fails loudly when it reaches it.
 
@@ -144,11 +148,10 @@ A helper **arranges**; it never simulates. It does not branch on its parameters,
 ```text
 tests/helpers/
 ├── index.ts          # The one import path for a spec
-├── world/            # makeWorld, submit, tickUntil, spawnFoo, loadInputLog
+├── world/            # makeWorld, submit, tickUntil, spawnFoo, loadInputLog, makeWorldView
 ├── content/          # makeFooDef and the small registries built from them
 ├── factories/        # defineFactory: the counter-backed builder every makeFooDef is written with
-├── doubles/          # makeWorldView and the Phaser stub the test runner aliases in
-├── assertions/       # expectAccepted and expectRefused, for a command result
+├── doubles/          # The Phaser stub the test runner aliases in, and the recorders and fixed stand-ins a test hands its subject
 ├── recording/        # Drivers that play a stored session to record its log again: the one kind that simulates
 └── architecture/     # One file per rule the architecture tier checks: a collect function and a describe function
 ```
@@ -184,6 +187,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | The principle | Test a rule where it is decided, a join where it is joined. Never both |
 | A test earns its place | It fails for a reason you want to know about, and not for one you don't |
 | Where a spec lives | `tests/` at the root, mirroring `src/`. Never beside the source, never `__tests__/`, always `*.spec.ts` |
+| Testing doors | A spec goes past a layer's public door only through its `testing.ts`; only tests and `tooling/` import one, never `src/` |
 | Choosing the tier | First yes decides: Phaser or GPU → benchmark; a script under `tooling/` or a lint rule → tooling; DOM → presentation; world → simulation; registry → content; source tree → architecture; otherwise unit |
 | Budgets | unit under 5 ms · simulation under 50 ms · content suite under 200 ms · presentation under 20 ms |
 | Nothing draws | The presentation tier tests logic around Phaser, never pixels |
@@ -198,12 +202,13 @@ A simulation test that passes on the second run has found a determinism bug — 
 | A bug fix | Ships with its reproducing input log as a replay test |
 | Recorded logs | Valid on one content version, a hash over what the simulation reads: the atlas and the listed presentation fields are left out, and no rule reads a listed field. A definition change re-stamps them, or records again those that assert what the numbers do |
 | Re-stamping | `pnpm restamp` only, never by hand: every log replays to its checksums first, only the stamp is rewritten, and one failing log writes nothing |
-| State checksums | Every stored log holds one at every 30th tick and its last, over every listed field of world state; rewritten by `pnpm restamp --checksums` only, and only for a change meant to change behaviour |
+| State checksums | Every stored log holds one at every 30th tick and its last, over every listed field of world state; reached only through the testing door; a log saved from the panel holds none until it is promoted; rewritten by `pnpm restamp --checksums` only, and only for a change meant to change behaviour |
 | Shape | One outcome per test; names read as requirements; arrange, act, assert; no logic; literal expected values |
 | Time and randomness | From the world's seed and `tick`. No clock, no fake timers, no sleep |
 | Worlds | Small: a factory-made registry of the definitions the test needs |
 | Focused and skipped | None focused; skipped only with an owner and condition. No retries |
 | A flaky test | A determinism bug, treated as one the day it flakes |
+| Doubles | Built from the real type by a helper; no `as any`, no `as unknown as`, no `vi.mock`; Phaser is the runner's alias stub |
 | Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition; a recording driver plays a session only to record its log again; a helper that is itself a proof, as the full-state comparison is, keeps its spec beside it |
 | Where helpers live | `tests/helpers/`, one folder per kind; a spec imports from the barrel only; factories count, never randomise; an architecture rule exports its collect function beside its describe |
 

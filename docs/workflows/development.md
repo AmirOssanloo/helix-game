@@ -17,7 +17,7 @@ pnpm test:watch     # The same, rerunning on save
 pnpm lint           # ESLint; pnpm lint:fix applies the auto-fixes and Prettier
 pnpm typecheck      # tsc --noEmit, strict, then again over shared, domain, and simulation with no DOM
 pnpm dev            # The Vite dev server with hot reload
-pnpm build          # The production build, with the panel and DevApi stripped
+pnpm build          # The production build, with the panel, DevApi, and the debug overlays stripped
 pnpm build:playtest # The playtest build: the same game, with the panel left in
 pnpm bench          # Serves the render benchmark scene under bench/
 pnpm restamp        # Rewrites the content version stamp of every stored log, and nothing else
@@ -41,7 +41,7 @@ Nothing needs to be up for any of this. No containers, no database. `pnpm test` 
 | Unit         | `tests/domain/`, `tests/shared/`, `tests/instrumentation/` | Node | `pnpm test` | One rule at a time: an orb eviction, a turn step, a damage formula, an A* result |
 | Simulation   | `tests/simulation/`, `tests/app/` | Node      | `pnpm test` | A world ticked with commands: the acceptance tests from the mechanics spec, spell casts, enemy behaviour, the replay determinism test, the stress test; the fixed-step driver over a world with an injected clock |
 | Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
-| Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table, asserted a second time; a wrong-direction import fails here and in lint. Every relative link and anchor in the documentation resolves |
+| Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table and each layer's doors, asserted a second time; a wrong-direction import, or one that skips a door, fails here and in lint. No writable module-level binding under `src/domain/` or `src/simulation/`. Every relative link and anchor in the documentation resolves |
 | Presentation | `tests/presentation/`, `tests/devtools/` | jsdom  | `pnpm test` | Input mapping, view binding, and the panel, with Phaser stubbed. Few, and small |
 | Tooling      | `tests/tooling/`                | Node        | `pnpm test` | The scripts under `tooling/` and the custom lint rules, over inputs the test builds |
 | Benchmark    | `bench/`                        | Chrome      | `pnpm bench`, by an agent through browser automation | Render time, draw calls, heap over 30 seconds. Never in `check` |
@@ -71,13 +71,13 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 
 ## What the gate enforces
 
-- **Lint** carries the layer import allow-list, the determinism and host bans under `src/domain/` and `src/simulation/` (`Math.random`, `Date.now`, `performance.now` in every spelling, and the host's globals), the presentation bans (Phaser Shape and Graphics factories anywhere), and the size limit of 500 raw lines per file under `src/`. `tests/tooling/lint-rules.spec.ts` proves each ban fires where it should and nowhere else.
+- **Lint** carries the layer import allow-list, the determinism and host bans under `src/domain/` and `src/simulation/` (`Math.random`, `Date.now`, `performance.now` in every spelling, and the host's globals), the presentation bans (Phaser Shape and Graphics factories anywhere), each layer's doors (`src/simulation/testing.ts` is refused anywhere under `src/`), a `default` calling `assertNever` in every switch under `src/domain/` and `src/simulation/`, and the size limit of 500 raw lines per file under `src/`. `tests/tooling/lint-rules.spec.ts` proves each ban fires where it should and nowhere else.
 - **Typecheck** is strict. No optional properties, no non-null assertions; both are lint errors as well. It runs twice: once over everything, and once over `src/shared/`, `src/domain/`, and `src/simulation/` alone through `tsconfig.dom-free.json`, with no DOM library and no ambient types, so `document` or `setTimeout` there is a type error.
-- **The architecture spec** reads the import table and walks `src/`. It fails on an import lint missed — a dynamic import, a re-export through a barrel.
+- **The architecture spec** reads the import table and walks `src/`. It fails on an import lint missed — a dynamic import, a re-export through a barrel — on a reference into another layer that does not go through a door, on a value exported from the domain's types door, and on a binding at module scope under `src/domain/` or `src/simulation/` that can be written.
 - **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
-- **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.
+- **The replay determinism test** replays a recorded input log twice and asserts identical state, and replays every stored log to each state checksum it holds. It fails the moment any system reads the clock or an unseeded random source, and names the first checksum tick a stored log parts at.
 - **The stress test** asserts the mean tick under 4 ms with 200 enemies chasing the hero and 100 projectiles in flight, again with a boss and its adds among them, again with 300 units on random orders, and on a walk of the long road from the spawn to the last boss, where it also holds the live count under the cap and the packs behind the hero asleep. It fails when a change makes a system too expensive.
-- **The build** fails if `DevApi`, the developer panel, or the pane the panel is built from leaks into the production bundle — and the playtest build fails if the panel is missing from it, so neither build can quietly become the other.
+- **The build** fails if `DevApi`, the developer panel, the pane the panel is built from, or the debug overlays leak into the production bundle — and the playtest build fails if the panel or the overlays are missing from it, so neither build can quietly become the other.
 - **The docs link test** fails on a relative link or anchor that does not resolve, so a renamed page or heading cannot leave a dead pointer behind.
 
 ---
@@ -127,13 +127,13 @@ Every command on this page is under `scripts` in the root `package.json`. That f
 
 ## When something looks wrong
 
-**A test passes alone and fails in the suite.** Something shares state between worlds — a module-level pool, a cached registry. Each test builds its own world.
+**A test passes alone and fails in the suite.** Something shares state between worlds — a module-level pool, a cached registry. Each test builds its own world, and a rule's working memory lives on the world's scratch, never at module scope.
 
 **The replay test fails after a change that "didn't touch the simulation".** It did. Look for a system reading iteration order from a `Map` keyed by object, or a sort without a tie-break.
 
 **Lint passes but the architecture spec fails.** A barrel re-export or a dynamic import crossed a layer. The failure names the file.
 
-**`pnpm build` fails on `DevApi`.** Something under `src/presentation/` or `src/app/` imports `src/devtools/` outside the development-only branch.
+**`pnpm build` fails on `DevApi` or the overlays.** Something under `src/presentation/` or `src/app/` imports `src/devtools/`, or adds the overlays' view syncer, outside the composition root's panel-build branch.
 
 ---
 

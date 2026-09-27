@@ -68,7 +68,7 @@ The build as phase 6 left it, and a pause screen. Press Esc with nothing to clos
 | Layer | docs |
 | Size | 1 |
 | Depends on | every other phase 7 ticket, T01 and the bucket's included |
-| Status | planned |
+| Status | done |
 
 **Build:** every architecture page this phase touched, read against the build and corrected. Each page's Quick reference must hold every rule its body states:
 - the [world model](../../../../docs/architecture/world-model.md), for the unit's sub-records and the order's tagged target;
@@ -87,6 +87,8 @@ Any drift the proposal of 2026-09-27 named that no ticket closed is closed here 
 **Tests:** none.
 
 **Definition of done:** Every change · A documentation change.
+
+> **Closed, 2026-09-27:** `pnpm check` green, 4585 tests, and the stress tier. Every page the ticket names was read against the build and corrected, and every other page under `docs/`, `AGENTS.md`, `README.md`, the rules, and the project skills were swept for what phase 7 made stale. Each touched architecture and standards page's Quick reference now holds every rule its body states; where a page had four anti-patterns, one was cut. Where to look: every path it names exists, the world row no longer says the world loads a map, and rows were added for the testing door, the DOM-free typecheck, and the size limit's list. The runbooks for a spell and an enemy name the real fields and descriptors. One code comment was corrected: the driver's clock is not the only read of time. The docs-links test walks the whole repository and passes. The proposal of 2026-09-27 is not a file in the repository, so its drift list was read through the phase 7 tickets that cite it; none names a drift for these pages that a ticket left open. What the code has not reached, or that needs a decision, went to [Deferred](../backlog/deferred.md): the item source kind behind ADR 0011, the tier of specs that build a world, a runbook for a definition kind, and two older wording tensions. Zone and projectile speeds divided at spawn were already there.
 
 ---
 
@@ -137,11 +139,11 @@ Each accepted item is written as a ticket, P7-S50-T04 onward, with a note. What 
 | --- | --- |
 | No click or key on a screen reaches the world | Holds. `tests/presentation/input-capture.spec.ts`: over a real mapper, a left and a right click, a release after a press from the world, and every bound key but Esc send no command with the pause screen open, and the log gains nothing; the bar's clicks never reach the world. The HUD scene no longer listens to the pointer or stops propagation |
 | The pause screen, by an agent in Chrome | Holds, 2026-09-27, the dev build in Chrome through browser automation: Esc opened it at tick 563; a right click, a left press dragged and released, and Q, S, A left the tick at 563 and the hero at (2000, 400) for 1.5 s; a click on Resume ran the world on from 563, at most one tick a frame (563, 564, 564, 565, ...); the same right click with the screen closed moved the hero |
-| The docs sync | |
-| The bucket: spent, and on what | |
+| The docs sync | Holds, 2026-09-27 (T02): 38 pages and files corrected against the build, every where-to-look path resolves, the docs-links test green over the repository; four drifts that need code or a decision in Deferred |
+| The bucket: spent, and on what | Not spent before T02: the event record's readers fell away with (b), and no ticket named a latent bug a refactor made live. The day is held for its first claim, a gate row that fails in T03, and is recorded spent or unspent there |
 | The gate walk | |
 | Milestone M11 | |
-| Actual days per ticket | T01: 1, sized 1 |
+| Actual days per ticket | T01: 1, sized 1; T02: 0.5, sized 1 |
 | Sprint total | |
 
 ## Risks in this sprint

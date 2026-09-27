@@ -79,7 +79,7 @@ Phaser v4.2.1 (WebGL | Web Audio)
 ## Editor setup
 
 - **ESLint and Prettier on save.** The repository ships `eslint.config.js` and a Prettier config; point your editor at them. Lint carries the layer import allow-list, so a wrong-direction import shows as a red squiggle before you run anything.
-- **TypeScript strict.** The `tsconfig.json` is strict with path aliases `@shared`, `@domain`, `@simulation`, `@content`, `@instrumentation`, `@presentation`, `@devtools`, `@app`. Use the aliases; relative paths that climb out of a layer are a lint failure.
+- **TypeScript strict.** The `tsconfig.json` is strict with path aliases `@shared`, `@domain`, `@simulation`, `@content`, `@instrumentation`, `@presentation`, `@devtools`, `@app`. Use the aliases, and enter a layer through its door: its `public.ts`, or the domain's `queries.ts` or `rules.ts`. Relative paths that climb out of a layer are a lint failure. A second config, `tsconfig.dom-free.json`, compiles `src/shared/`, `src/domain/`, and `src/simulation/` with no DOM library.
 - **Vitest.** The Vitest extension, if your editor has one, runs a single spec from the gutter.
 
 ---
@@ -97,6 +97,7 @@ Phaser v4.2.1 (WebGL | Web Audio)
 | The Phaser config and the fixed-step driver     | `src/app/`                               |
 | Pure helpers with no game knowledge             | `src/shared/`                            |
 | Every test                                      | `tests/`, mirroring `src/`               |
+| Scripts run by hand, such as `pnpm restamp`     | `tooling/`                               |
 | The render benchmark scene                      | `bench/`                                 |
 | How it all fits, and the rules code follows     | `docs/`                                  |
 
@@ -114,7 +115,7 @@ The layer each folder belongs to, and what it may import, is in [Layers and the 
 | A warning banner reads "Canvas renderer"        | WebGL is unavailable in this browser       | Enable hardware acceleration, or use another machine                |
 | The hero does not move when you click           | Left click selects; right click moves      | Right-click the ground                                              |
 | Holding Q adds one orb, not three               | Q, W, E are edge-triggered                 | By design. Press three times                                        |
-| `pnpm check` fails in `tests/architecture.spec.ts` | A file imports across a layer boundary  | Read the failure; it names the file and the layer it may not import |
+| `pnpm check` fails in `tests/architecture.spec.ts` | A file imports across a layer boundary or around a layer's door, or holds a writable binding at module scope in the domain or the simulation | Read the failure; it names the file and what it may not do |
 
 ---
 

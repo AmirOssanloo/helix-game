@@ -33,7 +33,7 @@ Q Q W ──► three orb commands ──► buffer [Q,Q,W] ──► R ──�
 9. **The cast point runs.** The hero holds for the spell's cast point, counted in ticks. A stun now cancels it: nothing spent, no clock.
 10. **Commit.** On the tick the cast point ends, the pipeline spends the mana, starts the spell's cooldown clock on the hero, and runs the definition's effects in order. Say the first is a damage area: the spatial hash returns the units near the point, the combat rules apply each one's magic resistance, and every unit's health drops. Say the second applies a status: each unit's status table gains an entry, and its stack rule decides whether a unit already carrying it refreshes or ignores. Events go on the ring for each damage and each status.
 11. **Backswing.** The hero is busy for the backswing. A move order cancels it; the spell already landed.
-12. **Death resolves.** At the end of the tick, one system checks every unit whose health reached zero, emits one death event each, and releases them. Experience goes to the hero.
+12. **Death resolves.** At the end of the tick, one system checks every unit whose health reached zero, emits one death event each, and starts the hero's respawn or holds every other unit's slot for a tuned delay before it is released. Experience goes to the hero.
 13. **The screen reacts.** The sync drains the ring: a floating damage number over each hit unit, a fill-tint flash on their views, a status icon above the ones still standing, a released view for the ones that died, the D square's wedge starting its sweep. The HUD bars read the hero's mana from the world view, not from the events.
 
 ---
@@ -44,7 +44,7 @@ Q Q W ──► three orb commands ──► buffer [Q,Q,W] ──► R ──�
 
 **Re-invoking a spell that is already out.** The buffer names the spell sitting in F. R swaps D and F, spends no mana, and starts no composer cooldown. If the spell is already in D, nothing happens at all. The player can promote F as fast as they can press R.
 
-**Pressing D while silenced.** The command is submitted; the validator reads the silence flag the previous tick's status pass set and drops it. The cursor does not open, because the mapper checks the same flag on the world view before opening. A refused-command event tells the HUD to flash the square.
+**Pressing D while silenced.** The spell in D needs a click, so before opening the cursor the mapper asks the domain the same readiness question the validator asks, over the world view, and the silence flag the previous tick's status pass set answers it. The cursor does not open, nothing is submitted, and the mapper flashes the square with the reason. A spell that needs no click is submitted instead; the validator drops it, and a refused-command event tells the HUD to flash the square.
 
 **Escape with the cursor open.** The mapper closes the cursor and submits nothing. No mana, no clock, no order change. The hero keeps whatever order it had.
 
@@ -95,6 +95,7 @@ Opening the targeting cursor by issuing a stop order "so the cast is ready". The
 | R with a recipe already in F | Swap D and F; no mana, no cooldown |
 | R with a recipe already in D | Nothing |
 | A targeted slot key | Opens the cursor on screen; sends nothing |
+| A targeted slot key the domain would refuse | The cursor stays shut and nothing is sent; the mapper flashes the square with the domain's reason |
 | The click | A cast command with the world point resolved at click time |
 | A vector spell's click | The press is resolved and held, sending nothing; the release sends one cast command with the press and the release, the press twice when there was no drag |
 | Escape | Closes the cursor; sends nothing |

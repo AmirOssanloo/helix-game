@@ -22,6 +22,10 @@ Skill points are spent by clicking the Q, W, or E square while a point is unspen
 
 D and F show the prepared spell's colour and a short label. Empty slots show an empty socket. A key a disable blocks is greyed out while the disable lasts, and every key and the orb buffer grey while the hero is dead.
 
+## The pause screen
+
+Escape, with no targeting cursor open and no screen to close, opens the pause screen: a dark shade over the whole canvas, a panel in the middle reading PAUSED, and one button, RESUME. The world stops on the tick it stands on. While it is open no click and no key but Escape reaches the world. Escape or a click on RESUME closes it, and the world goes on from the same tick. [Controls and orders](./controls-and-orders.md) has the keys.
+
 ## Around the hero
 
 - **Floating orbs.** The three orb instances orbit the hero, matching the bar's order, so the player reads the buffer without looking down.
@@ -54,7 +58,8 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Checkpoints | Thin ring as wide as the checkpoint's reach | Pale grey ahead, green once reached |
 | Checkpoint word | Bitmap text | Green |
 | Status icons | Small outlined squares with a glyph | White; the glyph tells them apart |
-| Overlays | The same shapes at low alpha | One per overlay |
+| Overlays, in a build with the panel | The same shapes at low alpha | One per overlay |
+| Pause screen | A shade over the canvas, a panel, and a button | Black shade, dark grey panel, white words |
 
 ## Depth order
 
@@ -67,6 +72,7 @@ From the bottom up, so a projectile is never hidden by the ground it flies over:
 5. Air effects and lifted units
 6. Floating text and status icons
 7. Overlays
+8. The bottom bar, then screens such as the pause screen, over everything
 
 There is no sorting by vertical position: everything lies flat on the floor and nothing is tall, so nothing can stand in front of what is behind it. Tall sprite art changes that; [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) says what it adds.
 
@@ -85,6 +91,7 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 | Health at zero | The health bar is empty; the six ability squares and the orb buffer grey until respawn, as death refuses every key |
 | Skill point unspent at level cap | The marker stays until spent |
 | Tab hidden | The HUD freezes with the simulation |
+| Pause screen open | The HUD holds still behind the shade; a click on the bar reaches neither the bar nor the world |
 
 ## Deferred
 

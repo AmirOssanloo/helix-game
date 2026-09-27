@@ -70,13 +70,13 @@ export const frostLanceHitFields = objectOf({ slowSeconds: nonNegativeSchema })
 export const frostLanceHitEffect: NamedEffect = (world, cast, fields) => { /* … */ }
 ```
 
-Register the key in `src/domain/abilities/effects/index.ts` with the schema of its fields beside it:
+Register the key in `src/domain/abilities/effects/index.ts` with the schema of its fields beside it, and the effect entries those fields carry, `NO_NESTING` when they carry none:
 
 ```typescript
-['frost_lance_hit', { fields: frostLanceHitFields, run: frostLanceHitEffect }],
+['frost_lance_hit', { fields: frostLanceHitFields, nested: NO_NESTING, run: frostLanceHitEffect }],
 ```
 
-The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the direction a vector cast was dragged along if it was, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, and gets every number from `cast.ability`, its own fields, or the tuning table. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
+The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the direction a vector cast was dragged along if it was, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, keeps any working memory on `world.scratch` rather than at module scope, and gets every number from `cast.ability`, its own fields, or the tuning table. Its fields are read as written, never converted at load, so a rate per second is not one of them; the content tier refuses one. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
 
 ---
 
@@ -100,7 +100,7 @@ Reload the page and click **Download atlas PNG** in the developer panel to confi
 export const spells = [hoarfrostDef, frostLanceDef, /* … */]   // In the place of the spell it replaces
 ```
 
-The registry assembles this list at startup, validates every definition against the schema, and fails loudly on an unresolved key or a missing frame.
+The registry assembles this list at startup, validates every definition by the spell kind's descriptor in `src/domain/definitions/kinds/spell.kind.ts`, and fails loudly on an unresolved key or a missing frame. A new spell touches nothing there.
 
 ---
 

@@ -45,7 +45,7 @@ export const fooBarDef = {
 
 **Tables by orb level are arrays indexed from level one with an explicit length.** The domain reads `table[level - 1]`; the content test asserts every table has the length the definition type declares, so a spell can never read past the end at max level.
 
-**Units in content are the designer's units.** Durations in seconds, distances in world units, speeds in units per second, chances as fractions of one. The domain converts seconds to ticks at load, once. A content file never contains a tick count.
+**Units in content are the designer's units.** Durations in seconds, distances in world units, speeds in units per second, chances as fractions of one. The domain converts seconds to ticks, and a rate per second to a rate per tick, once, when the world builds its records from the registry; nothing converts on a cast or a hit. A content file never contains a tick count.
 
 **A number design may retune carries a `// tunable` comment.** Numbers live in content files so they can change without touching code. A number a balance pass moved says so beside it, `// tunable; balance pass 1`, as a reference number cites its patch, and the catalogue's reason for it cites the same pass.
 
@@ -103,7 +103,7 @@ A definition that fails any of these fails the build. [Testing standards](./test
 | Cross-references | By id only; never import another definition |
 | Numbers | Every tunable is a field, never a literal in a formula |
 | Level tables | Arrays indexed from level one with the declared length |
-| Units | Seconds, world units, units per second, fractions; the domain converts at load; no tick counts in content |
+| Units | Seconds, world units, units per second, fractions; the domain converts once, when the world builds its records; no tick counts in content |
 | Reference numbers | Cited with the patch in a comment; a number a balance pass moved cites the pass beside it |
 | Drawing | Every visible definition declares an `atlasFrame` from the frame list |
 | Validation | Schema, keys, referenced ids, table lengths, frames, unique ids — all in the content test, all build-failing |

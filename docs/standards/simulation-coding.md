@@ -21,7 +21,7 @@ How code under `src/domain/` and `src/simulation/` is written so that a tick is 
 
 Every duration inside the simulation is an integer number of ticks. A cooldown is "ready at tick N", a cast point is "commit at tick N", a status is "expires at tick N".
 
-Content writes seconds because designers think in seconds. **The domain converts seconds to ticks when a definition is loaded**, once, and stores the tick value. A system never multiplies by a tick rate; if it does, the rate has leaked into a rule.
+Content writes seconds because designers think in seconds. **The domain converts seconds to ticks, and a rate per second to a rate per tick, when a definition is loaded**, once, and stores the tick value. A system never multiplies by a tick rate; if it does, the rate has leaked into a rule.
 
 ```typescript
 // At load, once. Never inside a system.
@@ -98,7 +98,7 @@ export const fooSystem = (world: World): void => {
 Two kinds, and the difference is what happens in production.
 
 - **Always-on cheap checks at boundaries.** Command validation, content validation at registry build, pool acquire (refuse past capacity), map load (grid matches bounds). These run in every build because a violation here means corrupted state, and the cost is a comparison.
-- **Development-only asserts inside the tick.** `assert(unit.hp >= 0)` in the damage system. Stripped from production by the build, because the tick is the hot path and the invariant is already guaranteed by the boundary checks when the code is right.
+- **Development-only asserts inside the tick.** `assert(unit.resources.health >= 0)` in the damage system. Stripped from production by the build, because the tick is the hot path and the invariant is already guaranteed by the boundary checks when the code is right.
 
 ---
 
@@ -132,13 +132,13 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 
 | Rule | Do |
 | --- | --- |
-| Outside world | No Phaser, DOM, `window`, or clock in `domain/` or `simulation/`, not even as types |
-| Randomness and time | The world's seeded source and the tick count. `Math.random`, `Date.now`, `performance.now` are lint failures |
+| Outside world | No Phaser, DOM, `window`, or clock in `domain/` or `simulation/`, not even as types; the host's timers, storage, network, `crypto`, and `structuredClone` are lint failures; the folders typecheck with no DOM library |
+| Randomness and time | The world's seeded source and the tick count. `Math.random`, `Date.now`, `performance.now` are lint failures, however spelled |
 | A rule's draw | The keyed draw, with its own purpose from the one list, a second purpose for a draw of another kind on one key and tick, and a draw index from 0 for several of one kind; the integer result scaled locally |
 | Asynchrony | None. A tick runs to completion |
-| Durations | Integer ticks, converted from seconds once at definition load. A system never multiplies by the tick rate |
+| Durations | Integer ticks, converted from seconds once at definition load, and a rate per second to a rate per tick. A system never multiplies by the tick rate |
 | Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch on the world's scratch; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |
-| Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
+| Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order; commands in one tick by timestamp, then key priority |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
 | Module scope | No mutable binding under `domain/` or `simulation/`, at any depth: constants typed read-only all the way down; the architecture test holds it |
 | Scratch | On `world.scratch`, made with the world, dead at the end of every tick, left out of the checksum; a value a later tick reads is state, in run or map scope |

@@ -16,6 +16,7 @@ The suffix says what the file is, and lint rules and the architecture test match
 | Pattern | Holds |
 | --- | --- |
 | `*.def.ts` | One content definition — a spell, an enemy, a status, a map |
+| `*.kind.ts` | One definition kind's descriptor: its schema, its checks, and its tuning, beside the kind list the registry walks |
 | `*.system.ts` | One per-tick system, a function over world state |
 | `*.effect.ts` | One named effect the ability pipeline looks up by string key |
 | `*.behaviour.ts` | One AI behaviour looked up by string key |
@@ -152,7 +153,7 @@ It skips the only question worth asking — what should happen when this is miss
 | Thing | Rule |
 | --- | --- |
 | Files and folders | kebab-case, always; the suffix says what the file is |
-| Suffixes | `.def.ts` definition · `.system.ts` system · `.effect.ts` named effect · `.behaviour.ts` AI behaviour · `.view.ts` view · `.scene.ts` scene · `.spec.ts` test |
+| Suffixes | `.def.ts` definition · `.kind.ts` definition kind descriptor · `.system.ts` system · `.effect.ts` named effect · `.behaviour.ts` AI behaviour · `.view.ts` view · `.scene.ts` scene · `.spec.ts` test |
 | Commands and events | Variants of one union in one file per folder, never a file per variant |
 | Main export | Matches the file name; named, never default |
 | Casing | Types, classes, definition types PascalCase; functions and constant objects camelCase; primitive constants SCREAMING_SNAKE_CASE; properties, including definition fields, camelCase; ids and keys, as string values, snake_case |

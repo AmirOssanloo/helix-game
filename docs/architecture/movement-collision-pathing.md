@@ -91,7 +91,7 @@ Every question of the form "what is near here" goes through one uniform grid has
 | Move | The movement system, when a unit changes cell |
 | Circle query | Attack range, area effects, attack-move target search, an occupied spawn point |
 | Segment query, widened by a radius | Projectile sweeps, line and cone effects |
-| Rectangle query | The presentation, to bind views to what the camera can see |
+| Rectangle query | The presentation, once a frame, to bind views to what the camera can see; every view that draws units reads that one answer |
 
 The hash returns candidates; the caller does the exact test. It returns ids in cell-then-index order so a replay finds the same target first. Queries write into a caller-supplied buffer and allocate nothing. A segment query takes the radius of the disc swept along it, so a unit whose centre is in a neighbouring cell is still a candidate. The cell size is a tunable; a change rebuilds the hash.
 

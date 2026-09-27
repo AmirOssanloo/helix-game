@@ -61,6 +61,7 @@ When two people call the same thing different names, the names leak into the cod
 | A unit an ability creates on the hero's side, owned by its caster | **Summon** | Pet, minion |
 | An enemy an ability creates, owned by its caster and in its pack | **Add** | Summon (that is on the hero's side), minion |
 | The typed data describing a spell, enemy, status, or map | **Definition** (`FooDef` in code) | Config, template, blueprint, prefab |
+| A file another layer imports a layer through: its `public.ts`, the domain's `queries.ts` for pure reads and `rules.ts` for systems and mutators, or a `testing.ts` only tests may import | **Door** | Barrel, index, API, entry point |
 | The part of an overlap between the hero and another unit that moves the hero, the rest moving the other unit | **Push share** (`hero_push_share` in code) | Push weight, mass, share of push-out |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
@@ -78,6 +79,7 @@ When two people call the same thing different names, the names leak into the cod
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
 | A person's note saved with the input log up to the tick it was written on, the content version, and the build it was played on | **Feedback file** | Bug report, playtest report, note |
 | The commit a build was made from, and whether its tree held uncommitted changes | **Build stamp** | Version, build id, revision |
+| The hash of every definition number the simulation reads, art left out, which an input log is stamped with and replays only under; `pnpm restamp` rewrites it | **Content version** | Registry hash, data version, build stamp (that is the code's) |
 | The hash of the whole of world state a tick decides, which a stored input log holds at every 30th tick and its last | **State checksum** | State hash, world hash, snapshot |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |
 | One step of the play scene's frame, registered with its place in the sync order: it makes its pools once and writes them every frame | **View syncer** | Render system, system (that is the simulation's), update hook |

@@ -27,40 +27,49 @@ import type { EnemyDef } from '@domain/public'
 
 export const frostArcherDef = {
   id: 'frost_archer',
-  name: 'Frost Archer',
-  tier: 'normal',                       // 'normal' | 'elite' | 'boss'
-  health: 95,
-  healthRegen: 0.1,                     // Per second; the pipeline converts to per tick
-  armour: 2,
+  health: 95, // tunable
+  healthRegen: 0.1, // tunable; per second, converted to per tick when the world builds its records
+  mana: 300, // tunable; frost_volley's cost comes out of it
+  manaRegen: 1, // tunable
+  armour: 2, // tunable
   magicResistance: 0.25,
-  moveSpeed: 225,
-  turnRate: 0.7,                        // Radians per 0.03 s, as the hero's
-  collisionRadius: 32,                  // A radius class, wider than the body is drawn
-  boundRadius: 24,                      // The drawn size, and what reach is measured on
-  attack: {
-    damage: 30,
-    damageType: 'physical',
-    range: 550,
-    projectileSpeed: 900,
-    attackPointSeconds: 0.4,            // Before the arrow leaves; converted to ticks at load
-    baseAttackSeconds: 1.7,             // One attack per this many seconds; converted to ticks at load
+  movementSpeed: 225, // tunable
+  turnRate: 0.7, // tunable; radians per 0.03 s, as the hero's
+  body: {
+    collisionRadius: 32, // tunable; a radius class, wider than the body is drawn
+    boundRadius: 24, // tunable; the drawn size, and what reach is measured on
+    selectionRadius: 32, // tunable
   },
-  aggroRadius: 800,
-  leashRadius: 1400,
-  experience: 60,
-  behaviour: 'ranged_kiter',            // A key under src/domain/ai/behaviours/
-  abilities: [                          // Tried in order; each id a key of a definition under src/content/abilities/
-    { id: 'frost_volley', condition: { kind: 'always' } },  // Or 'health_below' with a fraction, 'target_within' with a distance
+  attack: {
+    damage: 30, // tunable
+    range: 550, // tunable
+    acquireRadius: 800, // tunable
+    pointSeconds: 0.4, // tunable; before the arrow leaves, converted to ticks at load
+    backswingSeconds: 0.4, // tunable
+    baseAttackTimeSeconds: 1.7, // tunable; one attack per this many seconds
+    projectileSpeed: 900, // tunable
+    projectileRadius: 10, // tunable
+    atlasFrame: 'disc',
+    tint: 0x99ddff, // tunable
+  },
+  aggroRadius: 800, // tunable
+  leashRadius: 1400, // tunable
+  experience: 60, // tunable
+  indestructible: false,
+  tier: 'normal', // 'normal' | 'elite' | 'boss'
+  abilities: [ // Tried in order; each id a key of a definition under src/content/abilities/
+    { id: 'frost_volley', condition: { kind: 'always' } }, // Or 'health_below' with a fraction, 'target_within' with a distance
   ],
-  eliteAbility: null,                   // The one entry an elite adds after its list, or null for none
-  bossAbilities: [],                    // The entries a boss adds after its list, tried in order
-  statuses: [],                         // Statuses it carries for life, such as 'bash'; at most two, none raising a flag
+  eliteAbility: null, // The one entry an elite adds after its list, or null for none
+  bossAbilities: [], // The entries a boss adds after its list, tried in order
+  statuses: [], // Statuses it carries for life, such as 'bash'; at most two, none raising a flag
+  behaviour: 'ranged_kiter', // A key under src/domain/ai/behaviours/
   atlasFrame: 'square',
-  tint: 0x99ddff,
+  tint: 0x99ddff, // tunable
 } as const satisfies EnemyDef
 ```
 
-Every field is required. A missing one is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable and its attack's damage times the `elite_damage_multiplier` or `boss_damage_multiplier` tunable, grants its `experience` times the `elite_experience_multiplier` or `boss_experience_multiplier` tunable on its death, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
+Every field is required, and the enemy kind's descriptor in `src/domain/definitions/kinds/enemy.kind.ts` lists them; a new archetype touches nothing there. A missing field is a validation failure, not a default, so a definition never silently inherits a number from somewhere else. `tier` is `'normal'` in a definition; a spawn asks for a tier. An elite or a boss spawns with the definition's health times the `elite_health_multiplier` or `boss_health_multiplier` tunable and its attack's damage times the `elite_damage_multiplier` or `boss_damage_multiplier` tunable, grants its `experience` times the `elite_experience_multiplier` or `boss_experience_multiplier` tunable on its death, casts its `eliteAbility` or its `bossAbilities` after its own list, and is drawn with an outline. Nothing else about it changes: the rules that stun a grunt stun a boss.
 
 The numbers are set as the [enemy catalogue](../product/specs/enemy-catalogue.md#1-purpose) sets every archetype's, against a monster of Diablo II's first act: a fighting archetype dies to one to four of the hero's basic attacks after its armour, and walks slower than the hero. The content tier checks both. The Frost Archer's 95 behind armour 2 is three of the hero's attacks, and its 225 is under the hero's 280.
 
@@ -100,7 +109,7 @@ Something the enemy does on every hit, a bash or a frost attack, is not an abili
 
 ```typescript
 // src/content/enemies/index.ts
-export const enemies = [meleeGruntDef, fastRunnerDef, rangedArcherDef, tankDef, trainingDummyDef, frostArcherDef]
+export const enemies = [meleeGruntDef, fastRunnerDef, /* … every archetype … */, trollDef, frostArcherDef] as const satisfies readonly EnemyDef[]
 ```
 
 ---
@@ -125,7 +134,7 @@ Build a world with the hero at the centre and a pack of three Frost Archers just
 
 - **Aggro on sight.** Move the hero inside the radius. All three leave Idle within one tick; the pack shares aggro, so the two that could not see the hero aggro with the one that did.
 - **Aggro on damage.** Reset. Hit one from outside the radius. The whole pack aggros.
-- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on the `baseAttackSeconds` cadence; the first projectile leaves after `attackPointSeconds`. Both are ticks by then, converted at load.
+- **Range holding.** Tick until they close. Each stops at `attack.range` minus the bound radii and fires on the `baseAttackTimeSeconds` cadence; the first projectile leaves after `pointSeconds`. Both are ticks by then, converted at load.
 - **Kiting.** Walk the hero into melee. Each backs away along a path and keeps firing.
 - **Leash.** Walk the hero past `leashRadius`. They enter Return, walk to their spawn point, and regenerate.
 - **Death and experience.** Kill one. It enters Dead, its view unbinds, the hero gains `experience`, and its pool slot is released.
@@ -152,7 +161,7 @@ If the tick readout climbs with five on screen, something in the behaviour is re
 
 ## 9. Tune it
 
-Numbers in a definition hot-reload. Edit `health` or `moveSpeed`, save, and the next spawned pack has the new numbers. For live retuning of an existing pack, the **Tuning** group exposes every field a definition marks tunable. A tuning change is a command in the input log, so a session that found the right numbers replays.
+Numbers in a definition hot-reload. Edit `health` or `movementSpeed`, save, and the next spawned pack has the new numbers. For live retuning, the **Tuning** group exposes every field a definition marks tunable. A unit's health, mana, their regeneration, armour, attack speed, and magic resistance are derived every tick from a base it stored at spawn, so a change to one of those reaches the units spawned after it; spawn a fresh pack to see it. A tuning change is a command in the input log, so a session that found the right numbers replays.
 
 ---
 

@@ -2,7 +2,7 @@
 
 A 2D hero-combat game for the browser. TypeScript, Phaser 4, Vite, Vitest, one package. The product is **Helix**; **Skein** is the name of the hero's kit, and the [vocabulary](./docs/product/vocabulary.md) says never to call the game that.
 
-**The repository has no source code yet.** The pages under `docs/` describe the target and code is held to them. The folder under `.claude/plan/implementation/` describes the order and cost of reaching it. [STATUS.md](./.claude/plan/implementation/STATUS.md) says which sprint is active and which ticket is next. A pointer in the docs to a file under `src/` returns nothing until the ticket that creates it is done; that is expected, not a broken link.
+**The pages under `docs/` describe the target and the code is held to them.** Where the two differ, the page is right and the code comes to it. The folder under `.claude/plan/implementation/` describes the order and cost of reaching it. [STATUS.md](./.claude/plan/implementation/STATUS.md) says which sprint is active and which ticket is next. A pointer in the docs to a file under `src/` that a later ticket creates returns nothing until that ticket is done; that is expected, not a broken link.
 
 This file is a map. It links; it does not restate. When a sentence here disagrees with a page it links, the page wins and this file gets fixed.
 
@@ -53,12 +53,12 @@ Use the table in [docs/README.md](./docs/README.md#for-agents-what-to-load-for-a
 
 Each is owned by the page it links. The link is the rule; this list only says which ones bite most often.
 
-- **Imports run one way, and lint enforces it.** Phaser under `src/presentation/`, and under `src/app/` only to construct the game. No clock, DOM, or `Math.random` under `src/domain/` or `src/simulation/`. [Layers](./docs/architecture/layers-and-dependency-rule.md#quick-reference)
+- **Imports run one way, and enter a layer only through its doors; lint enforces both.** Nothing under `src/` imports a `testing.ts`. Phaser under `src/presentation/`, and under `src/app/` only to construct the game. No clock, DOM, or `Math.random` under `src/domain/` or `src/simulation/`. [Layers](./docs/architecture/layers-and-dependency-rule.md#quick-reference)
 - **Time in the simulation is a tick count.** Seconds live in content and are converted once. [Simulation loop](./docs/architecture/simulation-loop.md#quick-reference)
 - **Every change to world state is a command.** The developer panel included. [ADR 0004](./docs/adr/0004-all-mutation-enters-as-commands.md)
 - **Content references effects and behaviours by string key.** Never by function. [ADR 0005](./docs/adr/0005-content-references-by-string-key.md)
 - **No optional properties, no non-null assertions, no ticket or sprint references in code.** [Coding standards](./docs/standards/coding.md#quick-reference)
-- **Nothing allocates inside a system in steady state.** [Simulation coding](./docs/standards/simulation-coding.md#quick-reference)
+- **Nothing allocates inside a system in steady state, and nothing holds state at module scope.** A rule's working memory is the world's scratch. [Simulation coding](./docs/standards/simulation-coding.md#quick-reference)
 - **One word per concept.** Hero, unit, enemy, spell, ability, order, command, event, tick. [Vocabulary](./docs/product/vocabulary.md)
 - **A page that states a rule the change affects is updated in the same change.** [Documentation standards](./docs/documentation-standards.md#quick-reference)
 

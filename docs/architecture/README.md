@@ -45,7 +45,7 @@ src/
 └── app/              # The composition root and the fixed-step driver
 ```
 
-Imports run one way, and lint enforces it. [Layers and the dependency rule](./layers-and-dependency-rule.md) holds the table.
+Imports run one way, and enter a layer only through its doors; lint enforces both. [Layers and the dependency rule](./layers-and-dependency-rule.md) holds the table.
 
 ---
 
@@ -63,7 +63,7 @@ Two pages answer "what is actually there?" — everything else here answers "how
 - [Layers and the dependency rule](./layers-and-dependency-rule.md) — the eight layers, the import table, the public doors
 - [Simulation loop](./simulation-loop.md) — the fixed step, the accumulator, the tick, the system order, time as a tick count
 - [Commands and events](./commands-and-events.md) — input becomes commands, the tick emits events, the developer panel uses the same door
-- [Entities and pools](./entities-and-pools.md) — pooled objects, generational ids, run scope and map scope
+- [Entities and pools](./entities-and-pools.md) — pooled objects, generational ids tagged by their pool, run scope and map scope, the world's scratch
 - [Content and registries](./content-and-registries.md) — definitions as data, effects and behaviours by string key, validation at startup
 - [Ability pipeline](./ability-pipeline.md) — targeting, cast point, cooldowns, effect primitives, and why Invoke is a separate module
 - [Movement, collision, and pathing](./movement-collision-pathing.md) — locomotion, push-out, the spatial hash, grid A*

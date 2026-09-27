@@ -32,7 +32,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a cast moves from request to commit, and what it spends | `src/domain/abilities/` — the cast system, the cast context, the effect runner, the mana and cooldown rules, and the spell level a recipe's orbs index them by |
 | How a zone and a projectile move, touch, and expire | `src/domain/abilities/zones/` and `src/domain/abilities/projectiles/` — one system each |
 | Which AI behaviours exist | `src/domain/ai/behaviours/` — one file per behaviour, and the index that registers each under its key |
-| How a unit's behaviour is chosen and run each tick, the states an enemy moves through, and which ability it casts | `src/domain/ai/` — the registry, the shared state machine, the ability selection rule, and the pass over it |
+| How a unit's behaviour is chosen and run each tick, the states an enemy moves through, and which ability it casts | `src/domain/ai/` — the registry, the shared state machine with one file per state under `states/`, the ability selection rule, and the pass over it |
 | How a pack is placed, from the panel or a map, and when a map's pack wakes or sleeps | `src/domain/ai/packs.ts` — the one door a pack enters by, and the wake and sleep rule the AI pass ends with |
 | The walkability grid a unit is placed and paths on, what a map load resets, and when a checkpoint is reached | `src/domain/map/` — the grid and its radius classes, the map-scope reset, and the checkpoint rule |
 | How a unit attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
@@ -59,12 +59,12 @@ Every other architecture page says how code must be shaped. This one says where 
 | How units are kept apart and out of obstacles, and in what order | The collision rule and the collision system under `src/domain/movement/` — the two pushes, the share of an overlap the hero takes against the even split, the pass loop, and the tie-break |
 | How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
 | How "what is near" is answered, and what a query returns | The spatial hash under `src/domain/movement/` — the operations, the cell capacity, and the candidate order |
-| How a world is created, restarts on a seed and a map, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
+| How a world is created, restarts on a seed and a map, ticks, and is disposed, and how the hero enters it | `src/simulation/world.ts`; `src/simulation/session-world.ts` enters the hero into a new or restarted one |
 | How a session is made under another seed, how a loaded log runs on its own map, and how a map change keeps the run | `src/simulation/session.ts` — recreating under a seed, loading a log, and saving one that names its starting map; `src/domain/map/load-map.ts` — what a `load_map` command does |
 | How a session is recorded and replayed | `src/simulation/input-log.ts` records it; `src/simulation/replay/` replays it |
 | How many events the ring holds, and how a reader counts what it lost | `src/simulation/event-ring.ts` — the capacity at the top, and the reader's cursor |
-| What other layers may see of the simulation | `src/simulation/public.ts`, `src/domain/public.ts`, and `src/domain/queries.ts` — the exports are the whole surface; `src/domain/rules.ts` adds what the simulation and the composition root call |
-| Which doors each layer may import | `LAYER_DOORS` in `eslint/matrix.js` |
+| What other layers may see of the simulation | `src/simulation/public.ts`, `src/domain/public.ts`, and `src/domain/queries.ts` — the exports are the whole surface; `src/domain/rules.ts` adds what the simulation and the composition root call, and `src/simulation/testing.ts` what tests and `tooling/` reach past the door |
+| Which doors each layer may import | `LAYER_DOORS` in `eslint/matrix.js` — a layer it does not list has the one door `public.ts`; `eslint/rules/facades.js` turns the table into lint patterns |
 | Which scenes exist | `src/presentation/scenes/` — one `*.scene.ts` file per scene |
 | Which steps the play scene's frame runs, in what order, and what they share | `src/presentation/scenes/play-view-syncers.ts` — the order table and the list the composition root registers; `play-stage.ts` is what the steps share, and `view-syncers.ts` the list that makes and walks them |
 | How a world point becomes a screen point, and the scale the ground is drawn at | `src/presentation/camera/projection.ts` — the projection and its scale constant |
@@ -89,7 +89,9 @@ Every other architecture page says how code must be shaped. This one says where 
 | Where the debug overlays join the frame, and what keeps them out of production | `src/app/main.ts`'s panel branch adds their step from `src/app/play-view-syncers.ts`; the check is in `vite.config.ts` |
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
 | Which lint rules enforce the layer table | The layer allow-list in `eslint/matrix.js`, applied per layer by the files under `eslint/layers/` |
-| Which lint rules ban the clock and unseeded random | `eslint/rules/no-ambient-time-in-simulation.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/` |
+| Which lint rules ban the clock, unseeded random, and the host's globals | `eslint/rules/no-ambient-time-in-simulation.js` and `eslint/rules/no-dom-in-simulation.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/` |
+| Which folders are typechecked without the DOM | The `include` list of `tsconfig.dom-free.json` |
+| The file size limit, and which files are let past it | `eslint/size-limit.js` — the limit, the map exemption, and one line per file over it with its reason |
 | Which lint rule requires a switch to be exhaustive | `eslint/rules/switch-needs-never-check.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/`; the check it requires is `assertNever` in `src/shared/assert-never.ts` |
 | How a rule draws a random number, and which draw purposes exist | `src/domain/random/` — the keyed draw, the one purpose list, and the stride and limit of its draw index; the integer hash under it is in `src/shared/`, and the sequential generator the simulation keeps is `src/simulation/random.ts` |
 | Which rules the architecture test enforces | `tests/architecture.spec.ts` |

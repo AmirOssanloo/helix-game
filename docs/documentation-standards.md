@@ -94,7 +94,9 @@ The kind suffix is real; only the `foo`/`bar`/`baz` stem is made up. Read the st
 | Placeholder | Stands for | Real ones live at |
 | --- | --- | --- |
 | `Foo`, `FooPool` | One entity kind and its pool | `src/domain/entities/` — one file per kind |
+| `FooId` | An entity kind's id, tagged by its pool | Beside its pool under `src/domain/entities/`; the generic tag in `src/shared/ids.ts` |
 | `FooDef`, `foo-bar.def.ts` | One content definition — a spell, an enemy, a status, a map | `src/content/<kind>/` — one file each |
+| `fooKind`, `foo.kind.ts` | One definition kind's descriptor: schema, checks, and tuning | `src/domain/definitions/kinds/`, one line each in the kind list there |
 | `fooSystem`, `foo.system.ts` | One per-tick system, a function over world state | The module that owns it under `src/domain/`, listed in `src/simulation/systems.ts` |
 | `fooEffect`, `foo.effect.ts`, key `"foo"` | One named effect a definition references by string key | `src/domain/abilities/effects/` |
 | `fooBehaviour`, `foo.behaviour.ts`, key `"foo"` | One AI behaviour a definition references by string key | `src/domain/ai/behaviours/` |

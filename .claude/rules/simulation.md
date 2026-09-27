@@ -11,6 +11,8 @@ Files here decide and orchestrate. They run in Node with no screen.
 - No Phaser, DOM, `window`, `Math.random`, `Date.now`, or `performance.now`. Lint bans them; the architecture test catches what lint misses.
 - Time is a tick count. No seconds or milliseconds inside these folders.
 - No allocation inside a system in steady state. Acquire from a pool, release to it.
+- No binding at module scope that can be written. A rule's working memory is a field of `world.scratch`.
+- Every switch over a union ends in `default: return assertNever(foo);`.
 - Iteration order is fixed. No `Map` keyed by object on a path that affects state; every sort has a tie-break.
 - A refusal is a value with a reason, never a throw.
 - Every number comes from a definition or a tunable, never a literal in a system.

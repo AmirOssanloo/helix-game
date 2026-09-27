@@ -24,6 +24,8 @@ An entity is a pooled runtime thing with an id. Every entity that carries rules 
 
 Hero, enemy, and summon are one unit pool with a kind tag, not three pools. Movement, collision, statuses, and death treat every unit alike; what differs is who drives it.
 
+Some files beside the unit in `domain/entities` are parts of it, not kinds: its attack, its cast, its AI machine, its pack, and what ties a summon to its owner, each a sub-record the unit holds, with no pool of its own. The world's scratch sits there too, and is working memory, not an entity.
+
 ---
 
 ## Definition kinds
@@ -52,6 +54,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 
 - A unit references exactly one definition at a time: the hero's active form definition, one enemy definition, or one summon definition. The hero's reference follows its active form and is read every tick, never cached. A summon references the summon definition of what it is, and carries the id of its owner.
 - A unit an ability spawns takes its kind from the definition the ability names, never from its caster: a summon definition makes a summon, an enemy definition makes an enemy. Either carries its owner's id and ends when the owner dies or its lifetime runs out, with no experience granted.
+- A unit's order is aimed at nothing, a point, or another unit by its id; where the unit walks is the order's destination, not its target.
 - A unit has one status table. A status entry references one status definition; the definition's stack rule decides what a second application does.
 - A projectile, zone, or effect references the ability that created it, if one did, and the unit that cast it. An attack's shot and a zone the panel places name no ability. When the caster dies, what it created lives on.
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
@@ -63,7 +66,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 
 ## Keeping this page true
 
-Everything above is a fact, and facts go stale. The obligation to update this page is attached to the edit that makes it stale: adding, removing, or renaming a file under `src/domain/entities/` or `src/domain/definitions/` updates this page in the same change.
+Everything above is a fact, and facts go stale. The obligation to update this page is attached to the edit that makes it stale: adding, removing, or renaming a file under `src/domain/entities/` or `src/domain/definitions/` updates this page in the same change. Each descriptor under `src/domain/definitions/kinds/` is one row of the second table.
 
 If you add or remove a kind, add or remove a row. If you rename one, rename the row. Anything below aggregate altitude — a field, a capacity, a key name — does not belong here and needs no edit.
 

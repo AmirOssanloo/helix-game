@@ -13,7 +13,11 @@ How code under `src/presentation/` is written so that the world renders in a han
 
 **Scene classes hold lifetime and composition, nothing else.** A scene creates pools at `create`, calls sync each frame, and releases at shutdown. A rule in a scene — "skip the facing marker when stunned" — is a rule the tests cannot see. The domain sets a flag; the view reads it.
 
+**A verdict is asked of the domain, never worked out here.** Whether a key would be refused, whether an aim is in range, whether a point can be spent: each is a pure query through the domain's `queries.ts` door, over the world view. Presentation never imports the domain's `rules.ts`, so no view can hand the world to a mutator.
+
 **The camera never reads input directly.** The input mapper turns pointer and key events into commands and camera intents; the camera consumes the intents. One place knows what a middle-drag means.
+
+**The input claim is asked first.** Every pointer and key event goes to the input claim before the mapper, and the mapper sees only what no screen claims. No scene stops an event's propagation to protect another; [Presentation](../architecture/presentation.md#screens-and-the-input-claim) holds the claim's rules.
 
 ---
 
@@ -106,7 +110,9 @@ A view checking `hp <= 0` and playing a fade. The rule is now in the view; the d
 | Phaser | Used here; the composition root imports it only to construct the game |
 | World state | Read by reference through the `Readonly` view during sync; never written. Input becomes `Command`s |
 | Scenes | Lifetime and composition only. No rules |
+| A verdict | Asked of the domain through `queries.ts`, over the world view; never `rules.ts` |
 | Camera and input | The input mapper reads input; the camera consumes intents |
+| The input claim | Asked before the mapper for every pointer and key event; no scene stops propagation to protect another |
 | Drawing | Tinted quads from the boot-time atlas. `Graphics` and `Shape` objects are banned, debug overlays included |
 | Colour | Tint, never a second texture. The fill tint mode for a flat flash, written only when it turns |
 | A new shape | A new frame in the frame list, baked at boot |

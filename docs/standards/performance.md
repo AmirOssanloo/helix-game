@@ -74,9 +74,9 @@ The collector pauses when the heap fills, and at sixty frames a second a pause i
 | --- | --- |
 | A closure created per call | A module-level function taking the world |
 | Spread, `map`, `filter`, `reduce`, `forEach` | An index loop |
-| An object or array literal per entity | A preallocated field, a scratch slot, a pool |
+| An object or array literal per entity | A preallocated field, a slot on the world's scratch, a pool |
 | String concatenation for a key | Integers packed into one number |
-| A new vector per operation | The scratch vectors from `shared/` |
+| A new vector per operation | A scratch vector on the world's scratch, written through the vector helpers from `shared/` |
 | A fractional number passed to, or returned from, a call the engine does not inline | The object the number lives in, for a call made per unit per tick |
 | A `Map` or `Set` built per tick | A preallocated array or the spatial hash |
 | A per-frame `Text` update | `BitmapText` |

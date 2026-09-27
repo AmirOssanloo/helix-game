@@ -27,7 +27,7 @@ export type Clock = Readonly<{
   now: () => number;
 }>;
 
-/** The wall clock. This is the only place in the repository that reads one. */
+/** The wall clock the tick runs by. The session seed and the panel's refresh are the only other reads of time. */
 export const wallClock: Clock = {
   now: (): number => performance.now(),
 };

@@ -17,7 +17,7 @@ The steps are owned by the runbook [Adding an enemy](../../../docs/workflows/add
 
 - A definition adds numbers and keys. It never adds movement code; every unit gets turn-then-move, push-out, and pathing for free.
 - Every field is required. Do not add a default to make a definition shorter.
-- A behaviour drives the state machine, reads the spatial hash, asks the pathing module for a path, allocates nothing, and takes every number from the unit's definition.
+- A behaviour says only whether the unit engages, wanders, and kites, and where it stands to fight; the shared state machine under `src/domain/ai/`, one file per state, does the rest. Its standing rule allocates nothing, writes nothing in the world, holds nothing at module scope, and takes every number from the attack record, the unit, its definition, and the margin it is handed.
 - An enemy ability follows the `add-a-spell` skill, under `src/content/abilities/`, without a recipe.
 - Every archetype gets the six simulation tests the runbook lists: aggro on sight, aggro on damage, range holding, kiting or closing, leash, death with experience.
 

@@ -97,7 +97,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 ## Overlays
 
-Toggles, each drawn over the world in its own colour at low alpha. Like every toggle, turning one on changes nothing in the world and is not in the log.
+Toggles, each drawn over the world in its own colour at low alpha. Like every toggle, turning one on changes nothing in the world and is not in the log. The overlays are part of the panel: a build without the panel draws none and carries none of their code.
 
 - Collision discs, and bound radii as a separate toggle, because tuning the wrong one is the classic mistake
 - Facing and the action cone

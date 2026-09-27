@@ -69,7 +69,7 @@ A system reads world state, the tick count, the commands the tick consumed, and 
 
 ## Time is a tick count
 
-There are no seconds inside the domain. A cooldown is "ready at tick N". A cast point is "commits at tick N". A turn step is the angular rate times the constant step. A designer writes a cooldown in seconds in a definition; the registry converts it to ticks once, at load.
+There are no seconds inside the domain. A cooldown is "ready at tick N". A cast point is "commits at tick N". A turn step is the angular rate times the constant step. A designer writes a cooldown, a duration, or a speed in seconds in a definition; the world converts it to ticks or a per-tick step once, when it takes the definition into run scope at creation or when a tuning command changes the number, and never where the number is used.
 
 This is what makes a replay exact: two runs that receive the same commands at the same tick numbers do the same arithmetic.
 
@@ -92,6 +92,8 @@ Debug commands, tuning changes, and map changes are commands too, so a session w
 ## Recording and replay
 
 The simulation records every command it consumes, with its tick, into an input log. Replay creates a world with the same seed on the map the session started on and feeds the log back, tick by tick, with no driver and no Phaser; a later map arrives as a `load_map` among the records. It runs in Node, which is what makes it a test as well as a debugging tool.
+
+The log carries the seed, the content version the world was created under and each one a content reload moved it to, the map the session started on, the ticks run, and its records. A log from another content version, or one spanning a reload, is refused rather than replayed wrong. A stored log also carries state checksums a replay must reach; [Testing standards](../standards/testing.md) own them.
 
 The session that owns the world, the replay that may be feeding it, and saving and loading its log live in `simulation/`; `app/` constructs it and steps it through the driver. A new run, under a new seed or from a loaded log, is a session operation that makes both scopes again and begins a new log; it is never a command. A map change keeps the run and is a command in the log.
 
@@ -128,13 +130,13 @@ A system holding a module-level variable — a cached list, a counter, a scratch
 | System order | One list, in `simulation/systems.ts`; command application runs first |
 | A system | A plain function over world state; reads the world, the tick count, the consumed commands, and the world's random source; allocates nothing in steady state |
 | A map change | A `load_map` command, applied at the command system's point in the tick: run scope kept, map scope made again; allocates once, on that tick, which a sampler's window leaves out |
-| Time in the domain | A tick count; seconds in a definition become ticks at load |
+| Time in the domain | A tick count; seconds in a definition become ticks or a per-tick step once, when the world takes the definition in or a tuning command changes it, never where used |
 | Random | The world's seeded source only; `Math.random`, `Date.now`, `performance.now` are banned by lint |
 | A rule's draw | Keyed: a hash of the seed, a key, the tick, and a purpose from the one list with a draw index folded in; writes nothing. The sequential generator is the simulation's, never advanced by a system |
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |
 | Determinism contract | Same seed and input log give the same state, same machine, same build |
-| Input log | Every consumed command with its tick, including debug and tuning commands |
-| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version the world was created under and each one a content reload moved it to, the map the session started on, and the ticks run, with a later map as a `load_map` record; one from another content version or spanning a reload is refused |
+| Input log | Every consumed command with its tick, including debug, tuning, and map-change commands |
+| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version the world was created under and each one a content reload moved it to, the map the session started on, and the ticks run, with a later map as a `load_map` record; one from another content version or spanning a reload is refused; a stored log's state checksums are the testing standards' |
 | A new run | A session operation, under a new seed or from a loaded log: both scopes made again, a new log begun; never a command |
 | Interpolation | The driver hands the presentation the fraction into the next step; the world stores previous and current positions |
 | Measuring the tick | The driver, around each `tick`, into the instrumentation ring |

@@ -19,6 +19,8 @@ A change is done when every applicable row holds. "Not applicable" is a legitima
 | Old code the change replaces is deleted, not kept behind a flag | [Coding standards](../standards/coding.md#quick-reference) |
 | Names follow the vocabulary: hero, unit, enemy, spell, ability, order, command, tick | [Product vocabulary](../product/vocabulary.md) |
 | A documentation page that states a rule this change affects is updated in the same change | [Documentation standards](../documentation-standards.md#quick-reference) |
+| An import into another layer goes through a door open to the importer; nothing under `src/` imports a `testing.ts` | [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference) |
+| No file under `src/` passes 500 lines, unless it is listed with its reason in `eslint/size-limit.js` | [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference) |
 
 ## A change under `src/domain` or `src/simulation`
 
@@ -26,11 +28,13 @@ A change is done when every applicable row holds. "Not applicable" is a legitima
 | --- | --- |
 | No Phaser, DOM, `window`, `Math.random`, `Date.now`, or `performance.now` | [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference) |
 | No allocation inside a system in steady state; pools are acquired and released, never `new` per tick | [Simulation coding standards](../standards/simulation-coding.md#quick-reference) |
+| No binding at module scope that can be written; a rule's working memory is on the world's scratch | [Simulation coding standards](../standards/simulation-coding.md#quick-reference) |
+| Every switch over a union ends in a `default` that calls `assertNever` | [Simulation coding standards](../standards/simulation-coding.md#quick-reference) |
 | Time is a tick count; no seconds, no milliseconds inside the domain | [Simulation loop](../architecture/simulation-loop.md#quick-reference) |
 | Every number comes from a tunable or a definition, never a literal in a system | [Content authoring standards](../standards/content-authoring.md#quick-reference) |
 | A rule has a unit test; a sequence has a simulation test | [Testing standards](../standards/testing.md#quick-reference) |
 | A bug that came with an input log now ships with a replay test under `tests/simulation/` | [Testing standards](../standards/testing.md#quick-reference) |
-| The replay determinism test still passes | [ADR 0002](../adr/0002-custom-fixed-step-simulation.md) |
+| The replay determinism test still passes, and every stored log matches its state checksums; they are recorded again with `pnpm restamp --checksums` only when the change means to change behaviour | [Development workflow](./development.md#while-you-work) |
 | The stress test still holds the mean tick under 4 ms | [Performance standards](../standards/performance.md#quick-reference) |
 
 ## A new command, event, or system
@@ -48,6 +52,7 @@ A change is done when every applicable row holds. "Not applicable" is a legitima
 | --- | --- |
 | One definition file under `src/content/`, added to the registry index | [Content and registries](../architecture/content-and-registries.md#quick-reference) |
 | Every effect and behaviour key resolves; the content tier passes | [ADR 0005](../adr/0005-content-references-by-string-key.md) |
+| The stored logs are re-stamped with `pnpm restamp` in the same change, if the content version moved | [Development workflow](./development.md#while-you-work) |
 | Every atlas frame the definition names exists in `src/content/atlas-frames.ts` | [Presentation](../architecture/presentation.md#quick-reference) |
 | One simulation test per effect, at orb levels 1 and 7 where the ability scales | [Testing standards](../standards/testing.md#quick-reference) |
 | Targeting, cast point, cooldown, and mana come from the definition; the pipeline adds no special case | [Ability pipeline](../architecture/ability-pipeline.md#quick-reference) |
@@ -71,7 +76,9 @@ A change is done when every applicable row holds. "Not applicable" is a legitima
 | No game object is created or destroyed during play; views are bound from a pool | [Presentation](../architecture/presentation.md#quick-reference) |
 | Colour is a tint; a new shape is a new atlas frame, never drawn at runtime | [Presentation coding standards](../standards/presentation-coding.md#quick-reference) |
 | Depth is one of the fixed bands | [Presentation](../architecture/presentation.md#quick-reference) |
-| The sync reads the world view and writes sprites; it never reads a sprite back or decides anything | [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference) |
+| The sync reads the world view and writes sprites; it never reads a sprite back or decides anything; a verdict is asked through `@domain/queries`, never `@domain/rules` | [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md#quick-reference) |
+| Every pointer and key event is asked of the input claim before the mapper; no scene stops propagation to protect another | [Presentation](../architecture/presentation.md#quick-reference) |
+| A debug overlay is added only in the composition root's panel-build branch, and the production build carries none | [Developer tools and instrumentation](../architecture/devtools-and-instrumentation.md#quick-reference) |
 | The render benchmark was rerun if the atlas or any view changed, with before and after numbers in the change description | [Performance standards](../standards/performance.md#quick-reference) |
 
 ## A developer-panel control

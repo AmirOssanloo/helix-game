@@ -17,7 +17,7 @@ Each group is a folder you can collapse, and what you leave open is remembered. 
 | Hero         | Apply damage, Heal, Drain mana, Restore mana, Level up, Set orb levels (Quartz, Whorl, Ember), Infinite mana, No cooldowns, Apply status (stun, slow, silence, root), Jump to checkpoint | Puts the hero in any state without a fight |
 | Tuning       | One slider per tunable: `base_ms`, `turn_rate_T`, `turn_ramp_ticks`, `action_cone_deg`, `collision_radius`, `bound_radius`, `hash_cell_size`, `orb_capacity`, `prepared_slots`, `invoke_cd_base`, `invoke_cd_per_orb_level`, `invoke_mana`, `whorl_ms_per_instance`, and every number a definition exposes, plus Reset tunables | Retunes the live world; each change is a `SetTuning` command in the log, and the reset sends one per slider that moved |
 | Enemies      | Archetype dropdown, Tier, Group size, Spawn at click, Clear all, Kill all                                                                                       | Spawns a pack of the chosen archetype where you next click; the dropdown lists the content registry, so a new definition appears without a code change |
-| Simulation   | Pause, Single-step, Catch-up cap, Seed, Map, Save input log, Load input log, Feedback, Note, Reset map                                                                      | Freezes and steps the world; records and replays a session. Pause, step, and the cap act on the driver and are not in the log |
+| Simulation   | Pause, Single-step, Catch-up cap, Seed, Map, Save input log, Load input log, Feedback, Note, Reset map                                                                      | Freezes and steps the world; records and replays a session. Pause, step, and the cap act on the driver and are not in the log; a map change is a `load_map` command and is |
 | Overlays     | Collision discs, Bound radii, Facing and action cone, Attack and aggro ranges, Path lines, Spell areas, Unit state labels, Spatial hash cells, Walkability grid | Draws diagnostics over the world from a separate quad pool; a toggle is remembered between reloads |
 | Readouts     | Frame rate, Tick time (mean and max over the last second), Render time, Draw calls, Live units, Live projectiles, Live zones, Pool misses, Heap           | Live numbers from the instrumentation rings; draw calls are counted by wrapping the renderer's draw methods |
 | Atlas        | Download atlas PNG                                                                                                                                        | Saves the shape atlas generated at boot so you can inspect the frames |
@@ -43,7 +43,7 @@ A tick over 4 ms with a flat heap is a work problem. A tick over 4 ms with a ris
 
 ## Overlays
 
-Each overlay is a toggle. They draw from their own quad pool at depth 90, above everything else, and cost nothing when off.
+Each overlay is a toggle. They draw from their own quad pool at depth 90, above everything else, and cost nothing when off. They exist only in a build with the panel: a production build makes none of their quads and carries none of their code.
 
 - **Collision discs** — the solid body of every unit, radius 27 for the hero. Two discs overlapping after a tick is a push-out bug.
 - **Bound radii** — the range buffer added to attack and cast range. Shows why an attack lands from further than the number suggests.
@@ -63,20 +63,20 @@ The simulation is a function of a seed and the commands it receives, so any sess
 
 1. Note the **Seed** shown in the Simulation group. Recording is always on; every session is a log from its first tick.
 2. Play. Every keyboard, mouse, and panel command goes into the input log with its tick.
-3. Click **Save input log**. You get a JSON file: the seed, the content registry version, and the ordered commands.
+3. Click **Save input log**. You get a JSON file: the seed, the content registry version, the map the session started on, and the ordered commands. It holds no state checksums; a log promoted to a stored log gets them from `pnpm restamp --checksums`.
 4. Reload the page, click **Load input log**, pick the file. The world resets to the seed on the map the log was recorded on and consumes the commands tick by tick. What you saw happens again, at the same ticks. A log saved on another content version is refused, and the status line names both versions. So is a log saved after a content edit was hot-reloaded into the session, since it ran on two versions; recreate the session after the edit and record again.
 
 Use **Pause** and **Single-step** during a replay to stop at the tick that went wrong and read the overlays.
 
 **Filing feedback.** Press **F9**, or **Feedback** in the Simulation group, write what you think, and **Save**. The world is paused while you write and no key you type reaches the hero. The feedback file holds the note, the tick, the build's commit, and the log to that tick; **Load input log** takes it back, runs to the tick, pauses, and shows the note. [Development workflow](../workflows/development.md#filing-and-reading-feedback) has the whole round.
 
-**Turning a replay into a test.** Copy the JSON into `tests/simulation/replays/<name>.json` and add a spec under `tests/simulation/` that loads it, runs the world to the final tick, and asserts the state you expect — the hero's health, an enemy's position, which spell sits in slot D. The `loadInputLog` helper from `tests/helpers/` reads it, and `beginReplay` from the simulation's public door runs it. A bug that came with a replay ships with a test that replays it.
+**Turning a replay into a test.** Copy the JSON into `tests/simulation/replays/<name>.json` and add a spec under `tests/simulation/` that loads it, runs the world to the final tick, and asserts the state you expect — the hero's health, an enemy's position, which spell sits in slot D. The `loadInputLog` helper from `tests/helpers/` reads it, and `beginReplay` from `@simulation/testing`, the simulation's door for tests, runs it. Record its state checksums with `pnpm restamp --checksums`, and the determinism test replays it to each one. A bug that came with a replay ships with a test that replays it.
 
 ---
 
 ## Pausing and stepping
 
-**Pause** stops the driver from calling `tick`. The renderer keeps drawing, so overlays stay readable and the camera still moves. **Single-step** runs exactly one tick while paused. **Catch-up cap** sets how many ticks the driver may run in one frame after a stall; the default is 3, and the cap is why a tab-resume does not dump two seconds of orbs at once.
+**Pause** stops the driver from calling `tick`. The renderer keeps drawing, so overlays stay readable and the camera still moves. **Escape** in the game opens the pause screen, which stops the driver the same way under a reason of its own: resuming from the screen never undoes the panel's Pause, and the panel's never closes the screen. **Single-step** runs exactly one tick while paused. **Catch-up cap** sets how many ticks the driver may run in one frame after a stall; the default is 3, and the cap is why a tab-resume does not dump two seconds of orbs at once.
 
 Hiding the tab pauses the clock automatically. Cooldowns freeze, and input that arrives while hidden is discarded rather than replayed on resume.
 

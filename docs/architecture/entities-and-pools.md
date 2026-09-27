@@ -28,8 +28,8 @@ A pool is an array of plain objects of one kind plus a free list of indices. Eac
 Zones share the effect pool's discipline with their own capacity, declared in their file.
 
 ```typescript
-export const acquireFoo = (world: World): Foo | null => { /* pop the free list, bump generation, or null */ }
-export const releaseFoo = (world: World, id: FooId): void => { /* clear, push the free list */ }
+export const acquireFoo = (world: World, /* … */): FooId | null => { /* pop the free list and write the slot, or null */ }
+export const releaseFoo = (world: World, id: FooId): void => { /* clear in place, bump the generation, push the free list */ }
 ```
 
 **A full pool returns `null`, never grows.** The caller decides what that means — a spawn that does not happen, a projectile that is not fired — and the instrumentation counts the miss so a designer sees a map that is over capacity before a player does. [Performance standards](../standards/performance.md#quick-reference) hold the budget.
@@ -47,12 +47,12 @@ export const releaseFoo = (world: World, id: FooId): void => { /* clear, push th
 An id is a number packing a pool index and a generation. Releasing an entity bumps the generation, so a stale id held by a projectile, a targeting order, or a HUD label resolves to nothing instead of to whatever now occupies the slot.
 
 ```typescript
-const foo = resolveFoo(world, id)   // Foo | null — null when the generation no longer matches
+const foo = world.map.foos.resolve(id)   // Foo | null — null when the generation no longer matches
 ```
 
 Every reference between entities is an id, never an object. A system that holds an object across ticks is holding a slot, not an entity.
 
-**An id carries its pool's kind.** `shared/` holds one generic tagged number, `Id<Brand>`, beside the packing, and names no kind. Each kind declares its own id beside its pool under `domain/entities/`, a unit's, a projectile's, a zone's, an effect's, and a ground item's when it comes. A pool is typed by its id and takes and resolves only that one, so a projectile's id passed where a unit's is wanted fails the typecheck rather than resolving whatever occupies that slot of the unit pool. The tag exists only for the compiler: at run time an id is the number the pool packed.
+**An id carries its pool's kind.** `shared/` holds one generic tagged number, `Id<Brand>`, beside the packing, and names no kind. Each kind declares its own id beside its pool under `domain/entities/`, a unit's, a projectile's, a zone's, an effect's, and a ground item's. A pool is typed by its id and takes and resolves only that one, so a projectile's id passed where a unit's is wanted fails the typecheck rather than resolving whatever occupies that slot of the unit pool. The tag exists only for the compiler: at run time an id is the number the pool packed.
 
 ```typescript
 export type FooId = Id<"foo">                                  // in the kind's file, beside its pool
@@ -81,12 +81,12 @@ The world has two scopes, and every pool belongs to one.
 
 | Scope | Holds | Reset when |
 | --- | --- | --- |
-| **Run** | The hero, the tuning state, the random source, the hero's items, and later progression | Never during a session |
+| **Run** | The hero and its form records, the tuning state, the world's copies of the definitions, the maps the content registers, the random source, and the hero's items | Never during a session |
 | **Map** | Enemies, summons, projectiles, zones, effects, and ground items | A map is loaded |
 
 **Beside the two scopes sits the world's scratch**: the working memory the rules write and read within a call, such as a candidate buffer, a scratch point, the context an effect list runs with, the event an announcement is written through, and a re-entrancy guard. It is made once with the world, never grows, and nothing in it is read on a later tick, so it is not world state: the state checksum leaves it out and the world view does not show it. A value a later tick reads is state, and lives in run or map scope.
 
-`loadMap` releases every map-scoped entity and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. It is a rule in `domain/map/`, and it runs only as a `load_map` command at the command system's point in the tick, resolving the map's id against the maps run scope holds, validated with the rest of the content. A map change is in the input log and replays. The hero's position and spawn point are set by the new map's spawn point, and no checkpoint is reached; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
+`loadMap` releases every map-scoped entity but the hero, whose slot in the unit pool it keeps, and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. It is a rule in `domain/map/`, and it runs only as a `load_map` command at the command system's point in the tick, resolving the map's id against the maps run scope holds, validated with the rest of the content. A map change is in the input log and replays. The hero's position and spawn point are set by the new map's spawn point, and no checkpoint is reached; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
 
 Nothing may assume the hero is recreated per map.
 
@@ -141,18 +141,18 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Capacities | Units 512, projectiles 512, effects 256; zones declare their own |
 | A full pool | Returns `null`; the caller decides; the instrumentation counts the miss |
 | Entity shape | Plain object, kind tag, definition id; no class hierarchy; a unit an ability spawns takes the kind its definition names |
-| A unit's layout | One shape; the state one concern keeps between ticks in its own sub-record beside the unit, made with the slot and cleared in place |
+| A unit's layout | One shape; the state one concern keeps between ticks in its own sub-record beside the unit, made with the slot and cleared in place, never replaced; a concern that grows adds its field to its sub-record |
 | Derived values | One named field per entry of the one key list; create, clear, derive, and spawn walk it |
 | Typed arrays | Only after a profile shows the tick over budget |
 | Ids | A number packing index and generation; released slots bump the generation |
 | An id's kind | Tagged per pool with the generic `Id<Brand>` from `shared/`; each kind's id declared beside its pool; a pool takes and resolves only its own; no cost at run time |
-| Where a number becomes an id | Inside the pool, and at the input log's boundary; nowhere else |
+| Where a number becomes an id | Inside the pool, and at the input log's boundary; nowhere else. A buffer or scratch slot typed to hold an id starts at the pool module's placeholder and is written before any read |
 | An order's target | One fixed-shape record tagged nothing, a point, or a unit; every field always present and written with the tag; a reader checks the tag before it reads the unit; the walk goal is the order's destination, not the target |
 | References between entities | By generational id, resolved every tick; never by object |
 | A stale id | Resolves to `null` |
 | Status table | Per unit, fixed size, entries reference a status definition |
-| Run scope | Hero, tuning state, random source, the hero's items; never reset during a session |
-| Map scope | Enemies, summons, projectiles, zones, effects, ground items; released by `loadMap` |
+| Run scope | Hero and its form records, tuning state, the definition copies, the maps, random source, the hero's items; never reset during a session |
+| Map scope | Enemies, summons, projectiles, zones, effects, ground items; released by `loadMap`, which keeps the hero's slot in the unit pool |
 | The world's scratch | Working memory dead at the end of every tick, made with the world; not state, left out of the checksum. A value read on a later tick is state instead |
 | `loadMap` | Runs only as a `load_map` command, whose id resolves against the maps in run scope; resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |
 | The hero across maps | Never recreated |
@@ -165,7 +165,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |
 | The hero's definition | Read through the active form every tick; never cached across ticks |
 | Packs | Spawn data until the hero is within the activation radius; then units; spawn data again once the hero is past `pack_sleep_radius` and every living member rests at home at full health |
-| A map's pack records | Map scope, rebuilt by `loadMap`; asleep, waiting, awake, or dead; a pack not marked dormant placed by the load; a sleep keeps the survivor count, and a pack with none is dead until the next load; one the world cannot take keeps waiting |
+| A map's pack records | Map scope, rebuilt by `loadMap`; asleep, waiting, awake, or dead; a pack not marked dormant placed by the load; a sleep keeps the survivor count and a waking places the survivors whole under a new pack id, neither allocating; a pack with none is dead until the next load; one the world cannot take keeps waiting; a pack the panel spawns has no record and never sleeps |
 | A pack's placement | Free cells ring by ring from its point, no further than `pack_placement_radius`; no room within it, and it waits |
 
 ---
