@@ -102,6 +102,14 @@ export type {
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";
 export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";
+export type { PlayStage, PlayViewSyncer } from "./scenes/play-stage";
+export { PLAY_VIEW_SYNCERS, SYNC_ORDER } from "./scenes/play-view-syncers";
+export {
+  NO_MISSES,
+  type ViewSyncer,
+  type ViewSyncerEntry,
+  ViewSyncerList,
+} from "./scenes/view-syncers";
 export {
   DEPTH_AIR,
   DEPTH_DEBUG,

@@ -78,6 +78,17 @@ A view never creates or destroys a game object during play. A view never reads a
 export const syncFooViews = (world: WorldView, alpha: number): void => { /* bind, write, release */ }
 ```
 
+**The frame is an ordered list of steps.** `PlayScene` names no view. Each step of its frame is a view syncer, registered by the composition root with a name, its place in the sync order, the depth band it draws in, or none for a step that draws nothing, and a `create` that makes its pools from what the scene shares: the camera and what it shows this frame, the ground layer's factory and the scene's own, the mapper, and the hit feedback the event drain writes and the views read. The order is the list above made concrete: the camera's follow, the map load's rebind of the bounds and the void, the frame the views bind by, the floor, the event drain, the entity views, the cursor and its preview, then the debug overlays. A step reads what every step before it wrote, so a new view takes a place after what it reads and before what reads it; two steps at one place, or with one name, stop the scene at `create`.
+
+The list is fixed at scene start. Each step is made once, in the order it was registered, which is its pools' creation order and so its draw order inside a band, since a sort by depth keeps the order of equals. The steps are sorted by place then and never during play, and the per-frame walk is an indexed loop that allocates nothing. After the last step the scene keeps the ground layer in band order and writes the steps' misses, summed, to the view-miss ring.
+
+**A new view is a registration, not an edit to the scene.** It adds one entry beside the play scene's list, at a place in the order table:
+
+```typescript
+// one entry: a name, a place, a band, and the pools it makes once
+const fooViews: PlayViewSyncer = { name: "foo", order: SYNC_ORDER.bar + 50, band: DEPTH_BAZ, create: (stage) => ({ /* sync, misses */ }) }
+```
+
 ---
 
 ## Depth
@@ -179,6 +190,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Standing up | Status icons, floating numbers, and labels stay outside the ground layer and write the projected point; over a unit, raised by the projection's rise of its bound radius, never by a world offset |
 | The floor | The painted tile, a whole number of 160 by 80 art diamonds, each over four by four cells; tiled unscaled and untinted in screen space over what the camera shows, half an art diamond right of the projected origin; any other size stops the boot; continued a pixel past its frame into the gutter with its opposite edge, so no seam shows; the void is four quads on the ground; no extra draw |
 | Views | One kind per entity kind, one pool per kind, created at scene start |
+| The frame's steps | View syncers the composition root registers, each with a name, a place in the sync order, and a band or none; made once at `create` in registration order, which is the draw order inside a band; walked in place order by an indexed loop; two at one place or with one name stop the scene. The play scene names no view; a new view is a registration |
 | HUD ability squares | Filled from the active kit's slot descriptors: kind, ability, clock and its whole length, cost, level, and the disable blocking it; never a fixed layout; the kit is a resolver port |
 | Refusal reasons | Asked of the domain each frame: the slot readiness query for a square and before a cursor opens, the skill-point query before a spend, the range predicate for the preview; never computed in presentation and never written into world state; a disable or death greys a square |
 | HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |

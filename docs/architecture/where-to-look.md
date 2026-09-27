@@ -64,9 +64,10 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a session is recorded and replayed | `src/simulation/input-log.ts` records it; `src/simulation/replay/` replays it |
 | How many events the ring holds, and how a reader counts what it lost | `src/simulation/event-ring.ts` — the capacity at the top, and the reader's cursor |
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |
-| Which scenes exist | `src/presentation/scenes/` — one file per scene |
+| Which scenes exist | `src/presentation/scenes/` — one `*.scene.ts` file per scene |
+| Which steps the play scene's frame runs, in what order, and what they share | `src/presentation/scenes/play-view-syncers.ts` — the order table and the list the composition root registers; `play-stage.ts` is what the steps share, and `view-syncers.ts` the list that makes and walks them |
 | How a world point becomes a screen point, and the scale the ground is drawn at | `src/presentation/camera/projection.ts` — the projection and its scale constant |
-| What is drawn on the ground and what stands up | `src/presentation/scenes/play.scene.ts` — the ground layer's factory and the scene's own, and which pool takes which; the ground layer is `src/presentation/camera/ground-layer.ts` |
+| What is drawn on the ground and what stands up | `src/presentation/scenes/play.scene.ts` — the ground layer's factory and the scene's own; `play-view-syncers.ts` says which pool takes which; the ground layer is `src/presentation/camera/ground-layer.ts` |
 | How the floor is laid | `src/presentation/views/floor.view.ts` — the tiles and the void around the bounds; the floor frame is in the content frame list, and its image is `assets/floor.png` |
 | The depth bands | The depth constants in `src/presentation/views/` |
 | Which views exist | `src/presentation/views/` — one file per view, each named `*.view.ts`, plus the feedback a hit raises |

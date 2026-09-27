@@ -20,6 +20,7 @@ import {
   installDrawCallCounter,
   PLAY_SCENE_KEY,
   PlayScene,
+  PLAY_VIEW_SYNCERS,
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
@@ -88,7 +89,7 @@ export const boot: Boot = (): void => {
     type: rendererType(readRendererOverrides(window)),
     scene: [
       new BootScene(context),
-      new PlayScene(context),
+      new PlayScene(context, PLAY_VIEW_SYNCERS),
       new HudScene(context),
     ],
   });
