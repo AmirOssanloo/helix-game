@@ -5,7 +5,6 @@ import { createEventReader } from "@simulation/public";
 import { VIEW_SCREEN_MARGIN } from "../camera/camera-frame";
 import type { WorldCamera } from "../camera/world-camera";
 import { TargetingPreview } from "../input/targeting-preview";
-import { DebugOverlays } from "../overlays/debug-overlays";
 import {
   CHECKPOINT_FRAME,
   createCheckpointViews,
@@ -13,7 +12,6 @@ import {
 } from "../views/checkpoint.view";
 import {
   DEPTH_AIR,
-  DEPTH_DEBUG,
   DEPTH_FLOOR,
   DEPTH_GROUND,
   DEPTH_OBSTACLES,
@@ -71,6 +69,7 @@ export const SYNC_ORDER = {
   camera: 100,
   mapLoad: 200,
   cameraFrame: 300,
+  onScreen: 350,
   floor: 400,
   events: 500,
   obstacles: 600,
@@ -161,6 +160,19 @@ const cameraFrame: PlayViewSyncer = {
       misses: NO_MISSES,
     };
   },
+};
+
+/** The units inside the frame's world box, asked of the hash once for every view that binds by unit. */
+const onScreen: PlayViewSyncer = {
+  name: "on screen",
+  order: SYNC_ORDER.onScreen,
+  band: null,
+  create: ({ world, frame, onScreen: units }) => ({
+    sync: () => {
+      units.gather(world, frame.world);
+    },
+    misses: NO_MISSES,
+  }),
 };
 
 const floor: PlayViewSyncer = {
@@ -265,7 +277,14 @@ const units: PlayViewSyncer = {
   name: "units",
   order: SYNC_ORDER.units,
   band: DEPTH_UNITS,
-  create: ({ world, makeQuad, frameSizes, frame, candidates, flashes }) => {
+  create: ({
+    world,
+    makeQuad,
+    frameSizes,
+    frame,
+    onScreen: units,
+    flashes,
+  }) => {
     const pool = createUnitViewPool(
       UNIT_VIEW_COUNT,
       makeQuad,
@@ -275,7 +294,7 @@ const units: PlayViewSyncer = {
 
     return {
       sync: (alpha) => {
-        syncUnitViews(pool, world, frame, alpha, candidates, flashes);
+        syncUnitViews(pool, world, frame, alpha, units, flashes);
       },
       misses: () => pool.misses,
     };
@@ -287,7 +306,7 @@ const outlines: PlayViewSyncer = {
   name: "outlines",
   order: SYNC_ORDER.outlines,
   band: DEPTH_UNITS,
-  create: ({ world, makeQuad, frameSizes, frame, candidates }) => {
+  create: ({ world, makeQuad, frameSizes, frame, onScreen: units }) => {
     const pool = createOutlineViewPool(
       OUTLINE_VIEW_COUNT,
       makeQuad,
@@ -297,7 +316,7 @@ const outlines: PlayViewSyncer = {
 
     return {
       sync: (alpha) => {
-        syncOutlineViews(pool, world, frame, alpha, candidates);
+        syncOutlineViews(pool, world, frame, alpha, units);
       },
       misses: () => pool.misses,
     };
@@ -314,7 +333,7 @@ const statusIcons: PlayViewSyncer = {
     frameSizes,
     projection,
     frame,
-    candidates,
+    onScreen: units,
   }) => {
     const pool = createStatusIconViewPool(
       STATUS_ICON_VIEW_COUNT,
@@ -325,7 +344,7 @@ const statusIcons: PlayViewSyncer = {
 
     return {
       sync: (alpha) => {
-        syncStatusIconViews(pool, world, frame, alpha, candidates);
+        syncStatusIconViews(pool, world, frame, alpha, units);
       },
       misses: () => pool.misses,
     };
@@ -422,47 +441,18 @@ const cursor: PlayViewSyncer = {
   },
 };
 
-/** The debug overlays the panel's toggles ask for. */
-const overlays: PlayViewSyncer = {
-  name: "overlays",
-  order: SYNC_ORDER.overlays,
-  band: DEPTH_DEBUG,
-  create: ({
-    context,
-    world,
-    makeQuad,
-    makeLabel,
-    frameSizes,
-    projection,
-    frame,
-    screen,
-  }) => {
-    const views = new DebugOverlays(
-      makeQuad,
-      makeLabel,
-      frameSizes,
-      projection,
-    );
-
-    return {
-      sync: (alpha) => {
-        views.sync(world, frame.world, screen, alpha, context.overlays);
-      },
-      misses: () => views.misses,
-    };
-  },
-};
-
 /**
  * Every step the play scene draws a frame with. Each walks in its place in the sync order;
  * the list is in the order the steps are made, which is the pool order and so the draw order
  * inside a band: the preview under the checkpoints and the zones, the units under their
  * outlines, the status icons under the numbers. The composition root hands this list, or this
- * list and more, to the scene; a new view registers beside it and the scene is not edited.
+ * list and more, to the scene; a new view registers beside it and the scene is not edited. The
+ * debug overlays are not in it: the composition root adds their step where the panel is.
  */
 export const PLAY_VIEW_SYNCERS: readonly PlayViewSyncer[] = [
   camera,
   cameraFrame,
+  onScreen,
   events,
   floor,
   mapLoad,
@@ -476,5 +466,4 @@ export const PLAY_VIEW_SYNCERS: readonly PlayViewSyncer[] = [
   zones,
   orbs,
   numbers,
-  overlays,
 ];

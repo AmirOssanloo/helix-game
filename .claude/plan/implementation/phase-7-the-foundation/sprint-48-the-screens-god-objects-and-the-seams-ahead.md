@@ -25,7 +25,7 @@ In a production build, a frame with the panel absent walks none of the overlays'
 | Layer | presentation, devtools, app, tests, docs, bench |
 | Size | 1 |
 | Depends on | T02 (architect review, 2026-09-27) |
-| Status | planned |
+| Status | done |
 
 **Selection rule:**
 - **A god object** that P8-S33-T03 must grow: its ground labels need `QuadRun` as a shared pool.
@@ -210,14 +210,15 @@ In a production build, a frame with the panel absent walks none of the overlays'
 
 | Check | Result |
 | --- | --- |
-| No overlay code in a production build | |
-| The render benchmark before and after T01, in Chrome by an agent | T02 changed no view and no atlas, and `bench/` does not build the play scene, so the benchmark was not rerun for it; the play scene's own render readout before and after is in the syncer row |
+| No overlay code in a production build | Yes, 2026-09-27 (T01): the overlays' step left `PLAY_VIEW_SYNCERS`; `src/app/main.ts` adds it from `panelViewSyncers()` inside its `__PANEL__` branch only, and the scene holds no flag. The production bundle has no overlay code, 1,619,180 bytes against 1,629,890 before, so the ground layer walks none of their 4,293 quads and 512 labels. `vite.config.ts` fails a production build that carries the overlays' sentinel, the syncer's name, and a playtest build without it; a production build with the gate removed was seen to fail. `tests/app/build-flags.spec.ts` builds both modes in memory and checks the sentinel |
+| The render benchmark before and after T01, in Chrome by an agent | T01, 2026-09-27, headless Chrome over the DevTools protocol on the Apple M1 (ANGLE Metal), 30 s after a warm-up, draw calls counted by wrapping the WebGL draw methods. `pnpm bench`: 60.03 → 60.02 fps, worst frame 19.2 → 20.1 ms, 1 → 1 draw call, heap 62.8→66.2 → 63.4→63.9 MB. The play scene on the long road with 48 dummies spawned, `644e8c8` from a worktree against the change, runs interleaved, three each: panel build, overlays off, render (sync and render) mean 1.30 → 1.22 ms and script 1.81 → 1.69 ms a frame; production build, script 1.58 → 1.35 ms a frame; 2 draw calls a frame, 1 in the world, both ways, no view miss, no console error. Draw calls unchanged, sync no slower. Every overlay on: the frame drew the same by eye before and after, read from screenshots. T02 changed no view and no atlas, and `bench/` does not build the play scene, so the benchmark was not rerun for it; the play scene's own render readout before and after is in the syncer row |
+| No allocation in the sync or a counted draw, T01 | Yes, 2026-09-27: Chrome's sampling heap profiler over 30 s with every overlay on, 1 KB interval. Nothing sampled in the draw-call counter, before or after; presentation's sampled total 25.3 → 23.9 KB over 1,800 frames, all of it Phaser's own text layout when a hash count changes or its visibility setter, the same frames before and after. `tests/presentation/draw-call-counter.spec.ts` holds the counter to no collection and under 256 KB over 400,000 draws; the old rest-argument wrapper allocated 6.4 MB there |
 | A view syncer registered with no edit to the scene | Yes, 2026-09-27 (T02): `tests/presentation/play-scene.spec.ts` registers a step beside the play scene's own at a place between the units and the outlines and has it run there, and made after them, with `play.scene.ts` untouched. The scene names no view: `PLAY_VIEW_SYNCERS` in `presentation/scenes/play-view-syncers.ts`, handed by the composition root, is made once at `create` in registration order, which keeps today's pool order and so the draw order inside each band, and walked in place order by an indexed loop. The map load is one step. In Chrome by an agent at `167242d` against the change, the same page and protocol, 900 frames each: render time mean 1.95 → 1.71 ms (a first after run read 1.47), 2 draw calls a frame, 1 in the world, both ways; the frame draws the same by eye, overlays on as well, no console error |
 | Wrong-pool ids refused by the typecheck | |
 | Both decision records written, pages amended | |
 | The draw index, existing draws identical | |
-| The seven logs match their checksums | T02: a presentation change; all seven match in `pnpm check`, nothing re-recorded |
-| Actual days per ticket | T02: 0.5 of 0.5 |
+| The seven logs match their checksums | T02 and T01: presentation changes; all seven match in `pnpm check`, nothing re-recorded |
+| Actual days per ticket | T02: 0.5 of 0.5. T01: 0.75 of 1 |
 | Sprint total | |
 
 ## Risks in this sprint

@@ -28,7 +28,7 @@ The renderer is configured with `type: Phaser.AUTO` and `render: { maxTextures: 
 
 **Vite.** The dev server with hot reload, and the production build.
 
-Two Vite `define`s matter, and they answer different questions. `__DEV__` says how the code behaves — an `assert` throws under it — and is true under the dev server and in tests. `__PANEL__` says whether the developer panel is in the build. In a production build both are false and the bundle has no `DevApi`, no panel, and not the pane the panel is built from. In the **playtest build** they part company: the game behaves exactly as it ships, and the panel is published beside it. Content definitions under `src/content/` hot-reload, so retuning a spell does not restart the world.
+Two Vite `define`s matter, and they answer different questions. `__DEV__` says how the code behaves — an `assert` throws under it — and is true under the dev server and in tests. `__PANEL__` says whether the developer panel is in the build. In a production build both are false and the bundle has no `DevApi`, no panel, no debug overlays, and not the pane the panel is built from. In the **playtest build** they part company: the game behaves exactly as it ships, and the panel is published beside it. Content definitions under `src/content/` hot-reload, so retuning a spell does not restart the world.
 
 The production build asks for its bundle beside the page rather than at the server root, so one build serves from a domain root and from a path under it alike. [Development workflow](../workflows/development.md#publishing-the-playable-build) says where it is published.
 

@@ -85,7 +85,9 @@ The rings are on from the first line of code, in every build, because the cost o
 
 ## Debug overlays
 
-Overlays — collision discs, bound radii, the facing triangle and action cone, attack and aggro ranges, path segments, spell shapes, unit state labels, the walkability grid, the spatial hash's occupied cells — are drawn by `PlayScene` from a dedicated pool of quads at depth 90, plus `BitmapText` for labels. Each overlay has a toggle; an overlay that is off binds no quads. They obey every rule a view obeys: atlas frames only, no `Graphics`, no allocation during play.
+Overlays — collision discs, bound radii, the facing triangle and action cone, attack and aggro ranges, path segments, spell shapes, unit state labels, the walkability grid, the spatial hash's occupied cells — are drawn by `PlayScene` from a dedicated pool of quads at depth 90, plus `BitmapText` for labels. Each overlay has a toggle; an overlay that is off binds no quads. They obey every rule a view obeys: atlas frames only, no `Graphics`, no allocation during play, pool sizes in the one module every view's are in, and the units on screen read from the frame's one query rather than asked again.
+
+**The overlays exist only where the panel does.** They are one step of the play scene's frame, and the composition root adds that step inside its panel-build branch alone. A production build makes none of their quads or labels and carries none of their code; the build fails if the overlays' sentinel string reaches its output, as it does for the panel's. The playtest build fails without it.
 
 An overlay that shades cells keeps to what the screen shows, not the camera's world rectangle. That rectangle is the box around the screen's unprojected corners, about twice the area on screen, so the walkability overlay shades a blocked cell only when its centre is drawn inside the screen rectangle, widened past a cell's half-width.
 
@@ -141,10 +143,10 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Rings | Preallocated fixed arrays with a cursor, one per measurement, under `instrumentation/` |
 | Measurements | Tick time, render time, draw calls, live counts, pool misses, view misses, event overwrites, frame rate |
 | Who writes | The driver, `PlayScene`, the draw-call wrapper, the world, the pools, the event ring |
-| Draw calls | Counted by wrapping the renderer's public `drawElements` and `drawInstancedArrays` between its pre-render and post-render events, per scene; never read from internals; a dash under Canvas |
+| Draw calls | Counted by wrapping the renderer's public `drawElements` and `drawInstancedArrays` between its pre-render and post-render events, per scene; never read from internals; a dash under Canvas. Each wrapper takes the method's own arguments by name, so a draw allocates nothing |
 | Statistics | Computed by the panel from samples, never inside the simulation |
 | Rings in production | Always on; only the panel is stripped |
-| Overlays | Quads from a dedicated pool at depth 90 in `PlayScene`, plus `BitmapText`; one toggle each, on `DevApi`, presentation state and never a command |
+| Overlays | Quads from a dedicated pool at depth 90 in `PlayScene`, plus `BitmapText`; one toggle each, on `DevApi`, presentation state and never a command; a step the composition root adds only where the panel is, absent from a production build |
 | Overlay rules | The same as views: atlas frames only, no `Graphics`, no allocation during play |
 | Cell overlays | Bound from the camera's world rectangle, drawn only where a cell's centre falls inside the widened screen rectangle |
 | Atlas download | A `DevApi` hook returning the baked atlas as a PNG |

@@ -4,6 +4,7 @@ import type { DeepReadonly, EntityId, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import type { ScreenPlacement } from "../camera/projection";
+import type { ScreenUnits } from "../camera/screen-units";
 import { DEPTH_TEXT } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
 import { interpolate } from "./quad";
@@ -214,32 +215,25 @@ const wearsStatus = (unit: DeepReadonly<Unit>): boolean => {
 };
 
 /**
- * One frame of the status icons: asks the hash for the units inside the frame's world box,
- * keeps a row of icons on each one drawn inside its screen and wearing a status, and releases
- * the rows of the units that lost their last status or left the screen. `candidates` is the query buffer the caller preallocated; this
- * pass runs after the unit views, which is why it may share theirs.
+ * One frame of the status icons: of the units inside the frame's world box, `onScreen`,
+ * gathered once this frame, keeps a row of icons on each one drawn inside its screen and
+ * wearing a status, and releases the rows of the units that lost their last status or left
+ * the screen.
  */
 export const syncStatusIconViews = (
   pool: StatusIconViewPool,
   world: WorldView,
   frame: CameraFrame,
   alpha: number,
-  candidates: EntityId[],
+  onScreen: ScreenUnits,
 ): void => {
   const units = world.map.units;
-  const box = frame.world;
-  const count = world.map.spatialHash.queryRectangle(
-    box.minX,
-    box.minY,
-    box.maxX,
-    box.maxY,
-    candidates,
-  );
+  const ids = onScreen.ids;
 
   pool.beginFrame();
 
-  for (let index = 0; index < count; index += 1) {
-    const id = candidates[index];
+  for (let index = 0; index < onScreen.count; index += 1) {
+    const id = ids[index];
     const unit = id === undefined ? null : units.resolve(id);
 
     if (

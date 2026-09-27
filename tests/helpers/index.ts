@@ -69,7 +69,7 @@ export {
 export { CommandRecorder } from "./doubles/command-recorder";
 export { FixedHash } from "./doubles/fixed-hash";
 export { FLAT_PLACEMENT } from "./doubles/flat-placement";
-export { frameAround } from "./doubles/frame-around";
+export { frameAround, unitsOn } from "./doubles/frame-around";
 export { FixedLens } from "./doubles/fixed-lens";
 export {
   IntentRecorder,
@@ -87,6 +87,19 @@ export {
   arrangeArchetype,
   type ArrangedArchetype,
 } from "./world/arrange-archetype";
+export {
+  arrangeOverlays,
+  type ArrangedOverlays,
+  type MadeOverlays,
+  makeOverlays,
+  OVERLAY_CAMERA_RECT,
+  OVERLAY_FRAME_WIDTH,
+  OVERLAY_PATH_END_X,
+  OVERLAY_WALL,
+  quadWritesOf,
+  syncOverlays,
+  visibleQuads,
+} from "./world/arrange-overlays";
 export {
   describeArchetype,
   type DescribeArchetypeOptions,

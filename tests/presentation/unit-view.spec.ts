@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import {
-  acquireUnit,
-  createCandidateBuffer,
-  releaseUnit,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { acquireUnit, releaseUnit } from "@domain/public";
 import type { OutlineViewPool, UnitViewPool } from "@presentation/public";
 import {
   createOutlineViewPool,
@@ -23,6 +18,7 @@ import type { Simulation } from "@simulation/public";
 import {
   FEEDBACK_TIMINGS,
   frameAround,
+  unitsOn,
   makeWorld,
   QuadRecorder,
   spawnEnemy,
@@ -98,7 +94,6 @@ const arrange = (size: number): Arranged => {
     () => FRAME_WIDTH,
     definitions,
   );
-  const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const flashes = new HitFlashes();
   const heroId = world.state.run.heroId;
 
@@ -118,8 +113,10 @@ const arrange = (size: number): Arranged => {
     sync: (rect, alpha): void => {
       const frame = frameAround(rect);
 
-      syncUnitViews(pool, world.view, frame, alpha, candidates, flashes);
-      syncOutlineViews(outlines, world.view, frame, alpha, candidates);
+      const units = unitsOn(world.view, frame);
+
+      syncUnitViews(pool, world.view, frame, alpha, units, flashes);
+      syncOutlineViews(outlines, world.view, frame, alpha, units);
     },
   };
 };

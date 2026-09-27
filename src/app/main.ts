@@ -19,14 +19,15 @@ import {
   HudScene,
   installDrawCallCounter,
   PLAY_SCENE_KEY,
-  PlayScene,
   PLAY_VIEW_SYNCERS,
+  PlayScene,
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
 import { reloadContent } from "./content-reload";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
+import { panelViewSyncers } from "./play-view-syncers";
 import type { Boot } from "./public";
 import { Session } from "./session";
 
@@ -89,7 +90,11 @@ export const boot: Boot = (): void => {
     type: rendererType(readRendererOverrides(window)),
     scene: [
       new BootScene(context),
-      new PlayScene(context, PLAY_VIEW_SYNCERS),
+      // The debug overlays are steps of the play scene only where the panel is.
+      new PlayScene(
+        context,
+        __PANEL__ ? panelViewSyncers() : PLAY_VIEW_SYNCERS,
+      ),
       new HudScene(context),
     ],
   });

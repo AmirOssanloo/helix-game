@@ -1,8 +1,19 @@
+import { readFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { Unit } from "@domain/public";
-import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
 import {
   createObstacleViews,
+  FLOATING_NUMBER_COUNT,
+  OVERLAY_AREA_COUNT,
+  OVERLAY_BLOCKED_CELL_COUNT,
+  OVERLAY_FACING_QUAD_COUNT,
+  OVERLAY_HASH_CELL_COUNT,
+  OVERLAY_HERO_RANGE_QUAD_COUNT,
+  OVERLAY_PATH_SEGMENT_COUNT,
+  OVERLAY_RING_COUNT,
+  OVERLAY_STATE_LABEL_COUNT,
+  createFloatingNumberViews,
   createUnitViewPool,
   HitFlashes,
   syncUnitViews,
@@ -10,12 +21,28 @@ import {
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
 import {
+  FLAT_PLACEMENT,
   frameAround,
+  LabelRecorder,
+  listSourceFiles,
+  makeOverlays,
+  SOURCE_DIR,
+  unitsOn,
   makeWorld,
   QuadRecorder,
   spawnUnit,
   unitIdOf,
 } from "../../helpers";
+
+/** The one file every pool size in presentation is declared in. */
+const VIEW_COUNTS = "presentation/views/view-counts.ts";
+
+/**
+ * A pool size written where it is used: a constant named for a count and set to a number, or a
+ * pool made with a number for its size.
+ */
+const LOCAL_POOL_SIZE =
+  /\bconst\s+[A-Z][A-Z0-9_]*_COUNT\s*=\s*\d|\b(?:makeQuads|makeOverlayQuads|create\w*Views?(?:Pool)?)\(\s*\d/;
 
 /** Every frame the test atlas holds is this wide. */
 const FRAME_WIDTH = 128;
@@ -72,17 +99,18 @@ describe("the door: view pools are sized to the screen and bound by camera recta
       () => FRAME_WIDTH,
       unitDefinitionsOf(world.view),
     );
-    const candidates = createCandidateBuffer(UNIT_CAPACITY);
     const flashes = new HitFlashes();
 
     for (let row = 0; row < CLUSTERS_ACROSS; row += 1) {
       for (let column = 0; column < CLUSTERS_ACROSS; column += 1) {
+        const frame = frameAround(screenAround(column, row));
+
         syncUnitViews(
           pool,
           world.view,
-          frameAround(screenAround(column, row)),
+          frame,
           0,
-          candidates,
+          unitsOn(world.view, frame),
           flashes,
         );
       }
@@ -152,5 +180,48 @@ describe("the door: view pools are sized to the screen and bound by camera recta
             Math.abs(quad.y - centreOf(last)) <= SCREEN_REACH,
         ),
     ).toBe(true);
+  });
+
+  it("reads every pool size in presentation from the view counts, the overlays' and the numbers' included", () => {
+    const presentation = join(SOURCE_DIR, "presentation");
+    const offenders = listSourceFiles(presentation)
+      .map((file) => relative(SOURCE_DIR, file).split("\\").join("/"))
+      .filter((file) => file !== VIEW_COUNTS)
+      .filter((file) =>
+        LOCAL_POOL_SIZE.test(readFileSync(join(SOURCE_DIR, file), "utf8")),
+      );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("makes the overlays' quads and labels, and the floating numbers, to the sizes the view counts give", () => {
+    const { quads, labels } = makeOverlays(FLAT_PLACEMENT);
+    const numberLabels: LabelRecorder[] = [];
+
+    createFloatingNumberViews(
+      FLOATING_NUMBER_COUNT,
+      (size) => {
+        const label = new LabelRecorder(size);
+
+        numberLabels.push(label);
+
+        return label;
+      },
+      FLAT_PLACEMENT,
+    );
+
+    expect(quads).toHaveLength(
+      OVERLAY_RING_COUNT * 4 +
+        OVERLAY_FACING_QUAD_COUNT +
+        OVERLAY_PATH_SEGMENT_COUNT +
+        OVERLAY_BLOCKED_CELL_COUNT +
+        OVERLAY_HASH_CELL_COUNT +
+        OVERLAY_AREA_COUNT * 3 +
+        OVERLAY_HERO_RANGE_QUAD_COUNT,
+    );
+    expect(labels).toHaveLength(
+      OVERLAY_HASH_CELL_COUNT + OVERLAY_STATE_LABEL_COUNT,
+    );
+    expect(numberLabels).toHaveLength(FLOATING_NUMBER_COUNT);
   });
 });

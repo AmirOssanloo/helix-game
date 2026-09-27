@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { ViewSyncerEntry } from "@presentation/public";
 import {
+  DEBUG_OVERLAYS_SYNCER,
+  DEPTH_DEBUG,
   DEPTH_TEXT,
   DEPTH_UNITS,
   NO_MISSES,
@@ -42,6 +44,7 @@ const PLAY_SYNC_ORDER = [
   "camera",
   "map load",
   "camera frame",
+  "on screen",
   "floor",
   "events",
   "obstacles",
@@ -54,7 +57,6 @@ const PLAY_SYNC_ORDER = [
   "orbs",
   "numbers",
   "cursor",
-  "overlays",
 ];
 
 describe("the view syncer list", () => {
@@ -181,5 +183,23 @@ describe("the play scene's steps", () => {
     expect(journal.ran[units + 1]).toBe("ground items");
     expect(journal.ran[units + 2]).toBe("outlines");
     expect(journal.made.at(-1)).toBe("ground items");
+  });
+
+  it("hold no debug overlay: that step is the panel's, last in the order, at the debug band", () => {
+    const journal: Journal = { made: [], ran: [] };
+
+    new ViewSyncerList(
+      [
+        ...playStubs(),
+        stub(DEBUG_OVERLAYS_SYNCER.name, DEBUG_OVERLAYS_SYNCER.order),
+      ],
+      journal,
+    ).sync(0);
+
+    expect(PLAY_VIEW_SYNCERS.some((entry) => entry.band === DEPTH_DEBUG)).toBe(
+      false,
+    );
+    expect(DEBUG_OVERLAYS_SYNCER.band).toBe(DEPTH_DEBUG);
+    expect(journal.ran.at(-1)).toBe(DEBUG_OVERLAYS_SYNCER.name);
   });
 });

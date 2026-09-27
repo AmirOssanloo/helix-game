@@ -1,8 +1,9 @@
-import type { EntityId, Rect, Vec2 } from "@shared/public";
+import type { Rect, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import type { GroundLayer } from "../camera/ground-layer";
 import type { Projection } from "../camera/projection";
+import type { ScreenUnits } from "../camera/screen-units";
 import type { WorldCamera } from "../camera/world-camera";
 import type { InputMapper } from "../input/input-mapper";
 import type { CameraLens } from "../input/input-ports";
@@ -40,8 +41,8 @@ export type PlayStage = Readonly<{
   screen: Rect;
   /** What the camera shows this frame, for the views that bind by it. */
   frame: CameraFrame;
-  /** Scratch the unit queries by the camera's box fill. */
-  candidates: EntityId[];
+  /** The units inside the camera's world box, gathered once a frame for every view that binds by unit. */
+  onScreen: ScreenUnits;
   /**
    * The numbers rising where hits landed, written by the event drain and released on a map
    * load. Made on the first ask, which is the numbers step's `create`, so its labels take their

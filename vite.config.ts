@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import { type BuildStamp, readBuildStamp } from "./src/app/build-stamp.ts";
 import { DEVTOOLS_SENTINEL } from "./src/devtools/devtools-sentinel.ts";
+import { DEBUG_OVERLAYS_SENTINEL } from "./src/presentation/overlays/debug-overlays-sentinel.ts";
 
 const LAYERS = [
   "shared",
@@ -60,7 +61,9 @@ const PLAYTEST_MODE = "playtest";
  * the panel is: a production build carrying it has leaked the panel, and a playtest build without
  * it has lost the thing it exists to carry. The pane is checked beside the sentinel because a
  * bundler that keeps a module for its side effects keeps it whole and silent, and by then the
- * panel's own code is gone for the sentinel to catch it by.
+ * panel's own code is gone for the sentinel to catch it by. The debug overlays carry a sentinel
+ * of their own, their view syncer's name: the play scene makes them only where the panel is, so
+ * a production build carrying it would make quads nobody can switch on.
  */
 const devtoolsBuildCheck = (panel: boolean): Plugin => ({
   name: "helix:devtools-build-check",
@@ -68,6 +71,7 @@ const devtoolsBuildCheck = (panel: boolean): Plugin => ({
   generateBundle(_options, bundle): void {
     let sentinel: string | null = null;
     let pane: string | null = null;
+    let overlay: string | null = null;
 
     for (const output of Object.values(bundle)) {
       if (output.type !== "chunk") {
@@ -85,6 +89,10 @@ const devtoolsBuildCheck = (panel: boolean): Plugin => ({
       if (found !== undefined) {
         pane = found;
       }
+
+      if (output.code.includes(DEBUG_OVERLAYS_SENTINEL)) {
+        overlay = output.fileName;
+      }
     }
 
     if (!panel && sentinel !== null) {
@@ -101,7 +109,14 @@ const devtoolsBuildCheck = (panel: boolean): Plugin => ({
       );
     }
 
-    if (panel && (sentinel === null || pane === null)) {
+    if (!panel && overlay !== null) {
+      this.error(
+        `The debug overlays reached the production bundle in ${overlay}. ` +
+          "Add their view syncer only inside the __PANEL__ branch of src/app/main.ts.",
+      );
+    }
+
+    if (panel && (sentinel === null || pane === null || overlay === null)) {
       this.error(
         `The ${PLAYTEST_MODE} build has no developer panel in it: the game is published with the panel ` +
           "beside it, and without one there is nothing to play with. Check the __PANEL__ define.",

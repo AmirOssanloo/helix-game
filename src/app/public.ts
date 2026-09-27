@@ -23,6 +23,7 @@ export {
   type RendererOverrides,
   rendererType,
 } from "./game-config";
+export { panelViewSyncers } from "./play-view-syncers";
 
 export {
   type CommandStamps,

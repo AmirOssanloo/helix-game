@@ -17,14 +17,41 @@ export type RenderedScene = Readonly<{
 }>;
 
 /**
+ * `drawElements` as the renderer declares it: a drawing context, textures, a program, a vertex
+ * array, the count, the offset, and the topology. The counter passes each through untouched, so
+ * it names none of their types.
+ */
+export type DrawElements = (
+  context: never,
+  textures: never,
+  program: never,
+  vao: never,
+  count: never,
+  offset: never,
+  topology: never,
+) => void;
+
+/** `drawInstancedArrays` as the renderer declares it: as `drawElements`, with the first vertex and the instance count. */
+export type DrawInstancedArrays = (
+  context: never,
+  textures: never,
+  program: never,
+  vao: never,
+  first: never,
+  count: never,
+  instanceCount: never,
+  topology: never,
+) => void;
+
+/**
  * What the counter needs of the WebGL renderer: the two public draw methods every batch
  * handler, the filter pass, and the GPU tile layer draw through, and its event emitter.
  * Phaser's `WebGLRenderer` satisfies it; the composition root proves the renderer is one
  * before installing, since the Canvas renderer has nothing to count and no such methods.
  */
 export type DrawCallRenderer = {
-  drawElements: (...args: never[]) => void;
-  drawInstancedArrays: (...args: never[]) => void;
+  drawElements: DrawElements;
+  drawInstancedArrays: DrawInstancedArrays;
   on: (event: string, listener: (scene: RenderedScene) => void) => unknown;
 };
 
@@ -34,7 +61,8 @@ export type DrawCallRenderer = {
  * draw. On pre-render the counts reset; on post-render the frame total and the share drawn
  * between the world scene's render event and the next scene's go to the rings, so the world
  * figure the budget is held to excludes the HUD. Nothing is read from renderer internals.
- * Installed once, at boot, after the game is ready.
+ * Each wrapper takes the method's own arguments by name and calls through with them, so a draw
+ * allocates nothing: no rest array, no spread. Installed once, at boot, after the game is ready.
  */
 export const installDrawCallCounter = (
   renderer: DrawCallRenderer,
@@ -56,14 +84,50 @@ export const installDrawCallCounter = (
     inWorld = false;
   };
 
-  renderer.drawElements = (...args: never[]): void => {
+  renderer.drawElements = (
+    context,
+    textures,
+    program,
+    vao,
+    count,
+    offset,
+    topology,
+  ): void => {
     inFrame += 1;
-    drawElements.apply(renderer, args);
+    drawElements.call(
+      renderer,
+      context,
+      textures,
+      program,
+      vao,
+      count,
+      offset,
+      topology,
+    );
   };
 
-  renderer.drawInstancedArrays = (...args: never[]): void => {
+  renderer.drawInstancedArrays = (
+    context,
+    textures,
+    program,
+    vao,
+    first,
+    count,
+    instanceCount,
+    topology,
+  ): void => {
     inFrame += 1;
-    drawInstancedArrays.apply(renderer, args);
+    drawInstancedArrays.call(
+      renderer,
+      context,
+      textures,
+      program,
+      vao,
+      first,
+      count,
+      instanceCount,
+      topology,
+    );
   };
 
   renderer.on(Phaser.Renderer.Events.PRE_RENDER, (): void => {

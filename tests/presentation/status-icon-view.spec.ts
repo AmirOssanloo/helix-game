@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { statusIconFrame } from "@content/public";
 import type { Unit } from "@domain/public";
-import {
-  applyStatus,
-  createCandidateBuffer,
-  STATUS_TABLE_SIZE,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { applyStatus, STATUS_TABLE_SIZE } from "@domain/public";
 import type { ScreenPlacement, StatusIconViewPool } from "@presentation/public";
 import {
   createStatusIconViewPool,
@@ -19,6 +14,7 @@ import type { Simulation } from "@simulation/public";
 import {
   FLAT_PLACEMENT,
   frameAround,
+  unitsOn,
   makeWorld,
   QuadRecorder,
   spawnEnemy,
@@ -79,7 +75,6 @@ const arrange = (
   const hero = spawnHero(world, at);
   const heroId = world.state.run.heroId;
   const quads: QuadRecorder[] = [];
-  const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const pool = createStatusIconViewPool(
     size,
     (frame) => {
@@ -105,12 +100,14 @@ const arrange = (
     quads,
     icons: quads.slice(0, STATUS_TABLE_SIZE),
     sync: (rect = AROUND_HERO): void => {
+      const frame = frameAround(rect);
+
       syncStatusIconViews(
         pool,
         world.view,
-        frameAround(rect),
+        frame,
         HALF_WAY,
-        candidates,
+        unitsOn(world.view, frame),
       );
     },
     wear: (statusId): void => {

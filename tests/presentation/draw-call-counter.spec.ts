@@ -1,3 +1,4 @@
+import { GCProfiler } from "node:v8";
 import Phaser from "phaser";
 import { describe, expect, it } from "vitest";
 import type { SampleRing } from "@instrumentation/public";
@@ -6,6 +7,19 @@ import type { DrawCallRenderer, RenderedScene } from "@presentation/public";
 import { installDrawCallCounter, PLAY_SCENE_KEY } from "@presentation/public";
 
 const HUD_KEY = "hud";
+
+/** How many arguments each renderer method takes, as Phaser's WebGL renderer declares it. */
+const DRAW_ELEMENTS_ARITY = 7;
+const DRAW_INSTANCED_ARITY = 8;
+
+/** Draws run before measuring, so the wrappers are compiled as a long session would run them. */
+const WARM_UP_DRAWS = 10_000;
+
+/** Draws measured: about a minute of the busiest frames' batches. */
+const MEASURED_DRAWS = 200_000;
+
+/** What the heap may move by over the measured draws, for the runner's own bookkeeping; a rest array per draw would be megabytes. */
+const HEAP_ALLOWANCE_BYTES = 256 * 1024;
 
 type Listener = (scene: RenderedScene) => void;
 
@@ -19,12 +33,49 @@ class RendererRecorder implements DrawCallRenderer {
 
   private readonly listeners = new Map<string, Listener[]>();
 
-  drawElements = (): void => {
+  /** The last arguments each own method was handed, written in place so a draw allocates nothing here either. */
+  readonly lastElements: unknown[] = [0, 0, 0, 0, 0, 0, 0];
+
+  readonly lastInstanced: unknown[] = [0, 0, 0, 0, 0, 0, 0, 0];
+
+  drawElements = (
+    context: never,
+    textures: never,
+    program: never,
+    vao: never,
+    count: never,
+    offset: never,
+    topology: never,
+  ): void => {
     this.ownDraws += 1;
+    this.lastElements[0] = context;
+    this.lastElements[1] = textures;
+    this.lastElements[2] = program;
+    this.lastElements[3] = vao;
+    this.lastElements[4] = count;
+    this.lastElements[5] = offset;
+    this.lastElements[6] = topology;
   };
 
-  drawInstancedArrays = (): void => {
+  drawInstancedArrays = (
+    context: never,
+    textures: never,
+    program: never,
+    vao: never,
+    first: never,
+    count: never,
+    instanceCount: never,
+    topology: never,
+  ): void => {
     this.ownDraws += 1;
+    this.lastInstanced[0] = context;
+    this.lastInstanced[1] = textures;
+    this.lastInstanced[2] = program;
+    this.lastInstanced[3] = vao;
+    this.lastInstanced[4] = first;
+    this.lastInstanced[5] = count;
+    this.lastInstanced[6] = instanceCount;
+    this.lastInstanced[7] = topology;
   };
 
   on = (event: string, listener: Listener): void => {
@@ -46,6 +97,59 @@ const sceneNamed = (key: string): RenderedScene => ({
 });
 
 const NO_SCENE = sceneNamed("");
+
+/** A stand-in for one of the renderer's arguments, which the counter hands on without looking. */
+const argument = (name: string): never => name as never;
+
+/** The arguments a batch handler hands `drawElements`, in its order. */
+const ELEMENTS_ARGUMENTS = [
+  "context",
+  "textures",
+  "program",
+  "vao",
+  "count",
+  "offset",
+  "topology",
+];
+
+/** The arguments a batch handler hands `drawInstancedArrays`, in its order. */
+const INSTANCED_ARGUMENTS = [
+  "context",
+  "textures",
+  "program",
+  "vao",
+  "first",
+  "count",
+  "instanceCount",
+  "topology",
+];
+
+/** One draw through the wrapped `drawElements`, as a batch handler makes it. */
+const drawElements = (renderer: DrawCallRenderer): void => {
+  renderer.drawElements(
+    argument("context"),
+    argument("textures"),
+    argument("program"),
+    argument("vao"),
+    argument("count"),
+    argument("offset"),
+    argument("topology"),
+  );
+};
+
+/** One draw through the wrapped `drawInstancedArrays`. */
+const drawInstancedArrays = (renderer: DrawCallRenderer): void => {
+  renderer.drawInstancedArrays(
+    argument("context"),
+    argument("textures"),
+    argument("program"),
+    argument("vao"),
+    argument("first"),
+    argument("count"),
+    argument("instanceCount"),
+    argument("topology"),
+  );
+};
 
 type Arranged = {
   renderer: RendererRecorder;
@@ -88,9 +192,9 @@ describe("the draw-call counter", () => {
     const arranged = arrange();
 
     arranged.preRender();
-    arranged.renderer.drawElements();
-    arranged.renderer.drawElements();
-    arranged.renderer.drawInstancedArrays();
+    drawElements(arranged.renderer);
+    drawElements(arranged.renderer);
+    drawInstancedArrays(arranged.renderer);
     arranged.postRender();
 
     expect(arranged.drawCalls.at(0)).toBe(3);
@@ -102,10 +206,10 @@ describe("the draw-call counter", () => {
 
     arranged.preRender();
     arranged.render(PLAY_SCENE_KEY);
-    arranged.renderer.drawElements();
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
+    drawElements(arranged.renderer);
     arranged.render(HUD_KEY);
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
     arranged.postRender();
 
     expect(arranged.drawCalls.at(0)).toBe(3);
@@ -117,9 +221,9 @@ describe("the draw-call counter", () => {
 
     arranged.preRender();
     arranged.render(HUD_KEY);
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
     arranged.render(PLAY_SCENE_KEY);
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
     arranged.postRender();
 
     expect(arranged.worldDrawCalls.at(0)).toBe(1);
@@ -129,11 +233,11 @@ describe("the draw-call counter", () => {
     const arranged = arrange();
 
     arranged.preRender();
-    arranged.renderer.drawElements();
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
+    drawElements(arranged.renderer);
     arranged.postRender();
     arranged.preRender();
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
     arranged.postRender();
 
     expect(arranged.drawCalls.at(1)).toBe(1);
@@ -144,8 +248,89 @@ describe("the draw-call counter", () => {
     const arranged = arrange();
 
     arranged.preRender();
-    arranged.renderer.drawElements();
+    drawElements(arranged.renderer);
 
     expect(arranged.drawCalls.count).toBe(0);
+  });
+
+  it("wraps each draw method with the renderer's own arity, and hands every argument on in order", () => {
+    const arranged = arrange();
+
+    drawElements(arranged.renderer);
+    drawInstancedArrays(arranged.renderer);
+
+    expect(arranged.renderer.drawElements.length).toBe(DRAW_ELEMENTS_ARITY);
+    expect(arranged.renderer.drawInstancedArrays.length).toBe(
+      DRAW_INSTANCED_ARITY,
+    );
+    expect(arranged.renderer.lastElements).toEqual(ELEMENTS_ARGUMENTS);
+    expect(arranged.renderer.lastInstanced).toEqual(INSTANCED_ARGUMENTS);
+  });
+
+  it("allocates nothing per draw once it is warm", () => {
+    const arranged = arrange();
+    const renderer = arranged.renderer;
+    const context = argument("context");
+
+    arranged.preRender();
+
+    for (let draw = 0; draw < WARM_UP_DRAWS; draw += 1) {
+      renderer.drawElements(
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+      );
+      renderer.drawInstancedArrays(
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+      );
+    }
+
+    const profiler = new GCProfiler();
+
+    profiler.start();
+
+    const before = process.memoryUsage().heapUsed;
+
+    for (let draw = 0; draw < MEASURED_DRAWS; draw += 1) {
+      renderer.drawElements(
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+      );
+      renderer.drawInstancedArrays(
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+        context,
+      );
+    }
+
+    const after = process.memoryUsage().heapUsed;
+    const collections = profiler.stop().statistics.length;
+
+    arranged.postRender();
+
+    expect(arranged.drawCalls.at(0)).toBe(2 * (WARM_UP_DRAWS + MEASURED_DRAWS));
+    expect(collections).toBe(0);
+    expect(after - before).toBeLessThan(HEAP_ALLOWANCE_BYTES);
   });
 });

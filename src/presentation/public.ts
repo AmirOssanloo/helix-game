@@ -16,6 +16,7 @@ export {
   VIEW_SCALE,
 } from "./camera/projection";
 export { CameraFrame, VIEW_SCREEN_MARGIN } from "./camera/camera-frame";
+export { ScreenUnits } from "./camera/screen-units";
 export { type FollowCamera, WorldCamera } from "./camera/world-camera";
 export {
   AbilitySquareView,
@@ -82,6 +83,7 @@ export {
 } from "./input/targeting-preview";
 export { createGroundPick, type GroundPick } from "./input/ground-pick";
 export { DebugOverlays } from "./overlays/debug-overlays";
+export { DEBUG_OVERLAYS_SENTINEL } from "./overlays/debug-overlays-sentinel";
 export {
   createOverlayToggles,
   type OverlayToggles,
@@ -104,6 +106,7 @@ export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";
 export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";
 export type { PlayStage, PlayViewSyncer } from "./scenes/play-stage";
 export { PLAY_VIEW_SYNCERS, SYNC_ORDER } from "./scenes/play-view-syncers";
+export { DEBUG_OVERLAYS_SYNCER } from "./scenes/debug-overlays-syncer";
 export {
   NO_MISSES,
   type ViewSyncer,
@@ -132,8 +135,6 @@ export {
 export {
   createFloatingNumberViews,
   DAMAGE_NUMBER_TINTS,
-  FLOATING_NUMBER_COUNT,
-  FLOATING_NUMBER_HITS_A_SECOND,
   FLOATING_NUMBER_SIZE,
   FloatingNumberViews,
   NO_NUMBER,
@@ -162,6 +163,7 @@ export {
   type Quad,
   type QuadFactory,
 } from "./views/quad";
+export { makeQuads, QuadRun } from "./views/quad-run";
 export {
   createProjectileViewPool,
   ProjectileView,
@@ -188,11 +190,21 @@ export {
   type UnitViewPool,
 } from "./views/unit.view";
 export {
+  FLOATING_NUMBER_COUNT,
+  FLOATING_NUMBER_HITS_A_SECOND,
   FLOOR_TILE_COUNT,
   OBSTACLE_VIEW_COUNT,
   ON_SCREEN_ENEMIES,
   ON_SCREEN_PROJECTILES,
   OUTLINE_VIEW_COUNT,
+  OVERLAY_AREA_COUNT,
+  OVERLAY_BLOCKED_CELL_COUNT,
+  OVERLAY_FACING_QUAD_COUNT,
+  OVERLAY_HASH_CELL_COUNT,
+  OVERLAY_HERO_RANGE_QUAD_COUNT,
+  OVERLAY_PATH_SEGMENT_COUNT,
+  OVERLAY_RING_COUNT,
+  OVERLAY_STATE_LABEL_COUNT,
   PROJECTILE_VIEW_COUNT,
   STATUS_ICON_VIEW_COUNT,
   UNIT_VIEW_COUNT,

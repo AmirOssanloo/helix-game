@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  acquireUnit,
-  createCandidateBuffer,
-  releaseUnit,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { acquireUnit, releaseUnit } from "@domain/public";
 import type { FollowCamera, UnitViewPool } from "@presentation/public";
 import {
   CameraFrame,
@@ -23,6 +18,7 @@ import {
   FEEDBACK_TIMINGS,
   FixedHash,
   frameAround,
+  unitsOn,
   makeMapDef,
   makeWorld,
   makeWorldView,
@@ -72,7 +68,6 @@ const arrange = (size: number): Arranged => {
     () => FRAME_WIDTH,
     unitDefinitionsOf(view),
   );
-  const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const flashes = new HitFlashes();
 
   return {
@@ -82,13 +77,13 @@ const arrange = (size: number): Arranged => {
     hash,
     pool,
     sync: (frame = frameAround(AROUND_BOTH)): void => {
-      syncUnitViews(pool, view, frame, 0, candidates, flashes);
+      syncUnitViews(pool, view, frame, 0, unitsOn(view, frame), flashes);
     },
   };
 };
 
 describe("the unit sync", () => {
-  it("asks the hash for the frame's world box", () => {
+  it("binds from the units gathered in the frame's world box, one query a frame", () => {
     const arranged = arrange(2);
     const frame = frameAround(AROUND_BOTH);
 
@@ -278,7 +273,6 @@ const arrangeArena = (): Arena => {
   const shown: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   const widened: Rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   const centre = { x: 0, y: 0 };
-  const candidates = createCandidateBuffer(UNIT_CAPACITY);
   const flashes = new HitFlashes();
 
   return {
@@ -301,7 +295,14 @@ const arrangeArena = (): Arena => {
       camera.screenRect(0, shown);
       camera.screenRect(VIEW_SCREEN_MARGIN, widened);
       frame.fit(widened);
-      syncUnitViews(pool, world.view, frame, alpha, candidates, flashes);
+      syncUnitViews(
+        pool,
+        world.view,
+        frame,
+        alpha,
+        unitsOn(world.view, frame),
+        flashes,
+      );
 
       for (const quad of quads) {
         quad.forgetWrites();

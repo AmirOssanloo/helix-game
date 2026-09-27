@@ -1,5 +1,6 @@
-import { CameraFrame, Projection } from "@presentation/public";
+import { CameraFrame, Projection, ScreenUnits } from "@presentation/public";
 import type { Rect } from "@shared/public";
+import type { WorldView } from "@simulation/public";
 
 /** A camera frame for a view test: its screen is the box the world rectangle `rect` projects to, so a unit standing inside `rect` is drawn inside it. */
 export const frameAround = (rect: Readonly<Rect>): CameraFrame => {
@@ -11,4 +12,16 @@ export const frameAround = (rect: Readonly<Rect>): CameraFrame => {
   );
 
   return frame;
+};
+
+/** The units inside `frame`'s world box, gathered as the play scene's step does before the views that bind by unit. */
+export const unitsOn = (
+  world: WorldView,
+  frame: Readonly<CameraFrame>,
+): ScreenUnits => {
+  const units = new ScreenUnits();
+
+  units.gather(world, frame.world);
+
+  return units;
 };

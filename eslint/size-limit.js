@@ -19,8 +19,6 @@ const MAP_DEFINITIONS = "src/content/maps/**/*.ts";
 
 /** The files over the limit, each with why it is let past until it is split. */
 export const OVER_THE_LIMIT = {
-  "src/presentation/overlays/debug-overlays.ts":
-    "every debug overlay in one file; splits into one file per overlay",
   "src/domain/movement/spatial-hash.ts":
     "the grid, its queries, and their scratch in one module; splits by query",
   "src/domain/public.ts":

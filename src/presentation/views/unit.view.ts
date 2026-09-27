@@ -3,6 +3,7 @@ import { UNIT_CAPACITY } from "@domain/public";
 import type { DeepReadonly, EntityId } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
+import type { ScreenUnits } from "../camera/screen-units";
 import { DEPTH_UNITS } from "./depth-bands";
 import type { HitFlashes } from "./hit-feedback";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
@@ -202,34 +203,26 @@ export const createUnitViewPool = (
 };
 
 /**
- * One frame of the unit views: asks the hash for the units inside the frame's world box, keeps
- * a view on each live one drawn inside its screen and writes its fields, and releases the
- * views of the units that left.
- * `candidates` is the query buffer, preallocated to the unit capacity by the caller, and
- * `flashes` is the record of which of them took a hit recently enough to still be white.
+ * One frame of the unit views: of the units inside the frame's world box, `onScreen`, gathered
+ * once this frame, keeps a view on each live one drawn inside its screen and writes its fields,
+ * and releases the views of the units that left. `flashes` is the record of which of them took
+ * a hit recently enough to still be white.
  */
 export const syncUnitViews = (
   pool: UnitViewPool,
   world: WorldView,
   frame: CameraFrame,
   alpha: number,
-  candidates: EntityId[],
+  onScreen: ScreenUnits,
   flashes: HitFlashes,
 ): void => {
   const units = world.map.units;
-  const box = frame.world;
-  const count = world.map.spatialHash.queryRectangle(
-    box.minX,
-    box.minY,
-    box.maxX,
-    box.maxY,
-    candidates,
-  );
+  const ids = onScreen.ids;
 
   pool.beginFrame();
 
-  for (let index = 0; index < count; index += 1) {
-    const id = candidates[index];
+  for (let index = 0; index < onScreen.count; index += 1) {
+    const id = ids[index];
     const unit = id === undefined ? null : units.resolve(id);
 
     if (
@@ -342,8 +335,8 @@ export const createOutlineViewPool = (
 };
 
 /**
- * One frame of the outlines: asks the hash for the units inside the frame's world box and
- * keeps an outline on each elite and boss among them drawn inside its screen, releasing the
+ * One frame of the outlines: of the units inside the frame's world box, `onScreen`, keeps an
+ * outline on each elite and boss among them drawn inside its screen, releasing the
  * outlines of those that left the screen or the world, so an outline goes when its unit's slot
  * is given back.
  */
@@ -352,22 +345,15 @@ export const syncOutlineViews = (
   world: WorldView,
   frame: CameraFrame,
   alpha: number,
-  candidates: EntityId[],
+  onScreen: ScreenUnits,
 ): void => {
   const units = world.map.units;
-  const box = frame.world;
-  const count = world.map.spatialHash.queryRectangle(
-    box.minX,
-    box.minY,
-    box.maxX,
-    box.maxY,
-    candidates,
-  );
+  const ids = onScreen.ids;
 
   pool.beginFrame();
 
-  for (let index = 0; index < count; index += 1) {
-    const id = candidates[index];
+  for (let index = 0; index < onScreen.count; index += 1) {
+    const id = ids[index];
     const unit = id === undefined ? null : units.resolve(id);
 
     if (

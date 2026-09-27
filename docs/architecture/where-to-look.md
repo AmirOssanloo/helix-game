@@ -74,7 +74,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the HUD draws | `src/presentation/hud/` — the layout, and one view per part; `src/presentation/scenes/hud.scene.ts` binds them |
 | How the shape atlas is baked from the frame list | `src/presentation/atlas/` — the layout, the painter, and the atlas |
 | How draw calls are counted | `src/presentation/render/draw-call-counter.ts` |
-| How many views of each kind the play scene makes, and what each is sized from: a live cap, a pool's capacity, or what the camera can show | `src/presentation/views/view-counts.ts` |
+| How many views of each kind the play scene makes, and what each is sized from: a live cap, a pool's capacity, or what the camera can show | `src/presentation/views/view-counts.ts` — every pool size in presentation, the debug overlays' and the floating numbers' included |
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
@@ -82,7 +82,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |
 | What a feedback file holds, how it is written and read, and the note the feedback key opens | `src/devtools/feedback-file.ts` and `src/devtools/feedback-note.ts` |
 | How a build knows its commit, and whether its tree was dirty | `src/app/build-stamp.ts`; the stamp is defined in `vite.config.ts` and declared in `src/app/build-flags.d.ts` |
-| Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay |
+| Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay, and one file per overlay beside them |
+| Where the debug overlays join the frame, and what keeps them out of production | `src/app/main.ts`'s panel branch adds their step from `src/app/play-view-syncers.ts`; the check is in `vite.config.ts` |
 | Which timing rings exist | `src/instrumentation/` — one ring per measurement |
 | Which lint rules enforce the layer table | The layer allow-list in `eslint/matrix.js`, applied per layer by the files under `eslint/layers/` |
 | Which lint rules ban the clock and unseeded random | `eslint/rules/no-ambient-time-in-simulation.js`, wired for `src/domain` and `src/simulation` in their files under `eslint/layers/` |

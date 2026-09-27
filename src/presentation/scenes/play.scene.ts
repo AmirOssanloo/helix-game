@@ -1,13 +1,10 @@
 import Phaser from "phaser";
-import {
-  createCandidateBuffer,
-  readTunable,
-  UNIT_CAPACITY,
-} from "@domain/public";
+import { readTunable } from "@domain/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
 import { CameraFrame } from "../camera/camera-frame";
 import { GroundLayer } from "../camera/ground-layer";
 import { Projection, VIEW_SCALE } from "../camera/projection";
+import { ScreenUnits } from "../camera/screen-units";
 import { WorldCamera } from "../camera/world-camera";
 import { refusalFlashTicks } from "../hud/slot-flashes";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
@@ -16,12 +13,10 @@ import type { InputIntents } from "../input/input-ports";
 import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
-import {
-  createFloatingNumberViews,
-  FLOATING_NUMBER_COUNT,
-} from "../views/floating-number.view";
+import { createFloatingNumberViews } from "../views/floating-number.view";
 import { HitFlashes, HitNumbers } from "../views/hit-feedback";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
+import { FLOATING_NUMBER_COUNT } from "../views/view-counts";
 import type { PlayStage, PlayViewSyncer } from "./play-stage";
 import { ViewSyncerList } from "./view-syncers";
 
@@ -141,7 +136,7 @@ export class PlayScene extends Phaser.Scene {
       pointer: () => this.input.activePointer,
       screen: { minX: 0, minY: 0, maxX: 0, maxY: 0 },
       frame: new CameraFrame(projection),
-      candidates: createCandidateBuffer(UNIT_CAPACITY),
+      onScreen: new ScreenUnits(),
       numbers: sharedNumbers,
       flashes: new HitFlashes(),
       hitNumbers: new HitNumbers(),
