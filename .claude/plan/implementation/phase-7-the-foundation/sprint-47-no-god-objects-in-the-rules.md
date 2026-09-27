@@ -181,7 +181,7 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 | Layer | docs |
 | Size | 0.5 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** a structural question. It belongs to the engineering architect; the delivery strategist sizes it and does not answer it.
 
@@ -208,6 +208,12 @@ Only what is decided is built. The build, if (a), is sized at 1 and is the bucke
 >
 > The ticket still measures the slot before and after loot's fields, and writes the cost on the commands and events page. If it confirms (b), the bucket's second claim falls away.
 
+> **Note, 2026-09-27, at close: the decision is (b).** The engineering architect confirmed the lean.
+> - **Why.** Typed readers would sit over the same flat, preallocated slot, so they save no memory and no copy. Their one gain is hiding a narrowed kind's unused fields, which today only the docblock names. In exchange every kind needs a type and a reader kept in step, and phase 8 adds kinds far more often than fields. A field's cost is small and capped by the fixed ring, and one field per id kind already lets P7-S48-T03's brands type each id.
+> - **The slot, measured** in Node 24 (64-bit, no pointer compression), 16384 slots, heap after a forced collection, the ring's array pointer included: before, 15 properties, about 147 B a slot and 2356 KiB a ring; after loot's two id fields, an item id and a definition id, about 163 B a slot and 2612 KiB a ring. That is one word a field a slot: +256 KiB a ring in Node, about +128 KiB under Chrome's pointer compression. A fractional `amount` already boxes a heap number a slot (+16 B) and loot does not change it; gold and globe amounts reuse `amount`.
+> - **Written down.** The [commands and events](../../../../docs/architecture/commands-and-events.md#the-event-record) page gains "The event record": one flat record, no typed readers, what a new field costs in memory, time, and code, reuse before adding, an id kind's own field, and a decision record for any split. Two quick-reference rows say the same. No decision record: nothing is reversed.
+> - **The bucket.** Its second claim falls away; nothing is built. P8-S32-T02, which adds the item-id field, states its cost by the page's rule.
+
 ---
 
 ## Sprint exit
@@ -217,11 +223,11 @@ Only what is decided is built. The build, if (a), is sized at 1 and is the bucke
 | A stat added from one key list | Yes, 2026-09-27 (T01): `tests/domain/entities/unit.spec.ts` adds a toy stat to the key list in the test alone and has it created, cleared, stored from a definition at spawn, derived from the base through the rows for its modifier stat and no others, and derived on a form from its attribute's worth; each sub-record is created and cleared in place, and a released slot keeps every sub-record object |
 | A toy kind in three files or fewer | Yes, 2026-09-27 (T02): a toy kind on the real route touched three files under `src/`: its descriptor, the kind list, and the content index, the diff counted on a detached worktree and not kept. `tests/domain/definitions/toy-kind.spec.ts` validates, cross-references, and refuses a duplicate of a toy kind added to the list in the test, and has it copied, keyed into the tuning state and slots, and rebuilt by a tuning command |
 | No module-scope mutable state; interleaved worlds agree | Yes, 2026-09-27 (T03): `describeNoModuleState` in `tests/architecture.spec.ts` finds no binding at module scope under `src/domain/` or `src/simulation/` that can be written at any depth, and refuses a probe's `let`, array, record, typed array, and global pattern; `tests/simulation/two-worlds.spec.ts` ticks two boss encounters in turn, and the encounter beside the phase 1 session, and each agrees with its run alone at every tick. A module-level counter planted in the machine, and then removed, parted them at tick 2 |
-| The event record's decision | |
+| The event record's decision | Yes, 2026-09-27 (T04): (b), the record stays flat with no typed readers, decided by the engineering architect and written on the commands and events page with a new field's cost. The slot measured about 147 B and the ring 2356 KiB in Node; with loot's two id fields, 163 B and 2612 KiB, +128 KiB under Chrome's pointer compression. The bucket's second claim falls away |
 | `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60. T02: `src/domain/definitions/validate-registry.ts`, now 229 lines, and `src/domain/definitions/definition-schemas.ts`, removed; no descriptor file is over 210. T03: `src/domain/ai/machine.ts`, now 77 lines; no state file is over 280 |
-| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it. T02: all seven match with the content version stamp unchanged, nothing re-recorded; the change runs at validation and world creation, not in the tick. T03: all seven match, nothing re-recorded; the stress tier holds its budget |
-| Actual days per ticket | T01: 0.5 of 1. T02: 0.5 of 1.5. T03: 0.5 of 1 |
-| Sprint total | |
+| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it. T02: all seven match with the content version stamp unchanged, nothing re-recorded; the change runs at validation and world creation, not in the tick. T03: all seven match, nothing re-recorded; the stress tier holds its budget. T04: a docs ticket, no code changed; all seven match |
+| Actual days per ticket | T01: 0.5 of 1. T02: 0.5 of 1.5. T03: 0.5 of 1. T04: 0.25 of 0.5 |
+| Sprint total | Sized 4 with 1 of buffer, done in 1.75 on 2026-09-27; no unplanned ticket, the buffer unspent |
 
 ## Risks in this sprint
 

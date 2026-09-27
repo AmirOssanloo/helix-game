@@ -109,7 +109,7 @@ Phase 8 shrinks by 1 in return. P8-S31-T02 goes from 1.5 to 1, because the decis
 This phase has no playtest: behaviour is unchanged by construction and proved by the logs, so there is nothing for play to judge but the pause screen, which an agent checks in Chrome. The bucket is for what a refactor uncovers that no one can size ahead. It holds **an appetite of one sized day**, in sprint 50 before the gate, spent in this order:
 
 1. A gate row that fails.
-2. The event record's typed readers, if P7-S47-T04's decision is to build them (sized at 1, the whole bucket).
+2. The event record's typed readers, if P7-S47-T04's decision is to build them (sized at 1, the whole bucket). P7-S47-T04 decided (b) on 2026-09-27, no readers, so this claim falls away.
 3. A latent bug a refactor makes live, such as an enemy's stats that were stale before P7-S46-T01. It is fixed with an intended-change note and the logs it moves re-recorded.
 
 Whatever does not fit goes to [Deferred](../backlog/deferred.md) as "the foundation, after the bucket". An unspent day is recorded as unspent.

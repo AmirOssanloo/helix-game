@@ -122,7 +122,7 @@ Any drift the proposal of 2026-09-27 named that no ticket closed is closed here 
 One sized day, run after T01 and before T02, in the order the [phase README](./README.md#the-bucket) gives:
 
 1. a gate row that fails;
-2. the event record's typed readers, if P7-S47-T04 decided to build them;
+2. the event record's typed readers, if P7-S47-T04 decided to build them; P7-S47-T04 decided (b) on 2026-09-27, no readers, so this claim falls away;
 3. a latent bug a refactor made live.
 
 Each accepted item is written as a ticket, P7-S50-T04 onward, with a note. What does not fit goes to Deferred. An unspent day is recorded as unspent.

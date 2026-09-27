@@ -64,6 +64,20 @@ An event is a plain value announcing something that happened inside a tick: a un
 
 Events are for reactions, not for state. A view that needs to know a unit's health reads the world view; it does not sum damage events.
 
+### The event record
+
+Every ring slot is one flat record: a `kind` and every field any kind reads, with each field a kind does not use held at its neutral value. The union narrows on `kind`; which fields a kind reads is stated by its docblock, not by its type. The fields, their neutral values, and the three functions that make, copy, and reset a slot are in `src/domain/events/domain-event.ts`.
+
+There are no typed readers per variant over the slot. A reader narrows on `kind` and reads the fields that kind's docblock names. Readers would hide the unused fields from a narrowed kind, but they keep the same flat storage, so they save no memory and no copy, and they add a type and a reader to keep in step for every kind while a field is added far more rarely than a kind. One field per id kind keeps each id distinct enough for its own brand without them.
+
+**What a new field costs**, and so what a change adding one states:
+
+- **Memory.** One word per slot for the whole ring, allocated at world creation: 8 bytes in 64-bit Node and 4 under Chrome's pointer compression, multiplied by the capacity in `src/simulation/event-ring.ts`. A field that holds a fractional number also boxes a heap number per slot.
+- **Time.** One more assignment in the copy and one in the reset, for every event written, whichever kind it is.
+- **Code.** The field, its neutral value, and its line in each of the three functions, in one change, with the docblocks of the kinds that read it.
+
+A new kind reuses a field before it adds one, when the field already means the same thing: an amount is `amount`, the unit something happened to is `unitId`. A new id kind gets a field of its own, never a reused one of another id kind. A change that splits the storage, or moves the record off one flat shape, is a decision record.
+
 ---
 
 ## The world view
@@ -109,6 +123,8 @@ An event carrying a function to call when handled. It allocates a closure per ev
 | Tuning changes | A `SetTuning` command carrying a key of the tuning table or a definition key, `def:<kind>:<id>:<field path>[:<index>]`, and a value in the designer's units, recorded in the input log, converted once when applied |
 | A mutating method on the world | Never |
 | Events | Plain values in a preallocated ring; no emitter, no listeners, no closures |
+| The event record | One flat record per slot, every field any kind reads, the rest neutral; a reader narrows on `kind` and reads what the kind's docblock names; no typed readers per variant |
+| A new event field | Reuse a field that means the same thing first; an id kind gets its own field. Costs one word per slot across the ring (8 bytes in Node, 4 under pointer compression, times the capacity in `event-ring.ts`), a boxed number per slot if fractional, and one assignment each in the copy and the reset per event written; the field, its neutral value, and all three functions change together. Splitting the storage is a decision record |
 | Draining events | Once per render frame by the presentation, with its own cursor; the panel keeps its own |
 | A full ring | Overwrites the oldest entry; counts each event a reader finds overwritten before it read it, and none at the live cap |
 | State versus moments | Read the world view for state; use events for reactions |
