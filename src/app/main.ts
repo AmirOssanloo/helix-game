@@ -17,6 +17,7 @@ import {
   createGroundPick,
   createOverlayToggles,
   HudScene,
+  InputClaim,
   installDrawCallCounter,
   PLAY_SCENE_KEY,
   PLAY_VIEW_SYNCERS,
@@ -75,6 +76,15 @@ export const boot: Boot = (): void => {
     flashes: new SlotFlashes(),
     overlays,
     groundPick,
+    // A screen that pauses holds a reason of its own on the driver, apart from the panel's.
+    claim: new InputClaim({
+      hold: (): void => {
+        driver.setScreenPaused(true);
+      },
+      release: (): void => {
+        driver.setScreenPaused(false);
+      },
+    }),
     report: (message: string): void => {
       console.log(message);
     },

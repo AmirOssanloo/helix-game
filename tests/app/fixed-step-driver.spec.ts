@@ -10,7 +10,8 @@ import type { AnyCommand } from "@domain/public";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/testing";
-import { makeRegistry, makeWorld } from "../helpers";
+import { stateDifference } from "@simulation/testing";
+import { makeMapDef, makeRegistry, makeWorld, spawnHero } from "../helpers";
 
 const SEED = 7;
 
@@ -327,5 +328,138 @@ describe("FixedStepDriver", () => {
 
     expect(world.view.tick).toBe(0);
     expect(driver.runningTo).toBe(5);
+  });
+
+  describe("a screen's pause", () => {
+    /** A second of frames at sixty a second. */
+    const FRAME_MS = 1000 / 60;
+    const LONG_PAUSE_FRAMES = 600;
+
+    it("runs no tick while held, and still samples the frame rate", () => {
+      const { driver, world, rings } = makeDriver();
+
+      driver.setScreenPaused(true);
+      driver.onFrame(STEP_MS * 3);
+
+      expect(world.view.tick).toBe(0);
+      expect(driver.screenPaused).toBe(true);
+      expect(rings.frameRate.count).toBe(1);
+    });
+
+    it("never resumes a clock the panel stopped, and the panel's step still runs under it", () => {
+      const { driver, world } = makeDriver();
+
+      driver.setPaused(true);
+      driver.setScreenPaused(true);
+      driver.setScreenPaused(false);
+      driver.onFrame(STEP_MS * 2);
+
+      expect(world.view.tick).toBe(0);
+      expect(driver.paused).toBe(true);
+
+      driver.setScreenPaused(true);
+
+      expect(driver.step()).toBe(true);
+      expect(world.view.tick).toBe(1);
+    });
+
+    it("keeps the world stopped when the panel's pause ends under it", () => {
+      const { driver, world } = makeDriver();
+
+      driver.setScreenPaused(true);
+      driver.setPaused(true);
+      driver.setPaused(false);
+      driver.onFrame(STEP_MS * 2);
+
+      expect(world.view.tick).toBe(0);
+      expect(driver.screenPaused).toBe(true);
+    });
+
+    it("feeds no time while held, so the first frame after a long pause runs at most one tick", () => {
+      const { driver, world } = makeDriver();
+
+      driver.onFrame(STEP_MS * 0.9);
+      driver.setScreenPaused(true);
+
+      for (let frame = 0; frame < LONG_PAUSE_FRAMES; frame += 1) {
+        driver.onFrame(FRAME_MS);
+      }
+
+      driver.setScreenPaused(false);
+      driver.onFrame(FRAME_MS);
+
+      expect(world.view.tick).toBeLessThanOrEqual(1);
+    });
+
+    it("plays a session with pauses in it to the same world as the session played straight through", () => {
+      const moveAt = new Map<number, number>([
+        [2, 400],
+        [9, -300],
+        [17, 150],
+      ]);
+      const pauseAt = new Set<number>([3, 10, 11, 16]);
+      const ticks = 30;
+      const map = makeMapDef.build();
+      const pausedWorld = makeWorld({ seed: SEED, map });
+      const paused = {
+        world: pausedWorld,
+        driver: new FixedStepDriver({
+          world: pausedWorld,
+          rings: createRings(),
+          clock: sequenceClock([0]),
+        }),
+      };
+      const straight = makeWorld({ seed: SEED, map });
+
+      spawnHero(paused.world);
+      spawnHero(straight);
+
+      const move = (tick: number, x: number): AnyCommand => ({
+        kind: "move",
+        tick,
+        timestamp: tick,
+        destination: { x, y: x },
+      });
+
+      let frames = 0;
+
+      while (paused.world.view.tick < ticks) {
+        const tick = paused.world.view.tick;
+        const x = moveAt.get(tick);
+
+        if (x !== undefined && !paused.driver.screenPaused) {
+          paused.driver.submit(move(tick, x));
+          moveAt.delete(tick);
+        }
+
+        // Each pausing tick is held for a few frames, then released.
+        const hold = pauseAt.has(tick) && frames % 4 !== 3;
+
+        paused.driver.setScreenPaused(hold);
+        paused.driver.onFrame(STEP_MS);
+        frames += 1;
+      }
+
+      const straightMoves = new Map<number, number>([
+        [2, 400],
+        [9, -300],
+        [17, 150],
+      ]);
+
+      for (let tick = 0; tick < ticks; tick += 1) {
+        const x = straightMoves.get(tick);
+
+        if (x !== undefined) {
+          straight.submit(move(tick, x));
+        }
+
+        straight.tick();
+      }
+
+      expect(frames).toBeGreaterThan(ticks);
+      expect(straight.log.count).toBe(3);
+      expect(paused.world.log.count).toBe(straight.log.count);
+      expect(stateDifference(paused.world.state, straight.state)).toBeNull();
+    });
   });
 });

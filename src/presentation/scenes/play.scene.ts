@@ -7,7 +7,11 @@ import { Projection, VIEW_SCALE } from "../camera/projection";
 import { ScreenUnits } from "../camera/screen-units";
 import { WorldCamera } from "../camera/world-camera";
 import { refusalFlashTicks } from "../hud/slot-flashes";
-import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
+import {
+  bindSceneInput,
+  cameraLens,
+  claimedSink,
+} from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
 import type { InputIntents } from "../input/input-ports";
 import type { SceneContext } from "../scene-context";
@@ -40,7 +44,8 @@ type Built = Readonly<{
 }>;
 
 /**
- * Owns the world camera, runs the sync each frame, and maps input to commands. The world is
+ * Owns the world camera, runs the sync each frame, and maps input to commands, asking the input
+ * claim before the mapper sees any event. The world is
  * drawn through the projection: what lies on the ground is made inside the ground layer and
  * written in world coordinates, and what stands up off it, the icons, the numbers, and the
  * labels, is made in the scene and placed where its point is drawn. The frame's steps are the
@@ -153,12 +158,17 @@ export class PlayScene extends Phaser.Scene {
       );
     };
 
-    this.unbindInput = bindSceneInput(this, mapper);
+    this.context.claim.bindMapper(mapper);
+    this.unbindInput = bindSceneInput(
+      this,
+      claimedSink(this.context.claim, mapper),
+    );
     this.events.on(RENDER_EVENT, onRender);
     this.events.once(SHUTDOWN_EVENT, (): void => {
       this.events.off(RENDER_EVENT, onRender);
       this.unbindInput();
       this.unbindInput = NOT_BOUND;
+      this.context.claim.unbindMapper();
       this.built = null;
     });
   }

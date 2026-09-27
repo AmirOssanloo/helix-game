@@ -44,7 +44,19 @@ export {
   refusalFlashTicks,
   SlotFlashes,
 } from "./hud/slot-flashes";
-export { bindSceneInput, cameraLens } from "./input/bind-scene-input";
+export {
+  bindSceneInput,
+  cameraLens,
+  claimedSink,
+  type InputSink,
+  type MapperInput,
+} from "./input/bind-scene-input";
+export {
+  type ClaimRegion,
+  type ClaimScreen,
+  ESCAPE_CODE,
+  InputClaim,
+} from "./input/input-claim";
 export {
   projectedLens,
   type ScenePointAt,
@@ -54,9 +66,11 @@ export { InputMapper } from "./input/input-mapper";
 export { pickUnit } from "./input/pick-unit";
 export type {
   CameraLens,
+  ClaimedMapper,
   InputDriver,
   InputIntents,
   InputPorts,
+  PausePort,
 } from "./input/input-ports";
 export {
   type KeyAction,
@@ -101,6 +115,19 @@ export type {
   SceneContext,
   SceneRings,
 } from "./scene-context";
+export {
+  HUD_DEPTH_BAR,
+  HUD_DEPTH_BAR_TEXT,
+  HUD_DEPTH_SCREEN,
+  HUD_DEPTH_SCREEN_TEXT,
+} from "./hud/hud-bands";
+export {
+  PAUSE_TITLE,
+  PauseScreen,
+  RESUME_BUTTON_RECT,
+  RESUME_WORD,
+  type ScreenPorts,
+} from "./screens/pause-screen";
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";
 export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";

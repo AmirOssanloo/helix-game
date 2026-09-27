@@ -45,6 +45,12 @@ export type FixedStepDriverOptions = Readonly<{
  * is hidden it runs nothing and refuses every submit, so a tab that was away for a minute
  * neither replays a minute nor keeps the input that arrived meanwhile.
  *
+ * Every pause is a reason held apart from the others: a hidden tab, the developer panel's
+ * pause, and a screen that pauses the world, which a screen holds through the pause port the
+ * composition root builds over `setScreenPaused`. A tick runs only when no reason holds, and
+ * no time is fed to the accumulator while one does, so releasing one never resumes a clock
+ * another still holds and releasing the last runs no burst of catch-up ticks.
+ *
  * Pause, single-step, the cap, and running to a tick are the developer panel's: they decide
  * whether a frame calls `tick`, never what a tick does, so they are not commands and are not
  * in the log. Running to a tick spends each frame's budget on ticks rather than wall time
@@ -72,6 +78,8 @@ export class FixedStepDriver {
   private isHidden = false;
 
   private isPaused = false;
+
+  private isScreenPaused = false;
 
   private cap = MAX_TICKS_PER_FRAME;
 
@@ -102,6 +110,11 @@ export class FixedStepDriver {
   /** Whether the developer panel has paused the clock. */
   get paused(): boolean {
     return this.isPaused;
+  }
+
+  /** Whether an open screen has paused the world. */
+  get screenPaused(): boolean {
+    return this.isScreenPaused;
   }
 
   /** Ticks one frame may run before the remaining time is dropped. */
@@ -154,6 +167,16 @@ export class FixedStepDriver {
   }
 
   /**
+   * Holds or releases a screen's pause, a reason apart from the panel's: releasing it leaves a
+   * clock the panel stopped stopped, and the panel's step still runs under it. The accumulated
+   * time is dropped either way, so a release never catches up.
+   */
+  setScreenPaused(held: boolean): void {
+    this.isScreenPaused = held;
+    this.accumulatorMs = 0;
+  }
+
+  /**
    * Runs the world to `tick` as fast as each frame's budget allows and pauses there, or pauses
    * at once when the world is already on it or past it. `null` ends a run without pausing, as
    * a world made again does, and the driver keeps wall time from where it is.
@@ -201,7 +224,7 @@ export class FixedStepDriver {
       this.rings.frameRate.write(MS_PER_SECOND / frameDeltaMs);
     }
 
-    if (this.isPaused) {
+    if (this.isPaused || this.isScreenPaused) {
       return;
     }
 

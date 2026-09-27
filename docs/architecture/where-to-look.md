@@ -78,6 +78,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How many views of each kind the play scene makes, and what each is sized from: a live cap, a pool's capacity, or what the camera can show | `src/presentation/views/view-counts.ts` — every pool size in presentation, the debug overlays' and the floating numbers' included |
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
+| Whose a click or a key is, a screen's, the bar's, or the world's | `src/presentation/input/input-claim.ts` — the input claim; the play scene's binding asks it in `bind-scene-input.ts` |
+| Which screens exist | `src/presentation/screens/` — one file per screen, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |
 | What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |

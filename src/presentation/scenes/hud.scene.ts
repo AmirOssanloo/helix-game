@@ -4,26 +4,33 @@ import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { ATLAS_FONT_KEY, ATLAS_TEXTURE_KEY } from "../atlas/shape-atlas";
 import { Hud } from "../hud/hud";
+import {
+  HUD_DEPTH_BAR,
+  HUD_DEPTH_BAR_TEXT,
+  HUD_DEPTH_SCREEN,
+  HUD_DEPTH_SCREEN_TEXT,
+} from "../hud/hud-bands";
+import { BAR_RECT, containsPoint } from "../hud/hud-layout";
+import type { ClaimRegion } from "../input/input-claim";
 import type { SceneContext } from "../scene-context";
+import { PauseScreen } from "../screens/pause-screen";
 import { orbSlotsOf } from "../views/orb.view";
-import type { LabelFactory, QuadFactory } from "../views/quad";
+import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 
 export const HUD_SCENE_KEY = "hud";
 
-const POINTER_DOWN_EVENT = "pointerdown";
 const SHUTDOWN_EVENT = "shutdown";
 
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;
 
-/** Every label draws over every quad, whatever order they were made in. The HUD has no bands of its own. */
-const LABEL_DEPTH = 1;
-
 /**
  * Runs in parallel with the play scene, with its own camera, so the play camera's zoom and
  * scroll never move the bar. `create` makes every quad and label the bar will ever hold;
- * `update` reads the world view once and drains the event ring with its own cursor. A
- * pointer that goes down on the bar is the HUD's and is kept from the scenes below.
+ * `update` reads the world view once and drains the event ring with its own cursor. The bar
+ * and each screen are registered on the input claim, which hands them the presses that are
+ * theirs and keeps those from the world; the scene listens to no pointer itself. Screens draw
+ * in a band above the bar, each its own module.
  */
 export class HudScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -38,34 +45,53 @@ export class HudScene extends Phaser.Scene {
   }
 
   create(): void {
-    const makeQuad: QuadFactory = (frame) =>
-      this.add.image(0, 0, ATLAS_TEXTURE_KEY, frame).setVisible(false);
-    const makeLabel: LabelFactory = (size) =>
-      this.add
-        .bitmapText(0, 0, ATLAS_FONT_KEY, "", size)
-        .setOrigin(LABEL_ORIGIN)
-        .setDepth(LABEL_DEPTH)
-        .setVisible(false);
+    const quadIn =
+      (depth: number): QuadFactory =>
+      (frame) =>
+        this.add
+          .image(0, 0, ATLAS_TEXTURE_KEY, frame)
+          .setDepth(depth)
+          .setVisible(false);
+    const labelIn =
+      (depth: number): LabelFactory =>
+      (size) =>
+        this.add
+          .bitmapText(0, 0, ATLAS_FONT_KEY, "", size)
+          .setOrigin(LABEL_ORIGIN)
+          .setDepth(depth)
+          .setVisible(false);
+    const frameSizes: FrameSizes = (frame) =>
+      this.context.atlas.frameWidth(frame);
     const hud = new Hud({
-      makeQuad,
-      makeLabel,
-      frameSizes: (frame) => this.context.atlas.frameWidth(frame),
+      makeQuad: quadIn(HUD_DEPTH_BAR),
+      makeLabel: labelIn(HUD_DEPTH_BAR_TEXT),
+      frameSizes,
       kits: resolveKitSlots,
       flashes: this.context.flashes,
       driver: this.context.driver,
       wedgeSteps: this.context.atlas.wedgeSteps,
       orbSlots: orbSlotsOf(this.context.world),
     });
-    const onPointerDown = (pointer: Phaser.Input.Pointer): void => {
-      if (hud.click(pointer.x, pointer.y, pointer.button, this.context.world)) {
-        this.input.stopPropagation();
-      }
+    const pause = new PauseScreen({
+      makeQuad: quadIn(HUD_DEPTH_SCREEN),
+      makeLabel: labelIn(HUD_DEPTH_SCREEN_TEXT),
+      frameSizes,
+    });
+    const bar: ClaimRegion = {
+      contains: (x, y) => containsPoint(BAR_RECT, x, y),
+      pointerDown: (button, x, y): void => {
+        hud.click(x, y, button, this.context.world);
+      },
     };
+    const claim = this.context.claim;
 
     this.hud = hud;
-    this.input.on(POINTER_DOWN_EVENT, onPointerDown);
+    claim.addRegion(bar);
+    claim.setPauseScreen(pause);
     this.events.once(SHUTDOWN_EVENT, (): void => {
-      this.input.off(POINTER_DOWN_EVENT, onPointerDown);
+      claim.close(pause);
+      claim.setPauseScreen(null);
+      claim.removeRegion(bar);
       this.hud = null;
     });
   }

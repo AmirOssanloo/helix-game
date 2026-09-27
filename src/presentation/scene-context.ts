@@ -5,6 +5,7 @@ import type { WorldView } from "@simulation/public";
 import type { ShapeAtlas } from "./atlas/shape-atlas";
 import type { SlotFlashes } from "./hud/slot-flashes";
 import type { GroundPick } from "./input/ground-pick";
+import type { InputClaim } from "./input/input-claim";
 import type { OverlayToggles } from "./overlays/overlay-toggles";
 
 /**
@@ -40,7 +41,7 @@ export type SceneRings = Readonly<{
  * Everything a scene is given at construction. A scene composes over these and holds nothing
  * else. The flashes are shared by the two scenes: the play scene's mapper writes one for a
  * cursor it would not open, and the HUD writes one for a refused-command event and draws them
- * all. The overlay toggles are shared with the developer panel, which writes them.
+ * all. The input claim is shared the same way. The overlay toggles are shared with the developer panel, which writes them.
  */
 export type SceneContext = Readonly<{
   atlas: ShapeAtlas;
@@ -52,5 +53,7 @@ export type SceneContext = Readonly<{
   overlays: Readonly<OverlayToggles>;
   /** The panel's request for the next ground click, answered by the play scene's mapper. */
   groundPick: GroundPick;
+  /** Whose each pointer and key event is: the HUD scene registers the bar and its screens on it, and the play scene asks it before the mapper. */
+  claim: InputClaim;
   report: Reporter;
 }>;

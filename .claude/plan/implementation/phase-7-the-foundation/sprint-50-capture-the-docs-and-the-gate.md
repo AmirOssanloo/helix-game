@@ -21,7 +21,7 @@ The build as phase 6 left it, and a pause screen. Press Esc with nothing to clos
 | Layer | presentation, app, tests, docs |
 | Size | 1 |
 | Depends on | P7-S48-T04 (b); Q97 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a seam phase 8 names. P8-S34-T02, the first screen's frame and click claim, builds on this and shrinks to 0.5.
 
@@ -56,6 +56,8 @@ The build as phase 6 left it, and a pause screen. Press Esc with nothing to clos
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
 
 > **Architect review, 2026-09-27:** Q97's pause at the driver is right; see Q97's row. The driver's existing panel pause would have been overloaded by a second owner, so the two reasons are held apart. The accumulator and buffer rules close the two ways a pause could leak into the log's timing: a catch-up burst on resume, and commands that queued while paused. The port keeps presentation off `app/`. Size unchanged.
+
+> **Closed, 2026-09-27:** `pnpm check` green, 4584 tests, and the stress tier. Definition of done walked: every change holds; under `src/presentation`, the pause screen is quads and `BitmapText` from the atlas, made at `create` and shown or hidden, in a new HUD screen band above the bar's (`hud/hud-bands.ts`); the render benchmark is not applicable, since the atlas and every play view are unchanged and the bench draws no HUD, and T03 measures draw calls at the densest choke with the pause screen built. The docs: controls and orders states Esc's order and the pause rows, presentation states the pause screen and Escape's edge trigger, and where to look points at the claim and `src/presentation/screens/`. The spec that proves the claim is named `input-capture.spec.ts` as this ticket says, though the vocabulary's word is *input claim*.
 
 ---
 
@@ -133,13 +135,13 @@ Each accepted item is written as a ticket, P7-S50-T04 onward, with a note. What 
 
 | Check | Result |
 | --- | --- |
-| No click or key on a screen reaches the world | |
-| The pause screen, by an agent in Chrome | |
+| No click or key on a screen reaches the world | Holds. `tests/presentation/input-capture.spec.ts`: over a real mapper, a left and a right click, a release after a press from the world, and every bound key but Esc send no command with the pause screen open, and the log gains nothing; the bar's clicks never reach the world. The HUD scene no longer listens to the pointer or stops propagation |
+| The pause screen, by an agent in Chrome | Holds, 2026-09-27, the dev build in Chrome through browser automation: Esc opened it at tick 563; a right click, a left press dragged and released, and Q, S, A left the tick at 563 and the hero at (2000, 400) for 1.5 s; a click on Resume ran the world on from 563, at most one tick a frame (563, 564, 564, 565, ...); the same right click with the screen closed moved the hero |
 | The docs sync | |
 | The bucket: spent, and on what | |
 | The gate walk | |
 | Milestone M11 | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 1, sized 1 |
 | Sprint total | |
 
 ## Risks in this sprint

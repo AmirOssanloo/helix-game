@@ -33,3 +33,24 @@ export type InputPorts = Readonly<{
   intents: InputIntents;
   groundPick: GroundPick;
 }>;
+
+/**
+ * A pause a screen holds while it is open. Presentation declares it and the composition root
+ * implements it over the driver as a pause reason of its own, so presentation never imports
+ * the driver. A pause decides whether a tick runs, never what it does: it is not world state
+ * and sends no command.
+ */
+export type PausePort = Readonly<{
+  hold: () => void;
+  release: () => void;
+}>;
+
+/**
+ * The mapper as the input claim sees it: whether a targeting cursor is open, which Escape
+ * closes before anything else, and a release of every key and held press it has, with nothing
+ * sent, for a modal screen opening over it.
+ */
+export type ClaimedMapper = Readonly<{
+  cursorOpen: boolean;
+  releaseKeys: () => void;
+}>;

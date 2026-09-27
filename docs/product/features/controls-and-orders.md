@@ -35,7 +35,7 @@ A click resolves against the world at the moment of the click, so a camera move 
 | F | Slot F | Same, for slot F |
 | A then left click | Attack-move | Move to the point, attacking any enemy acquired on the way |
 | S | Stop | Clear the order, close the cursor, cancel a cast whose cast point has not finished |
-| Esc | Cancel targeting | Close the cursor. A running move continues |
+| Esc | Cancel, close, or pause | In one order: an open targeting cursor closes; else the open screen closes; else the pause screen opens. A running move continues |
 
 Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
 
@@ -94,6 +94,10 @@ The fail column of spec section 15, in short, because it is the shortest test of
 | Right click while the button is held on a spell aimed by press and drag | The cursor closes at no cost, and nothing is ordered: no cast and no move |
 | The window loses focus while the button is held on a spell aimed by press and drag | The cursor closes at no cost |
 | Esc with a move running | The cursor closes; the move continues |
+| Esc with no cursor and no screen open | The pause screen opens and the world stops on the tick it stands on. Nothing is sent and nothing enters the input log |
+| A click anywhere, or any key but Esc, while the pause screen is open | Nothing. No order reaches the world, and none waits to land when the world goes on |
+| Esc, or a click on Resume, while the pause screen is open | The screen closes and the world goes on from the same tick, with no catch-up |
+| A button held down on the world when a screen that stops the world opens | The press is dropped with nothing sent; a held aim closes at no cost |
 | D or F pressed on a targeted spell that is on cooldown, unaffordable, or blocked by a disable | The cursor does not open and nothing is sent; the square flashes with the reason |
 | Q, W, E, R, D, or F pressed while the targeting cursor is open | The cursor closes first, then the key applies as it would with no cursor |
 | Left click on empty ground with a unit-targeted cursor open | Nothing. The cursor stays open until a unit is clicked, or Esc or S closes it |

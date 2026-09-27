@@ -88,6 +88,11 @@ export class InputMapper {
     }
   }
 
+  /** Whether a targeting cursor is open, which Escape closes before any screen. */
+  get cursorOpen(): boolean {
+    return this.cursor.kind !== "closed";
+  }
+
   /**
    * One frame, before the preview is drawn: an open cursor the hero may no longer commit is
    * closed. Every cursor goes when the hero dies, since a dead hero takes no order. Otherwise

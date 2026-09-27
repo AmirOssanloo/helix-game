@@ -174,7 +174,11 @@ A screen is a panel the player opens over the world: the pause screen, the inven
 - **Escape**, in one order: an open targeting cursor closes, which the claim asks the mapper; else the topmost screen closes; else the pause screen opens.
 - **A modal screen claims every event** but the keys it names. Opening one closes a held press and releases every held key with nothing sent, as the window losing focus does.
 
-**A screen that pauses is modal, and pauses through a port.** Presentation declares a pause port with a hold and a release; the composition root implements it over the fixed-step driver as a pause reason of its own. Presentation never imports the driver. The pause is not world state and sends no command.
+**A screen that pauses is modal, and pauses through a port.** Presentation declares a pause port with a hold and a release; the composition root implements it over the fixed-step driver as a pause reason of its own. Presentation never imports the driver. The pause is not world state and sends no command. The claim holds the port while any pausing screen is open and releases it when the last one closes.
+
+**The pause screen is the first screen.** Escape opens it when there is no cursor and no screen to close: a shade over the whole canvas, a panel that says the world is paused, and one button. It is modal and pauses; it names no key, so Escape closes it through the claim, and a left click on its button closes it too. Every other click and key is the screen's and reaches nothing.
+
+**Escape is edge-triggered in the claim.** A held Escape's repeats neither open nor close a screen, as a held slot key does not fire twice.
 
 **A right click reads what is drawn, top first.** A right click the claim does not take names an item's label, then a unit, then an item's icon on the ground, then the ground. The labels reach the mapper through a pick port beside the other input ports: a fixed record the label views rewrite each frame with the canvas rectangle and the ground item id of every label shown, in drawing order, and a count. The mapper reads the record and never asks a view.
 
@@ -248,10 +252,11 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
 | Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands; a vector cursor holds its press on the button going down and sends on the button coming up, on the canvas or off it; one drag test, in logical canvas pixels, serves the mapper and the preview |
-| Screens | Quads and `BitmapText` from the atlas in `HudScene`'s screen band, made at `create`, pooled, shown and hidden; no texture, filter, or draw call of their own; each screen its own module registered on the HUD scene |
+| Screens | Quads and `BitmapText` from the atlas in `HudScene`'s screen band, above the bar's, made at `create`, pooled, shown and hidden; no texture, filter, or draw call of their own; each screen its own module registered on the HUD scene |
 | The input claim | One object in `presentation/input/`, handed to both scenes; asked before the mapper for every pointer and key event; no scene stops propagation to protect another |
 | What a screen claims | Its rectangles in canvas points; a press that goes down there and its release, wherever it comes up; the keys it names. A press from the world keeps its release. A key whose press reached the mapper sends its release there |
-| Escape | The open cursor, else the topmost screen, else the pause screen opens; resolved in the claim |
+| Escape | The open cursor, else the topmost screen, else the pause screen opens; resolved in the claim; edge-triggered, so a held Escape repeats nothing |
+| The pause screen | The first screen: a shade, a panel, and one button, modal and pausing; Escape or a left click on the button closes it |
 | A modal screen | Claims every event but its keys; opening it closes a held press and releases held keys with nothing sent. Every pausing screen is modal |
 | A pausing screen | Holds a pause port presentation declares and the composition root implements over the driver, a reason apart from the panel's and a hidden tab's; not world state, no command |
 | A right click | If not claimed: an item's label, then a unit, then an item's icon, then the ground; labels read from the pick port, a fixed record of rectangles and ground item ids the label views rewrite each frame |
