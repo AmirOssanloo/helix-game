@@ -99,7 +99,7 @@ Any drift the proposal of 2026-09-27 named that no ticket closed is closed here 
 | Layer | tests, docs, bench |
 | Size | 1 |
 | Depends on | every bucket ticket, T02 |
-| Status | planned |
+| Status | done |
 
 **Build:**
 - **The walk.** Walk every row of the [phase 7 gate](../04-phase-exit-gates.md#phase-7-gate) with its evidence:
@@ -121,6 +121,17 @@ Any drift the proposal of 2026-09-27 named that no ticket closed is closed here 
 
 **Definition of done:** Every change · A documentation change.
 
+> **Note, 2026-09-27: the gate walked, and closed on the maintainer's instruction.** Every row holds on the evidence below. No gate bug, so no replay test was added. The bucket stays unspent. The per-row results are in the [phase README](./README.md#exit-record).
+> - **The logs.** All seven carry content version `96752802`, the stamp P7-S45-T01 wrote. `git log` on them since then shows two commits, both checksum-only: P7-S45-T02 added the checksums, and P7-S46-T02 re-recorded them for the modifier rows and count, with its reason in the commit. No stamp moved.
+> - **`pnpm check`.** Exit 0: 237 files and 4586 tests passed, 1 file and 3 tests skipped, 1 todo; lint, both typechecks, and the build.
+> - **The stress tier.** 6 of 6 green under `pnpm test:budget`. The long-road case, five runs each, walks 4337 ticks to level 9 with no death, at most 10 live, and at most 1576 A* expansions in a tick. Vitest's development build reads a mean of 0.099 to 0.104 ms and a worst of 1.74 to 2.84 ms now. The last phase 6 commit, `f8d8660`, reads 0.085 to 0.091 ms and 1.74 to 1.84 ms. The mean is about 17% higher and still about 40 times under the 4 ms budget.
+> - **The bar in Chrome.** Chrome for Testing 153, headless, on the Apple M1 (ANGLE Metal), 1920 by 1080, over the DevTools protocol. The dev build, overlays off, is on the long road at checkpoint 6. Every unit is cleared, then twenty packs of ten grunts are spawned in the last boss's chamber, with their aggro and leash raised so all of them press through choke 5, the narrowest, at the hero. The hero is healed every half second. It ran for 30 s after an 8 s warm-up, one run of each build.
+>   - **Now:** 60.0 fps, every frame between 16.65 and 16.68 ms. 1 world draw call a frame and 2 in all, every frame. 197 to 199 live, no pool or view miss, no console error. Sync and render: mean 1.76 ms, p99 2.7, worst 7.5. Tick in the browser: mean 2.86, p99 4.5, worst 20.6. Heap after a collection: 37.4 → 37.8 MB, between 37.5 and 40.7 MB throughout.
+>   - **`f8d8660`, the same way:** 60.0 fps; 1 and 2 draw calls; no miss. Sync and render: mean 1.56, worst 3.9. Tick: mean 2.36, p99 4.3, worst 19.9. Heap: 36.7 → 37.2 MB.
+> - **Allocation.** The sampling heap profiler, at 1 KB with collected objects included, attributes 55.0 MB to the tick and 7.8 MB to the sync over the 30 s now, against 50.8 and 7.4 MB on `f8d8660`. The same functions dominate both: collision's `separatePair`, movement's `turnToward` and `movementSpeed`, and the unit views' sync. This is the engine boxing [Q30](../backlog/open-questions.md) answered: zero allocation in the code, the heap flat. No allocation was added by the phase in a place the before run lacks.
+> - **The render benchmark** was not rerun. The ticket's third run is not in this record: the interleaved runs in the playtest build, three a side, were stopped when the maintainer asked on 2026-09-27 to close the phase on the evidence in hand. The benchmark figures stand at P7-S48-T01's run on this machine: 60.02 fps, 1 draw call, heap flat. No atlas or view changed after it apart from the pause screen, which draws in the HUD scene.
+> - **Caveats.** Each Chrome figure is one run, so the tick and sync means in the browser, 21% and 13% over `f8d8660`, are not separated from noise. The browser tick's p99 and worst pass 4 ms in both builds. The standard holds the tick to the headless reading, which is well inside. Neither caveat blocks the gate. Both are noted for phase 8's bar.
+
 ---
 
 ## The bucket
@@ -140,11 +151,11 @@ Each accepted item is written as a ticket, P7-S50-T04 onward, with a note. What 
 | No click or key on a screen reaches the world | Holds. `tests/presentation/input-capture.spec.ts`: over a real mapper, a left and a right click, a release after a press from the world, and every bound key but Esc send no command with the pause screen open, and the log gains nothing; the bar's clicks never reach the world. The HUD scene no longer listens to the pointer or stops propagation |
 | The pause screen, by an agent in Chrome | Holds, 2026-09-27, the dev build in Chrome through browser automation: Esc opened it at tick 563; a right click, a left press dragged and released, and Q, S, A left the tick at 563 and the hero at (2000, 400) for 1.5 s; a click on Resume ran the world on from 563, at most one tick a frame (563, 564, 564, 565, ...); the same right click with the screen closed moved the hero |
 | The docs sync | Holds, 2026-09-27 (T02): 38 pages and files corrected against the build, every where-to-look path resolves, the docs-links test green over the repository; four drifts that need code or a decision in Deferred |
-| The bucket: spent, and on what | Not spent before T02: the event record's readers fell away with (b), and no ticket named a latent bug a refactor made live. The day is held for its first claim, a gate row that fails in T03, and is recorded spent or unspent there |
-| The gate walk | |
-| Milestone M11 | |
-| Actual days per ticket | T01: 1, sized 1; T02: 0.5, sized 1 |
-| Sprint total | |
+| The bucket: spent, and on what | Unspent. The event record's readers fell away with (b). No ticket named a latent bug a refactor made live. No gate row failed in T03 |
+| The gate walk | Holds, 2026-09-27 (T03): every row of the phase 7 gate, with the evidence in T03's note and the [exit record](./README.md#exit-record). No gate bug. The bucket's day is unspent. The playtest-build reruns and the render benchmark were not repeated, on the maintainer's instruction to close |
+| Milestone M11 | Reached 2026-09-27: the foundation phase's gate |
+| Actual days per ticket | T01: 1, sized 1; T02: 0.5, sized 1; T03: 0.5, sized 1 |
+| Sprint total | Closed 2026-09-27: sized 3 and a bucket of 1, with 1 of buffer; done in 2, with the bucket and the buffer unspent. No unplanned ticket |
 
 ## Risks in this sprint
 

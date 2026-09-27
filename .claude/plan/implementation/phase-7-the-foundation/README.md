@@ -134,18 +134,19 @@ Named here so no ticket is surprised by it. Each is inside the ticket that names
 
 ## Exit record
 
-Not yet walked.
+Closed 2026-09-27 on every gate row, walked by P7-S50-T03. The evidence per row is in [T03's note](./sprint-50-capture-the-docs-and-the-gate.md#p7-s50-t03--the-phase-gate). No gate row needs a person. Two readings wait on the maintainer, and nothing waits on them. The first is Q99, the map change while the hero is dead. The second is ADR 0011 and 0012 with Q98. Both are open boxes in STATUS.md, deferred by the standing instruction of 2026-09-24. Milestone M11 is reached. The maintainer asked on 2026-09-27 to close the phase on the evidence in hand. The interleaved playtest-build runs of the bar and a rerun of the render benchmark were stopped on that instruction and are not in this record.
 
 | Row | Result | Recorded by |
 | --- | --- | --- |
-| Gate rows | | |
-| The stored logs and the checksum | | |
-| `max-lines` exceptions and their reasons | | |
-| Findings closed or deferred | | |
-| The bucket | | |
-| Sized versus actual | | |
-| Largest miss | | |
+| Gate rows | Every row holds, 2026-09-27. **The logs:** the seven keep stamp `96752802` from P7-S45-T01, and only checksum re-records followed, by P7-S45-T02 and P7-S46-T02, each with its reason. **The checksum:** `replay-determinism`, `state-checksum`, and `map-change` specs green. **`pnpm check`:** exit 0, 237 files and 4586 tests. **`max-lines`:** 500. **The toy kind:** three files, in sprint 47's exit. **Findings:** closed, in the row below. **The docs:** P7-S50-T02's checklist. **The bar:** in the row after it. No gate bug, so no replay test | the engineer running the plan |
+| The stored logs and the checksum | `phase-1-session`, `balance-hero`, `balance-spells`, `balance-archetypes`, `corridor-200`, `boss-encounter`, and `long-road-playtest` all carry content version `96752802` and replay to their checksums at every stored tick: 53, 174, 326, 125, 49, 41, and 440 checksums. No re-stamp after P7-S45-T01. P7-S46-T02 re-recorded the checksums once, with `pnpm restamp --checksums`, for the modifier table's new rows and miss count. It first showed all seven logs matching under the old hash | the engineer running the plan |
+| The bar | **Headless:** 6 of 6 stress cases green. The long-road case reads a mean of 0.099 to 0.104 ms and a worst of 1.74 to 2.84 ms under Vitest, against 0.085 to 0.091 and 1.74 to 1.84 at phase 6's last commit `f8d8660`, five runs each. **In Chrome, at choke 5 with about 200 grunts pressing, one dev-build run a side:** 60.0 fps, every frame 16.65 to 16.68 ms. 1 world draw call, unchanged from phase 6's 1. No pool or view miss. Sync and render: mean 1.76 ms, worst 7.5, against 1.56 and 3.9. Heap flat, 37.4 → 37.8 MB after a collection. **Allocation:** the sampler finds the tick and sync garbage of Q30's engine boxing, 55.0 and 7.8 MB over 30 s, against 50.8 and 7.4 at `f8d8660`, in the same functions. None is new in the code. **Render benchmark:** P7-S48-T01's run stands, 60.02 fps, 1 draw call, heap flat; not rerun. The browser tick's p99, 4.5 ms against 4.3 before, passes 4 ms in both builds. The standard reads the tick headless, where it is far inside the budget | the engineer running the plan |
+| `max-lines` exceptions and their reasons | `max-lines` is 500 in `eslint/size-limit.js`. One exception is listed: `src/domain/movement/spatial-hash.ts`, 656 lines, "the grid, its queries, and their scratch in one module; splits by query". Map definitions under `src/content/maps/` are exempt as data. `definition-schemas.ts` was split with the registry descriptors. The largest other file, `domain/orders/state-machine.ts`, is at 496 | the engineer running the plan |
+| Findings closed or deferred | The proposal of 2026-09-27 is not a file in the repository, so its findings are read as this README's **In** list, one line each. Each is closed by a done ticket. The narrower stamp and `pnpm restamp`: P7-S45-T01. The comparison and checksum: T02. The lint and DOM-free typecheck: T03. The exhaustive switches: T04. Stats for every unit: P7-S46-T01. The modifier table: T02, with item rows left to record (a), as the review said. Orders, the refused tuning command, and seconds at load: T03. Presentation reading predicates: T04. The unit record: P7-S47-T01. The registry validator: T02. The AI split and scratch: T03. The event record's decision: T04. The overlays: P7-S48-T01. The syncers: T02. Branded ids: T03. The two records: T04. The draw index: T05. The doors: P7-S49-T01. The map change: T02. The capture layer and pause screen: P7-S50-T01. `max-lines`: in place. The docs sync: P7-S50-T02, whose four drifts that need code or a decision are rows of [Deferred](../backlog/deferred.md) | the engineer running the plan |
+| The bucket | Unspent, 0 of 1 day. The readers' claim fell away with P7-S47-T04's (b). No refactor made a latent bug live. No gate row failed | the engineer running the plan |
+| Sized versus actual | Sized 23.5: 22.5 in tickets and 1 of bucket. Actual 13.5: sprints 45 to 50 took 2.5, 2.0, 1.75, 3.25, 2, and 2, and the bucket nothing. Ratio 0.57 against 23.5, 0.60 against the 22.5 in tickets. Across phases 0 to 7: 82.5 actual against 154.1 sized, 0.54 | the engineer running the plan |
+| Largest miss | No ticket went over its size. The widest gaps were a day each: P7-S49-T01 and T02, each sized 2 and done in 1, and P7-S47-T02, sized 1.5 and done in 0.5 | the engineer running the plan |
 
 | Phase | Sized | Actual | Ratio | Largest miss |
 | --- | --- | --- | --- | --- |
-| 7 | 23.5 | | | |
+| 7 | 23.5 | 13.5 | 0.57 | P7-S49-T01 and T02: sized 2, actual 1 each |
