@@ -29,6 +29,8 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 > **Note, 2026-09-27, phase 7 inserted:** the acceptance "the xorshift stream still reads the same with the tables on and emptied" was vacuous, since nothing in `src/` draws from that stream. It is replaced by phase 7's full-state comparison (P7-S45-T02) with the affix tables on and emptied. Each affix and its value draw at their own draw index (P7-S48-T05), and the re-stamp goes through `pnpm restamp`.
 
+> **Note, 2026-09-28, from P8-S31-T01:** the [item catalogue](../../../../docs/product/specs/item-catalogue.md#5-the-affixes) groups an affix's tiers by stat: an item draws a stat its armory slot may roll and does not yet carry, then one tier of it the item level reaches and the rarity allows, then a value, so no item carries two affixes on one stat. "Drawn without repeat from the affixes" below reads as that.
+
 **Build:** an item's affixes rolled at the drop on the loot draw's sequence: the count its rarity gives (Q83: 0 to 5), drawn without repeat from the affixes of its slot's pool whose affix level the item level reaches, each value from the affix's range. The level requirement becomes the highest of the base's and the rolled affixes' (P8-S32-T03's rule). The item instance holds its rolled values in a fixed number of places, the most any rarity rolls, so a roll allocates nothing. A Legendary rolls nothing and reads its fixed identity from its definition. Each affix is a row the armory source adds, so P8-S34-T01's stack carries them unchanged. The rarity's tint reaches the label and the icon: gray, white, blue, orange, gold, purple, red, Common to Legendary. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
 **Acceptance:**

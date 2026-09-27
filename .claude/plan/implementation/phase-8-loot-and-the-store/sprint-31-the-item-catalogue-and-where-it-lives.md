@@ -21,11 +21,13 @@ None in the browser: this sprint is paper and a schema. The content tier loads t
 | Layer | docs |
 | Size | 1.5 |
 | Depends on | P8-S39-T01, P8-S39-T02; every question from Q73 to Q94 answered |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** edited for the answers of 2026-09-27: the economy is the new road's (Q58), active items have no rarity and never drop (Q84), the store is a basic Diablo II store (Q90), and the words are Q94's.
 
 > **Note, 2026-09-27, later:** edited again for the later answers: item level is the map's level (Q89), each base has a size in cells (Q88), no +1 to an orb anywhere (Q92), the stat is magic damage % (Q93), and items are picked up by a right click (Q87).
+
+> **Note, 2026-09-28, built:** a base names its icon frame and no tint of its own, since an item's icon and label are drawn in its rarity's tint (P8-S33-T03, P8-S34-T03); an affix's tiers are grouped by stat, one stat rolled once an item, which P8-S35-T01 is edited for. The choices no answer gave are [Q103](../backlog/open-questions.md), decided provisionally. The maintainer's approval is a box under Waiting on a person, deferred until phase 8 is done by the standing instruction of 2026-09-24.
 
 **Build:** `docs/product/specs/item-catalogue.md`, a product spec shaped like the [spell catalogue](../../../../docs/product/specs/spell-catalogue.md) and the [enemy catalogue](../../../../docs/product/specs/enemy-catalogue.md), with real names and numbers. It holds:
 
@@ -177,11 +179,11 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 
 | Check | Result |
 | --- | --- |
-| The item catalogue approved by the maintainer | |
+| The item catalogue approved by the maintainer | Drafted 2026-09-28 by P8-S31-T01, every agent-checkable acceptance row holding: [the item catalogue](../../../../docs/product/specs/item-catalogue.md) and [items and loot](../../../../docs/product/features/items-and-loot.md). The approval waits on the maintainer, deferred until phase 8 is done by the standing instruction of 2026-09-24, a box in STATUS.md; Q103 with it |
 | The architect's brief and its decision records | |
 | The schema refuses what it should, and the six logs re-stamped | |
 | The checkpoint reach at 256, every checkpoint reached on the long-road walk | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 against 1.5 |
 | Sprint total | |
 
 ## Risks in this sprint

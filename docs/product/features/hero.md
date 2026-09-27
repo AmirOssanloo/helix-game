@@ -10,7 +10,7 @@ Every number on this page is a starting value. The files that own them are `src/
 
 ## Attributes
 
-The hero has three attributes. Each drives two derived values, and every derived value is a modifier pipeline: base, plus flat sources, times percentage sources, so that orb passives now and items later are the same kind of thing.
+The hero has three attributes. Each drives two derived values, and every derived value is a modifier pipeline: base, plus flat sources, times percentage sources, so that orb passives and worn items are the same kind of thing: an item's stats join the pipeline as one more source ([Items and loot](./items-and-loot.md#wearing-an-item)).
 
 | Attribute | Drives | How |
 | --- | --- | --- |
@@ -83,10 +83,9 @@ When health reaches zero the hero enters a death state at the end of that tick: 
 
 - **Forms.** The hero may later swap between forms mid-fight, each with its own body, kit, health, mana, cooldowns, and armory, sharing level, experience, and item slots. The [overview](../overview.md) states the intent; the architecture already treats the hero as one unit pointing at an active form.
 - **Talents and kit upgrades.** Out of scope; the kit is the base kit.
-- **Items as modifier sources.** The stat pipeline is built for them, but no item exists.
 - **Real death rules** — experience loss, corpse runs, difficulty penalties. Respawn is free until the dungeon loop exists.
 - **Stat growth beyond level 30**, and any prestige or rebirth.
-- **Health and mana potions.** The developer panel is the only heal.
+- **Health and mana potions.** Health and mana globes, taken from the ground, are the only drops that restore a pool ([Items and loot](./items-and-loot.md#gold-and-globes-taken-by-walking)).
 
 ---
 

@@ -90,7 +90,7 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 
 - **Kit upgrades and talents.** The kit is the base kit.
 - **Ally targeting** for Quicken and Hoarfrost. There are no allies.
-- **Spell-lifesteal and other item-driven multipliers.** The damage pipeline accepts modifier sources; none exist. Magic damage, which raises every magical hit its holder deals, is read at each hit, and nothing grants it yet.
+- **Spell-lifesteal and other item-driven multipliers.** Worn items grant magic damage, which raises every magical hit the hero deals and is read at each hit ([Items and loot](./items-and-loot.md#wearing-an-item)); lifesteal is not built.
 - **Enemy summons stealing Emberling aggro.** Summons target enemies only.
 - **Named-spell art and sound.** Each spell is a colour and a shape until real art arrives.
 

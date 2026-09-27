@@ -97,8 +97,8 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 
 - **A second kit's layout.** The six squares are filled from whatever kit the hero's active form uses; today that is only Invoke. A hotbar form fills the same six squares from its ability list and hides the orb display.
 - **Minimap.** The arena is small enough to learn by walking it, and the long road runs one way.
-- **Item slots, inventory, and equipment.** No items exist.
-- **Tooltips** on hover for spells and statuses.
+- **Item slots, inventory, and equipment.** They are a screen opened over the world, not part of the HUD: [Items and loot](./items-and-loot.md#the-inventory-and-armory).
+- **Tooltips** on hover for spells and statuses. Items have theirs, on the [inventory screen](./items-and-loot.md#the-inventory-and-armory).
 - **Sound cues.** No audio.
 - **Crit styling** for damage numbers. Nothing crits yet.
 - **Animated art.** Shapes only until the sprite atlas arrives.

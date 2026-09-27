@@ -4,7 +4,7 @@
 
 ## Overview
 
-Enemies are the units the hero fights. Each enemy is an instance of an archetype — a definition holding its numbers, its behaviour, its abilities, and its tier. Enemies come in packs, aggro together, chase, attack, and leash back. When they die they give experience.
+Enemies are the units the hero fights. Each enemy is an instance of an archetype — a definition holding its numbers, its behaviour, its abilities, and its tier. Enemies come in packs, aggro together, chase, attack, and leash back. When they die they give experience and drop loot.
 
 Every archetype owns a definition file under `src/content/enemies/`, one per archetype. Numbers live there, not here; the [enemy catalogue](../specs/enemy-catalogue.md) holds each one's starting values and the reasoning behind them.
 
@@ -101,7 +101,7 @@ An enemy chooses an ability when it is off cooldown, in range, and the enemy's s
 
 ## Experience
 
-An enemy that dies grants its definition's experience reward, times its tier's multiplier, to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy and the imp grant none.
+An enemy that dies grants its definition's experience reward, times its tier's multiplier, to the hero, whoever landed the last hit — a summon's kill counts. A pack does not share or pool experience. The dummy and the imp grant none. It also rolls its tier's drop table, gold, globes, and items, and an add drops nothing: [Items and loot](./items-and-loot.md#drops).
 
 ## Dormant packs
 
@@ -137,7 +137,6 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 
 ## Deferred
 
-- **Loot and drops.** Enemies grant experience only.
 - **Flanking behaviour**, and kiting for the archer, which holds at range; the roster's kiters are the hexer and the skirmisher.
 - **Formations, patrols, and scripted encounters.** Packs stand where spawned.
 - **Bosses with phases** or scripted mechanics. A boss is numbers plus abilities.

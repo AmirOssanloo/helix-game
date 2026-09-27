@@ -160,7 +160,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 | [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
 | The long road | Its regions, packs, checkpoints, and experience budget | Phase 6 |
-| Item catalogue | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 8 and 9 |
+| [Item catalogue](./specs/item-catalogue.md) | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 8 and 9 |
 
 ---
 

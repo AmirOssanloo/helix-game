@@ -18,6 +18,23 @@ When two people call the same thing different names, the names leak into the cod
 | What the six slot keys mean for a form: Invoke for the caster, a plain hotbar for another | **Kit** | Loadout, spellbook, ability set |
 | The caster kit: three orbs, the Invoke composer, two slots | **Skein** | Any other name for the caster's kit |
 | Per-form equipment that modifies stats | **Armory** | Inventory (that is the shared item bag), gear |
+| One of the ten places in the armory an item is worn in: helm, amulet, armour, main hand, off-hand, gloves, belt, boots, and two rings | **Armory slot**, always with the word armory; the Armour slot is `body` in code | Slot (that is D or F), equipment slot, socket |
+| The grid of 10 by 4 cells the hero carries items in, shared by every form, in run scope | **Inventory** | Bag, backpack, stash |
+| One thing the hero can carry, wear, drop, buy, or sell: a base at a rarity with its rolled values | **Item** | Gear, equipment, loot (that is what drops, all of it), object |
+| What an item is before its rarity: its armory slot, size in cells, quality level, requirement, implicit stat, and value | **Base** | Item type, template, blueprint |
+| One stat line an item rolls beyond its base's implicit stat | **Affix** | Mod, modifier (that is a row of the stat pipeline), property, enchantment |
+| Common, Uncommon, Rare, Epic, Imperial, Mythical, Legendary: how many affixes an item rolls, and its tint | **Rarity** | Quality (that is a base's level), tier (that is an enemy's), grade |
+| The level an item is made at, which gates its base and affixes: the map's level for a drop, the hero's for the store's stock | **Item level** | Drop level, ilvl |
+| The lowest item level at which a base drops or is stocked | **Quality level** | Base level, tier |
+| The lowest item level at which an affix rolls | **Affix level** | Mod level, affix tier |
+| The hero level an item needs to be worn: the highest of its base's and its affixes' | **Level requirement** | Required level, item level (that is where it was made) |
+| The one currency, a number the hero holds, never an item | **Gold** | Money, coins, currency |
+| A drop that restores a quarter of its pool, taken by walking over or past it | **Health globe**, **mana globe** | Potion, orb (that is Quartz, Whorl, or Ember), heart |
+| Gold, a globe, or an item lying on a map | **Ground item** | Drop (that is the verb), loot pile, pickup |
+| The name drawn over a ground item in its rarity's tint | **Label** | Nameplate, tag, tooltip (that is the screen's) |
+| The order that walks the hero to an item and takes it; gold and globes are taken by walking, with no order | **Pick up** (`pick_up` in code) | Loot, grab, collect |
+| Where the hero buys and sells items, opened from a checkpoint's ring | **Store** | Shop, vendor, merchant, town |
+| An item with a power the hero uses through the cast pipeline; using it is to **activate** it | **Active item** | Usable, consumable, item active, use (that is in the "not" column of throw) |
 | The game | **Helix** | Skein (that is the hero's kit, not the product) |
 | Any actor in the world, friendly or hostile | **Unit** | Actor, mob, creature, entity as a game word |
 | A hostile unit | **Enemy** | Monster, mob, creep, NPC |
@@ -32,7 +49,7 @@ When two people call the same thing different names, the names leak into the cod
 | How far Q, W, or E has been levelled | **Orb level** | Skill level, rank |
 | Turning three orb instances into a spell | **Invoke** (the verb and the R key) | Compose, compile, craft |
 | One of the ten hero spells | **Spell** | Skill, ability (see below), invocation |
-| Anything cast through the cast pipeline: hero spells, enemy abilities, later item actives | **Ability** | Skill, power |
+| Anything cast through the cast pipeline: hero spells, enemy abilities, and active items' powers | **Ability** | Skill, power |
 | The D and F positions holding invoked spells | **Slot** (slot D, slot F) | Hotbar, bar, hand |
 | A spell sitting in a slot | **Prepared spell** | Active spell, equipped spell |
 | Casting a prepared spell | **Throw** | Fire, use, cast (cast is the pipeline's word) |

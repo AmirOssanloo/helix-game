@@ -31,6 +31,7 @@ These pages describe behaviour, not implementation. Numbers are quoted once as t
 
 - [Enemies](./enemies.md) — archetypes, packs, aggro and leash, tiers, enemy abilities
 - [Map and camera](./map-and-camera.md) — the map as data, the arena, the long road, the locked camera
+- [Items and loot](./items-and-loot.md) — drops, gold and globes, picking up, the inventory and armory, the store
 
 ## The screen
 
