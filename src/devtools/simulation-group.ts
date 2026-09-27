@@ -45,6 +45,10 @@ const loadStatus = (load: FileLoad, api: DevApi): string => {
     lines.push(load.buildDiffers);
   }
 
+  if (load.contentDiffers !== null) {
+    lines.push(load.contentDiffers);
+  }
+
   return lines.join(". ");
 };
 

@@ -21,6 +21,7 @@
     "build": "vite build",
     "build:playtest": "vite build --mode playtest",
     "bench": "vite --open /bench/",
+    "restamp": "node tooling/restamp.ts",
     "prepare": "husky"
   },
   "dependencies": {

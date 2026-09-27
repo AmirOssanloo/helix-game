@@ -20,6 +20,7 @@ pnpm dev            # The Vite dev server with hot reload
 pnpm build          # The production build, with the panel and DevApi stripped
 pnpm build:playtest # The playtest build: the same game, with the panel left in
 pnpm bench          # Serves the render benchmark scene under bench/
+pnpm restamp        # Rewrites the content version stamp of every stored log, and nothing else
 ```
 
 **`pnpm check` is the gate.** Run it before every push. It runs lint, typecheck, and build first, then the test tiers, and it never modifies a file; when it reports lint findings, `pnpm lint:fix` applies them, then run `check` again.
@@ -41,6 +42,7 @@ Nothing needs to be up for any of this. No containers, no database. `pnpm test` 
 | Content      | `tests/content/`                | Node        | `pnpm test` | Every definition validates; every effect and behaviour key resolves; every atlas frame a definition names exists |
 | Architecture | `tests/architecture.spec.ts`, `tests/docs-links.spec.ts` | Node | `pnpm test` | The layer import table, asserted a second time; a wrong-direction import fails here and in lint. Every relative link and anchor in the documentation resolves |
 | Presentation | `tests/presentation/`, `tests/devtools/` | jsdom  | `pnpm test` | Input mapping, view binding, and the panel, with Phaser stubbed. Few, and small |
+| Tooling      | `tests/tooling/`                | Node        | `pnpm test` | The scripts under `tooling/` and the custom lint rules, over inputs the test builds |
 | Benchmark    | `bench/`                        | Chrome      | `pnpm bench`, by an agent through browser automation | Render time, draw calls, heap over 30 seconds. Never in `check` |
 
 The benchmark is deliberately outside `pnpm check`: it needs a GPU, and it answers a different question — not "is the code right" but "does it still hold frame time". An agent runs it in Chrome on the development machine, an Apple M1 laptop, through browser automation, and reads the readout; nobody runs it by hand. The agent's way is headless Chrome driven over the DevTools protocol, 30 seconds after a warm-up, counting draw calls by wrapping the WebGL draw methods: a visible tab behind other windows reports itself hidden and renders nothing, so a headed run on this machine measures nothing. Firefox, Safari, Edge, and a separate reference laptop are not measured. Run it after touching the atlas, the views, or upgrading Phaser, and put the numbers in the change description.
@@ -54,7 +56,7 @@ Flags after the script name reach Vitest as they are. Do not put a `--` before t
 ```bash
 pnpm test -t "AT-M2"                     # One spec by name — here, the 180-degree turn test
 pnpm test tests/simulation/spells/        # One folder
-pnpm test --project simulation           # One tier: unit, simulation, content, architecture, or presentation
+pnpm test --project simulation           # One tier: unit, simulation, content, architecture, presentation, or tooling
 pnpm test -t "replay"                    # The determinism test
 pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders, the long road
 pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
@@ -101,7 +103,7 @@ A playtest's feedback goes into the build it was played on, as a file.
 
 1. **Filing.** While playing, press **F9** or click **Feedback** in the panel's Simulation group. The world pauses and a note opens above the panel; every key you type stays in it. Write what you think and click **Save**, or **Cancel** or Escape to drop it. The browser downloads `helix-feedback-<seed>-<tick>.json`: the note, the tick it was written on, the build stamp, the content version, and the input log up to that tick. Closing the note puts the pause back as it was.
 2. **The build stamp.** Every build and the dev server read the commit from git when they start, and whether the tree had uncommitted changes. A playtest build from Pages is a clean commit; a dev server with edits in the tree is marked dirty, so feedback filed on it may not replay.
-3. **Reading.** Check out the commit the file names, run `pnpm dev`, and pick the file with **Load input log**. The world is made on the log's map under its seed, runs to the note's tick many times faster than it was played, and pauses there, with the note under **Note**. On another commit, or where either tree was dirty, it loads anyway and the status line says the commit differs and names both builds; the state may not be the one the note was written about. A log from other content is refused, as any log is.
+3. **Reading.** Check out the commit the file names, run `pnpm dev`, and pick the file with **Load input log**. The world is made on the log's map under its seed, runs to the note's tick many times faster than it was played, and pauses there, with the note under **Note**. On another commit, or where either tree was dirty, it loads anyway and the status line says the commit differs and names both builds; the state may not be the one the note was written about. Where only the art differs, an atlas frame or a tint, it loads too and the status line says the art differs, naming the commit it was written on; the replay is the one played, but what is drawn may not be what was seen. A log from other content is refused, as any log is.
 4. **Triage.** Each note becomes a tuning change, a ticket, or a spell swap by the [adding-a-spell](./adding-a-spell.md) runbook. A note that shows a bug ships with its log as a replay test, as any bug with a log does.
 
 ---
@@ -116,6 +118,7 @@ Every command on this page is under `scripts` in the root `package.json`. That f
 
 - **Prettier runs on save** if your editor is set up, and in the commit hook regardless.
 - **Content hot-reloads.** Editing a number in a definition under `src/content/` swaps the registry in the running world without a page reload: the next spawn or cast reads the new number, and a number you moved in the panel keeps your value. A definition that fails validation is refused, with the faults on the panel's content line, and the game runs on. Any other edit under `src/content/` reloads the page, and so does anything under `src/domain/` or `src/simulation/`, because the world cannot be patched mid-tick.
+- **A definition change moves the content version**, and every stored log under `tests/simulation/replays/` goes with it in the same change. Run `pnpm restamp`: it replays each log, rewrites its stamp and nothing else, and prints the old and new stamp of each file. It is the only way a stamp is rewritten; a log that no longer replays is refused and nothing is written. An atlas frame or a tint moves no stamp, so an art edit needs none.
 - **The commit hook** runs `pnpm lint` and `pnpm typecheck` on staged files. It does not run tests; that is what `pnpm check` before a push is for.
 
 ---

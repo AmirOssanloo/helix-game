@@ -11,6 +11,7 @@ import type { EventRing, WorldView } from "@simulation/public";
 import type { BuildStamp, FeedbackFile } from "./feedback-file";
 import {
   buildDifference,
+  contentDifference,
   isFeedbackRefusal,
   readFeedbackFile,
   writeFeedbackFile,
@@ -57,6 +58,8 @@ export type DevSession = Readonly<{
   mapIds: readonly string[];
   /** The stamp of the content the world runs on. */
   contentVersion: string;
+  /** The strict stamp of the content the world runs on, its art included. */
+  strictContentVersion: string;
   recreate: (seed: number) => void;
   /** The message a person reads when no map has `mapId`, or `null` once the world is made again on it under the current seed. */
   chooseMap: (mapId: string) => string | null;
@@ -106,6 +109,8 @@ export type FileLoad = Readonly<{
   feedback: FeedbackFile | null;
   /** The line saying the feedback was written on another build, or `null` when it was not or the file holds no feedback. */
   buildDiffers: string | null;
+  /** The line saying the feedback was written on other art, or `null` when it was not or the file holds no feedback. */
+  contentDiffers: string | null;
 }>;
 
 /**
@@ -285,6 +290,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
         tick: view.tick,
         build: ports.build,
         contentVersion: session.contentVersion,
+        strictContentVersion: session.strictContentVersion,
         logText: session.saveInputLog(),
       }),
     loadFile: (text: string): FileLoad => {
@@ -295,6 +301,7 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
           refusal: loadInputLog(text),
           feedback: null,
           buildDiffers: null,
+          contentDiffers: null,
         };
       }
 
@@ -303,19 +310,24 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
           refusal: feedback.message,
           feedback: null,
           buildDiffers: null,
+          contentDiffers: null,
         };
       }
 
       const buildDiffers = buildDifference(feedback.build, ports.build);
+      const contentDiffers = contentDifference(
+        feedback,
+        session.strictContentVersion,
+      );
       const refusal = loadInputLog(JSON.stringify(feedback.log));
 
       if (refusal !== null) {
-        return { refusal, feedback: null, buildDiffers };
+        return { refusal, feedback: null, buildDiffers, contentDiffers };
       }
 
       driver.runTo(feedback.tick);
 
-      return { refusal: null, feedback, buildDiffers };
+      return { refusal: null, feedback, buildDiffers, contentDiffers };
     },
     downloadAtlas: ports.downloadAtlas,
   };

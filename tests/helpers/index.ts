@@ -31,6 +31,12 @@ export {
   type NoSpecUnderSrcOptions,
   type SpecUnderSrcViolation,
 } from "./architecture/no-spec-under-src";
+export {
+  collectPresentationFieldReads,
+  describePresentationFieldsUnread,
+  type PresentationFieldsOptions,
+  type PresentationFieldViolation,
+} from "./architecture/presentation-fields";
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
 export { always } from "./content/always";
 export { FEEDBACK_TIMINGS } from "./content/feedback-timings";

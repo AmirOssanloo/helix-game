@@ -16,11 +16,11 @@ import {
   mountPanel,
   readFeedbackFile,
 } from "@devtools/public";
-import type { PoolView } from "@domain/public";
+import type { PoolView, Registry } from "@domain/public";
 import { definitionFields } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation, WorldView } from "@simulation/public";
-import { contentVersionOf } from "@simulation/public";
+import { contentVersionOf, strictContentVersionOf } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 5;
@@ -37,6 +37,18 @@ const PLAYED_MAP = makeMapDef.build({
 });
 
 const registry = makeRegistry({ maps: [FIRST_MAP, PLAYED_MAP] });
+
+/** The same content with other art: one frame resized and every tint changed, which a replay does not read. */
+const repainted: Registry = {
+  ...registry,
+  atlasFrames: registry.atlasFrames.map((frame, index) =>
+    index === 0 ? { ...frame, width: frame.width + 1 } : frame,
+  ),
+  enemies: registry.enemies.map((def) => ({
+    ...def,
+    tint: (def.tint + 1) % 0x1000000,
+  })),
+};
 
 const STEP_MS = stepMsOf(tuningTable.sim_hz);
 
@@ -68,13 +80,14 @@ type Arranged = {
   handle: PanelHandle;
 };
 
-/** The panel over a session under `seed` on `mapId`, stamped as built on `build`. */
+/** The panel over a session under `seed` on `mapId` of `content`, stamped as built on `build`. */
 const arrange = (
   seed: number,
   mapId: string,
   build: BuildStamp = BUILD,
+  content: Registry = registry,
 ): Arranged => {
-  const session = new Session({ seed, registry, mapId });
+  const session = new Session({ seed, registry: content, mapId });
   const world = session.world;
   const rings = createRings();
   const driver = new FixedStepDriver({
@@ -328,6 +341,7 @@ describe("the feedback file", () => {
     expect(read.tick).toBe(PLAYED_TICKS);
     expect(read.build).toEqual(BUILD);
     expect(read.contentVersion).toBe(contentVersionOf(registry));
+    expect(read.strictContentVersion).toBe(strictContentVersionOf(registry));
     expect(read.log.ticks).toBe(PLAYED_TICKS);
     expect(read.log.seed).toBe(SEED);
     expect(read.log.mapId).toBe(PLAYED_MAP.id);
@@ -446,6 +460,7 @@ describe("loading a feedback file", () => {
 
     expect(load.refusal).toBeNull();
     expect(load.buildDiffers).toBeNull();
+    expect(load.contentDiffers).toBeNull();
     expect(load.feedback?.note).toBe("Here");
     expect(loading.api.driver.mapId).toBe(PLAYED_MAP.id);
     expect(loading.api.driver.runningTo).toBe(PLAYED_TICKS);
@@ -493,6 +508,44 @@ describe("loading a feedback file", () => {
     expect(fieldValues(loading.host)).toContain("The commit differs");
   });
 
+  it("says the art differs, naming its commit, when it was written before an atlas or tint change, and still replays", async () => {
+    const played = track(arrangePlayed());
+    const text = played.api.saveFeedback("Before the repaint");
+    const loading = track(arrange(OTHER_SEED, FIRST_MAP.id, BUILD, repainted));
+    const load = loading.api.loadFile(text);
+
+    expect(contentVersionOf(repainted)).toBe(contentVersionOf(registry));
+    expect(load.refusal).toBeNull();
+    expect(load.contentDiffers).toContain("The art differs");
+    expect(load.contentDiffers).toContain("a1b2c3");
+    expect(load.contentDiffers).toContain(strictContentVersionOf(registry));
+    expect(load.contentDiffers).toContain(strictContentVersionOf(repainted));
+
+    frameUntilPaused(loading.driver);
+
+    expect(loading.world.view.tick).toBe(PLAYED_TICKS);
+
+    pickNext(text);
+    buttonNamed(loading.host, "Load input log").click();
+    await settle();
+    loading.handle.refresh();
+
+    expect(fieldValues(loading.host)).toContain("The art differs");
+  });
+
+  it("loads a bare input log recorded before an atlas or tint change silently", () => {
+    const played = track(arrangePlayed());
+    const loading = track(arrange(OTHER_SEED, FIRST_MAP.id, BUILD, repainted));
+    const load = loading.api.loadFile(played.api.saveInputLog());
+
+    expect(load).toEqual({
+      refusal: null,
+      feedback: null,
+      buildDiffers: null,
+      contentDiffers: null,
+    });
+  });
+
   it("says a tree had uncommitted changes when the commit is the same", () => {
     const played = track(arrangePlayed({ commit: "a1b2c3", dirty: true }));
     const loading = track(arrange(OTHER_SEED, FIRST_MAP.id));
@@ -517,7 +570,12 @@ describe("loading a feedback file", () => {
     const loading = track(arrange(OTHER_SEED, FIRST_MAP.id));
     const load = loading.api.loadFile(played.api.saveInputLog());
 
-    expect(load).toEqual({ refusal: null, feedback: null, buildDiffers: null });
+    expect(load).toEqual({
+      refusal: null,
+      feedback: null,
+      buildDiffers: null,
+      contentDiffers: null,
+    });
     expect(loading.api.driver.runningTo).toBeNull();
     expect(loading.api.driver.mapId).toBe(PLAYED_MAP.id);
   });

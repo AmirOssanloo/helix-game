@@ -88,6 +88,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which acceptance tests mirror the mechanics spec | `tests/simulation/` — one spec per group of the spec's acceptance tests, prefixed `at-` |
 | The stress test and the replay determinism test | `tests/simulation/` — the specs named for them |
 | The render benchmark | `bench/` — one scene, with its expected numbers in the file header |
+| Which definition fields the content version leaves out as art | `PRESENTATION_FIELDS` in `src/simulation/replay/content-version.ts` |
+| How a stored log's stamp is rewritten | `pnpm restamp`, which runs `tooling/restamp.ts`; its logic is `tooling/restamp-logs.ts` |
 | Which commands exist | Root `package.json` → `scripts` |
 | The pinned Node and pnpm versions | `.nvmrc` and the `packageManager` field of the root `package.json` |
 | Which path aliases exist | The `paths` block of `tsconfig.json` |

@@ -35,6 +35,7 @@ If the task is a ticket, also read [the plan README](./.claude/plan/implementati
 │   └── tags/          # Prompts a person pastes into a chat by hand. Never loaded by tooling
 ├── src/               # The game, in eight layers (from sprint 00)
 ├── tests/             # Every test, outside src/, mirroring it (from sprint 00)
+├── tooling/           # Node scripts a person or an agent runs by hand, such as pnpm restamp
 └── bench/             # The render benchmark scene (from sprint 02)
 ```
 

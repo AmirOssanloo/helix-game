@@ -32,11 +32,12 @@ The reason is that the build compiles `src/` and excludes `tests/`, so a spec un
 Answer in order. The first yes decides.
 
 1. Does it boot Phaser, or need a GPU? → **benchmark**, under `bench/`, run by an agent in Chrome
-2. Does it need a DOM? → **presentation**, jsdom
-3. Does it need a world? → **simulation**
-4. Does it read the content registry? → **content**
-5. Does it read the source tree? → **architecture**
-6. Otherwise → **unit**
+2. Does it test a script under `tooling/` or a lint rule under `eslint/`? → **tooling**, under `tests/tooling/`
+3. Does it need a DOM? → **presentation**, jsdom
+4. Does it need a world? → **simulation**
+5. Does it read the content registry? → **content**
+6. Does it read the source tree? → **architecture**
+7. Otherwise → **unit**
 
 | Tier | The test… | Runs in | Budget |
 | --- | --- | --- | --- |
@@ -45,6 +46,7 @@ Answer in order. The first yes decides.
 | **content** | builds the real registry and validates every definition | Node | under 200 ms for the suite |
 | **presentation** | drives the input mapper or view binding with a fake world view | jsdom | under 20 ms |
 | **architecture** | asserts the layer import table and the determinism bans against the source tree | Node | seconds |
+| **tooling** | runs a script's logic or a lint rule over inputs the test builds, never over the files the script writes | Node | seconds |
 | **benchmark** | drives the render path at the caps under a real Phaser game | Chrome, through browser automation | thirty seconds, read by an agent |
 
 Nothing draws in a test. The presentation tier tests the logic around Phaser — what a click becomes, which entity a view binds to — never what a pixel looks like.
@@ -127,7 +129,9 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 | World view stub | `makeWorldView(overrides)` | A presentation test needs something to sync from |
 | Shared suite | `describeFoo({ def, ... })` | Every definition of one kind passes the same tests, such as the six every archetype passes; it mounts them and takes every number that differs as an option, so it never branches on which definition it has |
 
-**A recorded log is valid only on the content version it was recorded on.** A change to a definition number moves the version, and every stored log goes with it in the same change: re-stamped with the new version where its spec asserts something the number does not decide, and recorded again where the spec asserts what the numbers do, as a balance pass's logs do.
+**A recorded log is valid only on the content version it was recorded on.** The version is a hash over what the simulation reads of the content: the atlas frame list, glyphs included, and every definition field `PRESENTATION_FIELDS` in `src/simulation/replay/content-version.ts` names, the frame and the tint, are left out, so an art edit moves no version. The architecture test holds that no rule under `src/domain` or `src/simulation` reads a listed field. A change to any other definition field moves the version, and every stored log goes with it in the same change: re-stamped with the new version where its spec asserts something the number does not decide, and recorded again where the spec asserts what the numbers do, as a balance pass's logs do.
+
+**`pnpm restamp` is the only way a stamp is rewritten.** It replays every log under `tests/simulation/replays/` under the new stamp, rewrites the stamp and not one other character, and prints each file's old and new stamp. If any log does not replay to its last tick, it writes nothing. Nobody edits a stored log's stamp by hand.
 
 A helper **arranges**; it never simulates. It does not branch on its parameters, carry state between calls, or re-implement a production rule. `tickUntil` has a maximum and fails loudly when it reaches it.
 
@@ -174,7 +178,7 @@ A simulation test that passes on the second run has found a determinism bug — 
 | The principle | Test a rule where it is decided, a join where it is joined. Never both |
 | A test earns its place | It fails for a reason you want to know about, and not for one you don't |
 | Where a spec lives | `tests/` at the root, mirroring `src/`. Never beside the source, never `__tests__/`, always `*.spec.ts` |
-| Choosing the tier | First yes decides: Phaser or GPU → benchmark; DOM → presentation; world → simulation; registry → content; source tree → architecture; otherwise unit |
+| Choosing the tier | First yes decides: Phaser or GPU → benchmark; a script under `tooling/` or a lint rule → tooling; DOM → presentation; world → simulation; registry → content; source tree → architecture; otherwise unit |
 | Budgets | unit under 5 ms · simulation under 50 ms · content suite under 200 ms · presentation under 20 ms |
 | Nothing draws | The presentation tier tests logic around Phaser, never pixels |
 | Acceptance tests | Every one in the mechanics spec, by its name, in the simulation tier |
@@ -186,7 +190,8 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Always tested | Every acceptance test, determinism, every refusal, every disable against every blocked action, every transition, anything that failed once |
 | Never tested | The same rule at two tiers; call order and counts; Phaser; reference numbers; wiring |
 | A bug fix | Ships with its reproducing input log as a replay test |
-| Recorded logs | Valid on one content version; a number change re-stamps them, or records again those that assert what the numbers do |
+| Recorded logs | Valid on one content version, a hash over what the simulation reads: the atlas and the listed presentation fields are left out, and no rule reads a listed field. A definition change re-stamps them, or records again those that assert what the numbers do |
+| Re-stamping | `pnpm restamp` only, never by hand: every log replays first, only the stamp is rewritten, and one failing log writes nothing |
 | Shape | One outcome per test; names read as requirements; arrange, act, assert; no logic; literal expected values |
 | Time and randomness | From the world's seed and `tick`. No clock, no fake timers, no sleep |
 | Worlds | Small: a factory-made registry of the definitions the test needs |

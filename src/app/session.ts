@@ -23,6 +23,7 @@ import {
   Replay,
   restartSessionWorld,
   serializeInputLog,
+  strictContentVersionOf,
 } from "@simulation/public";
 
 /** What a session is made from: the seed of its first world, the content, and the id of the map in it the first world runs on. */
@@ -100,6 +101,11 @@ export class Session implements Steppable {
   /** The stamp of the registry the world runs on, written into every saved log. */
   get contentVersion(): string {
     return this.version;
+  }
+
+  /** The strict stamp of the registry the world runs on, its art included, written into every feedback file. */
+  get strictContentVersion(): string {
+    return strictContentVersionOf(this.registry);
   }
 
   get view(): WorldView {

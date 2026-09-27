@@ -92,13 +92,15 @@ export default defineConfig([
     },
   },
 
-  // The config sources run under Node, and the Vite and Vitest configs are bundled for it.
+  // The config sources run under Node, and the Vite and Vitest configs are bundled for it. The
+  // scripts under tooling/ run under Node too.
   {
     files: [
       "eslint.config.js",
       "eslint/**/*.js",
       "vite.config.ts",
       "vitest.config.ts",
+      "tooling/**/*.ts",
     ],
     languageOptions: {
       globals: globals.node,

@@ -15,8 +15,9 @@ export type BuildStamp = Readonly<{
 
 /**
  * What the feedback key saves: a person's note, the tick the world stood on when they wrote it,
- * the build and the content version it was written on, and the session's input log up to that
- * tick. Loading it replays the log and stops on the tick, so the note is read against the
+ * the build it was written on, the content version and the strict stamp of the content, and the
+ * session's input log up to that tick. The content version is what the log replays against; the
+ * strict stamp covers the art too, so a file read on other art says so and still loads. Loading it replays the log and stops on the tick, so the note is read against the
  * world it was written about. Feedback changes no world state; the file is not a command and
  * nothing of it is in the log.
  */
@@ -26,6 +27,7 @@ export type FeedbackFile = Readonly<{
   tick: number;
   build: BuildStamp;
   contentVersion: string;
+  strictContentVersion: string;
   log: InputLogFile;
 }>;
 
@@ -41,6 +43,7 @@ export type FeedbackParts = Readonly<{
   tick: number;
   build: BuildStamp;
   contentVersion: string;
+  strictContentVersion: string;
   logText: string;
 }>;
 
@@ -66,6 +69,7 @@ export const writeFeedbackFile = (parts: FeedbackParts): string => {
     tick: parts.tick,
     build: { commit: parts.build.commit, dirty: parts.build.dirty },
     contentVersion: parts.contentVersion,
+    strictContentVersion: parts.strictContentVersion,
     log,
   };
 
@@ -96,6 +100,7 @@ export const readFeedbackFile = (
   const tick = parsed["tick"];
   const build = parsed["build"];
   const contentVersion = parsed["contentVersion"];
+  const strictContentVersion = parsed["strictContentVersion"];
 
   if (typeof note !== "string") {
     return malformed("the note is not text");
@@ -117,6 +122,10 @@ export const readFeedbackFile = (
     return malformed("the content version is missing");
   }
 
+  if (typeof strictContentVersion !== "string") {
+    return malformed("the strict content version is missing");
+  }
+
   const log = parseInputLogFile(JSON.stringify(parsed["log"] ?? null));
 
   if (isReplayRefusal(log)) {
@@ -135,6 +144,7 @@ export const readFeedbackFile = (
     tick,
     build: { commit: build["commit"], dirty: build["dirty"] },
     contentVersion,
+    strictContentVersion,
     log,
   };
 };
@@ -169,4 +179,20 @@ export const buildDifference = (
       : "The commit differs";
 
   return `${which}: the feedback was written on ${describeBuild(written)} and this build is ${describeBuild(current)}, so the replay may not match what was played`;
+};
+
+/**
+ * The line a person reads when the feedback was written on content whose art differs from this
+ * build's, or `null` when the strict stamps agree. The log replays as it was played, since the
+ * content version it replays against leaves the art out; what is drawn may not be what was seen.
+ */
+export const contentDifference = (
+  written: FeedbackFile,
+  currentStrictVersion: string,
+): string | null => {
+  if (written.strictContentVersion === currentStrictVersion) {
+    return null;
+  }
+
+  return `The art differs: the feedback was written on ${describeBuild(written.build)} with content ${written.strictContentVersion} and this build has ${currentStrictVersion}, so frames and colours may not be drawn as they were seen`;
 };

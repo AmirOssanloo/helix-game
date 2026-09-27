@@ -32,7 +32,7 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | Layer | simulation, devtools, tests, tooling, docs |
 | Size | 1 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a seam phase 8 names. P8-S32-T04 adds glyphs and P8-S35-T03 adds icon frames, and today each would re-stamp every log. The loot plan implies about eleven re-stamps, and 37 commits have edited the stored replays by hand.
 
@@ -61,6 +61,12 @@ None in the browser: the build plays as phase 6 left it. Headless:
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
+> **Built, 2026-09-27:** the list is `PRESENTATION_FIELDS`, `atlasFrame` and `tint`, beside the stamp; no definition has label text yet, so none is listed. The glyphs are atlas frames, so leaving out the frame list leaves them out. The stamp moved from `08d1c2e4` to `96752802` by the one planned `pnpm restamp`, which rewrote the seven stamps and nothing else, and a second run wrote nothing.
+>
+> **Edited in place, 2026-09-27:** "no path under `src/domain` or `src/simulation` reads a listed field" is not literally true today and is held in the form that matters. A spawn copies the definition's frame and tint onto the projectile, zone, or basic-attack shot it makes, for the view to draw (`attack.system.ts`, `spawn-projectile.ts`, `spawn-zone.ts`), and the registry's validation checks each frame is one the atlas has. The architecture test allows exactly those: a line `foo.frame = bar.atlasFrame;` or `foo.tint = bar.tint;`, a write of a constant to the copy, and `validate-registry.ts` by name with its reason; any other read of a listed field, or any read of a copy's `frame` or `tint`, fails it. Before T02's checksums, "a log that diverges" is one that does not replay to its last tick: malformed, on a map the content has not got, spanning a reload, or throwing on a tick. T02 adds a checksum mismatch to the refusals.
+>
+> **Also built:** a feedback file names its `strictContentVersion` beside its `contentVersion`, and a load whose strict stamp differs gives `contentDiffers`, a status line that names the commit. A feedback file saved before this change has no strict stamp and is refused as malformed; its log carries the old whole-registry stamp and would be refused as any such log is. `tests/tooling/` is its own Vitest project, `tooling`, and the testing standards name it as a tier, which T03's lint-rule spec joins.
+
 ---
 
 ### P7-S45-T02 — A full-state comparison and a per-tick state checksum
@@ -87,6 +93,7 @@ None in the browser: the build plays as phase 6 left it. Headless:
 - **Completeness in the typecheck.** Each record's list is typed against the record's keys, as `satisfies Record<keyof Foo, …>`, so a new field fails the typecheck, not only a test.
 - **Derived caches and scratch are listed as excluded, each with its reason.** These are the walkability grid (derived from the map and tuning), the spatial hash's buckets, the path search, and the world-owned scratch of P7-S47-T03. The walk covers the included list; the exclusions are named so that nothing is silently absent.
 - **Allocation-free hashing.** Floats are hashed by their bits through one preallocated `Float64Array` and `Uint32Array` pair. Strings are hashed by `charCodeAt`. The unit's cooldown `Map` is walked with `forEach` and a callback made once, never `for…of`.
+- **The copied art is excluded** (note from P7-S45-T01, 2026-09-27). A spawn copies a definition's `atlasFrame` and `tint` onto the projectile, zone, or shot as `frame` and `tint`. The narrow stamp leaves those definition fields out, so an art edit moves no stamp. These pool fields are listed as excluded, with that reason, or an art edit would move a checksum under an unchanged stamp. `pnpm restamp` also refuses a log whose checksums do not match, beside the failures T01 refuses.
 
 **Acceptance:**
 - Changing any one field of any pool, run scope, or map scope by the smallest step changes the checksum and is named by the comparison, walked over every field in the lists.
@@ -195,13 +202,13 @@ None in the browser: the build plays as phase 6 left it. Headless:
 
 | Check | Result |
 | --- | --- |
-| `pnpm restamp` rewrites the seven stamps and nothing else | |
-| An atlas or glyph edit leaves the stamp unchanged | |
+| `pnpm restamp` rewrites the seven stamps and nothing else | Yes, 2026-09-27 (T01): `08d1c2e4` to `96752802` on all seven, one line each in the diff; a second run printed "0 of 7 stamps rewritten". `tests/tooling/restamp.spec.ts` holds the rules |
+| An atlas or glyph edit leaves the stamp unchanged | Yes (T01): `tests/simulation/replay/content-version.spec.ts` resizes a frame, drops every glyph, and nudges every `atlasFrame` and `tint` in the registry, with no stamp moved; every other leaf of every definition moves it |
 | Every field of every pool and scope moves the checksum | |
 | The seven logs match their checksums | |
 | Each widened lint rule shown failing on a branch | |
 | Real hits the widened rules found | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

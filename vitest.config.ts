@@ -114,6 +114,7 @@ export default defineConfig({
         },
       },
       project("content", "node", ["tests/content/**/*.spec.ts"]),
+      project("tooling", "node", ["tests/tooling/**/*.spec.ts"]),
       project("architecture", "node", [
         "tests/architecture.spec.ts",
         "tests/docs-links.spec.ts",

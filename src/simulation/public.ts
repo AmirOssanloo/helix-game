@@ -7,7 +7,11 @@ export {
 } from "./event-ring";
 export { InputLog } from "./input-log";
 export { createRandomState, nextFloat, nextInt, seedRandom } from "./random";
-export { contentVersionOf } from "./replay/content-version";
+export {
+  contentVersionOf,
+  PRESENTATION_FIELDS,
+  strictContentVersionOf,
+} from "./replay/content-version";
 export {
   type InputLogFile,
   type InputLogRecord,
