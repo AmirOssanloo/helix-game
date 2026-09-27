@@ -1,43 +1,21 @@
-import type { AbilityDef } from "./ability-def";
-import type { AtlasFrameList } from "./atlas-frame-def";
-import type { DisableMatrixDef } from "./disable-matrix-def";
-import type { EnemyDef, SummonDef } from "./enemy-def";
-import type { FormDef } from "./form-def";
-import type { HeroDef } from "./hero-def";
-import type { MapDef } from "./map-def";
-import type { SpellDef } from "./spell-def";
-import type { StatusDef } from "./status-def";
-import type { TuningDef } from "./tuning-def";
+import type { DefOfKind, RegistryOf } from "./definition-kind";
+import type { DEFINITION_KINDS } from "./kinds/index";
 
 /**
  * Every definition of every kind, in the designer's units, as a world receives it at
- * creation. The content layer assembles the real one from every definition file and the
- * composition root has the domain validate it before a world is made; a test builds one
- * from the two or three definitions it needs. The world converts what it reads into ticks
- * and per-tick rates when it builds run scope, so the registry itself is what a designer
- * wrote and what the content version stamp hashes.
+ * creation: one field per kind of the kind list, a list of its definitions or the one. The
+ * content layer assembles the real one from every definition file and the composition root
+ * has the domain validate it before a world is made; a test builds one from the two or three
+ * definitions it needs. The world converts what it reads into ticks and per-tick rates when
+ * it builds run scope, so the registry itself is what a designer wrote and what the content
+ * version stamp hashes. What each field holds is written on its kind.
  */
-export type Registry = Readonly<{
-  /** The tuning table in the designer's units, converted and copied into run scope when the world is created. */
-  tuning: TuningDef;
-  /** The hero: its forms by id, and how it levels. */
-  hero: HeroDef;
-  /** Every form; the hero definition says which of them it takes and in what order. */
-  forms: readonly FormDef[];
-  /** Every spell a form's ability list may name, keyed into run scope by id when the world is created. */
-  spells: readonly SpellDef[];
-  /** Every ability an enemy or a summon may cast, sharing the spells' id namespace. */
-  abilities: readonly AbilityDef[];
-  /** Every status an effect list, a hook, or the developer panel may apply. */
-  statuses: readonly StatusDef[];
-  /** What every status refuses, ends, and closes, one row per group of statuses; every status sits in exactly one row. */
-  disableMatrix: DisableMatrixDef;
-  /** Every archetype a map may spawn. */
-  enemies: readonly EnemyDef[];
-  /** Every unit a spawn-unit effect may create, sharing the enemies' id namespace. */
-  summons: readonly SummonDef[];
-  /** Every map a world may load. */
-  maps: readonly MapDef[];
-  /** The frame list every `atlasFrame` is checked against. */
-  atlasFrames: AtlasFrameList;
-}>;
+export type Registry = RegistryOf<typeof DEFINITION_KINDS>;
+
+/** The name of one field of the registry, which is one kind's. */
+export type RegistryField = keyof Registry;
+
+/** The type of one definition of the kind at `F`. */
+export type DefinitionOf<F extends RegistryField> = DefOfKind<
+  Extract<(typeof DEFINITION_KINDS)[number], Readonly<{ field: F }>>
+>;

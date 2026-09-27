@@ -1,10 +1,11 @@
 import type { DefinitionKey } from "./definition-keys";
+import { walkDefinitionNumbers } from "./definition-keys";
 import {
+  copyTunableDefinitions,
   definitionFields,
   forEachTunableDefinition,
-  walkDefinitionNumbers,
-} from "./definition-keys";
-import { copyTunableDefinitions } from "./definition-tuning";
+} from "./definition-tuning";
+import { DEFINITION_KINDS } from "./kinds/index";
 import type { Registry } from "./registry";
 import type { TuningKey, TuningUnit } from "./tuning-def";
 import { TUNING_KEYS, TUNING_UNITS } from "./tuning-def";
@@ -52,9 +53,9 @@ const tunablesOf = (
 };
 
 /**
- * `registry` as one string with every number the tuning surface reaches written as zero, and
- * the step rate as it is: two registries with the same shape differ only in numbers a tuning
- * command can set.
+ * `registry` as one string with every number the tuning surface reaches written as zero, every
+ * kind with no tuning as written but the tuning table, which is its keys and the step rate: two
+ * registries with the same shape differ only in numbers a tuning command can set.
  */
 const shapeOf = (registry: Registry): string => {
   const copies = copyTunableDefinitions(registry);
@@ -69,13 +70,19 @@ const shapeOf = (registry: Registry): string => {
     });
   });
 
+  const untuned: Record<string, unknown> = {};
+
+  for (const kind of DEFINITION_KINDS) {
+    if (kind.tuning === null && kind.field !== "tuning") {
+      untuned[kind.field] = registry[kind.field];
+    }
+  }
+
   return JSON.stringify({
     simHz: registry.tuning.sim_hz,
     tuningKeys: Object.keys(registry.tuning),
     copies,
-    maps: registry.maps,
-    disableMatrix: registry.disableMatrix,
-    atlasFrames: registry.atlasFrames,
+    untuned,
   });
 };
 

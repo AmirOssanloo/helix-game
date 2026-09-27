@@ -1,14 +1,9 @@
-import type { AbilityDef } from "./ability-def";
-import type { EnemyDef, SummonDef } from "./enemy-def";
-import type { FormDef } from "./form-def";
-import type { HeroDef } from "./hero-def";
-import type { SpellDef } from "./spell-def";
-import type { StatusDef } from "./status-def";
+import type { KindWordOf, TunableOf } from "./definition-kind";
+import type { DEFINITION_KINDS } from "./kinds/index";
 import type { TuningUnit } from "./tuning-def";
 
-/** The kinds of definition whose numbers the tuning surface reaches: every kind a unit, a cast, or a status reads. */
-export type DefinitionKind =
-  "hero" | "form" | "spell" | "ability" | "status" | "enemy" | "summon";
+/** The kinds of definition whose numbers the tuning surface reaches: every kind of the kind list with tuning, each a unit, a cast, or a status reads. */
+export type DefinitionKind = KindWordOf<typeof DEFINITION_KINDS>;
 
 /**
  * A tuning key that names one number of one definition: `def:<kind>:<id>:<field path>`, with
@@ -20,7 +15,7 @@ export type DefinitionKind =
  */
 export type DefinitionKey = `def:${DefinitionKind}:${string}`;
 
-/** The hero definition is the one of its kind and carries no id, so its keys name it by this one. */
+/** The one definition of a kind the registry holds one of carries no id, so its keys name it by its kind's word: the hero's are `hero`. */
 export const HERO_DEFINITION_ID = "hero";
 
 /** A definition field the tuning surface never reaches although it holds a number: a colour is not a slider. */
@@ -65,18 +60,10 @@ export type DefinitionKeysOf<Kind extends DefinitionKind, T> = T extends {
   readonly id: infer Id extends string;
 }
   ? `def:${Kind}:${Id}:${FieldPaths<T, "">}`
-  : `def:${Kind}:${typeof HERO_DEFINITION_ID}:${FieldPaths<T, "">}`;
+  : `def:${Kind}:${Kind}:${FieldPaths<T, "">}`;
 
-/** Every definition the tuning surface reaches, in the designer's units: the registry's kinds a world reads a number from. */
-export type TunableDefinitions = Readonly<{
-  hero: HeroDef;
-  forms: readonly FormDef[];
-  spells: readonly SpellDef[];
-  abilities: readonly AbilityDef[];
-  statuses: readonly StatusDef[];
-  enemies: readonly EnemyDef[];
-  summons: readonly SummonDef[];
-}>;
+/** Every definition the tuning surface reaches, in the designer's units: the registry's fields of every kind with tuning. */
+export type TunableDefinitions = TunableOf<typeof DEFINITION_KINDS>;
 
 /**
  * The unit a definition field is written in, read from its name as the coding standard
@@ -202,12 +189,12 @@ export const walkDefinitionNumbers = (
 };
 
 /** The key of the number at `path`, and at `index` when it is a table entry, of the definition `id` of `kind`. */
-export const definitionKeyOf = (
-  kind: DefinitionKind,
+export const definitionKeyOf = <Kind extends string>(
+  kind: Kind,
   id: string,
   path: string,
   index: number | null,
-): DefinitionKey =>
+): `def:${Kind}:${string}` =>
   index === null
     ? `def:${kind}:${id}:${path}`
     : `def:${kind}:${id}:${path}:${String(index)}`;
@@ -230,56 +217,3 @@ export type DefinitionField = Readonly<{
   value: number;
   unit: TuningUnit;
 }>;
-
-/** Calls `each` with every tunable definition in `defs`, its kind, and its id, the hero first. */
-export const forEachTunableDefinition = (
-  defs: TunableDefinitions,
-  each: (kind: DefinitionKind, id: string, def: object) => void,
-): void => {
-  each("hero", HERO_DEFINITION_ID, defs.hero);
-
-  const lists: readonly (readonly [
-    DefinitionKind,
-    readonly Readonly<{ id: string }>[],
-  ])[] = [
-    ["form", defs.forms],
-    ["spell", defs.spells],
-    ["ability", defs.abilities],
-    ["status", defs.statuses],
-    ["enemy", defs.enemies],
-    ["summon", defs.summons],
-  ];
-
-  for (const [kind, list] of lists) {
-    for (const def of list) {
-      each(kind, def.id, def);
-    }
-  }
-};
-
-/**
- * Every number of every definition in `defs` the tuning surface reaches, in the designer's
- * units: the hero, then each kind in registry order, each definition's fields in the order it
- * writes them. The panel generates a slider from each; nothing here converts.
- */
-export const definitionFields = (
-  defs: TunableDefinitions,
-): readonly DefinitionField[] => {
-  const fields: DefinitionField[] = [];
-
-  forEachTunableDefinition(defs, (kind, id, def): void => {
-    walkDefinitionNumbers(def, (path, index, _container, _property, value) => {
-      fields.push({
-        key: definitionKeyOf(kind, id, path, index),
-        kind,
-        id,
-        path,
-        index,
-        value,
-        unit: definitionFieldUnit(path),
-      });
-    });
-  });
-
-  return fields;
-};

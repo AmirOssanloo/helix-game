@@ -17,7 +17,7 @@ Replacing a spell or adding the fortieth enemy is a new file under `content/`, a
 
 ## Definitions
 
-A definition is a typed constant, one per file, under `content/<kind>/`. Its type lives in `domain/definitions/`, together with the validation schema for it. Content imports those types and nothing else from the domain.
+A definition is a typed constant, one per file, under `content/<kind>/`. Its type lives in `domain/definitions/`, and its schema in its kind's descriptor, below. Content imports those types and nothing else from the domain.
 
 ```typescript
 // content/spells/foo-bar.def.ts
@@ -75,6 +75,37 @@ const world = createWorld({ seed, registry, /* … */ })
 
 ---
 
+## Definition kinds
+
+A definition kind is one descriptor, a file under `domain/definitions/kinds/`, and one line in the kind list beside it. The descriptor holds everything the domain does with the kind:
+
+| Field | Holds |
+| --- | --- |
+| Field | The registry field the kind's definitions sit under |
+| Shape | A list of many, with the content folder a definition's file sits in and the name other definitions reference one by; or exactly one, with its file |
+| Stage | Its place in validation order: a gate, checked first, or a kind whose schema is built for the orb level cap |
+| Schema | The shape a definition must have |
+| Check | Its cross-references: every id, key, and frame it names |
+| Namespace | For a list, the id space a duplicate is refused in; kinds that share one, such as spells and enemy abilities, name the same one |
+| Tuning | The word its tuning keys name it by, its panel folder's title, and how the record read from a definition is rebuilt after a tuning command; `null` for a kind with no number the tuning surface reaches |
+
+The kind list is the one place kinds are enumerated. The registry's type, the kinds a tuning key may name, and the definitions a world copies are derived from it by type, so nothing else is edited by hand. Validation walks it in order: the gate kinds first, since the hero's orb level cap fixes every table's length, and a fault in a gate stops there; then every other kind's schema; then each kind's check over the definitions whose shape passed; then every namespace for a duplicate. A world walks it once at creation, copying every tunable kind's definitions and putting each number under its key.
+
+```typescript
+// domain/definitions/kinds/foo.kind.ts
+export const fooKind: ListKind<'foos', FooDef, 'foo'> = {
+  field: 'foos', shape: 'list', folder: 'foos', namespace: 'a foo',
+  nameOf: (def) => def.id, stage: 'levelled',
+  schema: (levels) => objectOf<FooDef>({ id: idSchema, bar: levels.levelTable }),
+  check: (context, file, def) => checkReference(context, file, 'bazId', def.bazId, context.space('baz', ['bazs'])),
+  tuning: { kind: 'foo', title: 'Foos', rebuild: (run, id, def, simHz) => { /* … */ } },
+}
+```
+
+Adding a kind is three files under `src/`: its descriptor, its line in the kind list, and its line in `content/index.ts`, beside the content's own definition files. The typed tables run scope builds from the copies, such as the spell and unit tables, are written by hand per kind and are not part of the descriptor; the descriptor's tuning rebuild writes the one record a tuning command changes. Validation order decides only which fault is listed first; each fault's file, path, and message are the kind's own.
+
+---
+
 ## Tunables
 
 Every number design may retune is a tunable: the hero's body values, the turn rate, pool activation radii, and every definition number. Tunables live in the tuning table under `content/`, with a default beside each. At world creation the table is copied into run scope, and a system reads tunables through the world, never through the content module. A tuning change is a command, so it lands in the input log and replays. [Commands and events](./commands-and-events.md) has the mechanism.
@@ -127,7 +158,9 @@ A system writing a stack count back into the status definition. The next unit th
 | Rule | Do |
 | --- | --- |
 | A definition | An immutable typed constant, one per file, under `content/<kind>/` |
-| Definition types and schemas | `domain/definitions/` |
+| Definition types | `domain/definitions/` |
+| A definition kind | One descriptor under `domain/definitions/kinds/` holding its schema, checks, id namespace, and tuning, and one line in the kind list; the registry's type and the tunable kinds derive from the list |
+| Adding a kind | Its descriptor, its line in the kind list, and its line in `content/index.ts`; no other file under `src/` |
 | Content may import | Domain types only, never domain functions |
 | Naming code from content | By string key: effect keys, behaviour keys, atlas frame names |
 | Named effects | `domain/abilities/effects/`, one file per key |

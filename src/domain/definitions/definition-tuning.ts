@@ -1,44 +1,104 @@
-import { assert, assertNever } from "@shared/public";
-import type { RunScope, TuningState } from "../entities/world-state";
-import type { AbilityDef } from "./ability-def";
-import { createAttackRecord } from "./attack-state";
+import type { TuningState } from "../entities/world-state";
 import type {
-  DefinitionKey,
+  DefinitionField,
   DefinitionKind,
   TunableDefinitions,
 } from "./definition-keys";
 import {
   definitionFieldUnit,
   definitionKeyOf,
-  forEachTunableDefinition,
   walkDefinitionNumbers,
 } from "./definition-keys";
-import type { EnemyDef, SummonDef } from "./enemy-def";
-import type { FormDef } from "./form-def";
-import { formInSimulationUnits } from "./form-state";
-import type { HeroDef } from "./hero-def";
-import type { SpellDef } from "./spell-def";
-import { abilityAsSpell, createSpellRecord } from "./spell-state";
-import type { StatusDef } from "./status-def";
-import { createStatusRecord } from "./status-state";
-import type { TuningUnit } from "./tuning-def";
+import type { AnyKind, KindTuning } from "./definition-kind";
+import type { DefinitionSlot } from "./definition-slot";
+import { DEFINITION_KINDS } from "./kinds/index";
 import { convertTunable, readTunable } from "./tuning-state";
-import { createUnitRecord } from "./unit-state";
+
+/** Definitions by registry field, as the tuning surface walks them under any list of kinds. */
+type DefinitionsByField = Readonly<Record<string, unknown>>;
 
 /**
- * Where one definition number lives in a world: the world's own copy of the definition it
- * belongs to, the object or array holding it and the property it sits under, and the unit a
- * tuning command's value is converted from. A tuning command on its key writes the copy and
- * rebuilds the one record read from it, so the next cast or spawn reads the new number.
+ * Calls `each` with every definition of every kind of `kinds` whose numbers the tuning surface
+ * reaches, in list order, with the kind's tuning and the definition's id. The one definition
+ * of a single kind is named by its kind's word, so the hero is `hero`.
  */
-export type DefinitionSlot = Readonly<{
-  kind: DefinitionKind;
-  id: string;
-  def: object;
-  container: Record<string, unknown> | unknown[];
-  property: string | number;
-  unit: TuningUnit;
-}>;
+const forEachTunable = (
+  kinds: readonly AnyKind[],
+  defs: DefinitionsByField,
+  each: (tuning: KindTuning<string, unknown>, id: string, def: object) => void,
+): void => {
+  for (const kind of kinds) {
+    const tuning = kind.tuning;
+
+    if (tuning === null) {
+      continue;
+    }
+
+    const value = defs[kind.field];
+
+    if (kind.shape === "single") {
+      if (value !== null && typeof value === "object") {
+        each(tuning, tuning.kind, value);
+      }
+
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const def of value as readonly object[]) {
+        each(tuning, kind.nameOf(def), def);
+      }
+    }
+  }
+};
+
+/** Calls `each` with every tunable definition in `defs`, its kind, and its id, the hero first. */
+export const forEachTunableDefinition = (
+  defs: TunableDefinitions,
+  each: (kind: DefinitionKind, id: string, def: object) => void,
+): void => {
+  forEachTunable(DEFINITION_KINDS, defs, (tuning, id, def): void => {
+    each(tuning.kind as DefinitionKind, id, def);
+  });
+};
+
+/**
+ * Every number of every definition in `defs` the tuning surface reaches, in the designer's
+ * units: the hero, then each kind in list order, each definition's fields in the order it
+ * writes them. The panel generates a slider from each; nothing here converts.
+ */
+export const definitionFields = (
+  defs: TunableDefinitions,
+): readonly DefinitionField[] => {
+  const fields: DefinitionField[] = [];
+
+  forEachTunableDefinition(defs, (kind, id, def): void => {
+    walkDefinitionNumbers(def, (path, index, _container, _property, value) => {
+      fields.push({
+        key: definitionKeyOf(kind, id, path, index),
+        kind,
+        id,
+        path,
+        index,
+        value,
+        unit: definitionFieldUnit(path),
+      });
+    });
+  });
+
+  return fields;
+};
+
+/** The title of the panel folder `kind`'s sliders sit in. */
+export const definitionKindTitle = (kind: DefinitionKind): string => {
+  for (const entry of DEFINITION_KINDS) {
+    if (entry.tuning?.kind === kind) {
+      return entry.tuning.title;
+    }
+  }
+
+  return kind;
+};
 
 /**
  * `value`, plain data as content writes it, copied at every depth. A world takes its own
@@ -63,140 +123,62 @@ const copyData = <T>(value: T): T => {
   return value;
 };
 
+/** A copy of every definition of every tunable kind of `kinds` in `defs`, by field, owned by one world. */
+export const copyTunableDefinitionsOf = (
+  kinds: readonly AnyKind[],
+  defs: DefinitionsByField,
+): DefinitionsByField => {
+  const copies: Record<string, unknown> = {};
+
+  for (const kind of kinds) {
+    if (kind.tuning !== null) {
+      copies[kind.field] = copyData(defs[kind.field]);
+    }
+  }
+
+  return copies;
+};
+
 /** A copy of every tunable definition in `defs`, owned by one world. */
 export const copyTunableDefinitions = (
   defs: TunableDefinitions,
-): TunableDefinitions => ({
-  hero: copyData(defs.hero),
-  forms: copyData(defs.forms),
-  spells: copyData(defs.spells),
-  abilities: copyData(defs.abilities),
-  statuses: copyData(defs.statuses),
-  enemies: copyData(defs.enemies),
-  summons: copyData(defs.summons),
-});
+): TunableDefinitions =>
+  copyTunableDefinitionsOf(DEFINITION_KINDS, defs) as TunableDefinitions;
 
 /**
- * Every number of the world's copies under its key, converted into the tuning state beside
- * the tuning table, and the slot a tuning command writes it through. Run once, when a world is
- * created: the tuning state takes every key it will ever hold here and never grows.
+ * Every number of the world's copies of the kinds of `kinds` under its key, converted into the
+ * tuning state beside the tuning table, and the slot a tuning command writes it through. Run
+ * once, when a world is created: the tuning state takes every key it will ever hold here and
+ * never grows, and each slot's rebuild is made here, not per command.
  */
-export const createDefinitionSlots = (
-  copies: TunableDefinitions,
+export const createDefinitionSlotsOf = (
+  kinds: readonly AnyKind[],
+  copies: DefinitionsByField,
   tuning: TuningState,
 ): Map<string, DefinitionSlot> => {
   const slots = new Map<string, DefinitionSlot>();
   const simHz = readTunable(tuning, "sim_hz");
 
-  forEachTunableDefinition(copies, (kind, id, def): void => {
+  forEachTunable(kinds, copies, (kindTuning, id, def): void => {
+    const rebuild: DefinitionSlot["rebuild"] = (run, rate): void => {
+      kindTuning.rebuild(run, id, def, rate);
+    };
+
     walkDefinitionNumbers(def, (path, index, container, property, value) => {
-      const key = definitionKeyOf(kind, id, path, index);
+      const key = definitionKeyOf(kindTuning.kind, id, path, index);
       const unit = definitionFieldUnit(path);
 
       tuning.set(key, convertTunable(unit, value, simHz));
-      slots.set(key, { kind, id, def, container, property, unit });
+      slots.set(key, { container, property, unit, rebuild });
     });
   });
 
   return slots;
 };
 
-/** Rebuilds the one record of run scope read from the definition `slot` belongs to, from the world's copy. */
-const rebuildRecord = (
-  run: RunScope,
-  slot: DefinitionSlot,
-  simHz: number,
-): void => {
-  switch (slot.kind) {
-    case "hero":
-      run.heroAttack = createAttackRecord((slot.def as HeroDef).attack, simHz);
-
-      return;
-
-    case "form":
-      for (const form of run.forms) {
-        if (form.def.id === slot.id) {
-          form.def = formInSimulationUnits(slot.def as FormDef, simHz);
-        }
-      }
-
-      return;
-
-    case "spell":
-      run.spells.set(slot.id, createSpellRecord(slot.def as SpellDef, simHz));
-
-      return;
-
-    case "status":
-      run.statuses.set(
-        slot.id,
-        createStatusRecord(slot.def as StatusDef, simHz),
-      );
-
-      return;
-
-    case "enemy":
-      run.units.set(
-        slot.id,
-        createUnitRecord(slot.def as EnemyDef, "enemy", 0, simHz),
-      );
-
-      return;
-
-    case "summon":
-      run.units.set(
-        slot.id,
-        createUnitRecord(
-          slot.def as SummonDef,
-          "summon",
-          (slot.def as SummonDef).followDistance,
-          simHz,
-        ),
-      );
-
-      return;
-
-    case "ability":
-      run.spells.set(
-        slot.id,
-        createSpellRecord(abilityAsSpell(slot.def as AbilityDef), simHz),
-      );
-
-      return;
-
-    default:
-      return assertNever(slot.kind);
-  }
-};
-
-/**
- * Sets the definition number `key` names to `value`, in the designer's units: the world's
- * copy of the definition takes the value as written, the tuning state takes it converted
- * exactly as at creation, and the record read from that definition is rebuilt, so the next
- * cast or spawn reads it. A unit already spawned keeps what it was dressed with. The key was
- * validated against the tuning state, which holds every slot's key, so a miss is a broken
- * invariant.
- */
-export const setDefinitionTunable = (
-  run: RunScope,
-  key: DefinitionKey,
-  value: number,
-): void => {
-  const slot = run.definitionSlots.get(key);
-
-  assert(
-    slot !== undefined,
-    "Every definition key the tuning state holds has a slot",
-  );
-
-  const simHz = readTunable(run.tuning, "sim_hz");
-
-  if (Array.isArray(slot.container)) {
-    slot.container[slot.property as number] = value;
-  } else {
-    slot.container[slot.property as string] = value;
-  }
-
-  run.tuning.set(key, convertTunable(slot.unit, value, simHz));
-  rebuildRecord(run, slot, simHz);
-};
+/** The slots of every tunable definition in the world's `copies`: see `createDefinitionSlotsOf`. */
+export const createDefinitionSlots = (
+  copies: TunableDefinitions,
+  tuning: TuningState,
+): Map<string, DefinitionSlot> =>
+  createDefinitionSlotsOf(DEFINITION_KINDS, copies, tuning);

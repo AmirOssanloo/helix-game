@@ -1,86 +1,16 @@
-import type { Rect } from "@shared/public";
-import { assertNever } from "@shared/public";
-import { resolveNamedEffect } from "../abilities/effects/index";
-import { BEHAVIOUR_KEYS, resolveBehaviour } from "../ai/behaviours/index";
-import { ENEMY_LIVE_CAP } from "../entities/unit";
-import { KIT_KEYS } from "../kits/kit-registry";
-import {
-  deriveWalkabilityGrid,
-  HERO_RADIUS_CLASS,
-  isBlockedAt,
-  RADIUS_CLASS_KEYS,
-} from "../map/walkability";
-import type { AbilityDef } from "./ability-def";
-import type { LevelledSchemas } from "./definition-schemas";
-import {
-  atlasFrameSchema,
-  createLevelledSchemas,
-  disableMatrixSchema,
-  heroSchema,
-  mapSchema,
-  tuningSchema,
-} from "./definition-schemas";
-import type { DisableMatrixDef } from "./disable-matrix-def";
-import { COMMAND_COLUMNS, DISABLE_COLUMNS } from "./disable-matrix-def";
-import type { EffectDef } from "./effect-def";
-import type { EnemyAbilityEntryDef, EnemyDef } from "./enemy-def";
-import type { MapDef } from "./map-def";
-import type { Registry } from "./registry";
+import type { AnyKind } from "./definition-kind";
+import { DEFINITION_KINDS } from "./kinds/index";
+import type { LevelSchemas } from "./level-schemas";
+import { createLevelSchemas } from "./level-schemas";
+import type { DefinitionOf, Registry, RegistryField } from "./registry";
+import type {
+  IdSpace,
+  RegistryFault,
+  ValidationContext,
+  ValidDefinition,
+} from "./registry-checks";
+import { report } from "./registry-checks";
 import type { Schema, SchemaFault } from "./schema";
-import type { StatusDef } from "./status-def";
-import type { TuningDef } from "./tuning-def";
-
-/**
- * The most statuses an archetype may carry for its life. Each takes a row of the unit's table
- * for as long as it lives, so the rows left for what is thrown at it stay the greater part.
- */
-export const MAX_CARRIED_STATUSES = 2;
-
-/**
- * One reason a registry is refused: the content file it comes from, the path inside the
- * definition, and what was expected. The file is derived from the kind's folder and the
- * definition's id, since content keeps one definition per file named after its id.
- */
-export type RegistryFault = Readonly<{
-  file: string;
-  path: string;
-  message: string;
-}>;
-
-/** The set of ids a definition may reference, and the kind word a fault names them by. */
-type IdSpace = Readonly<{
-  kind: string;
-  ids: ReadonlySet<string>;
-}>;
-
-/** Every id a definition may point at, gathered before any cross-reference is checked. */
-type IdSpaces = Readonly<{
-  abilities: IdSpace;
-  statuses: IdSpace;
-  summons: IdSpace;
-  enemies: IdSpace;
-  /** Every summon and every archetype: what a spawn-unit entry in a cast's own list may name. */
-  units: IdSpace;
-  forms: IdSpace;
-  frames: IdSpace;
-}>;
-
-/**
- * Where an effect list sits: a cast's own list, run once at commit; a zone's each-tick list;
- * any other list nested inside something, which runs later and more than once; or anywhere
- * under a named effect's fields. A per-second rate is legal only in the second, and a spawn
- * of an archetype only in the first, since that is the one list the cast pipeline counts
- * against the live enemy cap before it commits.
- */
-type EffectPlace = "cast" | "each_tick" | "nested" | "named";
-
-/**
- * The place of a list inside a list at `place`: under a named effect's fields it stays there
- * at any depth, since world creation converts no rate per second inside a named effect's
- * fields, so none is legal there, even in a zone's each-tick list.
- */
-const within = (place: EffectPlace, next: EffectPlace): EffectPlace =>
-  place === "named" ? "named" : next;
 
 /** The content file a definition of kind `folder` with `id` lives in. */
 const fileOf = (folder: string, id: unknown, index: number): string =>
@@ -93,33 +23,41 @@ const idOf = (value: unknown): unknown =>
     ? value.id
     : undefined;
 
-/** Copies schema faults under `file` into the registry's fault list. */
-const report = (
-  faults: RegistryFault[],
-  file: string,
-  found: readonly SchemaFault[],
-): void => {
-  for (const fault of found) {
-    faults.push({ file, path: fault.path, message: fault.message });
-  }
-};
-
 /**
- * Runs `schema` over every definition of `list`, reporting under the file each comes from,
- * and returns the ones that passed, since a cross-reference check reads only a definition
- * whose shape is known.
+ * Runs `schema` over what the registry holds for `kind`, reporting under the file each
+ * definition comes from, and returns the definitions that passed, since a cross-reference
+ * check reads only a definition whose shape is known.
  */
-const checkList = <T>(
+const checkShape = (
   faults: RegistryFault[],
-  folder: string,
-  schema: Schema<T>,
-  list: readonly unknown[],
-): readonly Readonly<{ file: string; def: T }>[] => {
-  const valid: Readonly<{ file: string; def: T }>[] = [];
+  kind: AnyKind,
+  schema: Schema<unknown>,
+  value: unknown,
+): ValidDefinition<unknown>[] => {
+  if (kind.shape === "single") {
+    const found: SchemaFault[] = [];
+
+    if (schema(value, "", found)) {
+      return [{ file: kind.file, def: value }];
+    }
+
+    report(faults, kind.file, found);
+
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    faults.push({ file: kind.folder, path: "", message: "expected a list" });
+
+    return [];
+  }
+
+  const list: readonly unknown[] = value;
+  const valid: ValidDefinition<unknown>[] = [];
 
   for (let index = 0; index < list.length; index += 1) {
     const candidate = list[index];
-    const file = fileOf(folder, idOf(candidate), index);
+    const file = fileOf(kind.folder, idOf(candidate), index);
     const found: SchemaFault[] = [];
 
     if (schema(candidate, "", found)) {
@@ -132,10 +70,14 @@ const checkList = <T>(
   return valid;
 };
 
+/** The schema of `kind`: a gate's as written, any other's built for the orb level cap. */
+const schemaOf = (kind: AnyKind, levels: LevelSchemas): Schema<unknown> =>
+  kind.stage === "gate" ? kind.schema : kind.schema(levels);
+
 /** Reports every id that appears twice among `entries`, each under the file of its second appearance. */
 const checkUnique = (
   faults: RegistryFault[],
-  kind: string,
+  namespace: string,
   entries: readonly Readonly<{ file: string; id: string }>[],
 ): void => {
   const seen = new Map<string, string>();
@@ -147,7 +89,7 @@ const checkUnique = (
       faults.push({
         file: entry.file,
         path: "id",
-        message: `"${entry.id}" is already the id of ${kind} in ${first}`,
+        message: `"${entry.id}" is already the id of ${namespace} in ${first}`,
       });
     } else {
       seen.set(entry.id, entry.file);
@@ -155,877 +97,117 @@ const checkUnique = (
   }
 };
 
-const checkReference = (
-  faults: RegistryFault[],
-  file: string,
-  path: string,
-  id: string,
-  space: IdSpace,
-): void => {
-  if (!space.ids.has(id)) {
-    faults.push({
-      file,
-      path,
-      message: `"${id}" is not the id of any ${space.kind}`,
-    });
-  }
-};
-
 /**
- * One entry of an enemy's ability list: an id the registry holds, and a condition whose number
- * can be met. A health fraction lies strictly between none and all of the maximum, since at
- * either end the entry would always or never be chosen and should say so; a distance is more
- * than nothing.
+ * Every fault in `registry` under the kinds `kinds`, or none when it is sound. The gate kinds
+ * are checked first, since the hero's orb level cap fixes every table's length, and a fault
+ * in one stops validation there. Then every other kind's definitions against its schema; then,
+ * over the definitions whose shape passed, each kind's cross-references in list order: keys
+ * against the domain's registries, referenced ids against the ids that exist, frames against
+ * the list; then every id namespace for a duplicate, in the order its first kind is listed. A
+ * fault names the content file, the path inside the definition, and what was expected.
  */
-const checkAbilityEntry = (
-  faults: RegistryFault[],
-  file: string,
-  path: string,
-  entry: EnemyAbilityEntryDef,
-  spaces: IdSpaces,
-): void => {
-  checkReference(faults, file, `${path}.id`, entry.id, spaces.abilities);
-
-  const condition = entry.condition;
-
-  switch (condition.kind) {
-    case "always":
-      return;
-
-    case "health_below":
-      if (
-        !Number.isFinite(condition.fraction) ||
-        condition.fraction <= 0 ||
-        condition.fraction >= 1
-      ) {
-        faults.push({
-          file,
-          path: `${path}.condition.fraction`,
-          message: `${String(condition.fraction)} is not a health fraction strictly between 0 and 1`,
-        });
-      }
-
-      return;
-
-    case "target_within":
-      if (!Number.isFinite(condition.distance) || condition.distance <= 0) {
-        faults.push({
-          file,
-          path: `${path}.condition.distance`,
-          message: `${String(condition.distance)} is not a distance greater than 0`,
-        });
-      }
-
-      return;
-
-    default:
-      return assertNever(condition);
-  }
-};
-
-const checkFrame = (
-  faults: RegistryFault[],
-  file: string,
-  path: string,
-  name: string,
-  spaces: IdSpaces,
-): void => {
-  if (!spaces.frames.ids.has(name)) {
-    faults.push({
-      file,
-      path,
-      message: `"${name}" is not in the atlas frame list`,
-    });
-  }
-};
-
-/**
- * Checks one effect and everything inside it: a named key resolves, its fields pass the
- * effect's own schema, and every effect entry those fields carry is checked as an entry of
- * its own; every status id exists, and every unit id a spawn names, which is a summon or,
- * in a cast's own list alone, an archetype; every frame is in the list; and a per-second
- * damage rate appears only in a zone's each-tick list.
- */
-const checkEffect = (
-  faults: RegistryFault[],
-  file: string,
-  at: string,
-  effect: EffectDef,
-  spaces: IdSpaces,
-  effectSchema: Schema<EffectDef>,
-  place: EffectPlace,
-): void => {
-  switch (effect.kind) {
-    case "damage_area":
-      if (effect.rate === "per_second" && place !== "each_tick") {
-        faults.push({
-          file,
-          path: `${at}.rate`,
-          message:
-            "a per-second rate is legal only in a zone's each-tick list, and never under a named effect's fields",
-        });
-      }
-
-      break;
-
-    case "apply_status":
-      checkReference(
-        faults,
-        file,
-        `${at}.statusId`,
-        effect.statusId,
-        spaces.statuses,
-      );
-
-      break;
-
-    case "spawn_projectile":
-      checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
-      checkEffects(
-        faults,
-        file,
-        `${at}.onHit`,
-        effect.onHit,
-        spaces,
-        effectSchema,
-        within(place, "nested"),
-      );
-
-      break;
-
-    case "spawn_zone":
-      checkFrame(faults, file, `${at}.atlasFrame`, effect.atlasFrame, spaces);
-      checkEffects(
-        faults,
-        file,
-        `${at}.onActivate`,
-        effect.onActivate,
-        spaces,
-        effectSchema,
-        within(place, "nested"),
-      );
-      checkEffects(
-        faults,
-        file,
-        `${at}.eachTick`,
-        effect.eachTick,
-        spaces,
-        effectSchema,
-        within(place, "each_tick"),
-      );
-
-      break;
-
-    case "spawn_unit":
-      if (place !== "cast" && spaces.enemies.ids.has(effect.unitId)) {
-        faults.push({
-          file,
-          path: `${at}.unitId`,
-          message: `"${effect.unitId}" is an enemy, spawned only from a cast's own effect list, where the live cap is checked`,
-        });
-
-        break;
-      }
-
-      checkReference(
-        faults,
-        file,
-        `${at}.unitId`,
-        effect.unitId,
-        place === "cast" ? spaces.units : spaces.summons,
-      );
-
-      break;
-
-    case "displace":
-      checkReference(
-        faults,
-        file,
-        `${at}.statusId`,
-        effect.statusId,
-        spaces.statuses,
-      );
-
-      break;
-
-    case "named": {
-      const entry = resolveNamedEffect(effect.key);
-
-      if (entry === null) {
-        faults.push({
-          file,
-          path: `${at}.key`,
-          message: `"${effect.key}" resolves to no named effect`,
-        });
-
-        break;
-      }
-
-      const found: SchemaFault[] = [];
-
-      if (!entry.fields(effect.fields, `${at}.fields`, found)) {
-        report(faults, file, found);
-
-        break;
-      }
-
-      for (const nested of entry.nested(effect.fields)) {
-        const inner: SchemaFault[] = [];
-        const where = `${at}.fields.${nested.path}`;
-
-        if (effectSchema(nested.entry, where, inner)) {
-          checkEffect(
-            faults,
-            file,
-            where,
-            nested.entry,
-            spaces,
-            effectSchema,
-            "named",
-          );
-        } else {
-          report(faults, file, inner);
-        }
-      }
-
-      break;
-    }
-
-    default:
-      return assertNever(effect);
-  }
-};
-
-/** Every effect of a list, each under its own index in `path`. */
-const checkEffects = (
-  faults: RegistryFault[],
-  file: string,
-  path: string,
-  effects: readonly EffectDef[],
-  spaces: IdSpaces,
-  effectSchema: Schema<EffectDef>,
-  place: EffectPlace,
-): void => {
-  for (let index = 0; index < effects.length; index += 1) {
-    const effect = effects[index];
-
-    if (effect !== undefined) {
-      checkEffect(
-        faults,
-        file,
-        `${path}[${String(index)}]`,
-        effect,
-        spaces,
-        effectSchema,
-        place,
-      );
-    }
-  }
-};
-
-const checkAbility = (
-  faults: RegistryFault[],
-  file: string,
-  def: AbilityDef,
-  spaces: IdSpaces,
-  effectSchema: Schema<EffectDef>,
-): void => {
-  checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
-
-  if (def.preview.kind !== "none" && def.preview.kind !== "line") {
-    checkFrame(
-      faults,
-      file,
-      "preview.atlasFrame",
-      def.preview.atlasFrame,
-      spaces,
-    );
-  }
-
-  checkEffects(
-    faults,
-    file,
-    "effects",
-    def.effects,
-    spaces,
-    effectSchema,
-    "cast",
-  );
-};
-
-const checkStatus = (
-  faults: RegistryFault[],
-  file: string,
-  def: StatusDef,
-  spaces: IdSpaces,
-  effectSchema: Schema<EffectDef>,
-): void => {
-  checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
-
-  if (def.onDamageTaken !== null) {
-    checkEffects(
-      faults,
-      file,
-      "onDamageTaken.effects",
-      def.onDamageTaken.effects,
-      spaces,
-      effectSchema,
-      "nested",
-    );
-  }
-
-  if (def.onDamageDealt !== null) {
-    checkEffects(
-      faults,
-      file,
-      "onDamageDealt.effects",
-      def.onDamageDealt.effects,
-      spaces,
-      effectSchema,
-      "nested",
-    );
-  }
-
-  checkEffects(
-    faults,
-    file,
-    "onExpiry",
-    def.onExpiry,
-    spaces,
-    effectSchema,
-    "nested",
-  );
-};
-
-/**
- * The statuses an archetype carries for its life: each one exists, none twice, no more than
- * the cap, and none raising a flag, since a disable or a lift held until death would leave a
- * unit that never acts.
- */
-const checkCarriedStatuses = (
-  faults: RegistryFault[],
-  file: string,
-  def: EnemyDef,
-  spaces: IdSpaces,
-  statuses: ReadonlyMap<string, StatusDef>,
-): void => {
-  if (def.statuses.length > MAX_CARRIED_STATUSES) {
-    faults.push({
-      file,
-      path: "statuses",
-      message: `expected at most ${String(MAX_CARRIED_STATUSES)} statuses, found ${String(def.statuses.length)}`,
-    });
-  }
-
-  for (let index = 0; index < def.statuses.length; index += 1) {
-    const id = def.statuses[index];
-
-    if (id === undefined) {
-      continue;
-    }
-
-    const path = `statuses[${String(index)}]`;
-
-    checkReference(faults, file, path, id, spaces.statuses);
-
-    if (def.statuses.indexOf(id) !== index) {
-      faults.push({ file, path, message: `"${id}" is listed twice` });
-    }
-
-    const status = statuses.get(id);
-
-    if (status !== undefined && status.flags.length > 0) {
-      faults.push({
-        file,
-        path,
-        message: `"${id}" raises ${status.flags.join(", ")}; a status carried for life raises no flag`,
-      });
-    }
-  }
-};
-
-/** Every entry of one of a definition's ability lists at `field`. A single elite ability reports at the field itself rather than at an index. */
-const checkAbilityList = (
-  faults: RegistryFault[],
-  file: string,
-  field: string,
-  entries: readonly EnemyAbilityEntryDef[],
-  spaces: IdSpaces,
-): void => {
-  const single = field === "eliteAbility";
-
-  for (let index = 0; index < entries.length; index += 1) {
-    const entry = entries[index];
-
-    if (entry !== undefined) {
-      checkAbilityEntry(
-        faults,
-        file,
-        single ? field : `${field}[${String(index)}]`,
-        entry,
-        spaces,
-      );
-    }
-  }
-};
-
-const checkUnitDef = (
-  faults: RegistryFault[],
-  file: string,
-  def: EnemyDef,
-  spaces: IdSpaces,
-  statuses: ReadonlyMap<string, StatusDef>,
-): void => {
-  checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
-  checkFrame(faults, file, "attack.atlasFrame", def.attack.atlasFrame, spaces);
-
-  if (resolveBehaviour(def.behaviour) === null) {
-    faults.push({
-      file,
-      path: "behaviour",
-      message: `"${def.behaviour}" resolves to no behaviour; the registry holds ${BEHAVIOUR_KEYS.join(", ")}`,
-    });
-  }
-
-  checkAbilityList(faults, file, "abilities", def.abilities, spaces);
-
-  if (def.eliteAbility !== null) {
-    checkAbilityList(faults, file, "eliteAbility", [def.eliteAbility], spaces);
-  }
-
-  checkAbilityList(faults, file, "bossAbilities", def.bossAbilities, spaces);
-  checkCarriedStatuses(faults, file, def, spaces, statuses);
-};
-
-/** The file the disable matrix lives in. */
-const DISABLE_MATRIX_FILE = "statuses/disable-matrix.ts";
-
-/**
- * The disable matrix against the statuses: its shape, every row id once, every status in
- * exactly one row and no row naming a status that does not exist, each row's flags exactly
- * the flags its statuses raise, the flags it is worn by among them, a reason exactly when a
- * key or order cell refuses, and a row worn by no flag blocking nothing.
- */
-const checkDisableMatrix = (
-  faults: RegistryFault[],
-  matrix: unknown,
-  statuses: ReadonlyMap<string, StatusDef>,
-): void => {
-  const found: SchemaFault[] = [];
-
-  if (!disableMatrixSchema(matrix, "", found)) {
-    report(faults, DISABLE_MATRIX_FILE, found);
-
-    return;
-  }
-
-  const rows: DisableMatrixDef = matrix;
-  const rowOf = new Map<string, string>();
-  const rowIds = new Set<string>();
-
-  for (let index = 0; index < rows.length; index += 1) {
-    const row = rows[index];
-
-    if (row === undefined) {
-      continue;
-    }
-
-    const path = `[${String(index)}]`;
-    const raised = new Set<string>();
-
-    if (rowIds.has(row.id)) {
-      faults.push({
-        file: DISABLE_MATRIX_FILE,
-        path: `${path}.id`,
-        message: `"${row.id}" is already the id of a row`,
-      });
-    }
-
-    rowIds.add(row.id);
-
-    for (let entry = 0; entry < row.statuses.length; entry += 1) {
-      const id = row.statuses[entry];
-
-      if (id === undefined) {
-        continue;
-      }
-
-      const entryPath = `${path}.statuses[${String(entry)}]`;
-      const status = statuses.get(id);
-      const earlier = rowOf.get(id);
-
-      if (status === undefined) {
-        faults.push({
-          file: DISABLE_MATRIX_FILE,
-          path: entryPath,
-          message: `"${id}" names no status`,
-        });
-
-        continue;
-      }
-
-      if (earlier !== undefined) {
-        faults.push({
-          file: DISABLE_MATRIX_FILE,
-          path: entryPath,
-          message: `"${id}" already sits in the row "${earlier}"`,
-        });
-
-        continue;
-      }
-
-      rowOf.set(id, row.id);
-
-      for (const flag of status.flags) {
-        raised.add(flag);
-      }
-    }
-
-    const written = new Set<string>(row.flags);
-    const matches =
-      written.size === raised.size &&
-      [...raised].every((flag) => written.has(flag));
-
-    if (!matches) {
-      faults.push({
-        file: DISABLE_MATRIX_FILE,
-        path: `${path}.flags`,
-        message: `expected the flags its statuses raise, ${[...raised].sort().join(", ") || "none"}`,
-      });
-    }
-
-    for (let entry = 0; entry < row.wornBy.length; entry += 1) {
-      const flag = row.wornBy[entry];
-
-      if (flag !== undefined && !written.has(flag)) {
-        faults.push({
-          file: DISABLE_MATRIX_FILE,
-          path: `${path}.wornBy[${String(entry)}]`,
-          message: `expected one of the row's flags, found "${flag}"`,
-        });
-      }
-    }
-
-    const refuses = COMMAND_COLUMNS.some(
-      (column) => row.cells[column] !== "allowed",
-    );
-
-    if (refuses !== (row.reason !== null)) {
-      faults.push({
-        file: DISABLE_MATRIX_FILE,
-        path: `${path}.reason`,
-        message: refuses
-          ? "expected a reason, since a key or order cell refuses"
-          : "expected null, since no key or order cell refuses",
-      });
-    }
-
-    if (row.wornBy.length === 0) {
-      for (const column of DISABLE_COLUMNS) {
-        const answer = row.cells[column];
-
-        if (answer !== "allowed" && answer !== "continues") {
-          faults.push({
-            file: DISABLE_MATRIX_FILE,
-            path: `${path}.cells.${column}`,
-            message: `expected allowed or continues, since no flag wears the row; found ${answer}`,
-          });
-        }
-      }
-    }
-  }
-
-  for (const id of statuses.keys()) {
-    if (!rowOf.has(id)) {
-      faults.push({
-        file: DISABLE_MATRIX_FILE,
-        path: "",
-        message: `the status "${id}" sits in no row`,
-      });
-    }
-  }
-};
-
-const isInsideRect = (rect: Readonly<Rect>, x: number, y: number): boolean =>
-  x >= rect.minX && x <= rect.maxX && y >= rect.minY && y <= rect.maxY;
-
-/**
- * Every checkpoint of `map` stands inside the bounds, outside every obstacle, and on a cell
- * open to the hero's radius class of the grid the tuning table derives, so a hero brought back
- * there can stand and walk. The grid is derived only for a map that has checkpoints and bounds
- * with area, and each checkpoint is refused for the first of the three it breaks.
- */
-const checkCheckpoints = (
-  faults: RegistryFault[],
-  file: string,
-  map: MapDef,
-  tuning: TuningDef,
-): void => {
-  const bounds = map.bounds;
-
-  if (
-    map.checkpoints.length === 0 ||
-    bounds.maxX <= bounds.minX ||
-    bounds.maxY <= bounds.minY
-  ) {
-    return;
-  }
-
-  const grid = deriveWalkabilityGrid(
-    bounds,
-    map.obstacles,
-    tuning.walkability_cell_size,
-    RADIUS_CLASS_KEYS.map((key) => tuning[key]),
-  );
-
-  for (let index = 0; index < map.checkpoints.length; index += 1) {
-    const checkpoint = map.checkpoints[index];
-
-    if (checkpoint === undefined) {
-      continue;
-    }
-
-    const path = `checkpoints[${String(index)}]`;
-    const { x, y } = checkpoint;
-
-    if (!isInsideRect(bounds, x, y)) {
-      faults.push({
-        file,
-        path,
-        message: "expected a point inside the bounds",
-      });
-    } else if (map.obstacles.some((obstacle) => isInsideRect(obstacle, x, y))) {
-      faults.push({
-        file,
-        path,
-        message: "expected a point outside every obstacle",
-      });
-    } else if (isBlockedAt(grid, HERO_RADIUS_CLASS, x, y)) {
-      faults.push({
-        file,
-        path,
-        message: "expected a point on a cell open to the hero's radius class",
-      });
-    }
-  }
-};
-
-/**
- * Every fault in `registry`, or none when it is sound. The hero and the tuning table are
- * checked first, since the orb level cap fixes every table's length; then every definition
- * of every kind against its schema; then, over the definitions whose shape passed, every
- * key against the domain's registries, every referenced id against the ids that exist,
- * every frame against the list, and every id namespace for a duplicate. A fault names the
- * content file, the path inside the definition, and what was expected.
- */
-export const validateRegistry = (registry: Registry): RegistryFault[] => {
+export const validateRegistryOf = (
+  kinds: readonly AnyKind[],
+  registry: Registry & Readonly<Record<string, unknown>>,
+): RegistryFault[] => {
   const faults: RegistryFault[] = [];
-  const heroFaults: SchemaFault[] = [];
-  const tuningFaults: SchemaFault[] = [];
+  const checked = new Map<string, ValidDefinition<unknown>[]>();
 
-  if (!heroSchema(registry.hero, "", heroFaults)) {
-    report(faults, "hero.ts", heroFaults);
-  }
-
-  if (!tuningSchema(registry.tuning, "", tuningFaults)) {
-    report(faults, "tuning.ts", tuningFaults);
+  for (const kind of kinds) {
+    if (kind.stage === "gate") {
+      checked.set(
+        kind.field,
+        checkShape(faults, kind, kind.schema, registry[kind.field]),
+      );
+    }
   }
 
   if (faults.length > 0) {
     return faults;
   }
 
-  const hero = registry.hero;
+  const levels = createLevelSchemas(registry.hero.maxOrbLevel);
 
-  if (hero.experienceThresholds.length !== hero.maxLevel) {
-    faults.push({
-      file: "hero.ts",
-      path: "experienceThresholds",
-      message: `expected ${String(hero.maxLevel)} entries, one per level, found ${String(hero.experienceThresholds.length)}`,
-    });
+  for (const kind of kinds) {
+    if (kind.stage !== "gate") {
+      checked.set(
+        kind.field,
+        checkShape(faults, kind, schemaOf(kind, levels), registry[kind.field]),
+      );
+    }
   }
 
-  const schemas: LevelledSchemas = createLevelledSchemas(hero.maxOrbLevel);
-  const frames = checkList(faults, "atlas-frames", atlasFrameSchema, [
-    ...registry.atlasFrames,
-  ]);
-  const forms = checkList(faults, "forms", schemas.form, registry.forms);
-  const spells = checkList(faults, "spells", schemas.spell, registry.spells);
-  const abilities = checkList(
-    faults,
-    "abilities",
-    schemas.ability,
-    registry.abilities,
-  );
-  const statuses = checkList(
-    faults,
-    "statuses",
-    schemas.status,
-    registry.statuses,
-  );
-  const enemies = checkList(faults, "enemies", schemas.enemy, registry.enemies);
-  const summons = checkList(
-    faults,
-    "summons",
-    schemas.summon,
-    registry.summons,
-  );
-  const maps = checkList(faults, "maps", mapSchema, registry.maps);
+  const spaces = new Map<string, IdSpace>();
+  const namesOf = (field: string): readonly string[] => {
+    const names: string[] = [];
 
-  const spaces: IdSpaces = {
-    abilities: {
-      kind: "spell or ability",
-      ids: new Set([...spells, ...abilities].map((entry) => entry.def.id)),
-    },
-    statuses: {
-      kind: "status",
-      ids: new Set(statuses.map((entry) => entry.def.id)),
-    },
-    summons: {
-      kind: "summon",
-      ids: new Set(summons.map((entry) => entry.def.id)),
-    },
-    enemies: {
-      kind: "enemy",
-      ids: new Set(enemies.map((entry) => entry.def.id)),
-    },
-    units: {
-      kind: "summon or enemy",
-      ids: new Set([...summons, ...enemies].map((entry) => entry.def.id)),
-    },
-    forms: { kind: "form", ids: new Set(forms.map((entry) => entry.def.id)) },
-    frames: {
-      kind: "atlas frame",
-      ids: new Set(frames.map((entry) => entry.def.name)),
+    for (const kind of kinds) {
+      if (kind.field === field && kind.shape === "list") {
+        for (const entry of checked.get(field) ?? []) {
+          names.push(kind.nameOf(entry.def));
+        }
+      }
+    }
+
+    return names;
+  };
+
+  const context: ValidationContext = {
+    faults,
+    levels,
+    registry,
+    valid: <F extends RegistryField>(field: F) =>
+      (checked.get(field) ?? []) as readonly ValidDefinition<DefinitionOf<F>>[],
+    space: (kind, fields) => {
+      const known = spaces.get(kind);
+
+      if (known !== undefined) {
+        return known;
+      }
+
+      const space = { kind, ids: new Set(fields.flatMap(namesOf)) };
+
+      spaces.set(kind, space);
+
+      return space;
     },
   };
 
-  checkFrame(
-    faults,
-    "hero.ts",
-    "attack.atlasFrame",
-    hero.attack.atlasFrame,
-    spaces,
-  );
-
-  for (let index = 0; index < hero.forms.length; index += 1) {
-    const id = hero.forms[index];
-
-    if (id !== undefined) {
-      checkReference(
-        faults,
-        "hero.ts",
-        `forms[${String(index)}]`,
-        id,
-        spaces.forms,
-      );
+  for (const kind of kinds) {
+    for (const entry of checked.get(kind.field) ?? []) {
+      kind.check(context, entry.file, entry.def);
     }
   }
 
-  for (const { file, def } of forms) {
-    checkFrame(faults, file, "atlasFrame", def.atlasFrame, spaces);
+  const namespaces = new Map<
+    string,
+    Readonly<{ file: string; id: string }>[]
+  >();
 
-    if (!KIT_KEYS.includes(def.kit)) {
-      faults.push({
-        file,
-        path: "kit",
-        message: `"${def.kit}" resolves to no kit; the registry holds ${KIT_KEYS.join(", ")}`,
-      });
+  for (const kind of kinds) {
+    if (kind.shape !== "list") {
+      continue;
     }
 
-    for (let index = 0; index < def.abilities.length; index += 1) {
-      const id = def.abilities[index];
+    const entries = namespaces.get(kind.namespace) ?? [];
 
-      if (id !== undefined) {
-        checkReference(
-          faults,
-          file,
-          `abilities[${String(index)}]`,
-          id,
-          spaces.abilities,
-        );
-      }
+    for (const entry of checked.get(kind.field) ?? []) {
+      entries.push({ file: entry.file, id: kind.nameOf(entry.def) });
     }
+
+    namespaces.set(kind.namespace, entries);
   }
 
-  for (const { file, def } of spells) {
-    checkAbility(faults, file, def, spaces, schemas.effect);
+  for (const [namespace, entries] of namespaces) {
+    checkUnique(faults, namespace, entries);
   }
-
-  for (const { file, def } of abilities) {
-    checkAbility(faults, file, def, spaces, schemas.effect);
-  }
-
-  for (const { file, def } of statuses) {
-    checkStatus(faults, file, def, spaces, schemas.effect);
-  }
-
-  const statusDefs = new Map(
-    statuses.map((entry): [string, StatusDef] => [entry.def.id, entry.def]),
-  );
-
-  checkDisableMatrix(faults, registry.disableMatrix, statusDefs);
-
-  for (const { file, def } of enemies) {
-    checkUnitDef(faults, file, def, spaces, statusDefs);
-  }
-
-  for (const { file, def } of summons) {
-    checkUnitDef(faults, file, def, spaces, statusDefs);
-  }
-
-  for (const { file, def } of maps) {
-    checkCheckpoints(faults, file, def, registry.tuning);
-
-    for (let index = 0; index < def.packs.length; index += 1) {
-      const pack = def.packs[index];
-
-      if (pack === undefined) {
-        continue;
-      }
-
-      checkReference(
-        faults,
-        file,
-        `packs[${String(index)}].archetypeId`,
-        pack.archetypeId,
-        spaces.enemies,
-      );
-
-      if (pack.count < 1 || pack.count > ENEMY_LIVE_CAP) {
-        faults.push({
-          file,
-          path: `packs[${String(index)}].count`,
-          message: `expected a pack of 1 to ${String(ENEMY_LIVE_CAP)}, the live enemy cap`,
-        });
-      }
-    }
-  }
-
-  const idEntries = <T extends Readonly<{ id: string }>>(
-    entries: readonly Readonly<{ file: string; def: T }>[],
-  ): Readonly<{ file: string; id: string }>[] =>
-    entries.map((entry) => ({ file: entry.file, id: entry.def.id }));
-
-  checkUnique(faults, "a spell or ability", [
-    ...idEntries(spells),
-    ...idEntries(abilities),
-  ]);
-  checkUnique(faults, "a status", idEntries(statuses));
-  checkUnique(faults, "an enemy or summon", [
-    ...idEntries(enemies),
-    ...idEntries(summons),
-  ]);
-  checkUnique(faults, "a form", idEntries(forms));
-  checkUnique(faults, "a map", idEntries(maps));
-  checkUnique(
-    faults,
-    "an atlas frame",
-    frames.map((entry) => ({ file: entry.file, id: entry.def.name })),
-  );
 
   return faults;
 };
+
+/** Every fault in `registry`, or none when it is sound: every kind of the kind list, validated in its order. */
+export const validateRegistry = (registry: Registry): RegistryFault[] =>
+  validateRegistryOf(DEFINITION_KINDS, registry);
 
 /** One line per fault, for the error a refused registry throws. */
 export const describeRegistryFaults = (

@@ -2,7 +2,7 @@ import type { EntityId, Rect, Vec2 } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
-import type { DefinitionSlot } from "../definitions/definition-tuning";
+import type { DefinitionSlot } from "../definitions/definition-slot";
 import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";

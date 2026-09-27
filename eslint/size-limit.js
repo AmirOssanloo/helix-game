@@ -21,16 +21,12 @@ const MAP_DEFINITIONS = "src/content/maps/**/*.ts";
 export const OVER_THE_LIMIT = {
   "src/presentation/overlays/debug-overlays.ts":
     "every debug overlay in one file; splits into one file per overlay",
-  "src/domain/definitions/validate-registry.ts":
-    "one hand-sequenced validation over every definition kind; splits into one descriptor per kind",
   "src/domain/ai/machine.ts":
     "every AI state in one machine; splits into one file per state",
   "src/domain/movement/spatial-hash.ts":
     "the grid, its queries, and their scratch in one module; splits by query",
   "src/domain/public.ts":
     "the domain's door re-exports every module; shrinks when the door is narrowed",
-  "src/domain/definitions/definition-schemas.ts":
-    "every definition kind's schema in one file; folds into the per-kind descriptors",
 };
 
 export const sizeLimit = [

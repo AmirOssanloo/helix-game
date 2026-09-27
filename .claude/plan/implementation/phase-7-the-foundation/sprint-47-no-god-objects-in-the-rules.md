@@ -75,7 +75,7 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 | Layer | domain, content, tests, docs |
 | Size | 1.5 |
 | Depends on | P7-S45-T04 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a god object a feature must grow. P8-S31-T03 adds an item base, an affix, a rarity table, and a loot table, four kinds. At today's cost of about ten touch points each, that is some forty edits in one ticket:
 
@@ -111,6 +111,13 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
 > **Architect review, 2026-09-27:** "three files or fewer" was satisfiable by a test that builds a descriptor inline and injects it, touching one file. It now counts the files under `src/` a real kind needs, reached by the real route. The run-scope requirement stops at the definition copies and tuning slots, which keeps the descriptor from growing into a table framework (R37). Size unchanged.
+
+> **Note, 2026-09-27, at close:** five choices the Build did not settle.
+> - **The descriptors live under `domain/definitions/kinds/`,** one `*.kind.ts` per kind and the list in `kinds/index.ts`. The pieces several kinds share sit beside them in `domain/definitions/`: the shapes no table depends on (`common-schemas.ts`), the level table and effect schemas built for the orb cap (`level-schemas.ts`), the effect-list and unit checks (`effect-checks.ts`, `unit-checks.ts`), and the fault type, the check context, and the reference and frame checks (`registry-checks.ts`). `definition-schemas.ts` is gone; `validate-registry.ts` is 229 lines and walks the list.
+> - **Validation order is one list order, not three.** The gates (the tuning table and the hero) come first and stop validation on a fault, as before. The other kinds' schemas, their checks, and the duplicate-id namespaces then run in list order, so a registry with faults in several kinds lists them in a different order than before: the hero's threshold fault now comes after the schema faults, the disable matrix's schema faults before the checks, and the duplicate namespaces in the order their first kind is listed. Every fault's file, path, and message is unchanged, and every refusal test passes as it was.
+> - **A single kind's definition is named by its kind's word** in its tuning keys, which for the hero is `hero`, as before. The panel's folder title moved from the definitions group into each descriptor's tuning, since a table keyed by `DefinitionKind` in `devtools/` would have been a fourth file for a tunable kind.
+> - **A tuning slot holds its rebuild, made once at world creation.** `setDefinitionTunable` moved to `definition-slot.ts`, which does not import the list, so the command system does not load the descriptors. The content-change shape takes every untuned kind but the tuning table from the list, rather than naming the maps, the matrix, and the frames.
+> - **The toy kind's diff.** On a detached worktree of this change, a toy kind with a number and a status reference took `src/domain/definitions/kinds/toy.kind.ts` (new), one line in `kinds/index.ts` and its import, and one line in `src/content/index.ts` holding its one definition: three files under `src/`. It validated, refused a missing status, was keyed `def:toy:toy_one:strength` in a new world's tuning state and slots, and was listed by `definitionFields`. Outside `src/`, the test helper `makeRegistry` and a test fixture typed as `TunableDefinitions` needed the field too, as they list every kind; a kind that checks a frame adds its file to the architecture test's list of files that may.
 
 ---
 
@@ -200,12 +207,12 @@ Only what is decided is built. The build, if (a), is sized at 1 and is the bucke
 | Check | Result |
 | --- | --- |
 | A stat added from one key list | Yes, 2026-09-27 (T01): `tests/domain/entities/unit.spec.ts` adds a toy stat to the key list in the test alone and has it created, cleared, stored from a definition at spawn, derived from the base through the rows for its modifier stat and no others, and derived on a form from its attribute's worth; each sub-record is created and cleared in place, and a released slot keeps every sub-record object |
-| A toy kind in three files or fewer | |
+| A toy kind in three files or fewer | Yes, 2026-09-27 (T02): a toy kind on the real route touched three files under `src/`: its descriptor, the kind list, and the content index, the diff counted on a detached worktree and not kept. `tests/domain/definitions/toy-kind.spec.ts` validates, cross-references, and refuses a duplicate of a toy kind added to the list in the test, and has it copied, keyed into the tuning state and slots, and rebuilt by a tuning command |
 | No module-scope mutable state; interleaved worlds agree | |
 | The event record's decision | |
-| `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60 |
-| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it |
-| Actual days per ticket | T01: 0.5 of 1 |
+| `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60. T02: `src/domain/definitions/validate-registry.ts`, now 229 lines, and `src/domain/definitions/definition-schemas.ts`, removed; no descriptor file is over 210 |
+| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it. T02: all seven match with the content version stamp unchanged, nothing re-recorded; the change runs at validation and world creation, not in the tick |
+| Actual days per ticket | T01: 0.5 of 1. T02: 0.5 of 1.5 |
 | Sprint total | |
 
 ## Risks in this sprint

@@ -6,7 +6,7 @@ import { isDebugCommand } from "../commands/command";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
 import { isDefinitionKey } from "../definitions/definition-keys";
-import { setDefinitionTunable } from "../definitions/definition-tuning";
+import { setDefinitionTunable } from "../definitions/definition-slot";
 import { setTunable, validateTuning } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";

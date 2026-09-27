@@ -1,5 +1,6 @@
 import type { FolderApi } from "tweakpane";
 import type { DefinitionField, DefinitionKind } from "@domain/public";
+import { definitionKindTitle } from "@domain/public";
 import type { Binding } from "./bindings";
 import { onCommit } from "./bindings";
 import type { DevApi } from "./dev-api";
@@ -14,17 +15,6 @@ const ZERO_DEFAULT_RANGE = 10;
 
 /** Roughly this many steps across a slider; the step is the power of ten nearest below, so a typed round number lands exactly. */
 const STEPS = 400;
-
-/** Folder titles by kind, in the order the fields come. */
-const KIND_TITLES: Readonly<Record<DefinitionKind, string>> = {
-  hero: "Hero",
-  form: "Forms",
-  spell: "Spells",
-  ability: "Abilities",
-  status: "Statuses",
-  enemy: "Enemies",
-  summon: "Summons",
-};
 
 /**
  * What a slider is labelled inside its definition's folder: the field path, "level n" for a
@@ -128,7 +118,7 @@ export const definitionsGroup = (
     if (kindFolder === undefined) {
       kindFolder = folder.addFolder({
         expanded: false,
-        title: KIND_TITLES[field.kind],
+        title: definitionKindTitle(field.kind),
       });
       kinds.set(field.kind, kindFolder);
     }

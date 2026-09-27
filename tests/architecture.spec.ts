@@ -29,7 +29,15 @@ describePresentationFieldsUnread({
   fields: PRESENTATION_FIELDS,
   copiedInto: ["frame", "tint"],
   checkedIn: {
-    "src/domain/definitions/validate-registry.ts":
+    "src/domain/definitions/effect-checks.ts":
+      "checks each frame a definition names is one the atlas has",
+    "src/domain/definitions/kinds/form.kind.ts":
+      "checks each frame a definition names is one the atlas has",
+    "src/domain/definitions/kinds/hero.kind.ts":
+      "checks each frame a definition names is one the atlas has",
+    "src/domain/definitions/kinds/status.kind.ts":
+      "checks each frame a definition names is one the atlas has",
+    "src/domain/definitions/unit-checks.ts":
       "checks each frame a definition names is one the atlas has",
   },
 });

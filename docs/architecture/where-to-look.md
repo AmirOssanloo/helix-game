@@ -25,7 +25,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
 | Which unit each tunable is written in, and how it becomes a tick, a radian, or a per-tick rate | The tuning definition and the tuning state under `src/domain/definitions/` — the unit table and the one conversion |
-| Which definition numbers are tunable, their keys, and the unit each is read in | `definitionFields` over the registry, in `src/domain/definitions/definition-keys.ts`; content's exact key union is in `src/content/content-tuning-key.ts` |
+| Which definition numbers are tunable, their keys, and the unit each is read in | `definitionFields` over the registry, in `src/domain/definitions/definition-tuning.ts`; content's exact key union is in `src/content/content-tuning-key.ts` |
 | Which atlas frames exist | The frame list in `src/content/atlas-frames.ts` — one entry per frame; the bake and the views both read it |
 | Which named effects exist | `src/domain/abilities/effects/` — one file per effect, and the index that registers each under its key |
 | Which primitives the effect runner runs | `src/domain/abilities/primitives/` — the table, keyed by the kind an effect entry names |
@@ -36,7 +36,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a pack is placed, from the panel or a map, and when a map's pack wakes or sleeps | `src/domain/ai/packs.ts` — the one door a pack enters by, and the wake and sleep rule the AI pass ends with |
 | The walkability grid a unit is placed and paths on, what a map load resets, and when a checkpoint is reached | `src/domain/map/` — the grid and its radius classes, the map-scope reset, and the checkpoint rule |
 | How a unit attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
-| How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/` holds the schemas and the validator |
+| How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/validate-registry.ts` walks the kind list |
+| Which definition kinds exist, each one's schema, checks, and tuning | `src/domain/definitions/kinds/index.ts` — the kind list, one descriptor file per kind beside it |
 | How a content edit reaches a running session, and when it asks for a page reload | `src/app/content-reload.ts`, and the content-change rule under `src/domain/definitions/` |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |

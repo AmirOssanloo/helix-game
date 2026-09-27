@@ -139,7 +139,6 @@ export {
 export {
   type DefinitionField,
   definitionFieldUnit,
-  definitionFields,
   type DefinitionKey,
   definitionKeyOf,
   type DefinitionKeysOf,
@@ -148,25 +147,25 @@ export {
   isDefinitionKey,
   type TunableDefinitions,
 } from "./definitions/definition-keys";
+export type { AnyKind, ListKind } from "./definitions/definition-kind";
 export {
-  copyTunableDefinitions,
-  createDefinitionSlots,
   type DefinitionSlot,
   setDefinitionTunable,
+} from "./definitions/definition-slot";
+export {
+  copyTunableDefinitions,
+  copyTunableDefinitionsOf,
+  createDefinitionSlots,
+  createDefinitionSlotsOf,
+  definitionFields,
+  definitionKindTitle,
 } from "./definitions/definition-tuning";
+export { DEFINITION_KINDS } from "./definitions/kinds/index";
 export type {
   AtlasFrameDef,
   AtlasFrameList,
   AtlasShape,
 } from "./definitions/atlas-frame-def";
-export {
-  atlasFrameSchema,
-  createLevelledSchemas,
-  heroSchema,
-  type LevelledSchemas,
-  mapSchema,
-  tuningSchema,
-} from "./definitions/definition-schemas";
 export {
   type ApplyStatusEffectDef,
   DAMAGE_RATES,
@@ -249,6 +248,7 @@ export {
   SLOT_COLUMNS,
 } from "./definitions/disable-matrix-def";
 export type { Registry } from "./definitions/registry";
+export { checkReference } from "./definitions/registry-checks";
 export {
   arrayOf,
   arrayOfLength,
@@ -323,12 +323,13 @@ export {
   type TuningValidation,
   validateTuning,
 } from "./definitions/tuning-state";
+export type { RegistryFault } from "./definitions/registry-checks";
+export { MAX_CARRIED_STATUSES } from "./definitions/unit-checks";
 export {
   assertRegistryValid,
   describeRegistryFaults,
-  MAX_CARRIED_STATUSES,
-  type RegistryFault,
   validateRegistry,
+  validateRegistryOf,
 } from "./definitions/validate-registry";
 export {
   createEffectPool,
