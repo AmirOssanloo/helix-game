@@ -194,7 +194,7 @@ export const startsHalt = (
   if (
     unitId === null ||
     tuning.haltTicks <= 0 ||
-    keyedDraw(world, unitId, DRAW_PURPOSE.chaseHalt) >=
+    keyedDraw(world, unitId, DRAW_PURPOSE.chaseHalt, 0) >=
       tuning.haltChance * KEYED_DRAW_RANGE
   ) {
     return false;
@@ -202,7 +202,7 @@ export const startsHalt = (
 
   const shortest = Math.ceil(tuning.haltTicks * SHORTEST_HALT_SHARE);
   const lengths = tuning.haltTicks - shortest + 1;
-  const drawn = keyedDraw(world, unitId, DRAW_PURPOSE.chaseHaltLength);
+  const drawn = keyedDraw(world, unitId, DRAW_PURPOSE.chaseHaltLength, 0);
 
   unit.ai.haltUntilTick =
     world.tick + shortest + Math.floor((drawn * lengths) / KEYED_DRAW_RANGE);

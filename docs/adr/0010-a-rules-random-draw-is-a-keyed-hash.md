@@ -5,7 +5,7 @@
 | Field             | Value                                                                   |
 | ----------------- | ----------------------------------------------------------------------- |
 | **Status**        | Accepted                                                                |
-| **Date**          | 2026-09-26                                                              |
+| **Date**          | 2026-09-26, amended 2026-09-27                                          |
 | **Deciders**      | The engineering architect, on the maintainer's delegation of 2026-09-26 |
 | **Supersedes**    | None                                                                    |
 | **Superseded by** | None                                                                    |
@@ -20,11 +20,24 @@ The engineer writing that rule feels it first. The next one feels it more: a cri
 
 ## Decision
 
-**A rule under `domain/` draws a random number as a pure hash of the run's seed, an integer key, the tick, and a draw purpose.** The mixer is an integer hash in `shared/`, which knows nothing of the game. The keyed draw in `domain/random/` reads the seed from run scope and takes the key, the current tick, and a purpose from the one purpose list beside it, and returns an integer in [0, 2^24). It reads nothing else, writes nothing, and allocates nothing; the result stays below the engine's small-integer bound, so it is never boxed. A per-unit draw keys on the unit's generational id. A site that draws twice for one key on one tick takes two purposes. The caller turns the integer into a chance or a range with local arithmetic.
+**A rule under `domain/` draws a random number as a pure hash of the run's seed, an integer key, the tick, and a draw purpose.** The mixer is an integer hash in `shared/`, which knows nothing of the game. The keyed draw in `domain/random/` reads the seed from run scope and takes the key, the current tick, and a purpose from the one purpose list beside it, and returns an integer in [0, 2^24). It reads nothing else, writes nothing, and allocates nothing; the result stays below the engine's small-integer bound, so it is never boxed. A per-unit draw keys on the unit's generational id. The caller turns the integer into a chance or a range with local arithmetic.
+
+**A site that draws several numbers of one kind for one key on one tick passes a draw index.** A drop's affixes, or a store's stock, take one purpose and count the index up from 0. The index folds into the hash's purpose word as `purpose + index × stride`, with every purpose below the stride, checked when the module loads, and the index below a stated limit, checked by a development assert. Index 0 is the purpose alone, the same hash call a draw with no index would make, so a site that draws one number passes 0 and no recorded log moves when a purpose gains indices. Two numbers of different kinds, such as a drop's count and its rarity, still take two purposes.
 
 ```typescript
 // domain: a per-unit chance, drawn at the rule's own moment
-if (keyedDraw(world, unitId, DRAW_PURPOSE.fooHalt) < fooChance * KEYED_DRAW_RANGE) { /* … */ }
+if (
+  keyedDraw(world, unitId, DRAW_PURPOSE.fooHalt, 0) <
+  fooChance * KEYED_DRAW_RANGE
+) {
+  /* … */
+}
+
+// domain: many numbers of one kind at one key and tick, one index each
+for (let index = 0; index < fooCount; index += 1) {
+  const drawn = keyedDraw(world, barId, DRAW_PURPOSE.fooAffix, index);
+  // …
+}
 ```
 
 The sequential source stays in the simulation, for orchestration that draws in sequence outside the systems. A system never advances it.
@@ -39,9 +52,13 @@ The sequential source stays in the simulation, for orchestration that draws in s
 
 **Drawing changes no state.** Run scope is untouched by a draw, so a rule that draws at a chance of zero leaves the world identical, to the bit, to one that does not draw.
 
+**A multi-number roll stays readable.** A loot roll that draws a dozen affixes names one purpose and a dozen indices, not a dozen purposes.
+
 ### What this makes hard
 
-**The purpose list is shared by every rule that draws.** It is one list so a clash is visible, and a test asserts the values are distinct, but two sites that reuse one purpose for one key on one tick draw the same number, and nothing but review catches that.
+**The purpose list is shared by every rule that draws.** It is one list so a clash is visible, and a test asserts the values are distinct and below the stride, but two sites that reuse one purpose and one index for one key on one tick draw the same number, and nothing but review catches that.
+
+**The purpose word is finite.** Every purpose stays below the stride and every index below its limit, so the list and the longest roll share one budget: 256 purposes, 1,024 indices each. A purpose or an index past either fails at module load or in a development assert, not silently.
 
 **The draw is a hash, not a tested generator.** It is good enough for chances and lengths. It has 24 bits of resolution, so a chance smaller than one in sixteen million reads as zero, and it has not been tested for the long-run statistics a generator has.
 
@@ -55,11 +72,13 @@ The sequential source stays in the simulation, for orchestration that draws in s
 
 **The simulation hands the draw down.** Either it pre-draws a number per unit per tick into a buffer on the world, or it puts a draw function on the world. The buffer costs a draw per unit per tick whether any rule reads it, and a buffer sized to the pool. A function on the world breaks the rule that world state is plain data, and hides a port inside every rule that reads it.
 
+**For a multi-number draw, a fifth hash argument or the index mixed into the key.** Either would count the index apart from the purpose, but both change the hash every existing draw runs, so every recorded log would move with it. Folding the index into the purpose word leaves index 0 the same call it always was.
+
 **A sequential state per unit, seeded at spawn from the seed and the id.** Order-independent across units, and a real generator. It lost because it adds a field to every unit record and to the map-scope reset, and two purposes on one unit still share one sequence, so the ordering problem returns inside the unit. The hash carries no state at all.
 
 ## Revisit when
 
-- A rule draws many numbers for one key on one tick, such as a loot table rolling a dozen entries, and a purpose per draw becomes a list nobody can read. Then the keyed draw seeds a local sequence and the purpose names the sequence.
+- A rule draws more numbers of one kind for one key on one tick than the index limit allows, or the purpose list outgrows the stride. Then the stride and the limit are raised together, which moves no draw at index 0, or the keyed draw seeds a local sequence and the purpose names the sequence.
 - A test or a playtest shows the draw's distribution is visibly off: streaks, or two purposes that move together.
 - A map generator arrives and wants the same shape, keyed on a room or a region. If it does, the sequential source has no consumer left and is retired.
 

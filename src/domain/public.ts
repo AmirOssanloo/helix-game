@@ -632,10 +632,12 @@ export {
   spendSkillPoint,
 } from "./stats/levels";
 export {
+  DRAW_INDEX_LIMIT,
   DRAW_PURPOSE,
   type DrawPurpose,
   KEYED_DRAW_RANGE,
   keyedDraw,
+  PURPOSE_STRIDE,
 } from "./random/keyed-draw";
 export type { ModifierTable } from "./stats/modifiers";
 export {
