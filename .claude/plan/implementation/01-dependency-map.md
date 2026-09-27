@@ -33,6 +33,12 @@ toolchain and layers (S00)
                                       → enemies home while the hero is dead, checkpoint jump and marker, feedback file, replace-a-spell (S27)
                                         → the long road, obstacle views by camera, the cap on the road (S28)
                                           → the maintainer's playtest, triage, bucket (S29) → bucket, gate (S30)  ══ phase 6 gate
+                                            → restamp, full-state comparison and checksum, lint and type holes, exhaustiveness (S45)
+                                              → stats for every unit, the modifier table, orders by the state machine, presentation stops deciding (S46)
+                                                → unit sub-records, registry descriptors, AI split and world scratch, the event record's decision (S47)
+                                                  → overlays split and gated, view syncers, branded ids, two decision records, the draw index (S48)
+                                                    → narrow doors, the map change as a command (S49)
+                                                      → the capture layer and pause screen, docs, bucket, gate (S50)  ══ phase 7 gate
                                             → the long road at Diablo II density, a level on every map, the crowd's push at 0.1 (S39, run first)
                                             → checkpoint reach at 256, item catalogue, the architect's placement and first-screen decision, item schema (S31)
                                               → ground item kind and pool, loot on death on a draw of its own, item level from the map level, font (S32)
@@ -41,8 +47,8 @@ toolchain and layers (S00)
                                                     → armory as a modifier source with magic damage %, the first screen, the inventory and armory screen (S34)
                                                       → rarity and affixes, the bases, moving an item on the grid (S35)
                                                         → tooltips, the store and its screen, panel loot controls (S36)
-                                                          → drop-rate balance, the maintainer's playtest, bucket (S37) → docs, gate (S38)  ══ phase 7 gate
-                                                            → the active-item bank and keys, the disable column, the eight actives (S41–S44, sketched)  ══ phase 8 gate
+                                                          → drop-rate balance, the maintainer's playtest, bucket (S37) → docs, gate (S38)  ══ phase 8 gate
+                                                            → the active-item bank and keys, the disable column, the eight actives (S41–S44, sketched)  ══ phase 9 gate
                                                               → the descent: about a hundred generated levels, a bet of its own
 ```
 
@@ -88,6 +94,27 @@ toolchain and layers (S00)
 | Enemies going home while the hero is dead (S27) precedes the playtest (S29) | Without it every chaser paths the length of the map to the respawn point after a death, which is R4's cost at once and a crowd waiting at the checkpoint |
 | Every playtest tool (S27) and the map (S28) precede the playtest (S29) | The maintainer plays once, thoroughly; a tool missing on that day is feedback lost |
 | The triage (S29) precedes every bucket ticket (S29, S30) | Tickets are sized after the notes are read, not before |
+| The safety net (S45) precedes every other phase 7 ticket | A refactor is judged by the full-state comparison and the checksum; one done before them is a refactor nobody can prove left behaviour alone |
+| Stats for every unit and the modifier table (S46) precede the unit's sub-records (S47) | The sub-records and the one stat key list are cut around the table's final shape; cut first, they are cut twice |
+| The unit's sub-records (S47) precede branded ids (S48) | The ids are branded on the fields the sub-records hold |
+| Module-level state moved to world scratch (S47) and branded ids (S48) precede the narrow doors (S49) | The doors export the scratch-taking signatures and the branded types; narrowed first, they are narrowed twice |
+| The first-screen decision record (S48) precedes the capture layer (S50) | Phaser or DOM decides what the layer claims across |
+| The phase 7 gate precedes phase 8, sprint 39 first | The maintainer's decision of 2026-09-27: loot lands on a foundation it does not have to reshape as it grows. Sprint 39's re-stamps and re-recordings are the first to run through `pnpm restamp` and the checksum |
+| `pnpm restamp` and the narrow stamp (P7-S45-T01) precede every loot re-stamp, and P8-S32-T04 above all | The narrowed stamp is what lets the atlas grow without re-stamping; every re-stamp in phase 8 is the script's |
+| The full-state comparison (P7-S45-T02) precedes P8-S32-T02 and P8-S35-T01 | Their proof that loot never moves a fight is that comparison with the tables on and emptied, extended to ground items, the inventory, and gold |
+| The modifier table (P7-S46-T02), stats for every unit (P7-S46-T01), the one stat key list (P7-S47-T01), and the item-placement record (P7-S48-T04 (a)) precede P8-S34-T01 | The armory's rows go where record (a) puts them, a run-scope table or every unit's table with a source identity, and P8-S34-T01 builds that; magic damage % is one more key and the attacker-side read (architect review, 2026-09-27) |
+| The checksum's canonical sequence (P7-S45-T02) precedes the unit's regrouping (P7-S47-T01) and the order's tagged target (P7-S48-T03), and the walk goal named apart from the target (P7-S46-T03) precedes the tagged target | Each layout change updates the checksum's accessors and keeps its sequence, since a layout change that moved a stored checksum would be indistinguishable from a behaviour change; and no tag has to hold both a unit and a point (architect review, 2026-09-27) |
+| The syncer list (P7-S48-T02) precedes the overlay split and gate (P7-S48-T01) | The overlays are gated by being registered on the list only in the panel build (architect review, 2026-09-27) |
+| The map change as a command and the session's move (P7-S49-T02) precede the narrow doors (P7-S49-T01) | The simulation's door is narrowed once, around the session it ends with (architect review, 2026-09-27) |
+| The registry descriptors (P7-S47-T02) precede P8-S31-T03 | Four item kinds at three files each, rather than about forty edits |
+| The event record's decision (P7-S47-T04) precedes P8-S31-T02 and P8-S32-T02 | The architect places loot's events on the record as decided |
+| Shared quad runs, pool sizes in one place, and view syncers (P7-S48-T01, T02) precede P8-S33-T03 | Ground views and labels register as syncers and draw from the shared pool |
+| Branded ids and the tagged order target (P7-S48-T03) precede P8-S32-T01 and P8-S40-T01 | A ground item has its own brand, and `pick_up`'s target can never resolve as a unit |
+| The two decision records (P7-S48-T04) precede P8-S31-T02, P8-S33-T01, and phase 9's sprint 41 | Where items live and item identity, including what phase 9's item cooldowns need, and the first screen, are decided before placement builds on them |
+| The draw index (P7-S48-T05) precedes P8-S32-T02, P8-S35-T01, and P8-S36-T02 | A drop, its affixes, and a store's stock draw many numbers at one key |
+| The narrow doors (P7-S49-T01) precede every loot screen (S34, S36) | A screen reads items through the queries door and cannot reach a mutator |
+| The map change as a command (P7-S49-T02) precedes P8-S33-T01 | The run-scope inventory survives a map change only once the production path keeps run scope |
+| The capture layer (P7-S50-T01) precedes P8-S34-T02 | The inventory's frame is the layer's second consumer |
 | The long road at Diablo II density (S39) precedes the catalogue (S31) and every loot ticket | The catalogue's economy, the three Legendary bosses, the map level an item level reads, and the balance are all the new road's; tuned on the old road they would be tuned twice |
 | A level on every map (S39) precedes item level (S32) | An item's level is its map's level (Q89) |
 | The crowd's push at 0.1 (S39) precedes the loot tickets' re-stamps | It records the crowd logs again; every later content-version move re-stamps on top of it |
@@ -106,7 +133,7 @@ toolchain and layers (S00)
 | The catalogue's approval (S31) precedes the bases (S35) | Twenty bases are typed from the approved page |
 | Rarity (S35) precedes the store (S36) | A price is a base's value by its rarity's multiplier |
 | Every loot ticket (S39, S31–S36, S40) precedes the balance (S37), and the balance precedes the playtest (S37) | The maintainer plays once, thoroughly, on rates already tuned headless on the new road |
-| Phase 7's gate precedes phase 8 | An active item is a Legendary item: it drops, sits in the inventory, sells, and is worn through what phase 7 builds |
+| Phase 8's gate precedes phase 9 | An active item is bought in the store, sits in the inventory, and is equipped through what phase 8 builds. Corrected 2026-09-27: it read "a Legendary item: it drops", which Q84's answer overturned |
 
 ---
 
@@ -122,6 +149,7 @@ Only relevant if a second engineer appears. With one engineer the order above is
 | AI, death, and experience (S12, S13) | The isometric view (S23, S24) | Sprint 12 |
 | Enemy abilities (S19) | Roster definitions and catalogue (S21) | Sprint 19 |
 | Map choice, checkpoints, sleeping packs (S26) | The feedback file and obstacle views by camera (S27, S28) | Sprint 26 |
+| Rules and god objects in the domain (S46, S47) | The overlays, view syncers, and the capture layer (S48, S50, presentation) | Sprint 46, once sprint 45's net holds |
 | Loot, inventory, armory stats, rarity, the store's rules (S32–S36, domain) | The font, ground views and labels, the first screen, the inventory, tooltips, the store's screen (S32–S36, presentation) | Sprint 32, once the architect's decision holds |
 
 A second engineer does not shorten phase 0, phase 4, or any gate sprint.
@@ -139,5 +167,7 @@ A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 - **The obstacle views do not depend on the map.** Binding by the camera is tested on a fixture with more obstacles than the pool.
 - **Loot does not depend on the descent.** Drops, pickup, and the store run on the long road; each generated level, when it comes, is one more map with packs and a level.
 - **The store does not depend on a town.** It is a rule on a checkpoint the map already has.
-- **Phase 7 does not depend on the Kit fix.** Nothing it builds is cast from a key; phase 8's bank beside the kit is how that phase avoids it too, and its architect ticket says if it cannot.
+- **Phase 8 does not depend on the Kit fix.** Nothing it builds is cast from a key; phase 9's bank beside the kit is how that phase avoids it too, and its architect ticket says if it cannot.
+- **Loot does not depend on an ECS, packages, or behaviour trees.** Phase 7 fixes what loot grows and stops there; each of those is a Deferred row behind its own door.
+- **The descent's generator does not depend on phase 7.** The map change as a command is all the descent needs from it now; the generator's port is the descent's.
 - **Rarity does not depend on the bases.** Affixes are rolled and tested on the fixture bases; the twenty real ones come after, from the approved page.

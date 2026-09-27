@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; phase 7 in sprint files and phase 8 sketched, added 2026-09-26, phase 7 re-cut 2026-09-27
+**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; loot and the store in sprint files and active items sketched, added 2026-09-26, loot re-cut 2026-09-27; phase 7, the foundation, inserted before loot on 2026-09-27 in sprint files, which renumbered loot to phase 8 and active items to phase 9
 **Status of this document:** a dated plan. It captures a moment. The `docs/` pages describe the target; this folder describes the order and cost of reaching it.
 
 ---
@@ -106,8 +106,9 @@ implementation/
 ├── phase-4-combat-feel-and-tuning/    # Sprints 16–18
 ├── phase-5-full-enemy-roster/         # Sprints 19–22
 ├── phase-6-the-long-road/             # Sprints 25–30
-├── phase-7-loot-and-the-store/        # Sprints 31–38, with 39 run first and 40 run after 33
-├── phase-8-active-items/              # Sprints 41–44, sketched in its README until phase 7's gate holds
+├── phase-7-the-foundation/            # Sprints 45–50, run before phase 8
+├── phase-8-loot-and-the-store/        # Sprints 31–38, with 39 run first and 40 run after 33
+├── phase-9-active-items/              # Sprints 41–44, sketched in its README until phase 8's gate holds
 └── backlog/
     ├── deferred.md                    # Cut items, the phase they were cut from, the door they wait behind, and those a phase has taken
     └── open-questions.md              # Decisions still needed, each with a proposed answer

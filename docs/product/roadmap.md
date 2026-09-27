@@ -4,7 +4,7 @@
 
 What arrives when. This is the one page in the documentation that says "phase"; every other page describes the finished target, and this one says the order we reach it in.
 
-Eight phases: the first five played on [the arena](./features/map-and-camera.md#the-arena), the sixth to the eighth on the long road, a hand-authored map for playtesting. The game's structure after them is Diablo I's: a descent through generated levels. Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
+Nine phases: the first five played on [the arena](./features/map-and-camera.md#the-arena), the sixth to the ninth on the long road, a hand-authored map for playtesting. The seventh adds almost nothing a player sees; it readies the game for items. The game's structure after them is Diablo I's: a descent through generated levels. Each phase ends with a playable build, domain tests green, and a frame-time check against [the bar](#the-bar-every-phase-is-held-to). A phase does not close on a promise to fix performance later.
 
 ---
 
@@ -92,7 +92,20 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 
 **Done when** the hero can walk the long road from level 1 and reach about level 10, every pack on it places, live enemies never pass the cap and no pack is refused unseen, a crowd no longer carries the hero out of a choke, a recorded playtest replays identically, and the maintainer has played the road and filed feedback.
 
-## Phase 7: loot and the store
+## Phase 7: the foundation
+
+**Goal:** the game is ready to grow items, a store, and screens without anything already built bending under them, and it plays exactly as before.
+
+- Every recorded session replays to the same state at every tick, checked against a fingerprint of the whole world, so a change that means to alter nothing is proved to alter nothing.
+- The rules that keep the game deterministic and its layers apart are enforced in full, not only in their most common form.
+- Each rule is decided in one place: stats for every unit from the same modifiers, orders changed only by the order machine, and the targeting preview and the HUD asking the rules rather than guessing.
+- No part of the game that items, loot, or the store must extend is a single oversized module. A new kind of definition costs a handful of files, not a dozen edits.
+- The seams items need are in place: modifiers that know their source, ids that cannot be mistaken for another kind of thing, many random draws at one moment, and a map change that keeps the hero's run.
+- A pause screen on Esc, the first screen of the game, whose clicks and keys never reach the world beneath.
+
+**Done when** every recorded session replays unchanged against its fingerprint, the checks all pass with no oversized module left unexplained, a new kind of definition is added in three files or fewer, every problem found in the review before the phase is fixed or deferred with a reason, and the frame budget holds as before.
+
+## Phase 8: loot and the store
 
 **Goal:** enemies on the long road drop what the hero needs, so the road is finished without the developer panel's heal and mana.
 
@@ -105,7 +118,7 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 
 **Done when** the hero walks the long road from level 1 to the last boss's kill with no heal or mana from the panel, every kind of drop appears and is taken, gold and globes by walking and items by a right click, a worn item changes the hero's derived stats, the store buys and sells at a checkpoint, a recorded session with loot replays identically, the frame budget holds with drops on the ground, and the maintainer has played it and filed feedback.
 
-## Phase 8: active items
+## Phase 9: active items
 
 **Goal:** items the hero uses, each an ability cast through the same pipeline as a spell.
 
@@ -117,7 +130,7 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 
 ---
 
-## Beyond phase 8
+## Beyond phase 9
 
 **The descent**, first: about a hundred generated levels in Diablo I's style, each its own map reached by stairs down, with a checkpoint at each level's start. The difficulty rises with depth through deeper and different enemy types, tiers, and density, never through scaling an enemy's stats by level; a level's number drives only its loot. Then a town with vendors, difficulty tiers, isometric sprite art with animation, audio, and a save system. This list is a direction, not a commitment. The intent is a game as rich as the classic loot-driven action RPGs.
 
@@ -147,7 +160,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 | [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
 | The long road | Its regions, packs, checkpoints, and experience budget | Phase 6 |
-| Item catalogue | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 7 and 8 |
+| Item catalogue | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 8 and 9 |
 
 ---
 
@@ -163,7 +176,7 @@ The brief raised 47 questions. Four went to discussion and became decision recor
 | Repository layout | Single package, one `src/` with eight layers, enforced by lint and an architecture test | [ADR 0003](../adr/0003-layered-single-package-architecture.md), [Architecture](../architecture/README.md) |
 | How state changes | All mutation, including developer-panel operations, enters as commands | [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) |
 | How content names behaviour | Definitions reference effects and behaviours by string key | [ADR 0005](../adr/0005-content-references-by-string-key.md) |
-| Phase numbering | Eight phases, with phase 4 as combat feel and tuning, phase 6 as the long road, phase 7 as loot and the store, and phase 8 as active items | This page |
+| Phase numbering | Nine phases, with phase 4 as combat feel and tuning, phase 6 as the long road, phase 7 as the foundation, phase 8 as loot and the store, and phase 9 as active items | This page |
 | Working title | Helix | [Product overview](./overview.md) |
 
 ---

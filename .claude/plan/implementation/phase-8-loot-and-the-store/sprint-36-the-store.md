@@ -1,6 +1,6 @@
 # Sprint 36 — The store
 
-**Phase:** 7 · **Sized days:** 4 · **Buffer:** 1
+**Phase:** 8 · **Sized days:** 4 · **Buffer:** 1
 
 ## Goal
 
@@ -14,13 +14,13 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 ## Tickets
 
-### P7-S36-T01 — Tooltips
+### P8-S36-T01 — Tooltips
 
 | Field | Value |
 | --- | --- |
 | Layer | presentation, tests, docs |
 | Size | 1 |
-| Depends on | P7-S34-T03, P7-S35-T01 |
+| Depends on | P8-S34-T03, P8-S35-T01 |
 | Status | planned |
 
 **Build:** the pointer over an item on a screen, or over a ground label, shows its tooltip: name in its rarity's tint, rarity, base, item level, level requirement (marked when above the hero's level), the implicit stat, each affix line, and, while the store is open, its price or sell price. Every line is read from the item instance and its definitions; the tooltip sums nothing. No comparison with the worn item (Deferred). The Deferred row "Tooltips" moves to built for items.
@@ -37,18 +37,18 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 ---
 
-### P7-S36-T02 — The store: stock, buy, and sell at a checkpoint
+### P8-S36-T02 — The store: stock, buy, and sell at a checkpoint
 
 | Field | Value |
 | --- | --- |
 | Layer | domain, simulation, content, tests, docs |
 | Size | 1 |
-| Depends on | P7-S33-T01, P7-S35-T01, P7-S31-T04 |
+| Depends on | P8-S33-T01, P8-S35-T01, P8-S31-T04 |
 | Status | planned |
 
 > **Note, 2026-09-27:** Q90 answered as proposed, made a basic Diablo II store: the stock is at the hero's level when the store first opens, as Diablo II's vendors stock (Q89), not at the region's; each stocked base sits in the tab the catalogue gives it. Six logs, not seven.
 
-**Build:** `open_store` is taken only while the hero stands alive within a checkpoint's reach radius, 256 since Q60's answer; on the first opening at that checkpoint it rolls the stock on the keyed draw of the checkpoint (Q90), at an item level of the hero's level on that tick, 12 items from Common to Rare, each in its tab, Armour, Weapons, or Misc, held in map scope and never restocked. `buy_item` takes the price in gold and moves the item into the inventory where it fits by its size (Q88, edited 2026-09-27); `sell_item` gives the sell price and the item is gone. `close_store`, and the store closes itself when the hero leaves the ring or dies. No active item is stocked in this phase. Each is a command under ADR 0004 with named refusals: not on a ring, not enough gold, no place the item fits, the store closed. The world keeps running while the store is open (Q90). The disable matrix's armory column from P7-S33-T01 covers the store commands. The content version moves; the six logs are re-stamped.
+**Build:** `open_store` is taken only while the hero stands alive within a checkpoint's reach radius, 256 since Q60's answer; on the first opening at that checkpoint it rolls the stock on the keyed draw of the checkpoint (Q90), at an item level of the hero's level on that tick, 12 items from Common to Rare, each in its tab, Armour, Weapons, or Misc, held in map scope and never restocked. `buy_item` takes the price in gold and moves the item into the inventory where it fits by its size (Q88, edited 2026-09-27); `sell_item` gives the sell price and the item is gone. `close_store`, and the store closes itself when the hero leaves the ring or dies. No active item is stocked in this phase. Each is a command under ADR 0004 with named refusals: not on a ring, not enough gold, no place the item fits, the store closed. The world keeps running while the store is open (Q90). The disable matrix's armory column from P8-S33-T01 covers the store commands. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
 **Acceptance:**
 - The same seed, checkpoint, and hero level stock the same items, at the hero's level; a second opening shows what the first left, whatever the hero's level is by then.
@@ -63,18 +63,18 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 ---
 
-### P7-S36-T03 — The store screen, opened from the checkpoint ring
+### P8-S36-T03 — The store screen, opened from the checkpoint ring
 
 | Field | Value |
 | --- | --- |
 | Layer | presentation, tests, docs |
 | Size | 1.5 |
-| Depends on | T02, P7-S34-T03, T01 |
+| Depends on | T02, P8-S34-T03, T01 |
 | Status | planned |
 
 > **Note, 2026-09-27:** Q90 answered: as close to a basic Diablo II store as possible, with three tabs, a grid, and prices on hover. The tabs are three views of one grid, so the size stays 1.5.
 
-**Build:** a left click on the checkpoint ring the hero stands in sends `open_store` instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory, as a Diablo II vendor's does: three tabs, **Armour**, **Weapons**, and **Misc**, the last empty until phase 8 lists the active items in it; each tab a grid of item icons in their rarity's tint; the price shown on hover in the item's tooltip (T01); gold shown. A left click on a tab shows it and sends nothing. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
+**Build:** a left click on the checkpoint ring the hero stands in sends `open_store` instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory, as a Diablo II vendor's does: three tabs, **Armour**, **Weapons**, and **Misc**, the last empty until phase 9 lists the active items in it; each tab a grid of item icons in their rarity's tint; the price shown on hover in the item's tooltip (T01); gold shown. A left click on a tab shows it and sends nothing. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
 
 **Acceptance:**
 - A click on the ring the hero stands in opens the store; the same click one unit outside the ring does not.
@@ -89,13 +89,13 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 ---
 
-### P7-S36-T04 — Panel controls: grant an item, grant gold, preview a loot table
+### P8-S36-T04 — Panel controls: grant an item, grant gold, preview a loot table
 
 | Field | Value |
 | --- | --- |
 | Layer | domain, simulation, devtools, tests, docs |
 | Size | 0.5 |
-| Depends on | P7-S35-T03, T02 |
+| Depends on | P8-S35-T03, T02 |
 | Status | planned |
 
 **Build:** a **Loot** group in the panel. **Grant item**: a base, a rarity, and an item level, sent as the `grant_item` debug command, rolled on its own key and put in the inventory where it fits. **Grant gold**: an amount, as `grant_gold`. **Preview loot table**: an enemy tier and a count, rolling the table that many times on scratch keys outside the world and showing the counts by kind and rarity; it changes nothing, so it sends no command. The [developer panel](../../../../docs/product/features/developer-panel.md) page lists the controls and the debug commands.

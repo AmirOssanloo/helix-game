@@ -1,20 +1,20 @@
 # Sprint 38 — The docs and the phase gate
 
-**Phase:** 7 · **Sized days:** 1.5 · **Buffer:** 1
+**Phase:** 8 · **Sized days:** 1.5 · **Buffer:** 1
 
 ## Goal
 
-The docs match the build, and the phase 7 gate is walked with numbers.
+The docs match the build, and the phase 8 gate is walked with numbers.
 
 ## Playable outcome
 
-The long road with loot and the store, as the maintainer's feedback left it. Milestone M12.
+The long road with loot and the store, as the maintainer's feedback left it. Milestone M13.
 
 ---
 
 ## Tickets
 
-### P7-S38-T01 — The phase gate
+### P8-S38-T01 — The phase gate
 
 | Field | Value |
 | --- | --- |
@@ -23,7 +23,7 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 | Depends on | every bucket ticket, T02 |
 | Status | planned |
 
-**Build:** walk every row of the [phase 7 gate](../04-phase-exit-gates.md#phase-7-gate) with its evidence: the maintainer's session and the balance walk, every drop kind picked up, the armory's stats, the store's commands, the replays, the combat stream unmoved by loot, the long-road stress case with the ground-item pool full, and the bar at the densest choke with drops on the ground. Every row of the bar is an agent's, headless or in Chrome on the development machine through browser automation, the render benchmark included, written as figures; no other browser or machine is measured (standing instruction of 2026-09-27, which edited this line). Replay tests for gate bugs. The exit record and sized versus actual in the [phase README](./README.md#exit-record), with the bucket's spent and unspent days.
+**Build:** walk every row of the [phase 8 gate](../04-phase-exit-gates.md#phase-8-gate) with its evidence: the maintainer's session and the balance walk, every drop kind picked up, the armory's stats, the store's commands, the replays, the combat stream unmoved by loot, the long-road stress case with the ground-item pool full, and the bar at the densest choke with drops on the ground. Every row of the bar is an agent's, headless or in Chrome on the development machine through browser automation, the render benchmark included, written as figures; no other browser or machine is measured (standing instruction of 2026-09-27, which edited this line). Replay tests for gate bugs. The exit record and sized versus actual in the [phase README](./README.md#exit-record), with the bucket's spent and unspent days.
 
 **Acceptance:**
 - Every gate row holds with evidence, or the phase does not close.
@@ -37,7 +37,7 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 
 ---
 
-### P7-S38-T02 — Documentation sync
+### P8-S38-T02 — Documentation sync
 
 | Field | Value |
 | --- | --- |
@@ -62,6 +62,6 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 | Check | Result |
 | --- | --- |
 | The gate walk | |
-| Milestone M12 | |
+| Milestone M13 | |
 | Actual days per ticket | |
 | Sprint total | |

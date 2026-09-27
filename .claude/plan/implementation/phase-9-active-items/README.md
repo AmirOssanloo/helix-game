@@ -1,9 +1,9 @@
-# Phase 8 — Active items
+# Phase 9 — Active items
 
-**Sprints:** 41–44, sketched; moved on 2026-09-27 from 39–42, then 40–43, as phase 7's re-cuts took 39 and 40 · **Sized days:** 14.5, sketched · **Gate:** [Phase 8 gate](../04-phase-exit-gates.md#phase-8-gate), an outline
-**Written:** 2026-09-26 · **Author:** delivery strategist role, from the maintainer's decisions of 2026-09-26
+**Sprints:** 41–44, sketched; moved on 2026-09-27 from 39–42, then 40–43, as phase 8's re-cuts took 39 and 40 · **Sized days:** 14.5, sketched · **Gate:** [Phase 9 gate](../04-phase-exit-gates.md#phase-9-gate), an outline
+**Written:** 2026-09-26 · **Author:** delivery strategist role, from the maintainer's decisions of 2026-09-26 · **Renumbered:** from phase 8 to phase 9 on 2026-09-27, when the maintainer inserted [phase 7, the foundation](../phase-7-the-foundation/README.md); its sprint numbers did not move
 
-**Status of this page:** a sketch. The sprint files are written when phase 7's gate holds, from what its triage found; ticket IDs are assigned then, so none is reserved here. The sizes below are the plan's first estimate and may move when the sprints are cut.
+**Status of this page:** a sketch. The sprint files are written when phase 8's gate holds, from what its triage found; ticket IDs are assigned then, so none is reserved here. The sizes below are the plan's first estimate and may move when the sprints are cut.
 
 ## Goal
 
@@ -28,7 +28,7 @@ Recorded in [Open questions](../backlog/open-questions.md): the eight actives an
 
 | Sprint | Ticket | Size |
 | --- | --- | --- |
-| 41 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground; how it relates to the retrospective's Kit finding; and the words of Q85 written into the vocabulary page | 1 |
+| 41 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground, on the item identity phase 7's record of where items live decided with this in view (P7-S48-T04 (a), noted 2026-09-27); how it relates to the retrospective's Kit finding; and the words of Q85 written into the vocabulary page | 1 |
 | 41 | The item catalogue's section on the eight actives: each one's effect list, numbers, cooldown, mana cost, and store price, approved by the maintainer | 0.5 |
 | 41 | Six bank slots, the keys T, X, V, C, G, and Space, a HUD row laid out as the grid, Space's browser default (page scroll) suppressed, and the same-tick tie-break order Q W E R D F extended with T X V C G Space | 2 |
 | 42 | The disable matrix's column for the six keys, one test per cell | 1 |
@@ -46,7 +46,7 @@ Recorded in [Open questions](../backlog/open-questions.md): the eight actives an
 | 44 | The phase gate | 1 |
 | | **Total** | **14.5** |
 
-The brief the maintainer saw sized the phase at about 12. The difference: the architect's decision at 1 rather than 0.5, since it carries the Kit finding and a vocabulary word; the catalogue section, 0.5, since no active is written before its effects are, as every catalogue here came first; listing them in the store, 0.5; and the playtest and the docs sync, 0.5 each, which the governance change of the [retrospective](../../2026-09-25-retrospective-and-account.md) asks of every phase. A triage bucket's appetite is set when the sprint files are written, from what phase 7's playtest found.
+The brief the maintainer saw sized the phase at about 12. The difference: the architect's decision at 1 rather than 0.5, since it carries the Kit finding and a vocabulary word; the catalogue section, 0.5, since no active is written before its effects are, as every catalogue here came first; listing them in the store, 0.5; and the playtest and the docs sync, 0.5 each, which the governance change of the [retrospective](../../2026-09-25-retrospective-and-account.md) asks of every phase. A triage bucket's appetite is set when the sprint files are written, from what phase 8's playtest found.
 
 ## Cut-line, sketched
 
@@ -56,7 +56,7 @@ The brief the maintainer saw sized the phase at about 12. The difference: the ar
 
 ## Gate, outlined
 
-Written as rows in [Phase exit gates](../04-phase-exit-gates.md#phase-8-gate): each active cast through the pipeline with nothing item-specific added to it; the disable-matrix column tested per cell; the keys in the tie-break order; Space not scrolling the page in Chrome, checked by an agent (standing instruction of 2026-09-27; no other browser); the actives bought in the store and never dropped; the maintainer's playtest with actives, replayed and triaged; the docs; the bar.
+Written as rows in [Phase exit gates](../04-phase-exit-gates.md#phase-9-gate): each active cast through the pipeline with nothing item-specific added to it; the disable-matrix column tested per cell; the keys in the tie-break order; Space not scrolling the page in Chrome, checked by an agent (standing instruction of 2026-09-27; no other browser); the actives bought in the store and never dropped; the maintainer's playtest with actives, replayed and triaged; the docs; the bar.
 
 ## Risks the sketch already sees
 

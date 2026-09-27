@@ -1,6 +1,6 @@
 # Sprint 33 — Walk over it
 
-**Phase:** 7 · **Sized days:** 4 · **Buffer:** 1
+**Phase:** 8 · **Sized days:** 4 · **Buffer:** 1
 
 > **Note, 2026-09-27, later:** re-cut on the later answers of that day. T01 grows to 2 for items several cells in size (Q88); T02 shrinks to 0.5, since only gold and globes are taken on walk-over (Q87); items are picked up by a right click, [sprint 40](./sprint-40-pick-it-up.md), which runs after this sprint.
 
@@ -16,20 +16,20 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 
 ## Tickets
 
-### P7-S33-T01 — The inventory and gold in run scope, and the armory commands
+### P8-S33-T01 — The inventory and gold in run scope, and the armory commands
 
 | Field | Value |
 | --- | --- |
 | Layer | domain, simulation, content, tests, docs |
 | Size | 2 |
-| Depends on | P7-S32-T01, P7-S32-T03 |
+| Depends on | P8-S32-T01, P8-S32-T03 |
 | Status | planned |
 
 > **Note, 2026-09-26:** the disable-matrix column is hidden work the brief's 1.5 did not name; it fits because the column reads one value in every row.
 
 > **Note, 2026-09-27, later:** resized from 1.5 to 2 on Q88's answer: the inventory is a 10 by 4 grid and an item takes the cells its base's size gives, as in Diablo II, so placement, a refusal by fit, and a swap that must fit are new work. The "dropped item waits" mark is gone with walk-over pickup of items (Q87).
 
-**Build:** run scope holds the hero's gold, an inventory of 10 by 4 cells in which each item takes the width and height in cells its base gives (Q88), and the armory's ten slots. An item placed without a cell named goes to the first place it fits, reading the grid left to right and top to bottom; a command may name the cell. The commands `equip_item`, `unequip_item`, `drop_item`, and a `move_item` within the grid, each under [ADR 0004](../../../../docs/adr/0004-all-mutation-enters-as-commands.md), recorded in the log and replayed, with named refusals: the item's level requirement above the hero's level, a slot the item cannot go in, no place the item fits, and a dead hero. Equipping into a worn slot swaps the worn item into the grid where it fits, and is refused if it does not. A ring goes to the empty ring slot, or to the one the command names. Dropping puts a ground item at the hero's feet. The fit test allocates nothing. The armory commands act under every disable and are refused while the hero is dead (Q91): the [disable matrix](../../../../docs/product/specs/disable-matrix.md) gains a column for them, one answer per status, in the page and in `src/content/statuses/disable-matrix.ts`. The armory's stats are P7-S34-T01's; here an equipped item is only held. The [commands and events](../../../../docs/architecture/commands-and-events.md) page, the world model's run-scope rows, and the items and loot page state it.
+**Build:** run scope holds the hero's gold, an inventory of 10 by 4 cells in which each item takes the width and height in cells its base gives (Q88), and the armory's ten slots. An item placed without a cell named goes to the first place it fits, reading the grid left to right and top to bottom; a command may name the cell. The commands `equip_item`, `unequip_item`, `drop_item`, and a `move_item` within the grid, each under [ADR 0004](../../../../docs/adr/0004-all-mutation-enters-as-commands.md), recorded in the log and replayed, with named refusals: the item's level requirement above the hero's level, a slot the item cannot go in, no place the item fits, and a dead hero. Equipping into a worn slot swaps the worn item into the grid where it fits, and is refused if it does not. A ring goes to the empty ring slot, or to the one the command names. Dropping puts a ground item at the hero's feet. The fit test allocates nothing. The armory commands act under every disable and are refused while the hero is dead (Q91): the [disable matrix](../../../../docs/product/specs/disable-matrix.md) gains a column for them, one answer per status, in the page and in `src/content/statuses/disable-matrix.ts`. The armory's stats are P8-S34-T01's; here an equipped item is only held. The [commands and events](../../../../docs/architecture/commands-and-events.md) page, the world model's run-scope rows, and the items and loot page state it.
 
 **Acceptance:**
 - Equip, unequip, move, and drop each change run scope as stated, land in the log, and replay.
@@ -48,7 +48,7 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 
 ---
 
-### P7-S33-T02 — Walk-over pickup: gold and globes
+### P8-S33-T02 — Walk-over pickup: gold and globes
 
 | Field | Value |
 | --- | --- |
@@ -57,11 +57,11 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 | Depends on | T01 |
 | Status | planned |
 
-> **Note, 2026-09-27:** the paragraph on the phase 6 playtest log's fights moving is gone: P7-S39-T01 retires that log before this ticket.
+> **Note, 2026-09-27:** the paragraph on the phase 6 playtest log's fights moving is gone: P8-S39-T01 retires that log before this ticket.
 
-> **Note, 2026-09-27, later:** narrowed to gold and globes and resized from 1 to 0.5 on Q87's answer: items are never taken by walking; they are picked up by a right click, P7-S40-T01. The dropped-item wait is no longer needed. Title was "Walk-over pickup: gold, globes, and items".
+> **Note, 2026-09-27, later:** narrowed to gold and globes and resized from 1 to 0.5 on Q87's answer: items are never taken by walking; they are picked up by a right click, P8-S40-T01. The dropped-item wait is no longer needed. Title was "Walk-over pickup: gold, globes, and items".
 
-**Build:** a pickup system at the place in the fixed order P7-S31-T02 chose. When a ground item of gold or a globe lies within the hero's disc plus `pickup_radius`, on the hero's way somewhere else as much as when it walks to it: gold is added; a health or mana globe restores its percentage of the pool's maximum, and waits on the ground while that pool is full (Q87). An item is never taken by this system. Each pickup announces an event. The tunables are in `src/content/tuning.ts`. A dead hero picks up nothing. The globe values start at Q86's answer, 25% of the pool, tuned later in P7-S37-T01. The content version moves; the six logs are re-stamped.
+**Build:** a pickup system at the place in the fixed order P8-S31-T02 chose. When a ground item of gold or a globe lies within the hero's disc plus `pickup_radius`, on the hero's way somewhere else as much as when it walks to it: gold is added; a health or mana globe restores its percentage of the pool's maximum, and waits on the ground while that pool is full (Q87). An item is never taken by this system. Each pickup announces an event. The tunables are in `src/content/tuning.ts`. A dead hero picks up nothing. The globe values start at Q86's answer, 25% of the pool, tuned later in P8-S37-T01. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
 **Acceptance:**
 - Gold and each globe are taken within the radius, walking past as well as onto them, and not from one unit further.
@@ -76,16 +76,16 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 
 ---
 
-### P7-S33-T03 — Ground item views, labels, and Alt
+### P8-S33-T03 — Ground item views, labels, and Alt
 
 | Field | Value |
 | --- | --- |
 | Layer | presentation, app, tests, docs |
 | Size | 1.5 |
-| Depends on | P7-S32-T01, P7-S32-T04 |
+| Depends on | P8-S32-T01, P8-S32-T04 |
 | Status | planned |
 
-> **Note, 2026-09-27, later:** the render benchmark is an agent's, in Chrome, by the standing instruction of that day; an item's icon and label are what P7-S40-T01's right click resolves against.
+> **Note, 2026-09-27, later:** the render benchmark is an agent's, in Chrome, by the standing instruction of that day; an item's icon and label are what P8-S40-T01's right click resolves against.
 
 **Build:** a ground-item view kind: the item's icon frame on the ground layer, tinted by rarity, gold and globes by their own frames; a pool sized to the screen and bound by the camera's rectangle ([presentation](../../../../docs/architecture/presentation.md)). A label view kind: the item's name in `BitmapText` with the atlas font in its rarity's tint, a pool sized to the screen. By default a label shows for the rarities Q87 names; while Alt is held every ground item's label shows, gold with its amount. Labels that would overlap are moved apart by a bounded pass with no allocation in the sync. Each view and label exposes the rectangle a pointer pick reads, for the right click of sprint 40. Alt is presentation state only, not a command, since it changes nothing in the world; its browser default is suppressed. The [HUD](../../../../docs/product/features/hud.md) and items and loot pages state what shows when.
 

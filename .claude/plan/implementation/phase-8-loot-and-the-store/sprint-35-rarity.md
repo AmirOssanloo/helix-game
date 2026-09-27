@@ -1,6 +1,6 @@
 # Sprint 35 — Rarity
 
-**Phase:** 7 · **Sized days:** 4 · **Buffer:** 1
+**Phase:** 8 · **Sized days:** 4 · **Buffer:** 1
 
 > **Note, 2026-09-27, later:** re-cut on the later answers of that day: T02, the +1 to an orb, is cut (Q92, no +1 to an orb anywhere), and T04, moving an item on the inventory grid by its size (Q88), takes its day.
 
@@ -16,22 +16,24 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 ## Tickets
 
-### P7-S35-T01 — Seven rarity tiers and rolled affixes
+### P8-S35-T01 — Seven rarity tiers and rolled affixes
 
 | Field | Value |
 | --- | --- |
 | Layer | domain, simulation, content, tests, docs |
 | Size | 2 |
-| Depends on | P7-S32-T02, P7-S34-T01 |
+| Depends on | P8-S32-T02, P8-S34-T01 |
 | Status | planned |
 
-> **Note, 2026-09-27:** the enemy-tier tables roll Common to Mythical, Mythical at a low rate from any enemy; Legendary comes only from its named boss's table (P7-S32-T02), and active items have no rarity and are in no table (Q84). An affix rolls only when the item level reaches its affix level (Q89). Tints per Q83's answer. Six logs, not seven. Later the same day: the item level is the map's (Q89's answer), and no affix touches an orb (Q92).
+> **Note, 2026-09-27:** the enemy-tier tables roll Common to Mythical, Mythical at a low rate from any enemy; Legendary comes only from its named boss's table (P8-S32-T02), and active items have no rarity and are in no table (Q84). An affix rolls only when the item level reaches its affix level (Q89). Tints per Q83's answer. Six logs, not seven. Later the same day: the item level is the map's (Q89's answer), and no affix touches an orb (Q92).
 
-**Build:** an item's affixes rolled at the drop on the loot draw's sequence: the count its rarity gives (Q83: 0 to 5), drawn without repeat from the affixes of its slot's pool whose affix level the item level reaches, each value from the affix's range. The level requirement becomes the highest of the base's and the rolled affixes' (P7-S32-T03's rule). The item instance holds its rolled values in a fixed number of places, the most any rarity rolls, so a roll allocates nothing. A Legendary rolls nothing and reads its fixed identity from its definition. Each affix is a row the armory source adds, so P7-S34-T01's stack carries them unchanged. The rarity's tint reaches the label and the icon: gray, white, blue, orange, gold, purple, red, Common to Legendary. The content version moves; the six logs are re-stamped.
+> **Note, 2026-09-27, phase 7 inserted:** the acceptance "the xorshift stream still reads the same with the tables on and emptied" was vacuous, since nothing in `src/` draws from that stream. It is replaced by phase 7's full-state comparison (P7-S45-T02) with the affix tables on and emptied. Each affix and its value draw at their own draw index (P7-S48-T05), and the re-stamp goes through `pnpm restamp`.
+
+**Build:** an item's affixes rolled at the drop on the loot draw's sequence: the count its rarity gives (Q83: 0 to 5), drawn without repeat from the affixes of its slot's pool whose affix level the item level reaches, each value from the affix's range. The level requirement becomes the highest of the base's and the rolled affixes' (P8-S32-T03's rule). The item instance holds its rolled values in a fixed number of places, the most any rarity rolls, so a roll allocates nothing. A Legendary rolls nothing and reads its fixed identity from its definition. Each affix is a row the armory source adds, so P8-S34-T01's stack carries them unchanged. The rarity's tint reaches the label and the icon: gray, white, blue, orange, gold, purple, red, Common to Legendary. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
 **Acceptance:**
 - Each rarity rolls its affix count, never one affix twice, each affix's level reached by the item level, each value in its range.
-- The same key rolls the same affixes; the xorshift stream still reads the same with the tables on and emptied.
+- The same key rolls the same affixes. Over the boss encounter log with every affix table on and emptied, and the walk-over take held off, the full-state comparison finds everything equal at every tick but the items' rolled affixes, on the ground and in the inventory: an affix roll never moves a combat outcome or another drop.
 - Over 10 000 rolls per enemy tier, each rarity from Common to Mythical lands within a stated tolerance of its weight; no enemy-tier table rolls a Legendary or an active item.
 - A worn item's affixes move the derived stats they name.
 
@@ -44,7 +46,7 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 ---
 
-### P7-S35-T02 — Plus one to an orb
+### P8-S35-T02 — Plus one to an orb
 
 | Field | Value |
 | --- | --- |
@@ -53,11 +55,11 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 | Depends on | T01 |
 | Status | cut |
 
-> **Note, 2026-09-27:** cut before it started, by the maintainer's answer to Q92: no +1 to an orb anywhere. The three Legendary pieces carry fixed values of existing, simple stats instead (P7-S35-T03). Its day goes to T04. The text below is kept as it was written.
+> **Note, 2026-09-27:** cut before it started, by the maintainer's answer to Q92: no +1 to an orb anywhere. The three Legendary pieces carry fixed values of existing, simple stats instead (P8-S35-T03). Its day goes to T04. The text below is kept as it was written.
 
 > **Note, 2026-09-26:** split from the rarity ticket. The brief the maintainer saw added half a day to rarity for the seven tiers; this is the reason it is a day on its own. It is the first item effect that reaches the Skein kit, and the [mechanics spec](../../../../docs/product/specs/character-movement-and-mechanics.md) section 2.2 keeps any item effect on orb level inside its scope.
 
-**Build:** an affix that adds one to Quartz's, Whorl's, or Ember's level. The effective orb level, the invested level plus the bonus capped at 7, the top of the orb level tables, is read in the one place P7-S31-T02 named (Q92): each instance's passive, updated on the tick the item goes on or comes off; each spell's tables at commit; and the total orb levels the Invoke cooldown reads. Skill points still go into the invested level up to 7. The bottom bar's orb square shows the effective level. The mechanics spec's section 2.2 and the section on orb levels, the [orbs and Invoke](../../../../docs/product/features/orbs-and-invoke.md) page, and the HUD page state it.
+**Build:** an affix that adds one to Quartz's, Whorl's, or Ember's level. The effective orb level, the invested level plus the bonus capped at 7, the top of the orb level tables, is read in the one place P8-S31-T02 named (Q92): each instance's passive, updated on the tick the item goes on or comes off; each spell's tables at commit; and the total orb levels the Invoke cooldown reads. Skill points still go into the invested level up to 7. The bottom bar's orb square shows the effective level. The mechanics spec's section 2.2 and the section on orb levels, the [orbs and Invoke](../../../../docs/product/features/orbs-and-invoke.md) page, and the HUD page state it.
 
 **Acceptance:**
 - Wearing +1 Quartz at an invested 3 makes Quartz 4 for its passive on the same tick, for a spell committed after it, and for the Invoke cooldown; at an invested 7 it stays 7.
@@ -74,20 +76,20 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 ---
 
-### P7-S35-T03 — The bases and the Legendary equipment
+### P8-S35-T03 — The bases and the Legendary equipment
 
 | Field | Value |
 | --- | --- |
 | Layer | content, tests, docs |
 | Size | 1 |
-| Depends on | P7-S31-T01 approved, T01, P7-S32-T04 |
+| Depends on | P8-S31-T01 approved, T01, P8-S32-T04 |
 | Status | planned |
 
-> **Note, 2026-09-27:** each Legendary is tied to the named boss P7-S39-T01's spec gives it (Q84); six logs, not seven.
+> **Note, 2026-09-27:** each Legendary is tied to the named boss P8-S39-T01's spec gives it (Q84); six logs, not seven.
 
 > **Note, 2026-09-27, later:** the Legendaries carry fixed values of existing stats, not +1 to an orb (Q92), and each base carries its size in cells (Q88); T02 no longer a dependency, since it is cut.
 
-**Build:** about twenty base definitions under `src/content/items/` from the approved catalogue, each with its size in cells and its quality level, and the three Legendary pieces, each with fixed values of existing, simple stats such as +10% magic damage, and each in its own boss's table (Q84). The fixture bases of P7-S31-T03 stay for tests. Each base's icon frame exists. The loot tables name them. The content version moves; the six logs are re-stamped.
+**Build:** about twenty base definitions under `src/content/items/` from the approved catalogue, each with its size in cells and its quality level, and the three Legendary pieces, each with fixed values of existing, simple stats such as +10% magic damage, and each in its own boss's table (Q84). The fixture bases of P8-S31-T03 stay for tests. Each base's icon frame exists. The loot tables name them. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
 **Acceptance:**
 - Every base and Legendary piece in the catalogue has a file, registered, and the catalogue's tables match the files.
@@ -101,18 +103,18 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 ---
 
-### P7-S35-T04 — Moving an item on the inventory grid by its size
+### P8-S35-T04 — Moving an item on the inventory grid by its size
 
 | Field | Value |
 | --- | --- |
 | Layer | presentation, tests, docs |
 | Size | 1 |
-| Depends on | P7-S34-T03, P7-S33-T01 |
+| Depends on | P8-S34-T03, P8-S33-T01 |
 | Status | planned |
 
-> **Note, 2026-09-27, later:** new, from Q88's answer: items take more than one cell, as in Diablo II, so the screen's placement grows. Split from the inventory screen, P7-S34-T03, to keep that ticket at 1.5; with P7-S33-T01's half day it is the +1.5 Q88 costs.
+> **Note, 2026-09-27, later:** new, from Q88's answer: items take more than one cell, as in Diablo II, so the screen's placement grows. Split from the inventory screen, P8-S34-T03, to keep that ticket at 1.5; with P8-S33-T01's half day it is the +1.5 Q88 costs.
 
-**Build:** on the inventory screen: pressing on an inventory item and moving the pointer a few pixels lifts it onto the pointer, drawn at its size, while a click that does not move keeps Q91's meaning, equip; the cells it would take are shown free or blocked as the pointer moves; releasing sets it down with `move_item` where it fits, or swaps it with the one item it would cover, as P7-S33-T01's rules say; Esc or a release outside the grid puts it back. The items and loot page states the gesture. The screen sums nothing; every placement is a command.
+**Build:** on the inventory screen: pressing on an inventory item and moving the pointer a few pixels lifts it onto the pointer, drawn at its size, while a click that does not move keeps Q91's meaning, equip; the cells it would take are shown free or blocked as the pointer moves; releasing sets it down with `move_item` where it fits, or swaps it with the one item it would cover, as P8-S33-T01's rules say; Esc or a release outside the grid puts it back. The items and loot page states the gesture. The screen sums nothing; every placement is a command.
 
 **Acceptance:**
 - An item lifted and set down where it fits sends one `move_item` and nothing else; where it does not, the cells show blocked and nothing is sent.
