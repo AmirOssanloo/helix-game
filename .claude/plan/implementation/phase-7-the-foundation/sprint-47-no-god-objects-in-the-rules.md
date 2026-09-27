@@ -128,7 +128,7 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 | Layer | domain, simulation, tests, docs |
 | Size | 1 |
 | Depends on | P7-S45-T02 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:**
 - **The split** is a file over the size limit. No phase 8 feature grows the AI, but the descent's roster will (R34), and the limit holds for the whole of `src/`.
@@ -163,6 +163,14 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
 > **Architect review, 2026-09-27:** added the test for sorting scratch from state, so that each moved binding lands in one of two places, and so the checksum's exclusions from P7-S45-T02 are exactly the scratch record. Size unchanged.
+
+> **Note, 2026-09-27, at close:** six choices the Build did not settle.
+> - **Every binding moved was scratch; none was state.** The type-checked sweep found 61 mutable bindings at module scope in 27 files under `src/domain/`, and the hash words in one under `src/simulation/`: candidate buffers, scratch points and records, cast contexts, event slots, the facing and machine tunables read at the start of each pass, the target stack's depth, and the damage hooks' running guard. Each is written before it is read, or raised and lowered inside one call, so none is live across a tick and no intended-change note was needed. They are fields of one record, `WorldScratch` in `domain/entities/world-scratch.ts`, on `World.scratch`, made at world creation; each piece's type and maker sit in the module that uses it. `WORLD_FIELDS` leaves `scratch` out with its reason, and the world view does not list it.
+> - **One event slot for every announcement.** The ten modules that each held an event slot now write through `world.scratch.event`. Every announcement fills and writes it with no call between, so sharing it changes nothing.
+> - **A pure function with no world takes the record from its caller.** `slotReadiness`, which the HUD and the targeting cursor call on the world view, takes the reader's own request record; `resolveDestination` takes the ring search's nearest-cell record, which `resolveDestinationFor` passes from the world. The composer compares counts per orb and holds no arrays. `mitigate`, which only tests call, makes its record per call. `invoke`, with one caller, takes the snapshot.
+> - **The checksum's hash words became a hasher the caller holds.** `stateChecksum(world, hasher)` hashes through it and allocates nothing warm, as its test holds; `recordChecksums` makes one per replay. `createHasher` is on the simulation's door.
+> - **The machine's split.** `domain/ai/machine.ts` keeps the dispatch and the per-pass read of its tunables; `states/idle.ts`, `states/chase.ts` (with the pack alert, which enters Chase), `states/attack.ts`, and `states/return.ts` hold one state each, and `states/moves.ts` the scratch, the anchors, the walks, the halt, and the transitions several states take. The behaviour flags are unchanged.
+> - **The check is the architecture test, not lint.** `describeNoModuleState` builds the project's program and asks the type checker whether each binding at module scope can be written at any depth: `let` or `var`, a mutable array or tuple, a map, set, typed array, buffer, or date, or a writable property, through arrays and read-only maps. A regular expression without `g` or `y` passes. A second test checks the rule on a probe source. `form-state.ts`'s shared empty modifier table, typed read-only only at its top, is now made where the form record is.
 
 ---
 
@@ -208,11 +216,11 @@ Only what is decided is built. The build, if (a), is sized at 1 and is the bucke
 | --- | --- |
 | A stat added from one key list | Yes, 2026-09-27 (T01): `tests/domain/entities/unit.spec.ts` adds a toy stat to the key list in the test alone and has it created, cleared, stored from a definition at spawn, derived from the base through the rows for its modifier stat and no others, and derived on a form from its attribute's worth; each sub-record is created and cleared in place, and a released slot keeps every sub-record object |
 | A toy kind in three files or fewer | Yes, 2026-09-27 (T02): a toy kind on the real route touched three files under `src/`: its descriptor, the kind list, and the content index, the diff counted on a detached worktree and not kept. `tests/domain/definitions/toy-kind.spec.ts` validates, cross-references, and refuses a duplicate of a toy kind added to the list in the test, and has it copied, keyed into the tuning state and slots, and rebuilt by a tuning command |
-| No module-scope mutable state; interleaved worlds agree | |
+| No module-scope mutable state; interleaved worlds agree | Yes, 2026-09-27 (T03): `describeNoModuleState` in `tests/architecture.spec.ts` finds no binding at module scope under `src/domain/` or `src/simulation/` that can be written at any depth, and refuses a probe's `let`, array, record, typed array, and global pattern; `tests/simulation/two-worlds.spec.ts` ticks two boss encounters in turn, and the encounter beside the phase 1 session, and each agrees with its run alone at every tick. A module-level counter planted in the machine, and then removed, parted them at tick 2 |
 | The event record's decision | |
-| `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60. T02: `src/domain/definitions/validate-registry.ts`, now 229 lines, and `src/domain/definitions/definition-schemas.ts`, removed; no descriptor file is over 210 |
-| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it. T02: all seven match with the content version stamp unchanged, nothing re-recorded; the change runs at validation and world creation, not in the tick |
-| Actual days per ticket | T01: 0.5 of 1. T02: 0.5 of 1.5 |
+| `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60. T02: `src/domain/definitions/validate-registry.ts`, now 229 lines, and `src/domain/definitions/definition-schemas.ts`, removed; no descriptor file is over 210. T03: `src/domain/ai/machine.ts`, now 77 lines; no state file is over 280 |
+| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it. T02: all seven match with the content version stamp unchanged, nothing re-recorded; the change runs at validation and world creation, not in the tick. T03: all seven match, nothing re-recorded; the stress tier holds its budget |
+| Actual days per ticket | T01: 0.5 of 1. T02: 0.5 of 1.5. T03: 0.5 of 1 |
 | Sprint total | |
 
 ## Risks in this sprint

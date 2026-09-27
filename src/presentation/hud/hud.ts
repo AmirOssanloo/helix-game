@@ -6,6 +6,7 @@ import type {
   Tick,
 } from "@domain/public";
 import {
+  createAbilityRequest,
   createSlotDescriptor,
   experienceProgress,
   readTunable,
@@ -99,6 +100,9 @@ export class Hud {
 
   /** Why the domain would refuse each slot's key as of the last sync, or `null`; index zero is unused. */
   private readonly refusals: (RefusalReason | null)[];
+
+  /** Scratch for what the kit makes of each key the readiness is asked about, reused every frame. */
+  private readonly asked = createAbilityRequest();
 
   /** Scratch for what a square is handed, rewritten per square per frame. */
   private readonly input: {
@@ -245,7 +249,13 @@ export class Hud {
         descriptor,
       );
 
-      const refusal = slotReadiness(world.run, world.tick, hero, slot);
+      const refusal = slotReadiness(
+        world.run,
+        world.tick,
+        hero,
+        slot,
+        this.asked,
+      );
 
       this.refusals[slot] = refusal;
 

@@ -28,11 +28,11 @@ export const damageArea: Primitive<DamageAreaEffectDef> = (
   cast: Cast,
   entry: DamageAreaEffectDef,
 ): void => {
-  const level = takeTargets();
+  const level = takeTargets(world);
   const count = collectTargets(world, cast, entry.target, level);
 
   if (count === 0) {
-    releaseTargets(level);
+    releaseTargets(world, level);
 
     return;
   }
@@ -48,12 +48,12 @@ export const damageArea: Primitive<DamageAreaEffectDef> = (
   for (let slot = 0; slot < count; slot += 1) {
     applyDamage(
       world,
-      targetAt(level, slot),
+      targetAt(world, level, slot),
       share,
       entry.damageType,
       cast.casterId,
     );
   }
 
-  releaseTargets(level);
+  releaseTargets(world, level);
 };

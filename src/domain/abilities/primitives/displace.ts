@@ -79,7 +79,7 @@ export const displace: Primitive<DisplaceEffectDef> = (
   cast: Cast,
   entry: DisplaceEffectDef,
 ): void => {
-  const level = takeTargets();
+  const level = takeTargets(world);
   const count = collectTargets(world, cast, entry.target, level);
   const distance =
     entry.mode === "push"
@@ -91,13 +91,13 @@ export const displace: Primitive<DisplaceEffectDef> = (
       : ticksOfSeconds(world.run.tuning, entry.seconds, cast.orbLevels);
 
   if (ticks === 0) {
-    releaseTargets(level);
+    releaseTargets(world, level);
 
     return;
   }
 
   for (let slot = 0; slot < count; slot += 1) {
-    const id: EntityId = targetAt(level, slot);
+    const id: EntityId = targetAt(world, level, slot);
     const unit = world.map.units.resolve(id);
 
     if (unit === null) {
@@ -124,5 +124,5 @@ export const displace: Primitive<DisplaceEffectDef> = (
     }
   }
 
-  releaseTargets(level);
+  releaseTargets(world, level);
 };

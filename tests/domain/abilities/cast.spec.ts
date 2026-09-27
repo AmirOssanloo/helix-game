@@ -8,6 +8,7 @@ import type {
 } from "@domain/public";
 import {
   castReadiness,
+  createAbilityRequest,
   createUnitPool,
   isInCastRange,
   requestCast,
@@ -163,7 +164,13 @@ describe("castReadiness", () => {
       pointSpell.id,
       spell,
     );
-    const slot = slotReadiness(world.view.run, world.view.tick, hero, D);
+    const slot = slotReadiness(
+      world.view.run,
+      world.view.tick,
+      hero,
+      D,
+      createAbilityRequest(),
+    );
 
     expect(snapshot(arranged)).toBe(before);
 

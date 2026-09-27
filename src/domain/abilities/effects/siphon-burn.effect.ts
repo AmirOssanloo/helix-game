@@ -74,12 +74,12 @@ export const siphonBurnEffect: NamedEffect = (
   fields: Readonly<Record<string, unknown>>,
 ): void => {
   const { burn, damagePerMana } = fieldsOf(fields);
-  const level = takeTargets();
+  const level = takeTargets(world);
   const count = collectTargets(world, cast, INSIDE, level);
   const whole = tableAtOrbLevels(burn, cast.orbLevels);
 
   for (let slot = 0; slot < count; slot += 1) {
-    const id = targetAt(level, slot);
+    const id = targetAt(world, level, slot);
     const unit = world.map.units.resolve(id);
 
     if (unit === null) {
@@ -103,5 +103,5 @@ export const siphonBurnEffect: NamedEffect = (
     );
   }
 
-  releaseTargets(level);
+  releaseTargets(world, level);
 };

@@ -43,11 +43,21 @@ type FacingTuning = {
   cone: number;
 };
 
-/** The facing tunables, read once per tick. */
-const facing: FacingTuning = { tunedTurnRate: 0, rampTicks: 0, cone: 0 };
+/**
+ * The attack pass's working memory, world-owned scratch: the facing tunables, read at the
+ * start of every pass, and the legal point an approach walks to, written for every unit
+ * before it is read.
+ */
+export type AttackScratch = {
+  facing: FacingTuning;
+  approachPoint: Vec2;
+};
 
-/** Scratch for the legal point an approach walks to, reused for every unit. */
-const approachPoint: Vec2 = { x: 0, y: 0 };
+/** The attack pass's scratch. Made once, with the world. */
+export const createAttackScratch = (): AttackScratch => ({
+  facing: { tunedTurnRate: 0, rampTicks: 0, cone: 0 },
+  approachPoint: { x: 0, y: 0 },
+});
 
 /** Whether the unit is carrying out an attack order of either kind. */
 const isAttacking = (unit: Readonly<Unit>): boolean =>
@@ -120,6 +130,8 @@ const approach = (
   target: Readonly<Unit>,
   epsilon: number,
 ): void => {
+  const approachPoint = world.scratch.attack.approachPoint;
+
   resolveDestinationFor(
     world,
     unit,
@@ -147,6 +159,8 @@ const approach = (
  * may begin. A target standing on the unit's own centre has no bearing and counts as faced.
  */
 const face = (world: World, unit: Unit, target: Readonly<Unit>): boolean => {
+  const facing = world.scratch.attack.facing;
+
   if (unit.state === "moving" || unit.needsPath || unit.path.count > 0) {
     const result = beginFacing(unit);
 
@@ -325,6 +339,7 @@ const runOrder = (
  * tick it was issued, and before pathing, so an approach asked for here is planned this tick.
  */
 export const attackSystem = (world: World): void => {
+  const facing = world.scratch.attack.facing;
   const tuning = world.run.tuning;
   const epsilon = readTunable(tuning, "arrival_epsilon");
   const units = world.map.units;

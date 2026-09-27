@@ -8,7 +8,6 @@ import {
 } from "./field-list";
 import {
   ABSENT,
-  floats,
   mixFloat,
   mixSmall,
   mixText,
@@ -25,16 +24,16 @@ export const records = <T, U>(
 ): Field<T> => ({
   leaves: leavesOf(list, `${name}[].`),
   excluded: excludedOf(list, `${name}[].`),
-  hash: (outer) => {
+  hash: (outer, hasher) => {
     const length = count(outer);
 
-    mixSmall(length);
+    mixSmall(hasher, length);
 
     for (let index = 0; index < length; index += 1) {
-      hashFields(list, at(outer, index));
+      hashFields(list, at(outer, index), hasher);
     }
   },
-  difference: (a, b) => {
+  difference: (a, b, hasher) => {
     const length = count(a);
 
     if (length !== count(b)) {
@@ -42,7 +41,12 @@ export const records = <T, U>(
     }
 
     for (let index = 0; index < length; index += 1) {
-      const difference = fieldsDifference(list, at(a, index), at(b, index));
+      const difference = fieldsDifference(
+        list,
+        at(a, index),
+        at(b, index),
+        hasher,
+      );
 
       if (difference !== null) {
         return `${name}[${String(index)}].${difference}`;
@@ -61,17 +65,17 @@ export const numbers = <T>(
 ): Field<T> => ({
   leaves: [{ path: `${name}[]`, kind: "numbers" }],
   excluded: [],
-  hash: (outer) => {
+  hash: (outer, hasher) => {
     const length = count(outer);
 
-    mixSmall(length);
+    mixSmall(hasher, length);
 
     for (let index = 0; index < length; index += 1) {
-      at(outer, index, floats, 0);
-      mixFloat();
+      at(outer, index, hasher.floats, 0);
+      mixFloat(hasher);
     }
   },
-  difference: (a, b) => {
+  difference: (a, b, hasher) => {
     const length = count(a);
 
     if (length !== count(b)) {
@@ -79,11 +83,11 @@ export const numbers = <T>(
     }
 
     for (let index = 0; index < length; index += 1) {
-      at(a, index, floats, 0);
-      at(b, index, floats, 1);
+      at(a, index, hasher.floats, 0);
+      at(b, index, hasher.floats, 1);
 
-      if (!sameFloats()) {
-        return `${name}[${String(index)}]: ${String(floats[0])} vs ${String(floats[1])}`;
+      if (!sameFloats(hasher)) {
+        return `${name}[${String(index)}]: ${String(hasher.floats[0])} vs ${String(hasher.floats[1])}`;
       }
     }
 
@@ -99,13 +103,13 @@ export const texts = <T>(
 ): Field<T> => ({
   leaves: [{ path: `${name}[]`, kind: "texts" }],
   excluded: [],
-  hash: (outer) => {
+  hash: (outer, hasher) => {
     const length = count(outer);
 
-    mixSmall(length);
+    mixSmall(hasher, length);
 
     for (let index = 0; index < length; index += 1) {
-      mixText(at(outer, index));
+      mixText(hasher, at(outer, index));
     }
   },
   difference: (a, b) => {
@@ -128,13 +132,6 @@ export const texts = <T>(
   },
 });
 
-/** Hashes one entry of a table. Made once, so walking a table with `forEach` makes no closure. */
-const hashTableEntry = (value: number, key: string): void => {
-  mixText(key);
-  floats[0] = value;
-  mixFloat();
-};
-
 /**
  * A map from text to number, hashed as its size and then each key and value in the map's
  * order. The order is part of the state: two maps holding the same entries in different
@@ -146,13 +143,13 @@ export const table = <T>(
 ): Field<T> => ({
   leaves: [{ path: `${name}{}`, kind: "table" }],
   excluded: [],
-  hash: (outer) => {
+  hash: (outer, hasher) => {
     const map = read(outer);
 
-    mixSmall(map.size);
-    map.forEach(hashTableEntry);
+    mixSmall(hasher, map.size);
+    map.forEach(hasher.mixEntry);
   },
-  difference: (a, b) => {
+  difference: (a, b, hasher) => {
     const left = [...read(a)];
     const right = [...read(b)];
 
@@ -164,10 +161,10 @@ export const table = <T>(
       const [leftKey, leftValue] = left[index] ?? ["", 0];
       const [rightKey, rightValue] = right[index] ?? ["", 0];
 
-      floats[0] = leftValue;
-      floats[1] = rightValue;
+      hasher.floats[0] = leftValue;
+      hasher.floats[1] = rightValue;
 
-      if (leftKey !== rightKey || !sameFloats()) {
+      if (leftKey !== rightKey || !sameFloats(hasher)) {
         return `${name}{${leftKey}}: ${String(leftValue)} vs ${rightKey === leftKey ? "" : `{${rightKey}} `}${String(rightValue)}`;
       }
     }
@@ -198,27 +195,27 @@ export const pool = <T, U>(
     ...leavesOf(list, `${name}[].`),
   ],
   excluded: excludedOf(list, `${name}[].`),
-  hash: (outer) => {
+  hash: (outer, hasher) => {
     const slots = read(outer);
 
-    mixSmall(slots.end);
+    mixSmall(hasher, slots.end);
 
     for (let index = 0; index < slots.end; index += 1) {
       const slot = slots.at(index);
       const id = slots.idAt(index);
 
       if (slot === null || id === null) {
-        mixSmall(ABSENT);
+        mixSmall(hasher, ABSENT);
         continue;
       }
 
-      floats[0] = id;
-      mixSmall(PRESENT);
-      mixFloat();
-      hashFields(list, slot);
+      hasher.floats[0] = id;
+      mixSmall(hasher, PRESENT);
+      mixFloat(hasher);
+      hashFields(list, slot, hasher);
     }
   },
-  difference: (a, b) => {
+  difference: (a, b, hasher) => {
     const left = read(a);
     const right = read(b);
 
@@ -241,7 +238,7 @@ export const pool = <T, U>(
         continue;
       }
 
-      const difference = fieldsDifference(list, leftSlot, rightSlot);
+      const difference = fieldsDifference(list, leftSlot, rightSlot, hasher);
 
       if (difference !== null) {
         return `${name}[${String(index)}].${difference}`;

@@ -21,6 +21,7 @@ export {
   serializeInputLog,
 } from "./replay/input-log-file";
 export type { ExcludedPath, Leaf, LeafKind } from "./replay/field-list";
+export { createHasher, type Hasher } from "./replay/hash-words";
 export {
   checksumMismatch,
   CHECKSUM_INTERVAL,

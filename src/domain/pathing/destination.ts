@@ -88,11 +88,26 @@ const distanceSquaredToCell = (
   return dx * dx + dy * dy;
 };
 
-/** The best cell the ring search has seen, reused across calls so the search allocates nothing. */
-const nearest = { column: -1, row: -1, distanceSquared: Infinity };
+/**
+ * The best cell the ring search has seen: world-owned scratch, reset at the start of every
+ * search and passed down, so the search allocates nothing.
+ */
+export type NearestCell = {
+  column: number;
+  row: number;
+  distanceSquared: number;
+};
+
+/** A record for the ring search to fill. Made once, with the world. */
+export const createNearestCell = (): NearestCell => ({
+  column: -1,
+  row: -1,
+  distanceSquared: Infinity,
+});
 
 /** Takes the cell as the nearest so far when it is open and closer to (`x`, `y`) than the one held. */
 const considerCell = (
+  nearest: NearestCell,
   grid: WalkabilityView,
   radiusClass: number,
   column: number,
@@ -122,6 +137,7 @@ const snapToNearestOpenCell = (
   grid: WalkabilityView,
   radiusClass: number,
   point: Vec2,
+  nearest: NearestCell,
 ): boolean => {
   const x = point.x;
   const y = point.y;
@@ -145,13 +161,14 @@ const snapToNearestOpenCell = (
     }
 
     if (ring === 0) {
-      considerCell(grid, radiusClass, centreColumn, centreRow, x, y);
+      considerCell(nearest, grid, radiusClass, centreColumn, centreRow, x, y);
 
       continue;
     }
 
     for (let offset = -ring; offset <= ring; offset += 1) {
       considerCell(
+        nearest,
         grid,
         radiusClass,
         centreColumn + offset,
@@ -160,6 +177,7 @@ const snapToNearestOpenCell = (
         y,
       );
       considerCell(
+        nearest,
         grid,
         radiusClass,
         centreColumn + offset,
@@ -171,6 +189,7 @@ const snapToNearestOpenCell = (
 
     for (let offset = -ring + 1; offset <= ring - 1; offset += 1) {
       considerCell(
+        nearest,
         grid,
         radiusClass,
         centreColumn - ring,
@@ -179,6 +198,7 @@ const snapToNearestOpenCell = (
         y,
       );
       considerCell(
+        nearest,
         grid,
         radiusClass,
         centreColumn + ring,
@@ -208,7 +228,7 @@ const snapToNearestOpenCell = (
  * bounds are walls; a point on an obstacle moves to the nearest edge of the obstacle inflated
  * by the class radius. When geometry leaves the point where no search can end, inside
  * overlapping inflations or in a cell the grid closes on every side, the point snaps to the
- * nearest open cell instead. Returns `out`.
+ * nearest open cell instead, searched with `nearest` as its working memory. Returns `out`.
  */
 export const resolveDestination = (
   grid: WalkabilityView,
@@ -218,6 +238,7 @@ export const resolveDestination = (
   x: number,
   y: number,
   out: Vec2,
+  nearest: NearestCell,
 ): Vec2 => {
   const radius = grid.classRadii[radiusClass];
 
@@ -256,7 +277,7 @@ export const resolveDestination = (
       rowOf(grid, out.y),
     )
   ) {
-    snapToNearestOpenCell(grid, radiusClass, out);
+    snapToNearestOpenCell(grid, radiusClass, out, nearest);
   }
 
   return out;
@@ -284,5 +305,6 @@ export const resolveDestinationFor = (
     x,
     y,
     out,
+    world.scratch.nearestCell,
   );
 };

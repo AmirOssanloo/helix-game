@@ -8,7 +8,6 @@ import { entryAtLevel } from "../definitions/spell-state";
 import { activeFormOf } from "../entities/hero";
 import type { Resources, Unit } from "../entities/unit";
 import type { RunScope, World } from "../entities/world-state";
-import { createAbilityRequest } from "../kits/kit";
 import { resolveKit } from "../kits/kit-registry";
 import { castRefusal } from "../orders/disable-matrix";
 import { issueCast } from "../orders/state-machine";
@@ -21,9 +20,6 @@ import { spellLevelOf } from "./spell-level";
 
 /** The orb levels of a unit that levels none. */
 const NO_ORB_LEVELS: readonly number[] = [];
-
-/** Scratch for what a kit makes of each slot key, reused for every look-up. */
-const request = createAbilityRequest();
 
 /** The pool a cast of `unit`'s draws on: the hero's is its active form's, every other unit's is its own. */
 export const resourcesOf = (world: World, unit: Unit): Resources => {
@@ -59,6 +55,7 @@ export const holdsAbility = (
   unit: Readonly<Unit>,
   abilityId: string,
 ): boolean => {
+  const request = world.scratch.castLookup;
   const form = activeFormOf(world, unit);
 
   if (form === null) {

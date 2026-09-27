@@ -23,14 +23,14 @@ export const applyStatusEffect: Primitive<ApplyStatusEffectDef> = (
   cast: Cast,
   entry: ApplyStatusEffectDef,
 ): void => {
-  const level = takeTargets();
+  const level = takeTargets(world);
   const count = collectTargets(world, cast, entry.target, level);
   const ticks = ticksOfSeconds(world.run.tuning, entry.seconds, cast.orbLevels);
 
   for (let slot = 0; slot < count; slot += 1) {
     applyStatus(
       world,
-      targetAt(level, slot),
+      targetAt(world, level, slot),
       entry.statusId,
       ticks,
       cast.casterId,
@@ -38,5 +38,5 @@ export const applyStatusEffect: Primitive<ApplyStatusEffectDef> = (
     );
   }
 
-  releaseTargets(level);
+  releaseTargets(world, level);
 };

@@ -1,17 +1,13 @@
 import type { EntityId } from "@shared/public";
 import type { World } from "../../entities/world-state";
 import type { Zone } from "../../entities/zone";
-import { createDomainEvent, resetDomainEvent } from "../../events/domain-event";
-import { createCastRecord, fillZoneCast } from "../cast-context";
+import { resetDomainEvent } from "../../events/domain-event";
+import { fillZoneCast } from "../cast-context";
 import { runEffects } from "../effect-runner";
 
-/** Scratch for the context a zone's lists run with, reused for every zone of every tick. */
-const context = createCastRecord();
-
-/** Scratch for the event an expiry announces, reused for every one. */
-const event = createDomainEvent();
-
 const announceExpired = (world: World, zoneId: EntityId): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "zone_expired";
   event.tick = world.tick;
@@ -55,6 +51,7 @@ const runRules = (
   zoneId: EntityId,
   isAlive: boolean,
 ): void => {
+  const context = world.scratch.zoneContext;
   const ability = zone.ability;
   const casterId = zone.casterId;
 

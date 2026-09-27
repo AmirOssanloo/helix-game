@@ -411,6 +411,10 @@ export {
   type World,
 } from "./entities/world-state";
 export {
+  createWorldScratch,
+  type WorldScratch,
+} from "./entities/world-scratch";
+export {
   acquireZone,
   createZonePool,
   hasTakenHit,
@@ -557,6 +561,8 @@ export {
   searchPath,
 } from "./pathing/astar";
 export {
+  createNearestCell,
+  type NearestCell,
   resolveDestination,
   resolveDestinationFor,
 } from "./pathing/destination";

@@ -23,9 +23,6 @@ import { levelUp } from "../stats/levels";
 import { refreshStats } from "../stats/stats.system";
 import { applyStatus } from "../statuses/status.system";
 
-/** Scratch for the legal point one spawned unit lands on, reused for every spawn. */
-const landing: Vec2 = { x: 0, y: 0 };
-
 /** The levels a status the panel applies is read at when the hero has no form to read them from. */
 const NO_ORB_LEVELS: readonly number[] = [];
 
@@ -50,6 +47,7 @@ const spawnGrid = (
   radius: number,
   dress: (unit: Unit) => void,
 ): RefusalReason | null => {
+  const landing = world.scratch.debugLanding;
   const units = world.map.units;
   const grid = world.map.walkability;
   const radiusClass = radiusClassOf(grid, radius);
@@ -73,6 +71,7 @@ const spawnGrid = (
       position.x + (column - offset) * spacing,
       position.y + (row - offset) * spacing,
       landing,
+      world.scratch.nearestCell,
     );
 
     const id = acquireUnit(world, "enemy", landing.x, landing.y);

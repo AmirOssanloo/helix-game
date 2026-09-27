@@ -11,7 +11,7 @@ import { setTunable, validateTuning } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { applySkillPoint, applySlotKey } from "../kits/slot-key";
 import { resolveDestinationFor } from "../pathing/destination";
 import {
@@ -24,18 +24,14 @@ import {
 import type { RefusalReason } from "./validator";
 import { validateCommand, validateDebugCommand } from "./validator";
 
-/** Scratch for the legal point a clicked destination resolves to, reused for every command. */
-const resolved: Vec2 = { x: 0, y: 0 };
-
-/** Scratch for the event a refusal announces, reused for every one. */
-const refused = createDomainEvent();
-
 /** Announces that `command` was refused for `reason`, naming the slot key or the spell when it had one so the view can flash the square. */
 const announceRefusal = (
   world: World,
   command: AnyCommand,
   reason: RefusalReason,
 ): void => {
+  const refused = world.scratch.event;
+
   resetDomainEvent(refused);
   refused.kind = "command_refused";
   refused.tick = world.tick;
@@ -54,7 +50,13 @@ const resolveFor = (
   hero: Readonly<Unit>,
   destination: Readonly<Vec2>,
 ): Vec2 =>
-  resolveDestinationFor(world, hero, destination.x, destination.y, resolved);
+  resolveDestinationFor(
+    world,
+    hero,
+    destination.x,
+    destination.y,
+    world.scratch.resolvedDestination,
+  );
 
 /**
  * Writes one validated player command onto the hero. The order commands replace the current

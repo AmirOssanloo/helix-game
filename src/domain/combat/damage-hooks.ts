@@ -1,4 +1,5 @@
 import type { EntityId } from "@shared/public";
+import type { CastRecord } from "../abilities/cast-context";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
 import type { StatusHookRecord } from "../definitions/status-state";
@@ -10,22 +11,30 @@ import type { World } from "../entities/world-state";
 /** Which of a status's two hooks a pass is running, and which ready tick on the row it reads. */
 type HookSide = "taken" | "dealt";
 
-/** Scratch for the context a hook's list runs with, reused for every hook of every hit. */
-const context = createCastRecord();
-
-/** The rows a pass found ready, as indices into the unit's table, so a list that applies a status does not lengthen the pass that ran it. */
-const ready: number[] = [];
-
-for (let row = 0; row < STATUS_TABLE_SIZE; row += 1) {
-  ready.push(0);
-}
-
 /**
- * Whether a hook is running. Damage a hook deals runs no hooks, so a hook can neither trigger
- * itself nor ping-pong with another, and the depth an effect list nests to stays bounded. It
- * is written and cleared inside one call, so no tick ever begins with it raised.
+ * The hook pass's working memory, world-owned scratch: the context a hook's list runs with,
+ * the rows a pass found ready, as indices into the unit's table, so a list that applies a
+ * status does not lengthen the pass that ran it, and whether a hook is running. Damage a hook
+ * deals runs no hooks, so a hook can neither trigger itself nor ping-pong with another, and
+ * the depth an effect list nests to stays bounded. The flag is raised and lowered inside one
+ * call, so no tick ever begins with it raised.
  */
-let running = false;
+export type HookScratch = {
+  context: CastRecord;
+  ready: number[];
+  running: boolean;
+};
+
+/** The hook pass's scratch, nothing running. Made once, with the world. */
+export const createHookScratch = (): HookScratch => {
+  const ready: number[] = [];
+
+  for (let row = 0; row < STATUS_TABLE_SIZE; row += 1) {
+    ready.push(0);
+  }
+
+  return { context: createCastRecord(), ready, running: false };
+};
 
 const hookOf = (
   record: Readonly<{
@@ -87,7 +96,7 @@ const collectReady = (world: World, holder: Unit, side: HookSide): number => {
       side,
       world.tick + amountAtOrbLevel(hook, entry.orbLevels),
     );
-    ready[found] = row;
+    world.scratch.hooks.ready[found] = row;
     found += 1;
   }
 
@@ -104,7 +113,7 @@ const runReady = (
   count: number,
 ): void => {
   for (let slot = 0; slot < count; slot += 1) {
-    const row = ready[slot];
+    const row = world.scratch.hooks.ready[slot];
     const entry = row === undefined ? undefined : holder.statuses[row];
     const definitionId = entry === undefined ? null : entry.definitionId;
     const record =
@@ -116,7 +125,7 @@ const runReady = (
     }
 
     const cast = fillHookCast(
-      context,
+      world.scratch.hooks.context,
       entry.sourceId ?? holderId,
       entry.orbLevels,
       holder.curr.x,
@@ -161,11 +170,13 @@ export const runDamageHooks = (
   damagedId: EntityId,
   sourceId: EntityId | null,
 ): void => {
-  if (running) {
+  const scratch = world.scratch.hooks;
+
+  if (scratch.running) {
     return;
   }
 
-  running = true;
+  scratch.running = true;
 
   runSide(world, damagedId, damagedId, "taken");
 
@@ -173,5 +184,5 @@ export const runDamageHooks = (
     runSide(world, sourceId, damagedId, "dealt");
   }
 
-  running = false;
+  scratch.running = false;
 };

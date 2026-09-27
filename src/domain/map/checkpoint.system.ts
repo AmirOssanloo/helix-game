@@ -2,10 +2,7 @@ import { distanceSquared } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import { resolveHero } from "../entities/hero";
 import type { World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
-
-/** Scratch for the event a checkpoint announces, reused for every one. */
-const event = createDomainEvent();
+import { resetDomainEvent } from "../events/domain-event";
 
 /**
  * A living hero within the reach radius of a checkpoint further along the map than the
@@ -46,6 +43,9 @@ export const checkpointSystem = (world: World): void => {
       scope.furthestCheckpoint = index;
       hero.spawnPoint.x = checkpoint.x;
       hero.spawnPoint.y = checkpoint.y;
+
+      const event = world.scratch.event;
+
       resetDomainEvent(event);
       event.kind = "checkpoint_reached";
       event.tick = world.tick;

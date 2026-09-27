@@ -5,7 +5,7 @@ import { provoke } from "../ai/ai-state";
 import type { Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { modifiedValue } from "../stats/modifiers";
 import { runDamageHooks } from "./damage-hooks";
 
@@ -27,9 +27,6 @@ export const DAMAGE_TYPES: readonly DamageType[] = [
 export const isDamageType = (value: string): value is DamageType =>
   DAMAGE_TYPES.includes(value as DamageType);
 
-/** Scratch for the event a damage instance announces, reused for every one. */
-const event = createDomainEvent();
-
 /**
  * The fraction of a physical hit `armour` takes off under `constant`, the curve the armour
  * tunable parameterises: each point is worth less than the one before it, so armour never
@@ -45,6 +42,12 @@ const armourReduction = (armour: number, constant: number): number =>
  * field it lives in is not.
  */
 export type DamageRecord = { amount: number; landed: number };
+
+/** A record with nothing in it, for a caller to fill. */
+export const createDamageRecord = (): DamageRecord => ({
+  amount: 0,
+  landed: 0,
+});
 
 /** What a magical hit's amplification is read over: nothing, so a unit with no row for it amplifies by nothing. */
 const NO_AMPLIFICATION = 0;
@@ -107,13 +110,11 @@ const mitigateRecord = (
   }
 };
 
-/** Scratch for the record `mitigate` asks through, reused for every question. */
-const asked: DamageRecord = { amount: 0, landed: 0 };
-
 /**
  * What lands of `amount` on a unit wearing `stats` under `armourConstant`, by the same rule
  * the damage door runs, as a plain number, from an attacker that amplifies nothing. A pure
- * function over plain numbers, for anything asking what a hit would be worth.
+ * function over plain numbers, for anything asking what a hit would be worth outside a tick:
+ * it makes the record it asks through, so it holds nothing between questions.
  */
 export const mitigate = (
   amount: number,
@@ -121,6 +122,8 @@ export const mitigate = (
   stats: Readonly<Stats>,
   armourConstant: number,
 ): number => {
+  const asked = createDamageRecord();
+
   asked.amount = amount;
   mitigateRecord(asked, type, stats, armourConstant, NO_AMPLIFICATION);
 
@@ -134,6 +137,8 @@ const announceDamaged = (
   amount: number,
   type: DamageType,
 ): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "unit_damaged";
   event.tick = world.tick;
@@ -143,9 +148,6 @@ const announceDamaged = (
   event.damageType = type;
   world.events.write(event);
 };
-
-/** Scratch for the record the plain-number door fills, reused for every hit through it. */
-const scratch: DamageRecord = { amount: 0, landed: 0 };
 
 /**
  * The one door damage enters by: `record.amount` of `type` from `sourceId`, or from nobody,
@@ -201,8 +203,8 @@ export const dealDamage = (
 
 /**
  * The same door for a caller holding the amount as a plain number: `amount` of `type` from
- * `sourceId` onto `targetId`, returning what landed. A caller that deals damage per unit per
- * tick holds a record and calls `dealDamage` instead.
+ * `sourceId` onto `targetId`, returning what landed, dealt through the world's scratch record.
+ * A caller that deals damage per unit per tick holds a record and calls `dealDamage` instead.
  */
 export const applyDamage = (
   world: World,
@@ -211,8 +213,10 @@ export const applyDamage = (
   type: DamageType,
   sourceId: EntityId | null,
 ): number => {
-  scratch.amount = amount;
-  dealDamage(world, targetId, scratch, type, sourceId);
+  const record = world.scratch.damage;
 
-  return scratch.landed;
+  record.amount = amount;
+  dealDamage(world, targetId, record, type, sourceId);
+
+  return record.landed;
 };

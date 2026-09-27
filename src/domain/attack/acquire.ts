@@ -2,12 +2,7 @@ import type { EntityId } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
 import { isHostile } from "../combat/sides";
 import type { Unit } from "../entities/unit";
-import { UNIT_CAPACITY } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { createCandidateBuffer } from "../movement/spatial-hash";
-
-/** The ids the hash proposes for one search. One unit acquires at a time, so one buffer serves every tick. */
-const candidates: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
 /**
  * The nearest unit within `radius` of `unit` that is hostile to it and that anything may
@@ -20,6 +15,7 @@ export const nearestEnemy = (
   unit: Readonly<Unit>,
   radius: number,
 ): EntityId | null => {
+  const candidates = world.scratch.acquireCandidates;
   const found = world.map.spatialHash.queryCircle(
     unit.curr,
     radius,

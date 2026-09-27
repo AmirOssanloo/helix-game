@@ -5,7 +5,7 @@ import { entryAtLevel } from "../definitions/spell-state";
 import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { isPathComplete } from "../movement/path";
 import { isInsideCone, turnToward } from "../movement/turn";
 import { turnRateOf } from "../movement/unit-rates";
@@ -43,28 +43,35 @@ type FacingTuning = {
   cone: number;
 };
 
-/** Scratch for where a unit's cast is aimed this tick, reused for every unit. */
-const aim: Vec2 = { x: 0, y: 0 };
+/**
+ * The cast pass's working memory, world-owned scratch: where a unit's cast is aimed this tick,
+ * the legal point an approach walks to, what the modifier table takes off a clock at commit,
+ * the context a commit's effects run with, and the facing tunables, read at the start of
+ * every pass. Each is written before it is read, for every unit and every commit.
+ */
+export type CastScratch = {
+  aim: Vec2;
+  approach: Vec2;
+  snapshot: CooldownSnapshot;
+  context: CastRecord;
+  facing: FacingTuning;
+};
 
-/** Scratch for the legal point an approach walks to, reused for every unit. */
-const approach: Vec2 = { x: 0, y: 0 };
-
-/** Scratch for what the modifier table takes off a clock at commit, reused for every commit. */
-const snapshot: CooldownSnapshot = createCooldownSnapshot();
-
-/** Scratch for the context a commit's effects run with, reused for every commit. */
-const context: CastRecord = createCastRecord();
-
-/** Scratch for the event a commit announces, reused for every one. */
-const event = createDomainEvent();
-
-/** The facing tunables, read once per tick. */
-const facing: FacingTuning = { tunedTurnRate: 0, rampTicks: 0, cone: 0 };
+/** The cast pass's scratch. Made once, with the world. */
+export const createCastScratch = (): CastScratch => ({
+  aim: { x: 0, y: 0 },
+  approach: { x: 0, y: 0 },
+  snapshot: createCooldownSnapshot(),
+  context: createCastRecord(),
+  facing: { tunedTurnRate: 0, rampTicks: 0, cone: 0 },
+});
 
 /** A unit target that no longer exists or is out of reach, where a bound radius would be. */
 const TARGET_GONE = -1;
 
 const announceCommitted = (world: World, abilityId: string): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "cast_committed";
   event.tick = world.tick;
@@ -142,6 +149,8 @@ const cancel = (unit: Unit): void => {
  * end of its path and still out of range has nowhere closer to go, and the cast is cancelled.
  */
 const approachTarget = (world: World, unit: Unit, epsilon: number): void => {
+  const aim = world.scratch.cast.aim;
+  const approach = world.scratch.cast.approach;
   const aimMoved =
     aim.x !== unit.cast.position.x || aim.y !== unit.cast.position.y;
 
@@ -171,6 +180,9 @@ const approachTarget = (world: World, unit: Unit, epsilon: number): void => {
  * An aim under the unit's own centre has no bearing and counts as faced.
  */
 const faceTarget = (world: World, unit: Unit): boolean => {
+  const aim = world.scratch.cast.aim;
+  const facing = world.scratch.cast.facing;
+
   if (unit.state === "moving" || unit.needsPath || unit.path.count > 0) {
     const result = beginFacing(unit);
 
@@ -212,6 +224,8 @@ const contextOf = (
   casterId: EntityId,
   record: SpellRecord,
 ): Cast => {
+  const aim = world.scratch.cast.aim;
+  const context = world.scratch.cast.context;
   const kind = unit.cast.targetKind;
   const onTarget = kind === "point" || kind === "unit" || kind === "vector";
   const isUnderCaster = aim.x === unit.curr.x && aim.y === unit.curr.y;
@@ -247,6 +261,7 @@ const commit = (
   casterId: EntityId,
   record: SpellRecord,
 ): void => {
+  const snapshot = world.scratch.cast.snapshot;
   const flags = world.run.debug;
   const level = castLevelOf(world, unit, record);
   const resources = resourcesOf(world, unit);
@@ -294,6 +309,8 @@ const commit = (
  * toward.
  */
 export const castSystem = (world: World): void => {
+  const aim = world.scratch.cast.aim;
+  const facing = world.scratch.cast.facing;
   const tuning = world.run.tuning;
   const epsilon = readTunable(tuning, "arrival_epsilon");
   const units = world.map.units;

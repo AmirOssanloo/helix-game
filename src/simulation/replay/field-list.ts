@@ -1,10 +1,11 @@
 import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
+import type { Hasher } from "./hash-words";
 import {
   ABSENT,
   beginHash,
+  createHasher,
   finishHash,
-  floats,
   mixFloat,
   mixSmall,
   mixText,
@@ -51,8 +52,8 @@ export type ExcludedPath = Readonly<{ path: string; reason: string }>;
 export type Field<T> = Readonly<{
   leaves: readonly Leaf[];
   excluded: readonly ExcludedPath[];
-  hash: (record: T) => void;
-  difference: (a: T, b: T) => string | null;
+  hash: (record: T, hasher: Hasher) => void;
+  difference: (a: T, b: T, hasher: Hasher) => string | null;
 }>;
 
 /** A key of a record that is left out of the state, with the reason. */
@@ -97,11 +98,15 @@ export const fieldsOf = <T>(table: FieldTable<T>): FieldList<T> => {
 /** A key left out of the state, with the reason a reader is given. */
 export const excluded = (reason: string): Excluded => ({ leftOut: reason });
 
-export const hashFields = <T>(list: FieldList<T>, record: T): void => {
+export const hashFields = <T>(
+  list: FieldList<T>,
+  record: T,
+  hasher: Hasher,
+): void => {
   const fields = list.fields;
 
   for (let index = 0; index < fields.length; index += 1) {
-    fields[index]?.hash(record);
+    fields[index]?.hash(record, hasher);
   }
 };
 
@@ -109,11 +114,12 @@ export const fieldsDifference = <T>(
   list: FieldList<T>,
   a: T,
   b: T,
+  hasher: Hasher,
 ): string | null => {
   const fields = list.fields;
 
   for (let index = 0; index < fields.length; index += 1) {
-    const difference = fields[index]?.difference(a, b) ?? null;
+    const difference = fields[index]?.difference(a, b, hasher) ?? null;
 
     if (difference !== null) {
       return difference;
@@ -128,12 +134,16 @@ export const leavesOf = <T>(list: FieldList<T>, prefix: string): Leaf[] =>
     field.leaves.map((leaf) => ({ path: prefix + leaf.path, kind: leaf.kind })),
   );
 
-/** The hash of `record` over `list`, from a fresh start. */
-export const hashRecord = <T>(list: FieldList<T>, record: T): number => {
-  beginHash();
-  hashFields(list, record);
+/** The hash of `record` over `list` through `hasher`, from a fresh start. */
+export const hashRecord = <T>(
+  list: FieldList<T>,
+  record: T,
+  hasher: Hasher,
+): number => {
+  beginHash(hasher);
+  hashFields(list, record, hasher);
 
-  return finishHash();
+  return finishHash(hasher);
 };
 
 /** The first path on which two records differ over `list`, with both values, or `null`. */
@@ -141,7 +151,7 @@ export const recordDifference = <T>(
   list: FieldList<T>,
   a: T,
   b: T,
-): string | null => fieldsDifference(list, a, b);
+): string | null => fieldsDifference(list, a, b, createHasher());
 
 export const excludedOf = <T>(
   list: FieldList<T>,
@@ -170,17 +180,17 @@ export const leavesOfList = <T>(list: FieldList<T>): Leaf[] =>
 export const number = <T>(name: string, read: NumberRead<T>): Field<T> => ({
   leaves: [{ path: name, kind: "number" }],
   excluded: [],
-  hash: (record) => {
-    read(record, floats, 0);
-    mixFloat();
+  hash: (record, hasher) => {
+    read(record, hasher.floats, 0);
+    mixFloat(hasher);
   },
-  difference: (a, b) => {
-    read(a, floats, 0);
-    read(b, floats, 1);
+  difference: (a, b, hasher) => {
+    read(a, hasher.floats, 0);
+    read(b, hasher.floats, 1);
 
-    return sameFloats()
+    return sameFloats(hasher)
       ? null
-      : `${name}: ${String(floats[0])} vs ${String(floats[1])}`;
+      : `${name}: ${String(hasher.floats[0])} vs ${String(hasher.floats[1])}`;
   },
 });
 
@@ -190,23 +200,23 @@ export const nullableNumber = <T>(
 ): Field<T> => ({
   leaves: [{ path: name, kind: "nullable_number" }],
   excluded: [],
-  hash: (record) => {
-    if (read(record, floats, 0)) {
-      mixSmall(PRESENT);
-      mixFloat();
+  hash: (record, hasher) => {
+    if (read(record, hasher.floats, 0)) {
+      mixSmall(hasher, PRESENT);
+      mixFloat(hasher);
     } else {
-      mixSmall(ABSENT);
+      mixSmall(hasher, ABSENT);
     }
   },
-  difference: (a, b) => {
-    const left = read(a, floats, 0);
-    const right = read(b, floats, 1);
+  difference: (a, b, hasher) => {
+    const left = read(a, hasher.floats, 0);
+    const right = read(b, hasher.floats, 1);
 
-    if (left === right && (!left || sameFloats())) {
+    if (left === right && (!left || sameFloats(hasher))) {
       return null;
     }
 
-    return `${name}: ${left ? String(floats[0]) : "null"} vs ${right ? String(floats[1]) : "null"}`;
+    return `${name}: ${left ? String(hasher.floats[0]) : "null"} vs ${right ? String(hasher.floats[1]) : "null"}`;
   },
 });
 
@@ -233,8 +243,8 @@ export const text = <T>(
 ): Field<T> => ({
   leaves: [{ path: name, kind: "text" }],
   excluded: [],
-  hash: (record) => {
-    mixText(read(record));
+  hash: (record, hasher) => {
+    mixText(hasher, read(record));
   },
   difference: (a, b) => {
     const left = read(a);
@@ -252,8 +262,8 @@ export const flag = <T>(
 ): Field<T> => ({
   leaves: [{ path: name, kind: "flag" }],
   excluded: [],
-  hash: (record) => {
-    mixSmall(read(record) ? 1 : 0);
+  hash: (record, hasher) => {
+    mixSmall(hasher, read(record) ? 1 : 0);
   },
   difference: (a, b) => {
     const left = read(a);
@@ -282,11 +292,11 @@ export const record = <T, U>(
 ): Field<T> => ({
   leaves: leavesOf(list, `${name}.`),
   excluded: excludedOf(list, `${name}.`),
-  hash: (outer) => {
-    hashFields(list, read(outer));
+  hash: (outer, hasher) => {
+    hashFields(list, read(outer), hasher);
   },
-  difference: (a, b) => {
-    const difference = fieldsDifference(list, read(a), read(b));
+  difference: (a, b, hasher) => {
+    const difference = fieldsDifference(list, read(a), read(b), hasher);
 
     return difference === null ? null : `${name}.${difference}`;
   },

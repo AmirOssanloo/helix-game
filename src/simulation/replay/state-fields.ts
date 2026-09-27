@@ -319,4 +319,7 @@ export const WORLD_FIELDS = fieldsOf<DeepReadonly<World>>({
   events: excluded(
     "announcements the presentation reads; what they announce is hashed where it lives",
   ),
+  scratch: excluded(
+    "the rules' working memory, dead at the end of every tick: nothing in it is read on a later one",
+  ),
 });

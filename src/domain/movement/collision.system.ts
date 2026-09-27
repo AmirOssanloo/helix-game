@@ -2,7 +2,6 @@ import type { EntityId } from "@shared/public";
 import { unpackIndex } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
-import { UNIT_CAPACITY } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import {
   keepInsideRect,
@@ -10,10 +9,6 @@ import {
   separateDiscs,
   separateFromHeld,
 } from "./collision";
-import { createCandidateBuffer } from "./spatial-hash";
-
-/** Scratch for the ids a circle query returns, reused for every unit every pass. */
-const candidates: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
 
 /** The share of an overlap each unit of a pair takes when neither is the hero: the rule is an even split, not a tuning. */
 const EVEN_SPLIT = 0.5;
@@ -103,6 +98,7 @@ const separatePair = (
  * radius adds the widest disc in the world, so a pair overlaps only if the hash proposed it.
  */
 export const collisionSystem = (world: World): void => {
+  const candidates = world.scratch.collisionCandidates;
   const passes = readTunable(world.run.tuning, "push_out_passes");
   const heroShare = readTunable(world.run.tuning, "hero_push_share");
   const units = world.map.units;

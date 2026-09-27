@@ -1,9 +1,10 @@
 import type { EntityId } from "@shared/public";
 import { assertNever } from "@shared/public";
+import type { CastRecord } from "../abilities/cast-context";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
 import type { DamageRecord } from "../combat/damage";
-import { dealDamage } from "../combat/damage";
+import { createDamageRecord, dealDamage } from "../combat/damage";
 import type { DisableColumn } from "../definitions/disable-matrix-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
@@ -12,7 +13,7 @@ import { activeFormOf } from "../entities/hero";
 import type { StatusEntry, Unit } from "../entities/unit";
 import { clearStatusEntry, STATUS_TABLE_SIZE } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
 import { isCancelled } from "../orders/disable-matrix";
 import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
@@ -31,32 +32,40 @@ export type StatusRefusal =
 /** What applying a status returns: it is on the table, or the reason it is not. */
 export type StatusResult = "ok" | StatusRefusal;
 
-/** Scratch for the event an application or an expiry announces, reused for every one. */
-const event = createDomainEvent();
-
-/** Scratch for the context an expiry list runs with, reused for every one of every tick. */
-const context = createCastRecord();
-
-/** Scratch for the share of a damage over time dealt this tick, reused for every row of every unit. */
-const share: DamageRecord = { amount: 0, landed: 0 };
-
 /**
- * The rows one unit's pass found ended, kept as the three things an expiry list needs after
- * the row itself is empty: which status ended, who applied it, and the levels its tables are
- * read at. The pass fills these and runs the lists after it, so a list that puts a status on
- * the same unit does not lengthen the pass that ran it.
+ * The status pass's working memory, world-owned scratch: the context an expiry list runs
+ * with, the share of a damage over time dealt this tick, and the rows one unit's pass found
+ * ended, kept as the three things an expiry list needs after the row itself is empty: which
+ * status ended, who applied it, and the levels its tables are read at. The pass fills these
+ * and runs the lists after it, so a list that puts a status on the same unit does not
+ * lengthen the pass that ran it.
  */
-const endedIds: (string | null)[] = [];
+export type StatusScratch = {
+  context: CastRecord;
+  share: DamageRecord;
+  endedIds: (string | null)[];
+  endedSources: (EntityId | null)[];
+  endedLevels: number[][];
+};
 
-const endedSources: (EntityId | null)[] = [];
+/** The status pass's scratch, with a row for every row of a unit's table. Made once, with the world. */
+export const createStatusScratch = (): StatusScratch => {
+  const scratch: StatusScratch = {
+    context: createCastRecord(),
+    share: createDamageRecord(),
+    endedIds: [],
+    endedSources: [],
+    endedLevels: [],
+  };
 
-const endedLevels: number[][] = [];
+  for (let row = 0; row < STATUS_TABLE_SIZE; row += 1) {
+    scratch.endedIds.push(null);
+    scratch.endedSources.push(null);
+    scratch.endedLevels.push(ORB_IDS.map(() => 0));
+  }
 
-for (let row = 0; row < STATUS_TABLE_SIZE; row += 1) {
-  endedIds.push(null);
-  endedSources.push(null);
-  endedLevels.push(ORB_IDS.map(() => 0));
-}
+  return scratch;
+};
 
 const announce = (
   world: World,
@@ -65,6 +74,8 @@ const announce = (
   sourceId: EntityId | null,
   statusId: string,
 ): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = kind;
   event.tick = world.tick;
@@ -169,6 +180,8 @@ const takeDamageOverTime = (
     return;
   }
 
+  const share = world.scratch.statuses.share;
+
   share.amount = amountAtOrbLevel(damage, entry.orbLevels) * entry.stacks;
   dealDamage(world, unitId, share, damage.damageType, entry.sourceId);
 };
@@ -199,11 +212,16 @@ const restoreHealthOverTime = (
 };
 
 /** Keeps what the ended row's list needs, in the scratch slot `found`, before the row is emptied. */
-const rememberEnded = (found: number, entry: Readonly<StatusEntry>): void => {
-  const levels = endedLevels[found];
+const rememberEnded = (
+  world: World,
+  found: number,
+  entry: Readonly<StatusEntry>,
+): void => {
+  const scratch = world.scratch.statuses;
+  const levels = scratch.endedLevels[found];
 
-  endedIds[found] = entry.definitionId;
-  endedSources[found] = entry.sourceId;
+  scratch.endedIds[found] = entry.definitionId;
+  scratch.endedSources[found] = entry.sourceId;
 
   if (levels === undefined) {
     return;
@@ -247,7 +265,7 @@ const readTable = (world: World, unit: Unit, unitId: EntityId): number => {
         entry.sourceId,
         entry.definitionId,
       );
-      rememberEnded(ended, entry);
+      rememberEnded(world, ended, entry);
       ended += 1;
       clearStatusEntry(entry);
 
@@ -286,13 +304,15 @@ const runExpiries = (
   unitId: EntityId,
   ended: number,
 ): void => {
+  const scratch = world.scratch.statuses;
+
   for (let slot = 0; slot < ended; slot += 1) {
-    const statusId = endedIds[slot];
+    const statusId = scratch.endedIds[slot];
     const record =
       statusId === undefined || statusId === null
         ? undefined
         : world.run.statuses.get(statusId);
-    const levels = endedLevels[slot];
+    const levels = scratch.endedLevels[slot];
 
     if (record === undefined || levels === undefined) {
       continue;
@@ -303,8 +323,8 @@ const runExpiries = (
     }
 
     const cast = fillHookCast(
-      context,
-      endedSources[slot] ?? unitId,
+      scratch.context,
+      scratch.endedSources[slot] ?? unitId,
       levels,
       unit.curr.x,
       unit.curr.y,

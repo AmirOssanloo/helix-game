@@ -4,6 +4,7 @@ import { LAYER_IMPORTS } from "../eslint/matrix.js";
 import {
   describeGameConfig,
   describeLayerImports,
+  describeNoModuleState,
   describeNoSpecUnderSrc,
   describeOrderWritesOnlyInOrders,
   describePresentationFieldsUnread,
@@ -13,6 +14,11 @@ import {
 describeLayerImports({ srcDir: SOURCE_DIR, layerImports: LAYER_IMPORTS });
 
 describeNoSpecUnderSrc({ srcDir: SOURCE_DIR });
+
+describeNoModuleState({
+  srcDir: SOURCE_DIR,
+  folders: ["domain", "simulation"],
+});
 
 describeOrderWritesOnlyInOrders({
   srcDir: SOURCE_DIR,

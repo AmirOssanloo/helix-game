@@ -1,5 +1,6 @@
 import type { RefusalReason, TargetingKind } from "@domain/public";
 import {
+  createAbilityRequest,
   createSlotDescriptor,
   resolveKit,
   slotReadiness,
@@ -45,6 +46,9 @@ export type SlotKeyOutcome = "send" | "opened" | RefusalReason;
 
 /** Scratch for the slot's description, reused for every key-down. */
 const descriptor = createSlotDescriptor();
+
+/** Scratch for what the kit makes of the key the readiness is asked about, reused the same way. */
+const asked = createAbilityRequest();
 
 /** One closed cursor. */
 export const createTargetingCursor = (): TargetingCursor => ({
@@ -168,7 +172,7 @@ export const pressSlotKey = (
     return "send";
   }
 
-  const refusal = slotReadiness(world.run, world.tick, hero, slot);
+  const refusal = slotReadiness(world.run, world.tick, hero, slot, asked);
 
   if (refusal !== null) {
     return refusal;

@@ -24,48 +24,67 @@ import type { Cast } from "../cast-context";
  */
 const COLLECTION_DEPTH = 4;
 
-/** Per level: the ids the hash proposed, and the ids the exact test kept. */
-const candidates: EntityId[][] = [];
+/**
+ * The stack of collection buffers, per level the ids the hash proposed and the ids the exact
+ * test kept, and how many levels are taken. World-owned scratch: every level is given back
+ * before the call that took it returns, so the depth is zero at the end of every tick.
+ */
+export type TargetStack = {
+  candidates: EntityId[][];
+  collected: EntityId[][];
+  depth: number;
+};
 
-const collected: EntityId[][] = [];
+/** A stack of every level's buffers, none taken. Made once, with the world. */
+export const createTargetStack = (): TargetStack => {
+  const stack: TargetStack = { candidates: [], collected: [], depth: 0 };
 
-for (let level = 0; level < COLLECTION_DEPTH; level += 1) {
-  candidates.push(createCandidateBuffer(UNIT_CAPACITY));
-  collected.push(createCandidateBuffer(UNIT_CAPACITY));
-}
+  for (let level = 0; level < COLLECTION_DEPTH; level += 1) {
+    stack.candidates.push(createCandidateBuffer(UNIT_CAPACITY));
+    stack.collected.push(createCandidateBuffer(UNIT_CAPACITY));
+  }
 
-let depth = 0;
+  return stack;
+};
 
 /**
  * The level the next collection writes at. Whoever takes one passes it to `collectTargets`,
  * reads the ids back through `targetAt`, and releases it before returning.
  */
-export const takeTargets = (): number => {
+export const takeTargets = (world: World): number => {
+  const stack = world.scratch.targets;
+
   assert(
-    depth < COLLECTION_DEPTH,
+    stack.depth < COLLECTION_DEPTH,
     "Effect lists nest no deeper than the stack",
   );
 
-  const level = depth;
+  const level = stack.depth;
 
-  depth += 1;
+  stack.depth += 1;
 
   return level;
 };
 
 /** Gives the level back to the stack. Levels are released in the order they were taken. */
-export const releaseTargets = (level: number): void => {
+export const releaseTargets = (world: World, level: number): void => {
+  const stack = world.scratch.targets;
+
   assert(
-    depth === level + 1,
+    stack.depth === level + 1,
     "A collection is released before the one under it",
   );
 
-  depth = level;
+  stack.depth = level;
 };
 
 /** The id at `slot` of the collection at `level`. Every slot below the count holds a live id. */
-export const targetAt = (level: number, slot: number): EntityId => {
-  const id = collected[level]?.[slot];
+export const targetAt = (
+  world: World,
+  level: number,
+  slot: number,
+): EntityId => {
+  const id = world.scratch.targets.collected[level]?.[slot];
 
   assert(id !== undefined, "A slot below a collection's count holds an id");
 
@@ -132,8 +151,8 @@ const collectInShape = (
   centre: Readonly<Vec2>,
   facing: number,
 ): number => {
-  const proposed = candidates[level];
-  const out = collected[level];
+  const proposed = world.scratch.targets.candidates[level];
+  const out = world.scratch.targets.collected[level];
 
   assert(
     proposed !== undefined && out !== undefined,
@@ -198,7 +217,7 @@ const collectInZone = (
 const collectTarget = (world: World, cast: Cast, level: number): number => {
   const targetId = cast.targetId;
   const unit = targetId === null ? null : world.map.units.resolve(targetId);
-  const out = collected[level];
+  const out = world.scratch.targets.collected[level];
 
   assert(out !== undefined, "Every collection level has its buffers");
 

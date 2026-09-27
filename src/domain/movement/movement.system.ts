@@ -11,9 +11,6 @@ import { movementSpeed } from "./speed-stack";
 import { isInsideCone, turnToward } from "./turn";
 import { baseSpeedOf, turnRateOf } from "./unit-rates";
 
-/** Scratch for the vector from a unit to its waypoint, reused for every unit every tick. */
-const toWaypoint: Vec2 = { x: 0, y: 0 };
-
 /** Whether the unit is turning toward or walking along a path. */
 const isUnderway = (unit: Readonly<Unit>): boolean =>
   unit.state === "turning" || unit.state === "moving";
@@ -126,6 +123,7 @@ const carryPushed = (units: PoolView<Unit>): void => {
  * cell its position is in, which is a no-op for a unit that stayed in its cell.
  */
 export const movementSystem = (world: World): void => {
+  const toWaypoint = world.scratch.toWaypoint;
   const tuning = world.run.tuning;
   const tunedTurnRate = readTunable(tuning, "turn_rate_T");
   const rampTicks = readTunable(tuning, "turn_ramp_ticks");

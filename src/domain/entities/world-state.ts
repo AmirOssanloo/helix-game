@@ -19,6 +19,7 @@ import type { Effect } from "./effect";
 import type { Pool } from "./pool";
 import type { Projectile } from "./projectile";
 import type { Resources, Unit } from "./unit";
+import type { WorldScratch } from "./world-scratch";
 import type { Zone } from "./zone";
 
 /** The seeded random source's state. It lives on the world so a replay from the same seed reproduces every draw. */
@@ -133,8 +134,9 @@ export type MapScope = {
 
 /**
  * The whole of world state: plain data a system reads and writes through the world it is
- * handed, the commands the current tick consumed for the systems to act on, and the ring a
- * system announces an event into.
+ * handed, the commands the current tick consumed for the systems to act on, the ring a
+ * system announces an event into, and the scratch the rules work in, which is the world's so
+ * no module holds any, and which no tick leaves anything in for the next.
  */
 export type World = {
   tick: Tick;
@@ -142,4 +144,5 @@ export type World = {
   map: MapScope;
   commands: ConsumedCommands;
   events: EventSink;
+  scratch: WorldScratch;
 };

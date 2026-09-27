@@ -72,11 +72,11 @@ const pickUp = (
   statusId: string,
   ticks: number,
 ): void => {
-  const level = takeTargets();
+  const level = takeTargets(world);
   const count = collectTargets(world, cast, INSIDE, level);
 
   for (let slot = 0; slot < count; slot += 1) {
-    const id: EntityId = targetAt(level, slot);
+    const id: EntityId = targetAt(world, level, slot);
     const unit = world.map.units.resolve(id);
 
     if (
@@ -92,7 +92,7 @@ const pickUp = (
     }
   }
 
-  releaseTargets(level);
+  releaseTargets(world, level);
 };
 
 /**

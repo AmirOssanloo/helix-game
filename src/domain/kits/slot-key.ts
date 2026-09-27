@@ -5,24 +5,15 @@ import type { CastTarget } from "../commands/command";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { FormRecord, RunScope, World } from "../entities/world-state";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { pressOrb } from "../invoke/buffer";
 import { invoke } from "../invoke/invoke";
 import { slotRefusal } from "../orders/disable-matrix";
 import type { RefusalReason } from "../orders/validator";
 import { spendSkillPoint } from "../stats/levels";
 import type { Tick } from "../tick";
-import { createAbilityRequest } from "./kit";
+import type { AbilityRequest } from "./kit";
 import { resolveKit } from "./kit-registry";
-
-/** Scratch for what the kit made of the slot key, reused for every slot command. */
-const request = createAbilityRequest();
-
-/** Scratch for what the kit makes of a slot key a reader asks about, kept apart from the command's. */
-const asked = createAbilityRequest();
-
-/** Scratch for the event a slot key announces, reused for every one. */
-const event = createDomainEvent();
 
 /** The slot key the newest prepared spell sits on, which a first invoke writes into: the key after the three orbs and the composer. */
 const NEWEST_PREPARED_SLOT = 5;
@@ -31,6 +22,8 @@ const NEWEST_PREPARED_SLOT = 5;
 const NO_TARGET: CastTarget = { kind: "none" };
 
 const announceOrbAdded = (world: World, orb: number): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "orb_added";
   event.tick = world.tick;
@@ -39,6 +32,8 @@ const announceOrbAdded = (world: World, orb: number): void => {
 };
 
 const announceSpellInvoked = (world: World, abilityId: string): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "spell_invoked";
   event.tick = world.tick;
@@ -48,6 +43,8 @@ const announceSpellInvoked = (world: World, abilityId: string): void => {
 };
 
 const announceSlotsChanged = (world: World): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = "slots_changed";
   event.tick = world.tick;
@@ -82,6 +79,7 @@ const applyInvoke = (
     world.run.tuning,
     world.run.debug,
     world.tick,
+    world.scratch.invokeSnapshot,
   );
 
   switch (outcome) {
@@ -129,6 +127,7 @@ export const applySlotKey = (
   hero: Unit,
   slot: number,
 ): RefusalReason | null => {
+  const request = world.scratch.slotRequest;
   const form = activeFormOf(world, hero);
 
   if (form === null) {
@@ -178,6 +177,7 @@ export const applySkillPoint = (
   hero: Unit,
   slot: number,
 ): RefusalReason | null => {
+  const request = world.scratch.slotRequest;
   const form = activeFormOf(world, hero);
 
   if (form === null) {
@@ -210,13 +210,15 @@ export const applySkillPoint = (
  * and an invoke answer only to death and the disables here: what refuses them reads the
  * buffer, which the key's command decides. Pure and read-only over the world view, so the
  * HUD reads each slot's reason from it every frame and writes none into the world; the
- * request stage runs the same checks through `castReadiness`.
+ * request stage runs the same checks through `castReadiness`. `asked` is the reader's own
+ * record for what the kit makes of the key, filled in place.
  */
 export const slotReadiness = (
   run: DeepReadonly<RunScope>,
   tick: Tick,
   hero: DeepReadonly<Unit>,
   slot: number,
+  asked: AbilityRequest,
 ): RefusalReason | null => {
   if (hero.state === "dead") {
     return "dead";

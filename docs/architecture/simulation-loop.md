@@ -103,7 +103,7 @@ Running every tick the accumulator holds after a long stall. A tab resumed after
 
 ### A system that remembers between ticks
 
-A system holding a module-level variable — a cached list, a counter — that is not in world state. It survives a map load, diverges on replay, and is invisible to the world view. Everything a system needs is on the world.
+A system holding a module-level variable — a cached list, a counter, a scratch buffer — that is not in world state. It survives a map load, diverges on replay, is shared by two worlds in one process, and is invisible to the world view. Everything a system needs is on the world: what it remembers in run or map scope, and what it works in on the world's scratch.
 
 ---
 

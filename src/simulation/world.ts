@@ -26,6 +26,7 @@ import {
   createTuningState,
   createUnitPool,
   createUnitTable,
+  createWorldScratch,
   createZonePool,
   deriveWalkabilityGrid,
   fitPathSearch,
@@ -204,6 +205,7 @@ export class Simulation {
       map: createMapScope(options.map, run.tuning),
       commands: this.buffer,
       events: this.events,
+      scratch: createWorldScratch(),
     };
     this.log = new InputLog();
     this.tickCompleted = createDomainEvent();

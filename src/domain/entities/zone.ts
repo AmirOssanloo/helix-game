@@ -3,7 +3,7 @@ import { assert } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
 import type { EffectDef, ShapeDef } from "../definitions/effect-def";
 import { ORB_IDS } from "../definitions/orb-id";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
 import type { World } from "./world-state";
@@ -20,9 +20,6 @@ const ZONE_HIT_CAPACITY = 64;
 
 /** The lists a zone with no rules of its own runs: a fresh slot's, and a zone the panel spawned. */
 const NO_EFFECTS: readonly EffectDef[] = [];
-
-/** Scratch for the event a spawn announces, reused for every one. */
-const event = createDomainEvent();
 
 /**
  * An ability's presence on the ground with rules of its own: an area at a place, live from
@@ -171,6 +168,8 @@ export const acquireZone = (
   zone.startedAtTick = world.tick;
   zone.activeAtTick = world.tick;
   zone.expiresAtTick = world.tick;
+
+  const event = world.scratch.event;
 
   resetDomainEvent(event);
   event.kind = "zone_spawned";

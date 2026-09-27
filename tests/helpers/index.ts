@@ -26,6 +26,12 @@ export {
   listSourceFiles,
 } from "./architecture/layer-imports";
 export {
+  collectModuleStateViolations,
+  describeNoModuleState,
+  type ModuleStateOptions,
+  type ModuleStateViolation,
+} from "./architecture/module-state";
+export {
   collectSpecUnderSrcViolations,
   describeNoSpecUnderSrc,
   type NoSpecUnderSrcOptions,

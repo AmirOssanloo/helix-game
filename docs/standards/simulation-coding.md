@@ -39,7 +39,7 @@ const cooldownTicks = toTicks(fooDef.cooldownSeconds)
 | A new object or array literal per entity | Write into a preallocated field or a scratch slot |
 | A closure passed to a callback | A named function at module level taking the world |
 | Spread, `map`, `filter`, `reduce` on the hot path | An index loop over the pool |
-| A new vector per operation | The scratch vectors from `shared/`, reset before use |
+| A new vector per operation | A scratch vector on the world's scratch, written through the vector helpers from `shared/` |
 | String concatenation for a key | Integer cell coordinates packed into one number |
 | A fractional number passed to, or returned from, a call made per unit per tick | The object the number lives in: the point for two coordinates, a scratch record the callee reads and writes for an amount, as the damage door takes one. The engine boxes a fractional number that crosses a call it does not inline, one heap object per argument or result per call |
 | Anything that lives longer than the tick | Acquired from its pool, released back to it |
@@ -61,7 +61,9 @@ Two runs with the same seed and the same commands must visit entities in the sam
 
 ## Systems
 
-A system is a function `(world) => void`, registered once in the single ordered list the simulation owns. It reads and writes world state only through the world it is handed. It holds no module-level state of its own, because module state is a second world that a test cannot reset.
+A system is a function `(world) => void`, registered once in the single ordered list the simulation owns. It reads and writes world state only through the world it is handed. It holds no module-level state of its own, because module state is a second world that a test cannot reset, and that two worlds in one process share.
+
+**A rule's working memory is the world's scratch.** A buffer, a scratch point or record, the context an effect list runs with, the event an announcement is written through, and a re-entrancy guard are fields of `world.scratch`, made once with the world. Each is sorted by one test: a value dead at the end of every tick is scratch, and the state checksum leaves the scratch out; a value read on a later tick is state, and goes into run or map scope, where the checksum hashes it. A scratch value found live across a tick is a bug. A pure rule with no world to hand takes the record from its caller, as the damage door takes its record. Nothing under `domain/` or `simulation/` holds a binding at module scope that can be written, at any depth: a constant is typed read-only all the way down, and the architecture test refuses the rest.
 
 **A rule is a pure function over plain state.** The system that applies it is thin: loop, call the rule, write the result. Test the rule with three arguments; test the system once for the loop. [Testing standards](./testing.md#quick-reference) say how many.
 
@@ -135,9 +137,11 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | A rule's draw | The keyed draw, with its own purpose from the one list, a second purpose for a second draw on one key and tick; the integer result scaled locally |
 | Asynchrony | None. A tick runs to completion |
 | Durations | Integer ticks, converted from seconds once at definition load. A system never multiplies by the tick rate |
-| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch vectors from `shared/`; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |
+| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch on the world's scratch; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |
 | Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
+| Module scope | No mutable binding under `domain/` or `simulation/`, at any depth: constants typed read-only all the way down; the architecture test holds it |
+| Scratch | On `world.scratch`, made with the world, dead at the end of every tick, left out of the checksum; a value a later tick reads is state, in run or map scope |
 | A rule | A pure function over plain state, testable without a world |
 | Commands | Validated before any mutation; a refusal changes nothing and is announced as one event with its reason |
 | Failures | Returned as values with a reason. Throwing is for broken invariants only |

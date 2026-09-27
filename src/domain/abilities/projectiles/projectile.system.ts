@@ -9,9 +9,10 @@ import type { Unit } from "../../entities/unit";
 import { UNIT_CAPACITY } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import type { DomainEvent } from "../../events/domain-event";
-import { createDomainEvent, resetDomainEvent } from "../../events/domain-event";
+import { resetDomainEvent } from "../../events/domain-event";
 import { createCandidateBuffer } from "../../movement/spatial-hash";
 import { NO_CONTACT, sweepDisc } from "../../movement/sweep";
+import type { CastRecord } from "../cast-context";
 import { createCastRecord, fillCast } from "../cast-context";
 import { runEffects } from "../effect-runner";
 import { isReachable } from "../primitives/targets";
@@ -19,24 +20,25 @@ import { isReachable } from "../primitives/targets";
 /** What an attack lands as. Every attack in the game is physical; a spell's type is its entry's. */
 const ATTACK_DAMAGE_TYPE: DamageType = "physical";
 
-/** Scratch for the context a hit list runs with, reused for every hit of every tick. */
-const context = createCastRecord();
-
-/** Scratch for the event a spawn, a hit, or an expiry announces, reused for every one. */
-const event = createDomainEvent();
-
-/** The ids the hash proposes for one sweep. One projectile is resolved at a time, so one buffer serves every tick. */
-const candidates: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
-
 /**
- * What one sweep found: the unit the projectile reached first and how far along the segment
- * it touched it, so the contact is computed once and read again where the projectile stops.
- * `null` is a segment that touched nothing.
+ * The projectile pass's working memory, world-owned scratch: the context a hit list runs
+ * with, the ids the hash proposes for one sweep, since one projectile is resolved at a time,
+ * and what one sweep found: the unit the projectile reached first and how far along the
+ * segment it touched it, so the contact is computed once and read again where the projectile
+ * stops. A `null` unit is a segment that touched nothing.
  */
-const contact: { unitId: EntityId | null; at: number } = {
-  unitId: null,
-  at: NO_CONTACT,
+export type ProjectileScratch = {
+  context: CastRecord;
+  candidates: EntityId[];
+  contact: { unitId: EntityId | null; at: number };
 };
+
+/** The projectile pass's scratch. Made once, with the world. */
+export const createProjectileScratch = (): ProjectileScratch => ({
+  context: createCastRecord(),
+  candidates: createCandidateBuffer(UNIT_CAPACITY),
+  contact: { unitId: null, at: NO_CONTACT },
+});
 
 const announce = (
   world: World,
@@ -45,6 +47,8 @@ const announce = (
   projectileId: EntityId,
   unitId: EntityId | null,
 ): void => {
+  const event = world.scratch.event;
+
   resetDomainEvent(event);
   event.kind = kind;
   event.tick = world.tick;
@@ -98,6 +102,7 @@ const contactWith = (
 
 /** The one unit a homing projectile may touch, written into `contact`. */
 const sweepTarget = (world: World, projectile: Readonly<Projectile>): void => {
+  const contact = world.scratch.projectiles.contact;
   const targetId = projectile.targetId;
   const target = targetId === null ? null : world.map.units.resolve(targetId);
   const at = target === null ? NO_CONTACT : contactWith(projectile, target);
@@ -114,6 +119,8 @@ const sweepTarget = (world: World, projectile: Readonly<Projectile>): void => {
  * touched at the same fraction resolve the same way every run.
  */
 const sweepAhead = (world: World, projectile: Readonly<Projectile>): void => {
+  const candidates = world.scratch.projectiles.candidates;
+  const contact = world.scratch.projectiles.contact;
   const casterId = projectile.casterId;
   const caster = casterId === null ? null : world.map.units.resolve(casterId);
   const reach =
@@ -167,6 +174,9 @@ const strike = (
   projectileId: EntityId,
   hitId: EntityId,
 ): void => {
+  const context = world.scratch.projectiles.context;
+  const contact = world.scratch.projectiles.contact;
+
   projectile.curr.x =
     projectile.prev.x + (projectile.curr.x - projectile.prev.x) * contact.at;
   projectile.curr.y =
@@ -223,6 +233,7 @@ const isSpent = (projectile: Readonly<Projectile>): boolean =>
  * unit, and before death resolves, so a hit it landed is counted on the tick it landed it.
  */
 export const projectileSystem = (world: World): void => {
+  const contact = world.scratch.projectiles.contact;
   const projectiles = world.map.projectiles;
 
   for (let index = 0; index < projectiles.end; index += 1) {

@@ -9,6 +9,7 @@ import type {
 } from "@domain/public";
 import {
   applyStatus,
+  createAbilityRequest,
   resolveKit,
   slotReadiness,
   validateRegistry,
@@ -497,7 +498,13 @@ describe("each square's refusal reason", () => {
   ): { hud: (RefusalReason | null)[]; domain: (RefusalReason | null)[] } => ({
     hud: SLOTS.map((slot) => arranged.hud.refusalOf(slot)),
     domain: SLOTS.map((slot) =>
-      slotReadiness(arranged.view.run, arranged.view.tick, arranged.hero, slot),
+      slotReadiness(
+        arranged.view.run,
+        arranged.view.tick,
+        arranged.hero,
+        slot,
+        createAbilityRequest(),
+      ),
     ),
   });
 

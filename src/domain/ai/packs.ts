@@ -88,18 +88,28 @@ const damageMultiplierOf = (world: World, tier: EnemyTier): number => {
   }
 };
 
-/** Scratch for the point the pack's centre resolves to. */
-const landing: Vec2 = { x: 0, y: 0 };
+/**
+ * Pack placement's working memory, world-owned scratch: the point the pack's centre resolves
+ * to, the cells a pack is placed on, found before any unit is acquired so a pack that does not
+ * fit spawns nothing, the units near a candidate cell, and the candidate cell the hash is
+ * asked around. A pack is never larger than the cap. Every placement writes what it reads.
+ */
+export type PackScratch = {
+  landing: Vec2;
+  packX: Float64Array;
+  packY: Float64Array;
+  nearby: EntityId[];
+  probe: Vec2;
+};
 
-/** Scratch for the cells a pack is placed on, found before any unit is acquired so a pack that does not fit spawns nothing. A pack is never larger than the cap. */
-const packX = new Float64Array(ENEMY_LIVE_CAP);
-const packY = new Float64Array(ENEMY_LIVE_CAP);
-
-/** Scratch for the units near a candidate cell. */
-const nearby: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
-
-/** Scratch for the candidate cell the hash is asked around. */
-const probe: Vec2 = { x: 0, y: 0 };
+/** Pack placement's scratch. Made once, with the world. */
+export const createPackScratch = (): PackScratch => ({
+  landing: { x: 0, y: 0 },
+  packX: new Float64Array(ENEMY_LIVE_CAP),
+  packY: new Float64Array(ENEMY_LIVE_CAP),
+  nearby: createCandidateBuffer(UNIT_CAPACITY),
+  probe: { x: 0, y: 0 },
+});
 
 /** Whether a disc of `radius` at (`x`, `y`) overlaps a unit already standing in the world. */
 const isOccupied = (
@@ -108,6 +118,8 @@ const isOccupied = (
   y: number,
   radius: number,
 ): boolean => {
+  const nearby = world.scratch.packs.nearby;
+  const probe = world.scratch.packs.probe;
   const units = world.map.units;
   probe.x = x;
   probe.y = y;
@@ -153,6 +165,9 @@ const findPackCells = (
   position: Readonly<Vec2>,
   radius: number,
 ): number => {
+  const landing = world.scratch.packs.landing;
+  const packX = world.scratch.packs.packX;
+  const packY = world.scratch.packs.packY;
   const grid = world.map.walkability;
   const bounds = world.map.bounds;
   const radiusClass = radiusClassOf(grid, radius);
@@ -175,6 +190,7 @@ const findPackCells = (
     position.x,
     position.y,
     landing,
+    world.scratch.nearestCell,
   );
 
   for (let ring = 0; ring <= lastRing && placed < count; ring += 1) {
@@ -221,6 +237,8 @@ export const placePack = (
   count: number,
   position: Readonly<Vec2>,
 ): RefusalReason | null => {
+  const packX = world.scratch.packs.packX;
+  const packY = world.scratch.packs.packY;
   const record = world.run.units.get(archetypeId);
   const units = world.map.units;
 

@@ -8,11 +8,21 @@ import { issueAttackTarget, issueMove } from "../../orders/state-machine";
 import { resolveDestinationFor } from "../../pathing/destination";
 import type { DriverBehaviour } from "../behaviour";
 
-/** Scratch for the vector from the owner to the summon, reused for every summon every tick. */
-const fromOwner: Vec2 = { x: 0, y: 0 };
+/**
+ * The summon driver's working memory, world-owned scratch: the vector from the owner to the
+ * summon, and the point the summon walks to, both written for every summon before they are
+ * read.
+ */
+export type SummonScratch = {
+  fromOwner: Vec2;
+  destination: Vec2;
+};
 
-/** Scratch for the point the summon walks to, reused the same way. */
-const destination: Vec2 = { x: 0, y: 0 };
+/** The summon driver's scratch. Made once, with the world. */
+export const createSummonScratch = (): SummonScratch => ({
+  fromOwner: { x: 0, y: 0 },
+  destination: { x: 0, y: 0 },
+});
 
 /**
  * How far from its owner the summon's definition lets it stand, or nothing for a unit whose
@@ -38,6 +48,9 @@ const writeFollowPoint = (
   owner: Readonly<Unit>,
   followDistance: number,
 ): void => {
+  const fromOwner = world.scratch.summons.fromOwner;
+  const destination = world.scratch.summons.destination;
+
   sub(unit.curr, owner.curr, fromOwner);
 
   const gap = length(fromOwner);
@@ -91,6 +104,7 @@ const acquired = (world: World, unit: Unit): boolean => {
  * nothing it did in between matters.
  */
 const followOwner = (world: World, unit: Unit): void => {
+  const destination = world.scratch.summons.destination;
   const ownerId = unit.summon.ownerId;
   const owner = ownerId === null ? null : world.map.units.resolve(ownerId);
 

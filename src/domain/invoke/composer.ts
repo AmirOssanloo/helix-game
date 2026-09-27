@@ -3,39 +3,41 @@ import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { KitState } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
-import { countOrbs } from "./buffer";
 
-/** Scratch for the buffer's count of each orb, reused for every compose. */
-const held: number[] = [];
+/** How many of the buffer's live orb instances are `orb`. */
+const heldCount = (state: DeepReadonly<KitState>, orb: number): number => {
+  let count = 0;
 
-/** Scratch for a recipe's count of each orb, reused for every spell compared. */
-const wanted: number[] = [];
-
-for (let orb = 0; orb < ORB_COUNT; orb += 1) {
-  held.push(0);
-  wanted.push(0);
-}
-
-/** Writes how many of each orb `recipe` names into `out`. An id that is no orb counts for nothing. */
-const countRecipe = (recipe: readonly string[], out: number[]): number[] => {
-  for (let orb = 0; orb < ORB_COUNT; orb += 1) {
-    out[orb] = 0;
-  }
-
-  for (let index = 0; index < recipe.length; index += 1) {
-    const orb = ORB_IDS.indexOf(recipe[index] as (typeof ORB_IDS)[number]);
-
-    if (orb !== -1) {
-      out[orb] = (out[orb] ?? 0) + 1;
+  for (let index = 0; index < state.orbCount; index += 1) {
+    if (state.orbs[index] === orb) {
+      count += 1;
     }
   }
 
-  return out;
+  return count;
 };
 
-const sameCounts = (a: readonly number[], b: readonly number[]): boolean => {
+/** How many of `recipe`'s entries name `orb`. An id that is no orb counts for nothing. */
+const recipeCount = (recipe: readonly string[], orb: number): number => {
+  const id = ORB_IDS[orb];
+  let count = 0;
+
+  for (let index = 0; index < recipe.length; index += 1) {
+    if (recipe[index] === id) {
+      count += 1;
+    }
+  }
+
+  return count;
+};
+
+/** Whether `recipe` holds the same count of each orb as the buffer does. */
+const sameCounts = (
+  state: DeepReadonly<KitState>,
+  recipe: readonly string[],
+): boolean => {
   for (let orb = 0; orb < ORB_COUNT; orb += 1) {
-    if (a[orb] !== b[orb]) {
+    if (heldCount(state, orb) !== recipeCount(recipe, orb)) {
       return false;
     }
   }
@@ -53,8 +55,6 @@ export const composeSpell = (
   abilities: readonly string[],
   spells: ReadonlyMap<string, SpellRecord>,
 ): string | null => {
-  countOrbs(state, held);
-
   for (let index = 0; index < abilities.length; index += 1) {
     const id = abilities[index];
     const spell = id === undefined ? undefined : spells.get(id);
@@ -63,7 +63,7 @@ export const composeSpell = (
       continue;
     }
 
-    if (sameCounts(held, countRecipe(spell.def.recipe, wanted))) {
+    if (sameCounts(state, spell.def.recipe)) {
       return spell.def.id;
     }
   }

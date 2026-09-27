@@ -31,24 +31,21 @@ export const formInSimulationUnits = (
   },
 });
 
-/** A form at level one wears no modifier source. */
-const NO_MODIFIERS: Readonly<ModifierTable> = {
-  modifiers: [],
-  liveModifierRows: 0,
-  modifierMisses: 0,
-};
-
-/** The first level's derived values with no modifier, which a fresh form's resources are filled to. */
+/**
+ * The first level's derived values with no modifier, which a fresh form's resources are
+ * filled to: a form at level one wears no modifier source. Run at world creation, so the
+ * empty table is made here rather than shared.
+ */
 const fullAtLevelOne = (def: FormDef): Stats => {
   const attributes: Attributes = { strength: 0, agility: 0, intelligence: 0 };
   const stats = createStats();
+  const none: ModifierTable = {
+    modifiers: [],
+    liveModifierRows: 0,
+    modifierMisses: 0,
+  };
 
-  return deriveStats(
-    def,
-    attributesAt(def, 1, attributes),
-    NO_MODIFIERS,
-    stats,
-  );
+  return deriveStats(def, attributesAt(def, 1, attributes), none, stats);
 };
 
 /**

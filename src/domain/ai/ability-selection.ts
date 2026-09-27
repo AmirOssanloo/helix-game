@@ -13,17 +13,20 @@ import { castRefusal } from "../orders/disable-matrix";
 /** The target a no-target ability is requested with. */
 const NO_TARGET: CastTarget = { kind: "none" };
 
-/** Scratch for a unit ability aimed at the machine's target, rewritten for every request. */
-const unitTarget: { kind: "unit"; unitId: EntityId } = {
-  kind: "unit",
-  unitId: 0,
+/**
+ * The aims a behaviour supplies, world-owned scratch: a unit ability aimed at the machine's
+ * target, and a point ability aimed where it stands, each rewritten for every request.
+ */
+export type AbilityAimScratch = {
+  unitTarget: { kind: "unit"; unitId: EntityId };
+  pointTarget: { kind: "point"; position: Vec2 };
 };
 
-/** Scratch for a point ability aimed where the machine's target stands, rewritten for every request. */
-const pointTarget: { kind: "point"; position: Vec2 } = {
-  kind: "point",
-  position: { x: 0, y: 0 },
-};
+/** The behaviour's aims. Made once, with the world. */
+export const createAbilityAimScratch = (): AbilityAimScratch => ({
+  unitTarget: { kind: "unit", unitId: 0 },
+  pointTarget: { kind: "point", position: { x: 0, y: 0 } },
+});
 
 /**
  * The aim a behaviour supplies for an ability of `kind` at `target`: the unit itself, the
@@ -31,10 +34,14 @@ const pointTarget: { kind: "point"; position: Vec2 } = {
  * vector need a line only a player draws, so the machine supplies neither and returns `null`.
  */
 const aimAt = (
+  world: World,
   kind: TargetingKind,
   target: Readonly<Unit>,
   targetId: EntityId,
 ): CastTarget | null => {
+  const unitTarget = world.scratch.abilityAim.unitTarget;
+  const pointTarget = world.scratch.abilityAim.pointTarget;
+
   switch (kind) {
     case "none":
       return NO_TARGET;
@@ -144,7 +151,7 @@ export const selectAbility = (
     const abilityId = entry.id;
 
     const kind = ability.def.targeting;
-    const aim = aimAt(kind, target, targetId);
+    const aim = aimAt(world, kind, target, targetId);
 
     if (
       aim === null ||

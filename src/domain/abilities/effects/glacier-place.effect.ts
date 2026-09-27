@@ -9,7 +9,7 @@ import {
 } from "../../definitions/schema";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
-import { createCastRecord, fillCast } from "../cast-context";
+import { fillCast } from "../cast-context";
 import { spawnZone } from "../primitives/spawn-zone";
 import type { NamedEffect, NamedEffectNesting } from "./index";
 
@@ -61,9 +61,6 @@ const fieldsOf = (
   fields: Readonly<Record<string, unknown>>,
 ): GlacierPlaceFields => fields as GlacierPlaceFields;
 
-/** Scratch for the context each segment is spawned with, reused for every segment of every cast. */
-const segment = createCastRecord();
-
 /**
  * Glacier's wall: one zone per segment on a line through the anchor, `spacing` apart and
  * centred on it, so an odd count puts one segment on the anchor and an even one leaves the
@@ -93,7 +90,7 @@ export const glacierPlaceEffect: NamedEffect = (
     spawnZone(
       world,
       fillCast(
-        segment,
+        world.scratch.glacierSegment,
         cast.casterId,
         cast.ability,
         cast.orbLevels,

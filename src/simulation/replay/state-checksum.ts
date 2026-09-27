@@ -7,6 +7,8 @@ import {
   leavesOfList,
   recordDifference,
 } from "./field-list";
+import type { Hasher } from "./hash-words";
+import { createHasher } from "./hash-words";
 import type { Replay } from "./replay";
 import { WORLD_FIELDS } from "./state-fields";
 
@@ -14,11 +16,13 @@ import { WORLD_FIELDS } from "./state-fields";
  * The hash of the whole of world state a tick decides, over the canonical sequence of field
  * paths in `state-fields.ts`, in pool-slot order. Floats are hashed by their bits, so it is
  * exact: any change to any listed value moves it, and so does any reordering of arithmetic.
- * It allocates nothing. It runs in the replay verifier, the re-stamp tool, and tests, never
- * in the driver or a session in the game.
+ * It hashes through the caller's `hasher` and allocates nothing. It runs in the replay
+ * verifier, the re-stamp tool, and tests, never in the driver or a session in the game.
  */
-export const stateChecksum = (world: DeepReadonly<World>): number =>
-  hashRecord(WORLD_FIELDS, world);
+export const stateChecksum = (
+  world: DeepReadonly<World>,
+  hasher: Hasher,
+): number => hashRecord(WORLD_FIELDS, world, hasher);
 
 /**
  * The first path on which two worlds differ, with both values, or `null`: the comparison the
@@ -57,12 +61,16 @@ const isChecksumTick = (tick: Tick, ticks: number): boolean =>
 export const recordChecksums = (replay: Replay): StateChecksum[] => {
   const checksums: StateChecksum[] = [];
   const ticks = replay.ticks;
+  const hasher = createHasher();
 
   for (;;) {
     const tick = replay.view.tick;
 
     if (isChecksumTick(tick, ticks)) {
-      checksums.push({ tick, value: stateChecksum(replay.world.state) });
+      checksums.push({
+        tick,
+        value: stateChecksum(replay.world.state, hasher),
+      });
     }
 
     if (replay.done) {

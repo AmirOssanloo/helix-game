@@ -4,6 +4,7 @@ import { arenaDef } from "@content/public";
 import type { Replay } from "@simulation/public";
 import {
   beginReplay,
+  createHasher,
   isReplayRefusal,
   recordChecksums,
   STATE_LEAVES,
@@ -17,6 +18,9 @@ import {
 } from "../../helpers";
 
 const registry = makeRegistry();
+
+/** One hasher for every checksum the file takes, as a verifier holds one. */
+const hasher = createHasher();
 
 /** Checksums taken before the heap is measured, so every read the walk makes has been compiled. */
 const WARM_UP_CALLS = 500;
@@ -40,16 +44,16 @@ const replayOf = (name: string): Replay => {
 describe("the state checksum", () => {
   it("moves when any one leaf of the state moves by the smallest step, and comes back when it is put back", () => {
     const reference = arrangeEveryRecord();
-    const base = stateChecksum(reference.state);
+    const base = stateChecksum(reference.state, hasher);
     let changed = arrangeEveryRecord();
     const unmoved: string[] = [];
 
     for (const leaf of STATE_LEAVES) {
-      expect(stateChecksum(changed.state), leaf.path).toBe(base);
+      expect(stateChecksum(changed.state, hasher), leaf.path).toBe(base);
 
       const nudge = nudgeLeaf(changed.state, leaf);
 
-      if (stateChecksum(changed.state) === base) {
+      if (stateChecksum(changed.state, hasher) === base) {
         unmoved.push(leaf.path);
       }
 
@@ -77,7 +81,7 @@ describe("the state checksum", () => {
     let sink = 0;
 
     for (let call = 0; call < WARM_UP_CALLS; call += 1) {
-      sink ^= stateChecksum(world);
+      sink ^= stateChecksum(world, hasher);
     }
 
     const profiler = new GCProfiler();
@@ -87,7 +91,7 @@ describe("the state checksum", () => {
     const before = process.memoryUsage().heapUsed;
 
     for (let call = 0; call < MEASURED_CALLS; call += 1) {
-      sink ^= stateChecksum(world);
+      sink ^= stateChecksum(world, hasher);
     }
 
     const after = process.memoryUsage().heapUsed;

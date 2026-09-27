@@ -1,6 +1,5 @@
 import type { CooldownSnapshot } from "../abilities/cooldowns";
 import {
-  createCooldownSnapshot,
   finalCooldownTicks,
   isCooldownReady,
   snapshotCooldownSources,
@@ -29,9 +28,6 @@ export type InvokeRefusal =
  * slots, the mana, and the clock untouched.
  */
 export type InvokeOutcome = "invoked" | "swapped" | "unchanged" | InvokeRefusal;
-
-/** Scratch for what the modifier table takes off the composer's clock, reused for every first invoke. */
-const snapshot: CooldownSnapshot = createCooldownSnapshot();
 
 /** The sum of every orb skill's level, which the composer's clock shortens by. */
 export const totalOrbLevels = (levels: readonly number[]): number => {
@@ -68,6 +64,7 @@ export const invokeCooldownTicks = (
  * the composer's clock runs or the form lacks the mana, unless the panel has switched either
  * off, and else the mana is spent, the clock starts from the total orb levels with the
  * percentage the hero holds at this moment baked in, and the slots shift to take the spell.
+ * `snapshot` is the world's scratch for what the modifier table takes off the clock.
  */
 export const invoke = (
   hero: Unit,
@@ -76,6 +73,7 @@ export const invoke = (
   tuning: ReadonlyMap<string, number>,
   flags: Readonly<DebugFlags>,
   now: Tick,
+  snapshot: CooldownSnapshot,
 ): InvokeOutcome => {
   const state = form.kit;
 

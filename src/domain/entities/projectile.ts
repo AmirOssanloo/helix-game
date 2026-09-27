@@ -3,7 +3,7 @@ import { assert } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
 import type { EffectDef } from "../definitions/effect-def";
 import { ORB_IDS } from "../definitions/orb-id";
-import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { resetDomainEvent } from "../events/domain-event";
 import { Pool } from "./pool";
 import type { World } from "./world-state";
 
@@ -14,9 +14,6 @@ const NO_EFFECTS: readonly EffectDef[] = [];
 
 /** A range of nothing is one no distance ever runs out, which is what a projectile aimed at a unit flies. */
 const NO_RANGE = 0;
-
-/** Scratch for the event a spawn announces, reused for every one. */
-const event = createDomainEvent();
 
 /**
  * A moving thing that hits: it flies from where it was fired until it touches a unit or runs
@@ -139,6 +136,8 @@ export const acquireProjectile = (
   projectile.curr.x = x;
   projectile.curr.y = y;
   projectile.facing = facing;
+
+  const event = world.scratch.event;
 
   resetDomainEvent(event);
   event.kind = "projectile_spawned";

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Path, PathSearch, WalkabilityGrid } from "@domain/public";
 import {
   cellIndex,
+  createNearestCell,
   createPathSearch,
   createUnitPool,
   deriveWalkabilityGrid,
@@ -309,6 +310,7 @@ describe("resolveDestination", () => {
       270,
       300,
       { x: 0, y: 0 },
+      createNearestCell(),
     );
 
     expect(out).toEqual({ x: 256 - HERO, y: 300 });
@@ -317,14 +319,32 @@ describe("resolveDestination", () => {
   it("moves a point outside the map to the nearest point inside the bounds a class radius in", () => {
     const grid = derive([]);
 
-    const west = resolveDestination(grid, HERO_CLASS, BOUNDS, [], -50, 300, {
-      x: 0,
-      y: 0,
-    });
-    const south = resolveDestination(grid, HERO_CLASS, BOUNDS, [], 300, 700, {
-      x: 0,
-      y: 0,
-    });
+    const west = resolveDestination(
+      grid,
+      HERO_CLASS,
+      BOUNDS,
+      [],
+      -50,
+      300,
+      {
+        x: 0,
+        y: 0,
+      },
+      createNearestCell(),
+    );
+    const south = resolveDestination(
+      grid,
+      HERO_CLASS,
+      BOUNDS,
+      [],
+      300,
+      700,
+      {
+        x: 0,
+        y: 0,
+      },
+      createNearestCell(),
+    );
 
     expect(west).toEqual({ x: HERO, y: 300 });
     expect(south).toEqual({ x: 300, y: 640 - HERO });
@@ -333,10 +353,19 @@ describe("resolveDestination", () => {
   it("snaps a point in the map's corner, which both wall strips close, to the nearest open cell", () => {
     const grid = derive([]);
 
-    const out = resolveDestination(grid, HERO_CLASS, BOUNDS, [], -50, 700, {
-      x: 0,
-      y: 0,
-    });
+    const out = resolveDestination(
+      grid,
+      HERO_CLASS,
+      BOUNDS,
+      [],
+      -50,
+      700,
+      {
+        x: 0,
+        y: 0,
+      },
+      createNearestCell(),
+    );
 
     expect(out).toEqual({ x: CELL, y: 640 - CELL });
   });
@@ -352,6 +381,7 @@ describe("resolveDestination", () => {
       100,
       100,
       { x: 0, y: 0 },
+      createNearestCell(),
     );
 
     expect(out).toEqual({ x: 100, y: 100 });
@@ -368,6 +398,7 @@ describe("resolveDestination", () => {
       320,
       336,
       { x: 0, y: 0 },
+      createNearestCell(),
     );
 
     expect(out).toEqual({ x: 480, y: 334 });

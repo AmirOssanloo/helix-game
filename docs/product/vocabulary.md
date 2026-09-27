@@ -71,6 +71,7 @@ When two people call the same thing different names, the names leak into the cod
 | A point on a map the hero comes back to after dying: the furthest one it has reached | **Checkpoint** | Save point, waypoint, respawn point, bonfire |
 | State that lives for the whole session: hero, tunables, seed | **Run scope** | Global state, session |
 | State that lives for one map: enemies, projectiles, zones | **Map scope** | Level state |
+| The working memory the rules write and read within a call, which the world owns and no tick leaves anything in | **Scratch** | Temp, buffer pool, cache (a cache is read on a later tick, so it is state) |
 | The HTML panel for spawning, tuning, and instrumentation | **Developer panel** | Debug menu, cheats, admin |
 | The build published for people to play with: the game as it ships, with the developer panel beside it | **Playtest build** | Demo, preview, staging, dev build |
 | Drawn diagnostics over the world | **Overlay** | Gizmo, debug draw |
