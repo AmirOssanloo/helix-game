@@ -1,9 +1,12 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import { interpolate } from "../views/quad";
 
 /**
- * How far around a click the hash is asked for units. Wider than any selection radius content
- * declares, so a unit whose selection disc covers the point is always among the candidates.
+ * How far around a click the hash is asked for units. The hash holds where each unit stands
+ * this tick, and a unit is drawn up to one tick's travel behind it, so the query is wider than
+ * any selection radius content declares plus the fastest walk's tick: a unit whose drawn
+ * selection disc covers the point is always among the candidates.
  */
 const PICK_QUERY_RADIUS = 128;
 
@@ -11,14 +14,17 @@ const PICK_QUERY_RADIUS = 128;
 const clicked: Vec2 = { x: 0, y: 0 };
 
 /**
- * The unit under a world point: the nearest one whose selection disc contains it, or `null`
- * when none does. Reads the hash and the pool through the view and writes nothing but
- * `candidates`, which the caller preallocates to the unit capacity.
+ * The unit drawn under a world point: the nearest one whose selection disc, around where it
+ * is drawn this frame at `alpha` between its last two ticks, contains the point, or `null`
+ * when none does. What the player clicks is what is drawn, not where the tick left it. Reads
+ * the hash and the pool through the view and writes nothing but `candidates`, which the
+ * caller preallocates to the unit capacity.
  */
 export const pickUnit = (
   world: WorldView,
   x: number,
   y: number,
+  alpha: number,
   candidates: EntityId[],
 ): EntityId | null => {
   clicked.x = x;
@@ -40,8 +46,8 @@ export const pickUnit = (
       continue;
     }
 
-    const dx = x - unit.curr.x;
-    const dy = y - unit.curr.y;
+    const dx = x - interpolate(unit.prev.x, unit.curr.x, alpha);
+    const dy = y - interpolate(unit.prev.y, unit.curr.y, alpha);
     const distanceSquared = dx * dx + dy * dy;
 
     if (

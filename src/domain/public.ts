@@ -1,5 +1,6 @@
 export {
   castLevelOf,
+  castReadiness,
   holdsAbility,
   isInCastRange,
   orbLevelsOf,
@@ -433,7 +434,7 @@ export {
   type SlotDescriptor,
   type SlotKind,
 } from "./kits/kit";
-export { applySkillPoint, applySlotKey } from "./kits/slot-key";
+export { applySkillPoint, applySlotKey, slotReadiness } from "./kits/slot-key";
 export {
   cellCentreX,
   cellCentreY,
@@ -562,6 +563,7 @@ export {
   type LevelUpResult,
   type Progression,
   type SkillPointRefusal,
+  skillPointRefusal,
   type SkillPointResult,
   spendSkillPoint,
 } from "./stats/levels";

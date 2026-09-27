@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Unit } from "@domain/public";
+import { requestCast } from "@domain/public";
 import type { TargetingCursor } from "@presentation/public";
 import {
   closeCursor,
@@ -19,6 +20,8 @@ import {
   makeWorld,
   QuadRecorder,
   spawnHero,
+  spawnUnit,
+  unitIdOf,
 } from "../helpers";
 
 const FRAME_WIDTH = 128;
@@ -588,5 +591,113 @@ describe("the line preview", () => {
 
     expect(arranged.shape.visible).toBe(false);
     expect(arranged.ring.visible).toBe(true);
+  });
+});
+
+describe("the preview against the cast at the edge of range", () => {
+  /** Target bounds from none to wider than the hero's, and steps across the edge, in world units. */
+  const TARGET_BOUNDS: readonly number[] = [0, 20, 48];
+  const STEPS_ACROSS_THE_EDGE: readonly number[] = [-3, -2, -1, 0, 1, 2, 3];
+
+  /** The preview's verdict and the cast's for a unit of `bound` whose centre stands `distance` east of the hero, the pointer on it. */
+  const verdicts = (
+    distance: number,
+    bound: number,
+  ): { preview: boolean; cast: boolean } => {
+    const arranged = arrange(reticleSpell.id, "unit");
+    const target = spawnUnit(arranged.world, {
+      x: HERO_X + distance,
+      y: HERO_Y,
+    });
+    const form = arranged.world.state.run.forms[arranged.hero.activeFormIndex];
+
+    if (form === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    target.boundRadius = bound;
+    target.selectionRadius = bound + 8;
+    form.kit.prepared[0] = reticleSpell.id;
+    arranged.world.state.run.debug.infiniteMana = true;
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      target.curr.x,
+      target.curr.y,
+      0,
+      0,
+      0,
+    );
+
+    const preview = arranged.ring.tint === RETICLE_TINT;
+
+    // Rooted, the request stage refuses a unit out of range instead of walking to it.
+    arranged.hero.disables.rooted = true;
+
+    const refusal = requestCast(
+      arranged.world.state,
+      arranged.hero,
+      reticleSpell.id,
+      { kind: "unit", unitId: unitIdOf(arranged.world, target) },
+    );
+
+    expect([null, "out_of_range"]).toContain(refusal);
+
+    return { preview, cast: refusal === null };
+  };
+
+  it("reads legal exactly when the cast accepts, over a sweep of distances and bounds", () => {
+    const heroBound = arrange(reticleSpell.id, "unit").hero.boundRadius;
+    let legal = 0;
+    let refused = 0;
+
+    for (const bound of TARGET_BOUNDS) {
+      for (const step of STEPS_ACROSS_THE_EDGE) {
+        const distance = RANGE + heroBound + bound + step;
+        const { preview, cast } = verdicts(distance, bound);
+
+        expect({ distance, bound, preview }).toEqual({
+          distance,
+          bound,
+          preview: cast,
+        });
+
+        if (cast) {
+          legal += 1;
+        } else {
+          refused += 1;
+        }
+      }
+    }
+
+    expect(legal).toBeGreaterThan(0);
+    expect(refused).toBeGreaterThan(0);
+  });
+
+  it("reads legal on the edge of a body past the bare range, where the cast lands", () => {
+    const bound = 48;
+
+    expect(verdicts(RANGE + bound, bound)).toEqual({
+      preview: true,
+      cast: true,
+    });
+  });
+
+  it("judges the range from where the hero stands this tick while the ring is drawn where it is drawn", () => {
+    const arranged = arrange(circleSpell.id, "point");
+
+    arranged.hero.prev.x = HERO_X - 100;
+    arranged.preview.sync(
+      arranged.world.view,
+      arranged.cursor,
+      HERO_X + RANGE,
+      HERO_Y,
+      0,
+      0,
+      0,
+    );
+
+    expect(arranged.ring.x).toBe(HERO_X - 100);
+    expect(arranged.ring.tint).toBe(CIRCLE_TINT);
   });
 });

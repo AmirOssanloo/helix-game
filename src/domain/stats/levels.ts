@@ -102,6 +102,12 @@ export const levelUp = (
   return "ok";
 };
 
+/** Whether `progression` has a point to spend: `no_skill_point` when it has none, or `null`. Pure, so the HUD asks it before it sends a spend. */
+export const skillPointRefusal = (
+  progression: Readonly<Progression>,
+): "no_skill_point" | null =>
+  progression.skillPoints < 1 ? "no_skill_point" : null;
+
 /**
  * Spends one skill point on the skill at `index` of `levels`, raising it by one. Refused, with
  * nothing changed, when there is no point to spend, when no such skill exists, or when the
@@ -115,8 +121,10 @@ export const spendSkillPoint = (
 ): SkillPointResult => {
   const current = levels[index];
 
-  if (progression.skillPoints < 1) {
-    return "no_skill_point";
+  const refusal = skillPointRefusal(progression);
+
+  if (refusal !== null) {
+    return refusal;
   }
 
   if (!Number.isInteger(index) || current === undefined) {

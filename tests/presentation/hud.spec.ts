@@ -7,9 +7,15 @@ import type {
   SlotDescriptor,
   Unit,
 } from "@domain/public";
-import { applyStatus, resolveKit, validateRegistry } from "@domain/public";
+import {
+  applyStatus,
+  resolveKit,
+  slotReadiness,
+  validateRegistry,
+} from "@domain/public";
 import type { KitResolver } from "@presentation/public";
 import {
+  flashKindOf,
   Hud,
   ORB_ROW_CENTRE_Y,
   ORB_TINTS,
@@ -179,12 +185,12 @@ const wear = (arranged: Arranged, statusId: string): void => {
   arranged.world.tick();
 };
 
-/** The slot keys whose descriptor named a disable at the last sync. */
+/** The slot keys whose reason at the last sync was a disable or death, the reasons a square greys for. */
 const greyedSlots = (arranged: Arranged): readonly number[] =>
   SLOTS.filter((slot) => {
-    const descriptor = arranged.hud.descriptorOf(slot);
+    const refusal = arranged.hud.refusalOf(slot);
 
-    return descriptor !== null && descriptor.blockedBy !== null;
+    return refusal !== null && flashKindOf(refusal) === "disable";
   });
 
 /** The orb row's visible quads, fills and sockets, in creation order. */
@@ -299,7 +305,7 @@ describe("the six ability squares", () => {
     arranged.hud.sync(arranged.view);
 
     expect(greyedSlots(arranged)).toEqual(SLOTS);
-    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("silenced");
+    expect(arranged.hud.refusalOf(Q)).toBe("silenced");
 
     const keyLabels = arranged.labels.filter((label) => label.text === "Q");
 
@@ -313,7 +319,7 @@ describe("the six ability squares", () => {
     arranged.hud.sync(arranged.view);
 
     expect(greyedSlots(arranged)).toEqual(SLOTS);
-    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("stunned");
+    expect(arranged.hud.refusalOf(Q)).toBe("stunned");
   });
 
   it("grey none while a disarm is on the hero: a disarm blocks no key", () => {
@@ -340,8 +346,8 @@ describe("the six ability squares", () => {
     arranged.hud.sync(arranged.view);
 
     expect(greyedSlots(arranged)).toEqual([D, F]);
-    expect(arranged.hud.descriptorOf(D)?.blockedBy).toBe("silenced");
-    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBeNull();
+    expect(arranged.hud.refusalOf(D)).toBe("silenced");
+    expect(arranged.hud.refusalOf(Q)).toBeNull();
   });
 
   it("grey all six and the orb row while the hero is dead, and light them again when it respawns", () => {
@@ -364,8 +370,8 @@ describe("the six ability squares", () => {
 
     expect(arranged.hero.state).toBe("dead");
     expect(greyedSlots(arranged)).toEqual(SLOTS);
-    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBe("dead");
-    expect(arranged.hud.descriptorOf(D)?.blockedBy).toBe("dead");
+    expect(arranged.hud.refusalOf(Q)).toBe("dead");
+    expect(arranged.hud.refusalOf(D)).toBe("dead");
     expect(labelsShowing(arranged, "Q")[0]?.alpha).toBeLessThan(1);
     expect(orbRowQuads(arranged)).toHaveLength(3);
     expect(orbRowQuads(arranged).every((quad) => quad.alpha < 1)).toBe(true);
@@ -470,6 +476,112 @@ describe("the bars and the level", () => {
     arranged.hud.sync(arranged.view);
 
     expect(marker?.visible).toBe(false);
+  });
+});
+
+describe("each square's refusal reason", () => {
+  /** The hero's form record, which holds its pool and its prepared spells. */
+  const formOf = (arranged: Arranged): FormRecord => {
+    const record = arranged.world.state.run.forms[0];
+
+    if (record === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    return record;
+  };
+
+  /** Every slot's reason as the HUD read it, beside the domain's own answer for the same view. */
+  const readAgainstDomain = (
+    arranged: Arranged,
+  ): { hud: (RefusalReason | null)[]; domain: (RefusalReason | null)[] } => ({
+    hud: SLOTS.map((slot) => arranged.hud.refusalOf(slot)),
+    domain: SLOTS.map((slot) =>
+      slotReadiness(arranged.view.run, arranged.view.tick, arranged.hero, slot),
+    ),
+  });
+
+  it("is none for a ready spell and the orbs, and empty_slot for an empty socket", () => {
+    const arranged = arrange();
+
+    arranged.hud.sync(arranged.view);
+
+    const read = readAgainstDomain(arranged);
+
+    expect(read.hud).toEqual([null, null, null, null, null, "empty_slot"]);
+    expect(read.hud).toEqual(read.domain);
+  });
+
+  it("is on_cooldown for a spell whose clock runs, without greying the square", () => {
+    const arranged = arrange();
+
+    arranged.hero.cooldowns.set(preparedSpell.id, CLOCK_END_TICK);
+    arranged.hud.sync(arranged.view);
+
+    const read = readAgainstDomain(arranged);
+
+    expect(arranged.hud.refusalOf(D)).toBe("on_cooldown");
+    expect(read.hud).toEqual(read.domain);
+    expect(greyedSlots(arranged)).toEqual([]);
+  });
+
+  it("is not_enough_mana for a spell the pool cannot pay for, without greying the square", () => {
+    const arranged = arrange();
+
+    formOf(arranged).resources.mana = 0;
+    arranged.hud.sync(arranged.view);
+
+    const read = readAgainstDomain(arranged);
+
+    expect(arranged.hud.refusalOf(D)).toBe("not_enough_mana");
+    expect(read.hud).toEqual(read.domain);
+    expect(greyedSlots(arranged)).toEqual([]);
+  });
+
+  it("is the disable's for every key the matrix refuses, over the clock and the cost", () => {
+    const arranged = arrange();
+
+    arranged.hero.cooldowns.set(preparedSpell.id, CLOCK_END_TICK);
+    formOf(arranged).resources.mana = 0;
+    wear(arranged, "silence");
+    arranged.hud.sync(arranged.view);
+
+    const read = readAgainstDomain(arranged);
+
+    expect(read.hud).toEqual(SLOTS.map(() => "silenced"));
+    expect(read.hud).toEqual(read.domain);
+  });
+
+  it("is dead for every key while the hero is dead, as the validator refuses them", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    const read = readAgainstDomain(arranged);
+
+    expect(read.hud).toEqual(SLOTS.map(() => "dead"));
+    expect(read.hud).toEqual(read.domain);
+  });
+
+  it("writes nothing into the world: the kit's descriptor keeps the disable alone", () => {
+    const arranged = arrange();
+
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hud.refusalOf(Q)).toBe("dead");
+    expect(arranged.hud.descriptorOf(Q)?.blockedBy).toBeNull();
   });
 });
 

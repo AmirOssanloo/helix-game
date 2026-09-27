@@ -1,9 +1,8 @@
 import type { RefusalReason, TargetingKind } from "@domain/public";
 import {
   createSlotDescriptor,
-  hasMana,
-  isCooldownReady,
   resolveKit,
+  slotReadiness,
 } from "@domain/public";
 import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
@@ -122,9 +121,10 @@ export const isDrag = (
 /**
  * What slot key `slot` asks of the mapper, read off the world view. An orb, the composer, an
  * empty socket, and a no-target spell are the world's to apply or refuse, so the key is sent
- * as a `slot` command. A targeted spell needs a click first: the cursor opens when the hero
- * may cast it now, checking the flags, the clock, and the cost the world would check, and
- * stays shut with the same reason otherwise, so the player learns why before aiming.
+ * as a `slot` command. A targeted spell needs a click first: the cursor opens when the
+ * domain's `slotReadiness` refuses the key nothing, the death, the flags, the clock, and the
+ * cost the world would check, and stays shut with its reason otherwise, so the player learns
+ * why before aiming.
  */
 export const pressSlotKey = (
   world: WorldView,
@@ -168,18 +168,10 @@ export const pressSlotKey = (
     return "send";
   }
 
-  if (descriptor.blockedBy !== null) {
-    return descriptor.blockedBy;
-  }
+  const refusal = slotReadiness(world.run, world.tick, hero, slot);
 
-  if (
-    !isCooldownReady(hero.cooldowns, abilityId, world.tick, world.run.debug)
-  ) {
-    return "on_cooldown";
-  }
-
-  if (!hasMana(form.resources, descriptor.cost, world.run.debug)) {
-    return "not_enough_mana";
+  if (refusal !== null) {
+    return refusal;
   }
 
   cursor.kind = "slot";

@@ -13,7 +13,7 @@ import { CameraFrame, VIEW_SCREEN_MARGIN } from "../camera/camera-frame";
 import { GroundLayer } from "../camera/ground-layer";
 import { Projection, VIEW_SCALE } from "../camera/projection";
 import { WorldCamera } from "../camera/world-camera";
-import { refusalFlashTicks } from "../hud/hud";
+import { refusalFlashTicks } from "../hud/slot-flashes";
 import { bindSceneInput, cameraLens } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
 import type { CameraLens, InputIntents } from "../input/input-ports";

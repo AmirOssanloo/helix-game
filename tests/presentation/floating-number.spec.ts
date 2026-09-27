@@ -23,6 +23,9 @@ const RISE = FEEDBACK_TIMINGS.numberRise;
 const SPAWN_X = 400;
 const SPAWN_Y = 100;
 
+/** The radius of the ground circle a case's number stands over. */
+const SPAWN_RADIUS = 24;
+
 /** How much a case's hit lands for, and how much a second one adds to it. */
 const HIT_AMOUNT = 37;
 const JOIN_AMOUNT = 5;
@@ -86,6 +89,7 @@ const arrange = (
       numbers.spawn(
         SPAWN_X,
         SPAWN_Y,
+        SPAWN_RADIUS,
         amount,
         damageType,
         tick,
@@ -265,6 +269,7 @@ describe("the numbers at the bar's busiest fight", () => {
         const label = arranged.numbers.spawn(
           landed,
           SPAWN_Y,
+          SPAWN_RADIUS,
           HIT_AMOUNT,
           "physical",
           tick,
@@ -421,6 +426,43 @@ describe("a number another hit joins", () => {
 });
 
 describe("a number in the isometric view", () => {
+  it("starts the projection's rise of the circle it stands over above where its hit is drawn, as every view that stands up does", () => {
+    const projection = new Projection();
+    const onTheGround = arrange(1, projection);
+    const overTheBody = arrange(1, projection);
+
+    onTheGround.numbers.spawn(
+      SPAWN_X,
+      SPAWN_Y,
+      0,
+      HIT_AMOUNT,
+      "physical",
+      START,
+      FLOATING_NUMBER_TICKS,
+    );
+    overTheBody.numbers.spawn(
+      SPAWN_X,
+      SPAWN_Y,
+      SPAWN_RADIUS,
+      HIT_AMOUNT,
+      "physical",
+      START,
+      FLOATING_NUMBER_TICKS,
+    );
+    onTheGround.numbers.sync(START, NO_ALPHA, RISE);
+    overTheBody.numbers.sync(START, NO_ALPHA, RISE);
+
+    const [ground] = visible(onTheGround);
+    const [body] = visible(overTheBody);
+
+    if (ground === undefined || body === undefined) {
+      throw new Error("A spawn shows one number");
+    }
+
+    expect(ground.x).toBe(body.x);
+    expect(ground.y - body.y).toBeCloseTo(projection.riseOf(SPAWN_RADIUS));
+  });
+
   it("rises straight up the screen from where its hit is drawn, by the same offset at every point of the arena", () => {
     const projection = new Projection();
     const drawn: Vec2 = { x: 0, y: 0 };
@@ -433,6 +475,7 @@ describe("a number in the isometric view", () => {
       arranged.numbers.spawn(
         point.x,
         point.y,
+        SPAWN_RADIUS,
         HIT_AMOUNT,
         "magical",
         START,

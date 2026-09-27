@@ -22,9 +22,12 @@ export type InputIntents = Readonly<{
   slotRefused: (slot: number, reason: RefusalReason) => void;
 }>;
 
+/** The driver as the mapper sees it: the command door, and the fraction between ticks the frame is drawn at, so a pick names what is drawn. */
+export type InputDriver = CommandDriver & Readonly<{ alpha: number }>;
+
 /** Everything the mapper is built over. It holds these and the cursor, and nothing else. */
 export type InputPorts = Readonly<{
-  driver: CommandDriver;
+  driver: InputDriver;
   lens: CameraLens;
   world: WorldView;
   intents: InputIntents;

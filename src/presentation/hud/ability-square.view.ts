@@ -1,4 +1,4 @@
-import type { SlotDescriptor, Tick } from "@domain/public";
+import type { RefusalReason, SlotDescriptor, Tick } from "@domain/public";
 import { ORB_IDS } from "@domain/public";
 import { clamp } from "@shared/public";
 import type { FrameSizes, Label, Quad, QuadFactory } from "../views/quad";
@@ -23,6 +23,7 @@ import {
   WHITE,
 } from "./palette";
 import type { FlashKind } from "./slot-flashes";
+import { flashKindOf } from "./slot-flashes";
 
 const SQUARE_FRAME = "square";
 const SOCKET_FRAME = "square_outline";
@@ -79,6 +80,8 @@ export type SquareInput = Readonly<{
   spellTint: number | null;
   tick: Tick;
   flash: FlashKind;
+  /** Why the domain would refuse the key now, whatever it aims at, or `null`: a disable or death greys the square. */
+  refusal: RefusalReason | null;
   /** How many steps the wedge sweeps in, from the tuning table: at most the sheet's, which is the smoothest. */
   sweepSteps: number;
 }>;
@@ -194,9 +197,9 @@ export class AbilitySquareView {
   }
 
   sync(input: SquareInput): void {
-    const { descriptor, tick, flash, sweepSteps } = input;
+    const { descriptor, tick, flash, refusal, sweepSteps } = input;
     const empty = descriptor.abilityId === null;
-    const greyed = descriptor.blockedBy !== null;
+    const greyed = refusal !== null && flashKindOf(refusal) === "disable";
     const alpha = greyed ? GREYED_ALPHA : OPAQUE;
 
     this.backdrop.visible = true;

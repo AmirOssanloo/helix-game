@@ -1,8 +1,13 @@
 import type { RefusalReason, Tick } from "@domain/public";
-import { SLOT_COUNT } from "@domain/public";
+import { readTunable, SLOT_COUNT } from "@domain/public";
+import type { WorldView } from "@simulation/public";
 
 /** What a square flashes for: mana is red, a clock grey, a disable or death striped, and any other refusal a plain white blink. */
 export type FlashKind = "none" | "mana" | "cooldown" | "disable" | "refused";
+
+/** How long a refusal flash shows, in ticks, as the world view's tuning state holds it now. */
+export const refusalFlashTicks = (world: WorldView): number =>
+  readTunable(world.run.tuning, "refusal_flash_duration");
 
 /** The kind of flash `reason` earns. */
 export const flashKindOf = (reason: RefusalReason): FlashKind => {

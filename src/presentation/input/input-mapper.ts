@@ -3,9 +3,13 @@ import { createCandidateBuffer, isClosed, UNIT_CAPACITY } from "@domain/public";
 import type { EntityId, Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
-import type { CommandDriver } from "../scene-context";
 import type { GroundPick } from "./ground-pick";
-import type { CameraLens, InputIntents, InputPorts } from "./input-ports";
+import type {
+  CameraLens,
+  InputDriver,
+  InputIntents,
+  InputPorts,
+} from "./input-ports";
 import {
   bindingIndexOf,
   KEY_BINDINGS,
@@ -43,7 +47,7 @@ export class InputMapper {
   /** Which cursor is open. The targeting preview reads it; nothing else writes it. */
   readonly cursor: TargetingCursor;
 
-  private readonly driver: CommandDriver;
+  private readonly driver: InputDriver;
 
   private readonly lens: CameraLens;
 
@@ -265,6 +269,7 @@ export class InputMapper {
       this.world,
       this.point.x,
       this.point.y,
+      this.driver.alpha,
       this.candidates,
     );
     const target =
@@ -363,6 +368,7 @@ export class InputMapper {
           this.world,
           this.point.x,
           this.point.y,
+          this.driver.alpha,
           this.candidates,
         );
 

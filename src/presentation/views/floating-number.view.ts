@@ -96,6 +96,9 @@ export class FloatingNumberViews {
 
   private readonly ys: number[];
 
+  /** Per label: how far above its point it starts, in screen pixels: the top of the ground circle it stands over, from the placement. */
+  private readonly lifts: number[];
+
   /** Per label: the text it shows, so a number is written only when it differs from the last one here. */
   private readonly shownTexts: (string | null)[];
 
@@ -125,6 +128,7 @@ export class FloatingNumberViews {
     this.lifeTicks = [];
     this.xs = [];
     this.ys = [];
+    this.lifts = [];
     this.shownTexts = [];
     this.rising = [];
     this.spawns = [];
@@ -138,6 +142,7 @@ export class FloatingNumberViews {
       this.lifeTicks.push(MIN_LIFE_TICKS);
       this.xs.push(0);
       this.ys.push(0);
+      this.lifts.push(0);
       this.shownTexts.push(null);
       this.rising.push(false);
       this.spawns.push(NO_SPAWN);
@@ -169,13 +174,15 @@ export class FloatingNumberViews {
   }
 
   /**
-   * Starts a number reading `amount`, rounded, in the colour of `damageType`, rising from
-   * (`x`, `y`) at tick `tick` for `lifeTicks` ticks, and hands back the label it took, for an
-   * `addTo` later. A set of no labels shows nothing, counts nothing, and hands back `NO_NUMBER`.
+   * Starts a number reading `amount`, rounded, in the colour of `damageType`, rising from the
+   * top of a ground circle of `radius` at (`x`, `y`), as the placement draws it, at tick
+   * `tick` for `lifeTicks` ticks, and hands back the label it took, for an `addTo` later. A
+   * set of no labels shows nothing, counts nothing, and hands back `NO_NUMBER`.
    */
   spawn(
     x: number,
     y: number,
+    radius: number,
     amount: number,
     damageType: DamageType,
     tick: Tick,
@@ -189,7 +196,15 @@ export class FloatingNumberViews {
     }
 
     this.amounts[index] = amount;
-    this.start(index, label, x, y, DAMAGE_NUMBER_TINTS[damageType], tick);
+    this.start(
+      index,
+      label,
+      x,
+      y,
+      radius,
+      DAMAGE_NUMBER_TINTS[damageType],
+      tick,
+    );
     this.write(index, label);
     this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
 
@@ -197,13 +212,15 @@ export class FloatingNumberViews {
   }
 
   /**
-   * Starts a word reading `text` in `tint`, rising from (`x`, `y`) at tick `tick` for
-   * `lifeTicks` ticks, on the next label as a number would take it. A word stands for no amount,
+   * Starts a word reading `text` in `tint`, rising from the top of a ground circle of
+   * `radius` at (`x`, `y`) at tick `tick` for `lifeTicks` ticks, on the next label as a
+   * number would take it. A word stands for no amount,
    * so no hit joins it. A set of no labels shows nothing.
    */
   spawnWord(
     x: number,
     y: number,
+    radius: number,
     text: string,
     tint: number,
     tick: Tick,
@@ -217,7 +234,7 @@ export class FloatingNumberViews {
     }
 
     this.amounts[index] = 0;
-    this.start(index, label, x, y, tint, tick);
+    this.start(index, label, x, y, radius, tint, tick);
 
     if (text !== this.shownTexts[index]) {
       this.shownTexts[index] = text;
@@ -227,12 +244,13 @@ export class FloatingNumberViews {
     this.lifeTicks[index] = Math.max(MIN_LIFE_TICKS, lifeTicks);
   }
 
-  /** Takes the label at `index` for a new rise from (`x`, `y`) at tick `tick`, counting a recycle, and moves the cursor past it. */
+  /** Takes the label at `index` for a new rise from the top of a circle of `radius` at (`x`, `y`) at tick `tick`, counting a recycle, and moves the cursor past it. */
   private start(
     index: number,
     label: Label,
     x: number,
     y: number,
+    radius: number,
     tint: number,
     tick: Tick,
   ): void {
@@ -243,6 +261,7 @@ export class FloatingNumberViews {
     label.tint = tint;
     this.xs[index] = x;
     this.ys[index] = y;
+    this.lifts[index] = this.placement.riseOf(radius);
     this.startTicks[index] = tick;
     this.rising[index] = true;
     this.spawns[index] = this.nextSpawn;
@@ -321,7 +340,7 @@ export class FloatingNumberViews {
         this.drawn,
       );
       label.x = this.drawn.x;
-      label.y = this.drawn.y - LIFT - rise * risen;
+      label.y = this.drawn.y - (this.lifts[index] ?? 0) - LIFT - rise * risen;
       label.alpha = OPAQUE - risen;
       label.visible = true;
     }

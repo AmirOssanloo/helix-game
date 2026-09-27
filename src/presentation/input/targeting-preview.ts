@@ -1,11 +1,22 @@
-import type { PreviewDef } from "@domain/public";
-import { scalarAtOrbLevels } from "@domain/public";
-import type { DeepReadonly, Vec2 } from "@shared/public";
+import type {
+  PreviewDef,
+  SpellRecord,
+  TargetingKind,
+  Unit,
+} from "@domain/public";
+import {
+  createCandidateBuffer,
+  isInCastRange,
+  scalarAtOrbLevels,
+  UNIT_CAPACITY,
+} from "@domain/public";
+import type { DeepReadonly, EntityId, Vec2 } from "@shared/public";
 import { bearing } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "../views/depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "../views/quad";
 import { interpolate } from "../views/quad";
+import { pickUnit } from "./pick-unit";
 import type { TargetingCursor } from "./targeting-cursor";
 import { isDrag } from "./targeting-cursor";
 
@@ -20,7 +31,7 @@ export const DIRECTION_LINE_WIDTH = 8;
 /** Half of a length, for the midpoint the drag line is centred on. */
 const HALF = 2;
 
-/** What the cursor wears where the click would be refused; in range it wears the spell's own colour. */
+/** What the cursor wears where the aim is past the domain's range; in range it wears the spell's own colour. */
 const OUT_OF_RANGE_TINT = 0xff3030;
 
 const RING_ALPHA = 0.5;
@@ -46,7 +57,11 @@ const centre: Vec2 = { x: 0, y: 0 };
  * The open targeting cursor, drawn in the play scene's world coordinates: a ring at the
  * spell's range around the hero where it is drawn this frame, and the spell's preview shape,
  * both from the atlas, both in the spell's own colour until the aim is past the range, when
- * they turn red. The aim is the pointer, or the press while one is held. The definition says
+ * they turn red. Whether it is past the range is the domain's `isInCastRange`, asked with the
+ * hero's and the target's positions this tick, which the cast reads, so the preview and the
+ * cast never disagree: a unit spell aims at the unit drawn under the pointer, picked as the
+ * click picks it, and reaches its body, not its centre; with no unit under the pointer the
+ * pointer is read as a unit of no bound. The aim is the pointer, or the press while one is held. The definition says
  * which shape: a reticle or a circle sits under the pointer, and a rectangle or a cone is
  * placed on the hero and turned toward it, so a direction spell shows the ground it would
  * cover and is never out of range. A line has no shape: before the press and while the press
@@ -73,6 +88,10 @@ export class TargetingPreview {
   private shapeFrame: string | null = null;
 
   private shapeScalePerUnit = 0;
+
+  /** Scratch for the units around the pointer, for a unit spell's pick. */
+  private readonly candidates: EntityId[] =
+    createCandidateBuffer(UNIT_CAPACITY);
 
   constructor(makeQuad: QuadFactory, frameSizes: FrameSizes) {
     this.ring = makeQuad(RING_FRAME);
@@ -135,12 +154,9 @@ export class TargetingPreview {
     centre.y = cursor.held ? cursor.press.y : to.y;
 
     const dragging = isDrag(cursor, screenX, screenY);
-    const dx = centre.x - from.x;
-    const dy = centre.y - from.y;
-    const outOfRange =
-      cursor.targeting !== "direction" &&
-      dx * dx + dy * dy > def.range * def.range;
-    const tint = outOfRange ? OUT_OF_RANGE_TINT : def.tint;
+    const tint = this.inRange(world, hero, record, cursor.targeting, alpha)
+      ? def.tint
+      : OUT_OF_RANGE_TINT;
 
     this.ring.x = from.x;
     this.ring.y = from.y;
@@ -155,6 +171,40 @@ export class TargetingPreview {
       tint,
     );
     this.syncLine(dragging, def.tint);
+  }
+
+  /** Whether the cast would reach the aim at `centre`, as the domain measures it: from where the hero stands this tick to the point, or to the body of the unit drawn under it. */
+  private inRange(
+    world: WorldView,
+    hero: DeepReadonly<Unit>,
+    record: DeepReadonly<SpellRecord>,
+    kind: TargetingKind,
+    alpha: number,
+  ): boolean {
+    if (kind === "unit") {
+      const targetId = pickUnit(
+        world,
+        centre.x,
+        centre.y,
+        alpha,
+        this.candidates,
+      );
+      const target =
+        targetId === null ? null : world.map.units.resolve(targetId);
+
+      if (target !== null) {
+        return isInCastRange(
+          hero,
+          record,
+          kind,
+          target.curr.x,
+          target.curr.y,
+          target.boundRadius,
+        );
+      }
+    }
+
+    return isInCastRange(hero, record, kind, centre.x, centre.y, 0);
   }
 
   /** Lays the drag line from the held press to the pointer, or hides it when nothing is dragged. */

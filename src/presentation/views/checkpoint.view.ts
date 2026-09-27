@@ -163,7 +163,8 @@ export const showCheckpointReached = (
 
   numbers.spawnWord(
     interpolate(hero.prev.x, hero.curr.x, alpha),
-    interpolate(hero.prev.y, hero.curr.y, alpha) - hero.boundRadius,
+    interpolate(hero.prev.y, hero.curr.y, alpha),
+    hero.boundRadius,
     CHECKPOINT_WORD,
     CHECKPOINT_REACHED_TINT,
     event.tick,

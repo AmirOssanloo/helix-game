@@ -24,12 +24,7 @@ export {
   wedgeStepFor,
 } from "./hud/ability-square.view";
 export { BarView } from "./hud/bar.view";
-export {
-  Hud,
-  type HudPorts,
-  type KitResolver,
-  refusalFlashTicks,
-} from "./hud/hud";
+export { Hud, type HudPorts, type KitResolver } from "./hud/hud";
 export {
   BAR_RECT,
   containsPoint,
@@ -42,7 +37,12 @@ export {
 export { LevelView } from "./hud/level.view";
 export { OrbSquaresView } from "./hud/orb-squares.view";
 export { ORB_TINTS, orbTint } from "./hud/palette";
-export { type FlashKind, flashKindOf, SlotFlashes } from "./hud/slot-flashes";
+export {
+  type FlashKind,
+  flashKindOf,
+  refusalFlashTicks,
+  SlotFlashes,
+} from "./hud/slot-flashes";
 export { bindSceneInput, cameraLens } from "./input/bind-scene-input";
 export {
   projectedLens,
@@ -50,7 +50,13 @@ export {
   type Unprojection,
 } from "./input/projected-lens";
 export { InputMapper } from "./input/input-mapper";
-export type { CameraLens, InputIntents, InputPorts } from "./input/input-ports";
+export { pickUnit } from "./input/pick-unit";
+export type {
+  CameraLens,
+  InputDriver,
+  InputIntents,
+  InputPorts,
+} from "./input/input-ports";
 export {
   type KeyAction,
   type KeyBinding,

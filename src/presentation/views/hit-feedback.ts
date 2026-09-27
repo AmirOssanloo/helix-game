@@ -112,7 +112,7 @@ export class HitNumbers {
   }
 
   /**
-   * Shows `amount` of `damageType` on `id` at (`x`, `y`) on tick `now`: added to the number of
+   * Shows `amount` of `damageType` on `id`, over its ground circle of `radius` at (`x`, `y`), on tick `now`: added to the number of
    * that type already rising for it where one began inside the window and the set still has
    * it, and raised as a number of its own, living `lifeTicks`, where it did not. An id outside
    * the pool always raises its own, since there is nowhere to remember it.
@@ -121,6 +121,7 @@ export class HitNumbers {
     id: EntityId,
     x: number,
     y: number,
+    radius: number,
     amount: number,
     damageType: DamageType,
     now: Tick,
@@ -130,7 +131,7 @@ export class HitNumbers {
     const slot = unpackIndex(id);
 
     if (slot < 0 || slot >= UNIT_CAPACITY) {
-      numbers.spawn(x, y, amount, damageType, now, lifeTicks);
+      numbers.spawn(x, y, radius, amount, damageType, now, lifeTicks);
 
       return;
     }
@@ -148,7 +149,15 @@ export class HitNumbers {
       return;
     }
 
-    const label = numbers.spawn(x, y, amount, damageType, now, lifeTicks);
+    const label = numbers.spawn(
+      x,
+      y,
+      radius,
+      amount,
+      damageType,
+      now,
+      lifeTicks,
+    );
 
     this.ids[entry] = label === NO_NUMBER ? NONE : id;
     this.labels[entry] = label;
@@ -212,7 +221,8 @@ export const showHit = (
   hitNumbers.show(
     event.unitId,
     interpolate(unit.prev.x, unit.curr.x, alpha),
-    interpolate(unit.prev.y, unit.curr.y, alpha) - unit.boundRadius,
+    interpolate(unit.prev.y, unit.curr.y, alpha),
+    unit.boundRadius,
     event.amount,
     event.damageType,
     event.tick,

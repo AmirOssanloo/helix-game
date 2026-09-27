@@ -1,7 +1,27 @@
 import { describe, expect, it } from "vitest";
-import type { SpellRecord, Unit } from "@domain/public";
-import { createUnitPool, isInCastRange } from "@domain/public";
-import { makeSpellDef } from "../../helpers";
+import { heroDef } from "@content/public";
+import type {
+  FormRecord,
+  RefusalReason,
+  SpellRecord,
+  Unit,
+} from "@domain/public";
+import {
+  castReadiness,
+  createUnitPool,
+  isInCastRange,
+  requestCast,
+  slotReadiness,
+} from "@domain/public";
+import type { Simulation } from "@simulation/public";
+import {
+  makeFormDef,
+  makeRegistry,
+  makeSpellDef,
+  makeWorld,
+  spawnHero,
+  submit,
+} from "../../helpers";
 
 const RANGE = 600;
 
@@ -70,5 +90,153 @@ describe("isInCastRange", () => {
 
     expect(isInCastRange(unit, record, "direction", 5000, 5000, 0)).toBe(true);
     expect(isInCastRange(unit, record, "none", 5000, 5000, 0)).toBe(true);
+  });
+});
+
+describe("castReadiness", () => {
+  /** The slot key the newest prepared spell sits on. */
+  const D = 5;
+
+  /** A clock that has not run out by the tick the case reads it. */
+  const CLOCK_END_TICK = 300;
+
+  const pointSpell = makeSpellDef.build({
+    recipe: ["quartz", "whorl", "ember"],
+    targeting: "point",
+    range: RANGE,
+  });
+  const form = makeFormDef.build({ abilities: [pointSpell.id] });
+
+  type Arranged = {
+    world: Simulation;
+    hero: Unit;
+    formRecord: FormRecord;
+    spell: SpellRecord;
+  };
+
+  /** A world whose hero holds `pointSpell` in D, with its clock run out and its mana full. */
+  const arrangeHero = (): Arranged => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        hero: { ...heroDef, forms: [form.id] },
+        forms: [form],
+        spells: [pointSpell],
+      }),
+    });
+    const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
+    const formRecord = world.state.run.forms[0];
+    const spell = world.state.run.spells.get(pointSpell.id);
+
+    if (formRecord === undefined || spell === undefined) {
+      throw new Error("The hero has a form and the world the spell");
+    }
+
+    formRecord.kit.prepared[0] = pointSpell.id;
+
+    return { world, hero, formRecord, spell };
+  };
+
+  /** Everything a cast could write: the order, the clocks, the pool. */
+  const snapshot = (arranged: Arranged): string =>
+    JSON.stringify({
+      order: arranged.hero.order,
+      cast: arranged.hero.cast,
+      cooldowns: [...arranged.hero.cooldowns],
+      resources: arranged.formRecord.resources,
+    });
+
+  /** The readiness query's answer, checked to change nothing, beside the slot's and the request stage's. */
+  const answers = (
+    arranged: Arranged,
+  ): {
+    readiness: RefusalReason | null;
+    slot: RefusalReason | null;
+    request: RefusalReason | null;
+  } => {
+    const { world, hero, spell } = arranged;
+    const before = snapshot(arranged);
+    const readiness = castReadiness(
+      world.view.run,
+      world.view.tick,
+      hero,
+      pointSpell.id,
+      spell,
+    );
+    const slot = slotReadiness(world.view.run, world.view.tick, hero, D);
+
+    expect(snapshot(arranged)).toBe(before);
+
+    const request = requestCast(world.state, hero, pointSpell.id, {
+      kind: "point",
+      position: { x: hero.curr.x + 1, y: hero.curr.y },
+    });
+
+    return { readiness, slot, request };
+  };
+
+  it("refuses nothing a ready hero may cast, and the request stage takes the cast", () => {
+    expect(answers(arrangeHero())).toEqual({
+      readiness: null,
+      slot: null,
+      request: null,
+    });
+  });
+
+  it("agrees with the request stage on a clock still running", () => {
+    const arranged = arrangeHero();
+
+    arranged.hero.cooldowns.set(pointSpell.id, CLOCK_END_TICK);
+
+    expect(answers(arranged)).toEqual({
+      readiness: "on_cooldown",
+      slot: "on_cooldown",
+      request: "on_cooldown",
+    });
+  });
+
+  it("agrees with the request stage on mana short of the cost", () => {
+    const arranged = arrangeHero();
+
+    arranged.formRecord.resources.mana = 0;
+
+    expect(answers(arranged)).toEqual({
+      readiness: "not_enough_mana",
+      slot: "not_enough_mana",
+      request: "not_enough_mana",
+    });
+  });
+
+  it("agrees with the request stage on a disable, named over the clock and the cost", () => {
+    const arranged = arrangeHero();
+
+    arranged.hero.cooldowns.set(pointSpell.id, CLOCK_END_TICK);
+    arranged.formRecord.resources.mana = 0;
+    arranged.hero.disables.silenced = true;
+
+    expect(answers(arranged)).toEqual({
+      readiness: "silenced",
+      slot: "silenced",
+      request: "silenced",
+    });
+  });
+
+  it("agrees with the request stage on death, named over everything else", () => {
+    const arranged = arrangeHero();
+
+    arranged.hero.disables.stunned = true;
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+    arranged.world.tick();
+
+    expect(arranged.hero.state).toBe("dead");
+    expect(answers(arranged)).toEqual({
+      readiness: "dead",
+      slot: "dead",
+      request: "dead",
+    });
   });
 });

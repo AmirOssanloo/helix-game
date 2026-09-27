@@ -1,19 +1,25 @@
+import type { DeepReadonly } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
-import { requestCast } from "../abilities/cast";
+import { clockAndCostRefusal, requestCast } from "../abilities/cast";
 import type { CastTarget } from "../commands/command";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
-import type { FormRecord, World } from "../entities/world-state";
+import type { FormRecord, RunScope, World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { pressOrb } from "../invoke/buffer";
 import { invoke } from "../invoke/invoke";
+import { slotRefusal } from "../orders/disable-matrix";
 import type { RefusalReason } from "../orders/validator";
 import { spendSkillPoint } from "../stats/levels";
+import type { Tick } from "../tick";
 import { createAbilityRequest } from "./kit";
 import { resolveKit } from "./kit-registry";
 
 /** Scratch for what the kit made of the slot key, reused for every slot command. */
 const request = createAbilityRequest();
+
+/** Scratch for what the kit makes of a slot key a reader asks about, kept apart from the command's. */
+const asked = createAbilityRequest();
 
 /** Scratch for the event a slot key announces, reused for every one. */
 const event = createDomainEvent();
@@ -195,4 +201,67 @@ export const applySkillPoint = (
   );
 
   return result === "ok" ? null : result;
+};
+
+/**
+ * Why slot key `slot` of `hero` would be refused at `tick` whatever it aims at, or `null`:
+ * death, a disable the matrix refuses the key's column under, and, for a key that throws a
+ * prepared spell, that spell's clock and cost; an empty socket is `empty_slot`. An orb press
+ * and an invoke answer only to death and the disables here: what refuses them reads the
+ * buffer, which the key's command decides. Pure and read-only over the world view, so the
+ * HUD reads each slot's reason from it every frame and writes none into the world; the
+ * request stage runs the same checks through `castReadiness`.
+ */
+export const slotReadiness = (
+  run: DeepReadonly<RunScope>,
+  tick: Tick,
+  hero: DeepReadonly<Unit>,
+  slot: number,
+): RefusalReason | null => {
+  if (hero.state === "dead") {
+    return "dead";
+  }
+
+  const disable = slotRefusal(run.disableMatrix, hero.disables, slot);
+
+  if (disable !== null) {
+    return disable;
+  }
+
+  const form =
+    hero.kind === "hero" ? run.forms[hero.activeFormIndex] : undefined;
+  const kit = form === undefined ? null : resolveKit(form.def.kit);
+
+  if (form === undefined || kit === null) {
+    return null;
+  }
+
+  kit.resolveSlot(slot, form.kit, asked);
+
+  switch (asked.kind) {
+    case "orb":
+    case "invoke":
+      return null;
+
+    case "cast": {
+      const abilityId = asked.abilityId;
+
+      assert(
+        abilityId !== null,
+        "A cast request names the ability the slot holds",
+      );
+
+      const record = run.spells.get(abilityId);
+
+      return record === undefined
+        ? "unknown_ability"
+        : clockAndCostRefusal(run, tick, hero, abilityId, record);
+    }
+
+    case "empty":
+      return "empty_slot";
+
+    default:
+      return assertNever(asked.kind);
+  }
 };

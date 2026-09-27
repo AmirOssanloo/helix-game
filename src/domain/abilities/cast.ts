@@ -1,3 +1,4 @@
+import type { DeepReadonly } from "@shared/public";
 import { assert, assertNever, bearing } from "@shared/public";
 import type { CastTarget } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
@@ -6,11 +7,13 @@ import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
 import { activeFormOf } from "../entities/hero";
 import type { Resources, Unit } from "../entities/unit";
-import type { World } from "../entities/world-state";
+import type { RunScope, World } from "../entities/world-state";
 import { createAbilityRequest } from "../kits/kit";
 import { resolveKit } from "../kits/kit-registry";
+import { castRefusal } from "../orders/disable-matrix";
 import { issueCast } from "../orders/state-machine";
 import type { RefusalReason } from "../orders/validator";
+import type { Tick } from "../tick";
 import { isCooldownReady } from "./cooldowns";
 import { hasMana } from "./mana";
 import { spawnsFit } from "./primitives/spawn-unit";
@@ -100,8 +103,8 @@ export const holdsAbility = (
  * `targetBound`; a direction or nothing, always.
  */
 export const isInCastRange = (
-  unit: Readonly<Unit>,
-  record: SpellRecord,
+  unit: DeepReadonly<Unit>,
+  record: DeepReadonly<SpellRecord>,
   kind: TargetingKind,
   x: number,
   y: number,
@@ -136,14 +139,73 @@ export const isInCastRange = (
 };
 
 /**
+ * The clock and the cost of `record`, with id `abilityId`, for `unit` at `tick`: the clock
+ * still running, or the mana of the pool the cast draws on short of the cost at the level it
+ * casts at, or `null`. The hero's pool and orb levels are its active form's. Reads the panel's
+ * flags, as the composer does, and writes nothing.
+ */
+export const clockAndCostRefusal = (
+  run: DeepReadonly<RunScope>,
+  tick: Tick,
+  unit: DeepReadonly<Unit>,
+  abilityId: string,
+  record: DeepReadonly<SpellRecord>,
+): RefusalReason | null => {
+  if (!isCooldownReady(unit.cooldowns, abilityId, tick, run.debug)) {
+    return "on_cooldown";
+  }
+
+  const form =
+    unit.kind === "hero" ? run.forms[unit.activeFormIndex] : undefined;
+  const cost = entryAtLevel(
+    record.def.manaCost,
+    spellLevelOf(
+      form === undefined ? NO_ORB_LEVELS : form.kit.orbLevels,
+      record.def.recipe,
+    ),
+  );
+
+  return hasMana(
+    form === undefined ? unit.resources : form.resources,
+    cost,
+    run.debug,
+  )
+    ? null
+    : "not_enough_mana";
+};
+
+/**
+ * Whether `unit` may cast `record`, with id `abilityId`, at `tick`, whatever it aims at: the
+ * part of the request stage no target changes. Returns the reason it may not, or `null`:
+ * death, a disable the matrix refuses both spell keys under, the clock still running, or the
+ * mana short of the cost. Pure and read-only, so the HUD and the cursor ask it of the world
+ * view every frame, and the request stage asks it before it writes; the two cannot disagree.
+ */
+export const castReadiness = (
+  run: DeepReadonly<RunScope>,
+  tick: Tick,
+  unit: DeepReadonly<Unit>,
+  abilityId: string,
+  record: DeepReadonly<SpellRecord>,
+): RefusalReason | null => {
+  if (unit.state === "dead") {
+    return "dead";
+  }
+
+  return (
+    castRefusal(run.disableMatrix, unit.disables) ??
+    clockAndCostRefusal(run, tick, unit, abilityId, record)
+  );
+};
+
+/**
  * The request stage over `unit`: a cast of `abilityId` at `target` is checked and, when it
  * passes, replaces the unit's order. Refused, with the reason for the caller to announce and
  * nothing changed, when no spell or ability has the id, the unit does not hold it, the target
  * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
- * unit is, the clock is running, the mana is short, the enemies it would spawn would take the
- * live cap past its limit, or the unit is rooted with the target out of range. The clock and the mana
- * read the panel's flags, as the composer does. A target in range is cast where the unit
- * stands; one out of range is walked toward first. A vector is aimed at the point pressed,
+ * unit is, `castReadiness` refuses it, the enemies it would spawn would take the live cap past
+ * its limit, or the unit is rooted with the target out of range. A target in range is cast
+ * where the unit stands; one out of range is walked toward first. A vector is aimed at the point pressed,
  * along the bearing from it to the point released, or along nothing when the two are one.
  */
 export const requestCast = (
@@ -216,19 +278,16 @@ export const requestCast = (
       return assertNever(target);
   }
 
-  if (
-    !isCooldownReady(unit.cooldowns, abilityId, world.tick, world.run.debug)
-  ) {
-    return "on_cooldown";
-  }
-
-  const cost = entryAtLevel(
-    record.def.manaCost,
-    castLevelOf(world, unit, record),
+  const readiness = castReadiness(
+    world.run,
+    world.tick,
+    unit,
+    abilityId,
+    record,
   );
 
-  if (!hasMana(resourcesOf(world, unit), cost, world.run.debug)) {
-    return "not_enough_mana";
+  if (readiness !== null) {
+    return readiness;
   }
 
   if (!spawnsFit(world, record.def)) {

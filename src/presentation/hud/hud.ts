@@ -9,7 +9,9 @@ import {
   createSlotDescriptor,
   experienceProgress,
   readTunable,
+  skillPointRefusal,
   SLOT_COUNT,
+  slotReadiness,
 } from "@domain/public";
 import type { WorldView } from "@simulation/public";
 import type { CommandDriver } from "../scene-context";
@@ -42,6 +44,7 @@ import { LevelView } from "./level.view";
 import { OrbSquaresView } from "./orb-squares.view";
 import { GREYED_ALPHA, HEALTH_TINT, MANA_TINT, OPAQUE } from "./palette";
 import type { SlotFlashes } from "./slot-flashes";
+import { refusalFlashTicks } from "./slot-flashes";
 
 /** The kit registered under a form's kit key, or `null`. The scene hands the domain registry's; a test hands a fake. */
 export type KitResolver = (key: string) => Kit | null;
@@ -60,10 +63,6 @@ export type HudPorts = Readonly<{
   orbSlots: number;
 }>;
 
-/** How long a refusal flash shows, in ticks, as the world view's tuning state holds it now. */
-export const refusalFlashTicks = (world: WorldView): number =>
-  readTunable(world.run.tuning, "refusal_flash_duration");
-
 /** The DOM button of a left click, the one that spends a point. */
 const LEFT_BUTTON = 0;
 
@@ -71,11 +70,12 @@ const LEFT_BUTTON = 0;
  * The bottom bar: the two resource bars, the orb squares, the six ability squares, and the
  * level block, read from the world view once per frame. It names no spell and no kit: the
  * active form's kit describes each slot, the spell table gives a prepared spell its colour,
- * and the orb row shows only while the kit describes an orb. While the hero is dead every
- * square reads as blocked by death, as the command validator refuses its keys, and the
- * squares and the orb row grey as they do under a disable. A click on an orb square with
- * a point unspent becomes a `spend_skill_point` command naming the slot; a refusal comes
- * back as an event and flashes the square.
+ * and the orb row shows only while the kit describes an orb. Each square's reason is the
+ * domain's `slotReadiness`, read each frame and written nowhere in the world: a square the
+ * reason is a disable or death for greys, so every square greys while the hero is dead, as
+ * the validator refuses its keys, and the orb row with them. A click on an orb square with a
+ * point unspent, as the domain's `skillPointRefusal` says, becomes a `spend_skill_point`
+ * command naming the slot; a refusal comes back as an event and flashes the square.
  */
 export class Hud {
   private readonly kits: KitResolver;
@@ -97,12 +97,16 @@ export class Hud {
   /** One per slot from one; index zero is unused. Rewritten by the kit each frame. */
   private readonly descriptors: readonly SlotDescriptor[];
 
+  /** Why the domain would refuse each slot's key as of the last sync, or `null`; index zero is unused. */
+  private readonly refusals: (RefusalReason | null)[];
+
   /** Scratch for what a square is handed, rewritten per square per frame. */
   private readonly input: {
     descriptor: Readonly<SlotDescriptor>;
     spellTint: number | null;
     tick: Tick;
     flash: SquareInput["flash"];
+    refusal: RefusalReason | null;
     sweepSteps: number;
   };
 
@@ -110,6 +114,7 @@ export class Hud {
     const { makeQuad, makeLabel, frameSizes } = ports;
     const squares: AbilitySquareView[] = [];
     const descriptors: SlotDescriptor[] = [];
+    const refusals: (RefusalReason | null)[] = [];
 
     this.kits = ports.kits;
     this.flashes = ports.flashes;
@@ -134,6 +139,7 @@ export class Hud {
 
     for (let slot = 0; slot <= SLOT_COUNT; slot += 1) {
       descriptors.push(createSlotDescriptor());
+      refusals.push(null);
     }
 
     for (let slot = 1; slot <= SLOT_COUNT; slot += 1) {
@@ -153,6 +159,7 @@ export class Hud {
 
     this.squares = squares;
     this.descriptors = descriptors;
+    this.refusals = refusals;
     this.level = new LevelView(
       makeQuad,
       frameSizes,
@@ -163,6 +170,7 @@ export class Hud {
       spellTint: null,
       tick: 0,
       flash: "none",
+      refusal: null,
       sweepSteps: ports.wedgeSteps,
     };
     this.health.place(BARS_CENTRE_X, HEALTH_BAR_CENTRE_Y);
@@ -181,6 +189,11 @@ export class Hud {
   /** The descriptor of `slot` as of the last sync, for a test to read. */
   descriptorOf(slot: number): Readonly<SlotDescriptor> | null {
     return this.descriptors[slot] ?? null;
+  }
+
+  /** Why the domain would refuse `slot`'s key as of the last sync, or `null`, for a test to read. */
+  refusalOf(slot: number): RefusalReason | null {
+    return this.refusals[slot] ?? null;
   }
 
   /** One frame: reads the hero through the view and writes every element. A world with no hero hides the bar. */
@@ -232,9 +245,9 @@ export class Hud {
         descriptor,
       );
 
-      if (dead) {
-        descriptor.blockedBy = "dead";
-      }
+      const refusal = slotReadiness(world.run, world.tick, hero, slot);
+
+      this.refusals[slot] = refusal;
 
       if (descriptor.kind === "orb") {
         hasOrbs = true;
@@ -249,6 +262,7 @@ export class Hud {
       this.input.spellTint = record === undefined ? null : record.def.tint;
       this.input.tick = world.tick;
       this.input.flash = this.flashes.kindAt(slot, world.tick);
+      this.input.refusal = refusal;
       square.sync(this.input);
     }
 
@@ -278,16 +292,6 @@ export class Hud {
     }
   }
 
-  /** A refused cursor the mapper reports: the same flash, from the mapper's tick. */
-  slotRefused(slot: number, reason: RefusalReason, world: WorldView): void {
-    this.flashes.flash(
-      slot,
-      reason,
-      this.driver.nextTick,
-      refusalFlashTicks(world),
-    );
-  }
-
   /**
    * A pointer went down at (`x`, `y`) on the HUD's canvas with `button`. Returns whether the
    * bar took it, so the scene keeps it from the world: every click on the bar is the HUD's,
@@ -309,7 +313,7 @@ export class Hud {
       descriptor === undefined ||
       descriptor.kind !== "orb" ||
       hero === null ||
-      hero.progression.skillPoints < 1
+      skillPointRefusal(hero.progression) !== null
     ) {
       return true;
     }
