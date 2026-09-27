@@ -33,6 +33,7 @@ const gruntPack = (dormant: boolean): PackDef => ({
   count: PACK_COUNT,
   position: PACK_AT,
   dormant,
+  legendaryId: null,
 });
 
 /** A bare rectangle with `packs` and nothing else. */

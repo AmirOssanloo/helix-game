@@ -131,25 +131,34 @@ describe("the narrow content version stamp", () => {
     },
   );
 
-  it("moves on every other field of every definition", () => {
-    const registry = copyOfContent();
-    const version = contentVersionOf(registry);
-    const leaves = definitionLeaves(registry).filter((leaf) => !isListed(leaf));
-    const unmoved: string[] = [];
+  /** The spec hashes the whole registry once per leaf, so its time grows with the square of the content; the item catalogue alone passes the default. */
+  const EVERY_LEAF_TIMEOUT_MS = 60_000;
 
-    for (const leaf of leaves) {
-      const restore = nudge(leaf);
+  it(
+    "moves on every other field of every definition",
+    () => {
+      const registry = copyOfContent();
+      const version = contentVersionOf(registry);
+      const leaves = definitionLeaves(registry).filter(
+        (leaf) => !isListed(leaf),
+      );
+      const unmoved: string[] = [];
 
-      if (contentVersionOf(registry) === version) {
-        unmoved.push(leaf.path);
+      for (const leaf of leaves) {
+        const restore = nudge(leaf);
+
+        if (contentVersionOf(registry) === version) {
+          unmoved.push(leaf.path);
+        }
+
+        restore();
       }
 
-      restore();
-    }
-
-    expect(unmoved).toEqual([]);
-    expect(contentVersionOf(registry)).toBe(version);
-  });
+      expect(unmoved).toEqual([]);
+      expect(contentVersionOf(registry)).toBe(version);
+    },
+    EVERY_LEAF_TIMEOUT_MS,
+  );
 });
 
 describe("the strict content version stamp", () => {

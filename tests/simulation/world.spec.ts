@@ -231,6 +231,7 @@ describe("load_map", () => {
         count: 2,
         position: { x: 900, y: 0 },
         dormant: false,
+        legendaryId: null,
       },
     ],
   });

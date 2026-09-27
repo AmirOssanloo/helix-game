@@ -43,6 +43,17 @@ export { forms } from "./forms/index";
 export { skeinDef } from "./forms/skein.def";
 export { heroDef } from "./hero";
 export { contentRegistry } from "./index";
+export {
+  affixes,
+  itemBases,
+  legendaries,
+  lootTables,
+  rarities,
+} from "./items/index";
+export { bandDef } from "./items/bases/band.def";
+export { capDef } from "./items/bases/cap.def";
+export { rimecoilDef } from "./items/legendaries/rimecoil.def";
+export { bossLootDef } from "./items/loot/boss.def";
 export { arenaDef } from "./maps/arena.def";
 export { longRoadDef } from "./maps/long-road.def";
 export { maps, startingMap } from "./maps/index";

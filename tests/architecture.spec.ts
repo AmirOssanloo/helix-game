@@ -51,6 +51,8 @@ describePresentationFieldsUnread({
       "checks each frame a definition names is one the atlas has",
     "src/domain/definitions/kinds/hero.kind.ts":
       "checks each frame a definition names is one the atlas has",
+    "src/domain/definitions/kinds/item-base.kind.ts":
+      "checks each frame a definition names is one the atlas has",
     "src/domain/definitions/kinds/status.kind.ts":
       "checks each frame a definition names is one the atlas has",
     "src/domain/definitions/unit-checks.ts":

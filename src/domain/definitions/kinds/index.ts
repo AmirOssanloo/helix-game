@@ -1,10 +1,15 @@
 import { abilityKind } from "./ability.kind";
+import { affixKind } from "./affix.kind";
 import { atlasFrameKind } from "./atlas-frame.kind";
 import { disableMatrixKind } from "./disable-matrix.kind";
 import { enemyKind } from "./enemy.kind";
 import { formKind } from "./form.kind";
 import { heroKind } from "./hero.kind";
+import { itemBaseKind } from "./item-base.kind";
+import { legendaryKind } from "./legendary.kind";
+import { lootTableKind } from "./loot-table.kind";
 import { mapKind } from "./map.kind";
+import { rarityKind } from "./rarity.kind";
 import { spellKind } from "./spell.kind";
 import { statusKind } from "./status.kind";
 import { summonKind } from "./summon.kind";
@@ -27,5 +32,10 @@ export const DEFINITION_KINDS = [
   disableMatrixKind,
   enemyKind,
   summonKind,
+  rarityKind,
+  itemBaseKind,
+  affixKind,
+  lootTableKind,
+  legendaryKind,
   mapKind,
 ] as const;

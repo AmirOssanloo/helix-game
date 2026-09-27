@@ -52,6 +52,7 @@ const longMap = (): MapDef => {
       count: PACK_SIZE,
       position: { x: packXOf(index), y: PACK_LINE_Y },
       dormant: true,
+      legendaryId: null,
     });
   }
 

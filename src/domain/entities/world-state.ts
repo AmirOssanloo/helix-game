@@ -6,6 +6,7 @@ import type { DefinitionSlot } from "../definitions/definition-slot";
 import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
+import type { LootTableDef } from "../definitions/loot-table-def";
 import type { MapDef } from "../definitions/map-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
@@ -94,6 +95,8 @@ export type RunScope = {
   units: Map<string, UnitRecord>;
   /** Every map the content registers, validated, which a map load resolves its id against. The loaded one is map scope's. */
   maps: readonly MapDef[];
+  /** The world's copy of every loot table by id, which a roll reads and a tuning command on one rewrites. */
+  lootTables: Map<string, LootTableDef>;
   tuning: TuningState;
   /**
    * Every definition number's key, to where it lives in the world's own copy of its

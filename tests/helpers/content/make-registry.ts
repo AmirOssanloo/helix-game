@@ -1,12 +1,17 @@
 import { contentRegistry } from "@content/public";
 import type {
   AbilityDef,
+  AffixDef,
   AtlasFrameList,
   DisableMatrixDef,
   EnemyDef,
   FormDef,
   HeroDef,
+  ItemBaseDef,
+  LegendaryDef,
+  LootTableDef,
   MapDef,
+  RarityTableDef,
   Registry,
   SpellDef,
   StatusDef,
@@ -25,6 +30,11 @@ export type MakeRegistryOptions = Readonly<{
   disableMatrix?: DisableMatrixDef;
   enemies?: readonly EnemyDef[];
   summons?: readonly SummonDef[];
+  rarities?: RarityTableDef;
+  itemBases?: readonly ItemBaseDef[];
+  affixes?: readonly AffixDef[];
+  lootTables?: readonly LootTableDef[];
+  legendaries?: readonly LegendaryDef[];
   maps?: readonly MapDef[];
   atlasFrames?: AtlasFrameList;
 }>;
@@ -40,6 +50,11 @@ export const makeRegistry = (options: MakeRegistryOptions = {}): Registry => ({
   disableMatrix: options.disableMatrix ?? contentRegistry.disableMatrix,
   enemies: options.enemies ?? contentRegistry.enemies,
   summons: options.summons ?? contentRegistry.summons,
+  rarities: options.rarities ?? contentRegistry.rarities,
+  itemBases: options.itemBases ?? contentRegistry.itemBases,
+  affixes: options.affixes ?? contentRegistry.affixes,
+  lootTables: options.lootTables ?? contentRegistry.lootTables,
+  legendaries: options.legendaries ?? contentRegistry.legendaries,
   maps: options.maps ?? contentRegistry.maps,
   atlasFrames: options.atlasFrames ?? contentRegistry.atlasFrames,
 });

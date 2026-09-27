@@ -291,6 +291,7 @@ describe("live enemies near a point", () => {
     count,
     position: { x, y: 0 },
     dormant: true,
+    legendaryId: null,
   });
 
   it("adds up every pack within the radius of the worst walkable point", () => {

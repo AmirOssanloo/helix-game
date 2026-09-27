@@ -2,9 +2,10 @@ import type { Rect, Vec2 } from "@shared/public";
 import type { EnemyTier } from "./enemy-def";
 
 /**
- * One pack as a map lists it: the archetype, the tier, how many, and the point it stands
- * around. A live pack spawns when the map loads; a dormant one is kept as this record, costing
- * no unit, until the hero comes within the activation radius of its position, and spawns then.
+ * One pack as a map lists it: the archetype, the tier, how many, the point it stands around,
+ * and the Legendary piece its boss drops by id, `null` for every pack but a named boss's. A live
+ * pack spawns when the map loads; a dormant one is kept as this record, costing no unit, until
+ * the hero comes within the activation radius of its position, and spawns then.
  */
 export type PackDef = Readonly<{
   archetypeId: string;
@@ -12,6 +13,7 @@ export type PackDef = Readonly<{
   count: number;
   position: Readonly<Vec2>;
   dormant: boolean;
+  legendaryId: string | null;
 }>;
 
 /**

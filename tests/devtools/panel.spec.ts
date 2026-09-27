@@ -43,6 +43,7 @@ const FIRST_MAP = makeMapDef.build({
       count: 2,
       position: { x: 0, y: 1500 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: meleeGruntDef.id,
@@ -50,6 +51,7 @@ const FIRST_MAP = makeMapDef.build({
       count: 2,
       position: { x: 0, y: -6000 },
       dormant: true,
+      legendaryId: null,
     },
   ],
 });

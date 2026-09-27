@@ -120,6 +120,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 > **Note, 2026-09-27, phase 7 inserted:** since P7-S45-T01 narrows the content-version stamp to simulation data, adding glyphs, frames, and icons to the atlas no longer re-stamps the stored logs; this ticket re-stamps nothing.
 
+> **Note, 2026-09-28, from P8-S31-T03:** the two fixture bases are drawn with `square` and `disc` until this ticket; it points the cap at `item_helm` and the band at `item_ring` once the frames exist. A base's `atlasFrame` is a presentation field, so the move re-stamps nothing ([Q105](../backlog/open-questions.md)).
+
 **Build:** `GLYPH_CHARACTERS` in `src/content/atlas-frames.ts` gains the space, `+`, and whatever else the catalogue's names and affix lines need; the space is an advance with no quad. Item icons are flat atlas shapes until art ([ADR 0001](../../../../docs/adr/0001-phaser-renderer-and-quad-atlas.md)): one frame per armory slot's silhouette, one for gold, one for a globe, each white and tinted at bind. Q64's CHECKPOINT word is not changed by this ticket; two words become possible and are Q64's to decide. The [presentation](../../../../docs/architecture/presentation.md) page's atlas line names the new frames.
 
 **Acceptance:**

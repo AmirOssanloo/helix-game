@@ -2,19 +2,33 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  affixes,
   enemies,
   heroDef,
   longRoadDef,
+  lootTables,
+  rarities,
   spells,
   tuningTable,
 } from "@content/public";
-import type { EnemyDef, EnemyTier, PackDef, SpellDef } from "@domain/public";
+import type {
+  AffixDef,
+  ArmorySlot,
+  EnemyDef,
+  EnemyTier,
+  LootTableId,
+  PackDef,
+  SpellDef,
+} from "@domain/public";
 import { mitigate } from "@domain/rules";
 import { REPOSITORY_ROOT } from "../helpers";
 
 /** The two content specifications whose tables restate what the definition files hold. */
 const ENEMY_CATALOGUE = "docs/product/specs/enemy-catalogue.md";
 const SPELL_CATALOGUE = "docs/product/specs/spell-catalogue.md";
+
+/** The item catalogue, whose rarity and affix tables restate the item definition files. */
+const ITEM_CATALOGUE = "docs/product/specs/item-catalogue.md";
 
 /** The long road's spec, whose pack table and experience budget restate its map file. */
 const LONG_ROAD_SPEC = "docs/product/specs/the-long-road.md";
@@ -477,5 +491,168 @@ describe("the long road's spec", () => {
     const skipped = sum(normals.slice(0, Math.ceil(normals.length / 5)));
 
     expect(levelAt(sum(beforeLastBoss.map(experienceOf)) - skipped)).toBe(10);
+  });
+});
+
+/** Every row of the item catalogue `width` cells wide whose first cell passes `keep`. */
+const itemRows = (width: number, keep: (cells: string[]) => boolean) =>
+  linesOf(ITEM_CATALOGUE)
+    .map(cellsOf)
+    .filter(
+      (cells): cells is string[] =>
+        cells !== null && cells.length === width && keep(cells),
+    );
+
+/** The catalogue's word for each armory slot, lower-cased, to the slot it names in code. */
+const SLOT_WORDS: Readonly<Record<string, ArmorySlot>> = {
+  helm: "helm",
+  amulet: "amulet",
+  armour: "body",
+  "main hand": "main_hand",
+  "off-hand": "off_hand",
+  gloves: "gloves",
+  belt: "belt",
+  boots: "boots",
+  ring: "ring",
+};
+
+/** The catalogue's name for each stat to the stat it names in code. */
+const STAT_WORDS: Readonly<Record<string, AffixDef["stat"]>> = {
+  "Maximum health": "max_health",
+  "Health regeneration": "health_regen",
+  "Maximum mana": "max_mana",
+  "Mana regeneration": "mana_regen",
+  Armour: "armour",
+  "Attack speed": "attack_speed",
+  "Attack damage": "attack_damage",
+  "Magic damage": "magic_damage",
+  "Magic resistance": "magic_resistance",
+  "Movement speed": "movement_speed",
+  "Cooldown reduction": "cooldown_reduction",
+};
+
+/** The id an affix row names in backticks, digits included, or `null`. */
+const affixIdIn = (cell: string): string | null =>
+  /`([a-z][a-z0-9_]*)`/.exec(cell)?.[1] ?? null;
+
+/** A number written as a percentage in the catalogue, as the fraction of one a definition holds, to three places. */
+const asFraction = (percent: number): number => Math.round(percent * 10) / 1000;
+
+/** The rarities from `from` to `to` in the table's order, as "Uncommon to Mythical" names them. */
+const raritySpan = (cell: string): string[] => {
+  const ids: readonly string[] = rarities.map((rarity) => rarity.id);
+  const [from = "", to = ""] = cell.toLowerCase().split(" to ");
+
+  return ids.slice(ids.indexOf(from), ids.indexOf(to) + 1);
+};
+
+describe("the item catalogue's rarity table", () => {
+  const rows = itemRows(9, (cells) =>
+    rarities.some((rarity) => rarity.name === cells[0]),
+  );
+
+  it("lists the seven rarities in the content's order", () => {
+    expect(rows.map((cells) => cells[0])).toEqual(
+      rarities.map((rarity) => rarity.name),
+    );
+    expect(rows).toHaveLength(7);
+  });
+
+  it("gives each rarity the content's affix count, tint, price multiplier, and default label", () => {
+    expect(
+      rows.map(([, count = "", tint = "", , , , , price = "", label = ""]) => ({
+        affixCount: count === "Fixed" ? null : Number(count),
+        tint: Number(/`(0x[0-9a-f]{6})`/.exec(tint)?.[1]),
+        priceMultiplier: Number(price),
+        labelByDefault: label === "Yes",
+      })),
+    ).toEqual(
+      rarities.map((rarity) => ({
+        affixCount: rarity.affixCount,
+        tint: rarity.tint,
+        priceMultiplier: rarity.priceMultiplier,
+        labelByDefault: rarity.labelByDefault,
+      })),
+    );
+  });
+
+  it.each([
+    ["normal", 3],
+    ["elite", 4],
+    ["boss", 5],
+    ["store", 6],
+  ] as const)(
+    "reads the %s weight column against the first item roll of that loot table",
+    (id: LootTableId, column) => {
+      const roll = lootTables.find((table) => table.id === id)?.itemRolls[0];
+      const weightOf = (rarity: string): number =>
+        roll?.weights.find((entry) => entry.rarity === rarity)?.weight ?? 0;
+
+      expect(rows.map((cells) => Number(cells[column]))).toEqual(
+        rarities.map((rarity) => weightOf(rarity.id)),
+      );
+    },
+  );
+});
+
+describe("the item catalogue's affix table", () => {
+  const rows = itemRows(9, (cells) => affixIdIn(cells[1] ?? "") !== null);
+  const byId = new Map(
+    affixes.map((affix): [string, AffixDef] => [affix.id, affix]),
+  );
+
+  it("lists the content's affixes in order, each under its name", () => {
+    expect(rows.map((cells) => [affixIdIn(cells[1] ?? ""), cells[0]])).toEqual(
+      affixes.map((affix) => [affix.id, affix.name]),
+    );
+  });
+
+  it("gives each affix the content's stat, armory slots, levels, range, and rarities", () => {
+    const firstTier = new Map<string, readonly ArmorySlot[]>();
+
+    for (const [
+      ,
+      id = "",
+      stat = "",
+      slots = "",
+      level = "",
+      requirement = "",
+      range = "",
+      span = "",
+    ] of rows) {
+      const affix = byId.get(affixIdIn(id) ?? "");
+      const [statName = "", kind = "flat"] = stat.split(", ");
+      const percent = range.includes("%");
+      const [min = 0, max = 0] = numbersIn(range).map((value) =>
+        percent ? asFraction(value) : value,
+      );
+      const named = slots.startsWith("As ")
+        ? (firstTier.get(STAT_WORDS[statName] ?? "") ?? [])
+        : slots.split(", ").map((word) => SLOT_WORDS[word.toLowerCase()]);
+
+      if (!firstTier.has(STAT_WORDS[statName] ?? "")) {
+        firstTier.set(STAT_WORDS[statName] ?? "", named as ArmorySlot[]);
+      }
+
+      expect({
+        stat: STAT_WORDS[statName],
+        kind,
+        armorySlots: [...named].sort(),
+        affixLevel: Number(level),
+        requirement: Number(requirement),
+        min,
+        max,
+        rarities: raritySpan(span),
+      }).toEqual({
+        stat: affix?.stat,
+        kind: affix?.kind,
+        armorySlots: [...(affix?.armorySlots ?? [])].sort(),
+        affixLevel: affix?.affixLevel,
+        requirement: affix?.requirement,
+        min: affix?.min,
+        max: affix?.max,
+        rarities: affix?.rarities,
+      });
+    }
   });
 });

@@ -34,6 +34,7 @@ const NEXT = makeMapDef.build({
       count: 3,
       position: { x: 700, y: -300 },
       dormant: false,
+      legendaryId: null,
     },
   ],
 });

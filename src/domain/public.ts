@@ -127,6 +127,20 @@ export type {
 export type { HeroDef } from "./definitions/hero-def";
 export type { LevelTable, Scalar } from "./definitions/level-table";
 export type { MapDef, PackDef } from "./definitions/map-def";
+export type { AffixDef } from "./definitions/affix-def";
+export type {
+  ArmorySlot,
+  ItemBaseDef,
+  StatRangeDef,
+} from "./definitions/item-base-def";
+export type { FixedLineDef, LegendaryDef } from "./definitions/legendary-def";
+export type {
+  ItemRollDef,
+  LootTableDef,
+  LootTableId,
+  RarityWeightDef,
+} from "./definitions/loot-table-def";
+export type { RarityDef, RarityTableDef } from "./definitions/rarity-def";
 export type { OrbId } from "./definitions/orb-id";
 export type {
   CastPointAnswer,

@@ -43,6 +43,7 @@ const otherMap = (): MapDef =>
         count: 2,
         position: { x: 900, y: -300 },
         dormant: false,
+        legendaryId: null,
       },
     ],
   });

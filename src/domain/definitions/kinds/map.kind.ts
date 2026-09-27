@@ -17,6 +17,7 @@ import {
   booleanSchema,
   countSchema,
   idSchema,
+  nullable,
   objectOf,
   oneOf,
 } from "../schema";
@@ -89,10 +90,41 @@ const checkCheckpoints = (
   }
 };
 
+/** Refuses a pack's Legendary piece that does not exist, or that a pack of a tier other than boss names. */
+const checkLegendary = (
+  context: ValidationContext,
+  file: string,
+  index: number,
+  pack: PackDef,
+): void => {
+  if (pack.legendaryId === null) {
+    return;
+  }
+
+  const path = `packs[${String(index)}].legendaryId`;
+
+  checkReference(
+    context,
+    file,
+    path,
+    pack.legendaryId,
+    context.space("Legendary piece", ["legendaries"]),
+  );
+
+  if (pack.tier !== "boss") {
+    context.faults.push({
+      file,
+      path,
+      message: `expected null on a ${pack.tier} pack: only a boss pack names a Legendary piece`,
+    });
+  }
+};
+
 /**
  * Every map a world may load: its id, map level, bounds, obstacles, spawn point, checkpoints,
  * and packs. The level is one or more, every checkpoint stands where a hero can, every pack
- * names an archetype that exists, and no pack holds more than the live enemy cap.
+ * names an archetype that exists, no pack holds more than the live enemy cap, and a pack that
+ * names a Legendary piece names one that exists and is a boss pack.
  */
 export const mapKind: ListKind<"maps", MapDef, null> = {
   field: "maps",
@@ -116,6 +148,7 @@ export const mapKind: ListKind<"maps", MapDef, null> = {
           count: countSchema,
           position: vec2Schema,
           dormant: booleanSchema,
+          legendaryId: nullable(idSchema),
         }),
       ),
     }),
@@ -146,6 +179,8 @@ export const mapKind: ListKind<"maps", MapDef, null> = {
         pack.archetypeId,
         context.space("enemy", ["enemies"]),
       );
+
+      checkLegendary(context, file, index, pack);
 
       if (pack.count < 1 || pack.count > ENEMY_LIVE_CAP) {
         faults.push({

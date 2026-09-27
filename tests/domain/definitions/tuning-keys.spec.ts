@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { bossLootDef, contentRegistry } from "@content/public";
 import type { DefinitionField, TunableDefinitions } from "@domain/public";
 import {
+  DEFINITION_KINDS,
   definitionFields,
   definitionFieldUnit,
   isDefinitionKey,
@@ -61,6 +63,7 @@ const fixture: TunableDefinitions = {
   statuses: [status],
   enemies: [enemy],
   summons: [summon],
+  lootTables: [bossLootDef],
 };
 
 const fields = definitionFields(fixture);
@@ -151,7 +154,68 @@ describe("definitionFields", () => {
       "status",
       "enemy",
       "summon",
+      "loot",
     ]);
+  });
+
+  it("keys a loot table under loot: its chances, a globe's entry, and a rarity's weight in a roll", () => {
+    expect(fieldNamed("def:loot:boss:goldChance")).toMatchObject({
+      value: 1,
+      unit: "as_written",
+    });
+    expect(fieldNamed("def:loot:boss:healthGlobeChances:1")).toMatchObject({
+      path: "healthGlobeChances",
+      index: 1,
+      value: 1,
+    });
+    expect(
+      fieldNamed("def:loot:boss:itemRolls.0.weights.2.weight"),
+    ).toMatchObject({ value: 700, unit: "as_written" });
+    expect(fieldNamed("def:loot:boss:legendaryChance").value).toBe(0.1);
+  });
+});
+
+describe("the item kinds on the tuning surface", () => {
+  /** The registry fields of the five item kinds, and the one of them that is tunable. */
+  const ITEM_FIELDS = [
+    "rarities",
+    "itemBases",
+    "affixes",
+    "lootTables",
+    "legendaries",
+  ];
+
+  it("gives only the loot tables a kind word, and it is loot", () => {
+    const words = DEFINITION_KINDS.filter((kind) =>
+      ITEM_FIELDS.includes(kind.field),
+    ).map((kind) => [kind.field, kind.tuning?.kind ?? null]);
+
+    expect(words).toEqual([
+      ["rarities", null],
+      ["itemBases", null],
+      ["affixes", null],
+      ["lootTables", "loot"],
+      ["legendaries", null],
+    ]);
+  });
+
+  it("keys every loot table of the content under loot, and no base, affix, rarity, or Legendary piece", () => {
+    const keys = definitionFields(contentRegistry).map((field) => field.key);
+    const itemIds = [
+      ...contentRegistry.itemBases.map((def) => def.id),
+      ...contentRegistry.affixes.map((def) => def.id),
+      ...contentRegistry.rarities.map((def) => def.id),
+      ...contentRegistry.legendaries.map((def) => def.id),
+    ];
+
+    for (const table of contentRegistry.lootTables) {
+      expect(keys).toContain(`def:loot:${table.id}:goldChance`);
+      expect(keys).toContain(`def:loot:${table.id}:itemRolls.0.chance`);
+    }
+
+    expect(
+      keys.filter((key) => itemIds.includes(key.split(":")[2] ?? "")),
+    ).toEqual([]);
   });
 });
 

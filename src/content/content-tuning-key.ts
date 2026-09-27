@@ -7,6 +7,7 @@ import type { abilities } from "./abilities/index";
 import type { enemies } from "./enemies/index";
 import type { forms } from "./forms/index";
 import type { heroDef } from "./hero";
+import type { lootTables } from "./items/index";
 import type { spells } from "./spells/index";
 import type { statuses } from "./statuses/index";
 import type { summons } from "./summons/index";
@@ -24,7 +25,8 @@ export type ContentDefinitionKey =
   | DefinitionKeysOf<"ability", (typeof abilities)[number]>
   | DefinitionKeysOf<"status", (typeof statuses)[number]>
   | DefinitionKeysOf<"enemy", (typeof enemies)[number]>
-  | DefinitionKeysOf<"summon", (typeof summons)[number]>;
+  | DefinitionKeysOf<"summon", (typeof summons)[number]>
+  | DefinitionKeysOf<"loot", (typeof lootTables)[number]>;
 
 /** Every key a tuning command may carry against this content: an entry of the tuning table or a definition number. */
 export type ContentTuningKey = TuningKey | ContentDefinitionKey;

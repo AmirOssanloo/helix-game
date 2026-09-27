@@ -65,6 +65,7 @@ const walledInPack: PackDef = {
   count: WALLED_IN_COUNT,
   position: WALLED_IN,
   dormant: true,
+  legendaryId: null,
 };
 
 type Arranged = Readonly<{ world: Simulation; reader: EventReader }>;

@@ -12,6 +12,13 @@ export { SLOT_COUNT } from "./commands/command";
 export { DAMAGE_TYPES, isDamageType } from "./combat/damage";
 export { definitionKindTitle } from "./definitions/definition-tuning";
 export { ENEMY_TIERS } from "./definitions/enemy-def";
+export {
+  ARMORY_SLOTS,
+  INVENTORY_COLUMNS,
+  INVENTORY_ROWS,
+  ITEM_LINE_CAPACITY,
+} from "./definitions/item-base-def";
+export { LOOT_TABLE_IDS } from "./definitions/loot-table-def";
 export { scalarAtOrbLevels } from "./definitions/level-table";
 export { ORB_IDS } from "./definitions/orb-id";
 export { TUNING_KEYS, TUNING_UNITS } from "./definitions/tuning-def";

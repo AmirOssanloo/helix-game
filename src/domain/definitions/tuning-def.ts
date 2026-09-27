@@ -57,6 +57,11 @@ export type TuningKey =
   | "pack_sleep_radius"
   | "pack_placement_radius"
   | "checkpoint_reach_radius"
+  | "pickup_radius"
+  | "health_globe_restore"
+  | "mana_globe_restore"
+  | "drop_placement_radius"
+  | "store_sell_fraction"
   | "elite_health_multiplier"
   | "boss_health_multiplier"
   | "elite_damage_multiplier"
@@ -136,6 +141,11 @@ export const TUNING_UNITS: Readonly<Record<TuningKey, TuningUnit>> = {
   pack_sleep_radius: "world_units",
   pack_placement_radius: "world_units",
   checkpoint_reach_radius: "world_units",
+  pickup_radius: "world_units",
+  health_globe_restore: "fraction",
+  mana_globe_restore: "fraction",
+  drop_placement_radius: "world_units",
+  store_sell_fraction: "fraction",
   elite_health_multiplier: "as_written",
   boss_health_multiplier: "as_written",
   elite_damage_multiplier: "as_written",

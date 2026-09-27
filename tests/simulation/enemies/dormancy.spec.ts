@@ -53,6 +53,7 @@ const gruntPack = (count: number): PackDef => ({
   count,
   position: PACK_AT,
   dormant: true,
+  legendaryId: null,
 });
 
 const mapWith = (pack: PackDef): MapDef => makeMapDef.build({ packs: [pack] });

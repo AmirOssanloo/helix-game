@@ -444,6 +444,7 @@ const checkpointMap = makeMapDef.build({
       count: 3,
       position: PACK_AT,
       dormant: false,
+      legendaryId: null,
     },
   ],
 });

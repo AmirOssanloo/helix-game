@@ -4,6 +4,13 @@ import { atlasFrames } from "./atlas-frames";
 import { enemies } from "./enemies/index";
 import { forms } from "./forms/index";
 import { heroDef } from "./hero";
+import {
+  affixes,
+  itemBases,
+  legendaries,
+  lootTables,
+  rarities,
+} from "./items/index";
 import { maps } from "./maps/index";
 import { spells } from "./spells/index";
 import { disableMatrix } from "./statuses/disable-matrix";
@@ -27,6 +34,11 @@ export const contentRegistry: Registry = {
   disableMatrix,
   enemies,
   summons,
+  rarities,
+  itemBases,
+  affixes,
+  lootTables,
+  legendaries,
   maps,
   atlasFrames,
 };

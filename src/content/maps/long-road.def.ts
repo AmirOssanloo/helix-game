@@ -188,6 +188,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2000, y: 1600 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -195,6 +196,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2600, y: 1800 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -202,6 +204,7 @@ export const longRoadDef = {
       count: 4,
       position: { x: 1100, y: 2300 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -209,6 +212,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2900, y: 2800 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -216,6 +220,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1300, y: 3300 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -223,6 +228,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2000, y: 3900 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -230,6 +236,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 4240 },
       dormant: true,
+      legendaryId: null,
     },
     // Region 2, the line.
     {
@@ -238,6 +245,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2000, y: 6600 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "frost_raider",
@@ -245,6 +253,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1000, y: 7100 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -252,6 +261,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 3000, y: 7300 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "lancer",
@@ -259,6 +269,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1600, y: 7900 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "ranged_archer",
@@ -266,6 +277,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2800, y: 8200 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "ranged_archer",
@@ -273,6 +285,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2000, y: 8700 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "frost_raider",
@@ -280,6 +293,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 9040 },
       dormant: true,
+      legendaryId: null,
     },
     // Region 3, the hexes.
     {
@@ -288,6 +302,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2000, y: 11400 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "trapper",
@@ -295,6 +310,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1000, y: 11900 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -302,6 +318,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 3000, y: 12000 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "skirmisher",
@@ -309,6 +326,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2400, y: 12600 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "lancer",
@@ -316,6 +334,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 1200, y: 13000 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -323,6 +342,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2000, y: 13500 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "skirmisher",
@@ -330,6 +350,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 13840 },
       dormant: true,
+      legendaryId: null,
     },
     // Region 4, the heavies.
     {
@@ -338,6 +359,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 2000, y: 16200 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "troll",
@@ -345,6 +367,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1000, y: 16700 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "summoner",
@@ -352,6 +375,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 3000, y: 16900 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "crusher",
@@ -359,6 +383,7 @@ export const longRoadDef = {
       count: 3,
       position: { x: 1600, y: 17500 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "frost_raider",
@@ -366,6 +391,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2800, y: 17800 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -373,6 +399,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2000, y: 18300 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "troll",
@@ -380,6 +407,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 18640 },
       dormant: true,
+      legendaryId: null,
     },
     // Region 5, the hall.
     {
@@ -388,6 +416,7 @@ export const longRoadDef = {
       count: 5,
       position: { x: 3100, y: 19700 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -395,6 +424,7 @@ export const longRoadDef = {
       count: 5,
       position: { x: 900, y: 20800 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "fast_runner",
@@ -402,6 +432,7 @@ export const longRoadDef = {
       count: 5,
       position: { x: 3000, y: 20800 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "brute",
@@ -409,6 +440,7 @@ export const longRoadDef = {
       count: 4,
       position: { x: 2000, y: 21000 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "summoner",
@@ -416,6 +448,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 1000, y: 21400 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "skirmisher",
@@ -423,6 +456,7 @@ export const longRoadDef = {
       count: 5,
       position: { x: 3000, y: 21400 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "melee_grunt",
@@ -430,6 +464,7 @@ export const longRoadDef = {
       count: 5,
       position: { x: 3400, y: 22100 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "brute",
@@ -437,6 +472,7 @@ export const longRoadDef = {
       count: 2,
       position: { x: 2000, y: 23200 },
       dormant: true,
+      legendaryId: null,
     },
     {
       archetypeId: "brute",
@@ -444,6 +480,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 23560 },
       dormant: true,
+      legendaryId: null,
     },
   ],
 } as const satisfies MapDef;

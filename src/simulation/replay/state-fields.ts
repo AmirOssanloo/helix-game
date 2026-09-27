@@ -263,6 +263,7 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
   disableMatrix: excluded(FROM_CONTENT),
   units: excluded(FROM_CONTENT),
   maps: excluded(FROM_CONTENT),
+  lootTables: excluded(FROM_CONTENT),
   tuning: table("tuning", (run) => run.tuning),
   definitionSlots: excluded(FROM_CONTENT),
   debug: record("debug", (run) => run.debug, DEBUG_FIELDS),

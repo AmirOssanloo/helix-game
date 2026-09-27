@@ -15,7 +15,11 @@ import type { TuningDef } from "@domain/public";
  * the activation radius of it, in world units, and an awake one sleeps again once the hero is
  * past the sleep radius of it and its members rest at home, in world units, and a pack looks for free cells no further than
  * the placement radius from its point, in world units, a hero within the checkpoint reach
- * radius of a checkpoint reaches it, in world units, an elite's and a boss's health and
+ * radius of a checkpoint reaches it, in world units, the hero takes gold and globes within the
+ * pickup radius of its bound, in world units, a health or mana globe restores its fraction of
+ * one of the pool's maximum, a drop falls on a free cell no further than the drop placement
+ * radius from the body, in world units, the store pays the sell fraction of one of an item's
+ * price, an elite's and a boss's health and
  * attack damage are the definition's times the tier's multipliers, read at spawn, and the experience it pays is the
  * definition's times the tier's own experience multiplier, read at its death, the three radii, the two cell sizes, and
  * the three radius classes are world units, the push-out passes and the re-path budget are
@@ -68,6 +72,11 @@ export const tuningTable = {
   pack_sleep_radius: 2000,
   pack_placement_radius: 1024,
   checkpoint_reach_radius: 256,
+  pickup_radius: 32,
+  health_globe_restore: 0.25,
+  mana_globe_restore: 0.25,
+  drop_placement_radius: 192,
+  store_sell_fraction: 0.25,
   elite_health_multiplier: 3,
   boss_health_multiplier: 4,
   elite_damage_multiplier: 1.5,

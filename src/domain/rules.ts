@@ -72,6 +72,7 @@ export {
   definitionFields,
 } from "./definitions/definition-tuning";
 export { DEFINITION_KINDS } from "./definitions/kinds/index";
+export { createLootTables } from "./definitions/kinds/loot-table.kind";
 export {
   DAMAGE_RATES,
   PUSH_DIRECTIONS,

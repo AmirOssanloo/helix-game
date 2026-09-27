@@ -4,7 +4,7 @@
 
 ## Overview
 
-Enemies drop gold, health globes, mana globes, and items. The hero takes gold and globes by walking over or past them, and picks up an item by right-clicking it. It holds items in an inventory of 10 by 4 cells, wears them in ten armory slots that change its stats, and buys and sells them at a store opened from a checkpoint's ring. This page covers how all of that behaves. Which items exist and every number they carry are the [item catalogue](../specs/item-catalogue.md); the files under `src/content/items/` own the numbers once they exist, and `src/content/tuning.ts` owns the globe percentages and the pickup radius.
+Enemies drop gold, health globes, mana globes, and items. The hero takes gold and globes by walking over or past them, and picks up an item by right-clicking it. It holds items in an inventory of 10 by 4 cells, wears them in ten armory slots that change its stats, and buys and sells them at a store opened from a checkpoint's ring. This page covers how all of that behaves. Which items exist and every number they carry are the [item catalogue](../specs/item-catalogue.md); the files under `src/content/items/` own the numbers once they exist, and `src/content/tuning.ts` owns the globe percentages, the pickup radius, the drop placement radius, and the sell fraction.
 
 ## Drops
 
@@ -12,7 +12,7 @@ When an enemy dies, it rolls its tier's drop table: gold, a health globe, a mana
 
 - **The roll is on a draw of its own.** A drop never changes a fight, and a replay of the same session drops the same things in the same places.
 - **An item's level is the map's level**, whatever dropped it. It decides which bases and affixes can roll: a base drops only once the item level reaches its quality level, an affix only once it reaches its affix level. A tougher enemy drops more and at better rarity, never at a higher level.
-- **Where it lands.** Each drop falls on free walkable ground near where the enemy died, found as a pack's members are placed, one drop to a spot, so two never lie on one point.
+- **Where it lands.** Each drop falls on free walkable ground near where the enemy died, found as a pack's members are placed, one drop to a spot, so two never lie on one point, and no further than 192 units from the body (`drop_placement_radius`).
 - **How long it stays.** A ground item stays until it is taken or the map is loaded or reset. It never fades, and the hero's death leaves it where it lies.
 
 ## Gold and globes, taken by walking
@@ -20,7 +20,7 @@ When an enemy dies, it rolls its tier's drop table: gold, a health globe, a mana
 Gold and globes are taken the moment the hero's disc comes within the pickup radius of them, 32 units by default (`pickup_radius`), whether the hero walked to them or past them on the way somewhere else. There is no order for it and no click.
 
 - **Gold** is added to the hero's gold, a number shown on the inventory screen. It takes no cell.
-- **A health globe** restores 25% of maximum health; **a mana globe** 25% of maximum mana. A globe whose pool is full is left on the ground and waits, so a hero at full health walks over health globes and keeps them for later.
+- **A health globe** restores 25% of maximum health (`health_globe_restore`); **a mana globe** 25% of maximum mana (`mana_globe_restore`). A globe whose pool is full is left on the ground and waits, so a hero at full health walks over health globes and keeps them for later.
 - A dead hero takes nothing, and nor does one whose health reached zero on that step: a globe never saves a hero already emptied.
 
 ## Picking up an item
@@ -66,7 +66,7 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 - **Three tabs:** Armour, Weapons, and Misc, the last holding amulets, rings, and the active items. A click on a tab shows it.
 - **Stock:** 12 items from Common to Rare, rolled the first time that checkpoint's store opens, at the hero's level on that tick, and never restocked.
 - **Buying:** a left click on a stocked item buys it for its price, into the inventory where it fits.
-- **Selling:** a right click on an inventory item sells it for a quarter of its price.
+- **Selling:** a right click on an inventory item sells it for a quarter of its price (`store_sell_fraction`), rounded down.
 - **Closing:** Esc, or the hero leaving the ring or dying. The world keeps running while it is open.
 
 ## States and edge cases
