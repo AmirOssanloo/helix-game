@@ -151,6 +151,7 @@ export type DebugCommand =
   | KillAllCommand
   | ClearAllCommand
   | ResetMapCommand
+  | LoadMapCommand
   | JumpToCheckpointCommand
   | BeginChannelCommand
   | ApplyStatusCommand
@@ -285,6 +286,21 @@ export type ResetMapCommand = Readonly<{
 }>;
 
 /**
+ * Loads the map the content registers as `mapId` in place of the loaded one: map scope is
+ * emptied and rebuilt on the new map, its live packs placed and its dormant ones asleep, and
+ * the hero stands at its spawn point with its order cleared. Run scope is untouched, so the
+ * hero keeps its level, experience, orbs, slots, cooldowns, and statuses. A dead hero is
+ * carried dead and stands up at the new spawn point when its delay runs out. Refused when no
+ * map has the id.
+ */
+export type LoadMapCommand = Readonly<{
+  kind: "load_map";
+  tick: Tick;
+  timestamp: number;
+  mapId: string;
+}>;
+
+/**
  * Stands the hero at checkpoint `checkpoint` of the loaded map, counted from zero in the order
  * the map lists them, with its order cleared and its previous position written so nothing
  * interpolates the carry. It reaches nothing itself: the checkpoint rule reads where it stands
@@ -383,6 +399,7 @@ export const DEBUG_COMMAND_KINDS: Readonly<Record<DebugCommand["kind"], true>> =
     kill_all: true,
     clear_all: true,
     reset_map: true,
+    load_map: true,
     jump_to_checkpoint: true,
     begin_channel: true,
     apply_status: true,

@@ -25,12 +25,5 @@ export {
 } from "./game-config";
 export { panelViewSyncers } from "./play-view-syncers";
 
-export {
-  type CommandStamps,
-  Session,
-  type SessionOptions,
-  type SessionRetune,
-} from "./session";
-
 /** Starts the game: builds the world, the renderer, and the fixed-step driver, and wires them together. */
 export type Boot = () => void;

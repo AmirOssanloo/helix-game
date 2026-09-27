@@ -7,6 +7,7 @@ import {
   issueMove,
   setStraightPath,
   UNIT_CAPACITY,
+  loadMap,
 } from "@domain/public";
 import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
@@ -98,7 +99,7 @@ describe("the collision system and obstacles", () => {
   it("pushes a unit standing on the spawn point of a loaded map out on the first tick", () => {
     const world = makeWorld({ seed: 1 });
     const hero = spawnHero(world, { x: 0, y: 0 });
-    world.loadMap(makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
+    loadMap(world.state, makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
     const squatter = spawnEnemy(world, 500, 500);
 
     world.tick();

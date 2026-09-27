@@ -6,7 +6,6 @@ import type {
   Registry,
   RunScope,
   TuningState,
-  WalkabilityGrid,
   World,
 } from "@domain/public";
 import {
@@ -28,13 +27,9 @@ import {
   createUnitTable,
   createWorldScratch,
   createZonePool,
-  deriveWalkabilityGrid,
-  fitPathSearch,
+  deriveMapGrid,
   placeMapPacks,
-  readRadiusClasses,
   readTunable,
-  resetMapScope,
-  walkabilityCovers,
 } from "@domain/public";
 import { assert } from "@shared/public";
 import { CommandBuffer } from "./command-buffer";
@@ -51,21 +46,13 @@ export type CreateWorldOptions = Readonly<{
   map: MapDef;
 }>;
 
-/** The grid `map` derives under the tuning state's cell size and radius classes. */
-const deriveGrid = (map: MapDef, tuning: TuningState): WalkabilityGrid =>
-  deriveWalkabilityGrid(
-    map.bounds,
-    map.obstacles,
-    readTunable(tuning, "walkability_cell_size"),
-    readRadiusClasses(tuning),
-  );
-
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
  * the world's own copy of every definition it may retune with each number under its key in
  * the tuning state, the hero's form records, its attack read for the tick, the spell,
- * status, and unit tables built over the copies, the disable matrix as written, both switches off, no hero yet, and the
- * random source at the start of the seed's sequence.
+ * status, and unit tables built over the copies, the disable matrix as written, every map the
+ * registry holds for a map load to resolve, both switches off, no hero yet, and the random
+ * source at the start of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
   const tuning = createTuningState(registry.tuning);
@@ -84,6 +71,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     statuses: createStatusTable(copies.statuses, tuning),
     disableMatrix: registry.disableMatrix,
     units: createUnitTable(copies.enemies, copies.summons, tuning),
+    maps: registry.maps,
     tuning,
     definitionSlots,
     debug: { noCooldowns: false, infiniteMana: false },
@@ -93,7 +81,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
 
 /** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
-  const walkability = deriveGrid(map, tuning);
+  const walkability = deriveMapGrid(map, tuning);
 
   return {
     mapId: map.id,
@@ -165,7 +153,9 @@ const copyPreviousPositions = (world: World): void => {
 /**
  * Owns a world and steps it. Commands enter through `submit`, `tick` consumes them, the
  * systems announce into `events`, and everything past the simulation's door reads the result
- * through `view`. There is no method here that changes world state outside a tick.
+ * through `view`. Within a session, world state changes only inside a tick, a map load
+ * included, since it enters as a command. The one method that changes it outside a tick is
+ * `restart`, which makes a new session rather than changing one.
  *
  * `state` is the live world a system is handed and a test helper arranges. The presentation
  * and the developer panel are given `view`, never `state`.
@@ -179,7 +169,7 @@ export class Simulation {
   /** Every consumed command with its tick. */
   readonly log: InputLog;
 
-  /** The map the world was created or last restarted on, which a restart without another map returns it to. A map load changes the loaded map, never this. */
+  /** The map the world was created or last restarted on: the one a session's log names as its start. A map load changes the loaded map, never this. */
   private startingMap: MapDef;
 
   /** What a restart builds run scope from: the registry the world was created from, or the last one it adopted. */
@@ -280,34 +270,6 @@ export class Simulation {
     this.events.write(this.tickCompleted);
 
     world.tick += 1;
-  }
-
-  /**
-   * Takes `map` as the loaded one: derives the walkability grid for the map's bounds and
-   * obstacles with the path search fitted to it, takes the map's spawn point and checkpoints, and
-   * resets map scope around it: every map-scoped entity but the hero released, no checkpoint
-   * reached, the hero given the map's spawn point and carried to it with its order cleared, the spatial hash rebuilt over what is
-   * left, the map's live packs placed, and its dormant ones asleep as records. Run scope is untouched; the hero is never recreated. Anything standing on
-   * the spawn point is pushed off by collision on the first tick.
-   */
-  loadMap(map: MapDef): void {
-    const world = this.state;
-    const scope = world.map;
-
-    scope.mapId = map.id;
-    scope.bounds = map.bounds;
-    scope.obstacles = map.obstacles;
-    scope.walkability = deriveGrid(map, world.run.tuning);
-
-    assert(
-      walkabilityCovers(scope.walkability, map.bounds),
-      "The walkability grid covers the loaded map's bounds",
-    );
-    fitPathSearch(scope.pathSearch, cellCount(scope.walkability));
-    scope.packs = createPackRecords(map.packs);
-    scope.spawnPoint = map.spawnPoint;
-    scope.checkpoints = map.checkpoints;
-    resetMapScope(world);
   }
 
   /**

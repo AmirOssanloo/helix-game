@@ -1,6 +1,6 @@
 import type { Registry } from "@domain/public";
 import { describeRegistryFaults, validateRegistry } from "@domain/public";
-import type { CommandStamps, Session } from "./session";
+import type { CommandStamps, Session } from "@simulation/public";
 
 /**
  * What a content reload came to: taken into the running session, refused with the session on

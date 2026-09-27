@@ -86,7 +86,7 @@ The world has two scopes, and every pool belongs to one.
 
 **Beside the two scopes sits the world's scratch**: the working memory the rules write and read within a call, such as a candidate buffer, a scratch point, the context an effect list runs with, the event an announcement is written through, and a re-entrancy guard. It is made once with the world, never grows, and nothing in it is read on a later tick, so it is not world state: the state checksum leaves it out and the world view does not show it. A value a later tick reads is state, and lives in run or map scope.
 
-`loadMap` releases every map-scoped entity and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. The hero's position and spawn point are set by the new map's spawn point, and no checkpoint is reached; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
+`loadMap` releases every map-scoped entity and rebuilds the walkability grid and the spatial hash from the new map definition. It does not touch run scope. It is a rule in `domain/map/`, and it runs only as a `load_map` command at the command system's point in the tick, resolving the map's id against the maps run scope holds, validated with the rest of the content. A map change is in the input log and replays. The hero's position and spawn point are set by the new map's spawn point, and no checkpoint is reached; the hero's orbs, slots, cooldowns, and statuses are the hero's business and follow the rules for a map transition, not the pool's.
 
 Nothing may assume the hero is recreated per map.
 
@@ -154,7 +154,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Run scope | Hero, tuning state, random source, the hero's items; never reset during a session |
 | Map scope | Enemies, summons, projectiles, zones, effects, ground items; released by `loadMap` |
 | The world's scratch | Working memory dead at the end of every tick, made with the world; not state, left out of the checksum. A value read on a later tick is state instead |
-| `loadMap` | Resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |
+| `loadMap` | Runs only as a `load_map` command, whose id resolves against the maps in run scope; resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |
 | The hero across maps | Never recreated |
 | The hero's forms | Run-scoped records: definition, resources, kit state, armory; the unit holds the active index |
 | The hero's items | Run scope, never the unit: the inventory and gold once, an armory on each form record; on the ground, a ground item in map scope |

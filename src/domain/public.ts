@@ -86,6 +86,7 @@ export {
   type KillAllCommand,
   type KillHeroCommand,
   type LevelUpCommand,
+  type LoadMapCommand,
   type MoveCommand,
   type NoopCommand,
   type ResetMapCommand,
@@ -537,6 +538,7 @@ export {
   type SpatialHashView,
 } from "./movement/spatial-hash";
 export { checkpointSystem } from "./map/checkpoint.system";
+export { deriveMapGrid, loadMap, mapNamed } from "./map/load-map";
 export { resetMapScope } from "./map/map-scope";
 export { movementSpeed } from "./movement/speed-stack";
 export { NO_CONTACT, sweepDisc } from "./movement/sweep";

@@ -557,6 +557,7 @@ describe("respawn at a checkpoint", () => {
       serializeInputLog(
         recorder.view,
         recorder.log,
+        recorder.mapDef.id,
         contentVersionOf(checkpointRegistry),
         [],
       ),

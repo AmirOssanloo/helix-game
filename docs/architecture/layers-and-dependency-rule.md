@@ -13,7 +13,7 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 | --- | --- | --- |
 | `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids, an integer hash |
 | `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and `public.ts` |
-| `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, and `public.ts` |
+| `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, the session that owns the world and switches it between live play and a replay, and `public.ts` |
 | `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
 | `instrumentation/` | Measures | Preallocated sample rings: tick time, render time, live counts, pool misses, frame rate |
 | `presentation/` | **Adapts.** Where Phaser is used | Scenes, the shape atlas, pooled views, input mapping, camera, HUD, debug overlays |
@@ -43,7 +43,7 @@ Three things follow from the table:
 
 - **`domain` and `simulation` import no Phaser, no DOM, no `window`, and no clock.** They run in Node. Lint bans `Math.random`, `Date.now`, `performance.now`, and an argument-less `Date` under both in every spelling, called or read, destructured, by a computed key, or through `globalThis`, `self`, or `window`, so a tick is a function of its inputs. It also bans the host's globals there: the page (`window`, `document`, `navigator`, `requestAnimationFrame`), the timers (`setTimeout`, `setInterval`, `queueMicrotask`), storage and the network (`localStorage`, `sessionStorage`, `fetch`), `crypto`, `structuredClone`, and `globalThis` and `self` themselves. `shared`, `domain`, and `simulation` are typechecked a second time as their own project with no DOM library and no ambient types, so a host name that lint misses does not resolve. [Simulation coding standards](../standards/simulation-coding.md#quick-reference) hold the detail.
 - **`presentation` is where Phaser is used, and `app` may import it only to construct the game.** The composition root builds the game config, creates the game, and hands it the scenes; it never builds a view, reads a game object, or draws. A Phaser type appearing in any other layer is a build failure.
-- **The wall clock lives in `app/`.** The fixed-step driver feeds Phaser's frame delta into an accumulator and calls `tick` with a constant step. Time inside the domain is a tick count.
+- **The wall clock lives outside the tick.** The fixed-step driver in `app/` feeds Phaser's frame delta into an accumulator and calls `tick` with a constant step, and owns tick time. Time inside the domain is a tick count. The boot's seed and the panel's refresh timer read the clock too, and neither changes world state; [Simulation loop](./simulation-loop.md#the-driver) says why.
 
 ---
 

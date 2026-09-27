@@ -5,6 +5,7 @@ import {
   createCandidateBuffer,
   releaseUnit,
   UNIT_CAPACITY,
+  loadMap,
 } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
@@ -144,7 +145,7 @@ describe("loadMap", () => {
     spawnHero(world, { x: 300, y: 300 });
     acquireUnit(world.state, "enemy", 300, 300);
 
-    world.loadMap(makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
+    loadMap(world.state, makeMapDef.build({ spawnPoint: { x: 500, y: 500 } }));
 
     expect(world.view.map.spatialHash.cellSize).toBe(32);
     expect(world.view.map.spatialHash.count).toBe(1);

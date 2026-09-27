@@ -455,6 +455,7 @@ describe("set_tuning on a definition key", () => {
       serializeInputLog(
         recorder.view,
         recorder.log,
+        recorder.mapDef.id,
         contentVersionOf(registry),
         [],
       ),

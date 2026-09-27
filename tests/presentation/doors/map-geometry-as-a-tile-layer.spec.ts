@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { WalkabilityView } from "@domain/public";
-import { isCellBlocked } from "@domain/public";
+import { isCellBlocked, loadMap } from "@domain/public";
 import type { WorldView } from "@simulation/public";
 import { makeMapDef, makeWorld } from "../../helpers";
 
@@ -114,7 +114,7 @@ describe("the door: static map geometry is drawn by a tile layer the domain map 
     expect(layer.tiles.includes(-1)).toBe(false);
     expect(Array.from(world.view.map.walkability.cells)).toEqual(cellsBefore);
 
-    world.loadMap(bareRoom);
+    loadMap(world.state, bareRoom);
     view.sync(world.view);
 
     expect([layer.columns, layer.rows]).toEqual([20, 10]);

@@ -17,7 +17,7 @@ A 144 Hz display and a 60 Hz display run the same number of ticks per second, so
 
 ## The driver
 
-The fixed-step driver lives in `app/` and is the only file in the repository that reads a clock. Each render frame it:
+The fixed-step driver lives in `app/` and owns tick time: **the tick reads no clock, and the driver is the only reader of one that decides when a tick runs.** Each render frame it:
 
 1. Receives Phaser's frame delta and adds it to an accumulator.
 2. Runs `tick` once for every whole step the accumulator holds, at most the **catch-up cap** per frame, three unless the developer panel sets another. Time beyond the cap is dropped, not queued.
@@ -37,6 +37,8 @@ const onFrame = (frameDeltaMs: number): void => {
 ```
 
 **When the tab is hidden**, the driver stops calling `tick`. Cooldowns freeze with it, because they are tick counts. Any input that arrived while hidden is discarded on resume, not replayed.
+
+**Two reads of the clock sit outside the tick, and neither can move world state.** The composition root reads the wall clock once at boot for a new session's seed; the seed is an input, written into the input log, so a replay runs under the same one. The developer panel refreshes its readouts on a host timer; the refresh reads the world view and writes nothing, and anything it changes goes in as a command. Neither is under `domain/` or `simulation/`, where lint bans both.
 
 **Every pause is a reason the driver holds, and each is held apart**: a hidden tab, the developer panel's pause, and a screen that pauses the world, which reaches the driver through a port presentation declares and the composition root implements. The driver runs a tick only when no reason holds, and feeds no time to the accumulator while one does, so releasing the last reason runs no burst of catch-up ticks, and releasing one never resumes a clock another still holds. No pause is world state or a command.
 
@@ -61,6 +63,8 @@ export const fooSystem = (world: World): void => { /* … */ }
 
 A system reads world state, the tick count, the commands the tick consumed, and the world's random source. It reads nothing else. It allocates nothing in steady state; [Performance standards](../standards/performance.md#quick-reference) hold the allocation rules.
 
+**A map change is a transition, not steady state.** It arrives as a `load_map` command and the command system applies it at its point in the tick, keeping run scope and making map scope again on the new map. A rule that changes map requests the change for that same point and never loads a map mid-pass. Deriving the new map's walkability grid and its pack records allocates, once, on the tick that changes map; an allocation sampler's window leaves that tick out.
+
 ---
 
 ## Time is a tick count
@@ -81,13 +85,15 @@ This is what makes a replay exact: two runs that receive the same commands at th
 - Every command carries the tick it applies to, and the ordering rule in [Commands and events](./commands-and-events.md) settles ties.
 - Floating-point arithmetic is fine. The contract is same-machine, same-build replay, not cross-platform bit equality.
 
-Debug commands and tuning changes are commands too, so a session with the developer panel open replays exactly. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) is why.
+Debug commands, tuning changes, and map changes are commands too, so a session with the developer panel open replays exactly. [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) is why.
 
 ---
 
 ## Recording and replay
 
-The simulation records every command it consumes, with its tick, into an input log. Replay creates a world with the same seed and feeds the log back, tick by tick, with no driver and no Phaser. It runs in Node, which is what makes it a test as well as a debugging tool.
+The simulation records every command it consumes, with its tick, into an input log. Replay creates a world with the same seed on the map the session started on and feeds the log back, tick by tick, with no driver and no Phaser; a later map arrives as a `load_map` among the records. It runs in Node, which is what makes it a test as well as a debugging tool.
+
+The session that owns the world, the replay that may be feeding it, and saving and loading its log live in `simulation/`; `app/` constructs it and steps it through the driver. A new run, under a new seed or from a loaded log, is a session operation that makes both scopes again and begins a new log; it is never a command. A map change keeps the run and is a command in the log.
 
 A bug arrives as a seed and a log, in a feedback file or an input log. The engineer replays to the failing tick and inspects the world view.
 
@@ -113,7 +119,7 @@ A system holding a module-level variable — a cached list, a counter, a scratch
 
 | Rule | Do |
 | --- | --- |
-| The clock | Read in `app/fixed-step-driver.ts` and nowhere else |
+| The clock | The tick reads none; the driver in `app/fixed-step-driver.ts` owns tick time. Outside the tick, the boot's seed read and the panel's refresh timer, neither of which changes world state |
 | The step | 30 Hz, constant `dt`; never a frame delta |
 | Catch-up | At most the catch-up cap of ticks per render frame, 3 unless the developer panel sets another, then drop the remaining time |
 | Hidden tab | No ticks; cooldowns freeze; input received while hidden is discarded |
@@ -121,13 +127,15 @@ A system holding a module-level variable — a cached list, a counter, a scratch
 | `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order with the consumed commands readable on the world, forgets them, writes `tick_completed`, advances the tick count; reads no clock |
 | System order | One list, in `simulation/systems.ts`; command application runs first |
 | A system | A plain function over world state; reads the world, the tick count, the consumed commands, and the world's random source; allocates nothing in steady state |
+| A map change | A `load_map` command, applied at the command system's point in the tick: run scope kept, map scope made again; allocates once, on that tick, which a sampler's window leaves out |
 | Time in the domain | A tick count; seconds in a definition become ticks at load |
 | Random | The world's seeded source only; `Math.random`, `Date.now`, `performance.now` are banned by lint |
 | A rule's draw | Keyed: a hash of the seed, a key, the tick, and a purpose from the one list with a draw index folded in; writes nothing. The sequential generator is the simulation's, never advanced by a system |
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |
 | Determinism contract | Same seed and input log give the same state, same machine, same build |
 | Input log | Every consumed command with its tick, including debug and tuning commands |
-| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version the world was created under and each one a content reload moved it to, the map, and the ticks run, and one from another content version or spanning a reload is refused |
+| Replay | A world with the same seed fed the log, in Node, with no driver and no Phaser; the log carries the seed, the content version the world was created under and each one a content reload moved it to, the map the session started on, and the ticks run, with a later map as a `load_map` record; one from another content version or spanning a reload is refused |
+| A new run | A session operation, under a new seed or from a loaded log: both scopes made again, a new log begun; never a command |
 | Interpolation | The driver hands the presentation the fraction into the next step; the world stores previous and current positions |
 | Measuring the tick | The driver, around each `tick`, into the instrumentation ring |
 

@@ -24,12 +24,12 @@ import {
   ShapeAtlas,
   SlotFlashes,
 } from "@presentation/public";
+import { Session } from "@simulation/public";
 import { reloadContent } from "./content-reload";
 import { FixedStepDriver, wallClock } from "./fixed-step-driver";
 import { gameConfig, readRendererOverrides, rendererType } from "./game-config";
 import { panelViewSyncers } from "./play-view-syncers";
 import type { Boot } from "./public";
-import { Session } from "./session";
 
 const DEVTOOLS_HOST_ID = "devtools";
 

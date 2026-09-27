@@ -58,8 +58,8 @@ const LOG_FILE_TYPES = ".json,application/json";
 /**
  * The simulation group: the three driver operations, which change nothing in the world and are
  * not in the log; the seed, shown so a person can name the session and editable to recreate the
- * world under another; the map, a dropdown of every registered map that recreates the world on
- * the one chosen under the current seed, a driver operation like the seed; the input log save
+ * world under another; the map, a dropdown of every registered map that submits a `load_map`
+ * command for the one chosen, which keeps the hero's run and is in the log; the input log save
  * and load, which replays a log on its own map; the feedback button, which opens `note`; the
  * load taking a feedback file too, which replays to the note's tick, pauses there, and shows
  * the note; the atlas download; the map reset,
@@ -68,7 +68,8 @@ const LOG_FILE_TYPES = ".json,application/json";
  * replaying.
  *
  * The cap, the seed, and the map are read back from the driver on each refresh, so a value it
- * refused and a seed or map a replay changed are all shown as they are. Each compares what it is handed against
+ * refused, a map the tick has not yet loaded or refused, and a seed or map a replay changed are
+ * all shown as they are. Each compares what it is handed against
  * the driver before it acts, so a refresh never recreates a world.
  */
 export const simulationGroup = (
@@ -137,16 +138,12 @@ export const simulationGroup = (
       return;
     }
 
-    const refusal = api.driver.chooseMap(value);
-
-    if (refusal !== null) {
-      driver.mapId = api.driver.mapId;
-      map.refresh();
-    }
-
-    report.status =
-      refusal ??
-      `Recreated on map ${value} under seed ${String(api.driver.seed)}`;
+    // The binding shows the loaded map until the tick takes the command and its refresh reads the new one.
+    driver.mapId = api.driver.mapId;
+    map.refresh();
+    report.status = api.submit({ kind: "load_map", mapId: value })
+      ? `Loading map ${value}`
+      : `The world took no command to load map ${value}`;
   });
 
   folder.addButton({ title: "Save input log" }).on("click", (): void => {

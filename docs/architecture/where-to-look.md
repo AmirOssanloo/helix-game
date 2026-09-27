@@ -60,7 +60,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a path is searched, smoothed, and budgeted, and how a clicked destination becomes a legal one | `src/domain/pathing/` — the search, the line of sight, the smoothing, the destination resolver, and the pathing system |
 | How "what is near" is answered, and what a query returns | The spatial hash under `src/domain/movement/` — the operations, the cell capacity, and the candidate order |
 | How a world is created, restarts on a seed and a map, loads a map, ticks, and is disposed | `src/simulation/world.ts` |
-| How a session is made on another map or seed, and how a loaded log runs on its own map | `src/app/session.ts` — choosing a map, recreating under a seed, and loading a log; `src/simulation/replay/` names a log's map |
+| How a session is made under another seed, how a loaded log runs on its own map, and how a map change keeps the run | `src/simulation/session.ts` — recreating under a seed, loading a log, and saving one that names its starting map; `src/domain/map/load-map.ts` — what a `load_map` command does |
 | How a session is recorded and replayed | `src/simulation/input-log.ts` records it; `src/simulation/replay/` replays it |
 | How many events the ring holds, and how a reader counts what it lost | `src/simulation/event-ring.ts` — the capacity at the top, and the reader's cursor |
 | What other layers may see of the simulation | `src/simulation/public.ts` and `src/domain/public.ts` — the exports are the whole surface |
@@ -77,7 +77,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How many views of each kind the play scene makes, and what each is sized from: a live cap, a pool's capacity, or what the camera can show | `src/presentation/views/view-counts.ts` — every pool size in presentation, the debug overlays' and the floating numbers' included |
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
-| Where the wall clock lives | `src/app/fixed-step-driver.ts` — the only file that reads a clock |
+| Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |
 | What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |
 | What a feedback file holds, how it is written and read, and the note the feedback key opens | `src/devtools/feedback-file.ts` and `src/devtools/feedback-note.ts` |

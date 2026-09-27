@@ -43,6 +43,7 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "enemy_cap_reached":
     case "no_free_cells":
     case "unknown_checkpoint":
+    case "unknown_map":
     case "ability_not_held":
     case "invalid_target":
     case "target_not_found":

@@ -47,12 +47,13 @@ export type DevDriver = Readonly<{
 
 /**
  * What the panel needs of the session: the operations that make a world rather than change
- * one. Recreating under a seed, choosing a map, and loading a log to replay restart the world
- * in place; a save reads the log. None is a command, and none is in the log. The composition
- * root supplies the real one.
+ * one. Recreating under a seed and loading a log to replay restart the world in place; a save
+ * reads the log. None is a command, and none is in the log. Choosing a map is not among them:
+ * it changes the running world, so the panel submits it as a `load_map` command. The
+ * composition root supplies the real one.
  */
 export type DevSession = Readonly<{
-  /** The id of the map the current world was made on. */
+  /** The id of the map the world has loaded now. */
   mapId: string;
   /** The id of every map the content registers, in the order the maps index lists them. */
   mapIds: readonly string[];
@@ -61,8 +62,6 @@ export type DevSession = Readonly<{
   /** The strict stamp of the content the world runs on, its art included. */
   strictContentVersion: string;
   recreate: (seed: number) => void;
-  /** The message a person reads when no map has `mapId`, or `null` once the world is made again on it under the current seed. */
-  chooseMap: (mapId: string) => string | null;
   saveInputLog: () => string;
   /** The message a person reads when the log cannot run, or `null` once the replay has begun. */
   loadInputLog: (text: string) => string | null;
@@ -73,25 +72,23 @@ export type DevSession = Readonly<{
  * pause, step, and the cap decide whether the driver calls `tick`, never what a tick does, so
  * the world has no state for them to change and the log never sees them. The seed is shown
  * so a person can name the session; choosing another recreates the world under it, which
- * makes a session rather than changing one and is a driver operation for the same reason.
- * The map is chosen the same way: from every registered map, the world made again on the one
- * chosen under the current seed.
+ * makes a session rather than changing one and is a driver operation for the same reason, a
+ * new run on the loaded map. The map is not: choosing one from every registered map submits a
+ * `load_map` command, which the log holds and which keeps the hero's run.
  */
 export type DriverControls = Readonly<{
   paused: boolean;
   catchUpCap: number;
   seed: number;
-  /** The id of the map the current world was made on. */
+  /** The id of the map the world has loaded now. */
   mapId: string;
-  /** The id of every registered map, which `chooseMap` takes. */
+  /** The id of every registered map, which a `load_map` names. */
   maps: readonly string[];
   pause: () => void;
   resume: () => void;
   step: () => boolean;
   setCatchUpCap: (cap: number) => boolean;
   recreate: (seed: number) => void;
-  /** Makes the world again on the map registered as `mapId` under the current seed, or returns the message naming an id no map has. */
-  chooseMap: (mapId: string) => string | null;
   /** The tick a run is heading for, or `null` while the driver keeps wall time. */
   runningTo: Tick | null;
   /** Runs the world to `tick` as fast as frames allow and pauses on it, or pauses at once on a world already there. */
@@ -244,15 +241,6 @@ export const createDevApi = (ports: DevApiPorts): DevApi => {
     recreate: (seed: number): void => {
       session.recreate(seed);
       driver.runTo(null);
-    },
-    chooseMap: (mapId: string): string | null => {
-      const refusal = session.chooseMap(mapId);
-
-      if (refusal === null) {
-        driver.runTo(null);
-      }
-
-      return refusal;
     },
     get runningTo(): Tick | null {
       return driver.runningTo;

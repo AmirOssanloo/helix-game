@@ -5,6 +5,7 @@ import { placePack } from "../ai/packs";
 import { applyDamage } from "../combat/damage";
 import type {
   DebugCommand,
+  LoadMapCommand,
   SpawnPackCommand,
   SpawnZoneCommand,
 } from "../commands/command";
@@ -15,6 +16,7 @@ import type { Unit } from "../entities/unit";
 import { acquireUnit, releaseUnit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { acquireZone } from "../entities/zone";
+import { loadMap, mapNamed } from "../map/load-map";
 import { resetMapScope } from "../map/map-scope";
 import { radiusClassOf } from "../map/walkability";
 import { beginChannel, clearOrder } from "../orders/state-machine";
@@ -190,6 +192,26 @@ const clearAll = (world: World): void => {
   }
 };
 
+/**
+ * Loads the map run scope registers under the command's id, hero or no hero, alive or dead:
+ * a dead hero is carried dead to the new spawn point and stands up there when its delay runs
+ * out. Refused, with nothing changed, when no map has the id.
+ */
+const loadMapNamed = (
+  world: World,
+  command: LoadMapCommand,
+): RefusalReason | null => {
+  const map = mapNamed(world.run.maps, command.mapId);
+
+  if (map === null) {
+    return "unknown_map";
+  }
+
+  loadMap(world, map);
+
+  return null;
+};
+
 /** A channel of `ticks` through the state machine, so an orb press aborts it by the real path. */
 const beginChannelFor = (
   world: World,
@@ -278,7 +300,7 @@ const jumpToCheckpoint = (
 };
 
 /**
- * Applies one validated debug command. The switches, the spawns, the kill, the clear, and the reset act
+ * Applies one validated debug command. The switches, the spawns, the kill, the clear, the reset, and the map load act
  * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
  * not take the command, for the caller to announce, or `null` when it applied. Damage goes
@@ -325,6 +347,9 @@ export const applyDebugCommand = (
       resetMapScope(world);
 
       return null;
+
+    case "load_map":
+      return loadMapNamed(world, command);
 
     case "spawn_zone":
       return spawnDebugZone(world, command);

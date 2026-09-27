@@ -448,6 +448,7 @@ describe("a session where a pack sleeps and wakes", () => {
       serializeInputLog(
         recorder.view,
         recorder.log,
+        recorder.mapDef.id,
         contentVersionOf(contentRegistry),
         [],
       ),

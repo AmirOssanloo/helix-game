@@ -6,6 +6,7 @@ import type { DefinitionSlot } from "../definitions/definition-slot";
 import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
+import type { MapDef } from "../definitions/map-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { StatusRecord } from "../definitions/status-state";
@@ -91,6 +92,8 @@ export type RunScope = {
   disableMatrix: DisableMatrixDef;
   /** Every archetype and every summon by id, with its rates read for the tick, for a spawn to dress a unit from. The live units are map scope's. */
   units: Map<string, UnitRecord>;
+  /** Every map the content registers, validated, which a map load resolves its id against. The loaded one is map scope's. */
+  maps: readonly MapDef[];
   tuning: TuningState;
   /**
    * Every definition number's key, to where it lives in the world's own copy of its

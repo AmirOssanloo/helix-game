@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, Session, stepMsOf } from "@app/public";
+import { FixedStepDriver, stepMsOf } from "@app/public";
 import { contentRegistry, meleeGruntDef, tuningTable } from "@content/public";
 import type {
   BuildStamp,
@@ -21,7 +21,11 @@ import { definitionFields } from "@domain/public";
 import { createRings } from "@instrumentation/public";
 import type { Id } from "@shared/public";
 import type { Simulation, WorldView } from "@simulation/public";
-import { contentVersionOf, strictContentVersionOf } from "@simulation/public";
+import {
+  contentVersionOf,
+  strictContentVersionOf,
+  Session,
+} from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 5;

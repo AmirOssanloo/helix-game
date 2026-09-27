@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CommandStamps } from "@app/public";
-import { reloadContent, Session } from "@app/public";
+import { reloadContent } from "@app/public";
 import { contentRegistry, meleeGruntDef } from "@content/public";
 import type {
   AnyCommand,
@@ -8,8 +7,8 @@ import type {
   Registry,
   SpawnPackCommand,
 } from "@domain/public";
-import type { Simulation } from "@simulation/public";
-import { contentVersionOf } from "@simulation/public";
+import type { Simulation, CommandStamps } from "@simulation/public";
+import { contentVersionOf, Session } from "@simulation/public";
 import type { MakeRegistryOptions } from "../helpers";
 import { makeMapDef, makeRegistry } from "../helpers";
 

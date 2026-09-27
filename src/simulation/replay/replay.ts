@@ -1,7 +1,7 @@
 import type { AnyCommand, MapDef, Registry } from "@domain/public";
 import { assert } from "@shared/public";
 import type { EventRing } from "../event-ring";
-import { createSessionWorld } from "../session";
+import { createSessionWorld } from "../session-world";
 import type { Simulation, Steppable } from "../world";
 import type { WorldView } from "../world-view";
 import { contentVersionOf } from "./content-version";

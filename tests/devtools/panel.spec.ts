@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, Session } from "@app/public";
+import { FixedStepDriver } from "@app/public";
 import {
   contentRegistry,
   fastRunnerDef,
@@ -21,6 +21,7 @@ import {
   ENEMY_LIVE_CAP,
 } from "@domain/public";
 import { createRings } from "@instrumentation/public";
+import { Session } from "@simulation/public";
 import type { Simulation } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
@@ -275,7 +276,8 @@ describe("the developer panel", () => {
   it("lists the checkpoints again when the map changes, and sends nothing on a map with none", () => {
     const arranged = arrange();
 
-    arranged.api.driver.chooseMap(SECOND_MAP.id);
+    arranged.api.submit({ kind: "load_map", mapId: SECOND_MAP.id });
+    arranged.world.tick();
     arranged.handle.refresh();
 
     const select = selectNamed(arranged.host, "Checkpoint");
@@ -285,9 +287,10 @@ describe("the developer panel", () => {
     buttonNamed(arranged.host, "Jump to checkpoint").click();
     arranged.world.tick();
 
-    expect(arranged.world.log.count).toBe(0);
+    expect(arranged.world.log.count).toBe(1);
 
-    arranged.api.driver.chooseMap(FIRST_MAP.id);
+    arranged.api.submit({ kind: "load_map", mapId: FIRST_MAP.id });
+    arranged.world.tick();
     arranged.handle.refresh();
 
     expect([...select.options].map((option) => option.text)).toEqual([
@@ -569,7 +572,7 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
-  it("lists every registered map and recreates the world on the one chosen under the current seed, with nothing in the log", () => {
+  it("lists every registered map and sends a load_map for the one chosen, which the log holds and which keeps the run", () => {
     const arranged = arrange();
     const select = selectNamed(arranged.host, "Map");
 
@@ -583,15 +586,25 @@ describe("the developer panel", () => {
     select.value = SECOND_MAP.id;
     select.dispatchEvent(new Event("change"));
 
+    expect(arranged.api.driver.mapId).toBe(FIRST_MAP.id);
+
+    arranged.world.tick();
+    arranged.handle.refresh();
+
     const view = arranged.world.view;
     const heroId = view.run.heroId;
     const hero = heroId === null ? null : view.map.units.resolve(heroId);
 
     expect(arranged.api.driver.mapId).toBe(SECOND_MAP.id);
+    expect(select.value).toBe(SECOND_MAP.id);
     expect(view.map.mapId).toBe(SECOND_MAP.id);
     expect(view.run.random.seed).toBe(SEED);
-    expect(view.tick).toBe(0);
-    expect(arranged.world.log.count).toBe(0);
+    expect(view.tick).toBe(2);
+    expect(arranged.world.log.count).toBe(1);
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "load_map",
+      mapId: SECOND_MAP.id,
+    });
     expect(hero?.curr).toEqual(SECOND_MAP.spawnPoint);
 
     arranged.handle.unmount();
@@ -600,20 +613,24 @@ describe("the developer panel", () => {
   it("follows a map a loaded log changed, and refuses a log naming a map no one registered", () => {
     const arranged = arrange();
 
-    arranged.api.driver.chooseMap(SECOND_MAP.id);
+    arranged.api.submit({ kind: "load_map", mapId: SECOND_MAP.id });
     arranged.world.tick();
 
     const saved = arranged.api.saveInputLog();
 
-    arranged.api.driver.chooseMap(FIRST_MAP.id);
-
     expect(arranged.api.loadInputLog(saved)).toBeNull();
+    expect(arranged.api.driver.mapId).toBe(FIRST_MAP.id);
 
+    // The replay feeds the recorded load_map on its first tick, which the driver steps.
+    arranged.api.driver.pause();
+    arranged.api.driver.step();
     arranged.handle.refresh();
 
     expect(selectNamed(arranged.host, "Map").value).toBe(SECOND_MAP.id);
     expect(
-      arranged.api.loadInputLog(saved.replace(SECOND_MAP.id, "lost_map")),
+      arranged.api.loadInputLog(
+        saved.replace(`"mapId":"${FIRST_MAP.id}"`, '"mapId":"lost_map"'),
+      ),
     ).toBe(
       'The log was recorded on map "lost_map", which no map in this build has',
     );

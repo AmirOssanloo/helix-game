@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
-import { FixedStepDriver, Session, stepMsOf } from "@app/public";
+import { FixedStepDriver, stepMsOf } from "@app/public";
 import {
   contentRegistry,
   trainingDummyDef,
@@ -14,7 +14,11 @@ import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { DeepReadonly } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { contentVersionOf, createEventReader } from "@simulation/public";
+import {
+  contentVersionOf,
+  createEventReader,
+  Session,
+} from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
 
 const SEED = 11;

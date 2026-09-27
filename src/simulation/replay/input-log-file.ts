@@ -12,7 +12,7 @@ export type InputLogRecord = Readonly<{
 /**
  * What the developer panel's save button writes and a replay reads back: the seed the world
  * was created under, the content version stamp of the registry it was created on, the stamp
- * each content reload taken while it ran moved it to, the map it ran on, how many ticks it
+ * each content reload taken while it ran moved it to, the map it started on, how many ticks it
  * ran, the state checksums a replay of it must reach, and every consumed command in the
  * order the ticks took them. The file is the record a bug report ships with, and a replay
  * needs nothing else. A log with any reload in it spans two versions and never replays. A log
@@ -45,12 +45,16 @@ export const isReplayRefusal = <T extends object>(
 ): value is ReplayRefusal => "reason" in value;
 
 /**
- * The file for the world behind `view` and its `log`, created under `contentVersion` and
- * moved by `contentReloads` since, as one JSON document. Called on a save, never per tick.
+ * The file for the world behind `view` and its `log`, begun on the map `startingMapId` names,
+ * created under `contentVersion` and moved by `contentReloads` since, as one JSON document.
+ * The header names the map the session started on, never the one loaded now: a later map is
+ * a `load_map` in the records, so a replay begins where the recording did. Called on a save,
+ * never per tick.
  */
 export const serializeInputLog = (
   view: WorldView,
   log: InputLog,
+  startingMapId: string,
   contentVersion: string,
   contentReloads: readonly string[],
 ): string => {
@@ -69,7 +73,7 @@ export const serializeInputLog = (
     seed: view.run.random.seed,
     contentVersion,
     contentReloads,
-    mapId: view.map.mapId,
+    mapId: startingMapId,
     ticks: view.tick,
     checksums: [],
     records,

@@ -1,7 +1,18 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
+import { meleeGruntDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import { readTunable, UNIT_CAPACITY, walkabilityCovers } from "@domain/public";
-import { createEventReader, nextFloat } from "@simulation/public";
+import {
+  readTunable,
+  UNIT_CAPACITY,
+  walkabilityCovers,
+  loadMap,
+} from "@domain/public";
+import {
+  createEventReader,
+  createSessionWorld,
+  nextFloat,
+  serializeInputLog,
+} from "@simulation/public";
 import type { Simulation, WorldView } from "@simulation/public";
 import {
   idOf,
@@ -141,7 +152,7 @@ describe("loadMap", () => {
     world.state.map.zones.acquire();
     world.state.run.heroId = idOf(42);
 
-    world.loadMap(makeMapDef.build({ id: "next" }));
+    loadMap(world.state, makeMapDef.build({ id: "next" }));
 
     expect(world.view.map.mapId).toBe("next");
     expect(world.view.map.units.count).toBe(0);
@@ -157,7 +168,7 @@ describe("loadMap", () => {
     world.tick();
     const stateBefore = world.view.run.random.state;
 
-    world.loadMap(makeMapDef.build());
+    loadMap(world.state, makeMapDef.build());
 
     expect(world.view.tick).toBe(1);
     expect(world.view.run.random.state).toBe(stateBefore);
@@ -176,7 +187,7 @@ describe("loadMap", () => {
     world.tick();
     const facingBefore = hero.facing;
 
-    world.loadMap(makeMapDef.build({ spawnPoint: { x: 300, y: 400 } }));
+    loadMap(world.state, makeMapDef.build({ spawnPoint: { x: 300, y: 400 } }));
 
     expect(world.view.map.units.count).toBe(1);
     expect(
@@ -199,7 +210,7 @@ describe("loadMap", () => {
       spawnPoint: { x: 320, y: 160 },
     });
 
-    world.loadMap(next);
+    loadMap(world.state, next);
 
     expect(world.view.map.bounds).toBe(next.bounds);
     expect(world.view.map.obstacles).toBe(next.obstacles);
@@ -208,6 +219,181 @@ describe("loadMap", () => {
     expect(walkabilityCovers(world.view.map.walkability, next.bounds)).toBe(
       true,
     );
+  });
+});
+
+describe("load_map", () => {
+  const FIRST = makeMapDef.build({ id: "first" });
+  const SECOND = makeMapDef.build({
+    id: "second",
+    spawnPoint: { x: 300, y: -200 },
+    packs: [
+      {
+        archetypeId: meleeGruntDef.id,
+        tier: "normal",
+        count: 2,
+        position: { x: 900, y: 0 },
+        dormant: false,
+      },
+    ],
+  });
+
+  /** A session world on the first map with the second one registered beside it. */
+  const arrangeWorld = (): Simulation =>
+    createSessionWorld({
+      seed: 1,
+      registry: makeRegistry({ maps: [FIRST, SECOND] }),
+      map: FIRST,
+    });
+
+  /** The reasons every refusal the ring holds was announced with. */
+  const refusals = (world: Simulation): string[] => {
+    const reader = createEventReader();
+    const found: string[] = [];
+
+    for (
+      let event = world.events.read(reader);
+      event !== null;
+      event = world.events.read(reader)
+    ) {
+      if (event.kind === "command_refused" && event.reason !== null) {
+        found.push(event.reason);
+      }
+    }
+
+    return found;
+  };
+
+  it("keeps run scope, the hero's level, experience, orbs, slots, and cooldowns among it, and resets map scope to the new map's packs", () => {
+    const world = arrangeWorld();
+    const hero = world.state.map.units.resolve(
+      world.state.run.heroId ?? idOf(-1),
+    );
+
+    if (hero === null) {
+      throw new Error("A session world has a hero");
+    }
+
+    submit(world, { kind: "level_up", tick: 0, timestamp: 1 });
+    submit(world, {
+      kind: "set_orb_levels",
+      tick: 0,
+      timestamp: 2,
+      levels: [1, 1, 0],
+    });
+    submit(world, {
+      kind: "spawn_units",
+      tick: 0,
+      timestamp: 3,
+      count: 4,
+      position: { x: 200, y: 200 },
+    });
+    world.tick();
+    world.state.map.projectiles.acquire();
+    world.state.map.effects.acquire();
+    world.state.map.zones.acquire();
+    hero.cooldowns.set("some_ability", 90);
+    hero.progression.experience = 17;
+
+    const form = world.state.run.forms[0];
+    const kitBefore = JSON.stringify(form?.kit);
+    const progressionBefore = { ...hero.progression };
+    const heroId = world.state.run.heroId;
+    const randomBefore = world.view.run.random.state;
+
+    submit(world, {
+      kind: "load_map",
+      tick: 1,
+      timestamp: 10,
+      mapId: SECOND.id,
+    });
+    world.tick();
+
+    expect(world.view.map.mapId).toBe(SECOND.id);
+    expect(world.view.run.heroId).toBe(heroId);
+    expect(world.view.map.units.resolve(heroId ?? idOf(-1))).toBe(hero);
+    expect(hero.progression).toEqual(progressionBefore);
+    expect(hero.progression.level).toBe(2);
+    expect(JSON.stringify(world.state.run.forms[0]?.kit)).toBe(kitBefore);
+    expect(hero.cooldowns.get("some_ability")).toBe(90);
+    expect(hero.curr).toEqual(SECOND.spawnPoint);
+    expect(hero.spawnPoint).toEqual(SECOND.spawnPoint);
+    expect(world.view.map.units.count).toBe(1 + 2);
+    expect(world.view.map.projectiles.count).toBe(0);
+    expect(world.view.map.effects.count).toBe(0);
+    expect(world.view.map.zones.count).toBe(0);
+    expect(world.view.map.packs.map((pack) => pack.state)).toEqual(["awake"]);
+    expect(world.view.map.furthestCheckpoint).toBe(-1);
+    expect(world.view.run.random.state).toBe(randomBefore);
+    expect(world.log.commandAt(world.log.count - 1)).toMatchObject({
+      kind: "load_map",
+      mapId: SECOND.id,
+    });
+  });
+
+  it("is refused for a map no one registered, announcing why, and changes nothing", () => {
+    const world = arrangeWorld();
+
+    submit(world, {
+      kind: "load_map",
+      tick: 0,
+      timestamp: 1,
+      mapId: "nowhere",
+    });
+    world.tick();
+
+    expect(world.view.map.mapId).toBe(FIRST.id);
+    expect(refusals(world)).toEqual(["unknown_map"]);
+  });
+
+  it("carries a dead hero dead to the new spawn point, where it stands up when its delay runs out", () => {
+    const world = arrangeWorld();
+    const heroId = world.state.run.heroId ?? idOf(-1);
+    const hero = world.state.map.units.resolve(heroId);
+
+    if (hero === null) {
+      throw new Error("A session world has a hero");
+    }
+
+    submit(world, { kind: "kill_hero", tick: 0, timestamp: 1 });
+    world.tick();
+
+    expect(hero.state).toBe("dead");
+
+    submit(world, {
+      kind: "load_map",
+      tick: 1,
+      timestamp: 2,
+      mapId: SECOND.id,
+    });
+    world.tick();
+
+    expect(world.view.map.mapId).toBe(SECOND.id);
+    expect(hero.state).toBe("dead");
+    expect(hero.curr).toEqual(SECOND.spawnPoint);
+
+    tickUntil(world, () => hero.state !== "dead", 1000);
+
+    expect(hero.curr).toEqual(SECOND.spawnPoint);
+  });
+
+  it("keeps the map the world was made on as its start, which a saved log names", () => {
+    const world = arrangeWorld();
+
+    submit(world, {
+      kind: "load_map",
+      tick: 0,
+      timestamp: 1,
+      mapId: SECOND.id,
+    });
+    world.tick();
+
+    expect(world.mapDef.id).toBe(FIRST.id);
+    expect(
+      JSON.parse(
+        serializeInputLog(world.view, world.log, world.mapDef.id, "stamp", []),
+      ),
+    ).toMatchObject({ mapId: FIRST.id });
   });
 });
 

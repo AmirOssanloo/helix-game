@@ -81,7 +81,7 @@ Choose another map from the panel mid-run: the hero keeps its level, experience,
 | Layer | domain, simulation, devtools, app, tests, docs |
 | Size | 2 |
 | Depends on | P7-S45-T02 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** documented drift and a seam. The [roadmap](../../../../docs/product/roadmap.md)'s door says run scope and map scope are separate lifetimes, so a map change never recreates the hero. In the build it is exercised only by tests:
 - `World.loadMap` (`simulation/world.ts:291`) has no production caller and mutates with no command;
@@ -119,6 +119,8 @@ P8-S33-T01's run-scope inventory, and the descent after phase 9, depend on it.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A new command, event, or system · A developer-panel control · A documentation change.
 
+> **Note, 2026-09-27, while building:** there was no `tests/app/session.spec.ts`; the session's specs lived in `tests/simulation/replay-format.spec.ts`, and they moved from there into `tests/simulation/session.spec.ts`. `createSessionWorld` and `restartSessionWorld` moved to `simulation/session-world.ts`, so the session and the replay import them with no cycle. `Session.chooseMap` is gone: the panel's **Map** submits `load_map`, and the Seed field's new run starts on the map loaded now. The two readings the docs left open, a `load_map` while the hero is dead and the map a new run starts on, are [Q99](../backlog/open-questions.md), decided provisionally. **The gate at close:** `pnpm check` passed whole once with the change in place, 4181 tests. Reruns later that day, with another program holding the CPU, timed out `content-version.spec.ts` just past 5 s, the same time at HEAD, and passed it alone; the maintainer said to skip the stress tier for now and to commit on that.
+
 > **Architect review, 2026-09-27:**
 > - **Decided the orchestration question:** the session moves to the simulation.
 > - **Fixed the map change's shape:** maps in run scope, the rule in the domain at one point in the tick, and its allocation named as a transition.
@@ -135,10 +137,10 @@ P8-S33-T01's run-scope inventory, and the descent after phase 9, depend on it.
 | --- | --- |
 | Each door rule shown failing on a branch | |
 | Presentation holds a read port on the ring | |
-| A map change keeps run scope, by hand in Chrome by an agent | |
-| A log with map changes replays identically | |
-| The seven logs match their checksums | |
-| Actual days per ticket | |
+| A map change keeps run scope, by hand in Chrome by an agent | Held, 2026-09-27, by the game engineer in Chrome through the dev server: level 2 and orb levels [2, 1, 0] kept across the panel's **Map** from `long_road` to `arena`, the hero at the arena's spawn with no other unit; the saved log named `long_road`, held `level_up`, `set_orb_levels`, `load_map`, and replayed through the change to `arena` at level 2 |
+| A log with map changes replays identically | Held: `tests/simulation/replay/map-change.spec.ts`, two changes, two replays agree at every tick by `stateDifference` and match the recording's checksums |
+| The seven logs match their checksums | Held after T02, with no format migration: `run.maps` is excluded from the checksum as content the stamp fixes. T01 still to check |
+| Actual days per ticket | T02: 1 (sized 2). T01: open |
 | Sprint total | |
 
 ## Risks in this sprint

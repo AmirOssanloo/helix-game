@@ -48,9 +48,9 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Pause | Stops the clock; the picture stays, and the button reads Resume until pressed again. Not a command: nothing in the world changes and nothing is logged |
 | Step | Runs exactly one tick while paused. Not a command, for the same reason |
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
-| Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another recreates the world under it: a driver operation, not a command |
-| Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one recreates the world on it under the current seed, with the hero at its spawn point: a driver operation like the seed, not a command |
-| Save input log | Downloads the session's seed, map, and commands |
+| Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another begins a new run under it on the map loaded now, hero and map made again and a new log begun: a driver operation, not a command |
+| Map | Every map the content registers, read from the maps index so a new map appears without a code change. Choosing one loads it in place of the current one: the hero keeps its level, experience, orbs, slots, cooldowns, and statuses, and stands at the new map's spawn point, with the new map's packs and nothing else around it. A debug command, `load_map`, in the log like the rest, so a session that changed map replays through the change |
+| Save input log | Downloads the session's seed, the map it started on, and its commands, a map change among them |
 | Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run. It takes a feedback file too: the log inside replays, the world runs to the note's tick faster than it was played and pauses there, and the note is shown under **Note** |
 | Feedback, or F9 | Opens a note above the panel and pauses the world. **Save** downloads a [feedback file](../vocabulary.md): the note, the tick, the build stamp, the content version with and without the art, and the input log up to that tick. **Cancel** or Escape closes it unsaved. Either way the pause goes back to what it was. Not a command: feedback changes nothing in the world and nothing of it is in the log |
 | Status | What the last log or feedback file loaded is replaying and on which map, or why it cannot run |
@@ -119,6 +119,8 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | Spawn on a blocked cell | The pack is placed at the nearest free cells; nothing spawns inside an obstacle |
 | Spawn past the live cap | Refused with a message naming the cap |
 | Jump to a checkpoint while the hero is dead | Refused: a dead hero reaches nothing and stands up at the furthest checkpoint reached |
+| Choose a map while the hero is dead | Taken, as a map choice always has been: the hero is carried dead to the new map's spawn point and stands up there when its delay runs out |
+| A map id the content does not register, from a log or the console | Refused with its reason, `unknown_map`; the world runs on the map it had |
 | Jump on a map with no checkpoints | The list reads "none" and the button sends nothing; an index the map has no checkpoint at, from a log or the console, is refused |
 | Tunable changed mid-cast | The running cast keeps the old value; the next cast reads the new one |
 | Pause with the targeting cursor open | The cursor stays open; the click commits when unpaused |
@@ -130,7 +132,7 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | A key typed into the feedback note | Stays in the note: Q is a letter, not an orb, and no key reaches the hero while the note has focus |
 | Load a feedback file written on another commit, or on a tree with uncommitted changes | Loaded and replayed, and the status line says the build differs and names both builds, or that the commit is the same but a tree had uncommitted changes: the replay may not match what was played |
 | Pause, or recreate the world, while a loaded feedback file runs to its tick | The run ends where it is |
-| Load a log recorded on a different map | The world is recreated on the log's map, and the map control follows it |
+| Load a log recorded on a different map | The world is recreated on the map the log started on, and the map control follows it, and follows each map change the log replays |
 | Load a log naming a map the content does not register | Refused with a message naming the map's id; the world runs on as it was |
 | A panel control or a key used while a log replays | Refused until the recorded ticks have run; then the world is live again |
 | Load a log saved after a content hot-reload changed a number | Refused with a message naming every version the log spans; recreating the session starts a log that replays |

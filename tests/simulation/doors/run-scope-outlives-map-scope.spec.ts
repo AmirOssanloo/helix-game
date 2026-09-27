@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { FormRecord, Unit } from "@domain/public";
-import { INVOKE_ID } from "@domain/public";
+import { INVOKE_ID, loadMap } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
   idOf,
@@ -100,7 +100,7 @@ describe("the door: run scope and map scope are separate lifetimes", () => {
     expect(record.kit.prepared[0]).toBe(qwe.id);
     expect(invokeReadyAt).toBeGreaterThan(world.view.tick);
 
-    world.loadMap(secondMap);
+    loadMap(world.state, secondMap);
     world.tick();
 
     expect(world.view.map.mapId).toBe("second_map");
@@ -137,7 +137,7 @@ describe("the door: run scope and map scope are separate lifetimes", () => {
     expect(world.view.map.furthestCheckpoint).toBe(0);
     expect(hero.spawnPoint).toEqual({ x: 3000, y: 0 });
 
-    world.loadMap(secondMap);
+    loadMap(world.state, secondMap);
     world.tick();
 
     expect(world.view.map.furthestCheckpoint).toBe(-1);

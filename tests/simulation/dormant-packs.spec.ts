@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tuningTable } from "@content/public";
+import { loadMap } from "@domain/public";
 import type { MapDef, PackDef, Unit } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
@@ -168,7 +169,7 @@ describe("a dormant pack", () => {
     const world = makeWorld({ seed: 1 });
 
     spawnHero(world);
-    world.loadMap(mapWith([gruntPack(true)]));
+    loadMap(world.state, mapWith([gruntPack(true)]));
 
     expect(world.view.map.units.count).toBe(1);
     expect(world.state.map.packs[0]?.state).toBe("asleep");
@@ -191,7 +192,7 @@ describe("a live pack", () => {
     const world = makeWorld({ seed: 1 });
 
     spawnHero(world);
-    world.loadMap(mapWith([gruntPack(false)]));
+    loadMap(world.state, mapWith([gruntPack(false)]));
 
     expect(gruntsOf(world)).toHaveLength(PACK_COUNT);
   });

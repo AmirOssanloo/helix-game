@@ -39,7 +39,13 @@ export {
   Replay,
   type ReplayOptions,
 } from "./replay/replay";
-export { createSessionWorld, restartSessionWorld } from "./session";
+export {
+  type CommandStamps,
+  Session,
+  type SessionOptions,
+  type SessionRetune,
+} from "./session";
+export { createSessionWorld, restartSessionWorld } from "./session-world";
 export { type System, systems } from "./systems";
 export {
   type CreateWorldOptions,

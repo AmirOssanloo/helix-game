@@ -31,7 +31,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * spend, the slot holds no orb skill, the skill is at its cap, or the level is. The last
  * are the debug commands' at apply: no archetype has the id the spawn names, the pack would
  * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
- * free cells for the pack, the map has no checkpoint at the index a jump names, a channel is
+ * free cells for the pack, the map has no checkpoint at the index a jump names, the content registers no map with the
+ * id a map load names, a channel is
  * already running, or the status rule refused the application. A tuning change is refused
  * when its value is not finite, its key is the fixed step rate, or no key of the table has it.
  */
@@ -58,6 +59,7 @@ export type RefusalReason =
   | "enemy_cap_reached"
   | "no_free_cells"
   | "unknown_checkpoint"
+  | "unknown_map"
   | "ability_not_held"
   | "invalid_target"
   | "target_not_found"
@@ -300,6 +302,7 @@ export const validateDebugCommand = (
     case "kill_all":
     case "clear_all":
     case "reset_map":
+    case "load_map":
       return "ok";
 
     default:

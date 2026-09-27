@@ -34,7 +34,7 @@ const recordedText = (seed: number, stamp: string): string => {
     world.tick();
   }
 
-  return serializeInputLog(world.view, world.log, stamp, []);
+  return serializeInputLog(world.view, world.log, world.mapDef.id, stamp, []);
 };
 
 /** `text` with its parsed fields changed by `change` and written back, for a log a recording could not make. */

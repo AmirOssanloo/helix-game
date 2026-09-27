@@ -299,6 +299,7 @@ export const recordHeroSession = (registry: Registry): string => {
   return serializeInputLog(
     session.world.view,
     session.world.log,
+    session.world.mapDef.id,
     contentVersionOf(registry),
     [],
   );
@@ -587,6 +588,7 @@ export const recordArchetypesSession = (registry: Registry): string => {
   return serializeInputLog(
     session.world.view,
     session.world.log,
+    session.world.mapDef.id,
     contentVersionOf(registry),
     [],
   );
@@ -788,6 +790,7 @@ export const recordSpellsSession = (registry: Registry): string => {
   return serializeInputLog(
     session.world.view,
     session.world.log,
+    session.world.mapDef.id,
     contentVersionOf(registry),
     [],
   );
