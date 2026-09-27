@@ -152,6 +152,7 @@ export type DebugCommand =
   | ClearAllCommand
   | ResetMapCommand
   | LoadMapCommand
+  | SetMapLevelCommand
   | JumpToCheckpointCommand
   | BeginChannelCommand
   | ApplyStatusCommand
@@ -301,6 +302,19 @@ export type LoadMapCommand = Readonly<{
 }>;
 
 /**
+ * Sets the loaded map's level to `level`, a whole number of one or more, until the next map
+ * load reads its definition's level again; a map reset keeps it. The level drives only loot,
+ * so this changes nothing a unit does. Refused when the level is not a whole number of one or
+ * more.
+ */
+export type SetMapLevelCommand = Readonly<{
+  kind: "set_map_level";
+  tick: Tick;
+  timestamp: number;
+  level: number;
+}>;
+
+/**
  * Stands the hero at checkpoint `checkpoint` of the loaded map, counted from zero in the order
  * the map lists them, with its order cleared and its previous position written so nothing
  * interpolates the carry. It reaches nothing itself: the checkpoint rule reads where it stands
@@ -400,6 +414,7 @@ export const DEBUG_COMMAND_KINDS: Readonly<Record<DebugCommand["kind"], true>> =
     clear_all: true,
     reset_map: true,
     load_map: true,
+    set_map_level: true,
     jump_to_checkpoint: true,
     begin_channel: true,
     apply_status: true,

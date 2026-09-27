@@ -543,3 +543,39 @@ describe("a map's checkpoints in the registry", () => {
     expect(faults[0]?.file).toMatch(/maps\/map-\d+\.def\.ts$/);
   });
 });
+
+/** The faults the registry finds in the level of a map at `level`. */
+const levelFaultsOf = (level: number) =>
+  validateRegistry(
+    makeRegistry({ maps: [makeMapDef.build({ level })] }),
+  ).filter((fault) => fault.path === "level");
+
+describe("a map's level", () => {
+  it.each(maps.map((map) => [map.id, map] as const))(
+    "%s names a whole map level of one or more",
+    (_id, map) => {
+      expect(Number.isInteger(map.level)).toBe(true);
+      expect(map.level).toBeGreaterThanOrEqual(1);
+    },
+  );
+
+  it("is 1 for the arena and 3 for the long road", () => {
+    expect(arenaDef.level).toBe(1);
+    expect(longRoadDef.level).toBe(3);
+  });
+
+  it("is accepted at one or more", () => {
+    expect(levelFaultsOf(1)).toEqual([]);
+    expect(levelFaultsOf(40)).toEqual([]);
+  });
+
+  it("is refused at zero, below it, and between whole numbers", () => {
+    expect(levelFaultsOf(0)).toMatchObject([
+      { path: "level", message: "expected a map level of 1 or more" },
+    ]);
+    expect(levelFaultsOf(-1)).toHaveLength(1);
+    expect(levelFaultsOf(2.5)).toMatchObject([
+      { path: "level", message: "expected a whole number no less than zero" },
+    ]);
+  });
+});

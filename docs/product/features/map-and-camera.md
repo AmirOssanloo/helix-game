@@ -12,6 +12,7 @@ A map is data. Each map has a definition file under `src/content/maps/`; the are
 
 Every map definition holds:
 
+- **Map level** — a whole number of one or more, the map's depth in the descent, which an item's level is read from. It drives only loot: no enemy's stats read it. The [developer panel](./developer-panel.md) can set another for the map's stay
 - **Bounds** — the playable rectangle, walled on every side
 - **Obstacles** — axis-aligned rectangles the hero and enemies cannot enter
 - **Spawn point** — where the hero appears on load, and on respawn until it reaches a checkpoint
@@ -30,6 +31,7 @@ The test map. It exists to test movement, spells, and enemies, not to be fun.
 | Property | Value |
 | --- | --- |
 | Size | 4000 by 4000 units, enclosed by walls |
+| Map level | 1 |
 | Obstacles | Ten rectangles of varied sizes |
 | Corridor | One passage 96 units wide, between two blocks east of the centre: open to a small or hero-sized unit, closed to a large one, to test pathing and pack queueing |
 | Spawn point | The centre |
@@ -43,6 +45,7 @@ A long strip the hero walks from level 1 at the spawn to about level 12 at the l
 | Property | Value |
 | --- | --- |
 | Size | 4000 by 24000 units, enclosed by walls. The road runs along the long axis, so on screen it runs diagonally, from upper right to lower left |
+| Map level | 3, one level for the whole road |
 | Regions | Five, each harder than the last and each adding archetypes the hero has not met. The first four each close with a boss-tier pack just short of a choke; the fifth ends with the last boss in a chamber past the last choke |
 | Chokes | A wall across the whole width at each of five chokes, four between regions and one into the last boss's chamber, each with one opening that narrows along the road from 416 units to 224, open to every unit size |
 | Obstacles | 137 rectangles: two walls at each of the five chokes, and 127 blocks that break up each region's open ground |

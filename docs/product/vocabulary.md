@@ -65,6 +65,7 @@ When two people call the same thing different names, the names leak into the cod
 | The part of an overlap between the hero and another unit that moves the hero, the rest moving the other unit | **Push share** (`hero_push_share` in code) | Push weight, mass, share of push-out |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
+| How deep a map is in the descent, which an item's level is read from and nothing else | **Map level** | Area level, dungeon level, depth, difficulty |
 | The hand-authored test map | **The arena** | Test level, sandbox |
 | The hand-authored playtest map the hero walks from level 1 | **The long road** | Campaign, the playtest map, level |
 | A stretch of a map between two chokes, or between a choke and the map's end, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |

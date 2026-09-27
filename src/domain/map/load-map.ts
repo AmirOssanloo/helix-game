@@ -40,7 +40,7 @@ export const mapNamed = (
 };
 
 /**
- * Takes `map` as the loaded one: derives the walkability grid for the map's bounds and
+ * Takes `map` as the loaded one: reads its level again from the definition, derives the walkability grid for the map's bounds and
  * obstacles with the path search fitted to it, takes the map's spawn point and checkpoints,
  * and resets map scope around it: every map-scoped entity but the hero released, no
  * checkpoint reached, the hero given the map's spawn point and carried to it with its order
@@ -57,6 +57,7 @@ export const loadMap = (world: World, map: MapDef): void => {
   const scope = world.map;
 
   scope.mapId = map.id;
+  scope.level = map.level;
   scope.bounds = map.bounds;
   scope.obstacles = map.obstacles;
   scope.walkability = deriveMapGrid(map, world.run.tuning);

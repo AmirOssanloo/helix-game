@@ -300,7 +300,7 @@ const jumpToCheckpoint = (
 };
 
 /**
- * Applies one validated debug command. The switches, the spawns, the kill, the clear, the reset, and the map load act
+ * Applies one validated debug command. The switches, the spawns, the kill, the clear, the reset, the map load, and the map level act
  * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
  * not take the command, for the caller to announce, or `null` when it applied. Damage goes
@@ -350,6 +350,11 @@ export const applyDebugCommand = (
 
     case "load_map":
       return loadMapNamed(world, command);
+
+    case "set_map_level":
+      world.map.level = command.level;
+
+      return null;
 
     case "spawn_zone":
       return spawnDebugZone(world, command);

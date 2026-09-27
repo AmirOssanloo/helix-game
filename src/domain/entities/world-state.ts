@@ -109,6 +109,8 @@ export type RunScope = {
 export type MapScope = {
   /** The id of the loaded map definition. */
   mapId: string;
+  /** The loaded map's level, which drives only loot: its definition's on every map load, until a `set_map_level` sets another for the rest of the map's stay. */
+  level: number;
   units: Pool<Unit, UnitId>;
   projectiles: Pool<Projectile, ProjectileId>;
   effects: Pool<Effect, EffectId>;

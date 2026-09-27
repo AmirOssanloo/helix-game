@@ -56,6 +56,7 @@ const FIRST_MAP = makeMapDef.build({
 
 const SECOND_MAP = makeMapDef.build({
   id: "second_map",
+  level: 4,
   spawnPoint: { x: 250, y: -125 },
 });
 
@@ -603,6 +604,46 @@ describe("the developer panel", () => {
       mapId: SECOND_MAP.id,
     });
     expect(hero?.curr).toEqual(SECOND_MAP.spawnPoint);
+
+    arranged.handle.unmount();
+  });
+
+  it("shows the loaded map's level and sends a set_map_level for another, which the log holds", () => {
+    const arranged = arrange();
+    const field = numberFieldNamed(arranged.host, "Map level");
+
+    expect(field.value).toBe(String(FIRST_MAP.level));
+
+    typeInto(field, "6");
+
+    expect(arranged.world.view.map.level).toBe(FIRST_MAP.level);
+
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(arranged.world.view.map.level).toBe(6);
+    expect(field.value).toBe("6");
+    expect(arranged.world.log.count).toBe(1);
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "set_map_level",
+      level: 6,
+    });
+
+    arranged.handle.unmount();
+  });
+
+  it("follows the level a map load reads from the new map's definition", () => {
+    const arranged = arrange();
+
+    arranged.api.submit({ kind: "set_map_level", level: 9 });
+    arranged.world.tick();
+    arranged.api.submit({ kind: "load_map", mapId: SECOND_MAP.id });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(numberFieldNamed(arranged.host, "Map level").value).toBe(
+      String(SECOND_MAP.level),
+    );
 
     arranged.handle.unmount();
   });

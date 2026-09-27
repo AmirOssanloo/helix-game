@@ -21,6 +21,9 @@ import {
   oneOf,
 } from "../schema";
 
+/** The shallowest a map can be: the first level of the descent. */
+const MIN_MAP_LEVEL = 1;
+
 const isInsideRect = (rect: Readonly<Rect>, x: number, y: number): boolean =>
   x >= rect.minX && x <= rect.maxX && y >= rect.minY && y <= rect.maxY;
 
@@ -87,9 +90,9 @@ const checkCheckpoints = (
 };
 
 /**
- * Every map a world may load: its id, bounds, obstacles, spawn point, checkpoints, and packs.
- * Every checkpoint stands where a hero can, every pack names an archetype that exists, and no
- * pack holds more than the live enemy cap.
+ * Every map a world may load: its id, map level, bounds, obstacles, spawn point, checkpoints,
+ * and packs. The level is one or more, every checkpoint stands where a hero can, every pack
+ * names an archetype that exists, and no pack holds more than the live enemy cap.
  */
 export const mapKind: ListKind<"maps", MapDef, null> = {
   field: "maps",
@@ -101,6 +104,7 @@ export const mapKind: ListKind<"maps", MapDef, null> = {
   schema: () =>
     objectOf<MapDef>({
       id: idSchema,
+      level: countSchema,
       bounds: rectSchema,
       obstacles: arrayOf(rectSchema),
       spawnPoint: vec2Schema,
@@ -117,6 +121,14 @@ export const mapKind: ListKind<"maps", MapDef, null> = {
     }),
   check: (context, file, def): void => {
     const faults = context.faults;
+
+    if (def.level < MIN_MAP_LEVEL) {
+      faults.push({
+        file,
+        path: "level",
+        message: `expected a map level of ${String(MIN_MAP_LEVEL)} or more`,
+      });
+    }
 
     checkCheckpoints(context, file, def);
 

@@ -42,7 +42,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
 | Disable matrix | `content/statuses/disable-matrix.ts`, typed in `domain/definitions` | Every status against every key, order, cast in progress, and cursor: one row per group of statuses, one answer per cell | Content |
 | Summon definition | `content/summons/`, typed in `domain/definitions` | A unit an ability spawns: enemy-shaped, with the distance it keeps from its owner | Content |
-| Map definition | `content/maps/`, typed in `domain/definitions` | Bounds, obstacles, the hero's spawn point, the checkpoints in order, and the packs of one map | Content |
+| Map definition | `content/maps/`, typed in `domain/definitions` | The map level, bounds, obstacles, the hero's spawn point, the checkpoints in order, and the packs of one map | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 
@@ -60,6 +60,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 - A spell definition names its effects by string key; the domain resolves the key at startup. An enemy definition names its behaviour the same way. Nothing in content calls the domain.
 - A map definition holds spawn data, not units. A map's enemies exist only once their pack is placed: a live pack at load, a dormant one when the hero comes within the activation radius, and a pack the world cannot take yet when it can. A pack left behind at rest gives its units back and sleeps as its record in map scope, keeping its survivors, so a large map costs little away from the hero. A pack the panel spawns has no record and never sleeps.
 - Run scope outlives map scope. Loading a map empties every map-scoped pool except the hero's slot in the unit pool, gives the hero the map's spawn point and carries it there with its order cleared, then places the map's live packs. The hero's level, form records, statuses, and clocks, the tuning state, and the random source are untouched.
+- The map level is map scope, read from the definition on every load. A `set_map_level` debug command sets another for the rest of the map's stay; a reset keeps it and the next load reads the definition's again. It drives only loot, an item's level among it; no enemy stat reads it.
 - The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it, gives the hero the map's spawn point back, and makes every pack of the map whole again. The hero's death clears neither: the hero comes back at the furthest checkpoint, and a killed pack stays dead.
 
 ---

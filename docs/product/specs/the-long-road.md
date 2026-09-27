@@ -28,6 +28,7 @@ This page fixes the map as data: the bounds, the regions, one row per pack, ever
 
 | Property | Value |
 |---|---|
+| Map level | 3, one for the whole road: a map is not split into regions by level. The road takes the hero from level 1 to about 12, as Diablo I's Cathedral, dungeon levels 1 to 4, does, and 3 sits in that band, so the catalogue's lower bases and affixes drop and are worn early. A base or an affix above level 3 is reached on the road only by the [developer panel](../features/developer-panel.md)'s map level, which is how item-level gating is tested here. No enemy stat reads it |
 | Bounds | 4000 by 24000 world units, `minX 0`, `minY 0`, `maxX 4000`, `maxY 24000`, walled on every side |
 | Direction | Along the long axis: the spawn at low `y`, the last boss at high `y` |
 | On screen | The square world is drawn as the [isometric view](../../adr/0006-isometric-view-over-a-square-world.md) draws every map, so a strip along `y` runs diagonally across the screen, from upper right to lower left. That is the road's look, not a mistake |

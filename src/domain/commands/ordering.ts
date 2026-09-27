@@ -50,6 +50,7 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "clear_all":
     case "reset_map":
     case "load_map":
+    case "set_map_level":
     case "jump_to_checkpoint":
     case "begin_channel":
     case "apply_status":

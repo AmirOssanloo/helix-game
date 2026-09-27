@@ -9,9 +9,11 @@ import type { MapDef } from "@domain/public";
  * checkpoints stand at the spawn, at each region's entrance, and before the last boss, in order
  * along the road. Every pack is dormant, listed in the spec's order, so it costs no unit until
  * the hero comes near. The spec's pack table and experience budget are checked against this file.
+ * Its map level is 3, one level for the whole road, as the spec states.
  */
 export const longRoadDef = {
   id: "long_road",
+  level: 3,
   bounds: { minX: 0, minY: 0, maxX: 4000, maxY: 24000 },
   obstacles: [
     // Choke 1, regions 1 and 2: 416 wide, 13 cells.

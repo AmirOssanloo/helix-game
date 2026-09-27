@@ -7,6 +7,9 @@ import type { PanelGroup } from "./panel-group";
 
 const WHOLE_STEP = 1;
 
+/** The shallowest map level the control offers; the world refuses anything below it too. */
+const MIN_MAP_LEVEL = 1;
+
 const JSON_MIME_TYPE = "application/json";
 
 /** The atlas is a PNG data URL; the browser reads the type from it. */
@@ -59,7 +62,9 @@ const LOG_FILE_TYPES = ".json,application/json";
  * The simulation group: the three driver operations, which change nothing in the world and are
  * not in the log; the seed, shown so a person can name the session and editable to recreate the
  * world under another; the map, a dropdown of every registered map that submits a `load_map`
- * command for the one chosen, which keeps the hero's run and is in the log; the input log save
+ * command for the one chosen, which keeps the hero's run and is in the log; the map level,
+ * shown from the world and editable to submit a `set_map_level` for the loaded map, in the
+ * log like the map; the input log save
  * and load, which replays a log on its own map; the feedback button, which opens `note`; the
  * load taking a feedback file too, which replays to the note's tick, pauses there, and shows
  * the note; the atlas download; the map reset,
@@ -67,10 +72,11 @@ const LOG_FILE_TYPES = ".json,application/json";
  * to. A load that cannot run says why in the status line; one that can says what it is
  * replaying.
  *
- * The cap, the seed, and the map are read back from the driver on each refresh, so a value it
- * refused, a map the tick has not yet loaded or refused, and a seed or map a replay changed are
- * all shown as they are. Each compares what it is handed against
- * the driver before it acts, so a refresh never recreates a world.
+ * The cap, the seed, and the map are read back from the driver on each refresh, and the map
+ * level from the world, so a value it refused, a map or a level the tick has not yet taken or
+ * refused, and a seed, map, or level a replay or a map load changed are all shown as they are.
+ * Each compares what it is handed against the driver before it acts, so a refresh never
+ * recreates a world.
  */
 export const simulationGroup = (
   folder: FolderApi,
@@ -82,6 +88,7 @@ export const simulationGroup = (
     seed: api.driver.seed,
     mapId: api.driver.mapId,
   };
+  const mapLevel = { level: api.view.map.level };
   const report = { status: "" };
   // The note of the last feedback file loaded, shown until another file is.
   const loaded = { note: "" };
@@ -110,6 +117,12 @@ export const simulationGroup = (
   const map = folder.addBinding(driver, "mapId", {
     label: "Map",
     options: optionsOf(api.driver.maps),
+  });
+
+  const level = folder.addBinding(mapLevel, "level", {
+    label: "Map level",
+    min: MIN_MAP_LEVEL,
+    step: WHOLE_STEP,
   });
 
   onCommit(cap, (value): void => {
@@ -144,6 +157,20 @@ export const simulationGroup = (
     report.status = api.submit({ kind: "load_map", mapId: value })
       ? `Loading map ${value}`
       : `The world took no command to load map ${value}`;
+  });
+
+  onCommit(level, (value): void => {
+    // The binding shows the world's level until the tick takes the command and its refresh reads the new one.
+    mapLevel.level = api.view.map.level;
+    level.refresh();
+
+    if (value === api.view.map.level) {
+      return;
+    }
+
+    report.status = api.submit({ kind: "set_map_level", level: value })
+      ? `Setting map level ${String(value)}`
+      : `The world took no command to set map level ${String(value)}`;
   });
 
   folder.addButton({ title: "Save input log" }).on("click", (): void => {
@@ -221,6 +248,14 @@ export const simulationGroup = (
       if (driver.mapId !== api.driver.mapId) {
         driver.mapId = api.driver.mapId;
         map.refresh();
+      }
+
+      if (
+        mapLevel.level !== api.view.map.level &&
+        !level.element.contains(document.activeElement)
+      ) {
+        mapLevel.level = api.view.map.level;
+        level.refresh();
       }
 
       if (!cap.element.contains(document.activeElement)) {

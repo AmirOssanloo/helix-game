@@ -26,6 +26,7 @@ export type WorldView = DeepReadonly<{
   run: RunScope;
   map: {
     mapId: string;
+    level: number;
     units: PoolView<Unit, UnitId>;
     projectiles: PoolView<Projectile, ProjectileId>;
     effects: PoolView<Effect, EffectId>;

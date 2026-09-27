@@ -66,7 +66,7 @@ The content version moves; the six stored logs that remain are re-stamped by `pn
 | Layer | domain, simulation, content, devtools, tests, docs |
 | Size | 0.5 |
 | Depends on | T01; Q89 answered |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** first written as "Regions and their area levels on the map" on Q89's Diablo II recommendation; rewritten the same day on Q89's answer, which takes Diablo I's structure: a level is one map and is not split into regions, and an item's level is the map's level.
 
@@ -83,6 +83,10 @@ The content version moves; the six stored logs that remain are re-stamped by `pn
 - `tests/devtools/panel.spec.ts`: the control.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A developer-panel control · A documentation change.
+
+> **Note, 2026-09-27:** two readings corrected while building. The panel has no **Map** group; its map dropdown sits in the simulation group, so the **Map level** control sits there beside it. And the level is world state a command changes, so the checksum hashes it: the six logs had their checksums recorded again with `pnpm restamp --checksums`, not only their stamps, after a probe with the level left out of the hash replayed all six to their old checksums at every stored tick, which shows nothing else moved.
+
+> **Done, 2026-09-27:** `MapDef` has a required `level`, a whole number of one or more that the map kind validates; the arena is at 1 and the long road at 3. Map scope holds the level, read from the definition on creation and on every `loadMap`; a `reset_map` keeps it (Q102, provisional). `set_map_level` is a debug command validated as a whole number of one or more, refused otherwise as `invalid_map_level`, and applied to map scope hero or no hero; it is in the log and the checksum. The simulation group's **Map level** shows the world's level, follows each load and replay, and submits the command. No enemy stat reads it: a brute elite spawned at level 60 matches one at level 1. The world model, the map and camera page, the long road spec, the developer panel page, the devtools architecture page, and the vocabulary state it. Content version `14e6373d` to `6f28a66b`. `pnpm check` green, 4603 tests; the budget project green.
 
 ---
 
@@ -122,9 +126,9 @@ The content version moves; the six stored logs that remain are re-stamped by `pn
 | The long road at 100 to 130 enemies, the budget at level 11 to 13 | 104 enemies in 37 packs; level 11 before the last boss, 12 with its kill, two levels a region; normal packs 60% of a full clear |
 | The near-point bound and the long-road stress case | Bound 60, peaks 33 within 2000 and 48 within 3200; the stress case at most 26 live, no pack refused, mean tick 0.141 ms |
 | The phase 6 playtest log retired with its note | Removed with its spec; the line is in the phase 6 README's exit record |
-| A level on every map, and the panel command to set it | |
+| A level on every map, and the panel command to set it | The arena at 1, the long road at 3; `set_map_level` in the log and the checksum, replayed, reset by a map load, kept by a reset; the **Map level** control in the simulation group |
 | The crowd's push at 0.1, and the overlap bar the architect's option settles | |
-| Actual days per ticket | T01: 0.5 against 2 |
+| Actual days per ticket | T01: 0.5 against 2; T02: 0.5 against 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

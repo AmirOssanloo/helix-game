@@ -8,10 +8,11 @@ import type { MapDef } from "@domain/public";
  * grid reads the rectangles exactly. The hero spawns at the centre, and the map holds no
  * pack: the panel spawns what a session fights. A pack listed here is written live, not
  * dormant, since the whole arena is near the hero. It has no checkpoint: a hero who dies
- * comes back at the spawn point.
+ * comes back at the spawn point. It is the first map level, the shallowest loot drops at.
  */
 export const arenaDef = {
   id: "arena",
+  level: 1,
   bounds: { minX: 0, minY: 0, maxX: 4000, maxY: 4000 },
   obstacles: [
     // The north-west block.

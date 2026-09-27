@@ -4,9 +4,10 @@ import { defineFactory } from "../factories/define-factory";
 /** How far the default test map reaches from the origin on each side, so a spec arranged around the origin never meets a wall. */
 const TEST_MAP_REACH = 8192;
 
-/** A map definition with a counted id, `map_1`, `map_2`, the same every run: a wide square around the origin, spawning at the origin, with no obstacles or checkpoints until a spec names some. */
+/** A map definition with a counted id, `map_1`, `map_2`, the same every run: a wide square around the origin at map level 1, spawning at the origin, with no obstacles or checkpoints until a spec names some. */
 export const makeMapDef = defineFactory<MapDef>((sequence) => ({
   id: `map_${sequence}`,
+  level: 1,
   bounds: {
     minX: -TEST_MAP_REACH,
     minY: -TEST_MAP_REACH,

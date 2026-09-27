@@ -80,12 +80,13 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `tuning`: empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
+/** Map scope for `map` under `tuning`: its level, empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
   const walkability = deriveMapGrid(map, tuning);
 
   return {
     mapId: map.id,
+    level: map.level,
     units: createUnitPool(),
     projectiles: createProjectilePool(),
     effects: createEffectPool(),

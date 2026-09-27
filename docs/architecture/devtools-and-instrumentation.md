@@ -134,6 +134,7 @@ Rings guarded by a build flag. The production build is the one whose frame time 
 | Pause, single-step, catch-up cap, run to a tick | Driver operations on `DevApi`; they change no world state, so they are not commands and not in the log |
 | Seed, load input log | Driver operations too: each makes a session rather than changing one, restarting the world in place; a log loads on the map it started on. A log from another content version, or one spanning a content reload, is refused with a message naming the versions; a log naming a map no one registered is refused with its id |
 | Map | A `load_map` debug command, in the log: run scope kept, map scope made again on the map chosen from the registered ones; an id no map has is refused as `unknown_map` |
+| Map level | A `set_map_level` debug command, in the log: map scope's level set until the next map load reads the definition's again; a level that is not a whole number of one or more is refused as `invalid_map_level` |
 | A content reload | Reported on the simulation group's content line: taken, refused with its faults, or reloading the page; a reload that is taken builds the panel again over the new defaults |
 | New panel power | A new `DebugCommand` variant and its handling, never a method on the world |
 | Reading state | The `Readonly` world view, by reference; the panel retypes its readouts a few times a second |

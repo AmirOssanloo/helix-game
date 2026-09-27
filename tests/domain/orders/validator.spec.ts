@@ -460,6 +460,13 @@ const spawnPack = (count: number, tier = "normal", x = 0): DebugCommand => ({
   position: { x, y: 0 },
 });
 
+const setMapLevel = (level: number): DebugCommand => ({
+  kind: "set_map_level",
+  tick: 0,
+  timestamp: 0,
+  level,
+});
+
 const beginChannel = (ticks: number): DebugCommand => ({
   kind: "begin_channel",
   tick: 0,
@@ -494,6 +501,7 @@ describe("validateDebugCommand on a well-formed payload", () => {
     ["kill_all", debug("kill_all")],
     ["clear_all", debug("clear_all")],
     ["reset_map", debug("reset_map")],
+    ["set_map_level", setMapLevel(3)],
     ["begin_channel", beginChannel(1)],
     ["apply_status", applyStatus("root", 1)],
     ["apply_status naming no known status", applyStatus("sleep", 1)],
@@ -512,6 +520,8 @@ describe("validateDebugCommand on a malformed payload", () => {
     ["four orb levels", setOrbLevels([1, 1, 1, 1]), "invalid_orb_level"],
     ["a negative orb level", setOrbLevels([0, -1, 0]), "invalid_orb_level"],
     ["a fractional orb level", setOrbLevels([0, 1.5, 0]), "invalid_orb_level"],
+    ["a map level of zero", setMapLevel(0), "invalid_map_level"],
+    ["a fractional map level", setMapLevel(2.5), "invalid_map_level"],
     ["a spawn count of zero", spawnUnits(0), "invalid_count"],
     ["a fractional spawn count", spawnUnits(1.5), "invalid_count"],
     [

@@ -20,7 +20,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * checks on a payload no mapper or panel should produce and a replay file might: a slot
  * outside the six keys, a point that is not finite, an amount below zero, a damage type no
  * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
- * archetype spawns at, a checkpoint index that is not a whole number of none or more. The
+ * archetype spawns at, a checkpoint index that is not a whole number of none or more, a map
+ * level that is not a whole number of one or more. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -48,6 +49,7 @@ export type RefusalReason =
   | "invalid_duration"
   | "invalid_tier"
   | "invalid_checkpoint"
+  | "invalid_map_level"
   | "orb_not_learned"
   | "buffer_not_full"
   | "no_spell_for_recipe"
@@ -212,8 +214,8 @@ export const validateCommand = (
 /**
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
  * type the rules know, one non-negative integer level per orb, a count and a duration of at
- * least one, a delay of none or more, a checkpoint index of none or more, and a finite
- * position. No disable and no state refuses a debug command; the panel is not the unit acting.
+ * least one, a delay of none or more, a checkpoint index of none or more, a map level of one
+ * or more, and a finite position. No disable and no state refuses a debug command; the panel is not the unit acting.
  * What the world can take, an archetype with the id it names, room in the pool, a level below
  * the cap, an orb level under its cap, a checkpoint at the index and a living hero to stand on
  * it, no channel running, a status with the id it names, the handler refuses when the command
@@ -272,6 +274,9 @@ export const validateDebugCommand = (
       return isCheckpointIndex(command.checkpoint)
         ? "ok"
         : "invalid_checkpoint";
+
+    case "set_map_level":
+      return isCount(command.level) ? "ok" : "invalid_map_level";
 
     case "apply_status":
       return isCount(command.ticks) ? "ok" : "invalid_duration";

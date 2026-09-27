@@ -271,6 +271,9 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
 
 const MAP_FIELDS = fieldsOf<DeepReadonly<MapScope>>({
   mapId: text("mapId", (map) => map.mapId),
+  level: number("level", (map, into, at) => {
+    into[at] = map.level;
+  }),
   units: pool("units", (map) => map.units, UNIT_FIELDS),
   projectiles: pool("projectiles", (map) => map.projectiles, PROJECTILE_FIELDS),
   effects: pool("effects", (map) => map.effects, EFFECT_FIELDS),

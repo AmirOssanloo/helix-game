@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Clock } from "@app/public";
 import { FixedStepDriver, stepMsOf } from "@app/public";
 import {
+  bruteDef,
   contentRegistry,
   trainingDummyDef,
   tuningTable,
@@ -34,7 +35,10 @@ const CHECKPOINT_MAP = makeMapDef.build({
   ],
 });
 
-const registry = makeRegistry({ maps: [MAP, CHECKPOINT_MAP] });
+/** A map deeper than the rest, so a load of it reads a level the others have not got. */
+const DEEP_MAP = makeMapDef.build({ level: 5 });
+
+const registry = makeRegistry({ maps: [MAP, CHECKPOINT_MAP, DEEP_MAP] });
 
 const STEP_MS = stepMsOf(tuningTable.sim_hz);
 
@@ -438,6 +442,110 @@ describe("DevApi jumps to a checkpoint", () => {
     expect(heroOf(world).state).toBe("dead");
     expect(world.view.map.furthestCheckpoint).toBe(0);
     expect(refusals(world)).toContain("dead");
+  });
+});
+
+describe("DevApi sets the map level", () => {
+  it("starts on the loaded map's level, sets another on the next tick, and lands in the log", () => {
+    const { api, world } = arrange();
+
+    expect(world.view.map.level).toBe(MAP.level);
+
+    api.submit({ kind: "set_map_level", level: 7 });
+
+    expect(world.view.map.level).toBe(MAP.level);
+
+    world.tick();
+
+    expect(world.view.map.level).toBe(7);
+    expect(world.log.count).toBe(1);
+    expect(world.log.commandAt(0)).toEqual({
+      kind: "set_map_level",
+      level: 7,
+      tick: 0,
+      timestamp: 1,
+    });
+  });
+
+  it("replays the level from the log", () => {
+    const { api, world, driver } = arrange();
+
+    api.submit({ kind: "set_map_level", level: 7 });
+    world.tick();
+    world.tick();
+
+    const saved = api.saveInputLog();
+
+    expect(api.loadInputLog(saved)).toBeNull();
+    expect(world.view.map.level).toBe(MAP.level);
+
+    driver.onFrame(STEP_MS);
+    driver.onFrame(STEP_MS);
+
+    expect(world.view.tick).toBe(2);
+    expect(world.view.map.level).toBe(7);
+  });
+
+  it("keeps the level through a map reset, and reads the definition's again on a map load", () => {
+    const { api, world } = arrange();
+
+    api.submit({ kind: "set_map_level", level: 7 });
+    world.tick();
+    api.submit({ kind: "reset_map" });
+    world.tick();
+
+    expect(world.view.map.level).toBe(7);
+
+    api.submit({ kind: "load_map", mapId: DEEP_MAP.id });
+    world.tick();
+
+    expect(world.view.map.level).toBe(DEEP_MAP.level);
+
+    api.submit({ kind: "set_map_level", level: 2 });
+    world.tick();
+    api.submit({ kind: "load_map", mapId: MAP.id });
+    world.tick();
+
+    expect(world.view.map.level).toBe(MAP.level);
+  });
+
+  it("refuses a level that is not a whole number of one or more, and keeps the one it had", () => {
+    const { api, world } = arrange();
+
+    api.submit({ kind: "set_map_level", level: 0 });
+    api.submit({ kind: "set_map_level", level: 2.5 });
+    world.tick();
+
+    expect(world.view.map.level).toBe(MAP.level);
+    expect(refusals(world)).toEqual(["invalid_map_level", "invalid_map_level"]);
+  });
+
+  it("changes no stat of an enemy spawned at a deeper level", () => {
+    const statsAt = (level: number) => {
+      const { api, world } = arrange();
+
+      api.submit({ kind: "set_map_level", level });
+      world.tick();
+      api.submit({
+        kind: "spawn_pack",
+        tier: "elite",
+        archetypeId: bruteDef.id,
+        count: 1,
+        position: { x: SPAWN_AT, y: 0 },
+      });
+      world.tick();
+
+      const spawned = spawnedOf(world);
+
+      return spawned === null
+        ? null
+        : { stats: { ...spawned.stats }, resources: { ...spawned.resources } };
+    };
+
+    const shallow = statsAt(1);
+
+    expect(shallow).not.toBeNull();
+    expect(statsAt(60)).toEqual(shallow);
   });
 });
 
