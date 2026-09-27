@@ -287,7 +287,8 @@ export class FixedStepDriver {
       map.units.misses +
         map.projectiles.misses +
         map.effects.misses +
-        map.zones.misses,
+        map.zones.misses +
+        map.groundItems.misses,
     );
     this.rings.eventOverwrites.write(this.world.events.overwrites);
   }

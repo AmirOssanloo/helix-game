@@ -1,13 +1,14 @@
 import { placeMapPacks } from "../ai/packs";
 import { readTunable } from "../definitions/tuning-state";
+import { releaseAllGroundItems } from "../entities/ground-item";
 import { resolveHero } from "../entities/hero";
 import { releaseUnit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { clearOrder } from "../orders/state-machine";
 
 /**
- * Empties map scope around the hero: every unit but the hero, every projectile, effect, and
- * zone is released, no checkpoint is reached any more, the hero is given the map's spawn point
+ * Empties map scope around the hero: every unit but the hero, every projectile, effect,
+ * zone, and ground item is released with every cell free of one and no drop counted as not made, no checkpoint is reached any more, the hero is given the map's spawn point
  * back and carried to it with its order cleared and its
  * previous position written so nothing interpolates the carry, pack ids count from zero again, the spatial hash is
  * rebuilt at the tuned cell size over what is left, and the map's packs are set back to what
@@ -32,6 +33,7 @@ export const resetMapScope = (world: World): void => {
   scope.projectiles.releaseAll();
   scope.effects.releaseAll();
   scope.zones.releaseAll();
+  releaseAllGroundItems(world);
   scope.nextPackId = 0;
   scope.furthestCheckpoint = -1;
 

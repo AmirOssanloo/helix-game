@@ -15,8 +15,12 @@ import type {
   PanelHandle,
 } from "@devtools/public";
 import { createDevApi, mountPanel, PANEL_MEMORY_KEY } from "@devtools/public";
-import { ENEMY_LIVE_CAP } from "@domain/queries";
-import { createDomainEvent, definitionFields } from "@domain/rules";
+import { ENEMY_LIVE_CAP, GROUND_ITEM_CAPACITY } from "@domain/queries";
+import {
+  acquireGroundItem,
+  createDomainEvent,
+  definitionFields,
+} from "@domain/rules";
 import { createRings } from "@instrumentation/public";
 import { Session } from "@simulation/testing";
 import type { Simulation } from "@simulation/testing";
@@ -764,6 +768,30 @@ describe("the developer panel", () => {
     expect(readoutNamed(arranged.host, "Tick")).toBe("1");
     expect(readoutNamed(arranged.host, "Draw calls total / world")).toBe(
       "- / -",
+    );
+
+    arranged.handle.unmount();
+  });
+
+  it("shows the ground items live over their capacity and the drops not made", () => {
+    const arranged = arrange();
+    const world = arranged.world.state;
+    const spawn = world.map.spawnPoint;
+    const cellSize = world.map.walkability.cellSize;
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Ground items")).toBe(
+      `0 / ${String(GROUND_ITEM_CAPACITY)}, 0 not made`,
+    );
+
+    acquireGroundItem(world, "gold", spawn.x, spawn.y);
+    acquireGroundItem(world, "health_globe", spawn.x + cellSize, spawn.y);
+    world.map.dropsNotMade = 3;
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Ground items")).toBe(
+      `2 / ${String(GROUND_ITEM_CAPACITY)}, 3 not made`,
     );
 
     arranged.handle.unmount();

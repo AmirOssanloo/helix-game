@@ -1,6 +1,10 @@
 import type { FolderApi } from "tweakpane";
 import type { PackRecord, PackState, RefusalReason } from "@domain/public";
-import { ENEMY_LIVE_CAP, readTunable } from "@domain/queries";
+import {
+  ENEMY_LIVE_CAP,
+  GROUND_ITEM_CAPACITY,
+  readTunable,
+} from "@domain/queries";
 import type { SampleRing } from "@instrumentation/public";
 import type { EventReader } from "@simulation/public";
 import { readout } from "./bindings";
@@ -59,9 +63,14 @@ const countPacks = (packs: readonly PackRecord[], state: PackState): number => {
 const packsText = (packs: readonly PackRecord[]): string =>
   `${String(countPacks(packs, "awake"))} / ${String(countPacks(packs, "asleep"))} / ${String(countPacks(packs, "waiting"))}`;
 
+/** `live / capacity, n not made` over the loaded map's ground items. */
+const groundItemsText = (live: number, notMade: number): string =>
+  `${String(live)} / ${String(GROUND_ITEM_CAPACITY)}, ${String(notMade)} not made`;
+
 /**
  * The readouts group: every measurement the rings hold, as mean and max over the last second
- * for the timings and as the latest sample for the counts, plus the tick number and how many of
+ * for the timings and as the latest sample for the counts, plus the tick number, the ground
+ * items live over their capacity with the drops not made, and how many of
  * the loaded map's packs are awake, asleep, and waiting from the view and, from the event ring read with `reader`, the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, and how many units have
@@ -81,6 +90,7 @@ export const readoutsGroup = (
   const projectiles = readout(folder, "Projectiles");
   const zones = readout(folder, "Zones");
   const effects = readout(folder, "Effects");
+  const groundItems = readout(folder, "Ground items");
   const poolMisses = readout(folder, "Pool misses");
   const viewMisses = readout(folder, "View misses");
   const overwrites = readout(folder, "Event overwrites");
@@ -167,6 +177,12 @@ export const readoutsGroup = (
       projectiles.show(latest(rings.liveProjectiles));
       zones.show(latest(rings.liveZones));
       effects.show(latest(rings.liveEffects));
+      groundItems.show(
+        groundItemsText(
+          api.view.map.groundItems.count,
+          api.view.map.dropsNotMade,
+        ),
+      );
       poolMisses.show(latest(rings.poolMisses));
       viewMisses.show(latest(rings.viewMisses));
       overwrites.show(latest(rings.eventOverwrites));

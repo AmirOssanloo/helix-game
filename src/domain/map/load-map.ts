@@ -2,6 +2,7 @@ import { assert } from "@shared/public";
 import { createPackRecords } from "../ai/packs";
 import type { MapDef } from "../definitions/map-def";
 import { readTunable } from "../definitions/tuning-state";
+import { createGroundItemCells } from "../entities/ground-item";
 import type { TuningState, World } from "../entities/world-state";
 import { fitPathSearch } from "../pathing/astar";
 import { resetMapScope } from "./map-scope";
@@ -41,7 +42,7 @@ export const mapNamed = (
 
 /**
  * Takes `map` as the loaded one: reads its level again from the definition, derives the walkability grid for the map's bounds and
- * obstacles with the path search fitted to it, takes the map's spawn point and checkpoints,
+ * obstacles with the path search and the ground-item cells made to it, takes the map's spawn point and checkpoints,
  * and resets map scope around it: every map-scoped entity but the hero released, no
  * checkpoint reached, the hero given the map's spawn point and carried to it with its order
  * cleared, the spatial hash rebuilt over what is left, the map's live packs placed, and its
@@ -67,6 +68,7 @@ export const loadMap = (world: World, map: MapDef): void => {
     "The walkability grid covers the loaded map's bounds",
   );
   fitPathSearch(scope.pathSearch, cellCount(scope.walkability));
+  scope.groundItemCells = createGroundItemCells(scope.walkability);
   scope.packs = createPackRecords(map.packs);
   scope.spawnPoint = map.spawnPoint;
   scope.checkpoints = map.checkpoints;

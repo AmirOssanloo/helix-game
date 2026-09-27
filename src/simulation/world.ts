@@ -17,6 +17,8 @@ import {
   createDomainEvent,
   createEffectPool,
   createFormRecords,
+  createGroundItemCells,
+  createGroundItemPool,
   createLootTables,
   createPackRecords,
   createPathSearch,
@@ -82,7 +84,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `tuning`: its level, empty pools, the grid derived, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
+/** Map scope for `map` under `tuning`: its level, empty pools, the grid derived with no ground item on any of its cells, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
   const walkability = deriveMapGrid(map, tuning);
 
@@ -93,6 +95,9 @@ const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
     projectiles: createProjectilePool(),
     effects: createEffectPool(),
     zones: createZonePool(),
+    groundItems: createGroundItemPool(),
+    groundItemCells: createGroundItemCells(walkability),
+    dropsNotMade: 0,
     walkability,
     bounds: map.bounds,
     obstacles: map.obstacles,
@@ -318,6 +323,7 @@ export class Simulation {
     scope.projectiles.releaseAll();
     scope.effects.releaseAll();
     scope.zones.releaseAll();
+    scope.groundItems.releaseAll();
     this.buffer.clear();
     this.events.clear();
     this.log.clear();

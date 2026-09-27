@@ -18,6 +18,7 @@ import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
 import type { Tick } from "../tick";
 import type { Effect, EffectId } from "./effect";
+import type { GroundItem, GroundItemId } from "./ground-item";
 import type { Pool } from "./pool";
 import type { Projectile, ProjectileId } from "./projectile";
 import type { Resources, Unit, UnitId } from "./unit";
@@ -118,6 +119,12 @@ export type MapScope = {
   projectiles: Pool<Projectile, ProjectileId>;
   effects: Pool<Effect, EffectId>;
   zones: Pool<Zone, ZoneId>;
+  /** What lies on the ground. Not in the spatial hash: every reader walks it by index. */
+  groundItems: Pool<GroundItem, GroundItemId>;
+  /** One byte per cell of one layer of the grid, `1` where a ground item lies: made with the grid, written with every acquire and release of a ground item. */
+  groundItemCells: Uint8Array;
+  /** Drops not made since the map was made: refused by a full pool, or finding no free cell. */
+  dropsNotMade: number;
   /** The grid the map module derives from the loaded map, one layer per radius class. */
   walkability: WalkabilityGrid;
   /** The loaded map's playable rectangle, which the collision system keeps every unit inside of. */

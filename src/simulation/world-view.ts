@@ -1,6 +1,8 @@
 import type {
   Effect,
   EffectId,
+  GroundItem,
+  GroundItemId,
   PackRecord,
   PoolView,
   Projectile,
@@ -31,6 +33,9 @@ export type WorldView = DeepReadonly<{
     projectiles: PoolView<Projectile, ProjectileId>;
     effects: PoolView<Effect, EffectId>;
     zones: PoolView<Zone, ZoneId>;
+    groundItems: PoolView<GroundItem, GroundItemId>;
+    groundItemCells: ArrayLike<number>;
+    dropsNotMade: number;
     walkability: WalkabilityView;
     bounds: Readonly<Rect>;
     obstacles: readonly Rect[];

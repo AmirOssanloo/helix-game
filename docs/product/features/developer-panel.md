@@ -83,6 +83,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Frame rate | Mean over the last second |
 | Draw calls total / world | Per frame, the total and the world's share without the HUD; the world's budget is 5. A dash under the Canvas renderer |
 | Units, Projectiles, Zones, Effects | The live count of each, one readout apiece |
+| Ground items | The ground items lying on the loaded map over how many it can hold, and how many drops were not made since the map was made, for want of room in the pool or a free cell |
 | Pool misses | How many times a simulation pool was asked for more than it holds |
 | View misses | How many times a view pool, an overlay's included, was asked for more than it holds |
 | Event overwrites | How many events a reader of the event ring lost because the ring overwrote them first. Zero at the live cap; a panel that was folded skips what passed meanwhile instead of counting it |

@@ -184,6 +184,13 @@ export {
   fillFromDefinition,
   wearDefinition,
 } from "./entities/unit-spawn";
+export {
+  acquireGroundItem,
+  createGroundItemCells,
+  createGroundItemPool,
+  releaseAllGroundItems,
+  releaseGroundItem,
+} from "./entities/ground-item";
 export { ORB_COUNT } from "./entities/world-state";
 export { createWorldScratch } from "./entities/world-scratch";
 export {

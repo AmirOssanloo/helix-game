@@ -45,6 +45,9 @@ const FROM_CONTENT =
 const COPIED_ART =
   "copied from a definition's presentation-only field, which the stamp leaves out; no rule reads it";
 
+/** Why the ground items are left out: no rule makes one yet, so the pool is empty, every cell free, and the count zero on every tick of every log. */
+const NO_DROP_YET = "always empty: nothing drops yet";
+
 /** Why a map's own geometry is left out: it is the loaded map definition's, which `mapId` names and the stamp fixes. */
 const FROM_MAP = "the loaded map definition's, named by mapId";
 
@@ -279,6 +282,9 @@ const MAP_FIELDS = fieldsOf<DeepReadonly<MapScope>>({
   projectiles: pool("projectiles", (map) => map.projectiles, PROJECTILE_FIELDS),
   effects: pool("effects", (map) => map.effects, EFFECT_FIELDS),
   zones: pool("zones", (map) => map.zones, ZONE_FIELDS),
+  groundItems: excluded(NO_DROP_YET),
+  groundItemCells: excluded(NO_DROP_YET),
+  dropsNotMade: excluded(NO_DROP_YET),
   walkability: excluded(
     "a cache derived from the loaded map and the tuning state, both hashed",
   ),

@@ -7,6 +7,7 @@ import {
   stepMsOf,
 } from "@app/public";
 import type { AnyCommand } from "@domain/public";
+import { GROUND_ITEM_CAPACITY } from "@domain/queries";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
 import type { Simulation } from "@simulation/testing";
@@ -115,6 +116,18 @@ describe("FixedStepDriver", () => {
     expect(rings.liveProjectiles.at(0)).toBe(0);
     expect(rings.poolMisses.at(0)).toBe(0);
     expect(rings.eventOverwrites.at(0)).toBe(0);
+  });
+
+  it("counts a ground item refused by a full pool among the pool misses", () => {
+    const { driver, world, rings } = makeDriver();
+
+    for (let slot = 0; slot <= GROUND_ITEM_CAPACITY; slot += 1) {
+      world.state.map.groundItems.acquire();
+    }
+
+    driver.onFrame(STEP_MS);
+
+    expect(rings.poolMisses.at(0)).toBe(1);
   });
 
   it("writes one frame-rate sample per frame", () => {

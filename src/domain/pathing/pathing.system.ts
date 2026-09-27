@@ -1,5 +1,6 @@
 import { clamp } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
+import { fitGroundItemCells } from "../entities/ground-item";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import {
@@ -87,7 +88,7 @@ const planPath = (world: World, unit: Unit): void => {
  *
  * The system also keeps the walkability grid true to the tuning table: when the cell size or a
  * class radius has changed since the grid was derived, it derives the grid again from the map's
- * bounds and obstacles and fits the search to it, on the tick that consumed the change. Neither
+ * bounds and obstacles, fits the search to it, and marks again the cells ground items lie on, on the tick that consumed the change. Neither
  * is steady state; a search on an unchanged grid allocates nothing.
  */
 export const pathingSystem = (world: World): void => {
@@ -105,6 +106,7 @@ export const pathingSystem = (world: World): void => {
       readTunable(tuning, "walkability_cell_size"),
       readRadiusClasses(tuning),
     );
+    fitGroundItemCells(world);
   }
 
   fitPathSearch(scope.pathSearch, cellCount(scope.walkability));

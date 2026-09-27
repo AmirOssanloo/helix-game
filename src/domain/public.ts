@@ -220,6 +220,12 @@ export type {
   World,
 } from "./entities/world-state";
 export type { WorldScratch } from "./entities/world-scratch";
+export type {
+  GroundItem,
+  GroundItemId,
+  GroundItemKind,
+} from "./entities/ground-item";
+export type { Item, ItemLine } from "./items/item";
 export type { Zone, ZoneId } from "./entities/zone";
 export type {
   CastCommittedEvent,

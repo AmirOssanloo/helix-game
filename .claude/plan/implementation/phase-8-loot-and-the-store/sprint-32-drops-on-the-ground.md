@@ -21,13 +21,15 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Layer | domain, simulation, devtools, tests, docs |
 | Size | 1.5 |
 | Depends on | P8-S31-T02, P8-S31-T03 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27, later:** the flag for an item the hero dropped and has not stepped off is gone: items are picked up by a right click, not by walking over them (Q87).
 
 > **Note, 2026-09-27, from P7-S48-T04:** a ground item holds an item instance inline, the value [ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) defines, copied in on a drop and out on a pickup; the ground item alone has a generational id.
 
 > **Note, 2026-09-28, from P8-S31-T02:** [the brief](../../2026-09-28-where-items-loot-and-the-store-live.md) and [ADR 0013](../../../../docs/adr/0013-loot-on-the-ground-is-a-pooled-entity-that-stays-until-the-map-is-made-again.md) set the capacity at 512, refuse a drop past it with nothing evicted, keep one ground item to a walkability cell in a map-scope byte per cell, keep ground items out of the spatial hash, and give them no timer. The size stays 1.5.
+
+> **Note, 2026-09-28, at close:** the item held inline needs the item value, so `src/domain/items/item.ts` (create, clear, copy, over the existing `ITEM_LINE_CAPACITY`) is made here rather than in P8-S33-T01, which extends it. A pool refusal counts in both the pool's misses and map scope's `dropsNotMade`; P8-S32-T02's no-free-cell refusal adds to `dropsNotMade` alone. The ground-item pool also joins the driver's **Pool misses** sum, and a tuned cell size that derives the grid anew marks the cell bytes again, both unforeseen and folded in as a few lines each. The three map-scope fields are left out of the state checksum with a reason until P8-S32-T02 makes the first drop, so no stored log moves.
 
 **Build:** the ground item as an entity kind in `src/domain/entities/ground-item.ts`, with its own `GroundItemId` brand: what it is (gold, a health globe, a mana globe, or an item), its point, a pile's amount, the item instance inline, made with the slot and cleared in place, and the tick it fell; no previous position. A pool of 512, `GROUND_ITEM_CAPACITY`, in map scope, released whole by `resetMapScope` for a map load and a reset alike, with generational ids. Map scope also holds one byte per walkability cell saying whether a ground item lies there, made with the grid on a map load, and a count of drops not made. Past capacity the pool returns `null`, the drop is not made, nothing on the ground is evicted, and the miss is counted. Ground items are not added to the spatial hash; every reader walks the pool by index. The panel's readouts gain **Ground items** live over capacity. The [world model](../../../../docs/architecture/world-model.md), [entities and pools](../../../../docs/architecture/entities-and-pools.md), and where-to-look pages state the kind.
 
@@ -78,6 +80,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 - `tests/simulation/replay-determinism.spec.ts`: green unchanged.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A new command, event, or system · A documentation change.
+
+> **Note, 2026-09-28, from P8-S32-T01:** `groundItems`, `groundItemCells`, and `dropsNotMade` stand in `src/simulation/replay/state-fields.ts` as left out, "always empty: nothing drops yet"; this ticket lists them there, the pool by its fields and the item inline, and `acquireGroundItem` in `src/domain/entities/ground-item.ts` is the acquire `placeDrops` calls. A drop with no free cell adds to `world.map.dropsNotMade`.
 
 ---
 
@@ -143,12 +147,12 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 | Check | Result |
 | --- | --- |
-| Ground items pooled in map scope, released by a map load | |
+| Ground items pooled in map scope, released by a map load | Yes: a pool of 512 in map scope with its own `GroundItemId`, the byte per cell, and `dropsNotMade`; a map load and a reset release every ground item and free every cell (`tests/domain/entities/ground-item-pool.spec.ts`, `tests/simulation/world.spec.ts`). The panel's **Ground items** readout shows live over capacity and the drops not made |
 | Drops the same on two replays, the world but its ground items unmoved | |
 | Item level from the map level; the quality-level filter | |
 | The font writes an item's name | |
 | The render benchmark after the atlas grew | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 (sized 1.5) |
 | Sprint total | |
 
 ## Risks in this sprint

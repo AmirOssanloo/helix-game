@@ -1,8 +1,17 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { meleeGruntDef } from "@content/public";
 import type { Unit } from "@domain/public";
-import { readTunable, UNIT_CAPACITY } from "@domain/queries";
-import { walkabilityCovers, loadMap } from "@domain/rules";
+import {
+  GROUND_ITEM_CAPACITY,
+  readTunable,
+  UNIT_CAPACITY,
+} from "@domain/queries";
+import {
+  acquireGroundItem,
+  cellCount,
+  walkabilityCovers,
+  loadMap,
+} from "@domain/rules";
 import { createEventReader } from "@simulation/public";
 import type { WorldView } from "@simulation/public";
 import {
@@ -51,6 +60,19 @@ describe("createWorld", () => {
     expect(world.view.map.spatialHash.count).toBe(0);
     expect(world.view.run.heroId).toBeNull();
     expect(world.view.map.units.capacity).toBe(UNIT_CAPACITY);
+  });
+
+  it("starts with no ground item, a free byte for every cell of the grid, and no drop not made", () => {
+    const world = makeWorld({ seed: 1 });
+    const map = world.view.map;
+
+    expect(map.groundItems.count).toBe(0);
+    expect(map.groundItems.capacity).toBe(GROUND_ITEM_CAPACITY);
+    expect(map.groundItemCells.length).toBe(cellCount(map.walkability));
+    expect(Array.from(map.groundItemCells).every((byte) => byte === 0)).toBe(
+      true,
+    );
+    expect(map.dropsNotMade).toBe(0);
   });
 
   it("copies the registry's tuning into run scope, converted into simulation units", () => {
@@ -158,6 +180,57 @@ describe("loadMap", () => {
     expect(world.view.map.zones.count).toBe(0);
     expect(world.view.run.heroId).toBe(42);
     expect(world.view.run.tuning.get("turn_ramp_ticks")).toBe(3);
+  });
+
+  it("releases every ground item, makes the cells to the new grid all free, and leaves run scope as it was", () => {
+    const world = makeWorld({ seed: 1 });
+    const spawn = world.view.map.spawnPoint;
+    const cellSize = world.view.map.walkability.cellSize;
+    const run = world.view.run;
+    const randomBefore = { ...run.random };
+    const tuningBefore = new Map(run.tuning);
+    const formsBefore = run.forms;
+    const first = acquireGroundItem(world.state, "gold", spawn.x, spawn.y);
+    acquireGroundItem(world.state, "item", spawn.x + cellSize, spawn.y);
+    world.state.map.dropsNotMade = 2;
+    const next = makeMapDef.build({
+      id: "next",
+      bounds: { minX: 0, minY: 0, maxX: 640, maxY: 320 },
+      spawnPoint: { x: 320, y: 160 },
+    });
+
+    loadMap(world.state, next);
+
+    const map = world.view.map;
+
+    expect(map.groundItems.count).toBe(0);
+    expect(first === null ? null : map.groundItems.resolve(first)).toBeNull();
+    expect(map.groundItemCells.length).toBe(cellCount(map.walkability));
+    expect(Array.from(map.groundItemCells).every((byte) => byte === 0)).toBe(
+      true,
+    );
+    expect(map.dropsNotMade).toBe(0);
+    expect(world.view.run).toBe(run);
+    expect(run.random).toEqual(randomBefore);
+    expect(new Map(run.tuning)).toEqual(tuningBefore);
+    expect(run.forms).toBe(formsBefore);
+    expect(run.heroId).toBeNull();
+  });
+
+  it("releases every ground item on the panel's map reset too", () => {
+    const world = makeWorld({ seed: 1 });
+    const spawn = world.view.map.spawnPoint;
+    acquireGroundItem(world.state, "mana_globe", spawn.x, spawn.y);
+    world.state.map.dropsNotMade = 1;
+
+    submit(world, { kind: "reset_map", tick: 0, timestamp: 0 });
+    world.tick();
+
+    expect(world.view.map.groundItems.count).toBe(0);
+    expect(
+      Array.from(world.view.map.groundItemCells).every((byte) => byte === 0),
+    ).toBe(true);
+    expect(world.view.map.dropsNotMade).toBe(0);
   });
 
   it("keeps the tick count and the random state", () => {
