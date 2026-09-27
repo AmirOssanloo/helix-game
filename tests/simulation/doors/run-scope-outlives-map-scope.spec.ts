@@ -4,6 +4,7 @@ import type { FormRecord, Unit } from "@domain/public";
 import { INVOKE_ID } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
+  idOf,
   makeFormDef,
   makeMapDef,
   makeRegistry,
@@ -104,7 +105,7 @@ describe("the door: run scope and map scope are separate lifetimes", () => {
 
     expect(world.view.map.mapId).toBe("second_map");
     expect(world.view.run.heroId).toBe(heroId);
-    expect(world.view.map.units.resolve(heroId ?? -1)).toBe(hero);
+    expect(world.view.map.units.resolve(heroId ?? idOf(-1))).toBe(hero);
     expect(hero.curr).toEqual({ x: 1600, y: 800 });
     expect(hero.progression).toEqual({
       level: LEVEL,

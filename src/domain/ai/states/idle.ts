@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import { distanceSquared } from "@shared/public";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import { regenerate } from "../../stats/regeneration";
@@ -66,7 +66,7 @@ export const rest = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   const provoked = unit.ai.provoked;
 

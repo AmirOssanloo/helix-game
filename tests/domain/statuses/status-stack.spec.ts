@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { StackRule, StatusEntry } from "@domain/public";
+import type { StackRule, StatusEntry, UnitId } from "@domain/public";
 import { createUnitPool, STATUS_TABLE_SIZE, writeStatus } from "@domain/public";
+import { idOf } from "../../helpers";
 
 /** The tick every first application in this spec ends on, and the later one a second gives. */
 const FIRST_END = 10;
@@ -11,8 +12,8 @@ const FIRST_LEVELS: readonly number[] = [1, 2, 3];
 const SECOND_LEVELS: readonly number[] = [4, 5, 6];
 
 /** The units that applied each of the two applications. */
-const FIRST_SOURCE = 11;
-const SECOND_SOURCE = 22;
+const FIRST_SOURCE = idOf<UnitId>(11);
+const SECOND_SOURCE = idOf<UnitId>(22);
 
 /** An empty status table of the fixed size, as a fresh unit wears it. */
 const table = (): readonly StatusEntry[] => {

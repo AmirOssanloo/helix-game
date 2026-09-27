@@ -1,13 +1,19 @@
 import { describe, expect, it } from "vitest";
-import type { EntityId } from "@shared/public";
+import type { UnitId } from "@domain/public";
 import type { Simulation } from "@simulation/public";
-import { makeWorld, spawnHero, spawnUnit, submit } from "../helpers";
+import {
+  makeWorld,
+  spawnHero,
+  spawnUnit,
+  submit,
+  targetUnitOf,
+} from "../helpers";
 
 /** Behind the hero and far enough that no attack reaches it, so an order on it stays a turn and an approach for as long as a spec runs. */
 const FAR_AWAY = -5000;
 
 /** An enemy well out of the hero's reach, and the id an order names it by: an attack on a unit that is not there drops to idle before a spec can read it. */
-const enemyId = (world: Simulation): EntityId => {
+const enemyId = (world: Simulation): UnitId => {
   const unit = spawnUnit(world, { x: FAR_AWAY, y: 0 });
   const units = world.state.map.units;
 
@@ -74,7 +80,7 @@ describe("commandSystem", () => {
     world.tick();
 
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.order.targetId).toBe(targetId);
+    expect(targetUnitOf(hero.order.target)).toBe(targetId);
     expect(hero.state).toBe("turning");
   });
 
@@ -104,7 +110,8 @@ describe("commandSystem", () => {
     const targetId = enemyId(world);
 
     hero.order.kind = "attack_target";
-    hero.order.targetId = targetId;
+    hero.order.target.tag = "unit";
+    hero.order.target.unitId = targetId;
     hero.state = "turning";
     hero.disables.stunned = true;
     submit(world, {
@@ -117,7 +124,7 @@ describe("commandSystem", () => {
     world.tick();
 
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.order.targetId).toBe(targetId);
+    expect(targetUnitOf(hero.order.target)).toBe(targetId);
     expect(hero.order.destination).not.toEqual({ x: 100, y: 40 });
     expect(hero.state).toBe("turning");
   });

@@ -1,8 +1,8 @@
-import type { EntityId } from "@shared/public";
 import { bearing } from "@shared/public";
 import { ticksOfSeconds, ticksOfTravel } from "../../definitions/duration";
 import type { DisplaceEffectDef } from "../../definitions/effect-def";
 import { tableAtOrbLevels } from "../../definitions/level-table";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import type { StatusResult } from "../../statuses/status.system";
@@ -33,7 +33,7 @@ const directionOf = (
 export const lift = (
   world: World,
   cast: Cast,
-  targetId: EntityId,
+  targetId: UnitId,
   statusId: string,
   ticks: number,
 ): StatusResult =>
@@ -97,7 +97,7 @@ export const displace: Primitive<DisplaceEffectDef> = (
   }
 
   for (let slot = 0; slot < count; slot += 1) {
-    const id: EntityId = targetAt(world, level, slot);
+    const id: UnitId = targetAt(world, level, slot);
     const unit = world.map.units.resolve(id);
 
     if (unit === null) {

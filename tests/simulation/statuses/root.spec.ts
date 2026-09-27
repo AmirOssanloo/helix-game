@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Command, Unit } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
-import { makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
+import { idOf, makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
 
 /** The slot key a spec presses: Q, an orb. */
 const Q = 1;
@@ -63,7 +63,7 @@ const reasons = (world: Simulation, reader: EventReader): string[] => {
 
 /** Every command a root leaves alone. */
 const ALLOWED: readonly (readonly [string, Unstamped<Command>])[] = [
-  ["attack_target", { kind: "attack_target", targetId: 7 }],
+  ["attack_target", { kind: "attack_target", targetId: idOf(7) }],
   ["stop", { kind: "stop" }],
   ["slot", { kind: "slot", slot: Q }],
 ];

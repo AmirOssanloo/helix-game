@@ -1,6 +1,7 @@
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, EnemyTier, Unit, UnitKind } from "@domain/public";
 import { UNIT_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId } from "@shared/public";
+import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import type { ScreenUnits } from "../camera/screen-units";
@@ -115,7 +116,7 @@ export class UnitView {
     this.facingScale = FACING_SHARE / frameSizes(FACING_FRAME);
   }
 
-  bind(_id: EntityId, unit: DeepReadonly<Unit>): void {
+  bind(_id: UnitId, unit: DeepReadonly<Unit>): void {
     const def = definitionOf(unit, this.definitions);
     const frame = def === null ? undressedFrameOf(unit.kind) : def.atlasFrame;
 
@@ -170,7 +171,7 @@ export class UnitView {
   }
 }
 
-export type UnitViewPool = ViewPool<DeepReadonly<Unit>, UnitView>;
+export type UnitViewPool = ViewPool<DeepReadonly<Unit>, UnitId, UnitView>;
 
 /**
  * `size` unit views over quads from `makeQuad`, at scene `create`. Every body is made before
@@ -283,7 +284,7 @@ export class OutlineView {
     this.scalePerUnit = 1 / frameSizes(OUTLINE_FRAME);
   }
 
-  bind(_id: EntityId, unit: DeepReadonly<Unit>): void {
+  bind(_id: UnitId, unit: DeepReadonly<Unit>): void {
     const def = definitionOf(unit, this.definitions);
 
     this.tint = def === null ? BARE_TINT : def.tint;
@@ -311,7 +312,7 @@ export class OutlineView {
   }
 }
 
-export type OutlineViewPool = ViewPool<DeepReadonly<Unit>, OutlineView>;
+export type OutlineViewPool = ViewPool<DeepReadonly<Unit>, UnitId, OutlineView>;
 
 /**
  * `size` outline views over quads from `makeQuad`, at scene `create`. Made after the unit

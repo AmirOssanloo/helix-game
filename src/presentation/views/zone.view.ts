@@ -1,6 +1,6 @@
-import type { ShapeDef, Zone } from "@domain/public";
+import type { ShapeDef, Zone, ZoneId } from "@domain/public";
 import { shapeExtent, ZONE_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Rect } from "@shared/public";
+import type { DeepReadonly, Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "./depth-bands";
 import type { FrameSizes, Quad, QuadFactory } from "./quad";
@@ -32,7 +32,7 @@ export class ZoneView {
     this.frameSizes = frameSizes;
   }
 
-  bind(_id: EntityId, zone: DeepReadonly<Zone>): void {
+  bind(_id: ZoneId, zone: DeepReadonly<Zone>): void {
     const frame = zone.frame ?? FALLBACK_FRAME;
 
     this.quad.setFrame(frame);
@@ -91,7 +91,7 @@ const sizeToShape = (
   }
 };
 
-export type ZoneViewPool = ViewPool<DeepReadonly<Zone>, ZoneView>;
+export type ZoneViewPool = ViewPool<DeepReadonly<Zone>, ZoneId, ZoneView>;
 
 /** `size` zone views over quads from `makeQuad`, at scene `create`. */
 export const createZoneViewPool = (

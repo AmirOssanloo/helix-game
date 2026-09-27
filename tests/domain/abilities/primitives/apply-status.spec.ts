@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { ApplyStatusEffectDef, Unit } from "@domain/public";
 import { runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
@@ -39,7 +39,7 @@ const rowOf = (unit: Unit, statusId: string): Unit["statuses"][number] | null =>
   unit.statuses.find((row) => row.definitionId === statusId) ?? null;
 
 /** The id of the unit at `index` in the pool. */
-const idAt = (world: Simulation, index: number): EntityId => {
+const idAt = (world: Simulation, index: number): UnitId => {
   const id = world.state.map.units.idAt(index);
 
   if (id === null) {

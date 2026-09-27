@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { distanceSquared } from "@shared/public";
 import {
   attackOf,
@@ -8,6 +7,7 @@ import {
 } from "../../attack/attack";
 import type { AttackRecord } from "../../definitions/attack-state";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import { isCasting, selectAbility } from "../ability-selection";
@@ -111,7 +111,7 @@ export const fight = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   if (isLost(hero) || heroId === null || isPastLeash(unit, record)) {
     enterReturn(world, unit);

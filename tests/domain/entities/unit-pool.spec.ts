@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Pool, Unit } from "@domain/public";
+import type { Pool, Unit, UnitId } from "@domain/public";
 import {
   createDisableFlags,
   createUnitPool,
@@ -8,8 +8,9 @@ import {
   STATUS_TABLE_SIZE,
   UNIT_CAPACITY,
 } from "@domain/public";
+import { idOf } from "../../helpers";
 
-const fillPool = (pool: Pool<Unit>): void => {
+const fillPool = (pool: Pool<Unit, UnitId>): void => {
   for (let slot = 0; slot < UNIT_CAPACITY; slot += 1) {
     pool.acquire();
   }
@@ -97,7 +98,8 @@ describe("unit pool", () => {
     firstModifier.percent = 0.5;
     unit.order.kind = "move";
     unit.order.destination.x = 4;
-    unit.order.targetId = 5;
+    unit.order.target.tag = "unit";
+    unit.order.target.unitId = idOf(5);
     unit.state = "moving";
     unit.disables.stunned = true;
     unit.disables.rooted = true;
@@ -114,7 +116,7 @@ describe("unit pool", () => {
     unit.pack.id = 9;
     unit.spawnPoint.y = 10;
     unit.ai.leashAnchor.y = 10;
-    unit.summon.ownerId = 11;
+    unit.summon.ownerId = idOf(11);
     unit.summon.expiresAtTick = 12;
     pool.release(id);
 

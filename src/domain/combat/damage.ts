@@ -1,9 +1,9 @@
-import type { EntityId } from "@shared/public";
 import { assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { provoke } from "../ai/ai-state";
 import type { Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
+import type { UnitId } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
 import { modifiedValue } from "../stats/modifiers";
@@ -57,10 +57,7 @@ const NO_AMPLIFICATION = 0;
  * rows over a base of nothing, read at the hit. Nothing from nobody, and nothing from a source
  * that no longer resolves.
  */
-const magicAmplification = (
-  world: World,
-  sourceId: EntityId | null,
-): number => {
+const magicAmplification = (world: World, sourceId: UnitId | null): number => {
   const source = sourceId === null ? null : world.map.units.resolve(sourceId);
 
   return source === null
@@ -132,8 +129,8 @@ export const mitigate = (
 
 const announceDamaged = (
   world: World,
-  targetId: EntityId,
-  sourceId: EntityId | null,
+  targetId: UnitId,
+  sourceId: UnitId | null,
   amount: number,
   type: DamageType,
 ): void => {
@@ -169,10 +166,10 @@ const announceDamaged = (
  */
 export const dealDamage = (
   world: World,
-  targetId: EntityId,
+  targetId: UnitId,
   record: DamageRecord,
   type: DamageType,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
 ): void => {
   const target = world.map.units.resolve(targetId);
 
@@ -208,10 +205,10 @@ export const dealDamage = (
  */
 export const applyDamage = (
   world: World,
-  targetId: EntityId,
+  targetId: UnitId,
   amount: number,
   type: DamageType,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
 ): number => {
   const record = world.scratch.damage;
 

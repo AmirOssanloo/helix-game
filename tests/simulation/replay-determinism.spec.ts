@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { arenaDef, contentRegistry } from "@content/public";
 import type { PoolView, Unit } from "@domain/public";
+import type { Id } from "@shared/public";
 import type {
   InputLogFile,
   Replay,
@@ -65,7 +66,9 @@ const replacer = (_key: string, value: unknown): unknown =>
   value instanceof Map ? [...value.entries()] : value;
 
 /** Every slot of `pool` below its end, live or `null`, so a hole compares as a hole. */
-const slotsOf = <T>(pool: PoolView<T>): (Readonly<T> | null)[] => {
+const slotsOf = <T, I extends Id<string>>(
+  pool: PoolView<T, I>,
+): (Readonly<T> | null)[] => {
   const slots: (Readonly<T> | null)[] = [];
 
   for (let index = 0; index < pool.end; index += 1) {

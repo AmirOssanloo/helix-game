@@ -1,9 +1,9 @@
-import type { EntityId } from "@shared/public";
 import type { CastRecord } from "../abilities/cast-context";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
 import { runEffects } from "../abilities/effect-runner";
 import type { StatusHookRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
+import type { UnitId } from "../entities/unit";
 import type { StatusEntry, Unit } from "../entities/unit";
 import { STATUS_TABLE_SIZE } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -107,8 +107,8 @@ const collectReady = (world: World, holder: Unit, side: HookSide): number => {
 const runReady = (
   world: World,
   holder: Unit,
-  holderId: EntityId,
-  damagedId: EntityId,
+  holderId: UnitId,
+  damagedId: UnitId,
   side: HookSide,
   count: number,
 ): void => {
@@ -141,8 +141,8 @@ const runReady = (
 /** Every hook of one side on one holder: the rows that are ready, then their lists. */
 const runSide = (
   world: World,
-  holderId: EntityId,
-  damagedId: EntityId,
+  holderId: UnitId,
+  damagedId: UnitId,
   side: HookSide,
 ): void => {
   const holder = world.map.units.resolve(holderId);
@@ -167,8 +167,8 @@ const runSide = (
  */
 export const runDamageHooks = (
   world: World,
-  damagedId: EntityId,
-  sourceId: EntityId | null,
+  damagedId: UnitId,
+  sourceId: UnitId | null,
 ): void => {
   const scratch = world.scratch.hooks;
 

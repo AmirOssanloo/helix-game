@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import {
   acquireUnit,
@@ -7,7 +8,7 @@ import {
   setStraightPath,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeMapDef,
@@ -39,7 +40,7 @@ const near = (
   x: number,
   y: number,
   radius: number,
-): EntityId[] => {
+): UnitId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
   const count = world.view.map.spatialHash.queryCircle({ x, y }, radius, out);
 

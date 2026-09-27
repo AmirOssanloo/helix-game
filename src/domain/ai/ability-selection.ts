@@ -1,4 +1,4 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assertNever } from "@shared/public";
 import { isInCastRange, requestCast, resourcesOf } from "../abilities/cast";
 import { isCooldownReady } from "../abilities/cooldowns";
@@ -6,6 +6,8 @@ import type { CastTarget } from "../commands/command";
 import type { TargetingKind } from "../definitions/ability-def";
 import type { AbilityConditionDef } from "../definitions/enemy-def";
 import type { UnitRecord } from "../definitions/unit-state";
+import { unwrittenId } from "../entities/pool";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { castRefusal } from "../orders/disable-matrix";
@@ -18,13 +20,13 @@ const NO_TARGET: CastTarget = { kind: "none" };
  * target, and a point ability aimed where it stands, each rewritten for every request.
  */
 export type AbilityAimScratch = {
-  unitTarget: { kind: "unit"; unitId: EntityId };
+  unitTarget: { kind: "unit"; unitId: UnitId };
   pointTarget: { kind: "point"; position: Vec2 };
 };
 
 /** The behaviour's aims. Made once, with the world. */
 export const createAbilityAimScratch = (): AbilityAimScratch => ({
-  unitTarget: { kind: "unit", unitId: 0 },
+  unitTarget: { kind: "unit", unitId: unwrittenId() },
   pointTarget: { kind: "point", position: { x: 0, y: 0 } },
 });
 
@@ -37,7 +39,7 @@ const aimAt = (
   world: World,
   kind: TargetingKind,
   target: Readonly<Unit>,
-  targetId: EntityId,
+  targetId: UnitId,
 ): CastTarget | null => {
   const unitTarget = world.scratch.abilityAim.unitTarget;
   const pointTarget = world.scratch.abilityAim.pointTarget;
@@ -124,7 +126,7 @@ export const selectAbility = (
   unit: Unit,
   record: UnitRecord,
   target: Readonly<Unit>,
-  targetId: EntityId,
+  targetId: UnitId,
 ): boolean => {
   if (
     castRefusal(world.run.disableMatrix, unit.disables) !== null ||

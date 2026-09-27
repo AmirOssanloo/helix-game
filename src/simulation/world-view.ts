@@ -1,14 +1,18 @@
 import type {
   Effect,
+  EffectId,
   PackRecord,
   PoolView,
   Projectile,
+  ProjectileId,
   RunScope,
   SpatialHashView,
   Tick,
   Unit,
+  UnitId,
   WalkabilityView,
   Zone,
+  ZoneId,
 } from "@domain/public";
 import type { DeepReadonly, Rect, Vec2 } from "@shared/public";
 
@@ -22,10 +26,10 @@ export type WorldView = DeepReadonly<{
   run: RunScope;
   map: {
     mapId: string;
-    units: PoolView<Unit>;
-    projectiles: PoolView<Projectile>;
-    effects: PoolView<Effect>;
-    zones: PoolView<Zone>;
+    units: PoolView<Unit, UnitId>;
+    projectiles: PoolView<Projectile, ProjectileId>;
+    effects: PoolView<Effect, EffectId>;
+    zones: PoolView<Zone, ZoneId>;
     walkability: WalkabilityView;
     bounds: Readonly<Rect>;
     obstacles: readonly Rect[];

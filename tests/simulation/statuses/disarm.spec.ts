@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Command, Unit } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
-import { makeWorld, spawnHero, submit } from "../../helpers";
+import { idOf, makeWorld, spawnHero, submit } from "../../helpers";
 
 /** The slot key a spec presses: Q, an orb. */
 const Q = 1;
@@ -72,7 +72,7 @@ describe("a disarm on the hero", () => {
     apply(world, "disarm", LONG_TICKS);
     world.tick();
 
-    act(world, { kind: "attack_target", targetId: 7 });
+    act(world, { kind: "attack_target", targetId: idOf(7) });
     world.tick();
 
     expect(reasons(world, reader)).toEqual(["disarmed"]);

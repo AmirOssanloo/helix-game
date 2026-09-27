@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { statusIconFrame } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { applyStatus, STATUS_TABLE_SIZE } from "@domain/public";
 import type { ScreenPlacement, StatusIconViewPool } from "@presentation/public";
@@ -9,7 +10,7 @@ import {
   Projection,
   syncStatusIconViews,
 } from "@presentation/public";
-import type { EntityId, Rect, Vec2 } from "@shared/public";
+import type { Rect, Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FLAT_PLACEMENT,
@@ -56,7 +57,7 @@ const HALF_WAY = 0.5;
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   pool: StatusIconViewPool;
   quads: QuadRecorder[];
   /** The icons of the first row, in the order the pool made them. */

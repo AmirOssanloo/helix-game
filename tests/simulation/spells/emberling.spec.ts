@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -61,7 +61,7 @@ const CASES: readonly Case[] = [
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   dummies: Unit[];
   reader: EventReader;
 };
@@ -109,7 +109,7 @@ const summonCount = (world: Simulation): number => {
 /** The spirit in the pool, and the id it holds, or nothing while none stands. */
 const findSummon = (
   world: Simulation,
-): Readonly<{ unit: Unit; id: EntityId }> | null => {
+): Readonly<{ unit: Unit; id: UnitId }> | null => {
   const units = world.state.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -138,7 +138,7 @@ const cast = (world: Simulation): void => {
 /** Casts Emberling and ticks until the spirit is standing, which is the commit. */
 const castAndSpawn = (
   world: Simulation,
-): Readonly<{ unit: Unit; id: EntityId }> => {
+): Readonly<{ unit: Unit; id: UnitId }> => {
   cast(world);
   tickUntil(world, () => findSummon(world) !== null, COMMIT_TICKS);
 

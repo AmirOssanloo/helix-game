@@ -1,4 +1,5 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { UnitId } from "@domain/public";
+import type { Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { interpolate } from "../views/quad";
 
@@ -25,8 +26,8 @@ export const pickUnit = (
   x: number,
   y: number,
   alpha: number,
-  candidates: EntityId[],
-): EntityId | null => {
+  candidates: UnitId[],
+): UnitId | null => {
   clicked.x = x;
   clicked.y = y;
 
@@ -35,7 +36,7 @@ export const pickUnit = (
     PICK_QUERY_RADIUS,
     candidates,
   );
-  let nearest: EntityId | null = null;
+  let nearest: UnitId | null = null;
   let nearestDistanceSquared = Number.POSITIVE_INFINITY;
 
   for (let index = 0; index < count; index += 1) {

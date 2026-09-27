@@ -6,9 +6,9 @@ import {
   meleeGruntDef,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { SetTuningCommand, SpawnPackCommand, Unit } from "@domain/public";
 import { definitionFields, readTunable, TUNING_KEYS } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   beginReplay,
@@ -201,7 +201,7 @@ const retune = (
 const arrangeHoarfrost = (): {
   world: Simulation;
   dummy: Unit;
-  dummyId: EntityId;
+  dummyId: UnitId;
 } => {
   const world = makeWorld({ seed: 1 });
 
@@ -224,7 +224,7 @@ const arrangeHoarfrost = (): {
 const hoarfrostTicks = (
   world: Simulation,
   dummy: Unit,
-  dummyId: EntityId,
+  dummyId: UnitId,
 ): number => {
   const reader = createEventReader();
 

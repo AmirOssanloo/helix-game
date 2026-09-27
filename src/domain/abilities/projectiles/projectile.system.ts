@@ -1,10 +1,10 @@
-import type { EntityId } from "@shared/public";
 import { bearing } from "@shared/public";
 import type { DamageType } from "../../combat/damage";
 import { applyDamage } from "../../combat/damage";
 import { isHostile } from "../../combat/sides";
 import { readTunable } from "../../definitions/tuning-state";
-import type { Projectile } from "../../entities/projectile";
+import type { Projectile, ProjectileId } from "../../entities/projectile";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import { UNIT_CAPACITY } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
@@ -29,8 +29,8 @@ const ATTACK_DAMAGE_TYPE: DamageType = "physical";
  */
 export type ProjectileScratch = {
   context: CastRecord;
-  candidates: EntityId[];
-  contact: { unitId: EntityId | null; at: number };
+  candidates: UnitId[];
+  contact: { unitId: UnitId | null; at: number };
 };
 
 /** The projectile pass's scratch. Made once, with the world. */
@@ -44,8 +44,8 @@ const announce = (
   world: World,
   kind: DomainEvent["kind"],
   projectile: Readonly<Projectile>,
-  projectileId: EntityId,
-  unitId: EntityId | null,
+  projectileId: ProjectileId,
+  unitId: UnitId | null,
 ): void => {
   const event = world.scratch.event;
 
@@ -171,8 +171,8 @@ const sweepAhead = (world: World, projectile: Readonly<Projectile>): void => {
 const strike = (
   world: World,
   projectile: Projectile,
-  projectileId: EntityId,
-  hitId: EntityId,
+  projectileId: ProjectileId,
+  hitId: UnitId,
 ): void => {
   const context = world.scratch.projectiles.context;
   const contact = world.scratch.projectiles.contact;

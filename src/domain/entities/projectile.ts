@@ -1,11 +1,15 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Id, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
 import type { EffectDef } from "../definitions/effect-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import { resetDomainEvent } from "../events/domain-event";
 import { Pool } from "./pool";
+import type { UnitId } from "./unit";
 import type { World } from "./world-state";
+
+/** A projectile's id: minted and resolved only by the projectile pool. */
+export type ProjectileId = Id<"projectile">;
 
 export const PROJECTILE_CAPACITY = 512;
 
@@ -29,11 +33,11 @@ const NO_RANGE = 0;
 export type Projectile = {
   /** The ability whose cast fired it, whose id names it. `null` for a projectile with no ability behind it. */
   ability: AbilityDef | null;
-  casterId: EntityId | null;
+  casterId: UnitId | null;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: number[];
   /** The unit it homes on, or `null` for one that flies its bearing. */
-  targetId: EntityId | null;
+  targetId: UnitId | null;
   prev: Vec2;
   curr: Vec2;
   /** The bearing it travels along. A homing projectile turns it onto its target every tick. */
@@ -100,7 +104,7 @@ const clearProjectile = (projectile: Projectile): void => {
   projectile.tint = 0;
 };
 
-export const createProjectilePool = (): Pool<Projectile> =>
+export const createProjectilePool = (): Pool<Projectile, ProjectileId> =>
   new Pool(PROJECTILE_CAPACITY, createProjectile, clearProjectile);
 
 /**
@@ -118,7 +122,7 @@ export const acquireProjectile = (
   x: number,
   y: number,
   facing: number,
-): EntityId | null => {
+): ProjectileId | null => {
   const projectiles = world.map.projectiles;
   const index = projectiles.acquireIndex();
 

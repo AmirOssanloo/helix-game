@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { rootNetDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, Projectile, Unit } from "@domain/public";
 import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   always,
@@ -57,9 +57,9 @@ const NETTER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   netter: Unit;
-  netterId: EntityId;
+  netterId: UnitId;
 }>;
 
 /** A world with the netter beside the content's abilities, the hero at the origin, and one netter in range. */

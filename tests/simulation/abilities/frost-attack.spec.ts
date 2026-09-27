@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { frostAttackDef, statuses, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, Unit } from "@domain/public";
 import { applyDamage, STATUS_NEVER_ENDS } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   greyedSlots,
@@ -68,7 +68,7 @@ const STILL_FROSTER: EnemyDef = makeEnemyDef.build({
   statuses: [frostAttackDef.id],
 });
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
 
 /** A world holding the two archetypes, with the hero at the origin facing +X and nothing else. */
 const arrange = (): Arranged => {
@@ -111,7 +111,7 @@ const spawnPackOf = (world: Simulation, def: EnemyDef, x: number): Unit => {
 };
 
 /** A froster that never swings, behind the hero, and its id. */
-const stillFroster = (world: Simulation): EntityId =>
+const stillFroster = (world: Simulation): UnitId =>
   unitIdOf(
     world,
     spawnEnemy(world, { definitionId: STILL_FROSTER.id, x: BEHIND_X, y: 0 }),

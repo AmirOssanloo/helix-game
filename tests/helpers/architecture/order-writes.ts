@@ -39,11 +39,11 @@ export type OrderWriteViolation = Readonly<{
 
 /**
  * An assignment to one of an order's fields, whether the unit's own or the one put aside, or
- * to the order or its destination whole through the unit. A local that happens to be named
+ * to the order, its destination, or its target whole through the unit. A local that happens to be named
  * `order` is a declaration, not a write, and is not matched.
  */
 const ORDER_WRITE =
-  /(?:\b(?:order|suspended)\.(?:kind|targetId|destination(?:\.[xy])?)|\.(?:order|suspended)(?:\.destination)?)\s*[-+*/]?=(?!=)/u;
+  /(?:\b(?:order|suspended)\.(?:kind|destination(?:\.[xy])?|target(?:\.(?:tag|unitId|point(?:\.[xy])?))?)|\.(?:order|suspended)(?:\.(?:destination|target))?)\s*[-+*/]?=(?!=)/u;
 
 const isComment = (line: string): boolean => {
   const trimmed = line.trimStart();
@@ -102,16 +102,19 @@ export const describeOrderWritesOnlyInOrders = (
           [
             'unit.order.kind = "move";',
             "unit.order.destination.x = 1;",
-            "unit.suspended.targetId = null;",
+            "unit.suspended.target.unitId = null;",
             "order.destination.y += 2;",
             'const same = unit.order.kind === "move";',
             ' * unit.order.kind = "move" in a comment',
             "const kind = unit.order.kind;",
             "const order = cells.map(toEntry);",
             "unit.order = next;",
+            'unit.order.target.tag = "unit";',
+            "unit.order.target.point.x = 3;",
+            "unit.order.target = other;",
           ].join("\n"),
         ),
-      ).toEqual([1, 2, 3, 4, 9]);
+      ).toEqual([1, 2, 3, 4, 9, 10, 11, 12]);
     });
   });
 };

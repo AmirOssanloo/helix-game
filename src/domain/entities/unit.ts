@@ -1,4 +1,4 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Id, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
@@ -8,7 +8,7 @@ import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import { clearDisableFlags, createDisableFlags } from "../orders/disable-flags";
 import type { Order, OrderState } from "../orders/order";
-import { resetOrder } from "../orders/order";
+import { createOrder, resetOrder } from "../orders/order";
 import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
@@ -23,6 +23,9 @@ import { clearPackMembership, createPackMembership } from "./unit-pack";
 import type { SummonState } from "./unit-summon";
 import { clearSummonState, createSummonState } from "./unit-summon";
 import type { World } from "./world-state";
+
+/** A unit's id: minted and resolved only by the unit pool. */
+export type UnitId = Id<"unit">;
 
 /** Hero, enemies, and summons together. */
 export const UNIT_CAPACITY = 512;
@@ -78,7 +81,7 @@ export type StatusEntry = {
   definitionId: string | null;
   endsAtTick: Tick;
   stacks: number;
-  sourceId: EntityId | null;
+  sourceId: UnitId | null;
   orbLevels: number[];
   damageTakenReadyAtTick: Tick;
   damageDealtReadyAtTick: Tick;
@@ -317,12 +320,12 @@ const createUnit = (): Unit => {
     boundRadius: 0,
     selectionRadius: 0,
     turnTicks: 0,
-    order: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
+    order: createOrder(),
     state: "idle",
     path: createPath(),
     needsPath: false,
     push: { step: { x: 0, y: 0 }, ticksLeft: 0 },
-    suspended: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
+    suspended: createOrder(),
     cast: createCastState(),
     stageEndsAtTick: 0,
     attack: createAttackState(),
@@ -413,7 +416,7 @@ const clearUnit = (unit: Unit): void => {
   clearSummonState(unit.summon);
 };
 
-export const createUnitPool = (): Pool<Unit> =>
+export const createUnitPool = (): Pool<Unit, UnitId> =>
   new Pool(UNIT_CAPACITY, createUnit, clearUnit);
 
 /**
@@ -428,7 +431,7 @@ export const acquireUnit = (
   kind: UnitKind,
   x: number,
   y: number,
-): EntityId | null => {
+): UnitId | null => {
   const units = world.map.units;
   const index = units.acquireIndex();
 
@@ -479,7 +482,7 @@ export const countLiveEnemies = (world: World): number => {
 };
 
 /** The one way a unit leaves the world: out of the spatial hash, then back to the pool. A stale id changes nothing. */
-export const releaseUnit = (world: World, id: EntityId): void => {
+export const releaseUnit = (world: World, id: UnitId): void => {
   world.map.spatialHash.remove(id);
   world.map.units.release(id);
 };

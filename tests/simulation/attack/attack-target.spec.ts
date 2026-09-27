@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { heroDef, trainingDummyDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import {
   attackTicks,
@@ -7,7 +8,6 @@ import {
   createAttackRecord,
   readTunable,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -44,7 +44,7 @@ type Arranged = {
   world: Simulation;
   hero: Unit;
   target: Unit;
-  targetId: EntityId;
+  targetId: UnitId;
   reader: EventReader;
 };
 
@@ -68,7 +68,7 @@ const arrange = (options: { health?: number } = {}): Arranged => {
 };
 
 /** Orders the hero to attack `targetId`, as a right click on it does. */
-const attack = (world: Simulation, targetId: EntityId): void => {
+const attack = (world: Simulation, targetId: UnitId): void => {
   submit(world, {
     kind: "attack_target",
     tick: world.view.tick,
@@ -123,7 +123,7 @@ const shotOf = (
   world: Simulation,
 ): Readonly<{
   speed: number;
-  targetId: EntityId | null;
+  targetId: UnitId | null;
   attackDamage: number;
 }> | null => {
   const projectiles = world.state.map.projectiles;

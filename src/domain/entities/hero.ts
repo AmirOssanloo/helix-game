@@ -1,5 +1,5 @@
-import type { EntityId } from "@shared/public";
 import type { FormDef } from "../definitions/form-def";
+import type { UnitId } from "./unit";
 import type { Unit } from "./unit";
 import { acquireUnit } from "./unit";
 import type { FormRecord, World } from "./world-state";
@@ -55,7 +55,7 @@ export const acquireHero = (
   world: World,
   x: number,
   y: number,
-): EntityId | null => {
+): UnitId | null => {
   const id = acquireUnit(world, "hero", x, y);
   const hero = id === null ? null : world.map.units.resolve(id);
 

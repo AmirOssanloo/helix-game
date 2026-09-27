@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
 import { applyDamage, applyStatus } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
+  idOf,
   makeWorld,
   spawnHero,
   spawnUnit,
@@ -41,7 +42,7 @@ const COMMIT_TICKS = 4;
 const LONG_TICKS = 10000;
 
 /** An id no unit in the fixture holds, for a cast aimed at something that is gone. */
-const STALE_ID = 9999;
+const STALE_ID = idOf<UnitId>(9999);
 
 /** What the panel applies a status at: no orb has a level. */
 const NO_ORB_LEVELS: readonly number[] = [];
@@ -61,7 +62,7 @@ const CASES: readonly Case[] = [
 type Arranged = {
   world: Simulation;
   dummy: Unit;
-  dummyId: EntityId;
+  dummyId: UnitId;
   reader: EventReader;
 };
 
@@ -89,7 +90,7 @@ const arrange = (level: number): Arranged => {
 };
 
 /** Presses D at the dummy, as the confirming click does. */
-const castAt = (world: Simulation, unitId: EntityId): void => {
+const castAt = (world: Simulation, unitId: UnitId): void => {
   submit(world, {
     kind: "cast",
     tick: world.view.tick,
@@ -104,17 +105,13 @@ const rowOf = (dummy: Unit): Readonly<{ endsAtTick: number }> | undefined =>
   dummy.statuses.find((row) => row.definitionId === HOARFROST);
 
 /** Casts Hoarfrost at the dummy and ticks until it holds the status. */
-const castAndLand = (
-  world: Simulation,
-  dummy: Unit,
-  unitId: EntityId,
-): void => {
+const castAndLand = (world: Simulation, dummy: Unit, unitId: UnitId): void => {
   castAt(world, unitId);
   tickUntil(world, () => rowOf(dummy) !== undefined, COMMIT_TICKS);
 };
 
 /** One pure hit on the dummy from the hero, the instance the hook hangs on. */
-const hit = (world: Simulation, unitId: EntityId): void => {
+const hit = (world: Simulation, unitId: UnitId): void => {
   applyDamage(world.state, unitId, HIT, "pure", world.state.run.heroId);
 };
 

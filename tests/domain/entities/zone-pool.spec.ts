@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Pool, Zone } from "@domain/public";
+import type { Pool, Zone, ZoneId } from "@domain/public";
 import { createZonePool, ZONE_CAPACITY } from "@domain/public";
-import { makeSpellDef } from "../../helpers";
+import { idOf, makeSpellDef } from "../../helpers";
 
-const fillPool = (pool: Pool<Zone>): void => {
+const fillPool = (pool: Pool<Zone, ZoneId>): void => {
   for (let slot = 0; slot < ZONE_CAPACITY; slot += 1) {
     pool.acquire();
   }
@@ -53,7 +53,7 @@ describe("zone pool", () => {
     }
 
     zone.ability = ability;
-    zone.casterId = 1;
+    zone.casterId = idOf(1);
     zone.orbLevels[0] = 3;
     zone.onActivate = ability.effects;
     zone.eachTick = ability.effects;
@@ -66,7 +66,7 @@ describe("zone pool", () => {
     zone.startedAtTick = 5;
     zone.activeAtTick = 6;
     zone.expiresAtTick = 7;
-    zone.hits[0] = 9;
+    zone.hits[0] = idOf(9);
     zone.hitCount = 1;
     zone.frame = "ring_thin";
     zone.tint = 0xffffff;

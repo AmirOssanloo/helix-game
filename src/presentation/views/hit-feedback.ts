@@ -1,6 +1,6 @@
+import type { UnitId } from "@domain/public";
 import type { DamageType, DomainEvent, Tick } from "@domain/public";
 import { DAMAGE_TYPES, readTunable, UNIT_CAPACITY } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import { unpackIndex } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { FloatingNumberViews } from "./floating-number.view";
@@ -49,7 +49,7 @@ export class HitFlashes {
   }
 
   /** Starts a flash on `id` at tick `now`, showing for `durationTicks`. An id outside the pool is ignored. */
-  flash(id: EntityId, now: Tick, durationTicks: number): void {
+  flash(id: UnitId, now: Tick, durationTicks: number): void {
     const slot = unpackIndex(id);
 
     if (slot < 0 || slot >= this.ids.length) {
@@ -61,7 +61,7 @@ export class HitFlashes {
   }
 
   /** Whether `id` is flashing at tick `now`. */
-  isFlashing(id: EntityId, now: Tick): boolean {
+  isFlashing(id: UnitId, now: Tick): boolean {
     const slot = unpackIndex(id);
     const until = this.untilTicks[slot];
 
@@ -118,7 +118,7 @@ export class HitNumbers {
    * the pool always raises its own, since there is nowhere to remember it.
    */
   show(
-    id: EntityId,
+    id: UnitId,
     x: number,
     y: number,
     radius: number,
@@ -166,7 +166,7 @@ export class HitNumbers {
   }
 
   /** Whether the number remembered at `entry` is still `id`'s and still inside the window at `now`. */
-  private joins(entry: number, id: EntityId, now: Tick): boolean {
+  private joins(entry: number, id: UnitId, now: Tick): boolean {
     const started = this.startTicks[entry];
 
     return (

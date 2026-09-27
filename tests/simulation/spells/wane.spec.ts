@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
 import { issueMove, setStraightPath } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -12,6 +12,7 @@ import {
   spawnHero,
   spawnUnit,
   submit,
+  targetUnitOf,
   tickUntil,
   unitIdOf,
 } from "../../helpers";
@@ -67,9 +68,9 @@ const CASES: readonly Case[] = [
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   enemy: Unit;
-  enemyId: EntityId;
+  enemyId: UnitId;
   reader: EventReader;
 };
 
@@ -175,7 +176,7 @@ const refusals = (world: Simulation, reader: EventReader): (string | null)[] =>
   eventsOfKind(world, reader, "command_refused").map((event) => event.reason);
 
 /** Carries `unit` out of the circle, hash and all, as a walk of its own would leave it. */
-const carryAway = (world: Simulation, unit: Unit, id: EntityId): void => {
+const carryAway = (world: Simulation, unit: Unit, id: UnitId): void => {
   unit.curr.x = OUTSIDE_X;
   unit.prev.x = OUTSIDE_X;
   world.state.map.spatialHash.move(id, unit.curr);
@@ -430,7 +431,7 @@ describe("Wane against a pack that has the hero's scent", () => {
 
     // Home, and at rest there with the hero still hidden, rather than turned back.
     expect(distant.map((unit) => unit.ai.state)).toEqual(["idle", "idle"]);
-    expect([adjacent.ai.state, adjacent.order.targetId]).toEqual([
+    expect([adjacent.ai.state, targetUnitOf(adjacent.order.target)]).toEqual([
       "attack",
       heroId,
     ]);

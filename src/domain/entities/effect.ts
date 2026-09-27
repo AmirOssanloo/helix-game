@@ -1,6 +1,10 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Id, Vec2 } from "@shared/public";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
+import type { UnitId } from "./unit";
+
+/** An effect's id: minted and resolved only by the effect pool. */
+export type EffectId = Id<"effect">;
 
 export const EFFECT_CAPACITY = 256;
 
@@ -9,7 +13,7 @@ export type Effect = {
   /** The atlas frame the presentation draws it with. */
   frame: string | null;
   abilityId: string | null;
-  casterId: EntityId | null;
+  casterId: UnitId | null;
   position: Vec2;
   facing: number;
   radius: number;
@@ -40,5 +44,5 @@ const clearEffect = (effect: Effect): void => {
   effect.expiresAtTick = null;
 };
 
-export const createEffectPool = (): Pool<Effect> =>
+export const createEffectPool = (): Pool<Effect, EffectId> =>
   new Pool(EFFECT_CAPACITY, createEffect, clearEffect);

@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { ticksOfSeconds } from "../../definitions/duration";
 import type {
   SpawnZoneEffectDef,
@@ -7,7 +6,7 @@ import type {
 import { tableAtOrbLevels } from "../../definitions/level-table";
 import { readTunable } from "../../definitions/tuning-state";
 import type { World } from "../../entities/world-state";
-import type { Zone } from "../../entities/zone";
+import type { Zone, ZoneId } from "../../entities/zone";
 import { acquireZone } from "../../entities/zone";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
@@ -65,7 +64,7 @@ export const spawnZone: Primitive<SpawnZoneEffectDef> = (
   const caster = onCaster ? world.map.units.resolve(cast.casterId) : null;
   const x = caster === null ? cast.anchor.x : caster.curr.x;
   const y = caster === null ? cast.anchor.y : caster.curr.y;
-  const id: EntityId | null = acquireZone(world, x, y, cast.facing);
+  const id: ZoneId | null = acquireZone(world, x, y, cast.facing);
   const zone = id === null ? null : world.map.zones.resolve(id);
 
   if (zone === null) {

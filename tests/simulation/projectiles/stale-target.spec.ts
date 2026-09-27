@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { SpawnProjectileEffectDef, Unit } from "@domain/public";
 import { applyDamage, applyStatus, runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -61,7 +61,7 @@ const entry: SpawnProjectileEffectDef = {
 type Arranged = {
   world: Simulation;
   target: Unit;
-  targetId: EntityId;
+  targetId: UnitId;
   outOfReach: string;
 };
 
@@ -86,7 +86,7 @@ const arrange = (): Arranged => {
 };
 
 /** Fires one homing projectile from the hero at `targetId`, as a commit would. */
-const fire = (world: Simulation, targetId: EntityId): void => {
+const fire = (world: Simulation, targetId: UnitId): void => {
   runPrimitive(world.state, makeCast(world, { targetId }), entry);
 };
 

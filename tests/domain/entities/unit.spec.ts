@@ -25,7 +25,7 @@ import {
   STAT_SOURCES,
   statSource,
 } from "@domain/public";
-import { makeEnemyDef } from "../../helpers";
+import { idOf, makeEnemyDef } from "../../helpers";
 
 /** The tuning table at 30 Hz, in simulation units. */
 const TUNING = createTuningState({ ...tuningTable, sim_hz: 30 });
@@ -91,10 +91,10 @@ describe("the unit's sub-records", () => {
     cast.abilityId = "fireball";
     cast.targetKind = "point";
     cast.position.y = 7;
-    cast.targetId = 3;
+    cast.targetId = idOf(3);
     cast.direction = 1;
     pack.id = 9;
-    summon.ownerId = 11;
+    summon.ownerId = idOf(11);
     summon.expiresAtTick = 12;
     ai.state = "chase";
     ai.wanderAtTick = 30;
@@ -137,7 +137,7 @@ describe("the unit's sub-records", () => {
     unit.attack.readyAtTick = 40;
     unit.cast.abilityId = "fireball";
     unit.pack.id = 9;
-    unit.summon.ownerId = 11;
+    unit.summon.ownerId = idOf(11);
     unit.ai.state = "chase";
     unit.stats.armour = 4;
     unit.baseStats.maxHealth = 80;

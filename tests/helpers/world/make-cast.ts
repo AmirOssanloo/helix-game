@@ -1,8 +1,9 @@
+import type { UnitId } from "@domain/public";
 import type { AbilityDef, Cast } from "@domain/public";
 import { createCastRecord, fillCast } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeSpellDef } from "../content/make-spell-def";
+import { idOf } from "./ids";
 
 /**
  * The context an effect runs with. Everything defaults to the hero casting a bare spell from
@@ -10,14 +11,14 @@ import { makeSpellDef } from "../content/make-spell-def";
  * with every orb unlearned.
  */
 export type MakeCastOptions = Readonly<{
-  casterId?: EntityId;
+  casterId?: UnitId;
   ability?: AbilityDef;
   orbLevels?: readonly number[];
   x?: number;
   y?: number;
   facing?: number;
   direction?: number | null;
-  targetId?: EntityId | null;
+  targetId?: UnitId | null;
 }>;
 
 /**
@@ -28,7 +29,8 @@ export const makeCast = (
   world: Simulation,
   options: MakeCastOptions = {},
 ): Cast => {
-  const casterId = options.casterId ?? world.state.run.heroId ?? 0;
+  const casterId =
+    options.casterId ?? world.state.run.heroId ?? idOf<UnitId>(0);
   const caster = world.state.map.units.resolve(casterId);
   const record = createCastRecord();
   const cast = fillCast(

@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeWorld,
   spawnHero,
   spawnUnit,
   submit,
+  targetUnitOf,
   unitIdOf,
 } from "../../helpers";
 
@@ -24,7 +25,7 @@ type Arranged = {
   world: Simulation;
   hero: Unit;
   enemy: Unit;
-  enemyId: EntityId;
+  enemyId: UnitId;
 };
 
 /** The hero at the origin facing its walk, with one enemy off to the side of it. */
@@ -69,9 +70,11 @@ describe("an attack-move", () => {
 
     attackMove(world);
 
-    expect(tickWhile(world, () => hero.order.targetId !== null)).toBe(true);
+    expect(
+      tickWhile(world, () => targetUnitOf(hero.order.target) !== null),
+    ).toBe(true);
     expect(hero.order.kind).toBe("attack_move");
-    expect(hero.order.targetId).toBe(enemyId);
+    expect(targetUnitOf(hero.order.target)).toBe(enemyId);
     expect(
       Math.hypot(enemy.curr.x - hero.curr.x, enemy.curr.y - hero.curr.y),
     ).toBeLessThanOrEqual(heroDef.attack.acquireRadius);
@@ -82,7 +85,7 @@ describe("an attack-move", () => {
     const { world, hero } = arrange();
 
     attackMove(world);
-    tickWhile(world, () => hero.order.targetId !== null);
+    tickWhile(world, () => targetUnitOf(hero.order.target) !== null);
 
     const left = hero.curr.x;
 
@@ -94,7 +97,7 @@ describe("an attack-move", () => {
     world.tick();
 
     expect(hero.order.kind).toBe("attack_move");
-    expect(hero.order.targetId).toBeNull();
+    expect(targetUnitOf(hero.order.target)).toBeNull();
     expect(hero.order.destination).toEqual(DESTINATION);
 
     let furthestBack = hero.curr.x;

@@ -19,6 +19,7 @@ import {
   serializeInputLog,
 } from "@simulation/public";
 import {
+  idOf,
   makeEnemyDef,
   makeFormDef,
   makeMapDef,
@@ -457,7 +458,7 @@ const walkTo = (world: Simulation, x: number, y: number): void => {
   tickUntil(
     world,
     (view) => {
-      const hero = view.map.units.resolve(view.run.heroId ?? -1);
+      const hero = view.map.units.resolve(view.run.heroId ?? idOf(-1));
 
       return hero !== null && hero.curr.x === x && hero.curr.y === y;
     },
@@ -474,7 +475,9 @@ describe("respawn at a checkpoint", () => {
       registry: checkpointRegistry,
       map: checkpointMap,
     });
-    const hero = world.state.map.units.resolve(world.view.run.heroId ?? -1);
+    const hero = world.state.map.units.resolve(
+      world.view.run.heroId ?? idOf(-1),
+    );
     const form = world.state.run.forms[0];
 
     if (hero === null || form === undefined) {
@@ -504,7 +507,9 @@ describe("respawn at a checkpoint", () => {
       registry: checkpointRegistry,
       map: checkpointMap,
     });
-    const hero = world.state.map.units.resolve(world.view.run.heroId ?? -1);
+    const hero = world.state.map.units.resolve(
+      world.view.run.heroId ?? idOf(-1),
+    );
 
     if (hero === null) {
       throw new Error("The session has a hero");
@@ -588,10 +593,10 @@ describe("respawn at a checkpoint", () => {
     }
 
     const recorded = recorder.view.map.units.resolve(
-      recorder.view.run.heroId ?? -1,
+      recorder.view.run.heroId ?? idOf(-1),
     );
     const replayed = replay.view.map.units.resolve(
-      replay.view.run.heroId ?? -1,
+      replay.view.run.heroId ?? idOf(-1),
     );
 
     if (recorded === null || replayed === null) {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef, trainingDummyDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { AnyCommand, DomainEvent, Unit } from "@domain/public";
 import {
   applyDamage,
   applyStatus,
   remainingCooldownTicks,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -58,7 +58,7 @@ const CHASE_TICKS = 30;
 /** Long enough for any wait below. */
 const PATIENCE = 1500;
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
 
 /** The content registry on an open map with the hero on the spawn point at the origin, every orb at one, and no wander. */
 const arrange = (): Arranged => {
@@ -100,7 +100,7 @@ const hit = (
   world: Simulation,
   target: Unit,
   amount: number,
-  source: EntityId | null,
+  source: UnitId | null,
 ): void => {
   applyDamage(world.state, unitIdOf(world, target), amount, "pure", source);
 };
@@ -111,7 +111,7 @@ const put = (
   unit: Unit,
   statusId: string,
   ticks: number,
-  source: EntityId | null,
+  source: UnitId | null,
 ): void => {
   const result = applyStatus(
     world.state,
@@ -184,9 +184,9 @@ const wearing = (unit: Readonly<Unit>): (string | null)[] =>
     .map((row) => row.definitionId);
 
 /** The ids of every live summon, in pool order. */
-const summonsOf = (world: Simulation): EntityId[] => {
+const summonsOf = (world: Simulation): UnitId[] => {
   const units = world.state.map.units;
-  const found: EntityId[] = [];
+  const found: UnitId[] = [];
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);

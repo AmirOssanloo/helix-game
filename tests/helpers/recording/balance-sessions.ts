@@ -6,6 +6,7 @@ import {
   rangedArcherDef,
   tankDef,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type {
   AnyCommand,
   CastTarget,
@@ -14,7 +15,7 @@ import type {
   Unit,
 } from "@domain/public";
 import { ORB_IDS } from "@domain/public";
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import {
   contentVersionOf,
@@ -163,9 +164,9 @@ const heroOf = (session: Session): Unit => {
 };
 
 /** Every living enemy with its id, in pool order. */
-const livingEnemies = (session: Session): [EntityId, Unit][] => {
+const livingEnemies = (session: Session): [UnitId, Unit][] => {
   const units = session.world.state.map.units;
-  const found: [EntityId, Unit][] = [];
+  const found: [UnitId, Unit][] = [];
 
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
@@ -185,9 +186,9 @@ const livingEnemies = (session: Session): [EntityId, Unit][] => {
 };
 
 /** The living enemy nearest the hero, ties to the lower slot, or `null` for none. */
-const nearestEnemy = (session: Session): [EntityId, Unit] | null => {
+const nearestEnemy = (session: Session): [UnitId, Unit] | null => {
   const hero = heroOf(session);
-  let nearest: [EntityId, Unit] | null = null;
+  let nearest: [UnitId, Unit] | null = null;
   let best = Number.POSITIVE_INFINITY;
 
   for (const entry of livingEnemies(session)) {
@@ -248,7 +249,7 @@ const spawnPack = (
   step(session);
 };
 
-const attack = (session: Session, targetId: EntityId): void => {
+const attack = (session: Session, targetId: UnitId): void => {
   send(session, { kind: "attack_target", targetId });
 };
 
@@ -260,7 +261,7 @@ const standAndAttack = (session: Session, archetypeId: string): void => {
   freshStart(session);
   spawnPack(session, archetypeId, PACK_SIZE, PACK_AT);
 
-  let target: [EntityId, Unit] | null = null;
+  let target: [UnitId, Unit] | null = null;
 
   for (let ticks = 0; ticks < FIGHT_LIMIT_TICKS; ticks += 1) {
     if (isHeroDead(session)) {
@@ -507,7 +508,7 @@ const throwAt = (
 };
 
 /** A tank spawned after a reset, walked in, and the hero's to throw at. */
-const freshTank = (session: Session): [EntityId, Unit] => {
+const freshTank = (session: Session): [UnitId, Unit] => {
   freshStart(session);
   spawnPack(session, tankDef.id, 1, PACK_AT);
 
@@ -651,7 +652,7 @@ const packCentre = (session: Session): Vec2 => {
 const packTarget = (
   spell: SpellDef,
   centre: Readonly<Vec2>,
-  targetId: EntityId,
+  targetId: UnitId,
 ): CastTarget => {
   if (spell.targeting === "unit") {
     return { kind: "unit", unitId: targetId };
@@ -665,8 +666,8 @@ const packTarget = (
 };
 
 /** The living enemy nearest `at`, ties to the lower slot. */
-const enemyNearest = (session: Session, at: Readonly<Vec2>): EntityId => {
-  let nearest: EntityId | null = null;
+const enemyNearest = (session: Session, at: Readonly<Vec2>): UnitId => {
+  let nearest: UnitId | null = null;
   let best = Number.POSITIVE_INFINITY;
 
   for (const [id, unit] of livingEnemies(session)) {

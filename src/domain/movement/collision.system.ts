@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import { unpackIndex } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import {
@@ -17,7 +17,7 @@ const EVEN_SPLIT = 0.5;
  * The direction a pair on one point separates along, from the pair's slots: the same pair
  * gets the same direction every run, and neighbouring pairs get different ones.
  */
-const tieSeedOf = (idA: EntityId, idB: EntityId): number =>
+const tieSeedOf = (idA: UnitId, idB: UnitId): number =>
   unpackIndex(idA) + unpackIndex(idB);
 
 /**

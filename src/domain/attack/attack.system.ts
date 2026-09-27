@@ -1,4 +1,4 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
 import type { DamageType } from "../combat/damage";
@@ -7,6 +7,7 @@ import type { AttackRecord } from "../definitions/attack-state";
 import { attackTicks } from "../definitions/attack-state";
 import { readTunable } from "../definitions/tuning-state";
 import { acquireProjectile } from "../entities/projectile";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { isInsideCone, turnToward } from "../movement/turn";
@@ -70,8 +71,9 @@ const isUnderway = (unit: Readonly<Unit>): boolean =>
 
 /** The unit the order is on, when it still exists and anything may land on it. */
 const targetOf = (world: World, unit: Readonly<Unit>): Unit | null => {
-  const targetId = unit.order.targetId;
-  const target = targetId === null ? null : world.map.units.resolve(targetId);
+  const aim = unit.order.target;
+  const target =
+    aim.tag === "unit" ? world.map.units.resolve(aim.unitId) : null;
 
   return target === null || !isReachable(target) ? null : target;
 };
@@ -97,7 +99,7 @@ const acquire = (
   unit: Unit,
   record: AttackRecord,
 ): Unit | null => {
-  if (unit.order.targetId !== null) {
+  if (unit.order.target.tag === "unit") {
     const result = disengageTarget(unit);
 
     assert(result === "ok", "An attack-move whose target is gone walks on");
@@ -192,8 +194,8 @@ const face = (world: World, unit: Unit, target: Readonly<Unit>): boolean => {
 const loose = (
   world: World,
   unit: Readonly<Unit>,
-  attackerId: EntityId,
-  targetId: EntityId,
+  attackerId: UnitId,
+  targetId: UnitId,
   record: AttackRecord,
 ): void => {
   const id = acquireProjectile(world, unit.curr.x, unit.curr.y, unit.facing);
@@ -221,12 +223,14 @@ const loose = (
 const fire = (
   world: World,
   unit: Unit,
-  attackerId: EntityId,
+  attackerId: UnitId,
   record: AttackRecord,
 ): void => {
-  const targetId = unit.order.targetId;
+  const aim = unit.order.target;
 
-  assert(targetId !== null, "A unit that swung has something to swing at");
+  assert(aim.tag === "unit", "A unit that swung has something to swing at");
+
+  const targetId = aim.unitId;
 
   if (isMelee(record)) {
     applyDamage(
@@ -270,7 +274,7 @@ const cancel = (unit: Unit): void => {
 const runOrder = (
   world: World,
   unit: Unit,
-  attackerId: EntityId,
+  attackerId: UnitId,
   record: AttackRecord,
   epsilon: number,
 ): void => {

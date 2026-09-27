@@ -7,8 +7,8 @@ import {
   meleeGruntDef,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import { ENEMY_LIVE_CAP } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Replay, WorldView } from "@simulation/public";
 import { beginReplay, createEventReader } from "@simulation/public";
 import { loadInputLog, makeRegistry } from "../helpers";
@@ -59,7 +59,7 @@ const replay = (): Replay => {
 };
 
 /** The id of the one unit at boss tier, or `null` before it stands. */
-const bossIdOf = (view: WorldView): EntityId | null => {
+const bossIdOf = (view: WorldView): UnitId | null => {
   for (let index = 0; index < view.map.units.end; index += 1) {
     const unit = view.map.units.at(index);
 
@@ -74,7 +74,7 @@ const bossIdOf = (view: WorldView): EntityId | null => {
 /** Live enemies on the map, and how many of them are imps owned by `ownerId`. */
 const enemiesOf = (
   view: WorldView,
-  ownerId: EntityId | null,
+  ownerId: UnitId | null,
 ): Readonly<{ enemies: number; adds: number }> => {
   let enemies = 0;
   let adds = 0;
@@ -95,7 +95,7 @@ const enemiesOf = (
 };
 
 type Encounter = {
-  bossId: EntityId | null;
+  bossId: UnitId | null;
   bossMaxHealth: number;
   /** Commits by ability id over the session. */
   commits: Map<string, number>;

@@ -1,7 +1,8 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { isHostile } from "../../combat/sides";
 import type { EffectTargetDef, ShapeDef } from "../../definitions/effect-def";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import { UNIT_CAPACITY } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
@@ -30,8 +31,8 @@ const COLLECTION_DEPTH = 4;
  * before the call that took it returns, so the depth is zero at the end of every tick.
  */
 export type TargetStack = {
-  candidates: EntityId[][];
-  collected: EntityId[][];
+  candidates: UnitId[][];
+  collected: UnitId[][];
   depth: number;
 };
 
@@ -79,11 +80,7 @@ export const releaseTargets = (world: World, level: number): void => {
 };
 
 /** The id at `slot` of the collection at `level`. Every slot below the count holds a live id. */
-export const targetAt = (
-  world: World,
-  level: number,
-  slot: number,
-): EntityId => {
+export const targetAt = (world: World, level: number, slot: number): UnitId => {
   const id = world.scratch.targets.collected[level]?.[slot];
 
   assert(id !== undefined, "A slot below a collection's count holds an id");

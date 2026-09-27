@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { chargeDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, MapDef, Unit } from "@domain/public";
 import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeAttackDef,
@@ -12,6 +12,7 @@ import {
   makeWorld,
   spawnEnemy,
   spawnHero,
+  targetUnitOf,
   tickUntil,
   unitIdOf,
 } from "../../helpers";
@@ -68,9 +69,9 @@ const CHARGER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   charger: Unit;
-  chargerId: EntityId;
+  chargerId: UnitId;
 }>;
 
 /** The hero at the origin and the charger on the positive x axis, `gap` from the hero's edge to its own, bound to bound. */
@@ -190,7 +191,7 @@ describe("the charge", () => {
 
     expect(charger.ai.state).toBe("attack");
     expect(charger.order.kind).toBe("attack_target");
-    expect(charger.order.targetId).toBe(heroId);
+    expect(targetUnitOf(charger.order.target)).toBe(heroId);
     expect(heroHealth(world)).toBeLessThan(hero.stats.maxHealth);
   });
 

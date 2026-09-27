@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -55,9 +55,9 @@ const CASES: readonly Case[] = [
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   dummy: Unit;
-  dummyId: EntityId;
+  dummyId: UnitId;
   reader: EventReader;
 };
 
@@ -145,7 +145,7 @@ const refusals = (world: Simulation, reader: EventReader): (string | null)[] =>
 const shotGaps = (
   world: Simulation,
   reader: EventReader,
-  dummyId: EntityId,
+  dummyId: UnitId,
 ): number[] => {
   submit(world, {
     kind: "attack_target",

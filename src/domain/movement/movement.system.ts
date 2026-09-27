@@ -2,7 +2,7 @@ import type { Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared, length, sub } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import type { PoolView } from "../entities/pool";
-import type { Unit } from "../entities/unit";
+import type { Unit, UnitId } from "../entities/unit";
 import { clearPush } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { arrive, beginMoving } from "../orders/state-machine";
@@ -30,7 +30,7 @@ const hasDestination = (unit: Readonly<Unit>): boolean =>
  */
 const endsAtDestination = (unit: Readonly<Unit>): boolean =>
   unit.order.kind === "move" ||
-  (unit.order.kind === "attack_move" && unit.order.targetId === null);
+  (unit.order.kind === "attack_move" && unit.order.target.tag !== "unit");
 
 /**
  * Lands the unit on the waypoint it reached and steps past it. Passing the last one ends a
@@ -73,7 +73,7 @@ const reachWaypoint = (
  * either, since a lift moves nothing: its ticks count off where it hangs, so a push it took in
  * the tick it was lifted is spent in the air and it comes down where it was lifted from.
  */
-const carryPushed = (units: PoolView<Unit>): void => {
+const carryPushed = (units: PoolView<Unit, UnitId>): void => {
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
 

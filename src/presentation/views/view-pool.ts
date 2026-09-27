@@ -1,9 +1,9 @@
-import type { EntityId } from "@shared/public";
+import type { Id } from "@shared/public";
 import { assert, unpackIndex } from "@shared/public";
 
 /** What a pool asks of a view kind: take an entity, and let go of it. */
-export type View<E> = {
-  bind: (id: EntityId, entity: E) => void;
+export type View<E, I extends Id<string>> = {
+  bind: (id: I, entity: E) => void;
   release: () => void;
 };
 
@@ -19,7 +19,7 @@ const NONE = -1;
  * `releaseUnkept` for the views no `keep` named. An id is found by its slot index, so a
  * bind, a lookup, and a release are each a few array reads and nothing allocates.
  */
-export class ViewPool<E, V extends View<E>> {
+export class ViewPool<E, I extends Id<string>, V extends View<E, I>> {
   private readonly views: readonly V[];
 
   /** Per view: the id it is bound to, or `NONE`. */
@@ -78,7 +78,7 @@ export class ViewPool<E, V extends View<E>> {
   }
 
   /** The view bound to `id`, or `null`. A stale id, or one a later entity's view sits under, finds nothing. */
-  viewOf(id: EntityId): V | null {
+  viewOf(id: I): V | null {
     const index = this.viewIndexOf(id);
 
     return index === NONE ? null : this.viewAt(index);
@@ -95,7 +95,7 @@ export class ViewPool<E, V extends View<E>> {
    * A view still bound to the slot's previous entity is released first: that id is gone for
    * good, so its view is free for the newcomer without waiting for the sweep.
    */
-  keep(id: EntityId, entity: E): V | null {
+  keep(id: I, entity: E): V | null {
     let index = this.viewIndexOf(id);
 
     if (index === NONE) {
@@ -130,7 +130,7 @@ export class ViewPool<E, V extends View<E>> {
     }
   }
 
-  private bind(id: EntityId, entity: E): number {
+  private bind(id: I, entity: E): number {
     if (this.freeCount === 0) {
       this.missCount += 1;
 
@@ -152,7 +152,7 @@ export class ViewPool<E, V extends View<E>> {
   }
 
   /** Releases the view bound to the previous entity of `id`'s slot, if one is still held. */
-  private releaseStale(id: EntityId): void {
+  private releaseStale(id: I): void {
     const held = this.viewOfSlot[unpackIndex(id)];
 
     if (held !== undefined && held !== NONE && this.boundIds[held] !== id) {
@@ -179,7 +179,7 @@ export class ViewPool<E, V extends View<E>> {
     this.viewAt(index).release();
   }
 
-  private viewIndexOf(id: EntityId): number {
+  private viewIndexOf(id: I): number {
     const index = this.viewOfSlot[unpackIndex(id)];
 
     if (index === undefined || index === NONE || this.boundIds[index] !== id) {

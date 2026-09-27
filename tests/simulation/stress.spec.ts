@@ -13,6 +13,7 @@ import type {
   SpawnProjectileEffectDef,
   SpellRecord,
   Unit,
+  UnitId,
 } from "@domain/public";
 import {
   applyDamage,
@@ -616,9 +617,9 @@ const arrangeWalk = (): Walk => {
 };
 
 /** The nearest living enemy within the engage radius of the hero, or `null`. */
-const nearestFoe = (world: Simulation, hero: Unit): number | null => {
+const nearestFoe = (world: Simulation, hero: Unit): UnitId | null => {
   const units = world.state.map.units;
-  let nearest: number | null = null;
+  let nearest: UnitId | null = null;
   let best = ENGAGE_RADIUS * ENGAGE_RADIUS;
 
   for (let index = 0; index < units.end; index += 1) {

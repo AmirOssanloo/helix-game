@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
 import type { Hasher } from "./hash-words";
 import {
@@ -223,7 +222,7 @@ export const nullableNumber = <T>(
 /** An id, or `null`. Ids are integers, so they are read as they are. */
 export const nullableId = <T>(
   name: string,
-  read: (record: T) => EntityId | null,
+  read: (record: T) => number | null,
 ): Field<T> =>
   nullableNumber(name, (record, into, at) => {
     const id = read(record);

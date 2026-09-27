@@ -1,5 +1,5 @@
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeRegistry } from "../content/make-registry";
 import { makeWorld } from "./make-world";
@@ -11,9 +11,9 @@ import { unitIdOf } from "./unit-id";
 export type ArrangedArchetype = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   unit: Unit;
-  unitId: EntityId;
+  unitId: UnitId;
 }>;
 
 /**

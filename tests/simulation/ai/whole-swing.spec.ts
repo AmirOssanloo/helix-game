@@ -7,9 +7,10 @@ import {
   meleeGruntDef,
   skirmisherDef,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, EnemyTier, Unit } from "@domain/public";
 import { applyStatus } from "@domain/public";
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   arrangeArchetype,
@@ -51,7 +52,7 @@ const ENEMIES = contentRegistry.enemies.map((def) =>
 type Swung = Readonly<{
   world: Simulation;
   unit: Unit;
-  unitId: EntityId;
+  unitId: UnitId;
   backswingTicks: number;
 }>;
 

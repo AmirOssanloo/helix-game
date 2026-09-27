@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { arrowDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, Projectile, Unit } from "@domain/public";
 import { applyStatus, mitigate, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   always,
@@ -61,9 +61,9 @@ const ARCHER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   archer: Unit;
-  archerId: EntityId;
+  archerId: UnitId;
 }>;
 
 /** A world with the archer beside the content's abilities, the hero at the origin, and one archer in range. */

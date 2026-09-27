@@ -1,6 +1,6 @@
-import type { Projectile } from "@domain/public";
+import type { Projectile, ProjectileId } from "@domain/public";
 import { PROJECTILE_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId } from "@shared/public";
+import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import { DEPTH_PROJECTILES } from "./depth-bands";
@@ -30,7 +30,7 @@ export class ProjectileView {
     this.frameSizes = frameSizes;
   }
 
-  bind(_id: EntityId, projectile: DeepReadonly<Projectile>): void {
+  bind(_id: ProjectileId, projectile: DeepReadonly<Projectile>): void {
     const frame = projectile.frame ?? FALLBACK_FRAME;
 
     this.quad.setFrame(frame);
@@ -54,6 +54,7 @@ export class ProjectileView {
 
 export type ProjectileViewPool = ViewPool<
   DeepReadonly<Projectile>,
+  ProjectileId,
   ProjectileView
 >;
 

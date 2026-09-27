@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, EffectDef, StatusDef, Unit } from "@domain/public";
 import { applyDamage, applyStatus } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -100,10 +100,10 @@ const STATUSES: readonly StatusDef[] = [
 type Arranged = {
   world: Simulation;
   holder: Unit;
-  holderId: EntityId;
+  holderId: UnitId;
   other: Unit;
-  otherId: EntityId;
-  applierId: EntityId;
+  otherId: UnitId;
+  applierId: UnitId;
   reader: EventReader;
 };
 
@@ -140,9 +140,9 @@ const arrange = (): Arranged => {
 /** Puts `status` on the unit for as long as the spec needs, from `sourceId`, at `orbLevels`. */
 const apply = (
   world: Simulation,
-  unitId: EntityId,
+  unitId: UnitId,
   status: StatusDef,
-  sourceId: EntityId | null = null,
+  sourceId: UnitId | null = null,
   orbLevels: readonly number[] = NO_ORB_LEVELS,
   ticks: number = LONG_TICKS,
 ): void => {
@@ -152,8 +152,8 @@ const apply = (
 /** One pure hit on `targetId` from `sourceId`, the instance every case below hangs a hook on. */
 const hit = (
   world: Simulation,
-  targetId: EntityId,
-  sourceId: EntityId | null,
+  targetId: UnitId,
+  sourceId: UnitId | null,
 ): void => {
   applyDamage(world.state, targetId, HIT, "pure", sourceId);
 };

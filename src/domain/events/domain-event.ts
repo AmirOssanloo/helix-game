@@ -1,5 +1,7 @@
-import type { EntityId } from "@shared/public";
 import type { DamageType } from "../combat/damage";
+import type { ProjectileId } from "../entities/projectile";
+import type { UnitId } from "../entities/unit";
+import type { ZoneId } from "../entities/zone";
 import type { RefusalReason } from "../orders/validator";
 import type { Tick } from "../tick";
 
@@ -20,13 +22,13 @@ type EventFields = {
   slot: number;
   reason: RefusalReason | null;
   /** The unit the event happened to. */
-  unitId: EntityId | null;
+  unitId: UnitId | null;
   /** The unit that caused it, or `null` where nothing did. */
-  sourceId: EntityId | null;
+  sourceId: UnitId | null;
   /** The zone the event is about. */
-  zoneId: EntityId | null;
+  zoneId: ZoneId | null;
   /** The projectile the event is about. */
-  projectileId: EntityId | null;
+  projectileId: ProjectileId | null;
   /** Health, after mitigation. */
   amount: number;
   damageType: DamageType | null;

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { chargeDef, contentRegistry } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { AnyCommand, EnemyDef, StatusDef, Unit } from "@domain/public";
 import {
   applyDamage,
   remainingCooldownTicks,
   startCooldown,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeAttackDef,
@@ -18,6 +18,7 @@ import {
   spawnHero,
   spawnUnit,
   submit,
+  targetUnitOf,
   tickUntil,
   unitIdOf,
 } from "../../helpers";
@@ -167,7 +168,7 @@ const FIGHTERS = [
   { def: CHARGER, range: MELEE_RANGE },
 ] as const;
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
 
 /**
  * A world with the enemies and the two statuses, the hero at the origin, no wander unless a
@@ -225,7 +226,7 @@ const killHero = (world: Simulation): void => {
 };
 
 /** One point of pure damage on `unit` from the hero. */
-const hit = (world: Simulation, unit: Unit, heroId: EntityId): void => {
+const hit = (world: Simulation, unit: Unit, heroId: UnitId): void => {
   applyDamage(world.state, unitIdOf(world, unit), 1, "pure", heroId);
 };
 
@@ -375,7 +376,7 @@ describe.each(FIGHTERS)(
 
         tickUntil(world, () => enemy.ai.state === "attack", PATIENCE);
 
-        expect(enemy.order.targetId).toBe(heroId);
+        expect(targetUnitOf(enemy.order.target)).toBe(heroId);
         expect(gap(enemy, hero)).toBeLessThanOrEqual(
           range + HERO_BOUND + ENEMY_BOUND,
         );
@@ -785,7 +786,10 @@ describe("the machine under melee_chaser", () => {
       world.tick();
     }
 
-    expect([enemy.ai.state, enemy.order.targetId]).toEqual(["attack", heroId]);
+    expect([enemy.ai.state, targetUnitOf(enemy.order.target)]).toEqual([
+      "attack",
+      heroId,
+    ]);
   });
 
   it("stands through its backswing when the hero walks out of its reach, and chases on the tick after it ends", () => {
@@ -863,7 +867,7 @@ describe("the machine under ranged_holder", () => {
     tickUntil(world, () => world.view.map.projectiles.count > 0, PATIENCE);
 
     const projectiles = world.view.map.projectiles;
-    let targetId: EntityId | null = null;
+    let targetId: UnitId | null = null;
 
     for (let index = 0; index < projectiles.end; index += 1) {
       const shot = projectiles.at(index);
@@ -917,11 +921,11 @@ describe("the machine under ranged_kiter", () => {
     }
 
     expect(hero.curr.x).toBeCloseTo(HOLD_MARGIN / 2, 0);
-    expect([enemy.ai.state, enemy.order.kind, enemy.order.targetId]).toEqual([
-      "attack",
-      "attack_target",
-      heroId,
-    ]);
+    expect([
+      enemy.ai.state,
+      enemy.order.kind,
+      targetUnitOf(enemy.order.target),
+    ]).toEqual(["attack", "attack_target", heroId]);
     expect(Math.abs(enemy.curr.x - standing)).toBeLessThanOrEqual(EPSILON);
   });
 

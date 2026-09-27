@@ -67,7 +67,7 @@ A view is a pooled Phaser object bound to one entity by id for as long as that e
 
 ```typescript
 export class FooView {
-  bind(id: EntityId): void { /* frame, depth, tint set once */ }
+  bind(id: FooId): void { /* frame, depth, tint set once */ }
   sync(world: WorldView, alpha: number): void { /* x, y, rotation, scale, tint, alpha, visible */ }
   release(): void { /* … */ }
 }

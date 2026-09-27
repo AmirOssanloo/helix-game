@@ -1,8 +1,9 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, assertNever, distanceSquared } from "@shared/public";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { PackDef } from "../definitions/map-def";
 import { readTunable } from "../definitions/tuning-state";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import {
   acquireUnit,
@@ -98,7 +99,7 @@ export type PackScratch = {
   landing: Vec2;
   packX: Float64Array;
   packY: Float64Array;
-  nearby: EntityId[];
+  nearby: UnitId[];
   probe: Vec2;
 };
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Pool, Projectile } from "@domain/public";
+import type { Pool, Projectile, ProjectileId } from "@domain/public";
 import { createProjectilePool, PROJECTILE_CAPACITY } from "@domain/public";
-import { makeSpellDef } from "../../helpers";
+import { idOf, makeSpellDef } from "../../helpers";
 
-const fillPool = (pool: Pool<Projectile>): void => {
+const fillPool = (pool: Pool<Projectile, ProjectileId>): void => {
   for (let slot = 0; slot < PROJECTILE_CAPACITY; slot += 1) {
     pool.acquire();
   }
@@ -29,9 +29,9 @@ describe("projectile pool", () => {
     }
 
     projectile.ability = makeSpellDef.build();
-    projectile.casterId = 1;
+    projectile.casterId = idOf(1);
     projectile.orbLevels[0] = 7;
-    projectile.targetId = 2;
+    projectile.targetId = idOf(2);
     projectile.prev.x = 3;
     projectile.curr.y = 4;
     projectile.facing = 5;

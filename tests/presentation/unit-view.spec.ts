@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { acquireUnit, releaseUnit } from "@domain/public";
 import type { OutlineViewPool, UnitViewPool } from "@presentation/public";
@@ -13,7 +14,7 @@ import {
   TINT_MULTIPLY,
   unitDefinitionsOf,
 } from "@presentation/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FEEDBACK_TIMINGS,
@@ -52,7 +53,7 @@ const FLASH_TINT = 0xffffff;
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   pool: UnitViewPool;
   /** Every quad the pool made, bodies first, then facing markers. */
   quads: QuadRecorder[];

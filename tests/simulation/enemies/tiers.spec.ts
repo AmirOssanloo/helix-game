@@ -5,6 +5,7 @@ import {
   rangedArcherDef,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyTier, TuningKey, Unit } from "@domain/public";
 import {
   addModifier,
@@ -14,7 +15,6 @@ import {
   holdsAbility,
   mitigate,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -508,7 +508,7 @@ describe("a tier changes no rule", () => {
   const castHoarfrost = (
     world: Simulation,
     target: Readonly<Unit>,
-    targetId: EntityId,
+    targetId: UnitId,
   ): void => {
     const form = world.state.run.forms[0];
 

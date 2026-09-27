@@ -1,4 +1,4 @@
-import type { EntityId } from "@shared/public";
+import type { Id } from "@shared/public";
 import {
   assert,
   nextGeneration,
@@ -7,18 +7,28 @@ import {
   unpackIndex,
 } from "@shared/public";
 
+const UNWRITTEN_ID = 0;
+
+/**
+ * The value a slot typed to hold an id starts at, in a buffer or a scratch record made before
+ * anything is written there. It packs slot zero at generation zero, which a pool can mint, so
+ * nothing may read it as naming nothing: every such slot is written before it is read, and a
+ * buffer is read only below the count its query returned.
+ */
+export const unwrittenId = <I extends Id<string>>(): I => UNWRITTEN_ID as I;
+
 /**
  * The read side of a pool: what a view of the world exposes. `Pool` satisfies it, so a
  * `Readonly` world view can name a pool without exposing `acquire` and `release`.
  */
-export type PoolView<T> = Readonly<{
+export type PoolView<T, I extends Id<string>> = Readonly<{
   capacity: number;
   count: number;
   end: number;
   misses: number;
   at: (index: number) => Readonly<T> | null;
-  resolve: (id: EntityId) => Readonly<T> | null;
-  idAt: (index: number) => EntityId | null;
+  resolve: (id: I) => Readonly<T> | null;
+  idAt: (index: number) => I | null;
 }>;
 
 /**
@@ -28,6 +38,8 @@ export type PoolView<T> = Readonly<{
  *
  * An id packs the slot index and the slot's generation. `release` bumps the generation, so an
  * id held across the release resolves to `null` instead of to whatever occupies the slot next.
+ * The pool's id type `I` carries its kind's tag: the pool hands out and takes only its own, so
+ * a unit id never resolves in the projectile pool.
  *
  * Released slots leave holes, which keeps every index stable while an entity lives, so a
  * system iterates from zero to `end` and skips a slot `at` returns `null` for:
@@ -43,7 +55,10 @@ export type PoolView<T> = Readonly<{
  * The free list is a stack with the lowest index on top, so a fresh pool acquires slots 0, 1,
  * 2 in order and the slot released last is the one reused first.
  */
-export class Pool<T extends object> implements PoolView<T> {
+export class Pool<T extends object, I extends Id<string>> implements PoolView<
+  T,
+  I
+> {
   readonly capacity: number;
 
   private readonly slots: T[];
@@ -148,7 +163,7 @@ export class Pool<T extends object> implements PoolView<T> {
   }
 
   /** Clears the slot `id` names, bumps its generation, and frees it. A stale or unknown id changes nothing. */
-  release(id: EntityId): void {
+  release(id: I): void {
     const index = this.liveIndexOf(id);
 
     if (index === -1) {
@@ -175,7 +190,7 @@ export class Pool<T extends object> implements PoolView<T> {
   }
 
   /** The live entity `id` names, or `null` when the id is stale or unknown. */
-  resolve(id: EntityId): T | null {
+  resolve(id: I): T | null {
     const index = this.liveIndexOf(id);
 
     if (index === -1) {
@@ -195,12 +210,13 @@ export class Pool<T extends object> implements PoolView<T> {
   }
 
   /** The id of the live entity at `index`, or `null` when the slot is free or outside [0, `end`). */
-  idAt(index: number): EntityId | null {
+  idAt(index: number): I | null {
     if (!this.isLive(index)) {
       return null;
     }
 
-    return packId(index, this.generationAt(index));
+    // The one place a packed number becomes an id: this pool minted it, so it carries this pool's tag.
+    return packId(index, this.generationAt(index)) as I;
   }
 
   private isLive(index: number): boolean {
@@ -211,7 +227,7 @@ export class Pool<T extends object> implements PoolView<T> {
     return this.live[index] === true;
   }
 
-  private liveIndexOf(id: EntityId): number {
+  private liveIndexOf(id: I): number {
     const index = unpackIndex(id);
 
     if (!this.isLive(index)) {

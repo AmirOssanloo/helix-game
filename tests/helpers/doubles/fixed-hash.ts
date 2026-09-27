@@ -1,5 +1,6 @@
+import type { UnitId } from "@domain/public";
 import type { HashCell, SpatialHashView } from "@domain/public";
-import type { EntityId, Rect, Vec2 } from "@shared/public";
+import type { Rect, Vec2 } from "@shared/public";
 
 /**
  * A hash for a sync test: answers every query with the ids it was given, wherever they are,
@@ -13,7 +14,7 @@ export class FixedHash implements SpatialHashView {
   readonly misses = 0;
 
   /** What every query answers with, in this order. */
-  ids: EntityId[] = [];
+  ids: UnitId[] = [];
 
   /** What a cell walk reports, one per index. */
   cells: HashCell[] = [];
@@ -45,11 +46,7 @@ export class FixedHash implements SpatialHashView {
     return true;
   }
 
-  queryCircle(
-    _centre: Readonly<Vec2>,
-    _radius: number,
-    out: EntityId[],
-  ): number {
+  queryCircle(_centre: Readonly<Vec2>, _radius: number, out: UnitId[]): number {
     return this.answer(out);
   }
 
@@ -57,7 +54,7 @@ export class FixedHash implements SpatialHashView {
     _from: Readonly<Vec2>,
     _to: Readonly<Vec2>,
     _radius: number,
-    out: EntityId[],
+    out: UnitId[],
   ): number {
     return this.answer(out);
   }
@@ -67,7 +64,7 @@ export class FixedHash implements SpatialHashView {
     minY: number,
     maxX: number,
     maxY: number,
-    out: EntityId[],
+    out: UnitId[],
   ): number {
     this.lastRectangle.minX = minX;
     this.lastRectangle.minY = minY;
@@ -78,7 +75,7 @@ export class FixedHash implements SpatialHashView {
     return this.answer(out);
   }
 
-  private answer(out: EntityId[]): number {
+  private answer(out: UnitId[]): number {
     for (let index = 0; index < this.ids.length; index += 1) {
       const id = this.ids[index];
 

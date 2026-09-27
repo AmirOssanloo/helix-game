@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId, ZoneId } from "@domain/public";
 import type { EffectDef, SpawnZoneEffectDef, Unit, Zone } from "@domain/public";
 import {
   createCandidateBuffer,
@@ -10,9 +11,9 @@ import {
   runPrimitive,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  idOf,
   makeCast,
   makeSpellDef,
   makeWorld,
@@ -79,9 +80,9 @@ const tieredEntry = (byLevel: readonly number[]): EffectDef => ({
 type Arranged = {
   world: Simulation;
   units: Unit[];
-  ids: EntityId[];
+  ids: UnitId[];
   zone: Zone;
-  zoneId: EntityId;
+  zoneId: ZoneId;
 };
 
 /**
@@ -103,7 +104,7 @@ const arrange = (xs: readonly number[]): Arranged => {
 };
 
 /** One zone on the ground as a spec holds it: the slot and the id the list runs with. */
-type Running = Readonly<{ zone: Zone; zoneId: EntityId }>;
+type Running = Readonly<{ zone: Zone; zoneId: ZoneId }>;
 
 /** The zone at `index` in the pool, travelling as the fixture's first one does. */
 const travelling = (world: Simulation, index: number): Running => {
@@ -138,7 +139,7 @@ const runFrom = (
     fillZoneCast(
       createCastRecord(),
       from.zoneId,
-      world.state.run.heroId ?? 0,
+      world.state.run.heroId ?? idOf(0),
       makeSpellDef.build(),
       orbLevels,
       from.zone.curr.x,
@@ -182,7 +183,7 @@ const expireLift = (fixture: Arranged): void => {
 const PROPOSED = createCandidateBuffer(UNIT_CAPACITY);
 
 /** Whether the hash proposes `id` for a query at (`x`, 0), which is what a shape asks it before the exact test. */
-const proposedAt = ({ world }: Arranged, x: number, id: EntityId): boolean => {
+const proposedAt = ({ world }: Arranged, x: number, id: UnitId): boolean => {
   const found = world.state.map.spatialHash.queryCircle(
     { x, y: 0 },
     1,
@@ -206,8 +207,8 @@ describe("the updraft catch", () => {
 
     run(fixture, [entry(LIFT_SECONDS)]);
 
-    expect(hasTakenHit(fixture.zone, fixture.ids[0] ?? 0)).toBe(true);
-    expect(hasTakenHit(fixture.zone, fixture.ids[1] ?? 0)).toBe(false);
+    expect(hasTakenHit(fixture.zone, fixture.ids[0] ?? idOf(0))).toBe(true);
+    expect(hasTakenHit(fixture.zone, fixture.ids[1] ?? idOf(0))).toBe(false);
   });
 
   it("leaves the unit it lifted where it stood, however many ticks it runs", () => {
@@ -224,7 +225,7 @@ describe("the updraft catch", () => {
 
   it("leaves the spatial hash reading the unit where it stands", () => {
     const fixture = arrange([INSIDE_X[0] ?? 0]);
-    const id = fixture.ids[0] ?? 0;
+    const id = fixture.ids[0] ?? idOf<UnitId>(0);
     const from = fixture.units[0]?.curr.x ?? 0;
 
     run(fixture, [entry(LIFT_SECONDS)]);
@@ -264,7 +265,7 @@ describe("the updraft catch", () => {
 
     runFrom(fixture, second, [entry(LIFT_SECONDS)]);
 
-    expect(hasTakenHit(second.zone, fixture.ids[0] ?? 0)).toBe(false);
+    expect(hasTakenHit(second.zone, fixture.ids[0] ?? idOf(0))).toBe(false);
     expect(alongX(fixture)).toEqual([INSIDE_X[0] ?? 0]);
   });
 

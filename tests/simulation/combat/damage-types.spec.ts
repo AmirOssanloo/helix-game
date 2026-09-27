@@ -7,9 +7,10 @@ import {
   tankDef,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DamageType, DomainEvent, Unit } from "@domain/public";
 import { applyDamage, holdsStatus, modifiedValue } from "@domain/public";
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -102,7 +103,7 @@ const live = makeRegistry({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   reader: EventReader;
 }>;
 
@@ -138,7 +139,7 @@ type CastTarget =
   | Readonly<{ kind: "none" }>
   | Readonly<{ kind: "point"; position: Readonly<Vec2> }>
   | Readonly<{ kind: "direction"; position: Readonly<Vec2> }>
-  | Readonly<{ kind: "unit"; unitId: EntityId }>
+  | Readonly<{ kind: "unit"; unitId: UnitId }>
   | Readonly<{
       kind: "vector";
       position: Readonly<Vec2>;
@@ -171,7 +172,7 @@ const cast = (
 const hitsOn = (
   world: Simulation,
   reader: EventReader,
-  unitId: EntityId,
+  unitId: UnitId,
 ): DomainEvent[] => {
   const found: DomainEvent[] = [];
 
@@ -196,9 +197,9 @@ const hitsOn = (
 const firstHit = (
   world: Simulation,
   reader: EventReader,
-  unitId: EntityId,
+  unitId: UnitId,
   type: DamageType,
-  sourceId: EntityId | null = null,
+  sourceId: UnitId | null = null,
 ): number => {
   let landed: number | null = null;
 
@@ -224,7 +225,7 @@ const firstHit = (
 };
 
 /** The one spirit Emberling stood, once it stands. */
-const spiritOf = (world: Simulation): EntityId => {
+const spiritOf = (world: Simulation): UnitId => {
   tickUntil(world, () => findSpirit(world) !== null, PATIENCE);
 
   const id = findSpirit(world);
@@ -236,7 +237,7 @@ const spiritOf = (world: Simulation): EntityId => {
   return id;
 };
 
-const findSpirit = (world: Simulation): EntityId | null => {
+const findSpirit = (world: Simulation): UnitId | null => {
   const units = world.state.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -255,7 +256,7 @@ const findSpirit = (world: Simulation): EntityId | null => {
  */
 type Source = Readonly<{
   name: string;
-  measure: (arranged: Arranged, targetId: EntityId) => number;
+  measure: (arranged: Arranged, targetId: UnitId) => number;
 }>;
 
 /** A hit landed a tick at a time, read as what it lands in a second. */

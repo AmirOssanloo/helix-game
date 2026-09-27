@@ -4,6 +4,7 @@ import { readTunable, UNIT_CAPACITY, walkabilityCovers } from "@domain/public";
 import { createEventReader, nextFloat } from "@simulation/public";
 import type { Simulation, WorldView } from "@simulation/public";
 import {
+  idOf,
   makeMapDef,
   makeRegistry,
   makeWorld,
@@ -138,7 +139,7 @@ describe("loadMap", () => {
     world.state.map.projectiles.acquire();
     world.state.map.effects.acquire();
     world.state.map.zones.acquire();
-    world.state.run.heroId = 42;
+    world.state.run.heroId = idOf(42);
 
     world.loadMap(makeMapDef.build({ id: "next" }));
 
@@ -178,9 +179,9 @@ describe("loadMap", () => {
     world.loadMap(makeMapDef.build({ spawnPoint: { x: 300, y: 400 } }));
 
     expect(world.view.map.units.count).toBe(1);
-    expect(world.view.map.units.resolve(world.view.run.heroId ?? -1)).toBe(
-      hero,
-    );
+    expect(
+      world.view.map.units.resolve(world.view.run.heroId ?? idOf(-1)),
+    ).toBe(hero);
     expect(hero.curr).toEqual({ x: 300, y: 400 });
     expect(hero.prev).toEqual({ x: 300, y: 400 });
     expect(hero.spawnPoint).toEqual({ x: 300, y: 400 });

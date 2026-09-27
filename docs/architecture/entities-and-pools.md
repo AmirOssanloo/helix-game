@@ -52,6 +52,15 @@ const foo = resolveFoo(world, id)   // Foo | null — null when the generation n
 
 Every reference between entities is an id, never an object. A system that holds an object across ticks is holding a slot, not an entity.
 
+**An id carries its pool's kind.** `shared/` holds one generic tagged number, `Id<Brand>`, beside the packing, and names no kind. Each kind declares its own id beside its pool under `domain/entities/`, a unit's, a projectile's, a zone's, an effect's, and a ground item's when it comes. A pool is typed by its id and takes and resolves only that one, so a projectile's id passed where a unit's is wanted fails the typecheck rather than resolving whatever occupies that slot of the unit pool. The tag exists only for the compiler: at run time an id is the number the pool packed.
+
+```typescript
+export type FooId = Id<"foo">                                  // in the kind's file, beside its pool
+export const createFooPool = (): Pool<Foo, FooId> => { /* … */ }
+```
+
+The pool is where a packed number becomes an id, and the one place the compiler is told so. The only other is the input log's parser, at the boundary, where a command read from a file claims its ids. A fixed-size buffer or scratch record typed to hold an id starts each slot at a placeholder the pool module gives, and writes it before any read.
+
 ---
 
 ## What an entity references
@@ -59,6 +68,8 @@ Every reference between entities is an id, never an object. A system that holds 
 - **A definition, by id.** The immutable half. A unit knows which enemy definition it is; a projectile knows which ability fired it.
 - **Other entities, by generational id.** A summon's owner. A projectile's target. A zone's caster.
 - **Its own mutable state.** Position — previous and current — facing, order, resources, cooldown clocks, and a status table.
+
+**An order's target is tagged by kind**: nothing, a point, or a unit. It is one record whose every field is present whatever the tag, written in place with the tag, so an order change allocates nothing; its type is a union over the tag, so a reader checks the tag before it reads a unit from it and states which targets it handles. A new kind of target, such as a ground item, is one more tag. Where the unit walks is not the target: the order's destination is its own field, which the attack and cast rules move to an approach point while the target stays.
 
 **The status table** is per unit: a small fixed array of entries, each referencing a status definition and holding the tick it ends, its stacks, the unit that applied it, and that applier's orb levels, which every table on the definition is read at. The definition's stack rule decides what a second application does; the table just holds it.
 
@@ -124,6 +135,9 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Derived values | One named field per entry of the one key list; create, clear, derive, and spawn walk it |
 | Typed arrays | Only after a profile shows the tick over budget |
 | Ids | A number packing index and generation; released slots bump the generation |
+| An id's kind | Tagged per pool with the generic `Id<Brand>` from `shared/`; each kind's id declared beside its pool; a pool takes and resolves only its own; no cost at run time |
+| Where a number becomes an id | Inside the pool, and at the input log's boundary; nowhere else |
+| An order's target | One fixed-shape record tagged nothing, a point, or a unit; every field always present and written with the tag; a reader checks the tag before it reads the unit; the walk goal is the order's destination, not the target |
 | References between entities | By generational id, resolved every tick; never by object |
 | A stale id | Resolves to `null` |
 | Status table | Per unit, fixed size, entries reference a status definition |

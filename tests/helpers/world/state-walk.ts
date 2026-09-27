@@ -3,6 +3,7 @@ import type { AbilityDef, EffectDef, ShapeDef, World } from "@domain/public";
 import { acquireProjectile, acquireUnit, acquireZone } from "@domain/public";
 import type { Leaf, LeafKind, Simulation } from "@simulation/public";
 import { createSessionWorld } from "@simulation/public";
+import { idOf } from "./ids";
 
 /** A cooldown key the arranged hero holds, so its table has an entry to change. */
 const ARRANGED_COOLDOWN = "arranged_cooldown";
@@ -81,7 +82,7 @@ export const arrangeEveryRecord = (): Simulation => {
   }
 
   zone.hitCount = 1;
-  zone.hits[0] = 1;
+  zone.hits[0] = idOf(1);
   world.map.effects.acquire();
   world.map.packs.push({
     def: first(longRoadDef.packs, "a pack on the long road"),

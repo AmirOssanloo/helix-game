@@ -1,5 +1,5 @@
-import type { EntityId } from "@shared/public";
 import type { StackRule } from "../definitions/status-def";
+import type { UnitId } from "../entities/unit";
 import type { StatusEntry } from "../entities/unit";
 
 /**
@@ -24,7 +24,7 @@ const FIRST_STACK = 1;
 const take = (
   entry: StatusEntry,
   endsAtTick: number,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
   orbLevels: readonly number[],
 ): void => {
   entry.endsAtTick = Math.max(entry.endsAtTick, endsAtTick);
@@ -54,7 +54,7 @@ export const writeStatus = (
   statusId: string,
   stack: StackRule,
   endsAtTick: number,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
   orbLevels: readonly number[],
 ): StatusWrite => {
   let empty: StatusEntry | null = null;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { HashCell, SpatialHash } from "@domain/public";
 import {
   CELL_CAPACITY,
@@ -8,24 +9,23 @@ import {
   createUnitPool,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import { packId } from "@shared/public";
+import { idOf } from "../../helpers";
 
 /** Cells of a round size, so a position reads as its cell at a glance. */
 const CELL = 100;
 
-const id = (index: number): EntityId => packId(index, 0);
+const id = (index: number): UnitId => idOf(packId(index, 0));
 
 /** The ids a query wrote, as a plain array a matcher can read. */
-const collect = (out: EntityId[], count: number): EntityId[] =>
-  out.slice(0, count);
+const collect = (out: UnitId[], count: number): UnitId[] => out.slice(0, count);
 
 const circle = (
   hash: SpatialHash,
   x: number,
   y: number,
   radius: number,
-): EntityId[] => {
+): UnitId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
   return collect(out, hash.queryCircle({ x, y }, radius, out));
@@ -38,7 +38,7 @@ const segment = (
   bx: number,
   by: number,
   radius: number,
-): EntityId[] => {
+): UnitId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
   return collect(
@@ -53,7 +53,7 @@ const rectangle = (
   minY: number,
   maxX: number,
   maxY: number,
-): EntityId[] => {
+): UnitId[] => {
   const out = createCandidateBuffer(UNIT_CAPACITY);
 
   return collect(out, hash.queryRectangle(minX, minY, maxX, maxY, out));
@@ -161,7 +161,7 @@ describe("SpatialHash", () => {
 
     hash.remove(id(1));
     hash.remove(id(1));
-    hash.remove(packId(2, 1));
+    hash.remove(idOf(packId(2, 1)));
 
     expect(circle(hash, 50, 50, 20)).toEqual([id(2)]);
     expect(hash.count).toBe(1);

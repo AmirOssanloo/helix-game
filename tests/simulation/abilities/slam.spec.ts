@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { slamDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, MapDef, Unit } from "@domain/public";
 import { applyStatus, mitigate, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeAttackDef,
@@ -70,9 +70,9 @@ const SLAMMER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   slammer: Unit;
-  slammerId: EntityId;
+  slammerId: UnitId;
 }>;
 
 /**

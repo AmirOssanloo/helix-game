@@ -1,6 +1,7 @@
+import type { UnitId } from "@domain/public";
 import type { AnyCommand, CastTarget } from "@domain/public";
 import { createCandidateBuffer, isClosed, UNIT_CAPACITY } from "@domain/public";
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { GroundPick } from "./ground-pick";
@@ -66,7 +67,7 @@ export class InputMapper {
   /** Scratch for the world point under the pointer as a held press comes up, unclamped. Copied onto a command, never shared with one. */
   private readonly end: Vec2 = { x: 0, y: 0 };
 
-  private readonly candidates: EntityId[];
+  private readonly candidates: UnitId[];
 
   constructor(ports: InputPorts) {
     this.driver = ports.driver;

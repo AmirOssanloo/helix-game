@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type { Simulation } from "@simulation/public";
 import {
+  idOf,
   makeFormDef,
   makeRegistry,
   makeWorld,
@@ -59,7 +60,7 @@ describe("the hero's forms", () => {
     expect(hero.boundRadius).toBe(30);
     expect(hero.selectionRadius).toBe(50);
     expect(world.view.run.heroId).toBe(id);
-    expect(world.state.map.units.resolve(id ?? -1)).toBe(hero);
+    expect(world.state.map.units.resolve(id ?? idOf(-1))).toBe(hero);
     expect(hero.curr).toEqual({ x: 100, y: 50 });
     expect(hero.facing).toBe(1);
   });

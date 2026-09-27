@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { DamageType, Unit } from "@domain/public";
 import { addModifier, applyDamage, releaseUnit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeRegistry, makeWorld, spawnUnit } from "../../helpers";
 
@@ -21,8 +21,8 @@ const AMPLIFICATION = 0.5;
 type Arranged = {
   world: Simulation;
   attacker: Unit;
-  attackerId: EntityId;
-  targetId: EntityId;
+  attackerId: UnitId;
+  targetId: UnitId;
 };
 
 /** A world with an attacker and a target wearing armour and resistance, far enough apart to stand alone. */
@@ -52,7 +52,7 @@ const arrange = (): Arranged => {
 const landed = (
   arranged: Arranged,
   type: DamageType,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
 ): number =>
   applyDamage(arranged.world.state, arranged.targetId, HIT, type, sourceId);
 

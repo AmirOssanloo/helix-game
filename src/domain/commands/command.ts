@@ -1,8 +1,9 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { DamageType } from "../combat/damage";
 import type { DefinitionKey } from "../definitions/definition-keys";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { TuningKey } from "../definitions/tuning-def";
+import type { UnitId } from "../entities/unit";
 import type { Tick } from "../tick";
 
 /**
@@ -61,7 +62,7 @@ export type AttackTargetCommand = Readonly<{
   kind: "attack_target";
   tick: Tick;
   timestamp: number;
-  targetId: EntityId;
+  targetId: UnitId;
 }>;
 
 /** How many slot keys there are: Q, W, E, R, D, F, as slots 1 to 6. */
@@ -90,7 +91,7 @@ export type SlotCommand = Readonly<{
 export type CastTarget =
   | Readonly<{ kind: "none" }>
   | Readonly<{ kind: "point"; position: Readonly<Vec2> }>
-  | Readonly<{ kind: "unit"; unitId: EntityId }>
+  | Readonly<{ kind: "unit"; unitId: UnitId }>
   | Readonly<{ kind: "direction"; position: Readonly<Vec2> }>
   | Readonly<{
       kind: "vector";

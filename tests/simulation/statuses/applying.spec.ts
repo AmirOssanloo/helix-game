@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { applyDamage, applyStatus, releaseUnit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeWorld, spawnUnit, tickUntil } from "../../helpers";
 
@@ -14,7 +14,7 @@ const LETHAL = 1000;
 /** What a status with no applier behind it is read at: no orb has a level. */
 const NO_ORB_LEVELS: readonly number[] = [];
 
-type Arranged = { world: Simulation; unit: Unit; id: EntityId };
+type Arranged = { world: Simulation; unit: Unit; id: UnitId };
 
 /** A world with one unit at the origin. */
 const arrange = (): Arranged => {

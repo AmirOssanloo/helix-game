@@ -1,12 +1,16 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Id, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
 import type { EffectDef, ShapeDef } from "../definitions/effect-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import { resetDomainEvent } from "../events/domain-event";
 import type { Tick } from "../tick";
-import { Pool } from "./pool";
+import { Pool, unwrittenId } from "./pool";
+import type { UnitId } from "./unit";
 import type { World } from "./world-state";
+
+/** A zone's id: minted and resolved only by the zone pool. */
+export type ZoneId = Id<"zone">;
 
 /** Zones follow the effect pool's discipline with a capacity of their own. */
 export const ZONE_CAPACITY = 64;
@@ -31,7 +35,7 @@ const NO_EFFECTS: readonly EffectDef[] = [];
 export type Zone = {
   /** The ability whose cast spawned it, whose id names it. `null` for a zone with no ability behind it. */
   ability: AbilityDef | null;
-  casterId: EntityId | null;
+  casterId: UnitId | null;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: number[];
   /** Run once on the tick the delay ends, with the zone as the context. */
@@ -59,7 +63,7 @@ export type Zone = {
   /** The tick it is released on. A zone with no lifetime at all expires on the tick it spawned. */
   expiresAtTick: Tick;
   /** The units a once-per-unit rule has taken, the first `hitCount` slots live. */
-  hits: EntityId[];
+  hits: UnitId[];
   hitCount: number;
   /** The atlas frame the presentation draws it with, and the colour it is drawn in. */
   frame: string | null;
@@ -71,10 +75,10 @@ const createZone = (): Zone => {
     kind: "circle",
     radius: 0,
   };
-  const hits: EntityId[] = [];
+  const hits: UnitId[] = [];
 
   for (let slot = 0; slot < ZONE_HIT_CAPACITY; slot += 1) {
-    hits.push(0);
+    hits.push(unwrittenId());
   }
 
   return {
@@ -129,7 +133,7 @@ const clearZone = (zone: Zone): void => {
   zone.tint = 0;
 };
 
-export const createZonePool = (): Pool<Zone> =>
+export const createZonePool = (): Pool<Zone, ZoneId> =>
   new Pool(ZONE_CAPACITY, createZone, clearZone);
 
 /**
@@ -147,7 +151,7 @@ export const acquireZone = (
   x: number,
   y: number,
   facing: number,
-): EntityId | null => {
+): ZoneId | null => {
   const zones = world.map.zones;
   const index = zones.acquireIndex();
 
@@ -185,7 +189,7 @@ export const acquireZone = (
  * answers yes to every unit it does not hold, so a rule that runs out of room costs itself a
  * hit rather than taking one unit twice.
  */
-export const hasTakenHit = (zone: Readonly<Zone>, id: EntityId): boolean => {
+export const hasTakenHit = (zone: Readonly<Zone>, id: UnitId): boolean => {
   for (let slot = 0; slot < zone.hitCount; slot += 1) {
     if (zone.hits[slot] === id) {
       return true;
@@ -196,7 +200,7 @@ export const hasTakenHit = (zone: Readonly<Zone>, id: EntityId): boolean => {
 };
 
 /** Records `id` as taken by a once-per-unit rule on this zone. A full list keeps what it holds. */
-export const takeHit = (zone: Zone, id: EntityId): void => {
+export const takeHit = (zone: Zone, id: UnitId): void => {
   if (zone.hitCount >= ZONE_HIT_CAPACITY) {
     return;
   }

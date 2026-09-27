@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AbilityDef } from "@domain/public";
 import { createCastRecord, fillCast } from "@domain/public";
-import { makeSpellDef } from "../../helpers";
+import { idOf, makeSpellDef } from "../../helpers";
 
 const ability: AbilityDef = makeSpellDef.build({});
 
@@ -9,13 +9,13 @@ describe("the context an effect runs with", () => {
   it("carries the caster, the ability, the anchor, the facing, and the target", () => {
     const context = fillCast(
       createCastRecord(),
-      7,
+      idOf(7),
       ability,
       [1, 2, 3],
       300,
       -40,
       1.5,
-      9,
+      idOf(9),
     );
 
     expect(context.casterId).toBe(7);
@@ -29,7 +29,7 @@ describe("the context an effect runs with", () => {
     const levels = [1, 2, 3];
     const context = fillCast(
       createCastRecord(),
-      1,
+      idOf(1),
       ability,
       levels,
       0,
@@ -44,22 +44,51 @@ describe("the context an effect runs with", () => {
   });
 
   it("reads a level of zero for an orb the caster does not level", () => {
-    const context = fillCast(createCastRecord(), 1, ability, [], 0, 0, 0, null);
+    const context = fillCast(
+      createCastRecord(),
+      idOf(1),
+      ability,
+      [],
+      0,
+      0,
+      0,
+      null,
+    );
 
     expect(context.orbLevels).toEqual([0, 0, 0]);
   });
 
   it("runs from no zone, whatever the record held before", () => {
     const record = createCastRecord();
-    record.zoneId = 4;
+    record.zoneId = idOf(4);
 
-    expect(fillCast(record, 1, ability, [], 0, 0, 0, null).zoneId).toBeNull();
+    expect(
+      fillCast(record, idOf(1), ability, [], 0, 0, 0, null).zoneId,
+    ).toBeNull();
   });
 
   it("is reused: a second fill overwrites the first", () => {
     const record = createCastRecord();
-    const first = fillCast(record, 1, ability, [1, 1, 1], 10, 10, 0, 2);
-    const second = fillCast(record, 3, ability, [4, 4, 4], 20, 20, 1, null);
+    const first = fillCast(
+      record,
+      idOf(1),
+      ability,
+      [1, 1, 1],
+      10,
+      10,
+      0,
+      idOf(2),
+    );
+    const second = fillCast(
+      record,
+      idOf(3),
+      ability,
+      [4, 4, 4],
+      20,
+      20,
+      1,
+      null,
+    );
 
     expect(first).toBe(second);
     expect(second.casterId).toBe(3);

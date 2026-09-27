@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
 import { applyStatus } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -40,8 +40,8 @@ const burn = makeStatusDef.build({
 type Arranged = {
   world: Simulation;
   unit: Unit;
-  id: EntityId;
-  sourceId: EntityId;
+  id: UnitId;
+  sourceId: UnitId;
   reader: EventReader;
 };
 

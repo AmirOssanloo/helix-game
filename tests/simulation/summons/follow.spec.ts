@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type {
   ApplyStatusEffectDef,
   SpawnUnitEffectDef,
@@ -7,7 +8,6 @@ import type {
   Unit,
 } from "@domain/public";
 import { runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeAttackDef,
@@ -19,6 +19,7 @@ import {
   spawnHero,
   spawnUnit,
   submit,
+  targetUnitOf,
   unitIdOf,
 } from "../../helpers";
 
@@ -82,14 +83,14 @@ type Arranged = {
   world: Simulation;
   hero: Unit;
   summon: Unit;
-  summonId: EntityId;
+  summonId: UnitId;
 };
 
 const distance = (a: Readonly<Unit>, b: Readonly<Unit>): number =>
   Math.hypot(a.curr.x - b.curr.x, a.curr.y - b.curr.y);
 
 /** The first summon in the pool, and the id it holds. */
-const summonOf = (world: Simulation): { unit: Unit; id: EntityId } => {
+const summonOf = (world: Simulation): { unit: Unit; id: UnitId } => {
   const units = world.state.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -163,7 +164,7 @@ describe("a summon following its owner", () => {
     world.tick();
 
     expect(summon.order.kind).toBe("attack_target");
-    expect(summon.order.targetId).toBe(enemyId);
+    expect(targetUnitOf(summon.order.target)).toBe(enemyId);
   });
 
   it("goes back to following once what it acquired is dead", () => {

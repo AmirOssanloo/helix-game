@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SpawnProjectileEffectDef, Unit } from "@domain/public";
+import type { SpawnProjectileEffectDef, Unit, UnitId } from "@domain/public";
 import { readTunable, runPrimitive } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
@@ -64,12 +64,12 @@ const arrange = (): Arranged => {
 };
 
 /** Fires one homing projectile from the hero at the unit `targetId` names. */
-const fire = (world: Simulation, targetId: number): void => {
+const fire = (world: Simulation, targetId: UnitId): void => {
   runPrimitive(world.state, makeCast(world, { targetId }), entry);
 };
 
 /** The id of the one enemy, which is the second unit the world acquired. */
-const targetIdOf = (world: Simulation): number => {
+const targetIdOf = (world: Simulation): UnitId => {
   const id = world.state.map.units.idAt(1);
 
   if (id === null) {

@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import type { Field, FieldList } from "./field-list";
 import {
   excludedOf,
@@ -177,7 +176,7 @@ export const table = <T>(
 export type PoolSlots<U> = Readonly<{
   end: number;
   at: (index: number) => U | null;
-  idAt: (index: number) => EntityId | null;
+  idAt: (index: number) => number | null;
 }>;
 
 /**

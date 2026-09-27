@@ -1,4 +1,4 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { placePack } from "../ai/packs";
@@ -10,6 +10,7 @@ import type {
 } from "../commands/command";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import { acquireUnit, releaseUnit } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -253,7 +254,7 @@ const setOrbLevels = (
 const jumpToCheckpoint = (
   world: World,
   hero: Unit,
-  heroId: EntityId,
+  heroId: UnitId,
   index: number,
 ): RefusalReason | null => {
   const checkpoint = world.map.checkpoints[index];

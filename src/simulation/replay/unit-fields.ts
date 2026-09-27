@@ -6,6 +6,7 @@ import type {
   DisableFlags,
   ModifierEntry,
   Order,
+  OrderTarget,
   PackMembership,
   Path,
   Progression,
@@ -48,10 +49,20 @@ export const RESOURCES_FIELDS = fieldsOf<DeepReadonly<Resources>>({
   }),
 });
 
+/** Where the target's tag and point come from, since neither is hashed. */
+const FROM_THE_ORDER =
+  "follows from what is hashed: the order's kind, its destination, the attack's put-aside point, and the cast record";
+
+const TARGET_FIELDS = fieldsOf<DeepReadonly<OrderTarget>>({
+  tag: excluded(FROM_THE_ORDER),
+  point: excluded(FROM_THE_ORDER),
+  unitId: nullableId("unitId", (target) => target.unitId),
+});
+
 const ORDER_FIELDS = fieldsOf<DeepReadonly<Order>>({
   kind: text("kind", (order) => order.kind),
   destination: record("destination", (order) => order.destination, VEC2_FIELDS),
-  targetId: nullableId("targetId", (order) => order.targetId),
+  target: record("target", (order) => order.target, TARGET_FIELDS),
 });
 
 const PATH_FIELDS = fieldsOf<DeepReadonly<Path>>({

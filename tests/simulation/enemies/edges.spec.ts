@@ -10,6 +10,7 @@ import {
   trainingDummyDef,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { AnyCommand, DomainEvent, Unit } from "@domain/public";
 import {
   acquireUnit,
@@ -19,7 +20,6 @@ import {
   remainingCooldownTicks,
   wearDefinition,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -59,7 +59,7 @@ const REPATH_TICKS = tuningTable.chase_repath_interval * tuningTable.sim_hz;
 /** The arrival epsilon: how close a walk counts as there, and how much two pushed discs may still overlap. */
 const EPSILON = tuningTable.arrival_epsilon;
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
 
 /** The content registry on an open map with the hero at the origin, and no wander to move anyone off their marks. */
 const arrange = (): Arranged => {
@@ -101,7 +101,7 @@ const hit = (
   world: Simulation,
   target: Unit,
   amount: number,
-  source: EntityId,
+  source: UnitId,
 ): void => {
   applyDamage(world.state, unitIdOf(world, target), amount, "pure", source);
 };
@@ -135,8 +135,8 @@ const wane = (world: Simulation): void => {
 const damageSince = (
   world: Simulation,
   reader: ReturnType<typeof createEventReader>,
-): { unitId: EntityId | null; amount: number }[] => {
-  const found: { unitId: EntityId | null; amount: number }[] = [];
+): { unitId: UnitId | null; amount: number }[] => {
+  const found: { unitId: UnitId | null; amount: number }[] = [];
   let event: DomainEvent | null = world.events.read(reader);
 
   while (event !== null) {

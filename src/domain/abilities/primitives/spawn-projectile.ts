@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import type { SpawnProjectileEffectDef } from "../../definitions/effect-def";
 import { readTunable } from "../../definitions/tuning-state";
+import type { ProjectileId } from "../../entities/projectile";
 import { acquireProjectile } from "../../entities/projectile";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
@@ -46,7 +46,7 @@ export const spawnProjectile: Primitive<SpawnProjectileEffectDef> = (
   const dx = cast.anchor.x - x;
   const dy = cast.anchor.y - y;
   const facing = dx === 0 && dy === 0 ? cast.facing : Math.atan2(dy, dx);
-  const id: EntityId | null = acquireProjectile(world, x, y, facing);
+  const id: ProjectileId | null = acquireProjectile(world, x, y, facing);
   const projectile = id === null ? null : world.map.projectiles.resolve(id);
 
   if (projectile === null) {

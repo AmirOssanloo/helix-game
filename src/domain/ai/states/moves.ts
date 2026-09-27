@@ -1,7 +1,8 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, distanceSquared } from "@shared/public";
 import { isReachable } from "../../abilities/primitives/targets";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import { UNIT_CAPACITY } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
@@ -49,7 +50,7 @@ export type MachineScratch = {
   tuning: MachineTuning;
   standing: Vec2;
   destination: Vec2;
-  candidates: EntityId[];
+  candidates: UnitId[];
 };
 
 /** The machine's scratch. Made once, with the world. */
@@ -263,10 +264,14 @@ export const enterIdle = (unit: Unit): void => {
 };
 
 /** Into Attack: the unit takes the hero as its attack target, and the attack rule faces, swings, and fires exactly as it does for the hero's own attack. */
-export const enterAttack = (unit: Unit, heroId: EntityId): void => {
+export const enterAttack = (unit: Unit, heroId: UnitId): void => {
   unit.ai.state = "attack";
 
-  if (unit.order.kind === "attack_target" && unit.order.targetId === heroId) {
+  if (
+    unit.order.kind === "attack_target" &&
+    unit.order.target.tag === "unit" &&
+    unit.order.target.unitId === heroId
+  ) {
     return;
   }
 

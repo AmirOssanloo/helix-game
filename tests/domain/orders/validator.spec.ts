@@ -12,6 +12,7 @@ import {
   validateCommand,
   validateDebugCommand,
 } from "@domain/public";
+import { idOf } from "../../helpers";
 
 /** What the validator decides on: every player command; a tuning change and a debug command never reach a unit. */
 type UnitCommand = Command;
@@ -34,7 +35,7 @@ const attackTarget = (): UnitCommand => ({
   kind: "attack_target",
   tick: 0,
   timestamp: 0,
-  targetId: 7,
+  targetId: idOf(7),
 });
 
 const stop = (): UnitCommand => ({ kind: "stop", tick: 0, timestamp: 0 });
@@ -394,7 +395,7 @@ describe("validateCommand on a destination", () => {
     expect(
       validateCommand(
         unitIn(),
-        cast({ kind: "unit", unitId: 7 }),
+        cast({ kind: "unit", unitId: idOf(7) }),
         disableMatrix,
       ),
     ).toBe("ok");

@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { Pool } from "@domain/public";
+import type { Id } from "@shared/public";
 import { unpackGeneration, unpackIndex } from "@shared/public";
 
 type Marker = {
   value: number;
 };
 
+type MarkerId = Id<"marker">;
+
 const CAPACITY = 3;
 
-const makePool = (): Pool<Marker> =>
+const makePool = (): Pool<Marker, MarkerId> =>
   new Pool(
     CAPACITY,
     () => ({ value: 0 }),
@@ -18,7 +21,7 @@ const makePool = (): Pool<Marker> =>
   );
 
 /** Acquires every slot, so a spec can start from a full pool. */
-const fillPool = (pool: Pool<Marker>): void => {
+const fillPool = (pool: Pool<Marker, MarkerId>): void => {
   for (let slot = 0; slot < CAPACITY; slot += 1) {
     pool.acquire();
   }

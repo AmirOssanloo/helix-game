@@ -18,6 +18,7 @@ import {
   serializeInputLog,
 } from "@simulation/public";
 import {
+  idOf,
   makeMapDef,
   makeWorld,
   spawnHero,
@@ -77,7 +78,9 @@ const gruntsOf = (world: Simulation): Unit[] =>
   unitsOf(world, meleeGruntDef.id);
 
 const heroOf = (world: Simulation): Unit => {
-  const hero = world.state.map.units.resolve(world.state.run.heroId ?? -1);
+  const hero = world.state.map.units.resolve(
+    world.state.run.heroId ?? idOf(-1),
+  );
 
   if (hero === null) {
     throw new Error("The session has a hero");

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { silenceCurseDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, Unit } from "@domain/public";
 import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   always,
@@ -63,9 +63,9 @@ const CURSER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   curser: Unit;
-  curserId: EntityId;
+  curserId: UnitId;
 }>;
 
 /** A world with the curser beside the content's abilities, the hero at the origin, and one curser in range. */

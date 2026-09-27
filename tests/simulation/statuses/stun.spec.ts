@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Command, DomainEvent, Unit } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
-import { makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
+import { idOf, makeWorld, spawnHero, submit, tickUntil } from "../../helpers";
 
 /** The slot key a spec presses: Q, an orb. */
 const Q = 1;
@@ -49,7 +49,7 @@ const act = (world: Simulation, command: Unstamped<Command>): void => {
 const EVERY_COMMAND: readonly (readonly [string, Unstamped<Command>])[] = [
   ["move", { kind: "move", destination: { x: 500, y: 0 } }],
   ["attack_move", { kind: "attack_move", destination: { x: 500, y: 0 } }],
-  ["attack_target", { kind: "attack_target", targetId: 7 }],
+  ["attack_target", { kind: "attack_target", targetId: idOf(7) }],
   ["stop", { kind: "stop" }],
   ["slot", { kind: "slot", slot: Q }],
   ["cast", { kind: "cast", abilityId: "hoarfrost", target: { kind: "none" } }],

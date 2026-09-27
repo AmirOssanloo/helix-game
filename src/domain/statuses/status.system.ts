@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { assertNever } from "@shared/public";
 import type { CastRecord } from "../abilities/cast-context";
 import { createCastRecord, fillHookCast } from "../abilities/cast-context";
@@ -10,6 +9,7 @@ import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
 import { activeFormOf } from "../entities/hero";
+import type { UnitId } from "../entities/unit";
 import type { StatusEntry, Unit } from "../entities/unit";
 import { clearStatusEntry, STATUS_TABLE_SIZE } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -44,7 +44,7 @@ export type StatusScratch = {
   context: CastRecord;
   share: DamageRecord;
   endedIds: (string | null)[];
-  endedSources: (EntityId | null)[];
+  endedSources: (UnitId | null)[];
   endedLevels: number[][];
 };
 
@@ -70,8 +70,8 @@ export const createStatusScratch = (): StatusScratch => {
 const announce = (
   world: World,
   kind: "status_applied" | "status_expired",
-  unitId: EntityId,
-  sourceId: EntityId | null,
+  unitId: UnitId,
+  sourceId: UnitId | null,
   statusId: string,
 ): void => {
   const event = world.scratch.event;
@@ -100,10 +100,10 @@ const announce = (
  */
 export const applyStatus = (
   world: World,
-  targetId: EntityId,
+  targetId: UnitId,
   statusId: string,
   ticks: number,
-  sourceId: EntityId | null,
+  sourceId: UnitId | null,
   orbLevels: readonly number[],
 ): StatusResult => {
   const record = world.run.statuses.get(statusId);
@@ -170,7 +170,7 @@ const installModifiers = (
 /** Takes this tick's share of the status's damage out of the unit, credited to whoever applied it. */
 const takeDamageOverTime = (
   world: World,
-  unitId: EntityId,
+  unitId: UnitId,
   record: StatusRecord,
   entry: Readonly<StatusEntry>,
 ): void => {
@@ -242,7 +242,7 @@ const rememberEnded = (
  * Returns how many rows ended, which the pass reads back out of the scratch to run their
  * expiry lists once the whole table has been read.
  */
-const readTable = (world: World, unit: Unit, unitId: EntityId): number => {
+const readTable = (world: World, unit: Unit, unitId: UnitId): number => {
   removeModifiers(unit, "status");
   clearDisableFlags(unit.disables);
 
@@ -301,7 +301,7 @@ const readTable = (world: World, unit: Unit, unitId: EntityId): number => {
 const runExpiries = (
   world: World,
   unit: Readonly<Unit>,
-  unitId: EntityId,
+  unitId: UnitId,
   ended: number,
 ): void => {
   const scratch = world.scratch.statuses;

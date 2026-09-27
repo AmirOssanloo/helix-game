@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import { acquireUnit, PATH_CAPACITY, setStraightPath } from "@domain/public";
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import {
   arrangeOverlays,
   OVERLAY_FRAME_WIDTH,
@@ -92,7 +93,7 @@ describe("the path lines", () => {
 
   it("draw a line for each of fifty movers at once with no miss", () => {
     const arranged = arrangeOverlays();
-    const ids: EntityId[] = [];
+    const ids: UnitId[] = [];
 
     for (let index = 0; index < MOVER_COUNT; index += 1) {
       const y = -400 + index * 16;

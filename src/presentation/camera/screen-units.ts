@@ -1,5 +1,6 @@
+import type { UnitId } from "@domain/public";
 import { createCandidateBuffer, UNIT_CAPACITY } from "@domain/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { Rect } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 
 /**
@@ -10,12 +11,12 @@ import type { WorldView } from "@simulation/public";
  * scene is made and never grows.
  */
 export class ScreenUnits {
-  private readonly buffer: EntityId[] = createCandidateBuffer(UNIT_CAPACITY);
+  private readonly buffer: UnitId[] = createCandidateBuffer(UNIT_CAPACITY);
 
   private found = 0;
 
   /** The ids found, valid from the first up to `count`. */
-  get ids(): readonly EntityId[] {
+  get ids(): readonly UnitId[] {
     return this.buffer;
   }
 

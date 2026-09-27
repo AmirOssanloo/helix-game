@@ -1,4 +1,4 @@
-import type { EntityId, Rect, Vec2 } from "@shared/public";
+import type { Rect, Vec2 } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
 import type { AttackRecord } from "../definitions/attack-state";
@@ -15,12 +15,12 @@ import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
 import type { Tick } from "../tick";
-import type { Effect } from "./effect";
+import type { Effect, EffectId } from "./effect";
 import type { Pool } from "./pool";
-import type { Projectile } from "./projectile";
-import type { Resources, Unit } from "./unit";
+import type { Projectile, ProjectileId } from "./projectile";
+import type { Resources, Unit, UnitId } from "./unit";
 import type { WorldScratch } from "./world-scratch";
-import type { Zone } from "./zone";
+import type { Zone, ZoneId } from "./zone";
 
 /** The seeded random source's state. It lives on the world so a replay from the same seed reproduces every draw. */
 export type RandomState = {
@@ -76,7 +76,7 @@ export type DebugFlags = {
 
 /** State that lives for the whole session. Never reset by a map load. */
 export type RunScope = {
-  heroId: EntityId | null;
+  heroId: UnitId | null;
   /** The world's copy of the hero definition: which forms it has and how it levels. */
   hero: HeroDef;
   /** The hero's attack with its seconds read for the tick, which the attack rule reads for whichever form is active. */
@@ -106,10 +106,10 @@ export type RunScope = {
 export type MapScope = {
   /** The id of the loaded map definition. */
   mapId: string;
-  units: Pool<Unit>;
-  projectiles: Pool<Projectile>;
-  effects: Pool<Effect>;
-  zones: Pool<Zone>;
+  units: Pool<Unit, UnitId>;
+  projectiles: Pool<Projectile, ProjectileId>;
+  effects: Pool<Effect, EffectId>;
+  zones: Pool<Zone, ZoneId>;
   /** The grid the map module derives from the loaded map, one layer per radius class. */
   walkability: WalkabilityGrid;
   /** The loaded map's playable rectangle, which the collision system keeps every unit inside of. */

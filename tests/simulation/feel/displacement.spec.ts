@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type {
   DamageAreaEffectDef,
   DisplaceEffectDef,
@@ -11,7 +12,6 @@ import {
   nearestEnemy,
   runPrimitive,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -120,7 +120,7 @@ const arrange = (map: MapDef = makeMapDef.build()): Arranged => {
 const cast = (
   world: Simulation,
   entry: DisplaceEffectDef | DamageAreaEffectDef,
-  targetId: EntityId | null = null,
+  targetId: UnitId | null = null,
 ): void => {
   runPrimitive(
     world.state,

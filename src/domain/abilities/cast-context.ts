@@ -1,6 +1,9 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { AbilityDef } from "../definitions/ability-def";
 import { ORB_IDS } from "../definitions/orb-id";
+import { unwrittenId } from "../entities/pool";
+import type { UnitId } from "../entities/unit";
+import type { ZoneId } from "../entities/zone";
 
 /**
  * What every effect runs with, whoever ran it: the caster, the ability, the three orb
@@ -15,7 +18,7 @@ import { ORB_IDS } from "../definitions/orb-id";
  * an effect reads nothing else.
  */
 export type Cast = Readonly<{
-  casterId: EntityId;
+  casterId: UnitId;
   ability: AbilityDef;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: readonly number[];
@@ -23,8 +26,8 @@ export type Cast = Readonly<{
   facing: number;
   /** The line a vector cast lies along, in radians, or `null` for a vector with no drag and for every other cast. */
   direction: number | null;
-  targetId: EntityId | null;
-  zoneId: EntityId | null;
+  targetId: UnitId | null;
+  zoneId: ZoneId | null;
 }>;
 
 /**
@@ -33,14 +36,14 @@ export type Cast = Readonly<{
  * each allocate nothing. Every field is the context's, read through `Cast` once written.
  */
 export type CastRecord = {
-  casterId: EntityId;
+  casterId: UnitId;
   ability: AbilityDef;
   orbLevels: number[];
   anchor: Vec2;
   facing: number;
   direction: number | null;
-  targetId: EntityId | null;
-  zoneId: EntityId | null;
+  targetId: UnitId | null;
+  zoneId: ZoneId | null;
 };
 
 /**
@@ -63,7 +66,7 @@ const NO_ABILITY: AbilityDef = {
 
 /** A record with room for one level per orb, for a caller to keep as scratch and fill. */
 export const createCastRecord = (): CastRecord => ({
-  casterId: 0,
+  casterId: unwrittenId(),
   ability: NO_ABILITY,
   orbLevels: ORB_IDS.map(() => 0),
   anchor: { x: 0, y: 0 },
@@ -83,13 +86,13 @@ export const createCastRecord = (): CastRecord => ({
  */
 export const fillCast = (
   out: CastRecord,
-  casterId: EntityId,
+  casterId: UnitId,
   ability: AbilityDef,
   orbLevels: readonly number[],
   x: number,
   y: number,
   facing: number,
-  targetId: EntityId | null,
+  targetId: UnitId | null,
 ): Cast => {
   out.casterId = casterId;
   out.ability = ability;
@@ -122,12 +125,12 @@ export const fillCast = (
  */
 export const fillHookCast = (
   out: CastRecord,
-  casterId: EntityId,
+  casterId: UnitId,
   orbLevels: readonly number[],
   x: number,
   y: number,
   facing: number,
-  damagedId: EntityId,
+  damagedId: UnitId,
 ): Cast =>
   fillCast(out, casterId, out.ability, orbLevels, x, y, facing, damagedId);
 
@@ -139,8 +142,8 @@ export const fillHookCast = (
  */
 export const fillZoneCast = (
   out: CastRecord,
-  zoneId: EntityId,
-  casterId: EntityId,
+  zoneId: ZoneId,
+  casterId: UnitId,
   ability: AbilityDef,
   orbLevels: readonly number[],
   x: number,

@@ -137,7 +137,12 @@ const parseChecksums = (
   return checksums;
 };
 
-/** Whether `value` has the shape every command shares: a kind, the tick it applies to, and its arrival stamp. The validator judges the rest when the tick consumes it. */
+/**
+ * Whether `value` has the shape every command shares: a kind, the tick it applies to, and its
+ * arrival stamp. The validator judges the rest when the tick consumes it. This is the boundary
+ * where a number read from a file becomes an id: a unit id in a command is taken as the log
+ * wrote it, and a stale or unknown one resolves to nothing when the tick reads it.
+ */
 const isCommand = (value: unknown): value is AnyCommand =>
   isRecord(value) &&
   typeof value["kind"] === "string" &&

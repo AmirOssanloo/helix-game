@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry, meleeGruntDef } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
 import { applyDamage, applyStatus } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
+  idOf,
   makeRegistry,
   makeWorld,
   spawnHero,
   submit,
+  targetUnitOf,
   tickUntil,
   unitIdOf,
 } from "../../helpers";
@@ -120,7 +122,7 @@ const onlyGrunt = (world: Simulation): Unit => {
 };
 
 /** Orders the hero to attack `targetId`, as a right click on it does. */
-const attack = (world: Simulation, targetId: EntityId): void => {
+const attack = (world: Simulation, targetId: UnitId): void => {
   submit(world, {
     kind: "attack_target",
     tick: world.view.tick,
@@ -143,8 +145,8 @@ const attackMove = (world: Simulation): void => {
 const hitsOn = (
   world: Simulation,
   reader: EventReader,
-  heroId: EntityId,
-  targetId: EntityId,
+  heroId: UnitId,
+  targetId: UnitId,
 ): number => {
   let count = 0;
 
@@ -193,7 +195,7 @@ describe("an attack on a grunt", () => {
 
     expect(hitsOn(world, reader, unitIdOf(world, hero), gruntId)).toBe(1);
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.order.targetId).toBe(gruntId);
+    expect(targetUnitOf(hero.order.target)).toBe(gruntId);
   });
 
   it("keeps hitting it as it fights back", () => {
@@ -221,7 +223,7 @@ describe("an attack on a grunt", () => {
     );
 
     expect(grunt.ai.state).toBe("attack");
-    expect(hero.order.targetId).toBe(gruntId);
+    expect(targetUnitOf(hero.order.target)).toBe(gruntId);
   });
 
   it("drops to idle when the grunt is lifted out of reach", () => {
@@ -249,9 +251,11 @@ describe("an attack-move through a pack", () => {
 
     spawnGrunts(world, PACK_COUNT, PACK_AT);
     attackMove(world);
-    tickUntil(world, () => hero.order.targetId !== null, PATIENCE);
+    tickUntil(world, () => targetUnitOf(hero.order.target) !== null, PATIENCE);
 
-    const target = world.state.map.units.resolve(hero.order.targetId ?? 0);
+    const target = world.state.map.units.resolve(
+      targetUnitOf(hero.order.target) ?? idOf(0),
+    );
     const gaps = gruntsOf(world).map((grunt) => startGap(hero, grunt));
 
     expect(target).not.toBeNull();
@@ -263,22 +267,26 @@ describe("an attack-move through a pack", () => {
 
     spawnGrunts(world, PACK_COUNT, PACK_AT);
     attackMove(world);
-    tickUntil(world, () => hero.order.targetId !== null, PATIENCE);
+    tickUntil(world, () => targetUnitOf(hero.order.target) !== null, PATIENCE);
 
-    const first = hero.order.targetId ?? 0;
+    const first = targetUnitOf(hero.order.target) ?? idOf<UnitId>(0);
 
     applyDamage(world.state, first, LETHAL, "pure", unitIdOf(world, hero));
     tickUntil(
       world,
-      () => hero.order.targetId !== null && hero.order.targetId !== first,
+      () =>
+        targetUnitOf(hero.order.target) !== null &&
+        targetUnitOf(hero.order.target) !== first,
       PATIENCE,
     );
 
-    const next = world.state.map.units.resolve(hero.order.targetId ?? 0);
+    const next = world.state.map.units.resolve(
+      targetUnitOf(hero.order.target) ?? idOf(0),
+    );
     const gaps = gruntsOf(world).map((grunt) => startGap(hero, grunt));
 
     expect(hero.order.kind).toBe("attack_move");
-    expect(hero.order.targetId).not.toBe(first);
+    expect(targetUnitOf(hero.order.target)).not.toBe(first);
     expect(next).not.toBeNull();
     expect(startGap(hero, next ?? hero)).toBe(Math.min(...gaps));
     expect(hero.attack.movePoint).toEqual(DESTINATION);
@@ -289,7 +297,7 @@ describe("an attack-move through a pack", () => {
 
     spawnGrunts(world, PACK_COUNT, PACK_AT);
     attackMove(world);
-    tickUntil(world, () => hero.order.targetId !== null, PATIENCE);
+    tickUntil(world, () => targetUnitOf(hero.order.target) !== null, PATIENCE);
     submit(world, {
       kind: "kill_all",
       tick: world.view.tick,
@@ -299,7 +307,7 @@ describe("an attack-move through a pack", () => {
     world.tick();
 
     expect(hero.order.kind).toBe("attack_move");
-    expect(hero.order.targetId).toBeNull();
+    expect(targetUnitOf(hero.order.target)).toBeNull();
 
     tickUntil(world, () => hero.order.kind === "none", PATIENCE);
 

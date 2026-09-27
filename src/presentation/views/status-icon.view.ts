@@ -1,6 +1,7 @@
+import type { UnitId } from "@domain/public";
 import type { StatusRecord, Unit } from "@domain/public";
 import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/public";
-import type { DeepReadonly, EntityId, Vec2 } from "@shared/public";
+import type { DeepReadonly, Vec2 } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import type { ScreenPlacement } from "../camera/projection";
@@ -69,7 +70,7 @@ export class StatusIconView {
     }
   }
 
-  bind(_id: EntityId, _unit: DeepReadonly<Unit>): void {
+  bind(_id: UnitId, _unit: DeepReadonly<Unit>): void {
     for (let index = 0; index < this.icons.length; index += 1) {
       const icon = this.icons[index];
 
@@ -173,7 +174,11 @@ export class StatusIconView {
   }
 }
 
-export type StatusIconViewPool = ViewPool<DeepReadonly<Unit>, StatusIconView>;
+export type StatusIconViewPool = ViewPool<
+  DeepReadonly<Unit>,
+  UnitId,
+  StatusIconView
+>;
 
 /**
  * `size` rows of icons over quads from `makeQuad`, at scene `create`: a whole table's worth of

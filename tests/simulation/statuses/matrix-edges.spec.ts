@@ -9,6 +9,7 @@ import {
   statuses,
   tuningTable,
 } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, EnemyDef, MapDef, Unit } from "@domain/public";
 import {
   applyDamage,
@@ -16,7 +17,6 @@ import {
   remainingCooldownTicks,
 } from "@domain/public";
 import { createGroundPick, InputMapper } from "@presentation/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -221,7 +221,7 @@ const STANDER: EnemyDef = makeEnemyDef.build({
   attack: makeAttackDef.build({ range: 0 }),
 });
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: EntityId }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
 
 type ArrangeOptions = Readonly<{
   map?: MapDef;
@@ -274,7 +274,7 @@ const place = (
   def: EnemyDef,
   x: number,
   y = 0,
-): { unit: Unit; id: EntityId } => {
+): { unit: Unit; id: UnitId } => {
   const unit = spawnEnemy(world, { definitionId: def.id, x, y });
 
   return { unit, id: unitIdOf(world, unit) };
@@ -328,7 +328,7 @@ const heroMana = (world: Simulation): number =>
 /** Puts `statusId` on the hero for `ticks`, from nobody. */
 const put = (
   world: Simulation,
-  heroId: EntityId,
+  heroId: UnitId,
   statusId: string,
   ticks: number,
 ): void => {
@@ -336,11 +336,7 @@ const put = (
 };
 
 /** Lands a small hit on the hero from `sourceId`, so the source's damage-dealt hook answers it. */
-const hitFrom = (
-  world: Simulation,
-  heroId: EntityId,
-  sourceId: EntityId,
-): void => {
+const hitFrom = (world: Simulation, heroId: UnitId, sourceId: UnitId): void => {
   applyDamage(world.state, heroId, HIT, "pure", sourceId);
 };
 

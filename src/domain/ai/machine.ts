@@ -1,7 +1,7 @@
-import type { EntityId } from "@shared/public";
 import { assertNever } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import type { UnitRecord } from "../definitions/unit-state";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import type { MachineBehaviour } from "./behaviour";
@@ -42,7 +42,7 @@ export const runMachine = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   switch (unit.ai.state) {
     case "idle":

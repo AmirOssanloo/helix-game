@@ -1,5 +1,6 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
+import type { UnitId } from "./unit";
 
 /**
  * The cast a unit has requested and not yet committed: the ability, what it is aimed at by
@@ -12,7 +13,7 @@ export type CastState = {
   abilityId: string | null;
   targetKind: TargetingKind;
   position: Vec2;
-  targetId: EntityId | null;
+  targetId: UnitId | null;
   /** The bearing of a vector's drag, in radians; `null` for a vector with no drag and for every other kind. */
   direction: number | null;
 };

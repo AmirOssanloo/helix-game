@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { impDef, summonerDef, tuningTable } from "@content/public";
-import type { EntityId } from "@shared/public";
+import type { UnitId } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import { arrangeArchetype, describeArchetype, tickUntil } from "../../helpers";
 
@@ -24,7 +24,7 @@ const PATIENCE = 600;
 const START_X = 600;
 
 /** Every imp standing, by the unit that owns it. */
-const impsOf = (world: Simulation, ownerId: EntityId): number => {
+const impsOf = (world: Simulation, ownerId: UnitId): number => {
   const units = world.state.map.units;
   let count = 0;
 

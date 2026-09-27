@@ -5,8 +5,8 @@ export { clamp } from "./clamp";
 export type { DeepReadonly } from "./deep-readonly";
 export { HASH_RANGE, hash4 } from "./hash";
 export {
-  type EntityId,
   GENERATION_BITS,
+  type Id,
   INDEX_BITS,
   MAX_GENERATION,
   MAX_INDEX,

@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import { attackOf, isInAttackRange } from "../../attack/attack";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import { isCasting, selectAbility } from "../ability-selection";
@@ -32,7 +32,7 @@ export const chase = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   const tuning = world.scratch.machine.tuning;
   const standing = world.scratch.machine.standing;
@@ -91,7 +91,7 @@ export const enterChase = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   unit.ai.state = "chase";
   unit.ai.repathAtTick = world.tick;
@@ -109,7 +109,7 @@ export const alertPack = (
   world: World,
   unit: Readonly<Unit>,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   const packId = unit.pack.id;
   const units = world.map.units;

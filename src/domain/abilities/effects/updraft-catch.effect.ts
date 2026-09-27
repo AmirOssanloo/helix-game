@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { ticksOfSeconds } from "../../definitions/duration";
 import type { EffectTargetDef } from "../../definitions/effect-def";
 import type { LevelTable } from "../../definitions/level-table";
@@ -11,6 +10,7 @@ import {
   objectOf,
   oneOf,
 } from "../../definitions/schema";
+import type { UnitId } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import type { Zone } from "../../entities/zone";
 import { hasTakenHit, takeHit } from "../../entities/zone";
@@ -76,7 +76,7 @@ const pickUp = (
   const count = collectTargets(world, cast, INSIDE, level);
 
   for (let slot = 0; slot < count; slot += 1) {
-    const id: EntityId = targetAt(world, level, slot);
+    const id: UnitId = targetAt(world, level, slot);
     const unit = world.map.units.resolve(id);
 
     if (

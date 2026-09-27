@@ -1,6 +1,8 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, unpackIndex } from "@shared/public";
 import type { PoolView } from "../entities/pool";
+import { unwrittenId } from "../entities/pool";
+import type { UnitId } from "../entities/unit";
 import { UNIT_CAPACITY } from "../entities/unit";
 
 /** Unit ids one cell holds. A cell at capacity refuses the next insert and counts the miss. */
@@ -67,29 +69,29 @@ export type SpatialHashView = Readonly<{
   queryCircle: (
     centre: Readonly<Vec2>,
     radius: number,
-    out: EntityId[],
+    out: UnitId[],
   ) => number;
   querySegment: (
     from: Readonly<Vec2>,
     to: Readonly<Vec2>,
     radius: number,
-    out: EntityId[],
+    out: UnitId[],
   ) => number;
   queryRectangle: (
     minX: number,
     minY: number,
     maxX: number,
     maxY: number,
-    out: EntityId[],
+    out: UnitId[],
   ) => number;
 }>;
 
 /** A buffer for query results, sized once. A query never writes past it. */
-export const createCandidateBuffer = (capacity: number): EntityId[] => {
-  const buffer: EntityId[] = [];
+export const createCandidateBuffer = (capacity: number): UnitId[] => {
+  const buffer: UnitId[] = [];
 
   for (let index = 0; index < capacity; index += 1) {
-    buffer.push(NO_ID);
+    buffer.push(unwrittenId());
   }
 
   return buffer;
@@ -147,7 +149,7 @@ export class SpatialHash implements SpatialHashView {
   private readonly cellCounts: number[];
 
   /** Every cell's ids, `CELL_CAPACITY` per cell, one after another. */
-  private readonly cellIds: number[];
+  private readonly cellIds: (UnitId | typeof NO_ID)[];
 
   private readonly freeCells: number[];
 
@@ -157,7 +159,7 @@ export class SpatialHash implements SpatialHashView {
   private readonly cellOfUnit: number[];
 
   /** Per unit slot: the id indexed there, or `NO_ID`, so a stale id is told from a live one. */
-  private readonly idOfUnit: number[];
+  private readonly idOfUnit: (UnitId | typeof NO_ID)[];
 
   private indexedCount = 0;
 
@@ -248,7 +250,7 @@ export class SpatialHash implements SpatialHashView {
    * Indexes `id` at a position it is not yet indexed at. `false` when the cell is full; the
    * unit is then outside the hash until a later `move` finds room.
    */
-  insert(id: EntityId, x: number, y: number): boolean {
+  insert(id: UnitId, x: number, y: number): boolean {
     assert(
       this.idOfUnit[unpackIndex(id)] === NO_ID,
       "A unit is inserted into the hash once; afterwards it moves",
@@ -258,7 +260,7 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** Forgets `id`. An id the hash does not hold changes nothing. */
-  remove(id: EntityId): void {
+  remove(id: UnitId): void {
     const unit = unpackIndex(id);
 
     if (this.idOfUnit[unit] !== id) {
@@ -277,7 +279,7 @@ export class SpatialHash implements SpatialHashView {
    * for every unit and every push each tick, and a fractional number handed to a call the
    * engine does not inline is boxed into a new heap object on the way in.
    */
-  move(id: EntityId, position: Readonly<Vec2>): void {
+  move(id: UnitId, position: Readonly<Vec2>): void {
     const unit = unpackIndex(id);
     const cell = this.cellOfUnit[unit];
     const x = position.x;
@@ -297,7 +299,7 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** Forgets everything, takes `cellSize`, and indexes every live unit of `units` in index order. */
-  rebuild(cellSize: number, units: PoolView<Positioned>): void {
+  rebuild(cellSize: number, units: PoolView<Positioned, UnitId>): void {
     assert(
       Number.isFinite(cellSize) && cellSize > 0,
       "A spatial hash needs a positive cell size",
@@ -335,7 +337,7 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** The ids in every cell the circle touches, including a cell it only clips at a corner. */
-  queryCircle(centre: Readonly<Vec2>, radius: number, out: EntityId[]): number {
+  queryCircle(centre: Readonly<Vec2>, radius: number, out: UnitId[]): number {
     const x = centre.x;
     const y = centre.y;
     const minColumn = this.cellOf(x - radius);
@@ -364,7 +366,7 @@ export class SpatialHash implements SpatialHashView {
     from: Readonly<Vec2>,
     to: Readonly<Vec2>,
     radius: number,
-    out: EntityId[],
+    out: UnitId[],
   ): number {
     const ax = from.x;
     const ay = from.y;
@@ -415,7 +417,7 @@ export class SpatialHash implements SpatialHashView {
     minY: number,
     maxX: number,
     maxY: number,
-    out: EntityId[],
+    out: UnitId[],
   ): number {
     const minColumn = this.cellOf(minX);
     const maxColumn = this.cellOf(maxX);
@@ -551,7 +553,7 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** Appends `id` to the cell at the position. `false`, and a miss, when the cell is full. */
-  private place(id: EntityId, x: number, y: number): boolean {
+  private place(id: UnitId, x: number, y: number): boolean {
     const cell = this.claimCell(packKey(this.cellOf(x), this.cellOf(y)));
 
     assert(cell !== NO_CELL, "One cell per unit slot is never exhausted");
@@ -618,7 +620,7 @@ export class SpatialHash implements SpatialHashView {
   }
 
   /** Copies the ids of the cell `key` names, if one exists, into `out` from `written` on. */
-  private copyCell(key: number, out: EntityId[], written: number): number {
+  private copyCell(key: number, out: UnitId[], written: number): number {
     const cell = this.cellAt(key);
 
     if (cell === NO_CELL) {
@@ -639,7 +641,7 @@ export class SpatialHash implements SpatialHashView {
     for (let slot = first; slot < first + count; slot += 1) {
       const id = this.cellIds[slot];
 
-      assert(id !== undefined, "A cell's ids fill its count");
+      assert(id !== undefined && id !== NO_ID, "A cell's ids fill its count");
 
       out[next] = id;
       next += 1;

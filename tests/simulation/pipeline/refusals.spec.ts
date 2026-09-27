@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
-import type { DomainEvent, Unit } from "@domain/public";
+import type { DomainEvent, Unit, UnitId } from "@domain/public";
 import { acquireUnit, releaseUnit } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
@@ -98,7 +98,7 @@ const castNone = (world: Simulation, abilityId: string): void => {
 const castUnit = (
   world: Simulation,
   abilityId: string,
-  unitId: number,
+  unitId: UnitId,
 ): void => {
   submit(world, {
     kind: "cast",

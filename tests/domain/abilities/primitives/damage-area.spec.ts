@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type {
   DamageAreaEffectDef,
   EffectDef,
@@ -6,7 +7,6 @@ import type {
   Unit,
 } from "@domain/public";
 import { effectsPerTick, runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../../helpers";
 
@@ -38,7 +38,7 @@ const POSITIONS: readonly (readonly [number, number])[] = [
 type Arranged = { world: Simulation; enemies: readonly Unit[] };
 
 /** The id of the enemy the fixture placed at `index`. The hero holds the slot before them. */
-const idOfEnemy = (world: Simulation, index: number): EntityId => {
+const idOfEnemy = (world: Simulation, index: number): UnitId => {
   const id = world.state.map.units.idAt(index + 1);
 
   if (id === null) {

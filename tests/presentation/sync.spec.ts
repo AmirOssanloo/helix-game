@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import { acquireUnit, releaseUnit } from "@domain/public";
 import type { FollowCamera, UnitViewPool } from "@presentation/public";
 import {
@@ -12,7 +13,7 @@ import {
   VIEW_SCREEN_MARGIN,
   WorldCamera,
 } from "@presentation/public";
-import type { EntityId, Rect } from "@shared/public";
+import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FEEDBACK_TIMINGS,
@@ -40,8 +41,8 @@ const AROUND_HERO: Rect = { minX: -100, minY: -100, maxX: 100, maxY: 100 };
 
 type Arranged = {
   world: Simulation;
-  heroId: EntityId;
-  enemyId: EntityId;
+  heroId: UnitId;
+  enemyId: UnitId;
   hash: FixedHash;
   pool: UnitViewPool;
   sync: (frame?: CameraFrame) => void;
@@ -215,7 +216,7 @@ const cameraOn = (centre: { x: number; y: number }): FollowCamera => ({
 
 type Arena = {
   world: Simulation;
-  ids: readonly EntityId[];
+  ids: readonly UnitId[];
   projection: Projection;
   pool: UnitViewPool;
   quads: QuadRecorder[];
@@ -234,7 +235,7 @@ const arrangeArena = (): Arena => {
       bounds: { minX: 0, minY: 0, maxX: ARENA, maxY: ARENA },
     }),
   });
-  const ids: EntityId[] = [];
+  const ids: UnitId[] = [];
 
   for (let across = 0; across < ENEMIES_ACROSS; across += 1) {
     for (let down = 0; down < ENEMIES_DOWN; down += 1) {
@@ -352,7 +353,7 @@ describe("two hundred enemies over the arena", () => {
 
   it("keeps a view on every enemy drawn on screen, and binds one only off its edge, walking across the arena", () => {
     const arena = arrangeArena();
-    const wasBound = new Set<EntityId>();
+    const wasBound = new Set<UnitId>();
     let entries = 0;
     let shownUnbound = 0;
     let poppedIn = 0;

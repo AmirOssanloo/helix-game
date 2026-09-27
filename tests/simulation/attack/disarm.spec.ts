@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -29,7 +29,7 @@ const PATIENCE = 200;
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  targetId: EntityId;
+  targetId: UnitId;
   reader: EventReader;
 };
 
@@ -59,7 +59,7 @@ const disarm = (world: Simulation, ticks: number): void => {
 };
 
 /** Orders the hero to attack `targetId`. */
-const attack = (world: Simulation, targetId: EntityId): void => {
+const attack = (world: Simulation, targetId: UnitId): void => {
   submit(world, {
     kind: "attack_target",
     tick: world.view.tick,

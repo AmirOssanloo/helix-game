@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { AbilityDef, EnemyDef, Unit } from "@domain/public";
 import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   always,
@@ -14,6 +14,7 @@ import {
   makeWorld,
   spawnEnemy,
   spawnHero,
+  targetUnitOf,
   tickUntil,
   unitIdOf,
 } from "../../helpers";
@@ -108,9 +109,9 @@ const PAIR = casterOf("pair", [FROST_VOLLEY.id, WAR_CRY.id]);
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   caster: Unit;
-  casterId: EntityId;
+  casterId: UnitId;
 }>;
 
 /** A world with every caster and ability above, the hero at the origin, and one caster of `def` at (`x`, 0). */
@@ -183,7 +184,7 @@ describe("the ability selection rule", () => {
       world,
       () =>
         caster.order.kind === "attack_target" &&
-        caster.order.targetId === heroId,
+        targetUnitOf(caster.order.target) === heroId,
       PATIENCE,
     );
 
@@ -214,7 +215,7 @@ describe("the ability selection rule", () => {
       world,
       () =>
         caster.order.kind === "attack_target" &&
-        caster.order.targetId === heroId,
+        targetUnitOf(caster.order.target) === heroId,
       PATIENCE,
     );
 
@@ -289,7 +290,7 @@ describe("the ability selection rule", () => {
       world,
       () =>
         caster.order.kind === "attack_target" &&
-        caster.order.targetId === heroId,
+        targetUnitOf(caster.order.target) === heroId,
       PATIENCE,
     );
 
@@ -322,7 +323,7 @@ describe("the ability selection rule", () => {
       world,
       () =>
         caster.order.kind === "attack_target" &&
-        caster.order.targetId === heroId,
+        targetUnitOf(caster.order.target) === heroId,
       PATIENCE,
     );
 
@@ -354,7 +355,7 @@ describe("the ability selection rule", () => {
       world,
       () =>
         caster.order.kind === "attack_target" &&
-        caster.order.targetId === heroId,
+        targetUnitOf(caster.order.target) === heroId,
       PATIENCE,
     );
 

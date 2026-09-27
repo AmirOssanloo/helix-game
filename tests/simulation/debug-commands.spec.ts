@@ -10,6 +10,7 @@ import { applyStatus, createDisableFlags, startCooldown } from "@domain/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
+  idOf,
   makeFormDef,
   makeMapDef,
   makeRegistry,
@@ -594,9 +595,9 @@ describe("clear_all", () => {
     world.tick();
 
     expect(world.view.map.units.count).toBe(1);
-    expect(world.view.map.units.resolve(world.view.run.heroId ?? -1)).toBe(
-      hero,
-    );
+    expect(
+      world.view.map.units.resolve(world.view.run.heroId ?? idOf(-1)),
+    ).toBe(hero);
   });
 });
 

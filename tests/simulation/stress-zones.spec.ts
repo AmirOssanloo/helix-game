@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { arenaDef } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type {
   SpawnProjectileEffectDef,
   SpellRecord,
   Unit,
 } from "@domain/public";
 import { runEffects, runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createSessionWorld } from "@simulation/public";
 import { makeCast, makeRegistry, submit } from "../helpers";
@@ -89,7 +89,7 @@ type Arranged = {
   world: Simulation;
   hero: Unit;
   dummy: Unit;
-  dummyId: EntityId;
+  dummyId: UnitId;
 };
 
 /** The arena with the hero at its spawn point facing west, and one training dummy in front of it. */

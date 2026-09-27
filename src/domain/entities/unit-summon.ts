@@ -1,12 +1,12 @@
-import type { EntityId } from "@shared/public";
 import type { Tick } from "../tick";
+import type { UnitId } from "./unit";
 
 /**
  * What ties a summon to the unit that summoned it: its owner, which it follows and dies
  * with, and the tick it expires on. A unit nothing summoned holds `null` in both.
  */
 export type SummonState = {
-  ownerId: EntityId | null;
+  ownerId: UnitId | null;
   /** The tick a summon expires on; `null` for a unit that lives until it dies. */
   expiresAtTick: Tick | null;
 };

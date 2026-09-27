@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, Unit } from "@domain/public";
 import { applyDamage, applyStatus } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -29,7 +29,7 @@ const NO_ORB_LEVELS: readonly number[] = [];
 type Arranged = {
   world: Simulation;
   unit: Unit;
-  id: EntityId;
+  id: UnitId;
   reader: EventReader;
 };
 
@@ -46,7 +46,7 @@ const arrange = (indestructible = false): Arranged => {
 };
 
 /** The id of the slot `unit` stands in. */
-const idOf = (world: Simulation, unit: Readonly<Unit>): EntityId => {
+const idOf = (world: Simulation, unit: Readonly<Unit>): UnitId => {
   const units = world.state.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -63,11 +63,8 @@ const idOf = (world: Simulation, unit: Readonly<Unit>): EntityId => {
 };
 
 /** Every death the reader has not seen, as the unit each was announced for. */
-const deaths = (
-  world: Simulation,
-  reader: EventReader,
-): (EntityId | null)[] => {
-  const found: (EntityId | null)[] = [];
+const deaths = (world: Simulation, reader: EventReader): (UnitId | null)[] => {
+  const found: (UnitId | null)[] = [];
   let event: DomainEvent | null = world.events.read(reader);
 
   while (event !== null) {

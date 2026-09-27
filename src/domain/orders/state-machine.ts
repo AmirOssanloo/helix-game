@@ -1,10 +1,15 @@
-import type { EntityId } from "@shared/public";
 import type { TargetingKind } from "../definitions/ability-def";
-import type { Unit } from "../entities/unit";
+import type { Unit, UnitId } from "../entities/unit";
 import { clearPath } from "../entities/unit";
 import type { OrderKind } from "./order";
-import { resetOrder } from "./order";
-import { clearCast, dropOrder, takeOrder } from "./order-steps";
+import { aimAtUnit, copyTarget, resetOrder } from "./order";
+import {
+  aimCast,
+  clearCast,
+  dropOrder,
+  takeOrder,
+  walkTo,
+} from "./order-steps";
 
 /** Why a transition did not happen. Each names the state or order the transition needed and did not find. */
 export type TransitionRefusal =
@@ -69,9 +74,7 @@ export const issueMove = (
 
   takeOrder(unit);
   unit.order.kind = "move";
-  unit.order.destination.x = x;
-  unit.order.destination.y = y;
-  unit.needsPath = true;
+  walkTo(unit, x, y);
 
   return "ok";
 };
@@ -79,7 +82,7 @@ export const issueMove = (
 /** Replaces the current order with an attack on `targetId`. Legal from every state but `dead`; an attack point or a cast point in progress is cancelled. */
 export const issueAttackTarget = (
   unit: Unit,
-  targetId: EntityId,
+  targetId: UnitId,
 ): TransitionResult => {
   if (unit.state === "dead") {
     return "dead";
@@ -87,7 +90,7 @@ export const issueAttackTarget = (
 
   takeOrder(unit);
   unit.order.kind = "attack_target";
-  unit.order.targetId = targetId;
+  aimAtUnit(unit.order.target, targetId);
 
   return "ok";
 };
@@ -104,9 +107,7 @@ export const issueAttackMove = (
 
   takeOrder(unit);
   unit.order.kind = "attack_move";
-  unit.order.destination.x = x;
-  unit.order.destination.y = y;
-  unit.needsPath = true;
+  walkTo(unit, x, y);
 
   return "ok";
 };
@@ -126,7 +127,7 @@ export const issueCast = (
   targetKind: TargetingKind,
   x: number,
   y: number,
-  targetId: EntityId | null,
+  targetId: UnitId | null,
   direction: number | null,
 ): TransitionResult => {
   if (unit.state === "dead") {
@@ -137,7 +138,7 @@ export const issueCast = (
   unit.order.kind = "cast";
   unit.order.destination.x = x;
   unit.order.destination.y = y;
-  unit.order.targetId = targetId;
+  aimCast(unit, targetKind, x, y, targetId);
   unit.cast.abilityId = abilityId;
   unit.cast.targetKind = targetKind;
   unit.cast.position.x = x;
@@ -223,7 +224,7 @@ export const setApproachPoint = (
   const aimsAtSomething =
     unit.order.kind === "cast" ||
     unit.order.kind === "attack_target" ||
-    (unit.order.kind === "attack_move" && unit.order.targetId !== null);
+    (unit.order.kind === "attack_move" && unit.order.target.tag === "unit");
 
   if (!aimsAtSomething) {
     return "no_order_to_approach";
@@ -300,15 +301,15 @@ export const cancelAttackWindup = (unit: Unit): TransitionResult => {
  */
 export const engageTarget = (
   unit: Unit,
-  targetId: EntityId,
+  targetId: UnitId,
 ): TransitionResult => {
-  if (unit.order.kind !== "attack_move" || unit.order.targetId !== null) {
+  if (unit.order.kind !== "attack_move" || unit.order.target.tag === "unit") {
     return "no_move_in_progress";
   }
 
   unit.attack.movePoint.x = unit.order.destination.x;
   unit.attack.movePoint.y = unit.order.destination.y;
-  unit.order.targetId = targetId;
+  aimAtUnit(unit.order.target, targetId);
   unit.state = "turning";
   unit.turnTicks = 0;
   clearPath(unit.path);
@@ -324,17 +325,14 @@ export const engageTarget = (
  * attack-move holds a target.
  */
 export const disengageTarget = (unit: Unit): TransitionResult => {
-  if (unit.order.kind !== "attack_move" || unit.order.targetId === null) {
+  if (unit.order.kind !== "attack_move" || unit.order.target.tag !== "unit") {
     return "no_attack_in_progress";
   }
 
-  unit.order.targetId = null;
-  unit.order.destination.x = unit.attack.movePoint.x;
-  unit.order.destination.y = unit.attack.movePoint.y;
   unit.state = "turning";
   unit.turnTicks = 0;
   clearPath(unit.path);
-  unit.needsPath = true;
+  walkTo(unit, unit.attack.movePoint.x, unit.attack.movePoint.y);
 
   return "ok";
 };
@@ -463,7 +461,7 @@ export const suspendOrder = (unit: Unit): TransitionResult => {
     unit.suspended.kind = unit.order.kind;
     unit.suspended.destination.x = unit.order.destination.x;
     unit.suspended.destination.y = unit.order.destination.y;
-    unit.suspended.targetId = unit.order.targetId;
+    copyTarget(unit.suspended.target, unit.order.target);
   }
 
   dropOrder(unit);
@@ -490,7 +488,7 @@ export const resumeOrder = (unit: Unit): TransitionResult => {
   unit.order.kind = unit.suspended.kind;
   unit.order.destination.x = unit.suspended.destination.x;
   unit.order.destination.y = unit.suspended.destination.y;
-  unit.order.targetId = unit.suspended.targetId;
+  copyTarget(unit.order.target, unit.suspended.target);
   unit.needsPath = unit.suspended.kind !== "attack_target";
   resetOrder(unit.suspended);
 

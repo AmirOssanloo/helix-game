@@ -8,6 +8,7 @@ import type {
   DisableReason,
   OrderKind,
   Unit,
+  UnitId,
 } from "@domain/public";
 import {
   answerOf,
@@ -261,7 +262,7 @@ const spell = makeSpellDef.build({
 
 const form = makeFormDef.build({ abilities: [spell.id] });
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; enemyId: number }>;
+type Arranged = Readonly<{ world: Simulation; hero: Unit; enemyId: UnitId }>;
 
 /** The hero at the origin facing +X with the spell prepared in D, and an enemy far off along +X. */
 const arrange = (): Arranged => {
@@ -300,7 +301,7 @@ const wear = (world: Simulation, statusId: string): void => {
 };
 
 /** The command a key or order column is validated with. */
-const commandFor = (column: CommandColumn, enemyId: number): Command => {
+const commandFor = (column: CommandColumn, enemyId: UnitId): Command => {
   const stamp = { tick: 0, timestamp: 0 };
   const slot = slotOf(column);
 
@@ -338,7 +339,7 @@ const orderOf = (column: DisableColumn): OrderKind | null => {
 const startOn = (
   world: Simulation,
   column: DisableColumn,
-  enemyId: number,
+  enemyId: UnitId,
 ): void => {
   const stamp = { tick: world.view.tick, timestamp: world.view.tick };
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { DamageType, DomainEvent, Unit } from "@domain/public";
 import { acquireUnit, releaseUnit } from "@domain/public";
 import type { FloatingNumberViews } from "@presentation/public";
@@ -12,7 +13,6 @@ import {
   HitNumbers,
   showHit,
 } from "@presentation/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   FEEDBACK_TIMINGS,
@@ -58,15 +58,15 @@ const TUNED_LIFE_TICKS = 60;
 type Arranged = {
   world: Simulation;
   dummy: Unit;
-  dummyId: EntityId;
-  otherId: EntityId;
+  dummyId: UnitId;
+  otherId: UnitId;
   numbers: FloatingNumberViews;
   flashes: HitFlashes;
   hitNumbers: HitNumbers;
   labels: LabelRecorder[];
   /** One `unit_damaged` of `damageType` on `unitId`, as the damage rule writes it, drained on tick `tick`. */
   hit: (
-    unitId: EntityId,
+    unitId: UnitId,
     amount: number,
     tick: number,
     damageType?: DamageType,
@@ -106,7 +106,7 @@ const arrange = (labelCount = LABELS): Arranged => {
     hitNumbers,
     labels,
     hit: (
-      unitId: EntityId,
+      unitId: UnitId,
       amount: number,
       tick: number,
       damageType: DamageType = "physical",
@@ -125,7 +125,7 @@ const arrange = (labelCount = LABELS): Arranged => {
 
 /** A `unit_damaged` as the damage rule writes one: the amount that landed, on the unit it landed on. */
 const damageEvent = (
-  unitId: EntityId,
+  unitId: UnitId,
   amount: number,
   tick: number,
   damageType: DamageType,
@@ -437,7 +437,7 @@ describe("the numbers a unit taking damage every tick shows", () => {
 describe("a second of the bar's busiest fight", () => {
   it("flashes every unit hit and shows a number for every hit, with none dropped or recycled", () => {
     const arranged = arrange(FLOATING_NUMBER_COUNT);
-    const ids: EntityId[] = [];
+    const ids: UnitId[] = [];
 
     for (let crowd = 0; crowd < FLOATING_NUMBER_HITS_A_SECOND; crowd += 1) {
       const id = acquireUnit(

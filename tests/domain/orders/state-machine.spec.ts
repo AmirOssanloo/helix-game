@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OrderKind, OrderState, Unit } from "@domain/public";
+import type { OrderKind, OrderState, Unit, UnitId } from "@domain/public";
 import {
   arrive,
   beginAttackBackswing,
@@ -20,6 +20,13 @@ import {
   issueMove,
   respawn,
 } from "@domain/public";
+import { idOf, targetUnitOf } from "../../helpers";
+
+/** The unit an order is aimed at in these specs; no pool minted it, and none resolves it. */
+const TARGET_ID = idOf<UnitId>(9);
+
+/** The unit an attack a spec arranges is aimed at. */
+const ARRANGED_ID = idOf<UnitId>(7);
 
 const STATES: readonly OrderState[] = [
   "idle",
@@ -68,7 +75,12 @@ const unitIn = (state: OrderState, orderKind = orderKindIn(state)): Unit => {
   unit.order.kind = orderKind;
   unit.order.destination.x = 10;
   unit.order.destination.y = 20;
-  unit.order.targetId = orderKind === "attack_target" ? 7 : null;
+
+  if (orderKind === "attack_target") {
+    unit.order.target.tag = "unit";
+    unit.order.target.unitId = ARRANGED_ID;
+  }
+
   unit.facing = 1;
 
   return unit;
@@ -112,7 +124,7 @@ describe("issueMove", () => {
       expect(unit.order).toEqual({
         kind: "move",
         destination: { x: 3, y: 4 },
-        targetId: null,
+        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
       });
     },
   );
@@ -155,7 +167,7 @@ describe("issueMove", () => {
 
     issueMove(unit, 3, 4);
 
-    expect(unit.order.targetId).toBeNull();
+    expect(targetUnitOf(unit.order.target)).toBeNull();
   });
 });
 
@@ -170,7 +182,7 @@ describe("issueCast", () => {
       expect(unit.order).toEqual({
         kind: "cast",
         destination: { x: 3, y: 4 },
-        targetId: null,
+        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
       });
       expect(unit.cast).toEqual({
         abilityId: "spell_1",
@@ -199,10 +211,10 @@ describe("issueCast", () => {
   it("records the unit a unit-targeted cast aims at on the order and the record", () => {
     const unit = unitIn("idle");
 
-    issueCast(unit, "spell_1", "unit", 3, 4, 9, null);
+    issueCast(unit, "spell_1", "unit", 3, 4, TARGET_ID, null);
 
-    expect(unit.order.targetId).toBe(9);
-    expect(unit.cast.targetId).toBe(9);
+    expect(targetUnitOf(unit.order.target)).toBe(TARGET_ID);
+    expect(unit.cast.targetId).toBe(TARGET_ID);
     expect(unit.cast.targetKind).toBe("unit");
   });
 
@@ -211,7 +223,15 @@ describe("issueCast", () => {
     (kind) => {
       const unit = unitIn("idle");
 
-      issueCast(unit, "spell_1", kind, 3, 4, kind === "unit" ? 9 : null, null);
+      issueCast(
+        unit,
+        "spell_1",
+        kind,
+        3,
+        4,
+        kind === "unit" ? TARGET_ID : null,
+        null,
+      );
 
       expect(unit.needsPath).toBe(true);
     },
@@ -260,7 +280,7 @@ describe("issueCast", () => {
 describe("a new order over a pending cast", () => {
   it.each([
     ["a move", (unit: Unit): unknown => issueMove(unit, 3, 4)],
-    ["an attack", (unit: Unit): unknown => issueAttackTarget(unit, 9)],
+    ["an attack", (unit: Unit): unknown => issueAttackTarget(unit, TARGET_ID)],
     ["an attack-move", (unit: Unit): unknown => issueAttackMove(unit, 3, 4)],
   ])("%s forgets the cast", (_name, issue) => {
     const unit = unitIn("turning", "cast");
@@ -337,12 +357,12 @@ describe("issueAttackTarget", () => {
     (state) => {
       const unit = unitIn(state);
 
-      expect(issueAttackTarget(unit, 9)).toBe("ok");
+      expect(issueAttackTarget(unit, TARGET_ID)).toBe("ok");
       expect(unit.state).toBe("turning");
       expect(unit.order).toEqual({
         kind: "attack_target",
         destination: { x: 0, y: 0 },
-        targetId: 9,
+        target: { tag: "unit", point: { x: 0, y: 0 }, unitId: TARGET_ID },
       });
     },
   );
@@ -353,7 +373,7 @@ describe("issueAttackTarget", () => {
       const unit = unitIn(state);
       pendingCast(unit);
 
-      expect(issueAttackTarget(unit, 9)).toBe("ok");
+      expect(issueAttackTarget(unit, TARGET_ID)).toBe("ok");
       expect(unit.state).toBe("turning");
       expect(unit.order.kind).toBe("attack_target");
       expect(unit.cast).toEqual(NO_CAST);
@@ -372,7 +392,7 @@ describe("issueAttackMove", () => {
       expect(unit.order).toEqual({
         kind: "attack_move",
         destination: { x: 3, y: 4 },
-        targetId: null,
+        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
       });
     },
   );
@@ -402,7 +422,7 @@ describe("clearOrder", () => {
       expect(unit.order).toEqual({
         kind: "none",
         destination: { x: 0, y: 0 },
-        targetId: null,
+        target: { tag: "none", point: { x: 0, y: 0 }, unitId: null },
       });
     },
   );
@@ -611,7 +631,7 @@ describe("beginChannel", () => {
 
     expect(beginChannel(unit)).toBe("ok");
     expect(unit.state).toBe("channeling");
-    expect(unit.order.targetId).toBeNull();
+    expect(targetUnitOf(unit.order.target)).toBeNull();
   });
 
   it("while channeling is refused", () => {
@@ -674,7 +694,10 @@ describe("finishBackswing", () => {
 describe("a dead unit", () => {
   it.each([
     ["issueMove", (unit: Unit): string => issueMove(unit, 3, 4)],
-    ["issueAttackTarget", (unit: Unit): string => issueAttackTarget(unit, 7)],
+    [
+      "issueAttackTarget",
+      (unit: Unit): string => issueAttackTarget(unit, ARRANGED_ID),
+    ],
     ["issueAttackMove", (unit: Unit): string => issueAttackMove(unit, 3, 4)],
     [
       "issueCast",
@@ -706,7 +729,7 @@ describe("die", () => {
       expect(unit.order).toEqual({
         kind: "none",
         destination: { x: 0, y: 0 },
-        targetId: null,
+        target: { tag: "none", point: { x: 0, y: 0 }, unitId: null },
       });
       expect(unit.cast).toEqual(NO_CAST);
       expect(unit.needsPath).toBe(false);

@@ -1,8 +1,9 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared } from "@shared/public";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
 import { readTunable } from "../definitions/tuning-state";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
@@ -221,7 +222,7 @@ const faceTarget = (world: World, unit: Unit): boolean => {
 const contextOf = (
   world: World,
   unit: Readonly<Unit>,
-  casterId: EntityId,
+  casterId: UnitId,
   record: SpellRecord,
 ): Cast => {
   const aim = world.scratch.cast.aim;
@@ -258,7 +259,7 @@ const contextOf = (
 const commit = (
   world: World,
   unit: Unit,
-  casterId: EntityId,
+  casterId: UnitId,
   record: SpellRecord,
 ): void => {
   const snapshot = world.scratch.cast.snapshot;

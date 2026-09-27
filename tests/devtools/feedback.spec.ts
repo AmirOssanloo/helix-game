@@ -19,6 +19,7 @@ import {
 import type { PoolView, Registry } from "@domain/public";
 import { definitionFields } from "@domain/public";
 import { createRings } from "@instrumentation/public";
+import type { Id } from "@shared/public";
 import type { Simulation, WorldView } from "@simulation/public";
 import { contentVersionOf, strictContentVersionOf } from "@simulation/public";
 import { makeMapDef, makeRegistry } from "../helpers";
@@ -165,7 +166,9 @@ const frameUntilPaused = (driver: FixedStepDriver): void => {
 const replacer = (_key: string, value: unknown): unknown =>
   value instanceof Map ? [...value.entries()] : value;
 
-const slotsOf = <T>(pool: PoolView<T>): (Readonly<T> | null)[] => {
+const slotsOf = <T, I extends Id<string>>(
+  pool: PoolView<T, I>,
+): (Readonly<T> | null)[] => {
   const slots: (Readonly<T> | null)[] = [];
 
   for (let index = 0; index < pool.end; index += 1) {

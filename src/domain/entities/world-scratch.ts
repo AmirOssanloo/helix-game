@@ -1,4 +1,4 @@
-import type { EntityId, Vec2 } from "@shared/public";
+import type { Vec2 } from "@shared/public";
 import type { CastRecord } from "../abilities/cast-context";
 import { createCastRecord } from "../abilities/cast-context";
 import type { CastScratch } from "../abilities/cast.system";
@@ -32,6 +32,7 @@ import type { NearestCell } from "../pathing/destination";
 import { createNearestCell } from "../pathing/destination";
 import type { StatusScratch } from "../statuses/status.system";
 import { createStatusScratch } from "../statuses/status.system";
+import type { UnitId } from "./unit";
 import { UNIT_CAPACITY } from "./unit";
 
 /**
@@ -71,9 +72,9 @@ export type WorldScratch = {
   /** The attack pass's facing tunables and approach point. */
   attack: AttackScratch;
   /** The ids the hash proposes when a unit acquires the nearest enemy. */
-  acquireCandidates: EntityId[];
+  acquireCandidates: UnitId[];
   /** The ids a circle query returns to the collision pass. */
-  collisionCandidates: EntityId[];
+  collisionCandidates: UnitId[];
   /** The vector from a unit to its waypoint. */
   toWaypoint: Vec2;
   /** The legal point a clicked destination resolves to. */

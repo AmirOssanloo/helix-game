@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import { assert, distanceSquared } from "@shared/public";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
 import { clearOrder } from "../../orders/state-machine";
@@ -70,7 +70,7 @@ export const goHome = (
   record: UnitRecord,
   behaviour: MachineBehaviour,
   hero: Unit | null,
-  heroId: EntityId | null,
+  heroId: UnitId | null,
 ): void => {
   const tuning = world.scratch.machine.tuning;
   const provoked = unit.ai.provoked;

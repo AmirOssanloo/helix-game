@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { heroDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { Command, Unit } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -25,7 +25,7 @@ const ticks = (seconds: number): number =>
 type Arranged = {
   world: Simulation;
   hero: Unit;
-  targetId: EntityId;
+  targetId: UnitId;
   reader: EventReader;
 };
 

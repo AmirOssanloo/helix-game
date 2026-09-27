@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EffectDef, Unit } from "@domain/public";
 import { holdsStatus, releaseUnit, runEffects } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { makeCast, makeWorld, spawnUnit, unitIdOf } from "../../../helpers";
 
@@ -35,9 +35,9 @@ const entry = (
 type Arranged = Readonly<{
   world: Simulation;
   caster: Unit;
-  casterId: EntityId;
+  casterId: UnitId;
   target: Unit;
-  targetId: EntityId;
+  targetId: UnitId;
 }>;
 
 /** A caster at the origin and a target on the positive x axis `gap` from edge to edge, bound radius to bound radius. */

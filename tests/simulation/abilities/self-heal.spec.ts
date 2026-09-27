@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { selfHealDef, statuses, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, EnemyDef, Unit } from "@domain/public";
 import { applyStatus, remainingCooldownTicks } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -79,9 +79,9 @@ const HEALER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   healer: Unit;
-  healerId: EntityId;
+  healerId: UnitId;
 }>;
 
 /**

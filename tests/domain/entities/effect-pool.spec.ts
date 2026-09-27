@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Effect, Pool } from "@domain/public";
+import type { Effect, EffectId, Pool } from "@domain/public";
 import { createEffectPool, EFFECT_CAPACITY } from "@domain/public";
+import { idOf } from "../../helpers";
 
-const fillPool = (pool: Pool<Effect>): void => {
+const fillPool = (pool: Pool<Effect, EffectId>): void => {
   for (let slot = 0; slot < EFFECT_CAPACITY; slot += 1) {
     pool.acquire();
   }
@@ -29,7 +30,7 @@ describe("effect pool", () => {
 
     effect.frame = "hit_flash";
     effect.abilityId = "bolt";
-    effect.casterId = 1;
+    effect.casterId = idOf(1);
     effect.position.x = 2;
     effect.facing = 3;
     effect.radius = 4;

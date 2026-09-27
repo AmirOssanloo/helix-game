@@ -1,10 +1,10 @@
-import type { EntityId } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
 import { enterDead } from "../ai/ai-state";
 import type { EnemyTier } from "../definitions/enemy-def";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import { clearStatusEntry, releaseUnit } from "../entities/unit";
 import { clearAiRecord } from "../entities/unit-ai";
@@ -27,7 +27,7 @@ const clearStatuses = (unit: Unit): void => {
   clearDisableFlags(unit.disables);
 };
 
-const announceDied = (world: World, unitId: EntityId): void => {
+const announceDied = (world: World, unitId: UnitId): void => {
   const event = world.scratch.event;
 
   resetDomainEvent(event);
@@ -100,7 +100,7 @@ const hasHealthPool = (unit: Readonly<Unit>): boolean =>
 const takeDeath = (
   world: World,
   unit: Unit,
-  id: EntityId,
+  id: UnitId,
   delay: number,
 ): void => {
   const result = die(unit);
@@ -124,7 +124,7 @@ const takeRespawn = (
   world: World,
   hero: Unit,
   form: FormRecord,
-  id: EntityId,
+  id: UnitId,
 ): void => {
   const result = respawn(hero);
 
@@ -141,7 +141,7 @@ const takeRespawn = (
 };
 
 /** The tick a dead unit was due on: the hero stands up again, and every other unit gives its slot back. */
-const endDeath = (world: World, unit: Unit, id: EntityId): void => {
+const endDeath = (world: World, unit: Unit, id: UnitId): void => {
   if (unit.kind !== "hero") {
     releaseUnit(world, id);
 

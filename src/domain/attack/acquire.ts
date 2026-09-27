@@ -1,6 +1,6 @@
-import type { EntityId } from "@shared/public";
 import { isReachable } from "../abilities/primitives/targets";
 import { isHostile } from "../combat/sides";
+import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 
@@ -14,7 +14,7 @@ export const nearestEnemy = (
   world: World,
   unit: Readonly<Unit>,
   radius: number,
-): EntityId | null => {
+): UnitId | null => {
   const candidates = world.scratch.acquireCandidates;
   const found = world.map.spatialHash.queryCircle(
     unit.curr,
@@ -22,7 +22,7 @@ export const nearestEnemy = (
     candidates,
   );
   const reach = radius * radius;
-  let nearestId: EntityId | null = null;
+  let nearestId: UnitId | null = null;
   let nearest = 0;
 
   for (let slot = 0; slot < found; slot += 1) {

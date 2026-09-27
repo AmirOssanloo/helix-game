@@ -1,4 +1,3 @@
-import type { EntityId } from "@shared/public";
 import { assert } from "@shared/public";
 import type { AbilityDef } from "../../definitions/ability-def";
 import { ticksOfSeconds } from "../../definitions/duration";
@@ -8,6 +7,7 @@ import type {
 } from "../../definitions/effect-def";
 import { tableAtOrbLevels } from "../../definitions/level-table";
 import type { UnitRecord } from "../../definitions/unit-state";
+import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import {
   acquireUnit,
@@ -71,7 +71,7 @@ const spawnOne = (
     cast.anchor.x + entry.offset.forward * cos + entry.offset.right * sin;
   const y =
     cast.anchor.y + entry.offset.forward * sin - entry.offset.right * cos;
-  const id: EntityId | null = acquireUnit(world, record.kind, x, y);
+  const id: UnitId | null = acquireUnit(world, record.kind, x, y);
   const spawned = id === null ? null : world.map.units.resolve(id);
   const caster = world.map.units.resolve(cast.casterId);
 

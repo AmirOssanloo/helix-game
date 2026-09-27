@@ -1,4 +1,4 @@
-import type { EntityId } from "@shared/public";
+import type { UnitId } from "../entities/unit";
 import type { AiRecord } from "../entities/unit-ai";
 
 /**
@@ -6,7 +6,7 @@ import type { AiRecord } from "../entities/unit-ai";
  * aggro on damage is. Damage from nobody, a debug kill or a burn with no caster, provokes
  * nothing.
  */
-export const provoke = (ai: AiRecord, sourceId: EntityId | null): void => {
+export const provoke = (ai: AiRecord, sourceId: UnitId | null): void => {
   if (sourceId !== null) {
     ai.provoked = true;
   }

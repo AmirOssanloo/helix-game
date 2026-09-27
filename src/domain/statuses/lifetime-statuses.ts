@@ -1,5 +1,5 @@
-import type { EntityId } from "@shared/public";
 import type { UnitRecord } from "../definitions/unit-state";
+import type { UnitId } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { STATUS_NEVER_ENDS } from "./status-table";
 import { applyStatus } from "./status.system";
@@ -15,7 +15,7 @@ const NO_ORB_LEVELS: readonly number[] = [];
  */
 export const applyLifetimeStatuses = (
   world: World,
-  unitId: EntityId,
+  unitId: UnitId,
   record: UnitRecord,
 ): void => {
   const statuses = record.def.statuses;

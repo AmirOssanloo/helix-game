@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { EffectDef, SpawnZoneEffectDef, Unit } from "@domain/public";
 import { effectsPerTick, readTunable, runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
-import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
+import { idOf, makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
 
 /** The area every zone below covers, wide enough to hold the enemy standing beside the hero. */
 const AREA = { kind: "circle", radius: 300 } as const;
@@ -80,7 +80,7 @@ const OPENING: EffectDef = {
 type Arranged = {
   world: Simulation;
   enemy: Unit;
-  enemyId: EntityId;
+  enemyId: UnitId;
   simHz: number;
 };
 
@@ -124,7 +124,7 @@ const tickTimes = (world: Simulation, ticks: number): void => {
 };
 
 /** Carries `unit` out of every zone, hash and all, as a walk of its own would leave it. */
-const carryAway = (world: Simulation, unit: Unit, id: EntityId): void => {
+const carryAway = (world: Simulation, unit: Unit, id: UnitId): void => {
   unit.curr.x = OUTSIDE_X;
   unit.prev.x = OUTSIDE_X;
   world.state.map.spatialHash.move(id, unit.curr);
@@ -217,7 +217,9 @@ describe("a zone's rules", () => {
 
   it("keeps a caster-anchored zone on the caster as the caster moves", () => {
     const { world } = arrange();
-    const hero = world.state.map.units.resolve(world.state.run.heroId ?? 0);
+    const hero = world.state.map.units.resolve(
+      world.state.run.heroId ?? idOf(0),
+    );
 
     spawn(world, { ...stillZone([], []), anchor: "caster" });
 

@@ -3,6 +3,7 @@ import type { DisplaceEffectDef, MapDef, Unit } from "@domain/public";
 import { issueMove, runPrimitive } from "@domain/public";
 import type { Simulation } from "@simulation/public";
 import {
+  idOf,
   makeCast,
   makeMapDef,
   makeWorld,
@@ -77,7 +78,7 @@ const arrange = (map: MapDef = makeMapDef.build()): Arranged => {
 
 /** The live hero of the world, which is the caster every case here casts as. */
 const heroOf = (world: Simulation): Unit => {
-  const hero = world.state.map.units.resolve(world.state.run.heroId ?? 0);
+  const hero = world.state.map.units.resolve(world.state.run.heroId ?? idOf(0));
 
   if (hero === null) {
     throw new Error("The fixture spawns the hero");
@@ -221,7 +222,7 @@ describe("a lift through the status pass", () => {
 
     runPrimitive(
       world.state,
-      makeCast(world, { targetId: world.state.run.heroId ?? 0 }),
+      makeCast(world, { targetId: world.state.run.heroId ?? idOf(0) }),
       liftAtTarget,
     );
     world.tick();

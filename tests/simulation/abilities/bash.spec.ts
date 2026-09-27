@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { bashDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { DomainEvent, EnemyDef, Unit } from "@domain/public";
 import { applyDamage, STATUS_NEVER_ENDS } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { EventReader, Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -73,7 +73,7 @@ const STILL_BASHER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   reader: EventReader;
 }>;
 
@@ -126,7 +126,7 @@ const spawnPackOf = (world: Simulation, def: EnemyDef, x: number): Unit => {
 const stunsOn = (
   world: Simulation,
   reader: EventReader,
-  unitId: EntityId,
+  unitId: UnitId,
 ): DomainEvent[] => {
   const found: DomainEvent[] = [];
   let event = world.events.read(reader);

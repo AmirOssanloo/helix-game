@@ -1,3 +1,4 @@
+import type { UnitId } from "@domain/public";
 import type {
   PreviewDef,
   SpellRecord,
@@ -10,7 +11,7 @@ import {
   scalarAtOrbLevels,
   UNIT_CAPACITY,
 } from "@domain/public";
-import type { DeepReadonly, EntityId, Vec2 } from "@shared/public";
+import type { DeepReadonly, Vec2 } from "@shared/public";
 import { bearing } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { DEPTH_GROUND } from "../views/depth-bands";
@@ -90,8 +91,7 @@ export class TargetingPreview {
   private shapeScalePerUnit = 0;
 
   /** Scratch for the units around the pointer, for a unit spell's pick. */
-  private readonly candidates: EntityId[] =
-    createCandidateBuffer(UNIT_CAPACITY);
+  private readonly candidates: UnitId[] = createCandidateBuffer(UNIT_CAPACITY);
 
   constructor(makeQuad: QuadFactory, frameSizes: FrameSizes) {
     this.ring = makeQuad(RING_FRAME);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { UnitId } from "@domain/public";
 import type { SpawnProjectileEffectDef, Unit } from "@domain/public";
 import { readTunable, runPrimitive } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import { makeCast, makeWorld, spawnHero, spawnUnit } from "../../helpers";
@@ -136,7 +136,7 @@ describe("a linear projectile", () => {
     const enemyId = world.state.map.units.idAt(1);
     const reader = createEventReader();
     const kinds: string[] = [];
-    let hitUnitId: EntityId | null = null;
+    let hitUnitId: UnitId | null = null;
 
     fire(world);
     tickTimes(world, 2);

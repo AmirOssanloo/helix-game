@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type {
   ApplyStatusEffectDef,
   SpawnUnitEffectDef,
@@ -7,7 +8,6 @@ import type {
   Unit,
 } from "@domain/public";
 import { runPrimitive, STATUS_NEVER_ENDS } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import {
@@ -108,7 +108,7 @@ const cast = (
 };
 
 /** The first summon in the pool, and the id it holds. */
-const summonOf = (world: Simulation): { unit: Unit; id: EntityId } => {
+const summonOf = (world: Simulation): { unit: Unit; id: UnitId } => {
   const units = world.state.map.units;
 
   for (let index = 0; index < units.end; index += 1) {
@@ -215,7 +215,7 @@ describe("a summon's lifecycle", () => {
 
     expect(world.state.map.units.resolve(id)).toBeNull();
 
-    const deaths: (EntityId | null)[] = [];
+    const deaths: (UnitId | null)[] = [];
 
     for (
       let event = world.events.read(reader);

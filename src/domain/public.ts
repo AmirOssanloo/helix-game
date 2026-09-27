@@ -335,6 +335,7 @@ export {
   createEffectPool,
   type Effect,
   EFFECT_CAPACITY,
+  type EffectId,
 } from "./entities/effect";
 export {
   acquireHero,
@@ -349,6 +350,7 @@ export {
   createProjectilePool,
   type Projectile,
   PROJECTILE_CAPACITY,
+  type ProjectileId,
 } from "./entities/projectile";
 export {
   acquireUnit,
@@ -370,6 +372,7 @@ export {
   type StatusEntry,
   type Unit,
   UNIT_CAPACITY,
+  type UnitId,
   ENEMY_LIVE_CAP,
   countLiveEnemies,
   type UnitKind,
@@ -421,6 +424,7 @@ export {
   takeHit,
   type Zone,
   ZONE_CAPACITY,
+  type ZoneId,
 } from "./entities/zone";
 export {
   type CastCommittedEvent,
@@ -553,7 +557,13 @@ export {
   refusalOf,
   slotRefusal,
 } from "./orders/disable-matrix";
-export type { Order, OrderKind, OrderState } from "./orders/order";
+export type {
+  Order,
+  OrderKind,
+  OrderState,
+  OrderTarget,
+  OrderTargetTag,
+} from "./orders/order";
 export {
   createPathSearch,
   fitPathSearch,

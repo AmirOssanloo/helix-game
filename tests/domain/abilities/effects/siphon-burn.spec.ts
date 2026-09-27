@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ZoneId } from "@domain/public";
 import type { EffectDef, SpawnZoneEffectDef, Unit } from "@domain/public";
 import {
   createCastRecord,
@@ -6,9 +7,9 @@ import {
   runEffects,
   runPrimitive,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
+  idOf,
   makeCast,
   makeSpellDef,
   makeWorld,
@@ -69,7 +70,7 @@ const tieredEntry = (byLevel: readonly number[]): EffectDef => ({
 /** What a unit of the fixture carries: where it stands, the mana it holds, and what it wears. */
 type Placed = Readonly<{ x: number; mana: number; magicResistance: number }>;
 
-type Arranged = { world: Simulation; units: Unit[]; zoneId: EntityId };
+type Arranged = { world: Simulation; units: Unit[]; zoneId: ZoneId };
 
 const place = (x: number, mana: number, magicResistance = 0): Placed => ({
   x,
@@ -118,7 +119,7 @@ const burn = (
     fillZoneCast(
       createCastRecord(),
       zoneId,
-      world.state.run.heroId ?? 0,
+      world.state.run.heroId ?? idOf(0),
       makeSpellDef.build(),
       orbLevels,
       0,

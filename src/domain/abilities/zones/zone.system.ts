@@ -1,11 +1,10 @@
-import type { EntityId } from "@shared/public";
 import type { World } from "../../entities/world-state";
-import type { Zone } from "../../entities/zone";
+import type { Zone, ZoneId } from "../../entities/zone";
 import { resetDomainEvent } from "../../events/domain-event";
 import { fillZoneCast } from "../cast-context";
 import { runEffects } from "../effect-runner";
 
-const announceExpired = (world: World, zoneId: EntityId): void => {
+const announceExpired = (world: World, zoneId: ZoneId): void => {
   const event = world.scratch.event;
 
   resetDomainEvent(event);
@@ -48,7 +47,7 @@ const carry = (world: World, zone: Zone): void => {
 const runRules = (
   world: World,
   zone: Zone,
-  zoneId: EntityId,
+  zoneId: ZoneId,
   isAlive: boolean,
 ): void => {
   const context = world.scratch.zoneContext;

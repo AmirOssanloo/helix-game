@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { impDef, summonAddsDef, tuningTable } from "@content/public";
+import type { UnitId } from "@domain/public";
 import type { EnemyDef, Unit } from "@domain/public";
 import {
   applyDamage,
@@ -8,7 +9,6 @@ import {
   isHostile,
   remainingCooldownTicks,
 } from "@domain/public";
-import type { EntityId } from "@shared/public";
 import type { Simulation } from "@simulation/public";
 import {
   makeAttackDef,
@@ -74,9 +74,9 @@ const FILLER: EnemyDef = makeEnemyDef.build({
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
-  heroId: EntityId;
+  heroId: UnitId;
   summoner: Unit;
-  summonerId: EntityId;
+  summonerId: UnitId;
 }>;
 
 /** A world with the summoner, the filler, and the imp; the hero at the origin; and one rooted summoner in its pack. */
