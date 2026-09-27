@@ -66,7 +66,7 @@ When two people call the same thing different names, the names leak into the cod
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
 | The hand-authored test map | **The arena** | Test level, sandbox |
-| The hand-authored playtest map the hero walks from level 1 to about level 10 | **The long road** | Campaign, the playtest map, level |
+| The hand-authored playtest map the hero walks from level 1 | **The long road** | Campaign, the playtest map, level |
 | A stretch of a map between two chokes, or between a choke and the map's end, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |
 | A wall across the whole width of a map with one opening, where a crowd presses the hero | **Choke** | Gate, bottleneck, chokepoint |
 | A point on a map the hero comes back to after dying: the furthest one it has reached | **Checkpoint** | Save point, waypoint, respawn point, bonfire |

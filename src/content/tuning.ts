@@ -73,7 +73,7 @@ export const tuningTable = {
   elite_damage_multiplier: 1.5,
   boss_damage_multiplier: 1.5,
   elite_experience_multiplier: 3,
-  boss_experience_multiplier: 10,
+  boss_experience_multiplier: 5,
   hit_flash_duration: 0.133,
   refusal_flash_duration: 0.333,
   damage_number_rise: 56,

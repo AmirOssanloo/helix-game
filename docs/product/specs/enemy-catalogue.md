@@ -244,7 +244,7 @@ The hero's level table is `experienceThresholds` in `src/content/hero.ts`: the t
 
 A grunt is the unit of account: 46, a fifth of the first level. The others are priced against it by how long each takes to kill and how much harm it does in that time. Experience is not shared or pooled across a pack; each enemy grants its own on death, as the [enemies page](../features/enemies.md#experience) says.
 
-The numbers here are a normal unit's. An elite grants 3 times its archetype's experience and a boss 10 times, the `elite_experience_multiplier` and `boss_experience_multiplier` tunables, apart from the tiers' health and damage multipliers: an elite grunt grants 138 and a boss grunt 460, the whole first level twice over.
+The numbers here are a normal unit's. An elite grants 3 times its archetype's experience and a boss 5 times, the `elite_experience_multiplier` and `boss_experience_multiplier` tunables, apart from the tiers' health and damage multipliers: an elite grunt grants 138 and a boss grunt 230, the whole first level.
 
 An elite has 3 times its archetype's health and a boss 4 times, the `elite_health_multiplier` and `boss_health_multiplier` tunables, as a Diablo II champion has 3 times its monster's life and a first-act unique about 4. Both land 1.5 times its hit, the `elite_damage_multiplier` and `boss_damage_multiplier` tunables. So an elite grunt has 285 and hits for 39, and on the long road the region bosses are a grunt of 380, a frost raider of 240, a skirmisher of 260, and a troll of 500, and the last boss a brute of 340 that hits for 69. Each boss is set against its Diablo II unique in [the ratios note](../../../.claude/plan/implementation/notes/2026-09-26-diablo-ii-act-1-ratios.md); the last boss is a brute at boss tier, well short of Andariel, as the note says. The imp and the dummy grant nothing at any tier.
 
@@ -606,7 +606,7 @@ A hardy melee enemy that heals itself once it is hurt.
 | A crusher, a troll, and a trapper | 250 | Level 2 and a little over |
 | A lancer, two frost raiders, and a skirmisher | 196 | Short of level 2 |
 
-A roster archetype is priced as the four are: by how long it takes to kill and how much harm it does in that time, and a disable counts as harm. The table is a normal unit's; an elite grants 3 times its archetype's experience and a boss 10 times, as section 4 says, so an elite brute grants 270 and a boss troll 850.
+A roster archetype is priced as the four are: by how long it takes to kill and how much harm it does in that time, and a disable counts as harm. The table is a normal unit's; an elite grants 3 times its archetype's experience and a boss 5 times, as section 4 says, so an elite brute grants 270 and a boss troll 425.
 
 ### 7.5 Frames the roster adds
 

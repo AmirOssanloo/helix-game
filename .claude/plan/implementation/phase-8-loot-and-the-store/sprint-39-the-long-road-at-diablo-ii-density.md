@@ -23,7 +23,7 @@ Choose the long road from the panel and walk it from level 1: packs of three to 
 | Layer | docs, content, tests |
 | Size | 2 |
 | Depends on | none; Q58 answered |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** unplanned, from Q58's answer of 2026-09-27, which supersedes Q95: the road changes in phase 8. Loot needs volume, and today the five bosses pay 3140 of a full clear's 6308.
 
@@ -54,6 +54,8 @@ The content version moves; the six stored logs that remain are re-stamped by `pn
 - `tests/simulation/stress.spec.ts`: the long-road case on the new road.
 
 **Definition of done:** Every change · A documentation change.
+
+> **Done, 2026-09-27:** 37 packs of 104 enemies: 27 normal packs of 89, 5 elite pairs, 5 bosses; the 32 old positions kept with five new field packs on open ground, one in region 1 and four in region 5, and the 137 obstacles and 6 checkpoints unchanged. The guards stay at 2 or 3, as the ticket's "as today" reads. A full clear pays 7931: 7481 before the last boss, level 11, and level 12 with its kill; the regions end at levels 3, 5, 7, 9, and 11; normal packs pay 4747, 60%. The five field packs grown into region 5 are of earlier archetypes, since its level is the dearest (Q101, provisional). The near-point bound is 60, peaking at 33 within 2000 and 48 within 3200. The Legendary bosses are packs 14, 28, and 37 (Q100, provisional). The long-road stress case: 4338 ticks, mean 0.141 ms, worst 4.72 ms, most live 26, most awake behind 1, no pack refused, the hero at level 9 fighting only its line. The six logs replay on content version `14e6373d`, their checksums re-recorded by `pnpm restamp --checksums`, since the tuning table and the map are world state from tick 0; the balance, corridor, and boss-encounter specs hold unchanged. The phase 6 playtest log and spec are removed, with the line in the phase 6 README.
 
 ---
 
@@ -117,12 +119,12 @@ The content version moves; the six stored logs that remain are re-stamped by `pn
 
 | Check | Result |
 | --- | --- |
-| The long road at 100 to 130 enemies, the budget at level 11 to 13 | |
-| The near-point bound and the long-road stress case | |
-| The phase 6 playtest log retired with its note | |
+| The long road at 100 to 130 enemies, the budget at level 11 to 13 | 104 enemies in 37 packs; level 11 before the last boss, 12 with its kill, two levels a region; normal packs 60% of a full clear |
+| The near-point bound and the long-road stress case | Bound 60, peaks 33 within 2000 and 48 within 3200; the stress case at most 26 live, no pack refused, mean tick 0.141 ms |
+| The phase 6 playtest log retired with its note | Removed with its spec; the line is in the phase 6 README's exit record |
 | A level on every map, and the panel command to set it | |
 | The crowd's push at 0.1, and the overlap bar the architect's option settles | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 against 2 |
 | Sprint total | |
 
 ## Risks in this sprint

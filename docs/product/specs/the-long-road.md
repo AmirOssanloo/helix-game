@@ -3,13 +3,13 @@
 > **Entry point:** [Product](../README.md)
 > **See also:** [Map and camera](../features/map-and-camera.md) · [Enemies](../features/enemies.md) · [Enemy catalogue](./enemy-catalogue.md)
 
-**Helix — The long road as data: the rectangle, the five regions, every pack, the walls, the checkpoints, and the experience that takes the hero from level 1 to level 10**
+**Helix — The long road as data: the rectangle, the five regions, every pack, the walls, the checkpoints, and the experience that takes the hero from level 1 to level 12**
 
 | Field | Value |
 |---|---|
 | Document type | Content specification |
 | Audience | Gameplay programming, combat design, the playtest |
-| Product context | Single-player. The hero walks one long map from the spawn at level 1 to the last boss at about level 10 |
+| Product context | Single-player. The hero walks one long map from the spawn at level 1 to the last boss at about level 12 |
 | Classification | What the long road holds and why. What a map is, the camera, and the arena are the [map and camera page](../features/map-and-camera.md); how packs wake, sleep, and fight is the [enemies page](../features/enemies.md) |
 | Map id | `long_road`, written in `src/content/maps/long-road.def.ts` from this page |
 | Reference | Every experience number is the [enemy catalogue's](./enemy-catalogue.md#3-the-archetypes); every level is `experienceThresholds` in `src/content/hero.ts` |
@@ -33,7 +33,7 @@ This page fixes the map as data: the bounds, the regions, one row per pack, ever
 | On screen | The square world is drawn as the [isometric view](../../adr/0006-isometric-view-over-a-square-world.md) draws every map, so a strip along `y` runs diagonally across the screen, from upper right to lower left. That is the road's look, not a mistake |
 | Walkability grid | 125 by 750 cells of 32 units, one layer for each of the three radius classes |
 | Spawn point | (2000, 400), the first checkpoint |
-| Packs | 32, every one dormant, 54 enemies in all |
+| Packs | 37, every one dormant, 104 enemies in all |
 | Obstacles | 137 rectangles: 10 choke walls and 127 blocks, every edge on a 32-unit cell boundary |
 | Checkpoints | 6 |
 
@@ -59,15 +59,15 @@ A region is a stretch of the road between two chokes, or between a choke and the
 
 **4 · The heavies.** Health and armour: a tank and a crusher take combos, a troll has to be finished, and a summoner has to be killed before its imps are. The first adds on the road are here. The boss troll heals, slams, and charges.
 
-**5 · The hall.** The brute's bash, then the last boss: a boss brute, which bashes, slams, charges, and brings adds, with two brutes beside it in a chamber past the narrowest choke.
+**5 · The hall.** The brute's bash among the largest crowds on the road: packs of five of the lighter archetypes met before, runners, frost raiders, skirmishers, and grunts, around a pack of brutes and an elite summoner pair. Then the last boss: a boss brute, which bashes, slams, charges, and brings adds, with two brutes beside it in a chamber past the narrowest choke.
 
-The dummy and the imp are never placed. Imps enter only as a summoner's or a boss's adds.
+An archetype met in an earlier region comes back in a later one as a field pack, so a region's lesson is its new archetypes and its crowds are the old ones. The dummy and the imp are never placed. Imps enter only as a summoner's or a boss's adds.
 
 ---
 
 ## 4. The packs
 
-One row per pack. Every pack is dormant: it costs no unit until the hero comes within the activation radius, and sleeps again once left behind, as the [enemies page](../features/enemies.md#dormant-packs) says. The position is the point a pack stands around; its members are placed on free cells around it. Every position is at least 256 units from any obstacle's edge and at least 1080 from every checkpoint, so a hero who comes back at a checkpoint is outside every aggro radius on the road.
+One row per pack. The sizes are Diablo II's: a normal field pack holds 3 to 6 members, an elite pack 2 to 3, and a boss stands alone behind a guard of two or three. Every pack is dormant: it costs no unit until the hero comes within the activation radius, and sleeps again once left behind, as the [enemies page](../features/enemies.md#dormant-packs) says. The position is the point a pack stands around; its members are placed on free cells around it. Every position is at least 256 units from any obstacle's edge and at least 1080 from every checkpoint, so a hero who comes back at a checkpoint is outside every aggro radius on the road.
 
 A **field** pack stands in a region's open ground. A **guard** stands between the hero and a region's boss, on the hero's side of it. A **boss** pack is one boss-tier unit a little way before the choke; the **last boss** stands in the chamber past the last choke. A guard and its boss are two packs: they wake together but share aggro only within each, so a hero who pulls the guard at the edge of its range can fight it before the boss.
 
@@ -76,46 +76,53 @@ The experience column is the archetype's experience from the catalogue, times th
 | # | Region | Archetype | Tier | Count | x | y | Role | Experience |
 |---|---|---|---|---|---|---|---|---|
 | 1 | 1 | `melee_grunt` | normal | 3 | 2000 | 1600 | field | 138 |
-| 2 | 1 | `fast_runner` | normal | 3 | 1100 | 2300 | field | 90 |
-| 3 | 1 | `melee_grunt` | elite | 1 | 2900 | 2800 | field | 138 |
-| 4 | 1 | `fast_runner` | normal | 2 | 1300 | 3300 | field | 60 |
-| 5 | 1 | `melee_grunt` | normal | 2 | 2000 | 3900 | guard | 92 |
-| 6 | 1 | `melee_grunt` | boss | 1 | 2000 | 4240 | boss | 460 |
-| 7 | 2 | `ranged_archer` | normal | 3 | 2000 | 6600 | field | 150 |
-| 8 | 2 | `frost_raider` | normal | 3 | 1000 | 7100 | field | 114 |
-| 9 | 2 | `melee_grunt` | normal | 2 | 3000 | 7300 | field | 92 |
-| 10 | 2 | `lancer` | normal | 2 | 1600 | 7900 | field | 130 |
-| 11 | 2 | `ranged_archer` | elite | 1 | 2800 | 8200 | field | 150 |
-| 12 | 2 | `ranged_archer` | normal | 2 | 2000 | 8700 | guard | 100 |
-| 13 | 2 | `frost_raider` | boss | 1 | 2000 | 9040 | boss | 380 |
-| 14 | 3 | `hexer` | normal | 2 | 2000 | 11400 | field | 120 |
-| 15 | 3 | `trapper` | normal | 2 | 1000 | 11900 | field | 110 |
-| 16 | 3 | `fast_runner` | normal | 2 | 3000 | 12000 | field | 60 |
-| 17 | 3 | `skirmisher` | normal | 2 | 2400 | 12600 | field | 110 |
-| 18 | 3 | `lancer` | elite | 1 | 1200 | 13000 | field | 195 |
-| 19 | 3 | `melee_grunt` | normal | 3 | 2000 | 13500 | guard | 138 |
-| 20 | 3 | `skirmisher` | boss | 1 | 2000 | 13840 | boss | 550 |
-| 21 | 4 | `tank` | normal | 1 | 2000 | 16200 | field | 120 |
-| 22 | 4 | `troll` | normal | 1 | 1000 | 16700 | field | 85 |
-| 23 | 4 | `summoner` | normal | 1 | 3000 | 16900 | field | 70 |
-| 24 | 4 | `crusher` | normal | 1 | 1600 | 17500 | field | 110 |
-| 25 | 4 | `frost_raider` | elite | 1 | 2800 | 17800 | field | 114 |
-| 26 | 4 | `melee_grunt` | normal | 2 | 2000 | 18300 | guard | 92 |
-| 27 | 4 | `troll` | boss | 1 | 2000 | 18640 | boss | 850 |
-| 28 | 5 | `brute` | normal | 1 | 2000 | 21000 | field | 90 |
-| 29 | 5 | `summoner` | elite | 1 | 1000 | 21400 | field | 210 |
-| 30 | 5 | `skirmisher` | normal | 2 | 3000 | 21400 | field | 110 |
-| 31 | 5 | `brute` | normal | 2 | 2000 | 23200 | guard | 180 |
-| 32 | 5 | `brute` | boss | 1 | 2000 | 23560 | last boss | 900 |
+| 2 | 1 | `fast_runner` | normal | 3 | 2600 | 1800 | field | 90 |
+| 3 | 1 | `fast_runner` | normal | 4 | 1100 | 2300 | field | 120 |
+| 4 | 1 | `melee_grunt` | elite | 2 | 2900 | 2800 | field | 276 |
+| 5 | 1 | `fast_runner` | normal | 3 | 1300 | 3300 | field | 90 |
+| 6 | 1 | `melee_grunt` | normal | 2 | 2000 | 3900 | guard | 92 |
+| 7 | 1 | `melee_grunt` | boss | 1 | 2000 | 4240 | boss | 230 |
+| 8 | 2 | `ranged_archer` | normal | 3 | 2000 | 6600 | field | 150 |
+| 9 | 2 | `frost_raider` | normal | 3 | 1000 | 7100 | field | 114 |
+| 10 | 2 | `melee_grunt` | normal | 3 | 3000 | 7300 | field | 138 |
+| 11 | 2 | `lancer` | normal | 3 | 1600 | 7900 | field | 195 |
+| 12 | 2 | `ranged_archer` | elite | 2 | 2800 | 8200 | field | 300 |
+| 13 | 2 | `ranged_archer` | normal | 2 | 2000 | 8700 | guard | 100 |
+| 14 | 2 | `frost_raider` | boss | 1 | 2000 | 9040 | boss | 190 |
+| 15 | 3 | `hexer` | normal | 3 | 2000 | 11400 | field | 180 |
+| 16 | 3 | `trapper` | normal | 3 | 1000 | 11900 | field | 165 |
+| 17 | 3 | `fast_runner` | normal | 3 | 3000 | 12000 | field | 90 |
+| 18 | 3 | `skirmisher` | normal | 3 | 2400 | 12600 | field | 165 |
+| 19 | 3 | `lancer` | elite | 2 | 1200 | 13000 | field | 390 |
+| 20 | 3 | `melee_grunt` | normal | 3 | 2000 | 13500 | guard | 138 |
+| 21 | 3 | `skirmisher` | boss | 1 | 2000 | 13840 | boss | 275 |
+| 22 | 4 | `tank` | normal | 3 | 2000 | 16200 | field | 360 |
+| 23 | 4 | `troll` | normal | 3 | 1000 | 16700 | field | 255 |
+| 24 | 4 | `summoner` | normal | 3 | 3000 | 16900 | field | 210 |
+| 25 | 4 | `crusher` | normal | 3 | 1600 | 17500 | field | 330 |
+| 26 | 4 | `frost_raider` | elite | 2 | 2800 | 17800 | field | 228 |
+| 27 | 4 | `melee_grunt` | normal | 2 | 2000 | 18300 | guard | 92 |
+| 28 | 4 | `troll` | boss | 1 | 2000 | 18640 | boss | 425 |
+| 29 | 5 | `frost_raider` | normal | 5 | 3100 | 19700 | field | 190 |
+| 30 | 5 | `fast_runner` | normal | 5 | 900 | 20800 | field | 150 |
+| 31 | 5 | `fast_runner` | normal | 5 | 3000 | 20800 | field | 150 |
+| 32 | 5 | `brute` | normal | 4 | 2000 | 21000 | field | 360 |
+| 33 | 5 | `summoner` | elite | 2 | 1000 | 21400 | field | 420 |
+| 34 | 5 | `skirmisher` | normal | 5 | 3000 | 21400 | field | 275 |
+| 35 | 5 | `melee_grunt` | normal | 5 | 3400 | 22100 | field | 230 |
+| 36 | 5 | `brute` | normal | 2 | 2000 | 23200 | guard | 180 |
+| 37 | 5 | `brute` | boss | 1 | 2000 | 23560 | last boss | 450 |
 
 | Tier | Packs | Enemies |
 |---|---|---|
-| Normal | 22 | 44 |
-| Elite | 5 | 5 |
+| Normal | 27 | 89 |
+| Elite | 5 | 10 |
 | Boss | 5 | 5 |
-| Total | 32 | 54 |
+| Total | 37 | 104 |
 
-Thirty-two packs, because the budget decides the number: five boss-tier units at ten times their archetype's experience take 3140 of the 6308 a full clear pays. More packs means smaller ones, or a hero past level 10 before the last boss.
+A hundred and four enemies, so loot has volume, and most of the experience is theirs: the normal packs pay 4747 of the 7931 a full clear pays, 60%, and the five bosses at five times their archetype's experience 1570, 20%. The budget decides the number. Region 5 holds the most because its level is the dearest; more packs anywhere else means a hero past its region's two levels before the region's boss.
+
+**The Legendary bosses.** Three boss packs each drop one of the three Legendary pieces, at a low rate, and no other enemy drops a Legendary: pack 14, the boss frost raider closing region 2; pack 28, the boss troll closing region 4; and pack 37, the last boss. They are the first, second, and third Legendary pieces in the order the item catalogue lists them, so one piece can fall early in a run, one late, and one at its end.
 
 ---
 
@@ -146,11 +153,11 @@ A checkpoint is a point on the road the hero comes back to after dying. The furt
 | # | Where | `x` | `y` | Nearest pack |
 |---|---|---|---|---|
 | 1 | The spawn | 2000 | 400 | 1200, pack 1 |
-| 2 | Region 2's entrance, past choke 1 | 2000 | 5440 | 1160, pack 7 |
-| 3 | Region 3's entrance, past choke 2 | 2000 | 10240 | 1160, pack 14 |
-| 4 | Region 4's entrance, past choke 3 | 2000 | 15040 | 1160, pack 21 |
-| 5 | Region 5's entrance, past choke 4 | 2000 | 19840 | 1160, pack 28 |
-| 6 | Before the last boss, short of choke 5 | 2000 | 22080 | 1080, pack 28 |
+| 2 | Region 2's entrance, past choke 1 | 2000 | 5440 | 1160, pack 8 |
+| 3 | Region 3's entrance, past choke 2 | 2000 | 10240 | 1160, pack 15 |
+| 4 | Region 4's entrance, past choke 3 | 2000 | 15040 | 1160, pack 22 |
+| 5 | Region 5's entrance, past choke 4 | 2000 | 19840 | 1109, pack 29 |
+| 6 | Before the last boss, short of choke 5 | 2000 | 22080 | 1080, pack 32 |
 
 A region's boss stands 1200 units short of the next checkpoint, so a hero that dies to it comes back at the region's own entrance, not past it.
 
@@ -163,9 +170,9 @@ A region's boss stands 1200 units short of the next checkpoint, so a hero that d
 | Input | Where it lives | Value |
 |---|---|---|
 | Experience per archetype | The `experience` field of each definition under `src/content/enemies/`, in the [catalogue](./enemy-catalogue.md#3-the-archetypes) | Grunt 46, runner 30, archer 50, tank 120, brute 90, frost raider 38, hexer 60, trapper 55, skirmisher 55, crusher 110, summoner 70, lancer 65, troll 85 |
-| Tier multipliers | `elite_experience_multiplier` and `boss_experience_multiplier` in `src/content/tuning.ts` | Normal 1, elite 3, boss 10 |
+| Tier multipliers | `elite_experience_multiplier` and `boss_experience_multiplier` in `src/content/tuning.ts` | Normal 1, elite 3, boss 5 |
 | Adds | The imp's definition | 0: an add grants nothing |
-| Level table | `experienceThresholds` in `src/content/hero.ts` | Level 9 at 4620, level 10 at 5550, level 11 at 6520 |
+| Level table | `experienceThresholds` in `src/content/hero.ts` | Level 3 at 600, 5 at 1660, 7 at 2980, 9 at 4620, 10 at 5550, 11 at 6520, 12 at 7530, 13 at 8580 |
 
 A retune of any input recomputes the tables below from the pack list; the pack list does not move with it unless the checks in [section 7.3](#73-the-checks) stop holding.
 
@@ -173,23 +180,25 @@ A retune of any input recomputes the tables below from the pack list; the pack l
 
 | Region | Packs | Normal | Elite | Boss | Region total | Running total | Level at the region's end |
 |---|---|---|---|---|---|---|---|
-| 1 · The approach | 6 | 380 | 138 | 460 | 978 | 978 | 3 |
-| 2 · The line | 7 | 586 | 150 | 380 | 1116 | 2094 | 5 |
-| 3 · The hexes | 7 | 538 | 195 | 550 | 1283 | 3377 | 7 |
-| 4 · The heavies | 7 | 477 | 114 | 850 | 1441 | 4818 | 9 |
-| 5 · The hall, before the last boss | 4 | 380 | 210 | 0 | 590 | 5408 | 9 |
-| The last boss | 1 | 0 | 0 | 900 | 900 | 6308 | 10 |
-| **Full clear** | **32** | **2361** | **807** | **3140** | **6308** | | **10** |
+| 1 · The approach | 7 | 530 | 276 | 230 | 1036 | 1036 | 3 |
+| 2 · The line | 7 | 697 | 300 | 190 | 1187 | 2223 | 5 |
+| 3 · The hexes | 7 | 738 | 390 | 275 | 1403 | 3626 | 7 |
+| 4 · The heavies | 7 | 1247 | 228 | 425 | 1900 | 5526 | 9 |
+| 5 · The hall, before the last boss | 8 | 1535 | 420 | 0 | 1955 | 7481 | 11 |
+| The last boss | 1 | 0 | 0 | 450 | 450 | 7931 | 12 |
+| **Full clear** | **37** | **4747** | **1614** | **1570** | **7931** | | **12** |
 
-Each of the first four regions is two levels: 1 to 3, 3 to 5, 5 to 7, 7 to 9. The fifth is one, and the last boss's kill is the one that takes it.
+Each of the five regions is two levels: 1 to 3, 3 to 5, 5 to 7, 7 to 9, and 9 to 11. The last boss's kill is the twelfth.
 
 ### 7.3 The checks
 
 | Check | Holds because |
 |---|---|
-| A full clear reaches level 10 with the last boss's kill, not before | Everything before the last boss is 5408, 142 short of 5550; its 900 makes 6308 |
-| A full clear stays under level 11 | 6308 is 212 short of 6520 |
-| A hero who skips a fifth of the normal packs still reaches level 9 before the last boss | A fifth of the 22 normal packs is 5. Skipping the five worth most, packs 31, 7, 1, 19, and 10, loses 736 and leaves 4672, 52 over 4620 |
+| A full clear reaches level 12 with the last boss's kill, not before | Everything before the last boss is 7481, 49 short of 7530; its 450 makes 7931 |
+| A full clear stays under level 13 | 7931 is 649 short of 8580 |
+| Each region is worth two levels | The running total at each region's end, 1036, 2223, 3626, 5526, and 7481, stands in levels 3, 5, 7, 9, and 11 |
+| Normal packs pay most of a full clear | 4747 of 7931, 60% |
+| A hero who skips a fifth of the normal packs still reaches level 10 before the last boss | A fifth of the 27 normal packs, rounded up, is 6. Skipping the six worth most, packs 22, 32, 25, 34, 23, and 35, loses 1810 and leaves 5671, 121 over 5550 |
 
 The fifth skipped is the costliest one on purpose: any other fifth leaves more.
 
@@ -199,9 +208,9 @@ The fifth skipped is the costliest one on purpose: any other fifth leaves more.
 
 The long road holds its packs asleep until the hero is near and puts them back to sleep once it is past, so the live count follows the hero rather than the map. The bound the map's content test holds is:
 
-**No walkable point on the road has more than 40 enemies in packs whose position lies within the sleep radius of it, for any sleep radius up to 3200.**
+**No walkable point on the road has more than 60 enemies in packs whose position lies within the sleep radius of it, for any sleep radius up to 3200.**
 
-The pack list as written peaks at 14 within 2000 of a point, near the middle of region 2, and at 22 within 3200, around choke 1. The live cap is 200, so the bound leaves 160 for adds, which a summoner and the last boss bring two at a time, and for packs behind the hero that have not yet gone home and slept. A pack added or grown in the playtest keeps the bound or the bound is argued again here.
+The pack list as written peaks at 33 within 2000 of a point, in the middle of region 5, and at 48 within 3200, around choke 4, where region 4's heavies, its boss and guard, and region 5's first packs all lie in reach. The live cap is 200, so the bound leaves 140 for the rest. Adds take part of it: a summoner and the last boss bring two imps a call, each for its lifetime, and the road's five summoners stand in regions 4 and 5. The packs behind the hero that have not yet gone home and slept take the rest, and a pack sleeps once the hero is past the sleep radius, so they are the packs of one region at most. A pack added or grown in the playtest keeps the bound or the bound is argued again here.
 
 ---
 

@@ -38,7 +38,7 @@ The test map. It exists to test movement, spells, and enemies, not to be fun.
 
 ## The long road
 
-A long strip the hero walks from level 1 at the spawn to about level 10 at the last boss, meeting the roster a few archetypes at a time. [The long road spec](../specs/the-long-road.md) holds every pack, wall, and checkpoint, and the experience budget they add up to.
+A long strip the hero walks from level 1 at the spawn to about level 12 at the last boss, meeting the roster a few archetypes at a time. [The long road spec](../specs/the-long-road.md) holds every pack, wall, and checkpoint, and the experience budget they add up to.
 
 | Property | Value |
 | --- | --- |

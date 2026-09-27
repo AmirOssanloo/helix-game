@@ -235,9 +235,9 @@ describe("the enemy catalogue's ratios", () => {
     expect(tuningTable.boss_damage_multiplier).toBe(1.5);
   });
 
-  it("pays an elite three times a normal's experience and a boss ten, as the level budget is set against", () => {
+  it("pays an elite three times a normal's experience and a boss five, as the level budget is set against", () => {
     expect(tuningTable.elite_experience_multiplier).toBe(3);
-    expect(tuningTable.boss_experience_multiplier).toBe(10);
+    expect(tuningTable.boss_experience_multiplier).toBe(5);
   });
 });
 
@@ -354,7 +354,7 @@ const levelAt = (experience: number): number =>
     .length;
 
 /** The experience the long road pays before the last boss and with it: the spec's budget, which no enemy retune moves. */
-const LEVEL_BUDGET = [5408, 6308];
+const LEVEL_BUDGET = [7481, 7931];
 
 const sum = (values: readonly number[]): number =>
   values.reduce((total, value) => total + value, 0);
@@ -435,17 +435,40 @@ describe("the long road's spec", () => {
     expect(budget.get("Full clear")?.[6]).toBe(levelAt(running));
   });
 
-  it("reaches level 10 with the last boss's kill, not before, and stays under level 11", () => {
+  it("reaches level 12 with the last boss's kill, not before, and stays under level 13", () => {
     const beforeLastBoss = sum(packs.slice(0, lastBoss).map(experienceOf));
     const fullClear = sum(packs.map(experienceOf));
 
     expect([beforeLastBoss, fullClear]).toEqual(LEVEL_BUDGET);
-    expect(levelAt(beforeLastBoss)).toBeLessThan(10);
-    expect(levelAt(fullClear)).toBe(10);
-    expect(fullClear).toBeLessThan(heroDef.experienceThresholds[10] ?? 0);
+    expect(levelAt(beforeLastBoss)).toBe(11);
+    expect(levelAt(fullClear)).toBe(12);
+    expect(fullClear).toBeLessThan(heroDef.experienceThresholds[12] ?? 0);
   });
 
-  it("reaches level 9 before the last boss with the five costliest normal packs skipped", () => {
+  it("takes the hero two levels through each region, to level 11 at the end of the fifth", () => {
+    const levels = [1, 2, 3, 4, 5].map((region) =>
+      levelAt(
+        sum(
+          packs
+            .slice(0, lastBoss)
+            .filter((_pack, index) => (rows[index]?.region ?? 0) <= region)
+            .map(experienceOf),
+        ),
+      ),
+    );
+
+    expect(levels).toEqual([3, 5, 7, 9, 11]);
+  });
+
+  it("pays more than half of a full clear from normal packs", () => {
+    const normal = sum(
+      packs.filter((pack) => pack.tier === "normal").map(experienceOf),
+    );
+
+    expect(normal * 2).toBeGreaterThan(sum(packs.map(experienceOf)));
+  });
+
+  it("reaches level 10 before the last boss with the costliest fifth of the normal packs skipped", () => {
     const beforeLastBoss = packs.slice(0, lastBoss);
     const normals = beforeLastBoss
       .filter((pack) => pack.tier === "normal")
@@ -453,6 +476,6 @@ describe("the long road's spec", () => {
       .sort((a, b) => b - a);
     const skipped = sum(normals.slice(0, Math.ceil(normals.length / 5)));
 
-    expect(levelAt(sum(beforeLastBoss.map(experienceOf)) - skipped)).toBe(9);
+    expect(levelAt(sum(beforeLastBoss.map(experienceOf)) - skipped)).toBe(10);
   });
 });

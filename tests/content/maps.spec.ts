@@ -74,7 +74,7 @@ const refusalsOf = (world: Simulation, reader: EventReader): string[] => {
  */
 const LIVE_NEAR_BOUND: Readonly<Record<string, number>> = {
   arena: 0,
-  long_road: 40,
+  long_road: 60,
 };
 
 /**
@@ -390,12 +390,43 @@ describe("the long road", () => {
     }
   });
 
-  it("holds 32 packs of 54 enemies, every one dormant", () => {
-    expect(longRoadDef.packs).toHaveLength(32);
-    expect(longRoadDef.packs.reduce((sum, pack) => sum + pack.count, 0)).toBe(
-      54,
+  it("holds 37 packs of 104 enemies, every one dormant", () => {
+    const enemies = longRoadDef.packs.reduce(
+      (sum, pack) => sum + pack.count,
+      0,
     );
+
+    expect(longRoadDef.packs).toHaveLength(37);
+    expect(enemies).toBe(104);
+    expect(enemies).toBeGreaterThanOrEqual(100);
+    expect(enemies).toBeLessThanOrEqual(130);
     expect(longRoadDef.packs.every((pack) => pack.dormant)).toBe(true);
+  });
+
+  it("holds 3 to 6 in every normal field pack, 2 to 3 in every elite pack, and one unit in every boss pack", () => {
+    const packs = longRoadDef.packs;
+    const bosses = packs.filter((pack) => pack.tier === "boss");
+    const guards = packs.filter(
+      (_pack, index) => packs[index + 1]?.tier === "boss",
+    );
+    const field = packs.filter(
+      (pack) => pack.tier === "normal" && !guards.includes(pack),
+    );
+
+    expect(bosses).toHaveLength(5);
+    expect(guards).toHaveLength(5);
+    expect(bosses.every((pack) => pack.count === 1)).toBe(true);
+    expect(guards.every((pack) => pack.tier === "normal")).toBe(true);
+
+    for (const pack of field) {
+      expect(pack.count).toBeGreaterThanOrEqual(3);
+      expect(pack.count).toBeLessThanOrEqual(6);
+    }
+
+    for (const pack of packs.filter((each) => each.tier === "elite")) {
+      expect(pack.count).toBeGreaterThanOrEqual(2);
+      expect(pack.count).toBeLessThanOrEqual(3);
+    }
   });
 
   it("stands every pack at least 256 from every obstacle and at least 1080 from every checkpoint", () => {
@@ -442,9 +473,9 @@ describe("the long road", () => {
     },
   );
 
-  it("keeps the live-near bound for any sleep radius up to 3200, peaking at 14 within 2000 and 22 within 3200", () => {
-    expect(mostEnemiesNear(longRoadDef, 2000)).toBe(14);
-    expect(mostEnemiesNear(longRoadDef, 3200)).toBe(22);
+  it("keeps the live-near bound for any sleep radius up to 3200, peaking at 33 within 2000 and 48 within 3200", () => {
+    expect(mostEnemiesNear(longRoadDef, 2000)).toBe(33);
+    expect(mostEnemiesNear(longRoadDef, 3200)).toBe(48);
     expect(mostEnemiesNear(longRoadDef, 3200)).toBeLessThanOrEqual(
       LIVE_NEAR_BOUND.long_road ?? 0,
     );

@@ -394,7 +394,7 @@ describe("a tier's experience", () => {
   it.each([
     ["normal", 46],
     ["elite", 138],
-    ["boss", 460],
+    ["boss", 230],
   ] as const)("a %s grunt pays %d on its death", (tier, experience) => {
     const world = arrange();
     const grunt = spawnGrunt(world, tier, AFAR);
@@ -412,9 +412,9 @@ describe("a tier's experience", () => {
     },
   );
 
-  it("puts an elite at triple and a boss at ten times, as the tunables stand by default", () => {
+  it("puts an elite at triple and a boss at five times, as the tunables stand by default", () => {
     expect(tuningTable.elite_experience_multiplier).toBe(3);
-    expect(tuningTable.boss_experience_multiplier).toBe(10);
+    expect(tuningTable.boss_experience_multiplier).toBe(5);
   });
 
   it("reads a retuned multiplier at the next death, a unit spawned before the retune included", () => {
