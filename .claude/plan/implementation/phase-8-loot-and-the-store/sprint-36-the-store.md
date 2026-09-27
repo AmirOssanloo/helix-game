@@ -23,6 +23,8 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 | Depends on | P8-S34-T03, P8-S35-T01 |
 | Status | planned |
 
+> **Note, 2026-09-27, from P7-S48-T04:** the tooltip draws in `HudScene`'s band over the screens, for a ground label too ([ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md)); its lines are read from the item instance's stat lines ([ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md)).
+
 **Build:** the pointer over an item on a screen, or over a ground label, shows its tooltip: name in its rarity's tint, rarity, base, item level, level requirement (marked when above the hero's level), the implicit stat, each affix line, and, while the store is open, its price or sell price. Every line is read from the item instance and its definitions; the tooltip sums nothing. No comparison with the worn item (Deferred). The Deferred row "Tooltips" moves to built for items.
 
 **Acceptance:**
@@ -73,6 +75,8 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 | Status | planned |
 
 > **Note, 2026-09-27:** Q90 answered: as close to a basic Diablo II store as possible, with three tabs, a grid, and prices on hover. The tabs are three views of one grid, so the size stays 1.5.
+
+> **Note, 2026-09-27, from P7-S48-T04:** the store is a second non-modal screen on the input claim, laid out beside the inventory in `HudScene` ([ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md)).
 
 **Build:** a left click on the checkpoint ring the hero stands in sends `open_store` instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory, as a Diablo II vendor's does: three tabs, **Armour**, **Weapons**, and **Misc**, the last empty until phase 9 lists the active items in it; each tab a grid of item icons in their rarity's tint; the price shown on hover in the item's tooltip (T01); gold shown. A left click on a tab shows it and sends nothing. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
 

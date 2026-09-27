@@ -76,6 +76,8 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 >
 > What is left places the inventory, the ground item and its pool, loot, and the store. Was items 2, 4, and 7, the item in memory, the loot draw, and the first screen, now answered.
 
+> **Note, 2026-09-27, from P7-S48-T04:** [ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) places the inventory and gold in run scope once, an armory on each form record, and an item as a fixed-shape value with no id, moved by copy, a command naming a cell or a slot; [ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) puts screens in `HudScene` behind the input claim. The brief places modules on both and does not reopen them.
+
 **Build:** the engineering architect's structural brief, and whatever decision records it takes, answering each of these on top of phase 7's records. The roadmap's door says later modules land in layers that already exist ([layers](../../../../docs/architecture/layers-and-dependency-rule.md)).
 
 1. **Placement.**

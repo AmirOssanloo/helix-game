@@ -81,8 +81,8 @@ The world has two scopes, and every pool belongs to one.
 
 | Scope | Holds | Reset when |
 | --- | --- | --- |
-| **Run** | The hero, the tuning state, the random source, and later inventory and progression | Never during a session |
-| **Map** | Enemies, summons, projectiles, zones, effects, and later ground items | A map is loaded |
+| **Run** | The hero, the tuning state, the random source, the hero's items, and later progression | Never during a session |
+| **Map** | Enemies, summons, projectiles, zones, effects, and ground items | A map is loaded |
 
 **Beside the two scopes sits the world's scratch**: the working memory the rules write and read within a call, such as a candidate buffer, a scratch point, the context an effect list runs with, the event an announcement is written through, and a re-entrancy guard. It is made once with the world, never grows, and nothing in it is read on a later tick, so it is not world state: the state checksum leaves it out and the world view does not show it. A value a later tick reads is state, and lives in run or map scope.
 
@@ -90,7 +90,17 @@ The world has two scopes, and every pool belongs to one.
 
 Nothing may assume the hero is recreated per map.
 
-**The hero is one unit with one id; a form is a record it points at.** Run scope holds one form record per form the design gives the hero: its definition, its health and mana, its kit state, and its armory. The unit itself holds what is continuous across a swap — position, facing, order, statuses, level, experience, item slots, and the cooldown clock map — plus the index of the active form. A swap changes that index and nothing else, so every enemy target, homing projectile, summon owner, and camera reference that names the hero's id stays valid. Systems read the hero's body and abilities through the active form each tick and never cache its definition.
+**The hero is one unit with one id; a form is a record it points at.** Run scope holds one form record per form the design gives the hero: its definition, its health and mana, its kit state, and its armory. The unit itself holds what is continuous across a swap — position, facing, order, statuses, level, experience, and the cooldown clock map — plus the index of the active form. A swap changes that index and nothing else, so every enemy target, homing projectile, summon owner, and camera reference that names the hero's id stays valid. Systems read the hero's body and abilities through the active form each tick and never cache its definition.
+
+**The hero's items live in run scope, never on the unit.** The unit is one shape for every slot of the pool, so a field the hero alone fills is paid 512 times. The inventory and gold sit in run scope once, shared by the forms; each form record carries its armory of slots; an item on the ground is a ground item in map scope. [ADR 0011](../adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) is the reason.
+
+- **An item is a value.** A fixed-shape record of its base's id, its rarity, its item level, and a fixed number of stat lines, each the content id it came from and its value, written once when the item is made. It holds no content index and no value read back from a definition, so a retune changes no item already made. It has no id: moving it copies its fields into the destination's record and clears the source's, and a command names a place, a cell or a slot, never an item.
+- **What the armory adds reaches the pipeline as totals.** Each armory keeps one flat and one percentage sum per stat beside its slots, rewritten whole from its slots when an item goes on or comes off. The stats system copies the active form's totals into the hero's totals on run scope first each tick. Every unit's modifier table references the totals it adds, the hero's for the hero and one shared record of zeros for every other unit, and the one modifier pipeline adds them to the row sums wherever a stat is read. The unit's table holds no item row.
+- **An item's clock is the unit's.** Cooldown clocks stay on the hero's unit, keyed by ability id, so moving an item touches no clock.
+
+```typescript
+export type FooItem = { baseId: string; lineCount: number; lineIds: (string | null)[]; lineValues: number[] /* … */ }
+```
 
 ---
 
@@ -141,12 +151,17 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | References between entities | By generational id, resolved every tick; never by object |
 | A stale id | Resolves to `null` |
 | Status table | Per unit, fixed size, entries reference a status definition |
-| Run scope | Hero, tuning state, random source; never reset during a session |
-| Map scope | Enemies, summons, projectiles, zones, effects; released by `loadMap` |
+| Run scope | Hero, tuning state, random source, the hero's items; never reset during a session |
+| Map scope | Enemies, summons, projectiles, zones, effects, ground items; released by `loadMap` |
 | The world's scratch | Working memory dead at the end of every tick, made with the world; not state, left out of the checksum. A value read on a later tick is state instead |
 | `loadMap` | Resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |
 | The hero across maps | Never recreated |
 | The hero's forms | Run-scoped records: definition, resources, kit state, armory; the unit holds the active index |
+| The hero's items | Run scope, never the unit: the inventory and gold once, an armory on each form record; on the ground, a ground item in map scope |
+| An item | A fixed-shape value: base id, rarity, item level, a fixed number of stat lines of content id and value written once; no content index, no id of its own |
+| Moving an item | Copy its fields into the destination's record and clear the source's; a command names a cell or a slot, never an item |
+| An item's stats | The armory's per-stat totals, rewritten whole on an equip or unequip, copied from the active form to the hero first in the stats system; every unit's table references the totals it adds, zeros for all but the hero; the one pipeline adds them wherever a stat is read; no item row on a unit's table |
+| An item's clock | On the unit, keyed by ability id; a move touches no clock |
 | A form swap | Changes the active index only; the hero's id, position, facing, order, statuses, and clocks continue |
 | The hero's definition | Read through the active form every tick; never cached across ticks |
 | Packs | Spawn data until the hero is within the activation radius; then units; spawn data again once the hero is past `pack_sleep_radius` and every living member rests at home at full health |
@@ -162,3 +177,4 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 - [Movement, collision, and pathing](./movement-collision-pathing.md) — the spatial hash that indexes these pools
 - [Performance standards](../standards/performance.md) — the allocation policy these pools serve
 - [Simulation coding standards](../standards/simulation-coding.md) — how a system may touch a pool
+- [ADR 0011 — An item is a value the hero holds in run scope](../adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) — why items live in run scope and reach the stats as totals

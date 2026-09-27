@@ -88,6 +88,8 @@ Correcting a small detail in an accepted record is fine — edit it. Changing wh
 | [0008](./0008-damage-hooks-are-status-capabilities.md) | Doing something on damage is a hook on a status, written as an effect list | Where a bash or a mark lives, why a hook has no key of its own, and why hook damage runs no hooks |
 | [0009](./0009-definition-tuning-key-is-the-field-path.md) | A definition number's tuning key is its field path, verbatim | How a slider, a log, and a test name one number on a definition, and what a rename costs |
 | [0010](./0010-a-rules-random-draw-is-a-keyed-hash.md) | A rule's random draw is a hash of the seed, a key, the tick, and a purpose | Where a rule gets a random number, and why a draw in one rule never moves another's |
+| [0011](./0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) | An item is a value the hero holds in run scope. Proposed | Where the inventory, the armory, and gold live, what an item instance holds, and how an item's stats reach the hero without growing every unit's modifier table |
+| [0012](./0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) | Screens draw in the HUD scene, behind one input claim. Proposed | Why a screen is Phaser and not the DOM, how a click or a key on a screen never reaches the world, how a right click reads item labels, and how a screen pauses the world |
 
 ---
 

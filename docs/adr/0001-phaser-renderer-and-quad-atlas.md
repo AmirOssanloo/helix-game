@@ -5,7 +5,7 @@
 | Field             | Value                                                  |
 | ----------------- | ------------------------------------------------------ |
 | **Status**        | Accepted                                               |
-| **Date**          | 2026-09-19                                             |
+| **Date**          | 2026-09-19, amended 2026-09-27                         |
 | **Deciders**      | Amir Ossanloo, with the engineering architect          |
 | **Supersedes**    | None                                                   |
 | **Superseded by** | None                                                   |
@@ -34,7 +34,7 @@ The game config uses `Phaser.AUTO` with `render: { maxTextures: 1 }`. There is n
 
 A `ShapeAtlas` module draws every shape the game needs onto one HTML canvas at boot, white with alpha and anti-aliased edges, and registers it as one Phaser texture with named frames. The frame names are fixed in a definition list under `content/`, so a disk atlas with the same names can replace the bake when sprite art arrives without touching game code. The frames are: a disc; thin and thick rings; a square and a square outline; a triangle; a four-pixel `pixel`; one cone per spell cone angle; a sixty-four-step wedge sheet for cooldown sweeps; status icons; the floor tile; and the glyphs of a bitmap font. Every frame is baked large and scaled down, never scaled up more than twice, and every colour is a runtime tint. The floor tile is the one frame not drawn by the bake: a person paints it, the boot loads `assets/floor.png` and copies it into the canvas in its own colours, and the loaded image is dropped, so the atlas stays one texture.
 
-Every visible thing in the play scene — the floor, units, projectiles, orbs, obstacles, zones, previews, HUD bars, status icons, and debug overlays — is an `Image` or `Sprite` using one of those frames. Dynamic geometry is a quad recipe, not a drawing: a line or a rotated rectangle is the `pixel` frame stretched and rotated; a cone is its baked frame scaled to range; a growing circle or ring is the disc or ring frame scaled by radius; a cooldown sweep is the wedge frame for the current fraction; a hit flash is a fill-mode tint for a few frames; an outline is a second quad parented to the unit's position. **No `Shape` object and no `Graphics` object exists anywhere, including the debug overlays.**
+Every visible thing in the play scene — the floor, units, projectiles, orbs, obstacles, zones, previews, HUD bars, screens, status icons, and debug overlays — is an `Image` or `Sprite` using one of those frames. Dynamic geometry is a quad recipe, not a drawing: a line or a rotated rectangle is the `pixel` frame stretched and rotated; a cone is its baked frame scaled to range; a growing circle or ring is the disc or ring frame scaled by radius; a cooldown sweep is the wedge frame for the current fraction; a hit flash is a fill-mode tint for a few frames; an outline is a second quad parented to the unit's position. **No `Shape` object and no `Graphics` object exists anywhere, including the debug overlays.**
 
 Numbers are `BitmapText` drawn with a `RetroFont` whose glyphs live in the atlas. `Text` is used only for static labels that rarely change, and never updated inside the render sync. Depth is a fixed set of bands (floor, ground effects, obstacles, units, projectiles, air effects, floating text, debug) with no y-sorting, and the HUD runs in a parallel scene with its own camera.
 

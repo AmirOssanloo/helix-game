@@ -23,9 +23,9 @@ Three scenes, each with an explicit job and nothing else:
 | --- | --- |
 | `BootScene` | Loads the floor tile, bakes the shape atlas and the bitmap font, checks the renderer, starts the other two |
 | `PlayScene` | Owns the world camera, runs the sync each frame, maps input to commands, and draws the debug band |
-| `HudScene` | Runs in parallel with its own camera, reads the world view, draws bars, orbs, ability squares, and numbers |
+| `HudScene` | Runs in parallel with its own camera, reads the world view, draws bars, orbs, ability squares, and numbers, and every screen |
 
-A scene composes; it holds no rules and no entity state. There is no debug scene: overlays are a depth band inside `PlayScene`, because a parallel scene would need the play camera copied every frame.
+A scene composes; it holds no rules and no entity state. There is no debug scene: overlays are a depth band inside `PlayScene`, because a parallel scene would need the play camera copied every frame. There is no screen scene either: screens draw in `HudScene`, whose camera is already fixed to the canvas, so the game has two input plugins, not three.
 
 ---
 
@@ -110,7 +110,7 @@ Fixed bands, no per-frame sorting:
 | Floating text | 50 |
 | Debug overlays | 90 |
 
-The HUD is in its own scene and needs no band. Within a band, draw order is pool order. The floor sits in the scene under the ground layer; everything from the ground band to the debug band inside the ground layer is ordered by the layer's list, because a container draws its children in list order whatever their depth says. The layer keeps its list sorted by band, which sorts only when a pool first binds a quad. Nothing sorts by position: everything on the ground lies flat, so nothing stands in front of what is behind it.
+The HUD is in its own scene, with bands of its own: the bar, then screens above it, then what sits over a screen, a tooltip or an item on the pointer. Within a band, draw order is pool order. The floor sits in the scene under the ground layer; everything from the ground band to the debug band inside the ground layer is ordered by the layer's list, because a container draws its children in list order whatever their depth says. The layer keeps its list sorted by band, which sorts only when a pool first binds a quad. Nothing sorts by position: everything on the ground lies flat, so nothing stands in front of what is behind it.
 
 **The HUD draws the active kit, not a fixed layout.** Its six ability squares are filled from slot descriptors the active form's kit writes for the world view — which ability sits in each slot, whether it is an orb, the composer, or a prepared spell, its clock and the whole length of that clock, its cost, its level, and the disable that blocks its key right now — and the orb display appears only while a descriptor is an orb. A prepared spell's colour comes from the spell table by id. `HudScene` never names a spell or a kit; a kit resolver is a port it is handed, so a second kit is a door test.
 
@@ -120,7 +120,7 @@ The HUD is in its own scene and needs no band. Within a band, draw order is pool
 
 **A refusal is a flash, and a flash ends at a tick.** One record of the six squares' flashes is shared by the two scenes: the play scene's input mapper writes one for a cursor it would not open, which never reaches the buffer to be refused there, and the HUD writes one for every refused-command event that names a slot. Red for mana, grey for a clock, striped for a disable, white for anything else. The end is a tick, so a flash pauses with the simulation.
 
-**A pointer that goes down on the bar is the HUD's.** The HUD scene sits above the play scene and stops the event before the play scene sees it, so a right click on the bar is never a move. A left click on an orb square while a skill point is unspent, as the domain says, becomes a spend-skill-point command naming the slot; the kit decides which orb that is.
+**A pointer that goes down on the bar is the HUD's.** The bar is a region of the input claim, always open, so the press and its release never reach the input mapper and a right click on the bar is never a move. A left click on an orb square while a skill point is unspent, as the domain says, becomes a spend-skill-point command naming the slot; the kit decides which orb that is.
 
 ---
 
@@ -160,6 +160,28 @@ A vector cursor is aimed with the button held. The button going down on it holds
 
 The cursor is the only piece of state the layer holds that is not in the world: which slot's cursor is open, and a press held on it. Each frame it reads the hero's state and disable flags and closes a cursor the hero may no longer commit — every cursor on death, and any cursor whose column in the disable matrix says closed under a status the hero wears: a slot cursor on a stun, a silence, or a lift, the attack-move cursor on a stun or a lift — at no cost and with no flash. While a press is held, Escape, a right click, a slot key, and the window losing focus each close the cursor with nothing sent, and S closes it and stops; the right click is the one time a right click is not a move.
 
+## Screens and the input claim
+
+A screen is a panel the player opens over the world: the pause screen, the inventory and armory, the store. [ADR 0012](../adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) is the reason for each rule here.
+
+**A screen is quads and `BitmapText` from the atlas, in `HudScene`.** Its frame and panels are stretched frames, an item is its icon frame in its rarity's tint, and every string is the atlas font. Every object a screen shows is made when the HUD scene is created, pooled where it shows a count of things, and shown, hidden, and written, never read back, as every HUD element is. A screen adds no texture, no filter, and no draw call. Each screen is its own module registered on the HUD scene, which composes them and holds none of their layout.
+
+**The input claim decides whose an event is.** One object in `presentation/input/`, made by the composition root and handed to both scenes, as the flashes record is. The play scene's binding asks it before it hands any pointer or key event to the mapper, and hands on only what is not claimed. No scene stops propagation to protect another, so the claim holds whatever order Phaser gives the scenes.
+
+- **Regions.** The bar, always, and each open screen register the canvas rectangles they cover, in the logical canvas points a pointer event carries.
+- **A press and its release.** A press that goes down in a claimed region is that region's, and so is its release, wherever it comes up. A press that went down on the world keeps its release over a screen, so a held aim still commits.
+- **Keys.** A screen names the keys it claims; a key it does not name reaches the mapper. A key whose press reached the mapper always sends its release there.
+- **Escape**, in one order: an open targeting cursor closes, which the claim asks the mapper; else the topmost screen closes; else the pause screen opens.
+- **A modal screen claims every event** but the keys it names. Opening one closes a held press and releases every held key with nothing sent, as the window losing focus does.
+
+**A screen that pauses is modal, and pauses through a port.** Presentation declares a pause port with a hold and a release; the composition root implements it over the fixed-step driver as a pause reason of its own. Presentation never imports the driver. The pause is not world state and sends no command.
+
+**A right click reads what is drawn, top first.** A right click the claim does not take names an item's label, then a unit, then an item's icon on the ground, then the ground. The labels reach the mapper through a pick port beside the other input ports: a fixed record the label views rewrite each frame with the canvas rectangle and the ground item id of every label shown, in drawing order, and a count. The mapper reads the record and never asks a view.
+
+```typescript
+if (!claim.keyDown(fooCode)) mapper.keyDown(fooCode)   // the binding asks the claim first, for every event
+```
+
 ---
 
 ## Anti-patterns
@@ -183,7 +205,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Rule | Do |
 | --- | --- |
 | Phaser | Used here; the composition root imports it only to construct the game |
-| Scenes | `BootScene` bakes and checks; `PlayScene` syncs, cameras, inputs, and draws debug; `HudScene` runs in parallel with its own camera |
+| Scenes | `BootScene` bakes and checks; `PlayScene` syncs, cameras, inputs, and draws debug; `HudScene` runs in parallel with its own camera and draws the bar and every screen; no fourth scene |
 | A scene | Composes; holds no rules and no entity state |
 | The atlas | One texture baked at boot by `ShapeAtlas`; frame names from the content frame list; every frame white but the floor tile, copied in from its image |
 | Colour | Always a runtime tint on a white frame; the floor tile is its own colours, untinted |
@@ -200,7 +222,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | HUD elements | Not entity views: laid out once, then a bar's fill by horizontal scale, a wedge by frame once per step, a label only when its text changes |
 | HUD state | Bars and the level read the world view; nothing sums events |
 | Refusal flashes | One record of six, shared by the mapper and the HUD; red mana, grey clock, striped disable, white otherwise; ends at a tick |
-| HUD input | A pointer down on the bar stops at the HUD scene; a left click on an orb square with a point unspent, as the domain says, is a spend-skill-point command naming the slot |
+| HUD input | The bar is a region of the input claim, always open, so its presses and releases never reach the mapper; a left click on an orb square with a point unspent, as the domain says, is a spend-skill-point command naming the slot |
 | Targeting preview | Three quads at the ground band in world coordinates, made once: the range ring on the hero; the shape the definition previews — a reticle or a circle under the pointer, a rectangle its offset in front of the hero or a cone on it, both turned toward the pointer, nothing for a line or a definition that previews none; and the drag line from a held press to the pointer while it is dragged. The ability's tint; the ring and the shape red past the range as the domain's range predicate judges it from the positions this tick, to the body of the unit drawn under the pointer for a unit spell, judged at the press while one is held |
 | Picking | Against the unit's interpolated, drawn position; the hash asked wider than any selection radius plus a tick's travel |
 | Binding | Each frame, the spatial hash asked once for the units in the camera's world rectangle, every view and overlay that binds by unit reading that answer; the box around the widened screen's unprojected corners; an entity kept only when its interpolated position is drawn inside the widened screen; zones, checkpoint markers, and obstacles by the world rectangle alone, walked by index; the floor and the walkability overlay over the screen alone |
@@ -226,6 +248,13 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Renderer | `Phaser.AUTO`; a Canvas renderer shows a warning and is unsupported |
 | Map geometry | A tile-layer view kind when needed; the domain never knows |
 | Input | `presentation/input/` owns keys, pointer, and the targeting cursor, and emits commands; a vector cursor holds its press on the button going down and sends on the button coming up, on the canvas or off it; one drag test, in logical canvas pixels, serves the mapper and the preview |
+| Screens | Quads and `BitmapText` from the atlas in `HudScene`'s screen band, made at `create`, pooled, shown and hidden; no texture, filter, or draw call of their own; each screen its own module registered on the HUD scene |
+| The input claim | One object in `presentation/input/`, handed to both scenes; asked before the mapper for every pointer and key event; no scene stops propagation to protect another |
+| What a screen claims | Its rectangles in canvas points; a press that goes down there and its release, wherever it comes up; the keys it names. A press from the world keeps its release. A key whose press reached the mapper sends its release there |
+| Escape | The open cursor, else the topmost screen, else the pause screen opens; resolved in the claim |
+| A modal screen | Claims every event but its keys; opening it closes a held press and releases held keys with nothing sent. Every pausing screen is modal |
+| A pausing screen | Holds a pause port presentation declares and the composition root implements over the driver, a reason apart from the panel's and a hidden tab's; not world state, no command |
+| A right click | If not claimed: an item's label, then a unit, then an item's icon, then the ground; labels read from the pick port, a fixed record of rectangles and ground item ids the label views rewrite each frame |
 | An open cursor | Closed each frame when the hero's state or flags refuse what it would send: every cursor on death, and one whose disable matrix cell says closed: a slot cursor on stun, silence, or lift, the attack-move cursor on stun or lift. A held press is closed with nothing sent by Escape, a right click, a slot key, or losing focus, and by S with a stop |
 
 ---
@@ -237,3 +266,4 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 - [Developer tools and instrumentation](./devtools-and-instrumentation.md) — the debug band and the render-time ring
 - [ADR 0001 — Phaser renderer and quad atlas](../adr/0001-phaser-renderer-and-quad-atlas.md) — why one atlas of quads and no `Graphics`
 - [ADR 0006 — The isometric view](../adr/0006-isometric-view-over-a-square-world.md) — why the projection lives here and the world stays square
+- [ADR 0012 — Screens draw in the HUD scene, behind one input claim](../adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) — why screens are Phaser, and how a screen's events never reach the world

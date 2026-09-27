@@ -147,7 +147,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 - **Static map geometry is drawn by a tile layer**; the domain map is already a grid and never learns how it is drawn — [Presentation](../architecture/presentation.md)
 - **Simulation cost is bounded by a live cap**; dormant packs wake by proximity — [Entities and pools](../architecture/entities-and-pools.md#dormant-packs)
 - **Stats are modifier-driven**, so items become one more source, and usable items are abilities cast through the same pipeline — [Ability pipeline](../architecture/ability-pipeline.md)
-- **Later modules land in layers that already exist** — progression, items, loot, map generation, an inventory adapter — [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md)
+- **Later modules land in layers that already exist** — progression, items, loot, map generation, and screens drawn in the HUD scene — [Layers and the dependency rule](../architecture/layers-and-dependency-rule.md)
 - **The Phaser-free layers move to a workspace package** on the day a second consumer of the simulation appears — [ADR 0003](../adr/0003-layered-single-package-architecture.md)
 
 ---

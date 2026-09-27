@@ -25,6 +25,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 > **Note, 2026-09-27, later:** the flag for an item the hero dropped and has not stepped off is gone: items are picked up by a right click, not by walking over them (Q87).
 
+> **Note, 2026-09-27, from P7-S48-T04:** a ground item holds an item instance inline, the value [ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) defines, copied in on a drop and out on a pickup; the ground item alone has a generational id.
+
 **Build:** the ground item as an entity kind where P8-S31-T02 placed it: gold with an amount, a health or mana globe, or an item instance; its position. A pool of the capacity the brief set, in map scope, released whole when a map is loaded, with generational ids and the rule the brief chose for a drop past capacity, counted as a pool miss if it refuses. The panel's readouts gain **Ground items** live over capacity. The [world model](../../../../docs/architecture/world-model.md), [entities and pools](../../../../docs/architecture/entities-and-pools.md), and where-to-look pages state the kind.
 
 **Acceptance:**

@@ -28,7 +28,7 @@ Recorded in [Open questions](../backlog/open-questions.md): the eight actives an
 
 | Sprint | Ticket | Size |
 | --- | --- | --- |
-| 41 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground, on the item identity phase 7's record of where items live decided with this in view (P7-S48-T04 (a), noted 2026-09-27); how it relates to the retrospective's Kit finding; and the words of Q85 written into the vocabulary page | 1 |
+| 41 | The engineering architect's decision: the active-item bank beside the kit, not a second kit; where an item's cooldown lives when the item moves between the bank, the inventory, and the ground, on the item identity phase 7's record of where items live decided with this in view (P7-S48-T04 (a), noted 2026-09-27); that record, [ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md), makes an item a value with no id, keeps its clock on the unit keyed by ability id so a move touches none, and places the bank in run scope beside the inventory; a clock per copy would be one field on the instance; how it relates to the retrospective's Kit finding; and the words of Q85 written into the vocabulary page | 1 |
 | 41 | The item catalogue's section on the eight actives: each one's effect list, numbers, cooldown, mana cost, and store price, approved by the maintainer | 0.5 |
 | 41 | Six bank slots, the keys T, X, V, C, G, and Space, a HUD row laid out as the grid, Space's browser default (page scroll) suppressed, and the same-tick tie-break order Q W E R D F extended with T X V C G Space | 2 |
 | 42 | The disable matrix's column for the six keys, one test per cell | 1 |

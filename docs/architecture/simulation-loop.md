@@ -38,6 +38,8 @@ const onFrame = (frameDeltaMs: number): void => {
 
 **When the tab is hidden**, the driver stops calling `tick`. Cooldowns freeze with it, because they are tick counts. Any input that arrived while hidden is discarded on resume, not replayed.
 
+**Every pause is a reason the driver holds, and each is held apart**: a hidden tab, the developer panel's pause, and a screen that pauses the world, which reaches the driver through a port presentation declares and the composition root implements. The driver runs a tick only when no reason holds, and feeds no time to the accumulator while one does, so releasing the last reason runs no burst of catch-up ticks, and releasing one never resumes a clock another still holds. No pause is world state or a command.
+
 ---
 
 ## The tick
@@ -115,6 +117,7 @@ A system holding a module-level variable — a cached list, a counter, a scratch
 | The step | 30 Hz, constant `dt`; never a frame delta |
 | Catch-up | At most the catch-up cap of ticks per render frame, 3 unless the developer panel sets another, then drop the remaining time |
 | Hidden tab | No ticks; cooldowns freeze; input received while hidden is discarded |
+| Pause reasons | A hidden tab, the panel's pause, and a pausing screen through its port, held apart; a tick only when none holds; no time fed while one does, so no catch-up burst on release; none is world state or a command |
 | `tick` | Takes no argument; copies previous positions, sorts and consumes the command buffer into the input log, runs the system list in order with the consumed commands readable on the world, forgets them, writes `tick_completed`, advances the tick count; reads no clock |
 | System order | One list, in `simulation/systems.ts`; command application runs first |
 | A system | A plain function over world state; reads the world, the tick count, the consumed commands, and the world's random source; allocates nothing in steady state |

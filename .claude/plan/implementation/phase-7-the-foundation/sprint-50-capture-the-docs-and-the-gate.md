@@ -25,6 +25,8 @@ The build as phase 6 left it, and a pause screen. Press Esc with nothing to clos
 
 **Selection rule:** a seam phase 8 names. P8-S34-T02, the first screen's frame and click claim, builds on this and shrinks to 0.5.
 
+> **Note, 2026-09-27, from P7-S48-T04:** [ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) is the record this ticket builds. The capture layer is the **input claim** in `presentation/input/`, handed to both scenes and asked by the play scene's binding before the mapper; the HUD's `stopPropagation` goes. The pause screen is modal and draws in `HudScene`. Size unchanged.
+
 **Build:**
 - **The capture layer.** Built as decision record (b) says. A screen claims pointerdown, pointerup, and every key it names; nothing it claims reaches the input mapper. Today's HUD-scene claim is rewritten on the layer, and pointerup no longer leaks.
 - **The pause screen.** Its first consumer, on Q97's proposal:

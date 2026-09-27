@@ -81,6 +81,8 @@ When two people call the same thing different names, the names leak into the cod
 | The hash of the whole of world state a tick decides, which a stored input log holds at every 30th tick and its last | **State checksum** | State hash, world hash, snapshot |
 | The pooled Phaser object that draws one entity | **View** | Sprite, renderable, game object (those are Phaser's words) |
 | One step of the play scene's frame, registered with its place in the sync order: it makes its pools once and writes them every frame | **View syncer** | Render system, system (that is the simulation's), update hook |
+| A panel the player opens over the world, drawn in the HUD scene: the pause screen, the inventory and armory, the store | **Screen** | Window, menu, dialog, overlay (that is the diagnostics') |
+| The one record of what the bar and the open screens own of the pointer and the keys, asked before any event reaches the input mapper | **Input claim** | Capture, focus, modal lock |
 | One named region of the atlas: a baked white shape, or the painted floor tile | **Atlas frame** | Texture, sprite |
 | The one mapping from a world point to the screen point it is drawn at, a square cell to a 2:1 diamond | **Projection** | Iso transform, camera transform, world-to-screen matrix |
 | The two nested containers that draw everything lying on the ground through the projection | **Ground layer** | World container, iso layer, floor layer |
