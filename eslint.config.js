@@ -13,7 +13,7 @@
  *   one-line violation; the procedure is in eslint/README.md.
  *
  * Order: the base blocks first, then src/ as a whole, then one block per layer, then the two
- * slices that sit inside a layer, then tests/. A block that overlaps nothing could go anywhere;
+ * slices that sit inside a layer, then the size limit on src/ and its exceptions, then tests/. A block that overlaps nothing could go anywhere;
  * they are kept in the order of the layer table so the file reads like it.
  */
 
@@ -33,6 +33,7 @@ import { presentationLayer } from "./eslint/layers/presentation.js";
 import { sharedLayer } from "./eslint/layers/shared.js";
 import { simulationLayer } from "./eslint/layers/simulation.js";
 import { helixPlugin } from "./eslint/plugin.js";
+import { sizeLimit } from "./eslint/size-limit.js";
 import { srcFiles } from "./eslint/src-files.js";
 import { testsRules } from "./eslint/tests.js";
 
@@ -149,5 +150,6 @@ export default defineConfig([
   bootSceneFile,
   devtoolsLayer,
   appLayer,
+  ...sizeLimit,
   ...testsRules,
 ]);

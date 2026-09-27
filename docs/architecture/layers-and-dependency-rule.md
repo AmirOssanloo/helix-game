@@ -41,7 +41,7 @@ Imports run one way. The lint configuration states this as an allow-list, and a 
 
 Three things follow from the table:
 
-- **`domain` and `simulation` import no Phaser, no DOM, no `window`, and no clock.** They run in Node. Lint also bans `Math.random`, `Date.now`, and `performance.now` under both, so a tick is a function of its inputs. [Simulation coding standards](../standards/simulation-coding.md#quick-reference) hold the detail.
+- **`domain` and `simulation` import no Phaser, no DOM, no `window`, and no clock.** They run in Node. Lint bans `Math.random`, `Date.now`, `performance.now`, and an argument-less `Date` under both in every spelling, called or read, destructured, by a computed key, or through `globalThis`, `self`, or `window`, so a tick is a function of its inputs. It also bans the host's globals there: the page (`window`, `document`, `navigator`, `requestAnimationFrame`), the timers (`setTimeout`, `setInterval`, `queueMicrotask`), storage and the network (`localStorage`, `sessionStorage`, `fetch`), `crypto`, `structuredClone`, and `globalThis` and `self` themselves. `shared`, `domain`, and `simulation` are typechecked a second time as their own project with no DOM library and no ambient types, so a host name that lint misses does not resolve. [Simulation coding standards](../standards/simulation-coding.md#quick-reference) hold the detail.
 - **`presentation` is where Phaser is used, and `app` may import it only to construct the game.** The composition root builds the game config, creates the game, and hands it the scenes; it never builds a view, reads a game object, or draws. A Phaser type appearing in any other layer is a build failure.
 - **The wall clock lives in `app/`.** The fixed-step driver feeds Phaser's frame delta into an accumulator and calls `tick` with a constant step. Time inside the domain is a tick count.
 
@@ -120,7 +120,10 @@ A spell definition importing an effect function and calling it. The registry can
 | `app` may import | Everything. It is the one place that knows concrete wiring |
 | Phaser | Used in `presentation`; imported in `app` only to construct the game; a build failure anywhere else |
 | Clock, DOM, `window` | Never in `domain` or `simulation` |
-| `Math.random`, `Date.now`, `performance.now` | Banned by lint under `domain` and `simulation` |
+| `Math.random`, `Date.now`, `performance.now`, `new Date()` | Banned by lint under `domain` and `simulation` in every spelling: read, destructured, computed, or through `globalThis`, `self`, or `window` |
+| Host globals | Banned by lint under `domain` and `simulation`: `window`, `document`, `navigator`, `requestAnimationFrame`, `setTimeout`, `setInterval`, `queueMicrotask`, `localStorage`, `sessionStorage`, `fetch`, `crypto`, `structuredClone`, `globalThis`, `self` |
+| The DOM-free typecheck | `shared`, `domain`, and `simulation` also compile with no DOM library and no ambient types (`tsconfig.dom-free.json`) |
+| File size | At most 500 raw lines per file under `src/`, blank and comment lines counted as `wc -l` counts them. Map definitions are exempt as data; every other file over it is listed in `eslint/size-limit.js` with its reason, and leaves the list when it is split |
 | Time in the domain | A tick count |
 | Content and the domain | The domain never imports content; content references effects and behaviours by string key |
 | Entering a layer | Through its `public.ts`; only the composition root reaches past it |

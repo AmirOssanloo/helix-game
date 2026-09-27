@@ -1,0 +1,17 @@
+// The three layers that run in Node with no host: shared, domain, and simulation. No DOM lib and
+// no ambient types, so neither `document` nor `setTimeout` resolves here. `pnpm typecheck` checks
+// this project after the root one, which covers the same files with the DOM for the outer layers.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "types": [],
+    "tsBuildInfoFile": "./tsconfig.dom-free.tsbuildinfo"
+  },
+  "include": [
+    "src/shared",
+    "src/domain",
+    "src/simulation",
+    "src/app/build-flags.d.ts"
+  ]
+}

@@ -16,7 +16,7 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.dom-free.json",
     "dev": "vite",
     "build": "vite build",
     "build:playtest": "vite build --mode playtest",

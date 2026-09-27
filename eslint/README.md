@@ -13,6 +13,7 @@ procedure that proves a rule still fires. The rules themselves are owned by the 
 | `rules/` | One restriction per file: a `no-restricted-syntax` selector, a `no-restricted-imports` pattern, or a `no-restricted-globals` name, with a message and no file glob and no rule id. Two files hold a rule implementation instead, because what they check is not in the AST: a file's own name, and a comment on the same line as a `.skip` |
 | `plugin.js` | Wraps the two implementations so flat config can reach them as `helix/<rule>` |
 | `src-files.js` | The block covering every file under `src/`, and `SRC_SYNTAX`, the list every layer block spreads back in |
+| `size-limit.js` | The `max-lines` limit on every file under `src/`, and `OVER_THE_LIMIT`, the files let past it, each with its reason. Map definitions are exempt as data |
 | `layers/` | One block per layer folder under `src/`, plus one slice, `boot-scene.js`. `app/` has a matrix row and a block that only widens `no-console`; its row allows everything, so it has nothing to forbid |
 | `tests.js` | The two blocks that cover `tests/` |
 
@@ -52,9 +53,15 @@ else for this reason.
 
 ## Checking a change
 
-Nothing in this folder has tests. A file pattern that matches nothing produces exactly the
-same output as no rule at all, so a green run proves nothing on its own. The check is that
-every rule still fires on a one-line violation and stays quiet on the line beside it.
+A file pattern that matches nothing produces exactly the same output as no rule at all, so a
+green run proves nothing on its own. The check is that every rule still fires on a one-line
+violation and stays quiet on the line beside it.
+
+`tests/tooling/lint-rules.spec.ts` holds that check for the determinism bans, the host
+globals, and the size limit: it runs each spelling through the entries themselves and through
+the real config at a path under `src/domain/`, `src/simulation/`, and `src/presentation/`.
+Edit one of those three and the spec is the proof. Everything else is proven by the probe
+below.
 
 Save the script below outside the repository and run it from the repository root with
 `node <path>`. It plants one throwaway file per case, lints them in a single run, prints one

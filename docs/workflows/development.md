@@ -15,7 +15,7 @@ pnpm test           # Every test tier in Node — unit, simulation, content, arc
 pnpm test:budget    # The stress test alone, uninstrumented: the tick budget
 pnpm test:watch     # The same, rerunning on save
 pnpm lint           # ESLint; pnpm lint:fix applies the auto-fixes and Prettier
-pnpm typecheck      # tsc --noEmit, strict
+pnpm typecheck      # tsc --noEmit, strict, then again over shared, domain, and simulation with no DOM
 pnpm dev            # The Vite dev server with hot reload
 pnpm build          # The production build, with the panel and DevApi stripped
 pnpm build:playtest # The playtest build: the same game, with the panel left in
@@ -71,8 +71,8 @@ The acceptance tests from the [mechanics spec](../product/specs/character-moveme
 
 ## What the gate enforces
 
-- **Lint** carries the layer import allow-list, the determinism bans (`Math.random`, `Date.now`, `performance.now` under `src/domain/` and `src/simulation/`), and the presentation bans (Phaser Shape and Graphics factories anywhere).
-- **Typecheck** is strict. No optional properties, no non-null assertions; both are lint errors as well.
+- **Lint** carries the layer import allow-list, the determinism and host bans under `src/domain/` and `src/simulation/` (`Math.random`, `Date.now`, `performance.now` in every spelling, and the host's globals), the presentation bans (Phaser Shape and Graphics factories anywhere), and the size limit of 500 raw lines per file under `src/`. `tests/tooling/lint-rules.spec.ts` proves each ban fires where it should and nowhere else.
+- **Typecheck** is strict. No optional properties, no non-null assertions; both are lint errors as well. It runs twice: once over everything, and once over `src/shared/`, `src/domain/`, and `src/simulation/` alone through `tsconfig.dom-free.json`, with no DOM library and no ambient types, so `document` or `setTimeout` there is a type error.
 - **The architecture spec** reads the import table and walks `src/`. It fails on an import lint missed — a dynamic import, a re-export through a barrel.
 - **The content tier** fails on an unresolved string key, so a typo in an effect name is caught before the world is created.
 - **The replay determinism test** replays a recorded input log twice and asserts identical state. It fails the moment any system reads the clock or an unseeded random source.

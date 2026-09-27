@@ -124,7 +124,7 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | Layer | tooling, tests, docs |
 | Size | 1 |
 | Depends on | none |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a verified violation. The [layers](../../../../docs/architecture/layers-and-dependency-rule.md#quick-reference) page says there is no clock, DOM, or ambient randomness under domain or simulation, and lint and the typecheck do not enforce it in full.
 
@@ -159,6 +159,8 @@ None in the browser: the build plays as phase 6 left it. Headless:
 > The architecture test's public-door and types-only rules, which the proposal put here, move to P7-S49-T01, where the doors they test are narrowed.
 
 > **Architect review, 2026-09-27:** the DOM-free project also drops Node's types, since `setTimeout` and `structuredClone` would otherwise typecheck there through `@types/node`. The size limit counts raw lines. Size unchanged.
+
+> **Built, 2026-09-27:** the two files under `eslint/rules/` are option lists for ESLint's core `no-restricted-syntax` and `no-restricted-globals`, not rule implementations, so the spec runs `RuleTester` over those core rules with our lists, and also lints each line through the real config at a path under `src/domain/`, `src/simulation/`, and `src/presentation/`, which is what proves the refusal is scoped. Each source (`Math.random`, `Date.now`, `performance.now`) is matched on ten spellings: called, read, destructured in a declaration or an assignment, computed, and through `globalThis`, `self`, or `window`, with `globalThis.Math` destructured and a computed global too; an argument-less `new Date()` and a bare `Date()` call are refused in both the plain and the global-prefixed form. The limit is `eslint/size-limit.js`: `MAX_LINES_PER_FILE` and `OVER_THE_LIMIT`, the seven files with their reasons, and the spec fails on a listed file that is no longer over the limit, so the line leaves with the split. ESLint's `max-lines` drops the empty line after a final newline, so its count is `wc -l`'s; `state-machine.ts`, at exactly 500, passes. The DOM-free project is `tsconfig.dom-free.json` over `src/shared`, `src/domain`, `src/simulation`, and the build flags' declaration, with `lib: ["ESNext"]` and `types: []`; `pnpm typecheck` runs it after the root project. The widened rules found no real hit under `src/`. Besides the layers page, the development workflow, the simulation coding standards, and `eslint/README.md` name the widened bans, the second typecheck, and the limit.
 
 ---
 
@@ -210,9 +212,9 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | An atlas or glyph edit leaves the stamp unchanged | Yes (T01): `tests/simulation/replay/content-version.spec.ts` resizes a frame, drops every glyph, and nudges every `atlasFrame` and `tint` in the registry, with no stamp moved; every other leaf of every definition moves it |
 | Every field of every pool and scope moves the checksum | Yes, 2026-09-27 (T02): all 159 leaves of `STATE_LEAVES`, beside 25 keys left out with reasons,, each nudged by one step at its first instance in a world with a live slot in every pool, move the checksum and are named by the comparison, and a world walk finds no value unlisted |
 | The seven logs match their checksums | Yes (T02): recorded once by `pnpm restamp --checksums`, 0 stamps moved; `tests/simulation/replay-determinism.spec.ts` replays each to every stored checksum |
-| Each widened lint rule shown failing on a branch | |
-| Real hits the widened rules found | |
-| Actual days per ticket | T01: 0.5 · T02: 1 |
+| Each widened lint rule shown failing on a branch | Yes, 2026-09-27 (T03): one planted file under `src/domain/` with every form on its own line and every banned global, linted by `eslint`: 33 `no-restricted-syntax` on 33 lines and 30 `no-restricted-globals`; the same file under `src/presentation/`, none of either; a 501-line file under `src/domain/`, one `max-lines`. Deleted afterwards. `tests/tooling/lint-rules.spec.ts` holds the same, 125 cases, and fails when a destructure selector or an exception path is broken |
+| Real hits the widened rules found | None (T03): `pnpm lint` and the DOM-free typecheck were green on the tree as it was |
+| Actual days per ticket | T01: 0.5 · T02: 1 · T03: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint
