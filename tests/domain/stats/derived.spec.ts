@@ -57,7 +57,11 @@ const derivedAt = (level: number, modifiers: ModifierEntry[] = []): Stats =>
   deriveStats(
     def,
     attributesAt(def, level, freshAttributes()),
-    modifiers,
+    {
+      modifiers,
+      liveModifierRows: modifiers.filter((entry) => entry.stat !== null).length,
+      modifierMisses: 0,
+    },
     freshStats(),
   );
 

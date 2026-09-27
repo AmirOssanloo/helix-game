@@ -67,7 +67,7 @@ The build plays as before, with one visible difference. The targeting preview no
 | Layer | domain, tests, docs |
 | Size | 1 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a verified violation (two overflow policies) and a seam phase 8 names: P8-S34-T01's magic damage % through the attacker-side read. Where item rows live, and so whether a row needs a source identity, is record (a)'s decision (P7-S48-T04), and P8-S34-T01 builds what it decides.
 
@@ -175,11 +175,11 @@ The build plays as before, with one visible difference. The targeting preview no
 | Check | Result |
 | --- | --- |
 | Every unit's stats derived each tick, within budget | Yes, 2026-09-27 (T01): the stats system derives every unit with a definition from the base it stored at spawn, in one pass over its rows by `applyModifiers`, or a copy when its live-row count is 0; spawn derives through the same `deriveFromBase`. `tests/domain/stats/stats-system.spec.ts` moves an enemy's armour and magic resistance with a row on the tick it lands and back, clamps health under a falling maximum, gives a unit spawned after the system its maximums at once, and leaves a standing grunt at its health after a retune. The stress tier is green unchanged at the live cap; the pass allocates nothing, locals only. The base and the live-row count are left out of the checksum with reasons: the stats derived from them are hashed every tick |
-| One overflow policy; the hero's worst case fits the table | |
+| One overflow policy; the hero's worst case fits the table | Yes, 2026-09-27 (T02): `addModifier` refuses a row past the table and counts it on the unit's `modifierMisses`, which the checksum hashes; the orb passives' two asserts are gone, so the status system, the orb passives, and spawn-unit take a refusal alike. The hero's worst case today is 8 status rows × 2, the most modifiers a status carries (Quicken), plus 3 orb instances × 2 for Whorl's second row: 22, over the 16 held, so `MODIFIER_TABLE_SIZE` is 22 with the arithmetic beside it; a summon's is 18. `tests/domain/stats/modifiers.spec.ts` fills a table with the hero's worst case read from content and counts a miss from every source kind. The attacker-side read is `magic_damage`, a stat read off the attacker's rows at each magical hit over a base of 0, before mitigation; `tests/domain/combat/damage.spec.ts` holds it at 0 changing nothing, raising magical hits only, and 0 from a released source. No allocation: no literal, closure, or spread on the path; `applyModifiers` now takes the table and stops at its last live row. **Heap:** a world is 6387 KiB at 16 rows and 6658 KiB at 22, +271 KiB or +4.2%, measured with `--expose-gc` over five arena worlds, so it went to the engineering architect. **Architect ruling, 2026-09-27:** "Accept 22. The table size comes from arithmetic over today's content, and a smaller number on the grounds that the worst case never happens would be a claim about content that nothing enforces; the stored logs using at most 7 rows shows only what those logs happened to do. The +271 KiB is a fixed cost paid once at pool construction, not per tick, acceptable on two conditions: derivation scans only the rows in use, never all 22, and one table size stays across unit kinds. The refuse-and-count policy stays as the backstop, and record (a) may not treat this headroom as room for items." The first condition is met in this ticket by the bounded pass; the second is a note on P7-S48-T04 |
 | Only the state machine writes an order | |
 | The preview agrees with the cast at the edge of range | |
-| The seven logs match their checksums, or each intended change named | T01: all seven match, nothing re-recorded. No stored log puts a row on a unit other than the hero after its spawn, so no latent bug went live |
-| Actual days per ticket | T01: 0.5 |
+| The seven logs match their checksums, or each intended change named | T01: all seven match, nothing re-recorded. No stored log puts a row on a unit other than the hero after its spawn, so no latent bug went live. T02: an intended change to what the checksum hashes, not to behaviour. The checksum hashes every row of the table and now the miss count, so the six new rows and the count move every checksum. Before re-recording, all seven logs matched their stored checksums with the table at 22 and the hash held to its first 16 rows without the count, and a probe over every tick of every log found no unit using more than 7 rows and no miss. Then `pnpm restamp --checksums` re-recorded all seven lists; no content stamp moved |
+| Actual days per ticket | T01: 0.5 · T02: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

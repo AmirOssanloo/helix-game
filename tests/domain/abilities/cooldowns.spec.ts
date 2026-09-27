@@ -33,7 +33,7 @@ const emptyTable = (): ModifierTable => {
     rows.push({ kind: null, stat: null, flat: 0, percent: 0 });
   }
 
-  return { modifiers: rows, liveModifierRows: 0 };
+  return { modifiers: rows, liveModifierRows: 0, modifierMisses: 0 };
 };
 
 /** A table with one cooldown source of `flat` ticks and `percent`, written by an orb. */

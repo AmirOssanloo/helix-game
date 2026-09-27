@@ -267,6 +267,9 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
   liveModifierRows: excluded(
     "a count of the modifier rows holding a stat, which are hashed",
   ),
+  modifierMisses: number("modifierMisses", (unit, into, at) => {
+    into[at] = unit.modifierMisses;
+  }),
   progression: record(
     "progression",
     (unit) => unit.progression,

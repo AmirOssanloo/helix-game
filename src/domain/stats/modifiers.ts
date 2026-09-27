@@ -3,19 +3,21 @@ import type { Stats } from "../definitions/form-def";
 import type { ModifierEntry, ModifierKind, Stat } from "../entities/unit";
 
 /**
- * A modifier table and how many of its rows hold a stat. `addModifier` and `removeModifiers`
- * keep the count true, so a derivation over a table with no live row is a copy of the base.
- * A unit is one.
+ * A modifier table, how many of its rows hold a stat, and how many rows it refused.
+ * `addModifier` and `removeModifiers` keep the counts true, so a derivation over a table with
+ * no live row is a copy of the base. A unit is one.
  */
 export type ModifierTable = {
   modifiers: readonly ModifierEntry[];
   liveModifierRows: number;
+  modifierMisses: number;
 };
 
 /**
  * Writes a source's contribution into the first empty row of `table`: `flat` in the stat's
- * own unit and `percent` as a fraction of one. Returns `false` when every row is taken, and
- * changes nothing; the caller decides what a source that does not apply means.
+ * own unit and `percent` as a fraction of one. When every row is taken the row is refused and
+ * counted as a miss, as a pool counts one, and nothing else changes: the source goes without
+ * that contribution. Every caller takes the refusal alike; the result is for a test to read.
  */
 export const addModifier = (
   table: ModifierTable,
@@ -41,6 +43,8 @@ export const addModifier = (
 
     return true;
   }
+
+  table.modifierMisses += 1;
 
   return false;
 };
@@ -99,17 +103,19 @@ export const modifiedValue = (
 };
 
 /**
- * Writes the seven derived values of `base` run through `modifiers` into `out`, by the same
- * pipeline as `modifiedValue`, in one pass over the rows rather than one per stat. The sums
- * for each stat are taken in row order, so every value is the one `modifiedValue` gives.
- * Rows for a stat no derived value carries are read where their stat is read. `out` may be
- * `base`.
+ * Writes the seven derived values of `base` run through `table` into `out`, by the same
+ * pipeline as `modifiedValue`, in one pass over the rows rather than one per stat, which
+ * stops at the last live row. The sums for each stat are taken in row order, so every value
+ * is the one `modifiedValue` gives. Rows for a stat no derived value carries are read where
+ * their stat is read. `out` may be `base`.
  */
 export const applyModifiers = (
   base: Readonly<Stats>,
-  modifiers: readonly ModifierEntry[],
+  table: Readonly<ModifierTable>,
   out: Stats,
 ): Stats => {
+  const modifiers = table.modifiers;
+  let unread = table.liveModifierRows;
   let maxHealthFlat = 0;
   let maxHealthPercent = 0;
   let healthRegenFlat = 0;
@@ -125,17 +131,20 @@ export const applyModifiers = (
   let magicResistanceFlat = 0;
   let magicResistancePercent = 0;
 
-  for (let row = 0; row < modifiers.length; row += 1) {
+  for (let row = 0; unread > 0 && row < modifiers.length; row += 1) {
     const entry = modifiers[row];
 
     if (entry === undefined || entry.stat === null) {
       continue;
     }
 
+    unread -= 1;
+
     switch (entry.stat) {
       case "movement_speed":
       case "attack_damage":
       case "cooldown_reduction":
+      case "magic_damage":
         break;
       case "max_health":
         maxHealthFlat += entry.flat;

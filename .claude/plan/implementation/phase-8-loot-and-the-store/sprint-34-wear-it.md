@@ -29,6 +29,8 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 
 **Build:** each armory slot adds its item's rows, the base's implicit stat now and its affixes from P8-S35-T01, to the stats modifier stack as one source, removed whole when the item comes off. The derived stats move on the tick the command is consumed. A new stat, **magic damage %**, applied where P8-S31-T02 placed it, to every instance of magical damage the hero deals: a spell's initial hit and its burns, and later an active item's magical damage (Q93). It never amplifies physical damage, so neither the hero's attack nor Emberling's attack, both physical, and pure damage is not magical. The P5-S22-T03 door test for items as a modifier source becomes a test of the real armory. The [hero](../../../../docs/product/features/hero.md) page's derived-values table and the [spells and attack](../../../../docs/product/features/spells-and-attack.md) page state the new stat, and the [vocabulary](../../../../docs/product/vocabulary.md) gains it; the Deferred row for spell amplification moves to built.
 
+> **Note, 2026-09-27, from P7-S46-T02:** the stat exists. `magic_damage` is a stat the damage door reads off the attacker's modifier rows at each magical hit, over a base of 0, before mitigation; a flat row of 0.1 is +10%. The vocabulary row and the Deferred row on the spells and attack page are already written. This ticket adds the armory as the source that writes it.
+
 **Acceptance:**
 - Wearing and removing an item moves each derived stat it names by its value, on the same tick, and leaves the stack as it was on removal.
 - Two items naming one stat add as the stack's flat and percentage rules say.

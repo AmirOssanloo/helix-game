@@ -45,6 +45,7 @@ When two people call the same thing different names, the names leak into the cod
 | One fixed step of the simulation | **Tick** | Frame, step, update |
 | One rendered picture | **Frame** | Tick |
 | Physical, magical, or pure | **Damage type** | Element, school |
+| What raises every magical hit a unit deals, as a fraction of the hit, before the target's resistance | **Magic damage** (`magic_damage` in code) | Spell damage, spell amplification |
 | A lasting condition on a unit | **Status** | Buff, debuff, modifier, effect (see below) |
 | A status that blocks something: stun, silence, root, disarm, lift | **Disable** | Crowd control, CC |
 | What a status does when its unit takes or deals damage, an effect list on the definition | **Damage hook** | Trigger, proc, on-hit |

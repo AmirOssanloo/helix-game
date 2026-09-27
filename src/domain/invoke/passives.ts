@@ -1,5 +1,4 @@
 import type { DeepReadonly } from "@shared/public";
-import { assert } from "@shared/public";
 import type { TuningKey } from "../definitions/tuning-def";
 import {
   EMBER_DAMAGE_KEYS,
@@ -37,7 +36,8 @@ const WHORL_CDR_STAT: Stat = "cooldown_reduction";
  * leaves, then each held instance writes one row at its orb's current level, and a Whorl
  * instance a second one for its cooldown reduction. Run every tick, it makes a swapped-out
  * instance take its passive with it and a raised orb level reach every instance out, both on
- * the tick it happened. An instance whose level has no table entry contributes nothing.
+ * the tick it happened. An instance whose level has no table entry contributes nothing, and a
+ * row the table refuses is counted there, as every source's is.
  */
 export const refreshOrbPassives = (
   unit: Unit,
@@ -59,12 +59,12 @@ export const refreshOrbPassives = (
     }
 
     const amount = readTunable(tuning, key);
-    const added =
-      orb === WHORL
-        ? addModifier(unit, "orb", stat, 0, amount)
-        : addModifier(unit, "orb", stat, amount, 0);
 
-    assert(added, "The modifier table has a row for every held orb instance");
+    if (orb === WHORL) {
+      addModifier(unit, "orb", stat, 0, amount);
+    } else {
+      addModifier(unit, "orb", stat, amount, 0);
+    }
 
     if (orb !== WHORL || level === undefined) {
       continue;
@@ -76,14 +76,6 @@ export const refreshOrbPassives = (
       continue;
     }
 
-    const cdrAdded = addModifier(
-      unit,
-      "orb",
-      WHORL_CDR_STAT,
-      0,
-      readTunable(tuning, cdrKey),
-    );
-
-    assert(cdrAdded, "The modifier table has a row for every Whorl passive");
+    addModifier(unit, "orb", WHORL_CDR_STAT, 0, readTunable(tuning, cdrKey));
   }
 };

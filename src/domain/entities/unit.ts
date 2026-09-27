@@ -38,8 +38,14 @@ assert(
 /** Statuses one unit can hold at once. An application past the table is refused by the status rule. */
 export const STATUS_TABLE_SIZE = 8;
 
-/** Modifier sources one unit can hold at once: every status, orb instance, and later item that changes a stat. */
-export const MODIFIER_TABLE_SIZE = 16;
+/**
+ * Modifier rows one unit can hold at once, sized for the worst case of today's sources. The
+ * hero's: every status row live with a definition at the most modifiers any carries, 8 × 2 =
+ * 16, and every orb instance a Whorl writing its second row, 3 × 2 = 6, so 22. A summon's
+ * worst case is under it: 16 status rows and its spawning entry's bonuses, 2 at most. A row
+ * past the table is refused and counted, never an error.
+ */
+export const MODIFIER_TABLE_SIZE = 22;
 
 /** Waypoints one unit's path can hold. Line-of-sight smoothing makes most paths one or two segments. */
 export const PATH_CAPACITY = 32;
@@ -74,12 +80,15 @@ export type StatusEntry = {
  * system writes: the attack rule reads its rows over the attacker's definition at the moment
  * of a shot, so an Ember instance out now is in this shot. Cooldown reduction is none either:
  * the cooldown pipeline reads its rows when a clock starts, a flat amount in ticks and a
- * fraction of the clock, and never again for that clock.
+ * fraction of the clock, and never again for that clock. Magic damage is none: the damage
+ * door reads its rows off the attacker at each magical hit, over a base of nothing, a flat
+ * amount being a fraction of the hit added to it.
  */
 export type Stat =
   | "movement_speed"
   | "attack_damage"
   | "cooldown_reduction"
+  | "magic_damage"
   | "max_health"
   | "health_regen"
   | "max_mana"
@@ -93,6 +102,7 @@ export const STATS: readonly Stat[] = [
   "movement_speed",
   "attack_damage",
   "cooldown_reduction",
+  "magic_damage",
   "max_health",
   "health_regen",
   "max_mana",
@@ -206,6 +216,8 @@ export type Unit = {
   modifiers: readonly ModifierEntry[];
   /** How many rows of `modifiers` hold a stat. Kept by `addModifier` and `removeModifiers`; a unit with none derives its stats as a copy of its base. */
   liveModifierRows: number;
+  /** How many rows `addModifier` refused because every row was taken, as a pool counts its misses. */
+  modifierMisses: number;
   /** Level, experience, and unspent skill points. Continuous across a form swap. */
   progression: Progression;
   /** The attributes at the current level, written by the stats system every tick. */
@@ -369,6 +381,7 @@ const createUnit = (): Unit => {
     attackReadyAtTick: 0,
     modifiers,
     liveModifierRows: 0,
+    modifierMisses: 0,
     progression: { level: 1, experience: 0, skillPoints: 0 },
     attributes: { strength: 0, agility: 0, intelligence: 0 },
     baseStats: createStats(),
@@ -431,6 +444,7 @@ const clearUnit = (unit: Unit): void => {
   }
 
   unit.liveModifierRows = 0;
+  unit.modifierMisses = 0;
   unit.progression.level = 1;
   unit.progression.experience = 0;
   unit.progression.skillPoints = 0;

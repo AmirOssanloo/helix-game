@@ -2,6 +2,7 @@ import { assert } from "@shared/public";
 import type { FormRecord } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
 import { attributesAt, deriveStats } from "../stats/derived";
+import type { ModifierTable } from "../stats/modifiers";
 import type { Attributes, FormDef, Stats } from "./form-def";
 import type { HeroDef } from "./hero-def";
 import { readTunable } from "./tuning-state";
@@ -29,6 +30,13 @@ export const formInSimulationUnits = (
   },
 });
 
+/** A form at level one wears no modifier source. */
+const NO_MODIFIERS: Readonly<ModifierTable> = {
+  modifiers: [],
+  liveModifierRows: 0,
+  modifierMisses: 0,
+};
+
 /** The first level's derived values with no modifier, which a fresh form's resources are filled to. */
 const fullAtLevelOne = (def: FormDef): Stats => {
   const attributes: Attributes = { strength: 0, agility: 0, intelligence: 0 };
@@ -42,7 +50,12 @@ const fullAtLevelOne = (def: FormDef): Stats => {
     magicResistance: 0,
   };
 
-  return deriveStats(def, attributesAt(def, 1, attributes), [], stats);
+  return deriveStats(
+    def,
+    attributesAt(def, 1, attributes),
+    NO_MODIFIERS,
+    stats,
+  );
 };
 
 /**

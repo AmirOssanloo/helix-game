@@ -6,6 +6,7 @@ import type { Stats } from "../definitions/form-def";
 import { readTunable } from "../definitions/tuning-state";
 import type { World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
+import { modifiedValue } from "../stats/modifiers";
 import { runDamageHooks } from "./damage-hooks";
 
 /**
@@ -45,18 +46,39 @@ const armourReduction = (armour: number, constant: number): number =>
  */
 export type DamageRecord = { amount: number; landed: number };
 
+/** What a magical hit's amplification is read over: nothing, so a unit with no row for it amplifies by nothing. */
+const NO_AMPLIFICATION = 0;
+
+/**
+ * The fraction the unit `sourceId` names adds to each magical hit it deals: its magic damage
+ * rows over a base of nothing, read at the hit. Nothing from nobody, and nothing from a source
+ * that no longer resolves.
+ */
+const magicAmplification = (
+  world: World,
+  sourceId: EntityId | null,
+): number => {
+  const source = sourceId === null ? null : world.map.units.resolve(sourceId);
+
+  return source === null
+    ? NO_AMPLIFICATION
+    : modifiedValue(NO_AMPLIFICATION, source.modifiers, "magic_damage");
+};
+
 /**
  * Writes into `record.landed` what lands of `record.amount` on a unit wearing `stats`: a
- * physical hit reduced by the armour curve under `armourConstant`, a magical hit by the magic
- * resistance the stats carry as a fraction of one, a pure hit by nothing. Never below zero, so
- * mitigation past the whole amount heals nobody. The damage door runs it on its record, so no
- * fractional amount crosses a call on the way in or out.
+ * physical hit reduced by the armour curve under `armourConstant`, a magical hit raised by the
+ * attacker's `amplification` and then reduced by the magic resistance the stats carry as a
+ * fraction of one, a pure hit by nothing. Only a magical hit reads the amplification. Never
+ * below zero, so mitigation past the whole amount heals nobody. The damage door runs it on its
+ * record, so no fractional amount crosses a call on the way in or out.
  */
 const mitigateRecord = (
   record: DamageRecord,
   type: DamageType,
   stats: Readonly<Stats>,
   armourConstant: number,
+  amplification: number,
 ): void => {
   switch (type) {
     case "physical":
@@ -68,7 +90,10 @@ const mitigateRecord = (
       return;
 
     case "magical":
-      record.landed = Math.max(0, record.amount * (1 - stats.magicResistance));
+      record.landed = Math.max(
+        0,
+        record.amount * (1 + amplification) * (1 - stats.magicResistance),
+      );
 
       return;
 
@@ -87,8 +112,8 @@ const asked: DamageRecord = { amount: 0, landed: 0 };
 
 /**
  * What lands of `amount` on a unit wearing `stats` under `armourConstant`, by the same rule
- * the damage door runs, as a plain number. A pure function over plain numbers, for anything
- * asking what a hit would be worth.
+ * the damage door runs, as a plain number, from an attacker that amplifies nothing. A pure
+ * function over plain numbers, for anything asking what a hit would be worth.
  */
 export const mitigate = (
   amount: number,
@@ -97,7 +122,7 @@ export const mitigate = (
   armourConstant: number,
 ): number => {
   asked.amount = amount;
-  mitigateRecord(asked, type, stats, armourConstant);
+  mitigateRecord(asked, type, stats, armourConstant, NO_AMPLIFICATION);
 
   return asked.landed;
 };
@@ -124,8 +149,9 @@ const scratch: DamageRecord = { amount: 0, landed: 0 };
 
 /**
  * The one door damage enters by: `record.amount` of `type` from `sourceId`, or from nobody,
- * onto the unit `targetId` names, with what landed written back to `record.landed`. The amount
- * is mitigated by the target's stats, taken from the pool the target draws on, and announced
+ * onto the unit `targetId` names, with what landed written back to `record.landed`. A magical
+ * amount is first raised by the source's magic damage, and the amount is mitigated by the
+ * target's stats, taken from the pool the target draws on, and announced
  * with the amount that landed, which is what a damage number shows. Health stops at zero, and
  * at one on a unit its definition calls indestructible, so the number announced is the whole
  * hit even where the health it removed was less. Zero lands on a stale id and on a unit
@@ -159,6 +185,7 @@ export const dealDamage = (
     type,
     target.stats,
     readTunable(world.run.tuning, "armour_constant"),
+    type === "magical" ? magicAmplification(world, sourceId) : NO_AMPLIFICATION,
   );
 
   const landed = record.landed;

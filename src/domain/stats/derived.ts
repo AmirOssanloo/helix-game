@@ -1,5 +1,6 @@
 import type { Attributes, FormDef, Stats } from "../definitions/form-def";
-import type { ModifierEntry, Unit } from "../entities/unit";
+import type { Unit } from "../entities/unit";
+import type { ModifierTable } from "./modifiers";
 import { applyModifiers } from "./modifiers";
 
 /** Writes the attributes a form has at `level` into `out`: the level-one values plus the per-level gains for every level after the first. */
@@ -30,7 +31,7 @@ export const attributesAt = (
 export const deriveStats = (
   def: FormDef,
   attributes: Readonly<Attributes>,
-  modifiers: readonly ModifierEntry[],
+  modifiers: Readonly<ModifierTable>,
   out: Stats,
 ): Stats => {
   const base = def.baseStats;
@@ -72,7 +73,7 @@ export const deriveFromBase = (unit: Unit): void => {
     stats.attackSpeed = base.attackSpeed;
     stats.magicResistance = base.magicResistance;
   } else {
-    applyModifiers(base, unit.modifiers, stats);
+    applyModifiers(base, unit, stats);
   }
 
   const resources = unit.resources;

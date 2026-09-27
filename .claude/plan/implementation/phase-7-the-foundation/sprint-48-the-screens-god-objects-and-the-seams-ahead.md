@@ -135,6 +135,8 @@ In a production build, a frame with the panel absent walks none of the overlays'
 
 > **Note, 2026-09-27:** a structural ticket. The engineering architect writes both records; the delivery strategist sizes them and names the questions, and does not answer them.
 
+> **Note, 2026-09-27, from P7-S46-T02:** the unit's modifier table is 22 rows, sized for today's sources alone with the arithmetic beside `MODIFIER_TABLE_SIZE`; raising it from 16 grew a world's heap by 4.2%. The architect's ruling on that ticket: record (a) states its effect on this arithmetic, and if it puts item rows on the unit table it carries a heap reading before and after. The headroom is not room for items.
+
 **Selection rule:** documented drift, and seams phases 8 and 9 name. The first screen, both records moved here from P8-S31-T02. Item identity is also a seam for phase 9's sprint 41, where an item's cooldown must survive a move between the bank, the inventory, and the ground.
 
 **Build:** two records under `docs/adr/`, 0011 and 0012 unless the architect numbers them otherwise, each Proposed until the maintainer reads it (a box under Waiting on a person in STATUS.md). The tickets after them build on them as written.

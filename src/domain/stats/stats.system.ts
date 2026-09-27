@@ -12,7 +12,7 @@ import { regenerate } from "./regeneration";
 export const refreshStats = (unit: Unit, form: FormRecord): void => {
   wearBody(unit, form.def);
   attributesAt(form.def, unit.progression.level, unit.attributes);
-  deriveStats(form.def, unit.attributes, unit.modifiers, unit.stats);
+  deriveStats(form.def, unit.attributes, unit, unit.stats);
 };
 
 /**
