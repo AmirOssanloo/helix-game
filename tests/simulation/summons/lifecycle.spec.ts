@@ -138,7 +138,7 @@ describe("a summon's lifecycle", () => {
     const { unit } = summonOf(world);
 
     expect(unit.definitionId).toBe(EMBERLING.id);
-    expect(unit.ownerId).toBe(world.state.run.heroId);
+    expect(unit.summon.ownerId).toBe(world.state.run.heroId);
     expect(unit.collisionRadius).toBe(EMBERLING.body.collisionRadius);
     expect(unit.boundRadius).toBe(EMBERLING.body.boundRadius);
     expect(unit.stats.maxHealth).toBe(EMBERLING.health);

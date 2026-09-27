@@ -34,7 +34,7 @@ const impsOf = (world: Simulation, ownerId: EntityId): number => {
     if (
       unit !== null &&
       unit.definitionId === impDef.id &&
-      unit.ownerId === ownerId
+      unit.summon.ownerId === ownerId
     ) {
       count += 1;
     }

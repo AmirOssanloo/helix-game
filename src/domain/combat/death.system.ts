@@ -1,12 +1,13 @@
 import type { EntityId } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { resourcesOf } from "../abilities/cast";
-import { clearAiRecord, enterDead } from "../ai/ai-state";
+import { enterDead } from "../ai/ai-state";
 import type { EnemyTier } from "../definitions/enemy-def";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import { clearStatusEntry, releaseUnit } from "../entities/unit";
+import { clearAiRecord } from "../entities/unit-ai";
 import type { FormRecord, World } from "../entities/world-state";
 import { createDomainEvent, resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags } from "../orders/disable-flags";
@@ -161,13 +162,13 @@ const endDeath = (world: World, unit: Unit, id: EntityId): void => {
  * dependants always resolve together and a dependant never outlives its owner by a tick.
  */
 const hasExpired = (world: World, unit: Readonly<Unit>): boolean => {
-  const expiresAtTick = unit.expiresAtTick;
+  const expiresAtTick = unit.summon.expiresAtTick;
 
   if (expiresAtTick !== null && world.tick >= expiresAtTick) {
     return true;
   }
 
-  const ownerId = unit.ownerId;
+  const ownerId = unit.summon.ownerId;
 
   if (ownerId === null) {
     return false;
@@ -195,7 +196,7 @@ const expireDependants = (world: World): void => {
     if (
       unit === null ||
       id === null ||
-      (unit.ownerId === null && unit.expiresAtTick === null)
+      (unit.summon.ownerId === null && unit.summon.expiresAtTick === null)
     ) {
       continue;
     }

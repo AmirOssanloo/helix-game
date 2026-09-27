@@ -111,17 +111,17 @@ describe("unit pool", () => {
     firstStatus.definitionId = "slow";
     firstStatus.stacks = 2;
     unit.activeFormIndex = 1;
-    unit.packId = 9;
+    unit.pack.id = 9;
     unit.spawnPoint.y = 10;
     unit.ai.leashAnchor.y = 10;
-    unit.ownerId = 11;
-    unit.expiresAtTick = 12;
+    unit.summon.ownerId = 11;
+    unit.summon.expiresAtTick = 12;
     pool.release(id);
 
     expect(unit).toEqual(fresh);
     expect(unit.path.count).toBe(0);
     expect(unit.cooldowns.size).toBe(0);
     expect(unit.resources).toEqual({ health: 0, mana: 0 });
-    expect(unit.ownerId).toBeNull();
+    expect(unit.summon.ownerId).toBeNull();
   });
 });

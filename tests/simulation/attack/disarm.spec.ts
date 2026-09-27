@@ -117,7 +117,7 @@ describe("a disarm on an attacker", () => {
     expect(hero.disables.disarmed).toBe(true);
     expect(hero.state).not.toBe("attack_windup");
     expect(hero.order.kind).toBe("attack_target");
-    expect(hero.attackReadyAtTick).toBe(0);
+    expect(hero.attack.readyAtTick).toBe(0);
     expect(shots(world, reader)).toBe(0);
   });
 

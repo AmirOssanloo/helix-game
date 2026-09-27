@@ -298,7 +298,7 @@ describe("Summon owner dies", () => {
 
     wearDefinition(summon, record);
     fillFromDefinition(summon, record, 1);
-    summon.ownerId = heroId;
+    summon.summon.ownerId = heroId;
     submit(world, stamp(world, { kind: "kill_hero" }));
     world.tick();
 

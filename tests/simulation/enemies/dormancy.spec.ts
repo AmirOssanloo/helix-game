@@ -182,8 +182,8 @@ describe("a pack placed from a map's record", () => {
     expect(packOf(world).state).toBe("awake");
     expect(grunts).toHaveLength(PACK_COUNT - 1);
     expect(grunts.map((grunt) => grunt.ai.state)).toEqual(["idle", "idle"]);
-    expect(new Set(grunts.map((grunt) => grunt.packId)).size).toBe(1);
-    expect(grunts[0]?.packId).toBe(packOf(world).packId);
+    expect(new Set(grunts.map((grunt) => grunt.pack.id)).size).toBe(1);
+    expect(grunts[0]?.pack.id).toBe(packOf(world).packId);
   });
 
   it("fought and left, goes home and stays awake until it is home and whole, then sleeps", () => {
@@ -471,7 +471,7 @@ describe("a session where a pack sleeps and wakes", () => {
         const unit = units.at(index);
 
         if (unit !== null) {
-          found.push({ x: unit.curr.x, y: unit.curr.y, packId: unit.packId });
+          found.push({ x: unit.curr.x, y: unit.curr.y, packId: unit.pack.id });
         }
       }
 

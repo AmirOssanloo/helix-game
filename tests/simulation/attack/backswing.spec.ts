@@ -132,7 +132,7 @@ describe("the attack point and the backswing", () => {
       world.tick();
 
       expect(hero.state).not.toBe("attack_windup");
-      expect(hero.attackReadyAtTick).toBe(0);
+      expect(hero.attack.readyAtTick).toBe(0);
       expect(shots(world, reader)).toBe(0);
     },
   );

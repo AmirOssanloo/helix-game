@@ -47,7 +47,12 @@ export { aiSystem } from "./ai/ai.system";
 export { nearestEnemy } from "./attack/acquire";
 export { attackDamageOf, attackOf, isInAttackRange } from "./attack/attack";
 export { attackSystem } from "./attack/attack.system";
-export type { AiRecord, AiState } from "./ai/ai-state";
+export {
+  type AiRecord,
+  type AiState,
+  clearAiRecord,
+  createAiRecord,
+} from "./entities/unit-ai";
 export type {
   Behaviour,
   DriverBehaviour,
@@ -200,6 +205,19 @@ export type {
   Stats,
 } from "./definitions/form-def";
 export { createFormRecords } from "./definitions/form-state";
+export {
+  type AttributeWorth,
+  clearStats,
+  clearStatValues,
+  copyStatValues,
+  createStats,
+  createStatValues,
+  STAT_SOURCES,
+  statSource,
+  type StatKey,
+  type StatSource,
+  type StatValues,
+} from "./definitions/stat-keys";
 export type { HeroDef } from "./definitions/hero-def";
 export {
   type LevelTable,
@@ -333,7 +351,6 @@ export {
 } from "./entities/projectile";
 export {
   acquireUnit,
-  type CastState,
   clearPath,
   clearPush,
   clearStatusEntry,
@@ -356,7 +373,31 @@ export {
   countLiveEnemies,
   type UnitKind,
 } from "./entities/unit";
-export { fillFromDefinition, wearDefinition } from "./entities/unit-spawn";
+export {
+  type AttackState,
+  clearAttackState,
+  createAttackState,
+} from "./entities/unit-attack";
+export {
+  type CastState,
+  clearCastState,
+  createCastState,
+} from "./entities/unit-cast";
+export {
+  clearPackMembership,
+  createPackMembership,
+  type PackMembership,
+} from "./entities/unit-pack";
+export {
+  clearSummonState,
+  createSummonState,
+  type SummonState,
+} from "./entities/unit-summon";
+export {
+  baseFromDefinitionOver,
+  fillFromDefinition,
+  wearDefinition,
+} from "./entities/unit-spawn";
 export {
   type DebugFlags,
   type FormRecord,
@@ -553,7 +594,13 @@ export {
   validateDebugCommand,
   type ValidationResult,
 } from "./orders/validator";
-export { attributesAt, deriveStats } from "./stats/derived";
+export {
+  attributesAt,
+  deriveFromBase,
+  deriveFromBaseOver,
+  deriveOver,
+  deriveStats,
+} from "./stats/derived";
 export {
   experienceProgress,
   grantExperience,
@@ -577,6 +624,7 @@ export type { ModifierTable } from "./stats/modifiers";
 export {
   addModifier,
   applyModifiers,
+  applyModifiersOver,
   modifiedValue,
   removeModifiers,
 } from "./stats/modifiers";

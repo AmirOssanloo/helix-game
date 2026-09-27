@@ -36,6 +36,10 @@ export const releaseFoo = (world: World, id: FooId): void => { /* clear, push th
 
 **Entities are plain objects.** Fields are set at acquire and read by systems. There is no class hierarchy: a hero, an enemy, and a summon are one unit shape with a kind tag and a definition id. Behaviour comes from systems and from the definition's keys, never from a subclass. A unit an ability spawns takes the kind its definition names, a summon for a summon definition and an enemy for an archetype, never its caster's. Typed arrays replace the object layout only when a profile of a real map shows the tick over budget, and that is a decision, not a habit.
 
+**A unit is one shape, grouped by concern.** The fields every system reads, such as its position, order, resources, and statuses, sit on the unit itself. The state one concern keeps between ticks sits in a sub-record of its own, declared beside the unit under `domain/entities/` with its own create and clear: the attack's, the cast under way, the AI machine's, the pack it belongs to, and what ties a summon to its owner. A sub-record is made once with the pool slot and cleared in place on release; none is replaced or reallocated. A concern that grows adds its field to its sub-record, not to the unit.
+
+**The derived values come from one key list.** The unit's stats and the base it stores at spawn are plain objects with one named field per entry of the list. Each entry names its field, the modifier stat whose rows change it, what an attribute point is worth toward it on a form, and the base a definition gives it. Creating, clearing, deriving, and spawning walk the list, so a new derived value is one entry in it and nothing else in the rules.
+
 ---
 
 ## Generational ids
@@ -114,6 +118,8 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | Capacities | Units 512, projectiles 512, effects 256; zones declare their own |
 | A full pool | Returns `null`; the caller decides; the instrumentation counts the miss |
 | Entity shape | Plain object, kind tag, definition id; no class hierarchy; a unit an ability spawns takes the kind its definition names |
+| A unit's layout | One shape; the state one concern keeps between ticks in its own sub-record beside the unit, made with the slot and cleared in place |
+| Derived values | One named field per entry of the one key list; create, clear, derive, and spawn walk it |
 | Typed arrays | Only after a profile shows the tick over budget |
 | Ids | A number packing index and generation; released slots bump the generation |
 | References between entities | By generational id, resolved every tick; never by object |

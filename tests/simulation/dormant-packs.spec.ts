@@ -98,7 +98,7 @@ describe("a dormant pack", () => {
       "idle",
       "idle",
     ]);
-    expect(new Set(grunts.map((grunt) => grunt.packId)).size).toBe(1);
+    expect(new Set(grunts.map((grunt) => grunt.pack.id)).size).toBe(1);
     expect(world.state.map.packs[0]?.state).toBe("awake");
   });
 

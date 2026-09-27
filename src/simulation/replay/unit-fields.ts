@@ -1,16 +1,19 @@
 import type {
   AiRecord,
+  AttackState,
   Attributes,
   CastState,
   DisableFlags,
   ModifierEntry,
   Order,
+  PackMembership,
   Path,
   Progression,
   Push,
   Resources,
   Stats,
   StatusEntry,
+  SummonState,
   Unit,
 } from "@domain/public";
 import type { DeepReadonly, Vec2 } from "@shared/public";
@@ -86,6 +89,13 @@ const CAST_FIELDS = fieldsOf<DeepReadonly<CastState>>({
     into[at] = cast.direction;
 
     return true;
+  }),
+});
+
+const ATTACK_FIELDS = fieldsOf<DeepReadonly<AttackState>>({
+  movePoint: record("movePoint", (attack) => attack.movePoint, VEC2_FIELDS),
+  readyAtTick: number("readyAtTick", (attack, into, at) => {
+    into[at] = attack.readyAtTick;
   }),
 });
 
@@ -195,6 +205,23 @@ const STATUS_FIELDS = fieldsOf<DeepReadonly<StatusEntry>>({
   ),
 });
 
+const PACK_FIELDS = fieldsOf<DeepReadonly<PackMembership>>({
+  id: nullableId("id", (pack) => pack.id),
+});
+
+const SUMMON_FIELDS = fieldsOf<DeepReadonly<SummonState>>({
+  ownerId: nullableId("ownerId", (summon) => summon.ownerId),
+  expiresAtTick: nullableNumber("expiresAtTick", (summon, into, at) => {
+    if (summon.expiresAtTick === null) {
+      return false;
+    }
+
+    into[at] = summon.expiresAtTick;
+
+    return true;
+  }),
+});
+
 const AI_FIELDS = fieldsOf<DeepReadonly<AiRecord>>({
   state: text("state", (ai) => ai.state),
   provoked: flag("provoked", (ai) => ai.provoked),
@@ -250,14 +277,7 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
   stageEndsAtTick: number("stageEndsAtTick", (unit, into, at) => {
     into[at] = unit.stageEndsAtTick;
   }),
-  attackMovePoint: record(
-    "attackMovePoint",
-    (unit) => unit.attackMovePoint,
-    VEC2_FIELDS,
-  ),
-  attackReadyAtTick: number("attackReadyAtTick", (unit, into, at) => {
-    into[at] = unit.attackReadyAtTick;
-  }),
+  attack: record("attack", (unit) => unit.attack, ATTACK_FIELDS),
   modifiers: records(
     "modifiers",
     (unit) => unit.modifiers.length,
@@ -297,21 +317,12 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
   activeFormIndex: number("activeFormIndex", (unit, into, at) => {
     into[at] = unit.activeFormIndex;
   }),
-  packId: nullableId("packId", (unit) => unit.packId),
+  pack: record("pack", (unit) => unit.pack, PACK_FIELDS),
   spawnPoint: record("spawnPoint", (unit) => unit.spawnPoint, VEC2_FIELDS),
   ai: record("ai", (unit) => unit.ai, AI_FIELDS),
   tier: text("tier", (unit) => unit.tier),
   attackDamageMultiplier: number("attackDamageMultiplier", (unit, into, at) => {
     into[at] = unit.attackDamageMultiplier;
   }),
-  ownerId: nullableId("ownerId", (unit) => unit.ownerId),
-  expiresAtTick: nullableNumber("expiresAtTick", (unit, into, at) => {
-    if (unit.expiresAtTick === null) {
-      return false;
-    }
-
-    into[at] = unit.expiresAtTick;
-
-    return true;
-  }),
+  summon: record("summon", (unit) => unit.summon, SUMMON_FIELDS),
 });

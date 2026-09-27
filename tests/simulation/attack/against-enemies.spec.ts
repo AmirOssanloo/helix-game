@@ -281,7 +281,7 @@ describe("an attack-move through a pack", () => {
     expect(hero.order.targetId).not.toBe(first);
     expect(next).not.toBeNull();
     expect(startGap(hero, next ?? hero)).toBe(Math.min(...gaps));
-    expect(hero.attackMovePoint).toEqual(DESTINATION);
+    expect(hero.attack.movePoint).toEqual(DESTINATION);
   });
 
   it("resumes the walk to its destination once the pack is dead", () => {

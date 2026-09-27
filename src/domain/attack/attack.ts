@@ -73,4 +73,4 @@ export const isReadyToSwing = (
   record: AttackRecord,
 ): boolean =>
   unit.stats.attackSpeed > 0 &&
-  world.tick + record.pointTicks >= unit.attackReadyAtTick;
+  world.tick + record.pointTicks >= unit.attack.readyAtTick;

@@ -28,7 +28,7 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 | Layer | domain, content, tests, docs |
 | Size | 1 |
 | Depends on | P7-S46-T01, P7-S46-T02 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a god object a feature must grow, and a seam. `domain/entities/unit.ts` is 521 lines and 35 fields. P8-S34-T01 adds magic damage %, a new stat, which today costs five hand-written edits: the form definition, `clearStats` (`unit.ts:272`), `createUnit`, `derived.ts`, and `unit-spawn.ts`.
 
@@ -59,6 +59,12 @@ None new in the browser: the build plays as before. Headless, a toy definition k
 > - **Ordering confirmed:** after P7-S46-T01 and T02, so the new stat of T02 is added once the old way and then folded in, and before P7-S48-T03, so brands are written into the final layout.
 >
 > Size unchanged.
+
+> **Note, 2026-09-27, at close:** four choices the Build did not settle.
+> - **Which fields each sub-record holds is fixed by the checksum's order.** A sub-record hashes its fields together where the unit's table places it, so a sub-record may only take fields that are adjacent in the canonical sequence. The attack's is the attack-move point and the ready tick; the pack's is the pack id alone; the summon's is the owner and the expiry. The tier and the attack damage multiplier stay on the unit, since the spawn point and the AI record sit between the pack id and them. The cast record and the AI record were already sub-records; both moved to files of their own under `domain/entities/` (`unit-cast.ts`, `unit-ai.ts`), with the AI's provoke and death rules left in `domain/ai/ai-state.ts`. Leaf paths now follow the layout (`attack.readyAtTick`, `pack.id`, `summon.ownerId`); the hashed values and their order are unchanged, so no log was re-recorded.
+> - **The key list lives in `domain/definitions/stat-keys.ts`, and `Stats` is derived from it by type,** so the stats and the base keep one named field per entry. Each entry holds its field, its modifier stat, its attribute worth on a form, its base reader for a definition, and a copy that names its field. The copy is there because a keyed copy of every stat for the two hundred units with no live row measured about 27 µs a tick against 1.5 µs for named writes; the named copies run at about 8 µs, and the tick is back inside a per cent.
+> - **Derivation over rows is one pass per derived value over the live rows**, each value's sums taken in row order, so every number is bit for bit what the single pass gave; the ability pipeline page says so.
+> - **A stats record is created by parsing its zeroed text,** not left as built key by key. A record built key by key holds its later fields outside the object, which boxed every number of the pool's stats and bases at creation: about 140 KB a world, and the stress heap 1.0 to 1.1 per cent over before. Parsed, the fields sit in the object as a literal's do.
 
 ---
 
@@ -193,13 +199,13 @@ Only what is decided is built. The build, if (a), is sized at 1 and is the bucke
 
 | Check | Result |
 | --- | --- |
-| A stat added from one key list | |
+| A stat added from one key list | Yes, 2026-09-27 (T01): `tests/domain/entities/unit.spec.ts` adds a toy stat to the key list in the test alone and has it created, cleared, stored from a definition at spawn, derived from the base through the rows for its modifier stat and no others, and derived on a form from its attribute's worth; each sub-record is created and cleared in place, and a released slot keeps every sub-record object |
 | A toy kind in three files or fewer | |
 | No module-scope mutable state; interleaved worlds agree | |
 | The event record's decision | |
-| `max-lines` exceptions removed this sprint | |
-| The seven logs match their checksums | |
-| Actual days per ticket | |
+| `max-lines` exceptions removed this sprint | T01: `src/domain/entities/unit.ts`, now 485 lines; no sub-record file is over 60 |
+| The seven logs match their checksums | T01: all seven match, nothing re-recorded. Stress tier, medians of eight runs each on the M1: mean tick 2.142 → 2.139 ms (300 bodies), 1.820 → 1.798 (live cap chasing), 2.158 → 2.154 (with zones), 2.263 → 2.266 (boss and adds), long road 0.087 → 0.086; heap after a forced collection at each case's end 29.9 → 30.1, 31.1 → 31.4, 31.8 → 32.0, 32.0 → 32.2 MB, 0.6 to 0.75 per cent, the three new objects a slot hold most of it |
+| Actual days per ticket | T01: 0.5 of 1 |
 | Sprint total | |
 
 ## Risks in this sprint

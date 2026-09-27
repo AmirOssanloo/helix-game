@@ -1,7 +1,14 @@
-import type { Attributes, FormDef, Stats } from "../definitions/form-def";
+import type {
+  Attributes,
+  AttributeConversions,
+  FormDef,
+  Stats,
+} from "../definitions/form-def";
+import type { StatSource, StatValues } from "../definitions/stat-keys";
+import { copyStatValues, STAT_SOURCES } from "../definitions/stat-keys";
 import type { Unit } from "../entities/unit";
 import type { ModifierTable } from "./modifiers";
-import { applyModifiers } from "./modifiers";
+import { applyModifiersOver } from "./modifiers";
 
 /** Writes the attributes a form has at `level` into `out`: the level-one values plus the per-level gains for every level after the first. */
 export const attributesAt = (
@@ -23,9 +30,40 @@ export const attributesAt = (
 };
 
 /**
- * Writes the seven derived values into `out`. Each is the definition's base plus what the
- * driving attribute is worth, run through the modifier pipeline for its stat, so an orb
- * passive now and an item later change a value the same way. The units are the
+ * Writes every value of `sources` into `out`: the base plus what its driving attribute is
+ * worth at `conversions`, the base alone for a value no attribute drives, run through the
+ * modifier pipeline for its stat, so an orb passive now and an item later change a value the
+ * same way.
+ */
+export const deriveOver = <Key extends string>(
+  sources: readonly StatSource<Key>[],
+  base: Readonly<StatValues<Key>>,
+  conversions: AttributeConversions,
+  attributes: Readonly<Attributes>,
+  modifiers: Readonly<ModifierTable>,
+  out: StatValues<Key>,
+): StatValues<Key> => {
+  for (let index = 0; index < sources.length; index += 1) {
+    const source = sources[index];
+
+    if (source === undefined) {
+      continue;
+    }
+
+    const worth = source.worth;
+
+    out[source.key] =
+      worth === null
+        ? base[source.key]
+        : base[source.key] +
+          attributes[worth.attribute] * conversions[worth.conversion];
+  }
+
+  return applyModifiersOver(sources, out, modifiers, out);
+};
+
+/**
+ * Writes a form's derived values into `out`, over the one key list. The units are the
  * definition's: regeneration is per tick once the form record holds it.
  */
 export const deriveStats = (
@@ -33,24 +71,28 @@ export const deriveStats = (
   attributes: Readonly<Attributes>,
   modifiers: Readonly<ModifierTable>,
   out: Stats,
-): Stats => {
-  const base = def.baseStats;
-  const worth = def.conversions;
+): Stats =>
+  deriveOver(
+    STAT_SOURCES,
+    def.baseStats,
+    def.conversions,
+    attributes,
+    modifiers,
+    out,
+  );
 
-  out.maxHealth =
-    base.maxHealth + attributes.strength * worth.healthPerStrength;
-  out.healthRegen =
-    base.healthRegen + attributes.strength * worth.healthRegenPerStrength;
-  out.maxMana =
-    base.maxMana + attributes.intelligence * worth.manaPerIntelligence;
-  out.manaRegen =
-    base.manaRegen + attributes.intelligence * worth.manaRegenPerIntelligence;
-  out.armour = base.armour + attributes.agility * worth.armourPerAgility;
-  out.attackSpeed =
-    base.attackSpeed + attributes.agility * worth.attackSpeedPerAgility;
-  out.magicResistance = base.magicResistance;
-
-  return applyModifiers(out, modifiers, out);
+/** Writes every value of `sources` of `base` through `table` into `out`, or copies the base when no row is live. */
+export const deriveFromBaseOver = <Key extends string>(
+  sources: readonly StatSource<Key>[],
+  base: Readonly<StatValues<Key>>,
+  table: Readonly<ModifierTable>,
+  out: StatValues<Key>,
+): void => {
+  if (table.liveModifierRows === 0) {
+    copyStatValues(sources, base, out);
+  } else {
+    applyModifiersOver(sources, base, table, out);
+  }
 };
 
 /**
@@ -61,20 +103,9 @@ export const deriveStats = (
  * every tick after.
  */
 export const deriveFromBase = (unit: Unit): void => {
-  const base = unit.baseStats;
   const stats = unit.stats;
 
-  if (unit.liveModifierRows === 0) {
-    stats.maxHealth = base.maxHealth;
-    stats.healthRegen = base.healthRegen;
-    stats.maxMana = base.maxMana;
-    stats.manaRegen = base.manaRegen;
-    stats.armour = base.armour;
-    stats.attackSpeed = base.attackSpeed;
-    stats.magicResistance = base.magicResistance;
-  } else {
-    applyModifiers(base, unit, stats);
-  }
+  deriveFromBaseOver(STAT_SOURCES, unit.baseStats, unit, stats);
 
   const resources = unit.resources;
 

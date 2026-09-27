@@ -306,8 +306,8 @@ export const engageTarget = (
     return "no_move_in_progress";
   }
 
-  unit.attackMovePoint.x = unit.order.destination.x;
-  unit.attackMovePoint.y = unit.order.destination.y;
+  unit.attack.movePoint.x = unit.order.destination.x;
+  unit.attack.movePoint.y = unit.order.destination.y;
   unit.order.targetId = targetId;
   unit.state = "turning";
   unit.turnTicks = 0;
@@ -329,8 +329,8 @@ export const disengageTarget = (unit: Unit): TransitionResult => {
   }
 
   unit.order.targetId = null;
-  unit.order.destination.x = unit.attackMovePoint.x;
-  unit.order.destination.y = unit.attackMovePoint.y;
+  unit.order.destination.x = unit.attack.movePoint.x;
+  unit.order.destination.y = unit.attack.movePoint.y;
   unit.state = "turning";
   unit.turnTicks = 0;
   clearPath(unit.path);

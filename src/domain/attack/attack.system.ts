@@ -230,7 +230,7 @@ const fire = (
 
   assert(result === "ok", "An attack point that ended begins its backswing");
   unit.stageEndsAtTick = world.tick + record.backswingTicks;
-  unit.attackReadyAtTick =
+  unit.attack.readyAtTick =
     world.tick + attackTicks(record, unit.stats.attackSpeed);
 };
 

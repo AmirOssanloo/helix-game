@@ -61,7 +61,11 @@ const isBeaten = (replay: Replay, pack: PackRecord): boolean => {
   for (let index = 0; index < units.end; index += 1) {
     const unit = units.at(index);
 
-    if (unit !== null && unit.packId === pack.packId && unit.state !== "dead") {
+    if (
+      unit !== null &&
+      unit.pack.id === pack.packId &&
+      unit.state !== "dead"
+    ) {
       return false;
     }
   }

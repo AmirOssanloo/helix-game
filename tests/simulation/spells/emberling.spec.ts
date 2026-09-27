@@ -204,7 +204,7 @@ describe.each(CASES)(
       const { unit } = castAndSpawn(world);
 
       expect(unit.definitionId).toBe(EMBERLING);
-      expect(unit.ownerId).toBe(heroId);
+      expect(unit.summon.ownerId).toBe(heroId);
       expect(unit.curr).toEqual({
         x: hero.curr.x,
         y: hero.curr.y - OFFSET_RIGHT,
@@ -217,7 +217,7 @@ describe.each(CASES)(
     it("lives the lifetime its Quartz table gives, then gives its slot back", () => {
       const { world, reader } = arrange(level);
       const { unit, id } = castAndSpawn(world);
-      const expiresAtTick = unit.expiresAtTick;
+      const expiresAtTick = unit.summon.expiresAtTick;
 
       expect(expiresAtTick).toBe(committedAt(world, reader) + lifetimeTicks);
       tickUntil(

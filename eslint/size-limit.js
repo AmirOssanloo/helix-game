@@ -31,8 +31,6 @@ export const OVER_THE_LIMIT = {
     "the domain's door re-exports every module; shrinks when the door is narrowed",
   "src/domain/definitions/definition-schemas.ts":
     "every definition kind's schema in one file; folds into the per-kind descriptors",
-  "src/domain/entities/unit.ts":
-    "the unit's fields as one flat record; splits into sub-records",
 };
 
 export const sizeLimit = [

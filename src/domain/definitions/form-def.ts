@@ -1,23 +1,12 @@
+import type { Stats } from "./stat-keys";
+
+export type { Stats } from "./stat-keys";
+
 /** The three attributes a form grows: each drives two derived values. */
 export type Attributes = {
   strength: number;
   agility: number;
   intelligence: number;
-};
-
-/**
- * The seven values the attributes and the modifier table derive. A definition writes the
- * level-independent base of each; the unit carries the current value of each. Regeneration
- * is per second in a definition and per tick on a unit.
- */
-export type Stats = {
-  maxHealth: number;
-  healthRegen: number;
-  maxMana: number;
-  manaRegen: number;
-  armour: number;
-  attackSpeed: number;
-  magicResistance: number;
 };
 
 /** How much of a derived value one attribute point is worth. Regeneration is per second here. */

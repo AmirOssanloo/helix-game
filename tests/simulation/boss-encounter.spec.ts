@@ -85,7 +85,7 @@ const enemiesOf = (
     if (unit !== null && unit.kind === "enemy") {
       enemies += 1;
 
-      if (unit.definitionId === impDef.id && unit.ownerId === ownerId) {
+      if (unit.definitionId === impDef.id && unit.summon.ownerId === ownerId) {
         adds += 1;
       }
     }

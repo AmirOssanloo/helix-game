@@ -181,10 +181,10 @@ describe("the summoned adds", () => {
     for (const imp of imps) {
       expect(imp.kind).toBe("enemy");
       expect(isHostile(imp.kind, hero.kind)).toBe(true);
-      expect(imp.ownerId).toBe(summonerId);
-      expect(imp.packId).toBe(PACK);
+      expect(imp.summon.ownerId).toBe(summonerId);
+      expect(imp.pack.id).toBe(PACK);
       expect(imp.tier).toBe("normal");
-      expect(imp.expiresAtTick).toBe(committedAt + LIFETIME_TICKS);
+      expect(imp.summon.expiresAtTick).toBe(committedAt + LIFETIME_TICKS);
       expect(imp.stats.maxHealth).toBe(impDef.health);
       expect(Math.hypot(imp.curr.x - summoner.curr.x, imp.curr.y)).toBeLessThan(
         ENTRY.offset.forward + imp.collisionRadius * 2,
@@ -268,7 +268,7 @@ describe("the summoned adds", () => {
     const committedAt = summon(world, summoner);
     const firstPair = (): Unit[] =>
       impsOf(world).filter(
-        (imp) => imp.expiresAtTick === committedAt + LIFETIME_TICKS,
+        (imp) => imp.summon.expiresAtTick === committedAt + LIFETIME_TICKS,
       );
 
     tickUntil(

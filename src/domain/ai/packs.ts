@@ -266,7 +266,7 @@ export const placePack = (
     unit.tier = tier;
     unit.attackDamageMultiplier = damageMultiplier;
     fillFromDefinition(unit, record, healthMultiplier);
-    unit.packId = packId;
+    unit.pack.id = packId;
     applyLifetimeStatuses(world, id, record);
   }
 
@@ -328,7 +328,8 @@ export const placeMapPacks = (world: World): void => {
  * Whether `unit` is a member of a pack rather than an add one of them brought: an add holds
  * its owner, and ends with it.
  */
-const isMember = (unit: Readonly<Unit>): boolean => unit.ownerId === null;
+const isMember = (unit: Readonly<Unit>): boolean =>
+  unit.summon.ownerId === null;
 
 /**
  * Whether a living member lets its pack sleep: it stands in Idle, which is at home, and its
@@ -351,7 +352,7 @@ const countRestedMembers = (world: World, pack: PackRecord): number => {
 
     if (
       unit === null ||
-      unit.packId !== pack.packId ||
+      unit.pack.id !== pack.packId ||
       unit.state === "dead" ||
       !isMember(unit)
     ) {
@@ -376,7 +377,7 @@ const releasePack = (world: World, pack: PackRecord): void => {
     const unit = units.at(index);
     const id = units.idAt(index);
 
-    if (unit !== null && id !== null && unit.packId === pack.packId) {
+    if (unit !== null && id !== null && unit.pack.id === pack.packId) {
       releaseUnit(world, id);
     }
   }

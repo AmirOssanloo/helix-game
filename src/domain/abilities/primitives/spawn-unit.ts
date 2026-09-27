@@ -72,23 +72,23 @@ const spawnOne = (
   const y =
     cast.anchor.y + entry.offset.forward * sin - entry.offset.right * cos;
   const id: EntityId | null = acquireUnit(world, record.kind, x, y);
-  const summon = id === null ? null : world.map.units.resolve(id);
+  const spawned = id === null ? null : world.map.units.resolve(id);
   const caster = world.map.units.resolve(cast.casterId);
 
-  if (id === null || summon === null) {
+  if (id === null || spawned === null) {
     return false;
   }
 
   if (record.kind === "enemy") {
-    summon.packId = caster === null ? null : caster.packId;
+    spawned.pack.id = caster === null ? null : caster.pack.id;
   }
 
-  summon.facing = cast.facing;
-  summon.ownerId = cast.casterId;
-  summon.expiresAtTick = world.tick + lifetimeTicks;
-  wearDefinition(summon, record);
-  writeBonuses(summon, entry.bonuses, cast.orbLevels);
-  fillFromDefinition(summon, record, NORMAL_HEALTH);
+  spawned.facing = cast.facing;
+  spawned.summon.ownerId = cast.casterId;
+  spawned.summon.expiresAtTick = world.tick + lifetimeTicks;
+  wearDefinition(spawned, record);
+  writeBonuses(spawned, entry.bonuses, cast.orbLevels);
+  fillFromDefinition(spawned, record, NORMAL_HEALTH);
   applyLifetimeStatuses(world, id, record);
 
   return true;

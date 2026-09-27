@@ -75,7 +75,7 @@ describe("an attack-move", () => {
     expect(
       Math.hypot(enemy.curr.x - hero.curr.x, enemy.curr.y - hero.curr.y),
     ).toBeLessThanOrEqual(heroDef.attack.acquireRadius);
-    expect(hero.attackMovePoint).toEqual(DESTINATION);
+    expect(hero.attack.movePoint).toEqual(DESTINATION);
   });
 
   it("resumes the walk from where it stands when the target is gone, without turning back", () => {

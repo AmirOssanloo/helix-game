@@ -1,11 +1,9 @@
 import type { EntityId, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
-import type { AiRecord } from "../ai/ai-state";
-import { clearAiRecord, createAiRecord } from "../ai/ai-state";
-import type { TargetingKind } from "../definitions/ability-def";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
 import { ORB_IDS } from "../definitions/orb-id";
+import { clearStats, createStats } from "../definitions/stat-keys";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
 import { clearDisableFlags, createDisableFlags } from "../orders/disable-flags";
@@ -14,6 +12,16 @@ import { resetOrder } from "../orders/order";
 import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
+import type { AiRecord } from "./unit-ai";
+import { clearAiRecord, createAiRecord } from "./unit-ai";
+import type { AttackState } from "./unit-attack";
+import { clearAttackState, createAttackState } from "./unit-attack";
+import type { CastState } from "./unit-cast";
+import { clearCastState, createCastState } from "./unit-cast";
+import type { PackMembership } from "./unit-pack";
+import { clearPackMembership, createPackMembership } from "./unit-pack";
+import type { SummonState } from "./unit-summon";
+import { clearSummonState, createSummonState } from "./unit-summon";
 import type { World } from "./world-state";
 
 /** Hero, enemies, and summons together. */
@@ -129,22 +137,6 @@ export type ModifierEntry = {
 };
 
 /**
- * The cast a unit has requested and not yet committed: the ability, what it is aimed at by
- * the ability's targeting kind, the point or the unit it is aimed at, and, for a vector, the
- * line the ability lies along. A `null` ability is no cast. The order carries the approach
- * toward the target; this record carries the aim, so it survives the order being cleared
- * when the cast point begins, and it is gone at commit.
- */
-export type CastState = {
-  abilityId: string | null;
-  targetKind: TargetingKind;
-  position: Vec2;
-  targetId: EntityId | null;
-  /** The bearing of a vector's drag, in radians; `null` for a vector with no drag and for every other kind. */
-  direction: number | null;
-};
-
-/**
  * The push a displacement has a unit in: how far it moves each tick, and how many ticks of it
  * are left. No ticks left is no push. The movement step translates by `step` while ticks
  * remain and collision decides where that leaves the unit, which is why a push into a wall
@@ -202,18 +194,8 @@ export type Unit = {
   cast: CastState;
   /** The tick the stage under way ends: a cast point, a backswing, a channel, or the death before a respawn. Read in those states only. */
   stageEndsAtTick: Tick;
-  /**
-   * The point an attack-move was walking to before it acquired something, given back when
-   * the target is gone so the walk carries on from where the unit then stands rather than
-   * from where it left the line. Read only while an attack-move holds a target.
-   */
-  attackMovePoint: Vec2;
-  /**
-   * The earliest tick a shot of this unit's may land. An attack point begins early enough to
-   * land on it, so two shots are one attack time apart however long the point is; a tick in
-   * the past is a unit that may shoot as soon as it faces something.
-   */
-  attackReadyAtTick: Tick;
+  /** When its next shot may land, and where an attack-move was walking. */
+  attack: AttackState;
   modifiers: readonly ModifierEntry[];
   /** How many rows of `modifiers` hold a stat. Kept by `addModifier` and `removeModifiers`; a unit with none derives its stats as a copy of its base. */
   liveModifierRows: number;
@@ -242,8 +224,8 @@ export type Unit = {
   /** The status table: every lasting condition on the unit, an empty row being a `null` definition id. Cleared by death. */
   statuses: readonly StatusEntry[];
   activeFormIndex: number;
-  /** The pack it was spawned in, whose members aggro together; `null` for a unit spawned alone. */
-  packId: number | null;
+  /** The pack it belongs to, whose members aggro together. */
+  pack: PackMembership;
   /** Where it was spawned: what it leashes from and walks back to. */
   spawnPoint: Vec2;
   /** Where the shared enemy state machine has it. Read only for a unit whose behaviour runs the machine. */
@@ -252,9 +234,8 @@ export type Unit = {
   tier: EnemyTier;
   /** What its attack's damage is multiplied by before the modifier rows: its tier's multiplier, read once at spawn, so a retune reaches the units spawned after it. 1 for the hero, a normal unit, and a summon. */
   attackDamageMultiplier: number;
-  ownerId: EntityId | null;
-  /** The tick a summon expires on; `null` for a unit that lives until it dies. */
-  expiresAtTick: Tick | null;
+  /** Its owner and its expiry, for a summon; `null` in both for a unit nothing summoned. */
+  summon: SummonState;
 };
 
 const createStatusEntry = (): StatusEntry => ({
@@ -289,26 +270,6 @@ const clearModifierEntry = (entry: ModifierEntry): void => {
   entry.stat = null;
   entry.flat = 0;
   entry.percent = 0;
-};
-
-const createStats = (): Stats => ({
-  maxHealth: 0,
-  healthRegen: 0,
-  maxMana: 0,
-  manaRegen: 0,
-  armour: 0,
-  attackSpeed: 0,
-  magicResistance: 0,
-});
-
-const clearStats = (stats: Stats): void => {
-  stats.maxHealth = 0;
-  stats.healthRegen = 0;
-  stats.maxMana = 0;
-  stats.manaRegen = 0;
-  stats.armour = 0;
-  stats.attackSpeed = 0;
-  stats.magicResistance = 0;
 };
 
 const createPath = (): Path => {
@@ -362,16 +323,9 @@ const createUnit = (): Unit => {
     needsPath: false,
     push: { step: { x: 0, y: 0 }, ticksLeft: 0 },
     suspended: { kind: "none", destination: { x: 0, y: 0 }, targetId: null },
-    cast: {
-      abilityId: null,
-      targetKind: "none",
-      position: { x: 0, y: 0 },
-      targetId: null,
-      direction: null,
-    },
+    cast: createCastState(),
     stageEndsAtTick: 0,
-    attackMovePoint: { x: 0, y: 0 },
-    attackReadyAtTick: 0,
+    attack: createAttackState(),
     modifiers,
     liveModifierRows: 0,
     modifierMisses: 0,
@@ -385,13 +339,12 @@ const createUnit = (): Unit => {
     cooldowns: new Map(),
     statuses,
     activeFormIndex: 0,
-    packId: null,
+    pack: createPackMembership(),
     spawnPoint: { x: 0, y: 0 },
     ai: createAiRecord(),
     tier: "normal",
     attackDamageMultiplier: 1,
-    ownerId: null,
-    expiresAtTick: null,
+    summon: createSummonState(),
   };
 };
 
@@ -414,16 +367,9 @@ const clearUnit = (unit: Unit): void => {
   unit.needsPath = false;
   clearPush(unit.push);
   resetOrder(unit.suspended);
-  unit.cast.abilityId = null;
-  unit.cast.targetKind = "none";
-  unit.cast.position.x = 0;
-  unit.cast.position.y = 0;
-  unit.cast.targetId = null;
-  unit.cast.direction = null;
+  clearCastState(unit.cast);
   unit.stageEndsAtTick = 0;
-  unit.attackMovePoint.x = 0;
-  unit.attackMovePoint.y = 0;
-  unit.attackReadyAtTick = 0;
+  clearAttackState(unit.attack);
 
   for (let row = 0; row < unit.modifiers.length; row += 1) {
     const entry = unit.modifiers[row];
@@ -458,14 +404,13 @@ const clearUnit = (unit: Unit): void => {
   }
 
   unit.activeFormIndex = 0;
-  unit.packId = null;
+  clearPackMembership(unit.pack);
   unit.spawnPoint.x = 0;
   unit.spawnPoint.y = 0;
   clearAiRecord(unit.ai);
   unit.tier = "normal";
   unit.attackDamageMultiplier = 1;
-  unit.ownerId = null;
-  unit.expiresAtTick = null;
+  clearSummonState(unit.summon);
 };
 
 export const createUnitPool = (): Pool<Unit> =>

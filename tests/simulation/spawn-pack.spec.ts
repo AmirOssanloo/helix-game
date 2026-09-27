@@ -220,10 +220,10 @@ describe("spawn_pack ids and tiers", () => {
     spawnPack(world, fastRunnerDef.id, 3, { x: 0, y: 1200 });
 
     const grunts = new Set(
-      unitsOf(world, meleeGruntDef.id).map((u) => u.packId),
+      unitsOf(world, meleeGruntDef.id).map((u) => u.pack.id),
     );
     const runners = new Set(
-      unitsOf(world, fastRunnerDef.id).map((u) => u.packId),
+      unitsOf(world, fastRunnerDef.id).map((u) => u.pack.id),
     );
 
     expect(grunts.size).toBe(1);
@@ -240,7 +240,7 @@ describe("spawn_pack ids and tiers", () => {
     run(world, "reset_map");
     spawnPack(world, meleeGruntDef.id, 2, OPEN_GROUND);
 
-    expect(unitsOf(world, meleeGruntDef.id).map((u) => u.packId)).toEqual([
+    expect(unitsOf(world, meleeGruntDef.id).map((u) => u.pack.id)).toEqual([
       0, 0,
     ]);
   });

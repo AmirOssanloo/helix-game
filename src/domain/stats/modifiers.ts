@@ -1,5 +1,6 @@
-import { assertNever } from "@shared/public";
 import type { Stats } from "../definitions/form-def";
+import type { StatSource, StatValues } from "../definitions/stat-keys";
+import { STAT_SOURCES } from "../definitions/stat-keys";
 import type { ModifierEntry, ModifierKind, Stat } from "../entities/unit";
 
 /**
@@ -103,92 +104,54 @@ export const modifiedValue = (
 };
 
 /**
- * Writes the seven derived values of `base` run through `table` into `out`, by the same
- * pipeline as `modifiedValue`, in one pass over the rows rather than one per stat, which
- * stops at the last live row. The sums for each stat are taken in row order, so every value
- * is the one `modifiedValue` gives. Rows for a stat no derived value carries are read where
- * their stat is read. `out` may be `base`.
+ * Writes every value of `sources` of `base` run through `table` into `out`, by the same
+ * pipeline as `modifiedValue`: for each value, the rows for its modifier stat summed in row
+ * order, a walk that stops at the last live row. Rows for a stat no derived value carries are
+ * read where their stat is read. `out` may be `base`.
  */
+export const applyModifiersOver = <Key extends string>(
+  sources: readonly StatSource<Key>[],
+  base: Readonly<StatValues<Key>>,
+  table: Readonly<ModifierTable>,
+  out: StatValues<Key>,
+): StatValues<Key> => {
+  const modifiers = table.modifiers;
+
+  for (let index = 0; index < sources.length; index += 1) {
+    const source = sources[index];
+
+    if (source === undefined) {
+      continue;
+    }
+
+    let unread = table.liveModifierRows;
+    let flat = 0;
+    let percent = 0;
+
+    for (let row = 0; unread > 0 && row < modifiers.length; row += 1) {
+      const entry = modifiers[row];
+
+      if (entry === undefined || entry.stat === null) {
+        continue;
+      }
+
+      unread -= 1;
+
+      if (entry.stat === source.modifier) {
+        flat += entry.flat;
+        percent += entry.percent;
+      }
+    }
+
+    out[source.key] = (base[source.key] + flat) * (1 + percent);
+  }
+
+  return out;
+};
+
+/** Writes the derived values of `base` run through `table` into `out`, over the one key list. `out` may be `base`. */
 export const applyModifiers = (
   base: Readonly<Stats>,
   table: Readonly<ModifierTable>,
   out: Stats,
-): Stats => {
-  const modifiers = table.modifiers;
-  let unread = table.liveModifierRows;
-  let maxHealthFlat = 0;
-  let maxHealthPercent = 0;
-  let healthRegenFlat = 0;
-  let healthRegenPercent = 0;
-  let maxManaFlat = 0;
-  let maxManaPercent = 0;
-  let manaRegenFlat = 0;
-  let manaRegenPercent = 0;
-  let armourFlat = 0;
-  let armourPercent = 0;
-  let attackSpeedFlat = 0;
-  let attackSpeedPercent = 0;
-  let magicResistanceFlat = 0;
-  let magicResistancePercent = 0;
-
-  for (let row = 0; unread > 0 && row < modifiers.length; row += 1) {
-    const entry = modifiers[row];
-
-    if (entry === undefined || entry.stat === null) {
-      continue;
-    }
-
-    unread -= 1;
-
-    switch (entry.stat) {
-      case "movement_speed":
-      case "attack_damage":
-      case "cooldown_reduction":
-      case "magic_damage":
-        break;
-      case "max_health":
-        maxHealthFlat += entry.flat;
-        maxHealthPercent += entry.percent;
-        break;
-      case "health_regen":
-        healthRegenFlat += entry.flat;
-        healthRegenPercent += entry.percent;
-        break;
-      case "max_mana":
-        maxManaFlat += entry.flat;
-        maxManaPercent += entry.percent;
-        break;
-      case "mana_regen":
-        manaRegenFlat += entry.flat;
-        manaRegenPercent += entry.percent;
-        break;
-      case "armour":
-        armourFlat += entry.flat;
-        armourPercent += entry.percent;
-        break;
-      case "attack_speed":
-        attackSpeedFlat += entry.flat;
-        attackSpeedPercent += entry.percent;
-        break;
-      case "magic_resistance":
-        magicResistanceFlat += entry.flat;
-        magicResistancePercent += entry.percent;
-        break;
-      default:
-        return assertNever(entry.stat);
-    }
-  }
-
-  out.maxHealth = (base.maxHealth + maxHealthFlat) * (1 + maxHealthPercent);
-  out.healthRegen =
-    (base.healthRegen + healthRegenFlat) * (1 + healthRegenPercent);
-  out.maxMana = (base.maxMana + maxManaFlat) * (1 + maxManaPercent);
-  out.manaRegen = (base.manaRegen + manaRegenFlat) * (1 + manaRegenPercent);
-  out.armour = (base.armour + armourFlat) * (1 + armourPercent);
-  out.attackSpeed =
-    (base.attackSpeed + attackSpeedFlat) * (1 + attackSpeedPercent);
-  out.magicResistance =
-    (base.magicResistance + magicResistanceFlat) * (1 + magicResistancePercent);
-
-  return out;
-};
+): Stats => applyModifiersOver(STAT_SOURCES, base, table, out);

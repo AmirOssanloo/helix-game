@@ -91,7 +91,7 @@ const acquired = (world: World, unit: Unit): boolean => {
  * nothing it did in between matters.
  */
 const followOwner = (world: World, unit: Unit): void => {
-  const ownerId = unit.ownerId;
+  const ownerId = unit.summon.ownerId;
   const owner = ownerId === null ? null : world.map.units.resolve(ownerId);
 
   if (owner === null || unit.state !== "idle") {

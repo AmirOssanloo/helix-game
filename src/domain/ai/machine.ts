@@ -496,7 +496,7 @@ const alertPack = (
   hero: Unit | null,
   heroId: EntityId | null,
 ): void => {
-  const packId = unit.packId;
+  const packId = unit.pack.id;
   const units = world.map.units;
 
   if (packId === null) {
@@ -509,7 +509,7 @@ const alertPack = (
     if (
       member === null ||
       member === unit ||
-      member.packId !== packId ||
+      member.pack.id !== packId ||
       (member.ai.state !== "idle" && member.ai.state !== "return") ||
       member.state === "dead"
     ) {
