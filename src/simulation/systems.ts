@@ -27,8 +27,8 @@ export type System = (world: World) => void;
  * disable flags and its modifier rows, a status that ended has taken everything it set with
  * it, and a stun clears the order before anything acts on it. The kit runs after it, so the
  * modifier rows the hero's held orbs grant are true to this tick's presses and levels. Stats run after it, so the hero wears its active
- * form's body and carries this tick's derived values, with every modifier the tick added,
- * before anything reads them. The cast stages run next, so a cast requested this tick spends
+ * form's body and every unit carries this tick's derived values, with every modifier the tick
+ * added, before anything reads them. The cast stages run next, so a cast requested this tick spends
  * this tick's mana, faces or commits this tick, and asks for its approach before pathing plans
  * it. The behaviours run after them, so a unit nobody commands issues its order where the
  * player's own order was issued, and the systems after it carry out both alike. Pathing

@@ -54,11 +54,11 @@ describe("statsSystem", () => {
     const hero = spawnHero(world);
     world.tick();
 
-    addModifier(hero.modifiers, "item", "max_health", 0, 0.1);
+    addModifier(hero, "item", "max_health", 0, 0.1);
     world.tick();
     const raised = hero.stats.maxHealth;
 
-    removeModifiers(hero.modifiers, "item");
+    removeModifiers(hero, "item");
     world.tick();
 
     expect(raised).toBeCloseTo(330);

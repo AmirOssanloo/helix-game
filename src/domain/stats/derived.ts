@@ -1,6 +1,6 @@
 import type { Attributes, FormDef, Stats } from "../definitions/form-def";
-import type { ModifierEntry } from "../entities/unit";
-import { modifiedValue } from "./modifiers";
+import type { ModifierEntry, Unit } from "../entities/unit";
+import { applyModifiers } from "./modifiers";
 
 /** Writes the attributes a form has at `level` into `out`: the level-one values plus the per-level gains for every level after the first. */
 export const attributesAt = (
@@ -36,41 +36,52 @@ export const deriveStats = (
   const base = def.baseStats;
   const worth = def.conversions;
 
-  out.maxHealth = modifiedValue(
-    base.maxHealth + attributes.strength * worth.healthPerStrength,
-    modifiers,
-    "max_health",
-  );
-  out.healthRegen = modifiedValue(
-    base.healthRegen + attributes.strength * worth.healthRegenPerStrength,
-    modifiers,
-    "health_regen",
-  );
-  out.maxMana = modifiedValue(
-    base.maxMana + attributes.intelligence * worth.manaPerIntelligence,
-    modifiers,
-    "max_mana",
-  );
-  out.manaRegen = modifiedValue(
-    base.manaRegen + attributes.intelligence * worth.manaRegenPerIntelligence,
-    modifiers,
-    "mana_regen",
-  );
-  out.armour = modifiedValue(
-    base.armour + attributes.agility * worth.armourPerAgility,
-    modifiers,
-    "armour",
-  );
-  out.attackSpeed = modifiedValue(
-    base.attackSpeed + attributes.agility * worth.attackSpeedPerAgility,
-    modifiers,
-    "attack_speed",
-  );
-  out.magicResistance = modifiedValue(
-    base.magicResistance,
-    modifiers,
-    "magic_resistance",
-  );
+  out.maxHealth =
+    base.maxHealth + attributes.strength * worth.healthPerStrength;
+  out.healthRegen =
+    base.healthRegen + attributes.strength * worth.healthRegenPerStrength;
+  out.maxMana =
+    base.maxMana + attributes.intelligence * worth.manaPerIntelligence;
+  out.manaRegen =
+    base.manaRegen + attributes.intelligence * worth.manaRegenPerIntelligence;
+  out.armour = base.armour + attributes.agility * worth.armourPerAgility;
+  out.attackSpeed =
+    base.attackSpeed + attributes.agility * worth.attackSpeedPerAgility;
+  out.magicResistance = base.magicResistance;
 
-  return out;
+  return applyModifiers(out, modifiers, out);
+};
+
+/**
+ * Writes the derived values of a unit spawned from a definition: its stored base through its
+ * modifier table, or the base alone when no row is live. Health and mana above a maximum that
+ * fell are brought down to it, as the hero's regeneration brings the hero's; nothing
+ * regenerates here. Spawn runs it once the spawn's rows are written, and the stats system
+ * every tick after.
+ */
+export const deriveFromBase = (unit: Unit): void => {
+  const base = unit.baseStats;
+  const stats = unit.stats;
+
+  if (unit.liveModifierRows === 0) {
+    stats.maxHealth = base.maxHealth;
+    stats.healthRegen = base.healthRegen;
+    stats.maxMana = base.maxMana;
+    stats.manaRegen = base.manaRegen;
+    stats.armour = base.armour;
+    stats.attackSpeed = base.attackSpeed;
+    stats.magicResistance = base.magicResistance;
+  } else {
+    applyModifiers(base, unit.modifiers, stats);
+  }
+
+  const resources = unit.resources;
+
+  if (resources.health > stats.maxHealth) {
+    resources.health = stats.maxHealth;
+  }
+
+  if (resources.mana > stats.maxMana) {
+    resources.mana = stats.maxMana;
+  }
 };

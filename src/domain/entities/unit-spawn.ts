@@ -1,6 +1,6 @@
 import { BASE_ATTACK_SPEED } from "../definitions/attack-state";
 import type { UnitRecord } from "../definitions/unit-state";
-import { modifiedValue } from "../stats/modifiers";
+import { deriveFromBase } from "../stats/derived";
 import type { Unit } from "./unit";
 
 /**
@@ -19,13 +19,13 @@ export const wearDefinition = (unit: Unit, record: UnitRecord): void => {
 };
 
 /**
- * Writes the seven derived values from `record` through the unit's modifier table, the
- * definition's health first multiplied by `healthMultiplier`, which is what a tier asks, and fills
- * its health and mana to the maximums just derived. Called once, after every modifier row
- * the spawn writes is on the table: the stats system derives the hero from its active form
- * every tick, and a unit spawned from a definition carries what this wrote, so a row added
- * here is in the values and a row added later is read where it is read live — the speed
- * stack, the attack rule — rather than from these.
+ * Stores `record`'s base on `unit`, the definition's health first multiplied by
+ * `healthMultiplier`, which is what a tier asks, derives the seven values from it through the
+ * unit's modifier table, and fills its health and mana to the maximums just derived. Called
+ * once, after every modifier row the spawn writes is on the table, so a unit spawned after
+ * the stats system has run carries real maximums on its spawn tick. The stats system derives
+ * from the same base every tick after, so a row added later is in the next tick's values,
+ * and a retune of the definition reaches only the units spawned after it.
  */
 export const fillFromDefinition = (
   unit: Unit,
@@ -33,36 +33,16 @@ export const fillFromDefinition = (
   healthMultiplier: number,
 ): void => {
   const def = record.def;
-  const stats = unit.stats;
-  const modifiers = unit.modifiers;
+  const base = unit.baseStats;
 
-  stats.maxHealth = modifiedValue(
-    def.health * healthMultiplier,
-    modifiers,
-    "max_health",
-  );
-  stats.healthRegen = modifiedValue(
-    record.healthRegenPerTick,
-    modifiers,
-    "health_regen",
-  );
-  stats.maxMana = modifiedValue(def.mana, modifiers, "max_mana");
-  stats.manaRegen = modifiedValue(
-    record.manaRegenPerTick,
-    modifiers,
-    "mana_regen",
-  );
-  stats.armour = modifiedValue(def.armour, modifiers, "armour");
-  stats.attackSpeed = modifiedValue(
-    BASE_ATTACK_SPEED,
-    modifiers,
-    "attack_speed",
-  );
-  stats.magicResistance = modifiedValue(
-    def.magicResistance,
-    modifiers,
-    "magic_resistance",
-  );
-  unit.resources.health = stats.maxHealth;
-  unit.resources.mana = stats.maxMana;
+  base.maxHealth = def.health * healthMultiplier;
+  base.healthRegen = record.healthRegenPerTick;
+  base.maxMana = def.mana;
+  base.manaRegen = record.manaRegenPerTick;
+  base.armour = def.armour;
+  base.attackSpeed = BASE_ATTACK_SPEED;
+  base.magicResistance = def.magicResistance;
+  deriveFromBase(unit);
+  unit.resources.health = unit.stats.maxHealth;
+  unit.resources.mana = unit.stats.maxMana;
 };

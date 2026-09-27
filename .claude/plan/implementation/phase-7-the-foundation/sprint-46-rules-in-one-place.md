@@ -29,7 +29,7 @@ The build plays as before, with one visible difference. The targeting preview no
 | Layer | domain, tests, docs |
 | Size | 1 |
 | Depends on | P7-S45-T02 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a verified violation, and a seam. The [ability pipeline](../../../../docs/architecture/ability-pipeline.md) says stats are modifier-driven for every unit. Only the hero's are derived each tick (`domain/stats/stats.system.ts:31-48`). Every other unit gets its stats once at spawn (`domain/entities/unit-spawn.ts:30-67`). The gap is latent today and goes live the moment anything shreds an enemy's armour or magic resistance, which phase 8's affixes and phase 9's Veilblade can.
 
@@ -174,12 +174,12 @@ The build plays as before, with one visible difference. The targeting preview no
 
 | Check | Result |
 | --- | --- |
-| Every unit's stats derived each tick, within budget | |
+| Every unit's stats derived each tick, within budget | Yes, 2026-09-27 (T01): the stats system derives every unit with a definition from the base it stored at spawn, in one pass over its rows by `applyModifiers`, or a copy when its live-row count is 0; spawn derives through the same `deriveFromBase`. `tests/domain/stats/stats-system.spec.ts` moves an enemy's armour and magic resistance with a row on the tick it lands and back, clamps health under a falling maximum, gives a unit spawned after the system its maximums at once, and leaves a standing grunt at its health after a retune. The stress tier is green unchanged at the live cap; the pass allocates nothing, locals only. The base and the live-row count are left out of the checksum with reasons: the stats derived from them are hashed every tick |
 | One overflow policy; the hero's worst case fits the table | |
 | Only the state machine writes an order | |
 | The preview agrees with the cast at the edge of range | |
-| The seven logs match their checksums, or each intended change named | |
-| Actual days per ticket | |
+| The seven logs match their checksums, or each intended change named | T01: all seven match, nothing re-recorded. No stored log puts a row on a unit other than the hero after its spawn, so no latent bug went live |
+| Actual days per ticket | T01: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

@@ -204,11 +204,20 @@ export type Unit = {
    */
   attackReadyAtTick: Tick;
   modifiers: readonly ModifierEntry[];
+  /** How many rows of `modifiers` hold a stat. Kept by `addModifier` and `removeModifiers`; a unit with none derives its stats as a copy of its base. */
+  liveModifierRows: number;
   /** Level, experience, and unspent skill points. Continuous across a form swap. */
   progression: Progression;
   /** The attributes at the current level, written by the stats system every tick. */
   attributes: Attributes;
-  /** The derived values the stats system writes every tick from the attributes and the modifier table. */
+  /**
+   * What a unit spawned from a definition derives its stats from: the definition's values with
+   * its tier's health multiplier and its record's per-tick regeneration, written once at spawn,
+   * so a retune reaches the units spawned after it. The hero's base is its active form's, read
+   * every tick; this stays empty for it and for a plain body.
+   */
+  baseStats: Stats;
+  /** The derived values the stats system writes every tick from the base and the modifier table. */
   stats: Stats;
   /** What the unit is blocked from this tick. Written by the status system, read by the validator. */
   disables: DisableFlags;
@@ -268,6 +277,16 @@ const clearModifierEntry = (entry: ModifierEntry): void => {
   entry.flat = 0;
   entry.percent = 0;
 };
+
+const createStats = (): Stats => ({
+  maxHealth: 0,
+  healthRegen: 0,
+  maxMana: 0,
+  manaRegen: 0,
+  armour: 0,
+  attackSpeed: 0,
+  magicResistance: 0,
+});
 
 const clearStats = (stats: Stats): void => {
   stats.maxHealth = 0;
@@ -349,17 +368,11 @@ const createUnit = (): Unit => {
     attackMovePoint: { x: 0, y: 0 },
     attackReadyAtTick: 0,
     modifiers,
+    liveModifierRows: 0,
     progression: { level: 1, experience: 0, skillPoints: 0 },
     attributes: { strength: 0, agility: 0, intelligence: 0 },
-    stats: {
-      maxHealth: 0,
-      healthRegen: 0,
-      maxMana: 0,
-      manaRegen: 0,
-      armour: 0,
-      attackSpeed: 0,
-      magicResistance: 0,
-    },
+    baseStats: createStats(),
+    stats: createStats(),
     disables: createDisableFlags(),
     resources: { health: 0, mana: 0 },
     indestructible: false,
@@ -417,12 +430,14 @@ const clearUnit = (unit: Unit): void => {
     }
   }
 
+  unit.liveModifierRows = 0;
   unit.progression.level = 1;
   unit.progression.experience = 0;
   unit.progression.skillPoints = 0;
   unit.attributes.strength = 0;
   unit.attributes.agility = 0;
   unit.attributes.intelligence = 0;
+  clearStats(unit.baseStats);
   clearStats(unit.stats);
   clearDisableFlags(unit.disables);
   unit.resources.health = 0;

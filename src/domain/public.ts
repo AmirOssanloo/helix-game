@@ -570,7 +570,13 @@ export {
   KEYED_DRAW_RANGE,
   keyedDraw,
 } from "./random/keyed-draw";
-export { addModifier, modifiedValue, removeModifiers } from "./stats/modifiers";
+export type { ModifierTable } from "./stats/modifiers";
+export {
+  addModifier,
+  applyModifiers,
+  modifiedValue,
+  removeModifiers,
+} from "./stats/modifiers";
 export { regenerate, restoreHealth } from "./stats/regeneration";
 export { refreshStats, statsSystem } from "./stats/stats.system";
 export { applyLifetimeStatuses } from "./statuses/lifetime-statuses";

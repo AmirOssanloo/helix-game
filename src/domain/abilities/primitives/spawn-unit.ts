@@ -41,7 +41,7 @@ const writeBonuses = (
     }
 
     addModifier(
-      unit.modifiers,
+      unit,
       "summon",
       bonus.stat,
       tableAtOrbLevels(bonus.flat, orbLevels),

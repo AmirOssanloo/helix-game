@@ -60,8 +60,8 @@ describe("the door: stats are modifier-driven, so an item is one more source", (
 
     expect(hero.stats.maxHealth).toBe(BASE_MAX_HEALTH + STATUS_FLAT);
 
-    addModifier(hero.modifiers, "item", "max_health", ITEM_FLAT, 0);
-    addModifier(hero.modifiers, "item", "max_health", 0, ITEM_PERCENT);
+    addModifier(hero, "item", "max_health", ITEM_FLAT, 0);
+    addModifier(hero, "item", "max_health", 0, ITEM_PERCENT);
 
     for (let tick = 0; tick < WORN_TICKS; tick += 1) {
       world.tick();
@@ -69,7 +69,7 @@ describe("the door: stats are modifier-driven, so an item is one more source", (
 
     expect(hero.stats.maxHealth).toBe(675);
 
-    removeModifiers(hero.modifiers, "item");
+    removeModifiers(hero, "item");
     world.tick();
 
     expect(hero.stats.maxHealth).toBe(BASE_MAX_HEALTH + STATUS_FLAT);

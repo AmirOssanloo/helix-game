@@ -157,7 +157,7 @@ describe("an enemy walks at its definition's speed", () => {
     const { world, enemy } = chaseFrom(slowedDef);
 
     // An item row, since the status system rewrites its own rows from the status table every tick.
-    addModifier(enemy.modifiers, "item", "movement_speed", 0, -0.5);
+    addModifier(enemy, "item", "movement_speed", 0, -0.5);
 
     expect(longestStep(world, enemy, 20)).toBeCloseTo(stepOf(150));
   });

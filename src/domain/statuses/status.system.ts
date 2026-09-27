@@ -152,7 +152,7 @@ const installModifiers = (
     const flat = modifier.kind === "flat" ? amount : 0;
     const percent = modifier.kind === "percent" ? amount : 0;
 
-    addModifier(unit.modifiers, "status", modifier.stat, flat, percent);
+    addModifier(unit, "status", modifier.stat, flat, percent);
   }
 };
 
@@ -225,7 +225,7 @@ const rememberEnded = (found: number, entry: Readonly<StatusEntry>): void => {
  * expiry lists once the whole table has been read.
  */
 const readTable = (world: World, unit: Unit, unitId: EntityId): number => {
-  removeModifiers(unit.modifiers, "status");
+  removeModifiers(unit, "status");
   clearDisableFlags(unit.disables);
 
   let ended = 0;

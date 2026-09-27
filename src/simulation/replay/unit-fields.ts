@@ -16,6 +16,7 @@ import type {
 import type { DeepReadonly, Vec2 } from "@shared/public";
 import { numbers, records, table } from "./field-collections";
 import {
+  excluded,
   fieldsOf,
   flag,
   itemAt,
@@ -263,6 +264,9 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
     (unit, index) => itemAt(unit.modifiers, index),
     MODIFIER_FIELDS,
   ),
+  liveModifierRows: excluded(
+    "a count of the modifier rows holding a stat, which are hashed",
+  ),
   progression: record(
     "progression",
     (unit) => unit.progression,
@@ -272,6 +276,9 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
     "attributes",
     (unit) => unit.attributes,
     ATTRIBUTES_FIELDS,
+  ),
+  baseStats: excluded(
+    "written once at spawn from the definition, the tier, and that tick's tuning, fixed by the stamp or hashed; the stats derived from it are hashed every tick",
   ),
   stats: record("stats", (unit) => unit.stats, STATS_FIELDS),
   disables: record("disables", (unit) => unit.disables, DISABLES_FIELDS),

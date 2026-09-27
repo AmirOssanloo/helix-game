@@ -44,7 +44,7 @@ export const refreshOrbPassives = (
   state: DeepReadonly<KitState>,
   tuning: ReadonlyMap<string, number>,
 ): void => {
-  removeModifiers(unit.modifiers, "orb");
+  removeModifiers(unit, "orb");
 
   for (let index = 0; index < state.orbCount; index += 1) {
     const orb = state.orbs[index];
@@ -61,8 +61,8 @@ export const refreshOrbPassives = (
     const amount = readTunable(tuning, key);
     const added =
       orb === WHORL
-        ? addModifier(unit.modifiers, "orb", stat, 0, amount)
-        : addModifier(unit.modifiers, "orb", stat, amount, 0);
+        ? addModifier(unit, "orb", stat, 0, amount)
+        : addModifier(unit, "orb", stat, amount, 0);
 
     assert(added, "The modifier table has a row for every held orb instance");
 
@@ -77,7 +77,7 @@ export const refreshOrbPassives = (
     }
 
     const cdrAdded = addModifier(
-      unit.modifiers,
+      unit,
       "orb",
       WHORL_CDR_STAT,
       0,

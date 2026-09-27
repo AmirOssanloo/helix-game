@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { tuningTable } from "@content/public";
-import type { DebugFlags, ModifierEntry, Tick } from "@domain/public";
+import type {
+  DebugFlags,
+  ModifierEntry,
+  ModifierTable,
+  Tick,
+} from "@domain/public";
 import {
   addModifier,
   createCooldownSnapshot,
@@ -21,18 +26,18 @@ const flagsOff: DebugFlags = { noCooldowns: false, infiniteMana: false };
 const noCooldowns: DebugFlags = { noCooldowns: true, infiniteMana: false };
 
 /** An empty modifier table of the unit's size. */
-const emptyTable = (): ModifierEntry[] => {
+const emptyTable = (): ModifierTable => {
   const rows: ModifierEntry[] = [];
 
   for (let row = 0; row < MODIFIER_TABLE_SIZE; row += 1) {
     rows.push({ kind: null, stat: null, flat: 0, percent: 0 });
   }
 
-  return rows;
+  return { modifiers: rows, liveModifierRows: 0 };
 };
 
 /** A table with one cooldown source of `flat` ticks and `percent`, written by an orb. */
-const tableWith = (flat: number, percent: number): ModifierEntry[] => {
+const tableWith = (flat: number, percent: number): ModifierTable => {
   const rows = emptyTable();
 
   addModifier(rows, "orb", "cooldown_reduction", flat, percent);
@@ -46,7 +51,9 @@ describe("the cooldown snapshot", () => {
 
     addModifier(rows, "orb", "movement_speed", 0, 0.5);
 
-    expect(snapshotCooldownSources(rows, createCooldownSnapshot())).toEqual({
+    expect(
+      snapshotCooldownSources(rows.modifiers, createCooldownSnapshot()),
+    ).toEqual({
       flat: 0,
       multiplier: 1,
       currentFlat: 0,
@@ -59,7 +66,10 @@ describe("the cooldown snapshot", () => {
     addModifier(rows, "orb", "cooldown_reduction", 3, 0.1);
     addModifier(rows, "item", "cooldown_reduction", 2, 0.1);
 
-    const snapshot = snapshotCooldownSources(rows, createCooldownSnapshot());
+    const snapshot = snapshotCooldownSources(
+      rows.modifiers,
+      createCooldownSnapshot(),
+    );
 
     expect(snapshot.flat).toBe(5);
     expect(snapshot.multiplier).toBeCloseTo(0.81);
@@ -68,11 +78,11 @@ describe("the cooldown snapshot", () => {
 
   it("overwrites what the record held last time", () => {
     const snapshot = snapshotCooldownSources(
-      tableWith(4, 0.25),
+      tableWith(4, 0.25).modifiers,
       createCooldownSnapshot(),
     );
 
-    snapshotCooldownSources(emptyTable(), snapshot);
+    snapshotCooldownSources(emptyTable().modifiers, snapshot);
 
     expect(snapshot).toEqual({ flat: 0, multiplier: 1, currentFlat: 0 });
   });
@@ -168,11 +178,14 @@ describe("a clock", () => {
   it("takes the Whorl percentage held when it starts, and keeps it after the orbs are swapped out", () => {
     const cooldowns = new Map<string, Tick>();
     const rows = tableWith(0, 0.1);
-    const snapshot = snapshotCooldownSources(rows, createCooldownSnapshot());
+    const snapshot = snapshotCooldownSources(
+      rows.modifiers,
+      createCooldownSnapshot(),
+    );
 
     startCooldown(cooldowns, "spell_1", 0, finalCooldownTicks(100, snapshot));
     removeModifiers(rows, "orb");
-    snapshotCooldownSources(rows, snapshot);
+    snapshotCooldownSources(rows.modifiers, snapshot);
 
     expect(cooldowns.get("spell_1")).toBe(90);
     expect(snapshot.multiplier).toBe(1);
@@ -197,7 +210,7 @@ describe("the composer's clock", () => {
   it("takes the held Whorl percentage on top", () => {
     const base = invokeCooldownTicks(tuning, 10);
     const snapshot = snapshotCooldownSources(
-      tableWith(0, 0.05),
+      tableWith(0, 0.05).modifiers,
       createCooldownSnapshot(),
     );
 
