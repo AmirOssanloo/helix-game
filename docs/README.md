@@ -48,7 +48,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 | A developer-panel control or overlay | [Developer tools and instrumentation](./architecture/devtools-and-instrumentation.md#quick-reference) · [Commands and events](./architecture/commands-and-events.md#quick-reference) |
 | Anything on the hot path | [Performance standards](./standards/performance.md#quick-reference) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) |
 | Writing tests | [Testing standards](./standards/testing.md#quick-reference) |
-| An item, a drop table, or the store | [ADR 0011](./adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) · [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Item catalogue](./product/specs/item-catalogue.md) · [Items and loot](./product/features/items-and-loot.md) |
+| An item, a drop table, or the store | [ADR 0011](./adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) · [Commands and events](./architecture/commands-and-events.md#quick-reference) · [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Item catalogue](./product/specs/item-catalogue.md) · [Items and loot](./product/features/items-and-loot.md) |
 | Changing how the hero controls or feels | [Mechanics spec](./product/specs/character-movement-and-mechanics.md) · [Controls and orders](./product/features/controls-and-orders.md) |
 | Before offering a change for review | [Definition of done](./workflows/definition-of-done.md) |
 | Changing a rule | The [decision record](./adr/README.md) that owns it, then the page that states it |

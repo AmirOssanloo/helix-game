@@ -81,6 +81,7 @@ This is what makes a replay exact: two runs that receive the same commands at th
 
 - The world owns a seeded random source. Nothing under `domain/` or `simulation/` reads `Math.random`, `Date.now`, or `performance.now`; lint bans them.
 - A rule draws a keyed number: a pure hash of the run's seed, an integer key such as the unit's id, the tick, and a purpose from the one purpose list in `domain/` with a draw index folded in, 0 for a site that draws one number. It reads the seed and writes nothing, so a draw in one rule never moves another's. The sequential generator on run scope is the simulation's, for orchestration that draws in sequence; a system never advances it. [ADR 0010](../adr/0010-a-rules-random-draw-is-a-keyed-hash.md) is why.
+- A roll that makes items keys on what it comes from, on the tick it happens: a death on the dying unit's id, a store's stock on its checkpoint's index, a debug grant on the command's position among the tick's consumed commands. Each source draws under purposes of its own, and each number of an item under its own purpose with a draw index counted from the item's place in the roll and the stat line's place in the item, so no two sources, items, or lines draw the same number, and the order drops are made in moves none.
 - Iteration order is fixed. Pools iterate by index; the spatial hash returns candidates in cell-then-index order.
 - Every command carries the tick it applies to, and the ordering rule in [Commands and events](./commands-and-events.md) settles ties.
 - Floating-point arithmetic is fine. The contract is same-machine, same-build replay, not cross-platform bit equality.
@@ -133,6 +134,7 @@ A system holding a module-level variable — a cached list, a counter, a scratch
 | Time in the domain | A tick count; seconds in a definition become ticks or a per-tick step once, when the world takes the definition in or a tuning command changes it, never where used |
 | Random | The world's seeded source only; `Math.random`, `Date.now`, `performance.now` are banned by lint |
 | A rule's draw | Keyed: a hash of the seed, a key, the tick, and a purpose from the one list with a draw index folded in; writes nothing. The sequential generator is the simulation's, never advanced by a system |
+| An item roll's draws | Keyed on its source at its tick: a dying unit's id, a checkpoint's index, a grant's position among the tick's commands; purposes per source and per kind of number; the index from the item's place in the roll and the line's place in the item, never from the order drops are made in |
 | Iteration order | Fixed: pools by index, spatial hash by cell then index |
 | Determinism contract | Same seed and input log give the same state, same machine, same build |
 | Input log | Every consumed command with its tick, including debug, tuning, and map-change commands |

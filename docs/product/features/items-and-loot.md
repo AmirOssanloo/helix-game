@@ -12,8 +12,8 @@ When an enemy dies, it rolls its tier's drop table: gold, a health globe, a mana
 
 - **The roll is on a draw of its own.** A drop never changes a fight, and a replay of the same session drops the same things in the same places.
 - **An item's level is the map's level**, whatever dropped it. It decides which bases and affixes can roll: a base drops only once the item level reaches its quality level, an affix only once it reaches its affix level. A tougher enemy drops more and at better rarity, never at a higher level.
-- **Where it lands.** Each drop falls on free walkable ground near where the enemy died, found as a pack's members are placed.
-- **How long it stays.** A ground item stays until it is taken or the map is loaded or reset.
+- **Where it lands.** Each drop falls on free walkable ground near where the enemy died, found as a pack's members are placed, one drop to a spot, so two never lie on one point.
+- **How long it stays.** A ground item stays until it is taken or the map is loaded or reset. It never fades, and the hero's death leaves it where it lies.
 
 ## Gold and globes, taken by walking
 
@@ -21,7 +21,7 @@ Gold and globes are taken the moment the hero's disc comes within the pickup rad
 
 - **Gold** is added to the hero's gold, a number shown on the inventory screen. It takes no cell.
 - **A health globe** restores 25% of maximum health; **a mana globe** 25% of maximum mana. A globe whose pool is full is left on the ground and waits, so a hero at full health walks over health globes and keeps them for later.
-- A dead hero takes nothing.
+- A dead hero takes nothing, and nor does one whose health reached zero on that step: a globe never saves a hero already emptied.
 
 ## Picking up an item
 
@@ -48,7 +48,7 @@ I opens and closes the inventory and armory screen; Esc closes it, after a targe
 | Left click | An inventory item | Equips it into its armory slot. A worn item there goes back into the grid where it fits, and the equip is refused if it does not |
 | Left click | A worn item | Unequips it into the grid where it fits |
 | Right click | An inventory item | Drops it on the ground at the hero's feet; while the store is open, sells it instead |
-| Press and move | An inventory item | Lifts it onto the pointer, drawn at its size, showing the cells it would take as free or blocked; releasing sets it down where it fits, or swaps it with the one item it would cover; Esc or a release outside the grid puts it back |
+| Press and move | An inventory item | Lifts it onto the pointer, drawn at its size, showing the cells it would take as free or blocked; releasing sets it down where it fits, or swaps it with the one item it would cover, which goes to the first place it then fits, and is refused if there is none; Esc or a release outside the grid puts it back |
 | Pointer over | Any item, on a screen or a ground label | Shows its tooltip: name in its tint, rarity, base, item level, level requirement, marked when above the hero's level, the implicit stat, each affix line, and the price or sell price while the store is open |
 
 A refused gesture flashes the item, as a refused key flashes its square. Every change to the inventory, the armory, or gold is a command, recorded in the input log and replayed.
@@ -84,6 +84,7 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 | Not enough gold | The buy is refused and the price flashes |
 | The store opened away from a ring | Refused; only the ring the hero stands in opens a store |
 | A map loaded or reset | Every ground item is gone. The inventory, the armory, and gold are run scope and are kept |
+| More on the ground than the map holds | A drop with no room, past the limit of ground items on a map or with no free spot near where the enemy died, is not made, and the developer panel counts it; nothing already on the ground is removed. A death's drops are made best first, so a globe goes without before an item, and a Legendary last of all. The limit holds at least two full clears of the long road with nothing taken |
 | The page reloaded | The inventory is lost with the session: there are no saves |
 | Active items | Listed in the store's Misc tab once they are usable; they never drop |
 

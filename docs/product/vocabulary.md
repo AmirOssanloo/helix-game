@@ -28,6 +28,8 @@ When two people call the same thing different names, the names leak into the cod
 | The lowest item level at which a base drops or is stocked | **Quality level** | Base level, tier |
 | The lowest item level at which an affix rolls | **Affix level** | Mod level, affix tier |
 | The hero level an item needs to be worn: the highest of its base's and its affixes' | **Level requirement** | Required level, item level (that is where it was made) |
+| One Legendary item with a fixed identity: a base with fixed stat lines, dropped only by the boss whose pack names it | **Legendary piece** | Unique, artifact, set item |
+| What an enemy tier drops, or what a store stocks: the chances of gold, each globe, and each item, and the weight of each rarity | **Loot table** | Treasure class, loot list |
 | The one currency, a number the hero holds, never an item | **Gold** | Money, coins, currency |
 | A drop that restores a quarter of its pool, taken by walking over or past it | **Health globe**, **mana globe** | Potion, orb (that is Quartz, Whorl, or Ember), heart |
 | Gold, a globe, or an item lying on a map | **Ground item** | Drop (that is the verb), loot pile, pickup |

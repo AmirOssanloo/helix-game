@@ -21,6 +21,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which kind a spawned unit is, and what ends it | The spawn primitive under `src/domain/abilities/primitives/` takes the kind from the definition it names; the death system under `src/domain/combat/` ends a unit with an owner when the owner dies or its lifetime runs out |
 | Which statuses exist, and how each stacks | `src/content/statuses/` — one file per status; the stack rule is a field of each definition |
 | Which maps exist, and which one a fresh session starts on | `src/content/maps/` — one file per map, and the index that lists every map and names the one a fresh session starts on |
+| Which item bases, affixes, rarities, loot tables, and Legendary pieces exist | `src/content/items/` — one file per base, affix, loot table, and Legendary piece, the rarity table, and the index that lists them |
+| Which boss pack drops which Legendary piece | The Legendary field of each pack in the map definitions under `src/content/maps/` |
 | The hero's level cap, experience table, skill points, and the attack every form swings | `src/content/hero.ts` |
 | Which forms the hero has, and each form's body, base attributes, per-level gains, per-point conversions, ability list, and kit key | `src/content/forms/` — one file per form; `src/content/hero.ts` lists them |
 | What is tunable, and its default | The tuning table in `src/content/` — one entry per tunable, default beside it |
@@ -36,18 +38,22 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a pack is placed, from the panel or a map, and when a map's pack wakes or sleeps | `src/domain/ai/packs.ts` — the one door a pack enters by, and the wake and sleep rule the AI pass ends with |
 | The walkability grid a unit is placed and paths on, what a map load resets, and when a checkpoint is reached | `src/domain/map/` — the grid and its radius classes, the map-scope reset, and the checkpoint rule |
 | How a unit attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
+| What a death drops, how it is rolled and where it lands, and how gold, globes, and a picked-up item are taken | `src/domain/loot/` — the roll, the placement and its refusal, and the pickup system |
+| How an item is made, held on the grid, worn, and priced, and how a place is encoded | `src/domain/items/` — the item value, the inventory and its fit test, the armory and its totals, the item commands, the prices, and the place encoding |
+| How a store is stocked, opened, closed, and traded with | `src/domain/store/` — the store records, the stock roll, the store commands, and the store system |
+| What a ground item holds, and how many there can be | `src/domain/entities/ground-item.ts` — the capacity at the top |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/validate-registry.ts` walks the kind list |
 | Which definition kinds exist, each one's schema, checks, and tuning | `src/domain/definitions/kinds/index.ts` — the kind list, one descriptor file per kind beside it |
 | How a content edit reaches a running session, and when it asks for a page reload | `src/app/content-reload.ts`, and the content-change rule under `src/domain/definitions/` |
 | Which systems run, and in what order | `src/simulation/systems.ts` — the one list; the order in the file is the order per tick |
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |
 | The live enemy cap, and the slots kept beside it for summons | The constants beside the unit pool's capacity, at the top of the unit file under `src/domain/entities/` |
-| Which commands the player can issue | The command union in `src/domain/commands/` |
+| Which commands the player can issue | The command union in `src/domain/commands/`, with the item and store commands in a file of their own beside it |
 | Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
 | Which events the tick can emit | The event union in `src/domain/events/` |
 | Which kits exist, and how a slot key becomes an orb press, an invoke, or a cast | `src/domain/kits/` — the registry, one file per kit, and the slot-key application |
 | The orb buffer, the composer, the prepared slots, the Invoke rule, and the orb passives | `src/domain/invoke/` — one file per rule |
-| The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine file, the validator beside it, and the matrix lookup. The matrix itself is data, in `src/content/statuses/disable-matrix.ts` |
+| The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine's files, one per family of transitions, the validator beside them, and the matrix lookup. The matrix itself is data, in `src/content/statuses/disable-matrix.ts` |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union |
 | How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system; where the hero comes back is the spawn point the checkpoint rule under `src/domain/map/` moves |
@@ -79,6 +85,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
 | Whose a click or a key is, a screen's, the bar's, or the world's | `src/presentation/input/input-claim.ts` — the input claim; the play scene's binding asks it in `bind-scene-input.ts` |
+| What a right click can name on the ground | The pick port in `src/presentation/input/input-ports.ts` — the labels and icons the ground-item views write each frame |
 | Which screens exist | `src/presentation/screens/` — one file per screen, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |

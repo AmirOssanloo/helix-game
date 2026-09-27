@@ -90,6 +90,8 @@ Correcting a small detail in an accepted record is fine — edit it. Changing wh
 | [0010](./0010-a-rules-random-draw-is-a-keyed-hash.md) | A rule's random draw is a hash of the seed, a key, the tick, and a purpose | Where a rule gets a random number, and why a draw in one rule never moves another's |
 | [0011](./0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) | An item is a value the hero holds in run scope. Proposed | Where the inventory, the armory, and gold live, what an item instance holds, and how an item's stats reach the hero without growing every unit's modifier table |
 | [0012](./0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) | Screens draw in the HUD scene, behind one input claim. Proposed | Why a screen is Phaser and not the DOM, how a click or a key on a screen never reaches the world, how a right click reads item labels, and how a screen pauses the world |
+| [0013](./0013-loot-on-the-ground-is-a-pooled-entity-that-stays-until-the-map-is-made-again.md) | Loot on the ground is a pooled entity that stays until the map is made again. Proposed | What a ground item is, how many there can be, what happens to a drop past the pool or with no free cell, and why nothing on the ground fades or is evicted |
+| [0014](./0014-of-item-content-the-tuning-surface-reaches-only-the-loot-tables.md) | Of item content, the tuning surface reaches only the loot tables. Proposed | Why a panel slider can move a drop chance but never an item's size, range, or price, and how a roll stays safe under a tuned table |
 
 ---
 

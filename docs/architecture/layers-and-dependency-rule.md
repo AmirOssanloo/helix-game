@@ -12,9 +12,9 @@ The eight layers under `src/`, what each one is for, and the one rule that holds
 | Layer | Job | Holds |
 | --- | --- | --- |
 | `shared/` | Pure helpers with no game knowledge | Vector math without allocation, angle wrap, clamp, ring buffer, assert, generational ids, an integer hash |
-| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, and three doors: `public.ts`, `queries.ts`, and `rules.ts` |
+| `domain/` | **Decides.** Pure rules over plain state | Definition types and their validation schema, entity kinds and pools, the command and event unions, the order state machine, movement, pathing, the ability pipeline, the attack, the hero's Invoke mechanics, stats, combat, AI, map derivation, items, loot, the store, and three doors: `public.ts`, `queries.ts`, and `rules.ts` |
 | `simulation/` | **Orchestrates.** Owns a world and steps it | The world with its run scope and map scope, the seeded random source, the command buffer, the event ring, the fixed system order, `tick`, input-log recording and replay, the session that owns the world and switches it between live play and a replay, `public.ts`, and `testing.ts` |
-| `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, and map; the hero; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
+| `content/` | Typed data | One file per spell, enemy ability, enemy, status, form, map, item base, affix, loot table, and Legendary piece; the hero; the rarity table; the tuning table; the atlas frame list; a registry index that assembles them for the domain to validate |
 | `instrumentation/` | Measures | Preallocated sample rings: tick time, render time, live counts, pool misses, frame rate |
 | `presentation/` | **Adapts.** Where Phaser is used | Scenes, the shape atlas, pooled views, the input claim and input mapping, camera, HUD, screens, debug overlays |
 | `devtools/` | The developer panel | The HTML panel and `DevApi` |
@@ -85,7 +85,10 @@ Most placement questions come down to one: **does it decide, orchestrate, descri
 | A named effect a spell references | `domain/abilities/effects/` |
 | An AI behaviour an enemy references | `domain/ai/behaviours/` |
 | A random draw in a rule | The keyed draw in `domain/random/`, with a new entry in its purpose list |
-| A spell, enemy, status, or map | `content/<kind>/` |
+| An item, the inventory, the armory, gold, or a price | `domain/items/` |
+| A drop, its roll, or taking what lies on the ground | `domain/loot/`; the ground item itself is `domain/entities/` |
+| The store, its stock, and its commands | `domain/store/` |
+| A spell, enemy, status, map, or item definition | `content/<kind>/`; every item kind under `content/items/` |
 | A number design will retune | The tuning table in `content/`, read through world state |
 | Anything that draws or reads input | `presentation/` |
 | A developer-panel control | `devtools/`, issuing a `DebugCommand` |

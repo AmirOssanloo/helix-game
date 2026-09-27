@@ -65,7 +65,7 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 | Layer | docs |
 | Size | 1 |
 | Depends on | T01 as drafted, not its approval; the phase 7 gate, P7-S48-T04 above all |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** a structural ticket. It is the engineering architect's; the delivery strategist names the questions and does not answer them. The brief the maintainer saw sized it at 1; it is 1.5 because the first UI screen is a structural decision of its own, the one ADR 0003's three-scene rule names as its revisit condition.
 
@@ -79,6 +79,8 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 > What is left places the inventory, the ground item and its pool, loot, and the store. Was items 2, 4, and 7, the item in memory, the loot draw, and the first screen, now answered.
 
 > **Note, 2026-09-27, from P7-S48-T04:** [ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) places the inventory and gold in run scope once, an armory on each form record, and an item as a fixed-shape value with no id, moved by copy, a command naming a cell or a slot; [ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md) puts screens in `HudScene` behind the input claim. The brief places modules on both and does not reopen them.
+
+> **Note, 2026-09-28, built:** [the brief](../../2026-09-28-where-items-loot-and-the-store-live.md) answers the eight questions, with two decision records, [ADR 0013](../../../../docs/adr/0013-loot-on-the-ground-is-a-pooled-entity-that-stays-until-the-map-is-made-again.md) for the ground item's pool and lifetime and [ADR 0014](../../../../docs/adr/0014-of-item-content-the-tuning-surface-reaches-only-the-loot-tables.md) for the item tuning surface, both Proposed; the choices no doc settled are [Q104](../backlog/open-questions.md), decided provisionally. The import table needs no new row. Seventeen tickets of sprints 31 to 36 and 40 carry a note.
 
 **Build:** the engineering architect's structural brief, and whatever decision records it takes, answering each of these on top of phase 7's records. The roadmap's door says later modules land in layers that already exist ([layers](../../../../docs/architecture/layers-and-dependency-rule.md)).
 
@@ -128,18 +130,22 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 
 > **Note, 2026-09-27, later:** a base also carries its size in cells (Q88).
 
-**Build:** the definition types the catalogue needs, placed where T02 says: an item base with its size in cells, its quality level, and its requirement, an affix with its affix level and requirement, the rarity table, and a loot table per enemy tier and for each Legendary boss, each with its validation schema, every field required. `src/content/items/` with an index registered in the content registry, holding two fixture bases, one loot table per enemy tier, and the rarity and affix tables; the real twenty bases are P8-S35-T03's. The tunables the catalogue names (globe percentages, pickup radius) go in `src/content/tuning.ts`. The [content and registries](../../../../docs/architecture/content-and-registries.md) page and the world model's definition kinds state the new kinds. Adding definitions moves the content version, so the six stored logs are re-stamped by `pnpm restamp`. Each new kind is one descriptor (P7-S47-T02).
+> **Note, 2026-09-28, from P8-S31-T02:** [the brief](../../2026-09-28-where-items-loot-and-the-store-live.md) makes five kinds, not four: a Legendary piece is a kind of its own, and a boss pack names its piece in a new `legendaryId` field of the map's pack, with the chance on the boss loot table, so there is no loot table per Legendary boss. Of the five only the loot table is tunable, under the word `loot` ([ADR 0014](../../../../docs/adr/0014-of-item-content-the-tuning-surface-reaches-only-the-loot-tables.md)); there is a `store` loot table beside the three tiers'. The tunables are named. The size stays 1: the fifth descriptor is one file on the pattern of the other four.
+
+**Build:** the definition types the catalogue needs, placed where T02 says, under `src/domain/definitions/` with a descriptor each under `kinds/`: an item base with its size in cells, its quality level, and its requirement; an affix with its affix level and requirement; the rarity table, a single kind; a loot table, one each for `normal`, `elite`, `boss`, and `store`, holding the chances of gold and each globe, the gold range, its item rolls each with a chance and a weight per rarity, and for the boss the Legendary chance; and a Legendary piece on a base, with its fixed lines and requirement. Each with its validation schema, every field required. The loot table's descriptor is tunable under `loot`; the other four carry `tuning: null`, as `mapKind` does. The map's `PackDef` gains `legendaryId: string | null`, checked by the map kind: an id naming a piece that exists, on a boss-tier pack only. `src/content/items/` with an index registered in the content registry, holding two fixture bases, one fixture Legendary piece, the four loot tables, and the rarity and affix tables; the real twenty bases and three pieces are P8-S35-T03's. The tunables go in `src/content/tuning.ts`: `pickup_radius`, `health_globe_restore`, `mana_globe_restore`, `drop_placement_radius`, and `store_sell_fraction`. The [content and registries](../../../../docs/architecture/content-and-registries.md) page and the world model's definition kinds state the new kinds. Adding definitions moves the content version, so the six stored logs are re-stamped by `pnpm restamp`. Each new kind is one descriptor (P7-S47-T02).
 
 **Acceptance:**
-- The registry takes a well-formed base and refuses, with a message naming the field: a missing field, an unknown armory slot, an affix on a slot it may not roll on, a loot table naming an unknown base or an active item, an atlas frame not in the frame list.
+- The registry takes a well-formed base and refuses, with a message naming the field: a missing field, an unknown armory slot, a size that does not fit the 10 by 4 grid, an affix on a slot it may not roll on, a loot table naming an unknown rarity, a Legendary piece on an unknown base, a pack naming an unknown piece or naming one at a tier other than boss, an atlas frame not in the frame list.
+- No tuning key names an item kind but `loot`.
 - The rarity table's seven rows match the catalogue's.
 - The six stored logs replay on the new content version.
 - `pnpm check` green.
 
 **Tests:**
 - `tests/domain/definitions/item-schema.spec.ts`: each refusal above, and a well-formed base taken.
-- `tests/content/items.spec.ts`: the index loads; every loot table names bases that exist.
-- `tests/content/catalogues.spec.ts`: the catalogue's rarity and affix tables against the content.
+- `tests/content/items.spec.ts`: the index loads; the four loot tables exist; a loot table names rarities and never an item, so no active item can be in one.
+- `tests/domain/definitions/tuning-keys.spec.ts`, or the tuning key spec already there: the `loot` keys present, no key for the other four item kinds.
+- `tests/content/catalogues.spec.ts`: the catalogue's rarity and affix tables against the content, the four weight columns read against the four loot tables.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
@@ -182,15 +188,15 @@ The behaviour goes in a new feature page, `docs/product/features/items-and-loot.
 | Check | Result |
 | --- | --- |
 | The item catalogue approved by the maintainer | Drafted 2026-09-28 by P8-S31-T01, every agent-checkable acceptance row holding: [the item catalogue](../../../../docs/product/specs/item-catalogue.md) and [items and loot](../../../../docs/product/features/items-and-loot.md). The approval waits on the maintainer, deferred until phase 8 is done by the standing instruction of 2026-09-24, a box in STATUS.md; Q103 with it |
-| The architect's brief and its decision records | |
+| The architect's brief and its decision records | Done 2026-09-28 by P8-S31-T02: [the brief](../../2026-09-28-where-items-loot-and-the-store-live.md) answers the eight questions; [ADR 0013](../../../../docs/adr/0013-loot-on-the-ground-is-a-pooled-entity-that-stays-until-the-map-is-made-again.md) and [ADR 0014](../../../../docs/adr/0014-of-item-content-the-tuning-surface-reaches-only-the-loot-tables.md) Proposed, the maintainer's reading a box in STATUS.md deferred until phase 8 is done by the standing instruction of 2026-09-24; Q104 decided provisionally; no new import-table row |
 | The schema refuses what it should, and the six logs re-stamped | |
 | The checkpoint reach at 256, every checkpoint reached on the long-road walk | Done 2026-09-28 by P8-S31-T04: the walk reaches checkpoints 0 to the last in order in 4338 ticks with no hero death; the six logs on content version a486c35a |
-| Actual days per ticket | T01: 0.5 against 1.5; T04: 0.25 against 0.5 |
+| Actual days per ticket | T01: 0.5 against 1.5; T02: 0.5 against 1; T04: 0.25 against 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint
 
 - The catalogue's approval is calendar time outside the sprint. Sprints 32 to 34 build on the draft and fixture bases; P8-S35-T03 waits on the approval.
 - The first screen's decision is phase 7's (P7-S48-T04 (b)), and its capture layer is built there (P7-S50-T01), so it no longer moves this sprint. Was: it could move P8-S34-T02 and T03 by a day either way.
-- Adding the four item kinds leans on phase 7's descriptors (P7-S47-T02). If that ticket's toy kind took more than three files, T03 is sized again before it starts.
+- Adding the five item kinds (four until P8-S31-T02 made the Legendary piece its own) leans on phase 7's descriptors (P7-S47-T02). If that ticket's toy kind took more than three files, T03 is sized again before it starts.
 - The catalogue's economy is arithmetic on the new road's 100 to 130 kills, which sprint 39 writes first. If it cannot cover the clean run's sustain at rates that still read as rare, it says so before sprint 32.
