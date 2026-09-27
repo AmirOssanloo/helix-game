@@ -90,6 +90,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | The render benchmark | `bench/` — one scene, with its expected numbers in the file header |
 | Which definition fields the content version leaves out as art | `PRESENTATION_FIELDS` in `src/simulation/replay/content-version.ts` |
 | How a stored log's stamp is rewritten | `pnpm restamp`, which runs `tooling/restamp.ts`; its logic is `tooling/restamp-logs.ts` |
+| Which fields the state checksum and the full-state comparison cover, and what they leave out | `src/simulation/replay/state-fields.ts` and `src/simulation/replay/unit-fields.ts`; `STATE_LEAVES` and `STATE_EXCLUDED` list them |
 | Which commands exist | Root `package.json` → `scripts` |
 | The pinned Node and pnpm versions | `.nvmrc` and the `packageManager` field of the root `package.json` |
 | Which path aliases exist | The `paths` block of `tsconfig.json` |

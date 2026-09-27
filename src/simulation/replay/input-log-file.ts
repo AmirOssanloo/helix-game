@@ -1,6 +1,7 @@
 import type { AnyCommand, Tick } from "@domain/public";
 import type { InputLog } from "../input-log";
 import type { WorldView } from "../world-view";
+import type { StateChecksum } from "./state-checksum";
 
 /** One consumed command with the tick it was consumed on, as the file holds it. */
 export type InputLogRecord = Readonly<{
@@ -12,9 +13,11 @@ export type InputLogRecord = Readonly<{
  * What the developer panel's save button writes and a replay reads back: the seed the world
  * was created under, the content version stamp of the registry it was created on, the stamp
  * each content reload taken while it ran moved it to, the map it ran on, how many ticks it
- * ran, and every consumed command in the order the ticks took them. The file is the record a
- * bug report ships with, and a replay needs nothing else. A log with any reload in it spans
- * two versions and never replays.
+ * ran, the state checksums a replay of it must reach, and every consumed command in the
+ * order the ticks took them. The file is the record a bug report ships with, and a replay
+ * needs nothing else. A log with any reload in it spans two versions and never replays. A log
+ * saved from the panel holds no checksum; `pnpm restamp --checksums` records them when it is
+ * promoted to a stored log.
  */
 export type InputLogFile = Readonly<{
   seed: number;
@@ -22,6 +25,7 @@ export type InputLogFile = Readonly<{
   contentReloads: readonly string[];
   mapId: string;
   ticks: number;
+  checksums: readonly StateChecksum[];
   records: readonly InputLogRecord[];
 }>;
 
@@ -67,6 +71,7 @@ export const serializeInputLog = (
     contentReloads,
     mapId: view.map.mapId,
     ticks: view.tick,
+    checksums: [],
     records,
   };
 
@@ -86,6 +91,51 @@ const isVersionList = (value: unknown): value is readonly string[] =>
 
 const isTick = (value: unknown): value is Tick =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+/**
+ * The checksums `value` holds, in tick order and each after a tick the session ran, or `null`
+ * when it holds none of that shape. A document with no checksum key was saved before logs
+ * held any, and holds none.
+ */
+const parseChecksums = (
+  value: unknown,
+  ticks: number,
+): StateChecksum[] | null => {
+  if (value === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const checksums: StateChecksum[] = [];
+  let lastTick = -1;
+
+  for (const entry of value) {
+    if (!isRecord(entry)) {
+      return null;
+    }
+
+    const tick = entry["tick"];
+    const checksum = entry["value"];
+
+    if (
+      !isTick(tick) ||
+      tick <= lastTick ||
+      tick > ticks ||
+      typeof checksum !== "number" ||
+      !Number.isInteger(checksum)
+    ) {
+      return null;
+    }
+
+    lastTick = tick;
+    checksums.push({ tick, value: checksum });
+  }
+
+  return checksums;
+};
 
 /** Whether `value` has the shape every command shares: a kind, the tick it applies to, and its arrival stamp. The validator judges the rest when the tick consumes it. */
 const isCommand = (value: unknown): value is AnyCommand =>
@@ -122,7 +172,7 @@ const parseRecord = (
 
 /**
  * The log `text` holds, or the reason it holds none: the text must be a JSON object with an
- * integer seed, a content version, the list of versions reloads moved it to, a map id, a tick count, and records in tick order, each
+ * integer seed, a content version, the list of versions reloads moved it to, a map id, a tick count, the checksums in tick order, and records in tick order, each
  * a tick before the count and a command with the shape every command shares. What a command
  * means is the validator's to judge when a tick consumes it, exactly as for a live one.
  */
@@ -147,6 +197,7 @@ export const parseInputLogFile = (
   const mapId = parsed["mapId"];
   const ticks = parsed["ticks"];
   const records = parsed["records"];
+  const checksumsValue = parsed["checksums"];
 
   if (typeof seed !== "number" || !Number.isInteger(seed)) {
     return malformed("the seed is not an integer");
@@ -166,6 +217,14 @@ export const parseInputLogFile = (
 
   if (!isTick(ticks)) {
     return malformed("the tick count is not a whole number");
+  }
+
+  const checksums = parseChecksums(checksumsValue, ticks);
+
+  if (checksums === null) {
+    return malformed(
+      "the checksums are not a list of ticks in order, each with a whole-number value",
+    );
   }
 
   if (!Array.isArray(records)) {
@@ -202,6 +261,7 @@ export const parseInputLogFile = (
     contentReloads,
     mapId,
     ticks,
+    checksums,
     records: parsedRecords,
   };
 };

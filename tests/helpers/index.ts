@@ -91,6 +91,12 @@ export { makeCast, type MakeCastOptions } from "./world/make-cast";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";
 export { spawnEnemy, type SpawnEnemyOptions } from "./world/spawn-enemy";
+export {
+  arrangeEveryRecord,
+  isPoolLike,
+  type Nudge,
+  nudgeLeaf,
+} from "./world/state-walk";
 export { spawnHero, type SpawnHeroOptions } from "./world/spawn-hero";
 export { spawnUnit, type SpawnUnitOptions } from "./world/spawn-unit";
 export { submit } from "./world/submit";

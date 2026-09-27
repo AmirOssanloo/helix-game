@@ -61,7 +61,11 @@ const BROKEN_MOVE: Readonly<Record<string, unknown>> = {
 describe("restamping the stored logs", () => {
   it("rewrites the stamp of a log recorded on other content, and not one other character", () => {
     const text = recordedText(1, OLD_STAMP);
-    const outcome = restampLogs([{ name: "old.json", text }], registry);
+    const outcome = restampLogs(
+      [{ name: "old.json", text }],
+      registry,
+      "stamps",
+    );
     const current = contentVersionOf(registry);
 
     expect(outcome.refusals).toEqual([]);
@@ -70,6 +74,7 @@ describe("restamping the stored logs", () => {
         name: "old.json",
         from: OLD_STAMP,
         to: current,
+        checksumsRewritten: false,
         text: text.replace(OLD_STAMP, current),
       },
     ]);
@@ -81,7 +86,7 @@ describe("restamping the stored logs", () => {
       { name: "a.json", text: recordedText(1, current) },
       { name: "b.json", text: recordedText(2, current) },
     ];
-    const outcome = restampLogs(logs, registry);
+    const outcome = restampLogs(logs, registry, "stamps");
 
     expect(outcome.refusals).toEqual([]);
     expect(
@@ -100,7 +105,7 @@ describe("restamping the stored logs", () => {
       { name: "a.json", text: recordedText(1, current) },
       { name: "b.json", text: recordedText(2, current) },
     ];
-    const outcome = restampLogs(logs, retuned);
+    const outcome = restampLogs(logs, retuned, "stamps");
 
     expect(outcome.refusals).toEqual([]);
     expect(outcome.restamped.map((log) => [log.from, log.to])).toEqual([
@@ -121,6 +126,7 @@ describe("restamping the stored logs", () => {
         { name: "broken.json", text: broken },
       ],
       registry,
+      "stamps",
     );
 
     expect(outcome.restamped).toEqual([]);
@@ -144,6 +150,7 @@ describe("restamping the stored logs", () => {
         { name: "prose.json", text: "not a log" },
       ],
       registry,
+      "stamps",
     );
 
     expect(outcome.restamped).toEqual([]);
@@ -152,6 +159,89 @@ describe("restamping the stored logs", () => {
       "reloaded.json",
       "prose.json",
     ]);
+  });
+
+  it("records a log's checksums under --checksums, touching nothing but them and the stamp", () => {
+    const text = recordedText(1, OLD_STAMP);
+    const outcome = restampLogs(
+      [{ name: "old.json", text }],
+      registry,
+      "checksums",
+    );
+    const log = outcome.restamped[0];
+    const file = log === undefined ? null : parseInputLogFile(log.text);
+
+    expect(outcome.refusals).toEqual([]);
+    expect(log?.checksumsRewritten).toBe(true);
+
+    if (file === null || isReplayRefusal(file)) {
+      throw new Error("The rewritten log parses");
+    }
+
+    expect(file.checksums.map((checksum) => checksum.tick)).toEqual([
+      0,
+      RECORDED_TICKS,
+    ]);
+    expect(log?.text.replace(/"checksums":\[[^\]]*\]/, '"checksums":[]')).toBe(
+      text.replace(OLD_STAMP, contentVersionOf(registry)),
+    );
+
+    const again = restampLogs(
+      [{ name: "old.json", text: log?.text ?? "" }],
+      registry,
+      "checksums",
+    );
+
+    expect(again.restamped[0]?.checksumsRewritten).toBe(false);
+    expect(again.restamped[0]?.text).toBe(log?.text);
+  });
+
+  it("inserts the checksums into a log saved before logs held any", () => {
+    const current = contentVersionOf(registry);
+    const text = edited(recordedText(1, current), (fields) => {
+      const { checksums: _dropped, ...rest } = fields;
+
+      return rest;
+    });
+    const outcome = restampLogs(
+      [{ name: "older.json", text }],
+      registry,
+      "checksums",
+    );
+    const file = parseInputLogFile(outcome.restamped[0]?.text ?? "");
+
+    expect(text).not.toContain("checksums");
+    expect(isReplayRefusal(file) ? [] : file.checksums).toHaveLength(2);
+  });
+
+  it("refuses a log whose replay misses a checksum it holds, unless the checksums are being recorded", () => {
+    const recorded = restampLogs(
+      [{ name: "a.json", text: recordedText(1, OLD_STAMP) }],
+      registry,
+      "checksums",
+    ).restamped[0];
+    const moved = edited(recorded?.text ?? "", (fields) => ({
+      ...fields,
+      checksums: [
+        { tick: 0, value: 1 },
+        { tick: RECORDED_TICKS, value: 2 },
+      ],
+    }));
+    const refused = restampLogs(
+      [{ name: "moved.json", text: moved }],
+      registry,
+      "stamps",
+    );
+    const rerecorded = restampLogs(
+      [{ name: "moved.json", text: moved }],
+      registry,
+      "checksums",
+    );
+
+    expect(refused.restamped).toEqual([]);
+    expect(refused.refusals[0]?.message).toContain("state checksum at tick 0");
+    expect(rerecorded.refusals).toEqual([]);
+    expect(rerecorded.restamped[0]?.checksumsRewritten).toBe(true);
   });
 
   it("finds every log under tests/simulation/replays/ already current, so a restamp of the tree as it is writes nothing", () => {

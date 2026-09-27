@@ -131,7 +131,11 @@ Nothing draws in a test. The presentation tier tests the logic around Phaser —
 
 **A recorded log is valid only on the content version it was recorded on.** The version is a hash over what the simulation reads of the content: the atlas frame list, glyphs included, and every definition field `PRESENTATION_FIELDS` in `src/simulation/replay/content-version.ts` names, the frame and the tint, are left out, so an art edit moves no version. The architecture test holds that no rule under `src/domain` or `src/simulation` reads a listed field. A change to any other definition field moves the version, and every stored log goes with it in the same change: re-stamped with the new version where its spec asserts something the number does not decide, and recorded again where the spec asserts what the numbers do, as a balance pass's logs do.
 
-**`pnpm restamp` is the only way a stamp is rewritten.** It replays every log under `tests/simulation/replays/` under the new stamp, rewrites the stamp and not one other character, and prints each file's old and new stamp. If any log does not replay to its last tick, it writes nothing. Nobody edits a stored log's stamp by hand.
+**`pnpm restamp` is the only way a stamp is rewritten.** It replays every log under `tests/simulation/replays/` under the new stamp, rewrites the stamp and not one other character, and prints each file's old and new stamp. If any log does not replay to its last tick, or misses a state checksum it holds, it writes nothing. Nobody edits a stored log's stamp by hand.
+
+**Every stored log holds the state checksum at every 30th tick and at its last.** The checksum hashes the whole of world state a tick decides — every pool slot, run scope, and map scope — over a fixed sequence of named field paths in `src/simulation/replay/state-fields.ts`, each read through an accessor, so a change of layout moves no checksum. Each record's list is typed against the record's keys, so a field added and not listed fails the typecheck; what is left out is listed with its reason: caches derived from hashed state, content the stamp fixes, and the art copied from a presentation-only field. Floats are hashed by their bits, so the checksum is exact, and it runs only in the replay verifier, the re-stamp tool, and tests. The replay determinism spec replays every stored log to its checksums, and the full-state comparison, `tickDifference`, walks the same lists to name the first field two worlds disagree on.
+
+**`pnpm restamp --checksums` is the only way a checksum is rewritten, and a change runs it only when it means to change behaviour.** It records every log's checksums from its replay, and the stamp with them. A refactor that moves a checksum is a defect in the refactor, not a reason to record again. A log saved from the panel holds no checksum; this records them when the log is promoted to a stored log.
 
 A helper **arranges**; it never simulates. It does not branch on its parameters, carry state between calls, or re-implement a production rule. `tickUntil` has a maximum and fails loudly when it reaches it.
 
@@ -148,6 +152,8 @@ tests/helpers/
 ├── recording/        # Drivers that play a stored session to record its log again: the one kind that simulates
 └── architecture/     # One file per rule the architecture tier checks: a collect function and a describe function
 ```
+
+A helper that is itself a proof, as the full-state comparison is the proof every refactor is judged by, keeps its spec beside it, `tests/helpers/world/tick-difference.spec.ts`, which runs in the simulation tier.
 
 A recording driver is the exception to arranging: it plays a whole session the way a person at the panel would, reacting to the world and sending only commands, and returns the input log file. A spec that asserts on the world never calls one; the recording spec beside the stored logs runs them, only when asked, to write the logs again.
 
@@ -191,13 +197,14 @@ A simulation test that passes on the second run has found a determinism bug — 
 | Never tested | The same rule at two tiers; call order and counts; Phaser; reference numbers; wiring |
 | A bug fix | Ships with its reproducing input log as a replay test |
 | Recorded logs | Valid on one content version, a hash over what the simulation reads: the atlas and the listed presentation fields are left out, and no rule reads a listed field. A definition change re-stamps them, or records again those that assert what the numbers do |
-| Re-stamping | `pnpm restamp` only, never by hand: every log replays first, only the stamp is rewritten, and one failing log writes nothing |
+| Re-stamping | `pnpm restamp` only, never by hand: every log replays to its checksums first, only the stamp is rewritten, and one failing log writes nothing |
+| State checksums | Every stored log holds one at every 30th tick and its last, over every listed field of world state; rewritten by `pnpm restamp --checksums` only, and only for a change meant to change behaviour |
 | Shape | One outcome per test; names read as requirements; arrange, act, assert; no logic; literal expected values |
 | Time and randomness | From the world's seed and `tick`. No clock, no fake timers, no sleep |
 | Worlds | Small: a factory-made registry of the definitions the test needs |
 | Focused and skipped | None focused; skipped only with an owner and condition. No retries |
 | A flaky test | A determinism bug, treated as one the day it flakes |
-| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition; a recording driver plays a session only to record its log again |
+| Helpers | `makeFooDef`, `makeWorld`, `spawnFoo`, `submit`, `tickUntil`, `loadInputLog`, `makeWorldView` — arrange, never simulate; `describeFoo` mounts a shared suite and never branches on its definition; a recording driver plays a session only to record its log again; a helper that is itself a proof, as the full-state comparison is, keeps its spec beside it |
 | Where helpers live | `tests/helpers/`, one folder per kind; a spec imports from the barrel only; factories count, never randomise; an architecture rule exports its collect function beside its describe |
 
 ---

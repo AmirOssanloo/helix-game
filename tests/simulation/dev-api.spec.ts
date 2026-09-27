@@ -448,7 +448,7 @@ describe("DevApi reads", () => {
     expect(api.overlays).toBe(overlays);
   });
 
-  it("saves the input log as the seed, the content version, no content reloads, the map, the ticks run, and every consumed command with its tick", () => {
+  it("saves the input log as the seed, the content version, no content reloads, the map, the ticks run, no checksums, and every consumed command with its tick", () => {
     const { api, world } = arrange();
 
     api.submit({ kind: "level_up" });
@@ -463,6 +463,7 @@ describe("DevApi reads", () => {
       contentReloads: [],
       mapId: world.view.map.mapId,
       ticks: 3,
+      checksums: [],
       records: [
         { tick: 0, command: { kind: "level_up", tick: 0, timestamp: 1 } },
         { tick: 2, command: { kind: "heal", tick: 2, timestamp: 2 } },

@@ -1,5 +1,7 @@
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { arenaDef } from "@content/public";
+import { arenaDef, contentRegistry } from "@content/public";
 import type { PoolView, Unit } from "@domain/public";
 import type {
   InputLogFile,
@@ -9,16 +11,21 @@ import type {
 } from "@simulation/public";
 import {
   beginReplay,
+  CHECKSUM_INTERVAL,
+  checksumMismatch,
   contentVersionOf,
   createSessionWorld,
   isReplayRefusal,
+  mapOfLog,
   parseInputLogFile,
+  recordChecksums,
   restartSessionWorld,
   serializeInputLog,
 } from "@simulation/public";
 import {
   loadInputLog,
   makeRegistry,
+  REPOSITORY_ROOT,
   submit,
   tickDifference,
   tickUntil,
@@ -41,6 +48,17 @@ const LIVE_SEED = 77;
  * got there, so the only thing this number must do is outlast the slowest machine that runs it.
  */
 const REPLAY_TIMEOUT_MS = 30_000;
+
+/** Every stored log, by the name `loadInputLog` takes. */
+const STORED_LOGS = readdirSync(
+  join(REPOSITORY_ROOT, "tests", "simulation", "replays"),
+)
+  .filter((name) => name.endsWith(".json"))
+  .map((name) => name.slice(0, -".json".length))
+  .sort();
+
+/** Longer again: the long road's log alone runs thirteen thousand ticks. */
+const STORED_REPLAY_TIMEOUT_MS = 60_000;
 
 /** A map's entries in insertion order, so a `Map` compares as data. */
 const replacer = (_key: string, value: unknown): unknown =>
@@ -211,7 +229,10 @@ describe("replay", () => {
         first.tick();
         second.tick();
 
-        const difference = tickDifference(first.view, second.view);
+        const difference = tickDifference(
+          first.world.state,
+          second.world.state,
+        );
 
         expect(difference, `after tick ${String(first.view.tick)}`).toBeNull();
       }
@@ -264,4 +285,32 @@ describe("replay", () => {
 
     expect(snapshot(restarted.view)).toBe(snapshot(fresh.view));
   });
+
+  it.each(STORED_LOGS)(
+    "replays the stored log %s to the state checksum it holds at every stored tick",
+    (name) => {
+      const file = loadInputLog(name);
+      const map = mapOfLog(file, contentRegistry);
+
+      if (isReplayRefusal(map)) {
+        throw new Error(map.message);
+      }
+
+      const replay = beginReplay(file, { registry: contentRegistry, map });
+
+      if (isReplayRefusal(replay)) {
+        throw new Error(replay.message);
+      }
+
+      const replayed = recordChecksums(replay);
+
+      expect(file.checksums.map((checksum) => checksum.tick)).toEqual(
+        replayed.map((checksum) => checksum.tick),
+      );
+      expect(file.checksums.at(-1)?.tick).toBe(file.ticks);
+      expect(file.checksums[1]?.tick).toBe(CHECKSUM_INTERVAL);
+      expect(checksumMismatch(file.checksums, replayed)).toBeNull();
+    },
+    STORED_REPLAY_TIMEOUT_MS,
+  );
 });

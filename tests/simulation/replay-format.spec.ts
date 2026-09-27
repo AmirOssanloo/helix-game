@@ -134,7 +134,7 @@ describe("the content version stamp", () => {
 });
 
 describe("the input log file", () => {
-  it("round-trips the seed, the content version, the content reloads, the map, the ticks run, and the records", () => {
+  it("round-trips the seed, the content version, the content reloads, the map, the ticks run, no checksums, and the records", () => {
     const file = recordedLog();
 
     expect(file).toEqual({
@@ -143,6 +143,7 @@ describe("the input log file", () => {
       contentReloads: [],
       mapId: RECORDED_MAP_ID,
       ticks: 2,
+      checksums: [],
       records: [
         { tick: 0, command: { kind: "level_up", tick: 0, timestamp: 1 } },
       ],
@@ -171,6 +172,28 @@ describe("the input log file", () => {
         '{"seed":1,"contentVersion":"a","contentReloads":"b","mapId":"m","ticks":1,"records":[]}',
       ),
     ).toContain("the content reloads are not a list of versions");
+  });
+
+  it("reads a document with no checksums as a log that holds none", () => {
+    const file = parseInputLogFile(
+      '{"seed":1,"contentVersion":"a","contentReloads":[],"mapId":"m","ticks":2,"records":[]}',
+    );
+
+    expect(isReplayRefusal(file) ? null : file.checksums).toEqual([]);
+  });
+
+  it.each([
+    ['"checksums":{}', "not a list"],
+    ['"checksums":[{"tick":0}]', "no value"],
+    ['"checksums":[{"tick":0,"value":1.5}]', "a fractional value"],
+    ['"checksums":[{"tick":2,"value":1},{"tick":1,"value":1}]', "out of order"],
+    ['"checksums":[{"tick":3,"value":1}]', "past the last tick"],
+  ])("refuses checksums with %s, %s", (checksums) => {
+    expect(
+      refusalOf(
+        `{"seed":1,"contentVersion":"a","contentReloads":[],"mapId":"m","ticks":2,${checksums},"records":[]}`,
+      ),
+    ).toContain("the checksums are not a list of ticks in order");
   });
 
   it("refuses a record with no command shape", () => {

@@ -101,7 +101,11 @@ export default defineConfig({
       project(
         "simulation",
         "node",
-        ["tests/simulation/**/*.spec.ts", "tests/app/**/*.spec.ts"],
+        [
+          "tests/simulation/**/*.spec.ts",
+          "tests/app/**/*.spec.ts",
+          "tests/helpers/**/*.spec.ts",
+        ],
         STRESS_SPECS,
       ),
       {

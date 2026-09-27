@@ -21,6 +21,7 @@ pnpm build          # The production build, with the panel and DevApi stripped
 pnpm build:playtest # The playtest build: the same game, with the panel left in
 pnpm bench          # Serves the render benchmark scene under bench/
 pnpm restamp        # Rewrites the content version stamp of every stored log, and nothing else
+pnpm restamp --checksums  # Also records every stored log's state checksums, for a change meant to change behaviour
 ```
 
 **`pnpm check` is the gate.** Run it before every push. It runs lint, typecheck, and build first, then the test tiers, and it never modifies a file; when it reports lint findings, `pnpm lint:fix` applies them, then run `check` again.
@@ -61,6 +62,7 @@ pnpm test -t "replay"                    # The determinism test
 pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders, the long road
 pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
 HELIX_RECORD=balance pnpm test tests/simulation/replays/record-balance.spec.ts  # Record the balance hero, spells, and archetypes sessions again, overwriting their logs
+pnpm restamp --checksums  # Then record the new logs' state checksums, since a recording writes none
 ```
 
 The acceptance tests from the [mechanics spec](../product/specs/character-movement-and-mechanics.md) are named by their identifiers — `AT-M1` to `AT-I9` — so a failure in review can be pointed at by name.
@@ -118,7 +120,7 @@ Every command on this page is under `scripts` in the root `package.json`. That f
 
 - **Prettier runs on save** if your editor is set up, and in the commit hook regardless.
 - **Content hot-reloads.** Editing a number in a definition under `src/content/` swaps the registry in the running world without a page reload: the next spawn or cast reads the new number, and a number you moved in the panel keeps your value. A definition that fails validation is refused, with the faults on the panel's content line, and the game runs on. Any other edit under `src/content/` reloads the page, and so does anything under `src/domain/` or `src/simulation/`, because the world cannot be patched mid-tick.
-- **A definition change moves the content version**, and every stored log under `tests/simulation/replays/` goes with it in the same change. Run `pnpm restamp`: it replays each log, rewrites its stamp and nothing else, and prints the old and new stamp of each file. It is the only way a stamp is rewritten; a log that no longer replays is refused and nothing is written. An atlas frame or a tint moves no stamp, so an art edit needs none.
+- **A definition change moves the content version**, and every stored log under `tests/simulation/replays/` goes with it in the same change. Run `pnpm restamp`: it replays each log, rewrites its stamp and nothing else, and prints the old and new stamp of each file. It is the only way a stamp is rewritten; a log that no longer replays is refused and nothing is written. An atlas frame or a tint moves no stamp, so an art edit needs none. A replay that misses one of a log's state checksums is refused too: the change moved behaviour. If it meant to, run `pnpm restamp --checksums`, the only way a checksum is rewritten; if it did not, the change has a defect. A log saved from the panel and promoted to a stored log gets its checksums the same way.
 - **The commit hook** runs `pnpm lint` and `pnpm typecheck` on staged files. It does not run tests; that is what `pnpm check` before a push is for.
 
 ---

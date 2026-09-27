@@ -123,7 +123,10 @@ describe.skipIf(!existsSync(SESSION_FILE))("the long road playtest", () => {
         first.tick();
         second.tick();
 
-        const difference = tickDifference(first.view, second.view);
+        const difference = tickDifference(
+          first.world.state,
+          second.world.state,
+        );
 
         expect(difference, `after tick ${String(first.view.tick)}`).toBeNull();
 

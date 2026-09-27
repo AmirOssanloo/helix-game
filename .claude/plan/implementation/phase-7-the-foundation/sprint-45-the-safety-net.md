@@ -76,7 +76,7 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | Layer | simulation, tests, docs |
 | Size | 1.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Selection rule:** a seam phase 8 names. P8-S32-T02 and P8-S35-T01 prove that loot never moves a fight by comparing the world with loot on and emptied, and that comparison must reach ground items, the inventory, and gold. It is also the phase's own proof.
 
@@ -110,6 +110,10 @@ None in the browser: the build plays as phase 6 left it. Headless:
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
 
 > **Architect review, 2026-09-27:** added the constraints block. Without a canonical sequence, sprint 47's regrouping of the unit and sprint 48's tagged target would each move every stored checksum with no change in behaviour, and the gate's "no re-record but an intended change" row could not hold. The checksum runs only in tests and tools, so it costs the game nothing. Field-list completeness moves from a test to the typecheck. Size unchanged.
+
+> **Built, 2026-09-27:** the lists are in `src/simulation/replay/state-fields.ts` and `unit-fields.ts`, over primitives in `field-list.ts`, `field-collections.ts`, and `hash-words.ts`; each record's list is built by `fieldsOf<Foo>`, whose table takes exactly the record's keys, so an unlisted field fails the typecheck at that list (shown by adding a field to the AI record and deleting it). The checksum is MurmurHash3's body over every value's words, folded to 30 bits so it is a small integer the engine never boxes, and a log writes it as a plain number beside its tick. Numbers are read by accessors that write into a preallocated `Float64Array` rather than return, since a returned fraction is a heap number; `tests/simulation/replay/state-checksum.spec.ts` takes ten thousand checksums with no collection and no heap growth past a small allowance. A log holds checksums at tick 0, every 30th, and its last; a document with no checksum key reads as a log with none. `pnpm restamp --checksums` records them and the stamp with them; plain `pnpm restamp` now refuses a log whose replay misses one. It was run once: 0 stamps and 7 checksum lists recorded, and a plain run afterwards wrote nothing.
+>
+> **Edited in place, 2026-09-27:** also left out, each with its reason in the list: run scope's records built from content (the hero definition, its attack, spells, statuses, the disable matrix, the unit records, the definition slots), since the stamp fixes the registry and every number a command can change is a tuning key, which is hashed; the map's bounds, obstacles, spawn point, and checkpoints, which `mapId` names; the pack and form definitions; the always-null armory; the effect pool's frame, with the copied art; the zone's own circle, hashed through `shape` whenever it is the shape in use; and a pool's capacity, live count, misses, and free-list order, the last not readable through its view and showing as a different slot at the next acquire. An ability is hashed by its id and an effect list by its entries' kinds. The comparison moved from the world view to the world, since the view has no `nextPackId`. The field lists' own spec sits beside the helper, `tests/helpers/world/tick-difference.spec.ts`, and the simulation project gains `tests/helpers/**/*.spec.ts`; besides naming each leaf, it walks the arranged world's objects and fails on any value no list names or leaves out.
 
 ---
 
@@ -204,11 +208,11 @@ None in the browser: the build plays as phase 6 left it. Headless:
 | --- | --- |
 | `pnpm restamp` rewrites the seven stamps and nothing else | Yes, 2026-09-27 (T01): `08d1c2e4` to `96752802` on all seven, one line each in the diff; a second run printed "0 of 7 stamps rewritten". `tests/tooling/restamp.spec.ts` holds the rules |
 | An atlas or glyph edit leaves the stamp unchanged | Yes (T01): `tests/simulation/replay/content-version.spec.ts` resizes a frame, drops every glyph, and nudges every `atlasFrame` and `tint` in the registry, with no stamp moved; every other leaf of every definition moves it |
-| Every field of every pool and scope moves the checksum | |
-| The seven logs match their checksums | |
+| Every field of every pool and scope moves the checksum | Yes, 2026-09-27 (T02): all 159 leaves of `STATE_LEAVES`, beside 25 keys left out with reasons,, each nudged by one step at its first instance in a world with a live slot in every pool, move the checksum and are named by the comparison, and a world walk finds no value unlisted |
+| The seven logs match their checksums | Yes (T02): recorded once by `pnpm restamp --checksums`, 0 stamps moved; `tests/simulation/replay-determinism.spec.ts` replays each to every stored checksum |
 | Each widened lint rule shown failing on a branch | |
 | Real hits the widened rules found | |
-| Actual days per ticket | T01: 0.5 |
+| Actual days per ticket | T01: 0.5 · T02: 1 |
 | Sprint total | |
 
 ## Risks in this sprint

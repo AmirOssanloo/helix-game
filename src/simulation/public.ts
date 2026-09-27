@@ -20,6 +20,17 @@ export {
   type ReplayRefusal,
   serializeInputLog,
 } from "./replay/input-log-file";
+export type { ExcludedPath, Leaf, LeafKind } from "./replay/field-list";
+export {
+  checksumMismatch,
+  CHECKSUM_INTERVAL,
+  recordChecksums,
+  type StateChecksum,
+  STATE_EXCLUDED,
+  STATE_LEAVES,
+  stateChecksum,
+  stateDifference,
+} from "./replay/state-checksum";
 export {
   beginReplay,
   checkReplayable,
