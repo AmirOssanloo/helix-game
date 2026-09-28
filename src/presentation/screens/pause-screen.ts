@@ -2,15 +2,9 @@ import type { Rect } from "@shared/public";
 import { containsPoint, HUD_HEIGHT, HUD_WIDTH } from "../hud/hud-layout";
 import type { ClaimScreen } from "../input/input-claim";
 import { LEFT_BUTTON } from "../input/key-bindings";
-import type {
-  FrameSizes,
-  Label,
-  LabelFactory,
-  Quad,
-  QuadFactory,
-} from "../views/quad";
-
-const SCREEN_FRAME = "square";
+import type { Label, Quad } from "../views/quad";
+import type { ScreenPorts } from "./screen-parts";
+import { placeQuad, SCREEN_FRAME, setShown } from "./screen-parts";
 
 const HALF = 0.5;
 
@@ -47,13 +41,6 @@ export const RESUME_BUTTON_RECT: Readonly<Rect> = {
   maxY: CENTRE_Y + BUTTON_OFFSET_Y + BUTTON_HEIGHT * HALF,
 };
 
-/** Everything the pause screen is built over: the HUD scene's factories, which set the screen band. */
-export type ScreenPorts = Readonly<{
-  makeQuad: QuadFactory;
-  makeLabel: LabelFactory;
-  frameSizes: FrameSizes;
-}>;
-
 /**
  * The screen Escape opens with no cursor and no other screen open. It shades the whole canvas,
  * says the world is paused, and has one button. It is modal and pauses: the claim holds the
@@ -81,13 +68,19 @@ export class PauseScreen implements ClaimScreen {
     const title = makeLabel(TITLE_SIZE);
     const resume = makeLabel(BUTTON_LABEL_SIZE);
 
-    place(shade, CENTRE_X, CENTRE_Y, HUD_WIDTH / size, HUD_HEIGHT / size);
+    placeQuad(shade, CENTRE_X, CENTRE_Y, HUD_WIDTH / size, HUD_HEIGHT / size);
     shade.tint = SHADE_TINT;
     shade.alpha = SHADE_ALPHA;
-    place(panel, CENTRE_X, CENTRE_Y, PANEL_WIDTH / size, PANEL_HEIGHT / size);
+    placeQuad(
+      panel,
+      CENTRE_X,
+      CENTRE_Y,
+      PANEL_WIDTH / size,
+      PANEL_HEIGHT / size,
+    );
     panel.tint = PANEL_TINT;
     panel.alpha = PANEL_ALPHA;
-    place(
+    placeQuad(
       button,
       CENTRE_X,
       CENTRE_Y + BUTTON_OFFSET_Y,
@@ -128,41 +121,10 @@ export class PauseScreen implements ClaimScreen {
   }
 
   show(): void {
-    this.setVisible(true);
+    setShown(this.quads, this.labels, true);
   }
 
   hide(): void {
-    this.setVisible(false);
-  }
-
-  private setVisible(visible: boolean): void {
-    for (let index = 0; index < this.quads.length; index += 1) {
-      const quad = this.quads[index];
-
-      if (quad !== undefined) {
-        quad.visible = visible;
-      }
-    }
-
-    for (let index = 0; index < this.labels.length; index += 1) {
-      const label = this.labels[index];
-
-      if (label !== undefined) {
-        label.visible = visible;
-      }
-    }
+    setShown(this.quads, this.labels, false);
   }
 }
-
-const place = (
-  quad: Quad,
-  x: number,
-  y: number,
-  scaleX: number,
-  scaleY: number,
-): void => {
-  quad.x = x;
-  quad.y = y;
-  quad.scaleX = scaleX;
-  quad.scaleY = scaleY;
-};

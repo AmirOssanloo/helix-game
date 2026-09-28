@@ -49,7 +49,8 @@ const NO_MAPPER: ClaimedMapper = {
  *
  * A press is whoever it went down on, and so is its release, wherever it comes up: a press on
  * a screen never sends its release to the mapper, and a press on the world keeps its release
- * over a screen. A key whose press reached the mapper always sends its release there. Escape
+ * over a screen. A key whose press reached the mapper always sends its release there. A
+ * toggle's key opens its screen, which then names that key and closes on it. Escape
  * is resolved here in one order: an open targeting cursor closes, which the mapper does; else
  * the topmost screen closes; else the pause screen opens. Opening a modal screen releases
  * every key and held press the mapper has, with nothing sent, and every press still down
@@ -65,6 +66,14 @@ export class InputClaim {
 
   /** Codes whose key-down reached the mapper and whose key-up has not arrived. */
   private readonly mapperKeys = new Set<string>();
+
+  /** Codes whose key-down a screen or a toggle took and whose key-up has not arrived: their repeats do nothing. */
+  private readonly claimedKeys = new Set<string>();
+
+  /** The keys that open a closed screen, beside the screen each opens. */
+  private readonly toggleCodes: string[] = [];
+
+  private readonly toggleScreens: ClaimScreen[] = [];
 
   private readonly presses: PressOwner[] = [];
 
@@ -116,6 +125,25 @@ export class InputClaim {
 
     if (index !== -1) {
       this.regions.splice(index, 1);
+    }
+  }
+
+  /**
+   * `code` opens `screen` while it is closed and no modal screen is open. The screen names the
+   * code among its keys, so the same key reaches it while it is open and it answers whether
+   * to close.
+   */
+  addToggle(code: string, screen: ClaimScreen): void {
+    this.toggleCodes.push(code);
+    this.toggleScreens.push(screen);
+  }
+
+  removeToggle(code: string): void {
+    const index = this.toggleCodes.indexOf(code);
+
+    if (index !== -1) {
+      this.toggleCodes.splice(index, 1);
+      this.toggleScreens.splice(index, 1);
     }
   }
 
@@ -228,25 +256,49 @@ export class InputClaim {
     }
   }
 
-  /** A key went down. Returns whether it is claimed, and hands a claimed key a screen names to that screen. */
+  /**
+   * A key went down. Returns whether it is claimed. A key an open screen names goes to the
+   * topmost such screen, down to the first modal one; a toggle's key opens its closed screen
+   * while no modal screen is open. Both are edge-triggered: a held key's repeats do nothing.
+   */
   keyDown(code: string): boolean {
     if (code === ESCAPE_CODE) {
       return this.escapeDown();
     }
 
+    if (this.claimedKeys.has(code)) {
+      return true;
+    }
+
     for (let index = this.screens.length - 1; index >= 0; index -= 1) {
       const screen = this.screens[index];
 
-      if (screen !== undefined && screen.keys.includes(code)) {
+      if (screen === undefined) {
+        continue;
+      }
+
+      if (screen.keys.includes(code)) {
+        this.claimedKeys.add(code);
+
         if (screen.keyDown(code)) {
           this.close(screen);
         }
 
         return true;
       }
+
+      if (screen.modal) {
+        return true;
+      }
     }
 
-    if (this.modalOpen()) {
+    const toggle = this.toggleCodes.indexOf(code);
+    const toggled = this.toggleScreens[toggle];
+
+    if (toggled !== undefined) {
+      this.claimedKeys.add(code);
+      this.open(toggled);
+
       return true;
     }
 
@@ -261,12 +313,15 @@ export class InputClaim {
       this.escapeHeld = false;
     }
 
+    this.claimedKeys.delete(code);
+
     return !this.mapperKeys.delete(code);
   }
 
   /** The window lost focus: every key and press is up, and whatever the mapper held is released by the binding. */
   blur(): void {
     this.mapperKeys.clear();
+    this.claimedKeys.clear();
     this.escapeHeld = false;
 
     for (let button = 0; button < POINTER_BUTTONS; button += 1) {

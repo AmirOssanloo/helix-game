@@ -80,6 +80,7 @@ export {
   type BrowserKeyEvent,
   type KeyAction,
   type KeyBinding,
+  INVENTORY_CODE,
   KEY_BINDINGS,
   LEFT_BUTTON,
   RIGHT_BUTTON,
@@ -132,8 +133,13 @@ export {
   PauseScreen,
   RESUME_BUTTON_RECT,
   RESUME_WORD,
-  type ScreenPorts,
 } from "./screens/pause-screen";
+export {
+  INVENTORY_RECT,
+  INVENTORY_TITLE,
+  InventoryScreen,
+} from "./screens/inventory.screen";
+export type { ScreenPorts } from "./screens/screen-parts";
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";
 export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";

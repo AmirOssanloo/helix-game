@@ -7,13 +7,25 @@ import {
   applyStatus,
   releaseGroundItem,
 } from "@domain/rules";
-import type { GroundPick, PickList, PickPort } from "@presentation/public";
+import type {
+  ClaimScreen,
+  GroundPick,
+  InputSink,
+  PickList,
+  PickPort,
+} from "@presentation/public";
 import {
+  claimedSink,
   createGroundPick,
   createPickPort,
   writePick,
   DRAG_THRESHOLD,
+  ESCAPE_CODE,
+  InputClaim,
   InputMapper,
+  INVENTORY_CODE,
+  INVENTORY_RECT,
+  InventoryScreen,
   LEFT_BUTTON,
   projectedLens,
   Projection,
@@ -25,12 +37,14 @@ import {
   CommandRecorder,
   FixedLens,
   IntentRecorder,
+  LabelRecorder,
   makeFormDef,
   makeMapDef,
   makeRegistry,
   type MakeRegistryOptions,
   makeSpellDef,
   makeWorld,
+  QuadRecorder,
   SEAL,
   SEALED_MATRIX,
   SEALED_STATUSES,
@@ -1214,5 +1228,195 @@ describe("Alt", () => {
     press("ShiftLeft");
 
     expect(prevented).toEqual(["AltLeft", "AltRight"]);
+  });
+});
+
+describe("the inventory open over the mapper", () => {
+  /** A point inside the inventory's rectangle, and one on the world clear of it and of the bar. */
+  const SCREEN_X = (INVENTORY_RECT.minX + INVENTORY_RECT.maxX) / 2;
+  const SCREEN_Y = (INVENTORY_RECT.minY + INVENTORY_RECT.maxY) / 2;
+  const WORLD_X = 400;
+  const WORLD_Y = 300;
+
+  /** A modal, pausing screen for Escape to open, which draws nothing. */
+  const pauseScreenStub = (): ClaimScreen & { visible: boolean } => {
+    const screen = {
+      visible: false,
+      modal: true,
+      pauses: true,
+      keys: [],
+      contains: (): boolean => true,
+      pointerDown: (): boolean => false,
+      keyDown: (): boolean => false,
+      show: (): void => {
+        screen.visible = true;
+      },
+      hide: (): void => {
+        screen.visible = false;
+      },
+    };
+
+    return screen;
+  };
+
+  type Claimed = Arranged & {
+    claim: InputClaim;
+    inventory: InventoryScreen;
+    pauseScreen: ClaimScreen & { visible: boolean };
+    sink: InputSink;
+    press: (code: string) => void;
+    click: (button: number, x: number, y: number) => void;
+  };
+
+  /** The mapper behind the claim, as the play scene binds it, with the inventory's key registered and the pause screen set. */
+  const claimed = (
+    prepared: readonly (string | null)[] = [pointSpell.id, unitSpell.id],
+  ): Claimed => {
+    const arranged = arrange(prepared);
+    const claim = new InputClaim({
+      hold: (): void => {},
+      release: (): void => {},
+    });
+    const inventory = new InventoryScreen({
+      makeQuad: (frame) => new QuadRecorder(frame),
+      makeLabel: (size) => new LabelRecorder(size),
+      frameSizes: () => 1,
+    });
+    const pauseScreen = pauseScreenStub();
+    const sink = claimedSink(claim, arranged.mapper);
+
+    claim.bindMapper(arranged.mapper);
+    claim.addToggle(INVENTORY_CODE, inventory);
+    claim.setPauseScreen(pauseScreen);
+
+    return {
+      ...arranged,
+      claim,
+      inventory,
+      pauseScreen,
+      sink,
+      press: (code): void => {
+        sink.keyDown(code);
+        sink.keyUp(code);
+      },
+      click: (button, x, y): void => {
+        sink.pointerDown(button, x, y);
+        sink.pointerUp(button, x, y);
+      },
+    };
+  };
+
+  it("I opens and closes the inventory, sends nothing, and the log gains nothing", () => {
+    const { world, claim, inventory, driver, press } = claimed();
+
+    press(INVENTORY_CODE);
+    expect(claim.isOpen(inventory)).toBe(true);
+
+    press(INVENTORY_CODE);
+    expect(claim.isOpen(inventory)).toBe(false);
+
+    expect(driver.commands).toEqual([]);
+
+    world.tick();
+
+    expect(world.log.count).toBe(0);
+  });
+
+  it("a held I opens the inventory once: its repeats neither close nor reopen it", () => {
+    const { claim, inventory, sink } = claimed();
+
+    sink.keyDown(INVENTORY_CODE);
+    sink.keyDown(INVENTORY_CODE);
+    sink.keyDown(INVENTORY_CODE);
+
+    expect(claim.isOpen(inventory)).toBe(true);
+
+    sink.keyUp(INVENTORY_CODE);
+    sink.keyDown(INVENTORY_CODE);
+
+    expect(claim.isOpen(inventory)).toBe(false);
+  });
+
+  it("a left or a right click on the open inventory sends no command, and the same right click off it is a move", () => {
+    const { world, driver, press, click } = claimed();
+
+    press(INVENTORY_CODE);
+    click(LEFT_BUTTON, SCREEN_X, SCREEN_Y);
+    click(RIGHT_BUTTON, SCREEN_X, SCREEN_Y);
+    click(RIGHT_BUTTON, INVENTORY_RECT.minX, INVENTORY_RECT.minY);
+    click(RIGHT_BUTTON, INVENTORY_RECT.maxX, INVENTORY_RECT.maxY);
+
+    expect(driver.commands).toEqual([]);
+
+    world.tick();
+
+    expect(world.log.count).toBe(0);
+
+    click(RIGHT_BUTTON, WORLD_X, WORLD_Y);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual(["move"]);
+  });
+
+  it("a right click on the inventory with a cursor open neither moves nor closes the cursor", () => {
+    const { driver, mapper, press, click } = claimed();
+
+    press(INVENTORY_CODE);
+    press("KeyD");
+    click(RIGHT_BUTTON, SCREEN_X, SCREEN_Y);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("slot");
+  });
+
+  it("Esc closes an open cursor first, then the inventory, then opens the pause screen", () => {
+    const { claim, inventory, pauseScreen, mapper, driver, press } = claimed();
+
+    press(INVENTORY_CODE);
+    press("KeyD");
+    expect(mapper.cursor.kind).toBe("slot");
+
+    press(ESCAPE_CODE);
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(claim.isOpen(inventory)).toBe(true);
+
+    press(ESCAPE_CODE);
+    expect(claim.isOpen(inventory)).toBe(false);
+    expect(pauseScreen.visible).toBe(false);
+
+    press(ESCAPE_CODE);
+    expect(pauseScreen.visible).toBe(true);
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("Q, W, E, R, and D send their slots and F opens its cursor while the inventory is open, which stays open", () => {
+    const { claim, inventory, driver, mapper, press } = claimed([
+      instantSpell.id,
+      pointSpell.id,
+    ]);
+
+    press(INVENTORY_CODE);
+
+    for (const code of ["KeyQ", "KeyW", "KeyE", "KeyR", "KeyD", "KeyF"]) {
+      press(code);
+    }
+
+    expect(
+      driver.commands.map((command) =>
+        command.kind === "slot" ? command.slot : command.kind,
+      ),
+    ).toEqual([1, 2, 3, 4, D]);
+    expect(mapper.cursor.kind).toBe("slot");
+    expect(claim.isOpen(inventory)).toBe(true);
+  });
+
+  it("a left click on the world commits an open cursor while the inventory is open", () => {
+    const { driver, press, click } = claimed();
+
+    press(INVENTORY_CODE);
+    press("KeyD");
+    click(LEFT_BUTTON, WORLD_X, WORLD_Y);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual(["cast"]);
   });
 });

@@ -12,7 +12,9 @@ import {
 } from "../hud/hud-bands";
 import { BAR_RECT, containsPoint } from "../hud/hud-layout";
 import type { ClaimRegion } from "../input/input-claim";
+import { INVENTORY_CODE } from "../input/key-bindings";
 import type { SceneContext } from "../scene-context";
+import { InventoryScreen } from "../screens/inventory.screen";
 import { PauseScreen } from "../screens/pause-screen";
 import { orbSlotsOf } from "../views/orb.view";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
@@ -72,11 +74,13 @@ export class HudScene extends Phaser.Scene {
       wedgeSteps: this.context.atlas.wedgeSteps,
       orbSlots: orbSlotsOf(this.context.world),
     });
-    const pause = new PauseScreen({
+    const screenPorts = {
       makeQuad: quadIn(HUD_DEPTH_SCREEN),
       makeLabel: labelIn(HUD_DEPTH_SCREEN_TEXT),
       frameSizes,
-    });
+    };
+    const inventory = new InventoryScreen(screenPorts);
+    const pause = new PauseScreen(screenPorts);
     const bar: ClaimRegion = {
       contains: (x, y) => containsPoint(BAR_RECT, x, y),
       pointerDown: (button, x, y): void => {
@@ -87,9 +91,12 @@ export class HudScene extends Phaser.Scene {
 
     this.hud = hud;
     claim.addRegion(bar);
+    claim.addToggle(INVENTORY_CODE, inventory);
     claim.setPauseScreen(pause);
     this.events.once(SHUTDOWN_EVENT, (): void => {
       claim.close(pause);
+      claim.close(inventory);
+      claim.removeToggle(INVENTORY_CODE);
       claim.setPauseScreen(null);
       claim.removeRegion(bar);
       this.hud = null;

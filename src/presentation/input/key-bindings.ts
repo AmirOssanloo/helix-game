@@ -38,6 +38,12 @@ export const bindingIndexOf = (code: string): number => {
   return -1;
 };
 
+/**
+ * The key that opens and closes the inventory, by DOM `code`. It is the screen's, through the
+ * input claim, and never reaches the mapper.
+ */
+export const INVENTORY_CODE = "KeyI";
+
 /** The DOM button numbers the pointer reports. */
 export const LEFT_BUTTON = 0;
 export const RIGHT_BUTTON = 2;

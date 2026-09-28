@@ -59,7 +59,7 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 | Layer | presentation, app, tests, docs |
 | Size | 0.5 |
 | Depends on | P8-S31-T02, P7-S50-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** split from the brief's 2.5-day inventory screen, which is not on the plan's scale. The frame is first-of-kind and touches Phaser or the DOM, so it carries both half days of the anchors.
 
@@ -83,6 +83,8 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 - `tests/presentation/screen.spec.ts`: open, close, and the claim's rectangle.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+> **Note, 2026-09-28, at close:** the screen is `InventoryScreen` in `src/presentation/screens/inventory.screen.ts`, a titled panel along the right of the canvas above the bar, its rectangle `INVENTORY_RECT`; T03 lays the armory, the grid, and gold inside it. The claim gained toggles: `addToggle(code, screen)` opens a closed screen on its key while no modal screen is open, and the open screen names the key and closes on it, so the key never reaches the mapper. Two things the ticket did not name were fixed in the claim on the way: a key a screen or toggle took is now edge-triggered, so a held I does not flicker the screen, and a modal screen now stops keys from reaching the screens beneath it, so I under the pause screen does not close the inventory. The screens' shared ports and helpers moved to `src/presentation/screens/screen-parts.ts`. Measured by an agent in headless Chrome over the DevTools protocol on the Apple M1, draw calls counted by wrapping the WebGL draw methods: 2 a frame (the world's 1 and the HUD's 1) with the screen closed, open, and closed again, and no console error. One `pnpm check` under a load average near 55 from another session timed out two replay specs and one allocation spec, none touched here; each passed alone, and the full gate passed once the load fell.
 
 ---
 
@@ -146,11 +148,11 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 | --- | --- |
 | A worn item moves its derived stats and leaves cleanly | Yes: `tests/simulation/items/armory-stats.spec.ts`, each of the seven derived values by a flat line on the equip's tick and back on the unequip's, two items and a status summing in one multiplier, and the attack damage, movement speed, and cooldown reads at the moment; the door test `tests/simulation/doors/items-are-a-modifier-source.spec.ts` now wears a real item |
 | Magic damage % on magical damage alone | Yes: `tests/domain/combat/magic-damage.spec.ts`, +10% on a magical hit and a magical burn; none on physical or pure, the hero's attack, Emberling's attack, or an enemy's magical hit |
-| No click on a screen reaches the ground | |
+| No click on a screen reaches the ground | Yes: `tests/presentation/input-mapper.spec.ts`, a left or right click on the open inventory, edges included, sends no command and the log gains nothing, and the same right click off it is a move; `tests/presentation/screen.spec.ts`, every press inside the rectangle and its release kept from the mapper. The world's draw calls with the screen open: 1, the HUD's 1, measured by an agent in headless Chrome |
 | The inventory and armory screen, by hand | |
 | The render benchmark with the screen open | |
 | Milestone M12 | |
-| Actual days per ticket | P8-S34-T01: sized 1.5, done in 1 |
+| Actual days per ticket | P8-S34-T01: sized 1.5, done in 1. P8-S34-T02: sized 0.5, done in 0.25 |
 | Sprint total | |
 
 ## Risks in this sprint

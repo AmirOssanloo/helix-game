@@ -21,6 +21,7 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Left click | Targeting cursor open | Commits the target and starts the cast |
 | Left click | The Q, W, or E square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
 | Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
+| Any click | An open screen, such as the inventory | Belongs to the screen and never reaches the world: it is not a move, an attack, a select, or a pick up on the ground beneath, and an open targeting cursor stays open |
 | Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
 A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it. A right click names what is drawn on top where it lands: an item's label, then a unit, then an item's icon, then the ground.
@@ -37,6 +38,7 @@ A click resolves against the world at the moment of the click, so a camera move 
 | F | Slot F | Same, for slot F |
 | A then left click | Attack-move | Move to the point, attacking any enemy acquired on the way |
 | S | Stop | Clear the order, close the cursor, cancel a cast whose cast point has not finished |
+| I | Inventory | Opens the inventory, and closes it when it is open. The world goes on; nothing is sent |
 | Esc | Cancel, close, or pause | In one order: an open targeting cursor closes; else the open screen closes; else the pause screen opens. A running move continues |
 
 Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
@@ -99,6 +101,9 @@ The fail column of spec section 15, in short, because it is the shortest test of
 | Esc with no cursor and no screen open | The pause screen opens and the world stops on the tick it stands on. Nothing is sent and nothing enters the input log |
 | A click anywhere, or any key but Esc, while the pause screen is open | Nothing. No order reaches the world, and none waits to land when the world goes on |
 | Esc, or a click on Resume, while the pause screen is open | The screen closes and the world goes on from the same tick, with no catch-up |
+| Q, W, E, R, D, F, A, or S while the inventory is open | Each acts as it does with no screen open, and the inventory stays open. The inventory takes I alone; T, X, V, C, G, and Space are taken by no screen |
+| I held down | The inventory opens once. Repeats neither close nor reopen it |
+| I while the pause screen is open | Nothing. The pause screen takes every key but Esc |
 | A button held down on the world when a screen that stops the world opens | The press is dropped with nothing sent; a held aim closes at no cost |
 | D or F pressed on a targeted spell that is on cooldown, unaffordable, or blocked by a disable | The cursor does not open and nothing is sent; the square flashes with the reason |
 | Q, W, E, R, D, or F pressed while the targeting cursor is open | The cursor closes first, then the key applies as it would with no cursor |
