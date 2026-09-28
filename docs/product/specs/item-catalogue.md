@@ -187,7 +187,7 @@ A Legendary's item level is the map's, as every drop's is, and its base's qualit
 
 ## 7. The active items
 
-Eight items with a power the hero activates. They have no rarity, their labels are emerald green, they are in no loot table and never drop, and they are bought only in the store's Misc tab, at a steep price. Their effects, sizes, and the bank they are worn in wait on the [roadmap](../roadmap.md); this table fixes their names and prices.
+Eight items with a power the hero activates. They have no rarity, their labels are emerald green, they are in no loot table and never drop, and they are bought only in the store's Misc tab, at a steep price. Each is modelled on a Dota 2 item and keeps what makes that item a decision: when to fire it matters more than that it was fired.
 
 | Active item | Id | Store price |
 |---|---|---|
@@ -199,6 +199,29 @@ Eight items with a power the hero activates. They have no rarity, their labels a
 | Mainspring | `mainspring` | 3000 |
 | Fetter Bolas | `fetter_bolas` | 1600 |
 | Veilblade | `veilblade` | 2000 |
+
+### 7.1 What each does
+
+`L` is the hero's level when the activation commits: the three that deal damage grow with the hero, since an active item has no item level and must stay worth its key a hundred maps down. Their magical damage is raised by magic damage %, and every clock below is shortened by the cooldown reduction the hero has, items' and Whorl's, as a spell's is.
+
+| Active item | Model | Target | Range | Cast point | Cooldown | Mana | What it does |
+|---|---|---|---|---|---|---|---|
+| Gyre Sceptre | Eul's Scepter | The hero, or an enemy | 600 | None | 23 s | 100 | On an enemy: lifts it where it stands for 2.5 s, then drops it there with 60 + 5 × L magical damage. On the hero: the self-lift for 2.5 s, untargetable and invulnerable, shedding on the tick it rises every status an enemy put on it; Q, W, E, and R work in the air. Cast on the hero by pressing its key and left-clicking the hero |
+| Scorchglass | Dagon | An enemy | 700 | None | 30 s | 120 | 120 + 12 × L magical damage, at once |
+| Slipknife | Blink Dagger | A point | 1200 | None | 15 s | None | The hero blinks to the point, the nearest walkable ground to it, or 1200 toward it if the point is further. Every projectile aimed at the hero is disjointed. Refused for 3 s after the hero takes damage from an elite or a boss, and under root |
+| Rimeward | Shiva's Guard | None | A ring to 900 | None | 30 s | 100 | A ring grows from the hero to 900 over 1.5 s; each enemy it reaches takes 90 + 9 × L magical damage once and is slowed 40% for 4 s. While it is in the bank, +4 armour |
+| Skyfall Maul | Meteor Hammer | A point | 600 | 2 s | 28 s | 125 | After the long cast point, a meteor lands at the point 0.5 s later: 100 + 10 × L magical damage to each enemy within 300, and a burn of 25 + 2.5 × L a second for 3 s |
+| Mainspring | Refresher Orb | None | None | None | 180 s | 250 | Every clock the hero holds ends: its prepared spells', Invoke's, the hidden clocks of spells no longer in D or F, and every active item's but Mainspring's own |
+| Fetter Bolas | Gleipnir | A point | 1100 | None | 18 s | 100 | A bolas flies to the point at 1500 a second; there it roots every enemy within 250 for 2 s and deals 60 + 6 × L magical damage |
+| Veilblade | Ethereal Blade | The hero, or an enemy | 800 | None | 20 s | 100 | A blade flies at 1275 a second; its target is ethereal for 3 s: immune to physical damage, unable to attack, and taking 40% more magical damage. An enemy also takes 60 + 6 × L magical damage, raised by the 40%, and is slowed 50% for the 3 s |
+
+### 7.2 The bank
+
+- **Six places, six keys.** The bank holds up to six active items, one to each of T, X, V above and C, G, Space below, in that grid. An item in the bank is activated by its key; one in the inventory is carried and not activated.
+- **Where one goes.** A bought active item goes to the first free place in the bank, reading the grid top row first, and into the inventory where it fits if the bank is full. The player moves one between the bank and the inventory, and between two places of the bank, as any item is moved, so the player chooses its key.
+- **One of each.** Buying an active item the hero already holds, in the bank or the inventory, is refused, since two copies share one clock and the second would be gold spent for nothing.
+- **In the inventory** each takes 1 by 2 cells. Each sells for a quarter of its price, as any item does.
+- **Its clock** belongs to the item, not the place: moving it, or selling one and buying it again, keeps the clock running.
 
 ---
 
@@ -221,7 +244,7 @@ When an enemy dies, it rolls its tier's table on a draw of its own, so a drop ne
 
 ## 9. The store
 
-A store stands at every checkpoint, opened by standing in its ring and clicking it. It is a basic Diablo II vendor: three tabs, a grid of items in each, and the price on hover.
+A store stands at every checkpoint of the long road, opened by standing in its ring and clicking it, and in the town above the descent, whose maps hold none ([travel](../features/map-and-camera.md#travel)). It is a basic Diablo II vendor: three tabs, a grid of items in each, and the price on hover. The town's store is rolled again at the hero's level the first time it opens after the hero reaches a new waypoint; every other rule below holds for both.
 
 | Property | Value |
 |---|---|
@@ -268,6 +291,8 @@ The economy holds two margins:
 
 - **Health:** outside the boss fights, the hero's health never falls below **25%** of its maximum. A boss fight is any tick a living boss stands within 1200 of the hero. On the walk the lowest is 44%.
 - **Pools:** the globes the walk takes restore at least the clean run's panel use, 2 health pools and 8 mana pools.
+
+The health margin is the stored seed's reading. What the economy promises on every seed is less: the road is finished from level 1 to the last boss's kill with no heal or mana from the panel, and with at most one death, which may come early in region 1 before the first globes fall. Of eight seeds walked on these values, every one reaches the last boss's kill with no panel command, and none dies more than once.
 
 A normal enemy's mana globe chance is 50%, not 35%: at 35% the walk's kills drop 33 mana globes, 8.25 pools, which only just covers the 8. A full clear at 50% drops 16.1 mana pools, above the 15.4 the clean run's 8 would reach if the hero's spending grew with the road's length. A hero that clears more of the road than the walk does takes more of both.
 

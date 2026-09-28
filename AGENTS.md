@@ -86,7 +86,7 @@ The `pick-up-a-ticket` skill walks the steps.
 
 [Agents and skills standards](./docs/standards/agents-and-skills.md) owns the rules for everything under `.claude/`. In one line each:
 
-- **Agents** (`.claude/agents/`) are delegation targets with a scope: the engineering architect decides structure, the game engineer implements inside it, the delivery strategist decides order and cost. Delegation is flat; an agent reports back rather than delegating on.
+- **Agents** (`.claude/agents/`) are delegation targets with a scope: the game designer decides what the game is under the [vision](./docs/product/vision.md)'s pillars, the engineering architect decides structure, the game engineer implements inside it, the delivery strategist decides order and cost. Delegation is flat; an agent reports back rather than delegating on.
 - **Skills** (`.claude/skills/`) are procedures or references. The Phaser skills describe Phaser, not this game. The project skills wrap a runbook: `pick-up-a-ticket`, `add-a-spell`, `add-an-enemy`, `write-a-docs-page`.
 - **Rules** (`.claude/rules/`) load when a matching file is edited and link a quick-reference anchor. They restate nothing.
 - **Tags** (`.claude/tags/`) are prompts a person pastes by hand. Tooling never loads them and nothing links them as a delegation target.

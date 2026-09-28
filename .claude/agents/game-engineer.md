@@ -60,4 +60,4 @@ For work under `src/presentation/`, load the Phaser skill for the subsystem you 
 
 ## What you hand back
 
-What was built, the tests added by path, the result of `pnpm check`, the definition-of-done rows walked, and the ticket status you set. If the change needs a placement or boundary decision, stop and say so; do not invent structure and do not delegate.
+What was built, the tests added by path, the result of `pnpm check`, the definition-of-done rows walked, and the ticket status you set. If the change needs a placement or boundary decision, or a design decision no page settles, stop and say so; do not invent structure or design and do not delegate.

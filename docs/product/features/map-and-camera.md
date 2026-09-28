@@ -18,7 +18,7 @@ Every map definition holds:
 - **Spawn point** — where the hero appears on load, and on respawn until it reaches a checkpoint
 - **Checkpoints** — points in order along the map. A hero within 256 units of one further along than any it has reached makes it the furthest, and comes back there when it dies. Walking back to an earlier one changes nothing. Each stands inside the bounds, outside every obstacle, on ground a hero-sized unit can stand on, or the map is refused when the game starts. A map with none brings the hero back at the spawn point. On the floor each checkpoint is a thin ring as wide as its reach, pale grey while it lies beyond the furthest checkpoint reached and green once it is the furthest or any before it, so the ring shows where to step and where the hero comes back; reaching a new furthest raises the word CHECKPOINT over the hero once, the way a damage number rises. A store stands at each checkpoint: a left click inside the ring the hero stands in opens it, and a click on any other ring keeps its usual meaning ([items and loot](./items-and-loot.md#the-store))
 - **Packs** — each an archetype, a tier, a count, the point it stands around, and whether it is dormant until the hero comes near; see [Enemies](./enemies.md#dormant-packs)
-- **Later:** spawn tables for packs and exits to other maps
+- **On a map of the descent:** an arrival point, one waypoint, and one portal down, as [travel](#travel) says; the map is generated from the run's seed and its level by [the descent's](../specs/the-descent.md) recipe for its stratum, and holds no store
 
 From the obstacles, the game derives a walkability grid on 32-unit cells. Pathfinding runs on that grid; collision runs against the rectangles and other units. A unit is a solid disc, and the grid keeps one layer for each of three unit sizes, small, hero-sized, and large, each inflated by its radius, so a wide unit never paths through a gap it cannot fit.
 
@@ -60,7 +60,48 @@ Two things live for different lengths of time, and the player can feel the diffe
 - **Run scope** — the hero, its level, its orb levels, its prepared spells, its inventory, armory, and gold, and every tunable. Created once per session.
 - **Map scope** — enemies, projectiles, zones, summons, floating numbers, the items and gold on the ground, the stores and their stock, and the checkpoints reached. Created when a map loads and thrown away when it unloads.
 
-Loading a map never recreates the hero. Later, walking through an exit keeps the hero exactly as it was and gives it a fresh map.
+Loading a map never recreates the hero. Stepping through a portal keeps the hero exactly as it was and gives it a fresh map.
+
+## Travel
+
+The descent is walked down, portal to portal; a waypoint on every map and a town portal save the walk back without making the walk down pointless. The long road stands outside the descent and keeps its checkpoints and their stores.
+
+### The portal down
+
+- Every map of the descent has one **portal**, at the far end of the walk from its **arrival point**, behind the map's boss. A right click on it walks the hero there, as a move does, and the hero steps through on reaching it, arriving at the next map's arrival point. A walk that only passes over it does not take it.
+- On the tenth map of each stratum the portal stays shut until the stratum boss is dead.
+- Nothing goes up by portal. The way back up is a waypoint or the town portal.
+
+### Waypoints
+
+- Every map of the descent has one **waypoint**, a third to a half of the way along the walk from the arrival point to the portal, drawn as a ring. The hero reaches it by coming within 256 units of it (`waypoint_reach_radius`), with no click. The town has one too, reached from the start.
+- A right click on a reached waypoint walks the hero there and opens the waypoint screen, beside the inventory as the store is: the town and every reached waypoint, by map level. A click on one takes the hero there, standing on that waypoint. The world keeps running while the screen is open, and it closes as the store does, on Esc, on leaving the ring, or on death.
+- Travel by waypoint is free and instant, from any reached waypoint to any other.
+
+### The town portal
+
+- **B** opens a town portal where the hero stands: a channel of 3 seconds (`town_portal_channel_seconds`), then the portal stands there. Any order, an orb press, Invoke, or a throw ends the channel at no cost, and so do a stun and a lift; the six active-item keys do too, since an activation is a cast. B is refused in town and while the portal's clock runs: 60 seconds from the moment a portal opens (`town_portal_cooldown_seconds`), shortened by no cooldown reduction.
+- A right click on the portal walks the hero there and takes it to town, beside the town's end of the portal. A right click on that end takes it back to the spot it left.
+- **The map is kept while the portal stands.** It does not run while the hero is in town: every pack, corpse, projectile, and ground item waits where it was, and the hero comes back to it as it left it. It is the only map kept.
+- One town portal stands at a time. Opening another closes the first, and leaving by the portal down or by a waypoint closes it and lets the kept map go.
+
+### A run resumed
+
+A saved run holds no map, so a run resumed from a save starts in town with no town portal standing: a portal that stood when the run was saved is closed, and the way back down is a waypoint. The hero comes back with the health and mana it was saved with, which the town does not top up, no statuses, and every clock ready.
+
+### Maps made fresh
+
+Every other way into a map makes it fresh: by the portal down, by a waypoint, or at the start of a run. A map made fresh has the same ground every time, since it is generated from the run's seed and its level, and every pack alive and nothing on the ground. What was left on a map is gone once the hero leaves it by any way but the town portal.
+
+### Checkpoints on a map of the descent
+
+A map of the descent has two checkpoints: its arrival point, reached on arrival, and its waypoint, reached by walking to it. A hero who dies comes back at the furthest reached, with full health and mana, and the map is not made fresh: a pack killed stays dead, as on the long road.
+
+### The town
+
+A map above the descent with no enemies, no packs, and nothing to drop. It holds the store, its waypoint, and the town's end of an open town portal. The town heals nothing: the hero's health and mana come back there as they do anywhere, by regeneration. The kit and the active items work in town as they do anywhere, with nothing to throw them at.
+
+The town's store is the item catalogue's store with one rule of its own: its stock is rolled again, at the hero's level, the first time it opens after the hero reaches a waypoint it had not reached before, so a hero that goes deeper finds new stock and one that goes back and forth does not ([items and loot](./items-and-loot.md#the-store)).
 
 ## The camera
 
@@ -101,8 +142,8 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 
 ## Deferred
 
-- **The descent.** About a hundred generated levels, each its own map reached by stairs, harder with depth through its enemy types, tiers, and density, never by scaling an enemy's stats. The map format is designed for generation; the generator does not exist.
-- **Exits, portals, and map transitions.** Run scope and map scope are already separate so this costs no rewrite.
+- **The generator.** [The descent](../specs/the-descent.md) and [travel](#travel) above are the target; the map format is designed for generation and the generator does not exist yet. Run scope and map scope are already separate so a map transition costs no rewrite.
+- **A way up by portal**, and keeping any map but the one a town portal stands on. The waypoint and the town portal are the way back up.
 - **Obstacle art.** Obstacles are grey rectangles on the painted floor; art replaces them when it arrives.
 - **Minimap and fog of war.** The arena is small enough to learn by walking it, and the long road runs one way.
 - **A day-night clock** and its speed bonus. The spec keeps the option; the game does not use it.

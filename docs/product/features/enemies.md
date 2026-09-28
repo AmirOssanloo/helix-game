@@ -64,7 +64,7 @@ Every enemy runs the same state machine. The behaviour name in its definition pi
 | --- | --- | --- |
 | Idle | Stands at its spawn point, or wanders 64 units from it every few seconds, regenerating | The hero enters its aggro radius, or it takes damage |
 | Aggro | Alerts its pack, and turns toward the hero as it sets off | Immediately, into Chase |
-| Chase | Paths toward the hero, re-pathing on a budget. Now and then it halts: at each re-path it stands where it is instead of walking, with the halt chance, 8% (`chase_halt_chance`), for between half and all of the halt time, 1 second (`chase_halt_seconds`), each unit on its own draw, so a pack comes on in fits rather than as one swarm | In attack range, into Attack, halted or not; or past its leash radius, or the hero dead, untargetable, or hidden from aggro, into Return, halted or not |
+| Chase | Paths toward the hero, re-pathing on a budget. Now and then it halts: at each re-path it stands where it is instead of walking, with the halt chance, 8% (`chase_halt_chance`), for between half and all of the halt time, 1 second (`chase_halt_seconds`), each unit on its own draw, so a pack comes on in fits rather than as one swarm | In attack range, into Attack, halted or not; or past its leash radius, or the hero dead or hidden from aggro, into Return, halted or not. A hero in its self-lift is waited for, not left |
 | Attack | Turns to face, runs its attack point, hits, repeats. A melee enemy neither walks after the hero nor casts until its whole swing, attack point and backswing, is over | Target out of range, into Chase, once any attack point it began has landed and, for a melee enemy, its backswing has ended; or the hero dead, target lost, hidden, or past its leash radius, into Return at once |
 | Return | Paths back to its spawn point, regenerating, ignoring the hero unless the hero hits it | Arrives, into Idle; or hit by the hero while it can see the hero, through Aggro into Chase, its pack with it |
 | Dead | Gives experience, clears statuses, releases its slot after a short delay | Never |
@@ -123,6 +123,7 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 | Pack partially in aggro radius | The whole pack aggroes on the first member that sees or is hit |
 | Hero hits an enemy walking home | It turns on the next tick, through Aggro into Chase, and its pack with it, resting or walking home. It keeps the health its walk home gave it and no more, since there is no leash heal. A hit from nobody, or one while the hero is dead or hidden from aggro, leaves it walking home |
 | Hero uses Wane | Aggro drops; enemies return unless already adjacent and attacking |
+| Hero lifts itself with Gyre Sceptre | Every enemy chasing or attacking it keeps its aggro and holds: it stands where it is, facing the hero, starts no attack and no cast at it, and takes it up again on the tick it lands. An attack point or cast point already aimed at it ends at no cost, and a projectile already flying at it is disjointed. So the lift buys time and sheds statuses, never a way out of a fight |
 | A summoner dies, or the hero with a summon out | Its adds or summons go on the same tick, with no corpse and no experience |
 | Enemy calls adds when the live cap is reached | The ability is refused this cast; cooldown is not spent |
 | Hero nears a dormant pack with the live cap reached, or too few free cells within the placement radius | The pack keeps waiting, and is placed on a later tick the hero is near and there is room |
@@ -139,8 +140,8 @@ A pack the hero kills to the last member is dead for the map load: it does not c
 
 - **Flanking behaviour**, and kiting for the archer, which holds at range; the roster's kiters are the hexer and the skirmisher.
 - **Formations, patrols, and scripted encounters.** Packs stand where spawned.
-- **Bosses with phases** or scripted mechanics. A boss is numbers plus abilities.
-- **Enemy affixes** — an elite is a multiplier and one extra ability, not a random modifier set.
+- **Bosses with scripted mechanics.** A boss is numbers plus abilities; what a stratum boss casts changes with its health through the abilities' own conditions, as [the descent](../specs/the-descent.md#52-stratum-bosses) says, and nothing more.
+- **Aspects and families.** On the long road an elite is a multiplier and one extra ability. The descent's elites and bosses roll aspects, and its archetypes come in families of four variants ([the descent](../specs/the-descent.md#4-aspects)); both are written with the strata that bring them.
 
 ---
 

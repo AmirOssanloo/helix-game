@@ -29,7 +29,7 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Left click | A tab or a stocked item in the store | Shows the tab, or buys the item |
 | Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
-A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it. A right click names what is drawn on top where it lands: an item's label, then a unit, then an item's icon, then the ground.
+A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it. A right click names, where it lands, a unit first, then an item's label, then an item's icon, then a portal or a waypoint, then the ground, so a click on an enemy is always an attack and a drop lying on a waypoint is still reachable. While Alt is held a label comes before a unit, so loot under an enemy is reached with Alt held ([items and loot](./items-and-loot.md#picking-up-an-item)).
 
 ## The keys
 
@@ -43,13 +43,15 @@ A click resolves against the world at the moment of the click, so a camera move 
 | F | Slot F | Same, for slot F |
 | A then left click | Attack-move | Move to the point, attacking any enemy acquired on the way |
 | S | Stop | Clear the order, close the cursor, cancel a cast whose cast point has not finished |
+| T, X, V, C, G, Space | Active items | Activate the active item in that place of the bank, top row T X V, bottom row C G Space. A no-target item fires on key-down; a targeted one opens the cursor, as D and F do, and Gyre Sceptre and Veilblade take the hero itself as a target by a left click on it ([item catalogue](../specs/item-catalogue.md#7-the-active-items)). Space's browser default is suppressed |
+| B | Town portal | Channels a portal to town where the hero stands ([travel](./map-and-camera.md#the-town-portal)) |
 | I | Inventory | Opens the inventory, and closes it when it is open. The world goes on; nothing is sent |
 | Alt, held | Every label | Shows the label of every item and gold pile on the ground while held. Nothing is sent, and the browser's own use of Alt is suppressed |
 | Esc | Cancel, close, or pause | In one order: an open targeting cursor closes; else the topmost open screen closes, the store before the inventory it opened over; else the pause screen opens. Closing the store this way closes it in the world too. A running move continues |
 
 F9 opens the [developer panel](./developer-panel.md)'s feedback note, in a build that carries the panel. It is not a game key and sends nothing.
 
-Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
+Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F, then T X V C G Space, then B breaking ties.
 
 ## One order at a time
 

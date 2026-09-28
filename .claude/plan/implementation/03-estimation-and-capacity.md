@@ -39,8 +39,15 @@ Then judgment: anything touching Phaser gets a half-day added for the things the
 | 6 | 23: 19 in tickets, 4 of bucket appetite | 6 | 3.8 |
 | 7 | 23.5: 22.5 in tickets, 1 of bucket appetite; was 24 until the architect review of 2026-09-27 | 6 | 3.9 |
 | 8 | 34: 27 planned in tickets, 6 added on 2026-09-27, 1 moved to phase 7 the same day, 2 of bucket appetite | 10 | 3.4 |
-| 9, sketched | 14.5 | 4 | 3.6 |
-| **Total** | **193.5** | **51** | |
+| 9 | 27.5: 25.5 in tickets, 2 of bucket; was 14.5 until 2026-09-28, and held when its sprint files were cut that day | 7 | 3.9 |
+| 10, sketched | 46.5: 43.5 in tickets, 3 of bucket | 12 | 3.9 |
+| 11, sketched | 21: 19 in tickets, 2 of bucket | 6 | 3.5 |
+| 12, sketched | 32.5: 29.5 in tickets, 3 of bucket | 9 | 3.6 |
+| 13, sketched | 19.5: 17.5 in tickets, 2 of bucket | 5 | 3.9 |
+| 14, sketched | 36: 33 in tickets, 3 of bucket | 10 | 3.6 |
+| 15, sketched | 31: 28 in tickets, 3 of bucket | 8 | 3.9 |
+| 16, sketched | 25.5: 22.5 in tickets, 3 of bucket, engineering only | 7 | 3.6 |
+| **Total** | **418.5** | **111** | |
 
 Ninety-two sized days in twenty-three sprints of five days is 115 calendar days, of which 23 are buffer. That is a 25% contingency held inside the sprints rather than as a block at the end, so it is spent where the slip happens and is visible per sprint.
 
@@ -77,6 +84,9 @@ Not every ticket is equally uncertain. These are the ones whose size could be of
 | P7-S47-T02 · The registry validator by descriptor | A descriptor can grow into a framework (R37) | Its acceptance is the toy kind in three files and nothing more general; a descriptor feature no kind uses is cut |
 | P7-S49-T02 · A map change as a command | Replay through a map change, and session orchestration decided mid-ticket | Sprint 49's buffer; what the orchestration decision adds past it goes to Deferred |
 | P7-S50-T01 · The capture layer | The first screen of the game; DOM, if chosen, claims across two input sources | Sprint 50's buffer, then the bucket |
+| P9-S42-T02 · The active item kind and the bank | A kind, six places, the buy rule, and an activation through the pipeline in 1.5 | Sprint 42's buffer; the Misc tab moves to sprint 43's top and the column after it |
+| P9-S44-T02 · Gyre Sceptre on either side | Two lists under one named effect, a status with its own matrix row, and the AI's first new reading since phase 6 | Sprint 44's buffer; bank passives move to sprint 51's top |
+| P9-S51-T02 · The disjoint | New state on the unit and the projectile, and the one phase 9 ticket that may move a stored log by design | Sprint 51's buffer; each moved log traced before re-recording, however long it takes, rather than re-recorded untraced |
 
 If every one of phases 0 to 5's rows doubles, the plan is 29 sprints. If none does, it is 21, because some gate buffers go unused. The honest band is **21 to 29 sprints**, with 23 as the plan.
 
@@ -100,6 +110,14 @@ If every one of phases 0 to 5's rows doubles, the plan is 29 sprints. If none do
   - **What phase 8 gives back.** Phase 8 returns 1 day: P8-S31-T02 from 1.5 to 1, since both of its decision records and the modifier model arrive done, and P8-S34-T02 from 1 to 0.5, since the capture layer arrives built. The net cost of the phase is 23.
   - **Expected ratio.** Almost all of it reshapes code that exists against a strong test net, which ran at about 0.35 in phases 3 to 5, so read the 23 as roughly 8 to 12 engineer-days. The exceptions are the checksum and the capture layer, which are new ground.
   - **Calendar.** No playtest; the calendar is its engineering days plus the maintainer's reading of two Proposed decision records, which does not stop the sprints after them.
+- **Phases 9 to 16, outlined 2026-09-28.** Sized on this page's anchors from the design and architecture outlines, before any sprint file is written.
+  - **The actuals they are read against.** Phases 0 to 8 ran at 0.53: 99.5 actual against 188.1 sized. Phase 7 ran at 0.57 and phase 8 at 0.50. Work that reshapes code or adds content on shapes that exist ran near 0.35; new ground ran near 0.8.
+  - **Phase 9, 14.5 to 27.5, up 13 net.** Its README lists each change. The catalogue section is done (-0.5). Q121's counterplay adds capabilities the sketch never had: the dispel and `invulnerable`, the disjoint, bank passives, the hold, and the per-level term (+5.5). Then the file splits (+2), Q98's pick order (+1), the bank's domain half (+1), Rimeward's ring (+0.5), `stun_bolt` (+1), pinned playtest builds (+0.5), and a bucket (+2). Expect 0.5 of sized: about 14 engineer-days, a band of 10 to 22.
+  - **Phase 9's cut into sprint files, 2026-09-28, held at 27.5.** The disable matrix ticket fell from 1 to 0.5, its self-lift row having been counted in Gyre Sceptre's ticket too; the half day paid for moving an active item between the bank and the inventory on screen, which the catalogue's section 7.2 asks and the sketch missed. Sprint 53 holds 3.5, its spare half day the first room for phase 8's bucket.
+  - **Phases 10 to 16, 212 sized days in 57 sprints.** Expected ratios: 0.65 for phase 10, which holds the most new ground (the second map scope and the generator); 0.6 for phases 11 and 16; 0.45 for phase 13, mostly content; and 0.5 for phases 12, 14, and 15, which build content on kinds they add once. Expected actuals: 30, 12.5, 16, 9, 18, 15.5, and 15 engineer-days. Each phase README gives its band.
+  - **What is not sized.** Three things fall outside these days. The design tickets are sized as writing, as the catalogues were; if they become discussions, they become calendar (R43). Phase 16's art is integration only; the sheets' production is unknown until the maintainer decides their source (R44). The maintainer's nine playtests, phase 8's included, are the calendar (R41).
+  - **Sequencing costs sprints.** A phase ends in a playtest, then a bucket and the gate, which cannot share a sprint with the work they read. The docs sync now runs beside the playtest, and each bucket ticket keeps its own pages by the definition of done (R17). Even so, phases 10 to 16 average 3.7 sized days a sprint, not 4.
+  - **The re-cut rule** applies per phase as before: a ratio under 0.6 for two sprints, or over 1.3, re-cuts the remaining calendar. Phase 10 also re-cuts at sprint 59 (R45).
 - **The bar's cost.** By the standing instruction of 2026-09-27 every bar row and bench is an agent's in Chrome on the development machine, so no gate waits on the maintainer's calendar for a browser sitting; that sitting was the longest wait of phases 3 to 6.
 - **Actuals.** Sprint 00 gained an unplanned one-day ticket, T00, before it opened: the entry points and agent configuration the plan assumed were there. The table above keeps the original sizing; the sprint file carries the total of 5. The engineer records the actual days beside each ticket's size when the sprint closes. After sprint 06, compare. If actuals run more than 30% over sized days, re-cut phases 2 to 5 before starting phase 2, not after.
 

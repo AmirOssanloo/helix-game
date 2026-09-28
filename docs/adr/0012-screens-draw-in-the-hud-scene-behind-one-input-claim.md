@@ -4,9 +4,9 @@
 
 | Field             | Value                                                                         |
 | ----------------- | ----------------------------------------------------------------------------- |
-| **Status**        | Proposed                                                                      |
+| **Status**        | Accepted, 2026-09-28                                                          |
 | **Date**          | 2026-09-27                                                                    |
-| **Deciders**      | The engineering architect; Proposed until the maintainer reads it             |
+| **Deciders**      | The engineering architect; accepted by the game designer on the maintainer's delegation, with the pick order amended to Q98's answer |
 | **Supersedes**    | None; answers [ADR 0003](./0003-layered-single-package-architecture.md)'s fourth-scene revisit condition |
 | **Superseded by** | None                                                                          |
 
@@ -42,7 +42,7 @@ The player feels this as a click on the inventory that also walks the hero, or a
 
 The HUD scene draws and hit-tests its screens; the play scene's input binding asks the claim before it hands an event to the mapper. Neither scene stops propagation to protect the other, so the claim holds whatever order Phaser gives the scenes' input plugins.
 
-**The pick port.** A right click that is not a screen's is resolved by the mapper against what the play scene draws, in drawing order, top first: an item's label, then a unit, then an item's icon on the ground, then the ground. The labels reach the mapper through a port in `presentation/input/input-ports.ts`: a fixed record the label views rewrite each frame with the canvas rectangle and the ground item id of every label shown, in the order they are drawn, and a count. The mapper reads it and never asks a view.
+**The pick port.** A right click that is not a screen's is resolved by the mapper against what the play scene draws, in one fixed order: a unit, then an item's label, then an item's icon on the ground, then the ground. While Alt is held, an item's label comes before a unit, and the rest keep their order. A unit is first so that a click on an enemy standing on its own drop is always an attack; Alt, already the key that shows every label, turns the order for looting, so an item under an enemy is always reachable. The mapper reads Alt from the same key state that shows the labels, at the event, as it reads the pointer; the order is the mapper's, and no view knows it. The labels reach the mapper through a port in `presentation/input/input-ports.ts`: a fixed record the label views rewrite each frame with the canvas rectangle and the ground item id of every label shown, in the order they are drawn, and a count. Within the labels, the one drawn on top wins. The mapper reads it and never asks a view.
 
 **Pausing.** Presentation declares a pause port with a hold and a release. The composition root implements it over the fixed-step driver as a pause reason of its own, apart from the developer panel's and a hidden tab's; the driver runs a tick only when no reason holds, feeds no time to the accumulator while one does, and so runs no burst of catch-up ticks on the release. The pause is not world state, sends no command, and puts nothing in the log. Presentation never imports the driver.
 
@@ -63,7 +63,7 @@ if (!claim.pointerDown(fooButton, fooX, fooY)) mapper.pointerDown(fooButton, foo
 
 **Item icons are drawn once, one way.** The icon an item wears on the ground, in the inventory, in the store, and on the pointer is one atlas frame in one tint, so a sprite art swap later changes all four at once.
 
-**The pick is testable without a canvas.** The port is a plain record, so a mapper test writes three rectangles into it and clicks.
+**The pick is testable without a canvas.** The port is a plain record, so a mapper test writes three rectangles into it and clicks, once with Alt up and once with it down.
 
 ### What this makes hard
 
@@ -93,12 +93,15 @@ if (!claim.pointerDown(fooButton, fooX, fooY)) mapper.pointerDown(fooButton, foo
 - The game takes on an accessibility goal.
 - The HUD scene's render time, as the panel reads it, grows past the bar's share with every screen open.
 - A screen is needed that must be drawn in the world's camera, such as a menu over the map that scrolls with it. Then its place is asked again.
+- Something else on the ground takes a right click, such as a portal or a waypoint. Its place in the pick order is stated here before it is built.
+- Sprite art makes a unit's drawn shape taller than its disc, so a click on a sprite and a click on its footprint disagree. Then the unit's place in the pick order is read against the sprite's bounds.
 
 ## References
 
 Nothing enforces it until the capture layer is built; its tests will:
 
 - The capture spec under `tests/presentation/` asserts every pointer and key event passes the claim before the mapper, the release of a claimed press included, and a modal screen claims every event but its own keys.
+- The input mapper's spec under `tests/presentation/` holds the pick order: a unit before a label with Alt up, a label before a unit with Alt down, then an icon, then the ground.
 - The driver's spec under `tests/app/` asserts the screen's pause reason is held apart from the panel's, and a release runs no catch-up burst.
 - The lint rule under `src/presentation` that bans the `Shape`, `Graphics`, and `Text` factories holds screens to the atlas, as it holds the bar.
 - The layer allow-list keeps presentation from importing `app/`, so the pause can only reach the driver through its port.

@@ -10,7 +10,7 @@ How Helix is built, the rules code follows, why it's shaped this way, what the g
 
 Start with [Onboarding](./onboarding/README.md) and follow it in order. It takes you from a fresh clone to the game running with the developer panel open.
 
-Then read [Product overview](./product/overview.md) to know what you're building, the [mechanics spec](./product/specs/character-movement-and-mechanics.md) to know how the hero must feel, and the [architecture overview](./architecture/README.md) to know where code goes.
+Then read [Product vision](./product/vision.md) and [Product overview](./product/overview.md) to know what you're building, the [mechanics spec](./product/specs/character-movement-and-mechanics.md) to know how the hero must feel, and the [architecture overview](./architecture/README.md) to know where code goes.
 
 ---
 
@@ -49,6 +49,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 | Anything on the hot path | [Performance standards](./standards/performance.md#quick-reference) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) |
 | Writing tests | [Testing standards](./standards/testing.md#quick-reference) |
 | An item, a loot table, or the store | [ADR 0011](./adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) · [Entities and pools](./architecture/entities-and-pools.md#quick-reference) · [Commands and events](./architecture/commands-and-events.md#quick-reference) · [Content and registries](./architecture/content-and-registries.md#quick-reference) · [Item catalogue](./product/specs/item-catalogue.md) · [Items and loot](./product/features/items-and-loot.md) |
+| A design decision: difficulty, roster, bosses, loot, travel, or a rule the player feels | [Product vision](./product/vision.md) · [Product overview](./product/overview.md) · [Vocabulary](./product/vocabulary.md) · [Roadmap](./product/roadmap.md) · [The descent](./product/specs/the-descent.md) |
 | Changing how the hero controls or feels | [Mechanics spec](./product/specs/character-movement-and-mechanics.md) · [Controls and orders](./product/features/controls-and-orders.md) |
 | Before offering a change for review | [Definition of done](./workflows/definition-of-done.md) |
 | Changing a rule | The [decision record](./adr/README.md) that owns it, then the page that states it |
@@ -65,7 +66,7 @@ Every architecture and standards page ends with a `## Quick reference` table hol
 
 **Getting set up and shipping** — [onboarding](./onboarding/README.md) · [development workflow](./workflows/development.md) · [definition of done](./workflows/definition-of-done.md) · [adding a spell](./workflows/adding-a-spell.md) · [adding an enemy](./workflows/adding-an-enemy.md)
 
-**Product** — [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md) · [enemy catalogue](./product/specs/enemy-catalogue.md) · [disable matrix](./product/specs/disable-matrix.md) · [the long road](./product/specs/the-long-road.md) · [item catalogue](./product/specs/item-catalogue.md) · [items and loot](./product/features/items-and-loot.md)
+**Product** — [vision](./product/vision.md) · [overview](./product/overview.md) · [roadmap](./product/roadmap.md) · [vocabulary](./product/vocabulary.md) · [features](./product/features/README.md) · [mechanics spec](./product/specs/character-movement-and-mechanics.md) · [spell catalogue](./product/specs/spell-catalogue.md) · [enemy catalogue](./product/specs/enemy-catalogue.md) · [disable matrix](./product/specs/disable-matrix.md) · [the long road](./product/specs/the-long-road.md) · [the descent](./product/specs/the-descent.md) · [item catalogue](./product/specs/item-catalogue.md) · [items and loot](./product/features/items-and-loot.md)
 
 ---
 

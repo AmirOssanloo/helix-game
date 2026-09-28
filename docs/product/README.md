@@ -10,6 +10,7 @@ These pages use **real names and real numbers** — Quartz, Hoarfrost, 280 units
 
 ## Start here
 
+- [Product vision](./vision.md) — the maintainer's pillars every design decision serves, and who decides what
 - [Product overview](./overview.md) — what Helix is, who plays it, and how a fight goes
 - [Product vocabulary](./vocabulary.md) — the words we use, and the ones we don't
 - [Roadmap](./roadmap.md) — the phases, what each ships, and the bar every phase is held to
@@ -19,9 +20,10 @@ These pages use **real names and real numbers** — Quartz, Hoarfrost, 280 units
 - [Character movement and mechanics](./specs/character-movement-and-mechanics.md) — the control model with every number: pointer and keys, locomotion, turn rate, the orb buffer, Invoke, the D and F slots, cooldowns, the tick model, and the acceptance tests. Authoritative on all of those; every feature page defers to it
 - [Spell catalogue](./specs/spell-catalogue.md) — the ten spells as data: recipe, targeting, cast point, range, cooldown and mana by level, effect lists, statuses, shapes, frames, and the pieces the pipeline needs to cast them. Authoritative on the shape; the definition files own the numbers
 - [Enemy catalogue](./specs/enemy-catalogue.md) — the archetypes as data: every field of an enemy definition with a starting value and why it starts there, set against the level-1 hero, and what a pack is worth in experience. The definition files own the numbers
-- [Disable matrix](./specs/disable-matrix.md) — every status against Q, W, E, R, D, F, the four orders, the item commands, a cast point in progress, and the two cursors, one answer per cell with a note where it is not obvious. Authoritative over the status effects page's table; the data file mirrors it cell for cell
+- [Disable matrix](./specs/disable-matrix.md) — every status against Q, W, E, R, D, F, the six active-item keys, the four orders, the item commands, a cast point in progress, and the two cursors, one answer per cell with a note where it is not obvious. Authoritative over the status effects page's table; the data file mirrors it cell for cell
 - [Item catalogue](./specs/item-catalogue.md) — items as data: the ten armory slots, twenty bases with their sizes and levels, seven rarities, the affixes, the Legendary pieces and their bosses, the loot table of each enemy tier, the store, and the economy of a full clear of the long road. The item definitions are written from it
 - [The long road](./specs/the-long-road.md) — the long road as data: the rectangle, five regions, every pack with its archetype, tier, count, and position, the chokes and blocks, the checkpoints, and the experience budget from level 1 to level 12 at the last boss. The map definition is written from it
+- [The descent](./specs/the-descent.md) — the descent as design: a hundred maps in ten strata, the families and variants of the roster, aspects, map and stratum bosses and what each demands, density, and the arithmetic that makes each map harder with no enemy scaled by level. Map recipes and archetypes are written from it
 
 ## The surfaces
 

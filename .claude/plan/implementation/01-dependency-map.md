@@ -1,6 +1,6 @@
 # Dependency map
 
-**Written:** 2026-09-20 · **For:** anyone re-cutting a sprint or asking why something is not earlier
+**Written:** 2026-09-20 · **Updated:** 2026-09-28, for phase 9's sprint files · **For:** anyone re-cutting a sprint or asking why something is not earlier
 
 What has to exist before what. Every arrow here is a reason a ticket sits where it does. If a re-cut moves a ticket earlier than something it depends on, the re-cut is wrong.
 
@@ -48,8 +48,14 @@ toolchain and layers (S00)
                                                       → rarity and affixes, the bases, moving an item on the grid (S35)
                                                         → tooltips, the store and its screen, panel loot controls (S36)
                                                           → drop-rate balance, the maintainer's playtest, bucket (S37) → docs, gate (S38)  ══ phase 8 gate
-                                                            → the active-item bank and keys, the disable column, the eight actives (S41–S44, sketched)  ══ phase 9 gate
-                                                              → the descent: about a hundred generated levels, a bet of its own
+                                                            → the architect's placement, the domain splits, pinned playtest builds, the right click's order (S41)
+                                                              → the presentation splits, the active item kind and the bank, the six keys and the bank row, the Misc tab (S42)
+                                                                → the active-item column, the bank on screen, the per-level term, Scorchglass, Fetter Bolas, Mainspring (S43)
+                                                                  → invulnerable, the side, and the dispel; Gyre Sceptre and the hold; bank passives and the tier filter (S44)
+                                                                    → Slipknife and blink_to, the disjoint, Rimeward (S51)
+                                                                      → Skyfall Maul, Veilblade, stun_bolt on the long road, the maintainer's playtest (S52)
+                                                                        → bucket, docs, gate (S53)  ══ phase 9 gate
+                                                                          → phases 10 to 16, sketched in their READMEs: the first stratum, saves, strata 2 and 3, loot at depth, strata 4 to 10, art and audio
 ```
 
 ---
@@ -134,6 +140,19 @@ toolchain and layers (S00)
 | Rarity (S35) precedes the store (S36) | A price is a base's value by its rarity's multiplier |
 | Every loot ticket (S39, S31–S36, S40) precedes the balance (S37), and the balance precedes the playtest (S37) | The maintainer plays once, thoroughly, on rates already tuned headless on the new road |
 | Phase 8's gate precedes phase 9 | An active item is bought in the store, sits in the inventory, and is equipped through what phase 8 builds. Corrected 2026-09-27: it read "a Legendary item: it drops", which Q84's answer overturned |
+| Phase 8's gate, not phase 8's playtest, precedes phase 9 (Q118) | Nothing in phase 9's design is set against the loot playtest's verdict. The run waits on a person, so it is played on phase 8's build pinned at its own address (P9-S41-T03), and its bucket runs first in whatever sprint is open when it comes |
+| The architect's placement (P9-S41-T01) precedes every phase 9 ticket that touches the domain | The bank, the three flags, the dispel, the disjoint, and bank passives each change a page's rule; placed after the code, they are placed twice |
+| The domain splits (P9-S41-T02) precede the bank (P9-S42-T02), `invulnerable` and the side (P9-S44-T01), bank passives (P9-S44-T03), and the disjoint (P9-S51-T02) | Each adds to `unit.ts`, `command.ts`, `state-fields.ts`, or `status.system.ts`, all at the limit; a feature that trips the limit restructures a file it did not mean to (R40) |
+| The presentation splits (P9-S42-T01) precede the keys and tooltip (P9-S42-T03) and the Misc tab (P9-S42-T04) | `tooltip.ts` and `store.screen.ts` are at the limit and both grow |
+| The right click's order (P9-S41-T04) precedes the six keys (P9-S42-T03) | Both change the mapper; the pick leaves it first, so the keys land in a file with room |
+| The active item kind and the bank (P9-S42-T02) precede every active item, the keys, the Misc tab, the column, and bank passives | An active item is a definition of the kind, lives in a bank place, and is fired by `activate_item`, all made there |
+| The pinned builds (P9-S41-T03) precede the disjoint (P9-S51-T02) and `stun_bolt` (P9-S52-T03) | After either, a log recorded on phase 8's build may no longer replay on main |
+| The per-level term (P9-S43-T03) precedes every damaging active item | Scorchglass, Fetter Bolas, Gyre Sceptre's landing, Rimeward, Skyfall Maul, and Veilblade all deal `base + perLevel × L` |
+| `invulnerable` (P9-S44-T01) precedes the self-lift and its matrix row (P9-S44-T02) and `ethereal` (P9-S52-T02) | The self-lift's status carries the flag, and `physical_immune` is read beside it in the one damage function |
+| Bank passives and the tier filter (P9-S44-T03) precede Slipknife (P9-S51-T01) and Rimeward (P9-S51-T03) | Slipknife's lockout is a banked status with a tier-filtered hook; Rimeward's armour is a banked status |
+| Slipknife's `blink_to` (P9-S51-T01) precedes the disjoint (P9-S51-T02) | A blink is one of the two things that bump the disjoint count |
+| The disjoint (P9-S51-T02) precedes `stun_bolt` (P9-S52-T03) | Slipknife's answer to the bolt is the disjoint; a bolt with no answer is not the road the playtest is meant to judge |
+| Every phase 9 ticket precedes the playtest (P9-S52-T04), and the playtest precedes the bucket and the gate (S53) | The maintainer plays once, thoroughly, with every item buyable; the bucket is sized after the triage |
 
 ---
 
@@ -151,6 +170,7 @@ Only relevant if a second engineer appears. With one engineer the order above is
 | Map choice, checkpoints, sleeping packs (S26) | The feedback file and obstacle views by camera (S27, S28) | Sprint 26 |
 | Rules and god objects in the domain (S46, S47) | The overlays, view syncers, and the capture layer (S48, S50, presentation) | Sprint 46, once sprint 45's net holds |
 | Loot, inventory, armory stats, rarity, the store's rules (S32–S36, domain) | The font, ground views and labels, the first screen, the inventory, tooltips, the store's screen (S32–S36, presentation) | Sprint 32, once the architect's decision holds |
+| The bank, the per-level term, the three flags, the dispel, bank passives, the disjoint, the eight actives (S42–S44, S51, S52, domain and content) | The keys and bank row, the bank on screen, the Misc tab, Rimeward's ring view (S42, S43, S51, presentation) | Sprint 42, once the placement and the splits hold |
 
 A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 
@@ -168,6 +188,9 @@ A second engineer does not shorten phase 0, phase 4, or any gate sprint.
 - **Loot does not depend on the descent.** Drops, pickup, and the store run on the long road; each generated level, when it comes, is one more map with packs and a level.
 - **The store does not depend on a town.** It is a rule on a checkpoint the map already has.
 - **Phase 8 does not depend on the Kit fix.** Nothing it builds is cast from a key; phase 9's bank beside the kit is how that phase avoids it too, and its architect ticket says if it cannot.
+- **Phase 9 does not depend on phase 8's playtest.** It starts on phase 8's gate; the run is played on the pinned build whenever it comes (Q118).
+- **The active items do not depend on the town portal or the descent.** They are bought at the long road's checkpoint stores, and the town's store is phase 10's.
+- **The first active items do not depend on the self-lift.** Scorchglass, Fetter Bolas, and Mainspring need only the bank, the column, and the per-level term, so they are played in sprint 43 before the three flags exist.
 - **Loot does not depend on an ECS, packages, or behaviour trees.** Phase 7 fixes what loot grows and stops there; each of those is a Deferred row behind its own door.
 - **The descent's generator does not depend on phase 7.** The map change as a command is all the descent needs from it now; the generator's port is the descent's.
 - **Rarity does not depend on the bases.** Affixes are rolled and tested on the fixture bases; the twenty real ones come after, from the approved page.

@@ -58,4 +58,4 @@ For a change that touches the simulation, also load the quick references of `doc
 
 ## What you hand back
 
-A decision, its placement, the pages or records you changed, and the tickets or follow-ups it creates. If a question needs product or delivery judgement, say so and stop; do not delegate.
+A decision, its placement, the pages or records you changed, and the tickets or follow-ups it creates. If a question needs design judgement, say it belongs to the game designer; if it needs delivery judgement, the delivery strategist; and stop. Do not delegate.

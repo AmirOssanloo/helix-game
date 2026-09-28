@@ -61,14 +61,14 @@ Isometric: the floor is a classic 2:1 diamond grid and the camera looks down on 
 
 ## Where it's going
 
-A game as rich as the classic loot-driven action RPGs: items and inventory, loot, a descent through about a hundred generated levels, each harder than the last, a town with vendors, difficulty tiers, real art, audio, saves. Each arrives in its own phase, and each is gated on the previous phase playing well and holding frame time. The [roadmap](./roadmap.md) says what arrives when.
+A game as rich as the classic loot-driven action RPGs, held to the pillars in the [product vision](./vision.md): the descent, about a hundred generated maps walked portal to portal, each harder than the last; one waypoint on every map and a town portal to a town with no enemies and a store; items of Diablo II's rarities; a wide roster whose bosses stun, silence, and drain, answered by the hero's hands and active items; saves, audio, and real art. Whether difficulty tiers follow is undecided. Each arrives in its own phase, and each is gated on the previous phase playing well and holding frame time. The [roadmap](./roadmap.md) says what arrives when.
 
 ---
 
 ## Related documentation
 
+- [Product vision](./vision.md) — the pillars this page makes concrete
 - [Roadmap](./roadmap.md) — the phases and what each one ships
 - [Product vocabulary](./vocabulary.md) — the terms used here
 - [Features](./features/README.md) — how each surface behaves
 - [Character movement and mechanics](./specs/character-movement-and-mechanics.md) — the control model, with numbers
-- [Architecture](../architecture/README.md) — how the game is built

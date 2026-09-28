@@ -2,11 +2,13 @@
 
 **Written:** 2026-09-20 · **For:** leadership and the engineer running the plan
 
-One engineer, fifty-one one-week sprints, ten phases, one playable build at the end of every phase. The phases were added in steps:
+One engineer, a hundred and eleven one-week sprints, seventeen phases, one playable build at the end of every phase. The phases were added in steps:
 - Phase 6 on 2026-09-26, after phase 5 closed.
 - Loot and active items the same day, after phase 6 closed, with active items sketched.
 - On 2026-09-27, loot was re-cut twice, with sprint 39, the long road grown, run first, and sprint 40, the pick-up order, run after 33.
 - The same day, the maintainer inserted phase 7, the foundation, before loot, which renumbered loot to phase 8 and active items to phase 9. Sprint numbers are global and did not move: the foundation takes 45 to 50 and runs before loot's 39.
+- On 2026-09-28, after phase 8 closed, the delivery strategist outlined phases 10 to 16, the descent, its saves, and its art. They come from [the design outline](../2026-09-28-design-outline-next-phases.md) and [the architecture outline](../2026-09-28-architecture-outline-next-phases.md). Phase 9 was re-sized from 14.5 to 27.5 the same day and takes sprints 51 to 53 after its 41 to 44.
+- **The maintainer approved that outline, phases 9 to 16, on 2026-09-28.** The same day the delivery strategist cut phase 9's sprint files, 41 to 44 and 51 to 53, at the approved 27.5. Phases 10 to 16 stay sketches in their READMEs; each one's sprint files are cut when the phase before it closes and [R41](./02-risks-and-hidden-work.md)'s limit allows.
 
 This page is the whole plan at one screen's altitude. The sprint files hold the detail.
 
@@ -33,10 +35,33 @@ Every phase ends with a build the person at the keyboard can play, tests that ar
 | 6 · The long road | 25–30 | 6 | A hand-authored map 4000 by 24000 the hero walks from level 1 to about level 10 through five regions of rising difficulty, with checkpoints, packs that wake and sleep, the hero's smaller share of push-out, and a feedback key; the maintainer has played it and the feedback is triaged |
 | 7 · The foundation | 45–50 | 6 | The build plays exactly as phase 6 left it, proved by every stored log replaying to the same state checksum at every tick, with a pause screen on Esc as the one new thing; underneath, no module loot must grow is a god object, each layer's door exports only what is used, a map change keeps the hero's run, and the seams loot and active items name are in place |
 | 8 · Loot and the store | 39, 31–33, 40, 34–38 | 10 | The long road grown to Diablo II density, about 100 to 130 enemies, pressing the hero far less; enemies on it drop gold and health and mana globes, taken by walking past them, and equipment in seven rarities, picked up by a right click into a 10 by 4 inventory of sized items; ten armory slots worn from the first UI screen change the hero's stats; a store at each checkpoint buys and sells; the road is finished from level 1 to the last boss with no heal or mana from the panel, and the maintainer has played it |
-| 9 · Active items, sketched | 41–44 | 4 | Eight active items, sold only in the store's Misc tab; six keys in a grid beside the kit use them through the ability pipeline |
-| **Total** | **51** | **51** | |
+| 9 · Active items, with their answers | 41–44, 51–53 | 7 | Eight active items, sold only in the store's Misc tab, in a bank of six keys beside the kit, each cast through the ability pipeline. The self-lift sheds a silence and lets the hero invoke in the air; a blink or a lift disjoints a `stun_bolt` the long road now throws; the maintainer has played them |
+| 10 · The first stratum, sketched | 54–65 | 12 | The town, and the Nave's ten generated maps walked portal to portal, with a waypoint on each and a town portal home to the store and back to a map kept frozen; six families and a map boss on every map; the Gaolmaster on map 10, killed by the driver at about level 12; the maintainer has played the town and the first maps |
+| 11 · Saves, and the casts heard, sketched | 66–71 | 6 | The run saved on entering town, at a waypoint, and through a portal, and resumed in town; a stash; 10% of gold lost on death; every enemy cast heard as it begins; the maintainer has played the whole first stratum across sittings |
+| 12 · The Undercroft and the Ossuary, sketched | 72–80 | 9 | Maps 11 to 30: the long road's disablers as families, the Nave's at variants II and III, ten aspects on elites and bosses, mana burn and a stun in flight, two stratum bosses, a silhouette for every family, items to level 30 |
+| 13 · Loot at depth, sketched | 81–85 | 5 | Bases and affixes to level 100, a 40% cap on cooldown reduction from items, a Legendary piece for every stratum boss, and a store stocking Epic from the fourth stratum |
+| 14 · Strata 4 to 7, sketched | 86–95 | 10 | Maps 31 to 70: the hook, the burst, the healer, fear, the raiser, the nest, the flicker, and burning ground, with four stratum bosses |
+| 15 · Strata 8 to 10 and the last boss, sketched | 96–103 | 8 | Maps 71 to 100: mute, thorns, the tether, the silence field, splits, and shields, the Choirmaster, the Binder Below, and the Unwound; the run won and saved |
+| 16 · Art and audio, sketched | 104–110 | 7 | Isometric sprite art with animation for the hero, every family, and every boss, a floor per stratum, sorting and occlusion, and the rest of the sound |
+| **Total** | **111** | **111** | |
 
-Twenty-five sprints was planned as about six calendar months for one engineer at full allocation; phases 0 to 5 closed in six calendar days (the [retrospective](../2026-09-25-retrospective-and-account.md)). The calendar of phases 6, 8, and 9 is set by the maintainer's playtests and approvals, not by engineering days; phase 7 has no playtest, and its calendar is its engineering days and the maintainer's reading of two decision records. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
+Twenty-five sprints was planned as about six calendar months for one engineer at full allocation; phases 0 to 5 closed in six calendar days (the [retrospective](../2026-09-25-retrospective-and-account.md)). Phases 0 to 8 ran at 0.53 of their sized days. The calendar of every phase with a playtest is set by the maintainer's playtests and approvals, not by engineering days; phase 7 had none. From phase 9 on that is the plan's governing constraint: eight more playtests, and phase 8's still outstanding. [R41](./02-risks-and-hidden-work.md) holds the rules that keep them from piling up. The confidence band and what moves it are in [Estimation and capacity](./03-estimation-and-capacity.md).
+
+---
+
+## The order after phase 8
+
+Decided by the delivery strategist on 2026-09-28 and approved by the maintainer the same day. The phases run in the game designer's order, 9 to 16, with five changes:
+
+| Change | Why |
+| --- | --- |
+| Phase 9 starts on phase 8's gate as it stands; phase 8's run is played on a build pinned at phase 8's close | Nothing in phase 9's design is set against the loot playtest (Q118). `stun_bolt` changes how the long road plays, so a phase 8 log recorded after it could not replay; the pinned build lets the run come late, and both runs can be played in one sitting |
+| No phase starts while two phases' playtests are outstanding | The maintainer's playtests are the calendar; a phase tuned on a verdict nobody has given is tuned twice ([R41](./02-risks-and-hidden-work.md)) |
+| Saves stay after the first stratum. Phase 10's playtest is the town and the first maps in one sitting, and the whole stratum is played in phase 11 across sittings | Saves resume in town, which phase 10 builds, so they cannot come first. The engineer's point stands in its other half: a person should not be asked for a ninety-minute session in one tab with no reload. The driver judges the Gaolmaster in phase 10, and the maintainer judges it once a run survives the tab |
+| The audio adapter and the enemy cast tells move from phase 16 to phase 11 | The architect finds the adapter independent of all but the event ring and no costlier for waiting. Phase 11's playtest is the first whole stratum, ending in a boss that throws a stun every six seconds; the fifth pillar is seeing, and hearing, the cast coming. Phase 11 is the smallest phase. The rest of audio stays in phase 16, and the game designer may send the tells back there at no change in cost |
+| The architect's moves inside phases are all taken | The file splits first in each phase; ADR 0017 on paper and ADR 0018, the pack member list, and the driver in phase 10; travel on authored maps before the generator; ADRs 0019 to 0021's paper in phase 12; the damage function's source point first in phase 15. [The architecture outline](../2026-09-28-architecture-outline-next-phases.md), section 5 |
+
+Phase 13, loot at depth, stays before the middle strata: those strata are tuned against a hero whose power is flat below map 30 without it.
 
 ---
 
@@ -58,7 +83,17 @@ Twenty-five sprints was planned as about six calendar months for one engineer at
 | M11 · Phase 7 gate | end of 50, before loot's 39 | Every stored log replays to the same state checksum at every tick with no re-stamp since the stamp was narrowed; `pnpm check` green with no file over about 500 lines but listed exceptions; a new definition kind costs three files; the bar holds with allocations at zero and draw calls unchanged |
 | M12 · Loot worn | end of 34 | A pack killed on the long road drops an item, the hero picks it up with a right click, opens the inventory, wears it, and a derived stat moves; no click on the screen walks the hero. Was M11 until 2026-09-27, when phase 7 took it; the walk-over wording was also corrected, since Q87 made items a right click |
 | M13 · Phase 8 gate | end of 38 | The long road finished from level 1 to the last boss with no heal or mana from the panel; the store used; the session replays identically; the feedback triaged. Was M12 |
-| M14 · Phase 9 gate | end of 44 | Every active item cast through the pipeline from its key; the maintainer has played with them. Was M13 |
+| M14 · Phase 9 gate | end of 53 | Every active item cast through the pipeline from its key. A silenced hero lifts itself free and invokes in the air; a `stun_bolt` on the long road is disjointed by a blink. The maintainer has played with them. Was M13; was the end of 44 until the re-size of 2026-09-28 |
+| M15 · Travel on authored maps | end of 59 | The hero opens a town portal on B, goes to town, and comes back to the same spot on a map kept frozen; takes a portal down and a waypoint across; a replay through town and back finds the kept map's checksum unchanged |
+| M16 · A generated map walked | end of 62 | The driver walks a seed sweep of generated maps from arrival to waypoint to portal; every map passes its checks or falls back and is counted |
+| M17 · Phase 10 gate | end of 65 | The driver walks the Nave from the town to the Gaolmaster's kill at about level 12; the maintainer has played the town and the first maps |
+| M18 · Phase 11 gate | end of 71 | Close the tab, come back, and the hero is in town with everything it carried; the maintainer has played the whole first stratum across sittings, hearing every enemy cast |
+| M19 · Phase 12 gate | end of 80 | Maps 11 to 30 played from saves: fifteen families told apart by their silhouettes, elites with aspects, mana burn, and two stratum bosses |
+| M20 · Phase 13 gate | end of 85 | A drop at map 90's level reads as something no drop at map 20 could be; the hero's power index at depth is inside the designer's band |
+| M21 · The Cisterns playable | end of 89 | Maps 31 to 40 walked by the driver and the Drowned Hook killed |
+| M22 · Phase 14 gate | end of 95 | Strata 4 to 7 played from saves: fear, nests, raises, and burning ground, with four stratum bosses |
+| M23 · Phase 15 gate | end of 103 | The Unwound killed and the run won, by the driver from the town and by the maintainer from a save |
+| M24 · Phase 16 gate | end of 110 | The descent drawn in sprite art and heard, with the simulation unchanged |
 
 ---
 
@@ -75,9 +110,16 @@ What each phase deliberately does not include, so that nobody adds it by habit. 
 - **Phase 6** adds one hand-authored map and what playing it needs. No loot, no minimap, no generator or *one floor*, no per-level or per-pack enemy scaling, no art, no audio, no saves, no eleventh spell. What the playtest asks for is built only inside a bucket of four sized days; the rest is deferred.
 - **Phase 7** changes no behaviour but the pause screen. It does not rewrite to an ECS or split into packages, replace AI flags with behaviour trees, build the inventory screen, port the generator the descent needs, or tune performance beyond the debug overlays. A ticket enters only if it fixes a verified violation, removes a documented drift, or builds a seam a phase 8 or 9 ticket names. What the refactors uncover is built only inside a bucket of one sized day.
 - **Phase 8** grows the long road to Diablo II density, then adds loot, the inventory and armory, and a store on it. No active item in the drops or the store, no +1 to an orb, no catalogue at Diablo II's scale, no two-handed weapon, no stash, no restock, no death penalty, no saves, no descent, no town, no art, no audio. What the playtest asks for is built only inside a bucket of two sized days.
-- **Phase 9** adds the eight active items, bought only in the store, and their keys. No rebinding, no potions on a belt, no second kit, no descent.
+- **Phase 9** adds the eight active items, bought only in the store, their keys, Q121's answers (the dispel, `invulnerable`, `ethereal`, the disjoint, Slipknife's lockout, the hold), `stun_bolt` on the long road, and Q98's pick order. No rebinding, no potions on a belt, no second kit, no active item beyond the eight, no mana burn, mute, or fear, no town portal, no descent, no sound. What the playtest asks for is built only inside a bucket of two sized days.
+- **Phase 10** adds the town, travel, the generator, and the Nave. No saves, stash, or death penalty, no aspects or variants past I, no stratum but the Nave, no way up by portal, no minimap, no silhouettes, no sound. Rooms and corridors are the fallback cut to open ground if the phase runs over. Bucket of three.
+- **Phase 11** adds one saved run, the stash, the death penalty, the start screen, and the enemy cast tells. No second run, hardcore, corpse run, item or experience loss, mid-map save, settings screen, or music. Bucket of two.
+- **Phase 12** adds strata 2 and 3, the aspects, mana burn, silhouettes, and items to level 30. No stratum below the Ossuary, no variant IV, no sprite art. Bucket of three.
+- **Phase 13** adds the catalogue to level 100. No sets, sockets, runewords, lifesteal, crafting, or item comparison. Bucket of two.
+- **Phase 14** adds strata 4 to 7. Nothing from strata 8 to 10. If it runs over, it is cut after the Warrens and the last two strata become a phase of their own. Bucket of three.
+- **Phase 15** adds strata 8 to 10 and the Unwound. Nothing after the bottom, which waits on Q122. Bucket of three.
+- **Phase 16** adds sprite art and the rest of audio, and changes nothing under the domain or the simulation. No voice, music beyond ambience, or cutscenes. Its days are integration only; the art's source is the maintainer's decision. Bucket of three.
 
-Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile, crafting.
+Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile, crafting. Not yet in any phase: difficulty tiers, which wait on the maintainer's answer to Q122 (proposed: none), and key rebinding, which waits on a settings menu.
 
 ---
 
@@ -92,6 +134,7 @@ Not in any phase: multiplayer, hero selection, quick-cast, order queues, mobile,
 
 ## What would change this plan
 
+- **The maintainer's playtests fall further behind.** Engineering stops at R41's limit, two phases outstanding, rather than building on unplayed ground; the sprints wait, not the scope.
 - **The render benchmark fails in sprint 02.** Everything after it waits until the cause is found. ADR 0001 says the fix is inside Phaser; the plan holds one buffer day for it and a second failure reopens the ADR.
 - **The stress test fails in sprint 06 and the cause is the object layout.** ADR 0003 names typed arrays as the fallback. That is a rewrite of every system that touches units, estimated at two sprints, and it would be scheduled before phase 2 begins.
 - **A second engineer joins.** The dependency map shows where the plan parallelises: presentation and domain diverge from sprint 02, and content authoring diverges from pipeline work in sprint 10. Two engineers shorten phases 2 and 3 by roughly a third, not a half.

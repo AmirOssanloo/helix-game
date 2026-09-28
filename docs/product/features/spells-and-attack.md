@@ -52,7 +52,7 @@ A ranged projectile attack. Range 600, acquire radius 800, projectile speed 900,
 - **Attack-move** (A then left click) walks to the point and attacks any enemy acquired within 800 units on the way, then resumes the walk when the target is lost, without backtracking.
 - **Backswing** can be cancelled by a move, a stop, or a cast, so attack-orb-attack weaving is possible.
 
-Projectiles are homing: once fired, an attack projectile follows its target and lands unless the target dies or becomes untargetable first.
+Projectiles are homing: once fired, an attack projectile follows its target and lands unless the target dies first, or is disjointed by blinking or being lifted, when it flies on to where the target stood and ends there on nothing ([status effects](./status-effects.md#disjoint)).
 
 ## Damage types
 

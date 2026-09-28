@@ -19,7 +19,7 @@ Every automated worker starts from `AGENTS.md` at the repository root. `CLAUDE.m
 
 | Kind | Loaded | Use for |
 | --- | --- | --- |
-| **Agent** | When work is delegated to it | A discipline with a scope — architecture, game engineering, delivery planning |
+| **Agent** | When work is delegated to it | A discipline with a scope — game design, architecture, game engineering, delivery planning |
 | **Skill** | On request, or preloaded by an agent | A procedure or a body of knowledge — a Phaser subsystem, a repository workflow |
 | **Rule** | Automatically, when matching files are edited | Constraints that must always apply to those files |
 
@@ -44,11 +44,11 @@ Something the model already does well gets nothing written for it: every added i
 
 ## Agents
 
-Three agents exist, each a principal-level discipline: the **engineering architect** decides structure and boundaries, the **game engineer** implements systems inside those boundaries, and the **delivery strategist** decides what is built in which order and at what cost. An agent's file says what it loads first, what it is trusted to decide, and what it hands back.
+Four agents exist, each a principal-level discipline: the **game designer** decides what the game is, serving the pillars in the [product vision](../product/vision.md), the **engineering architect** decides structure and boundaries, the **game engineer** implements systems inside those boundaries, and the **delivery strategist** decides what is built in which order and at what cost. An agent's file says what it loads first, what it is trusted to decide, and what it hands back.
 
 **The description is the most important line.** It is what gets matched when work is delegated, so it says *when to use this agent*, not what the agent is like.
 
-**Agents preload the skills they always need**, rather than relying on a decision they might make differently each run. The game engineer preloads the ticket procedure; the architect preloads the docs-page procedure. A Phaser reference skill is loaded on demand for the subsystem touched, because most tickets never touch Phaser and a preloaded reference costs attention on every one.
+**Agents preload the skills they always need**, rather than relying on a decision they might make differently each run. The game engineer preloads the ticket procedure; the architect and the game designer preload the docs-page procedure. A Phaser reference skill is loaded on demand for the subsystem touched, because most tickets never touch Phaser and a preloaded reference costs attention on every one.
 
 **Delegation is flat.** An agent doesn't delegate to another agent; if it needs work outside its scope, it reports back and the top delegates the next piece. Independent pieces of work are delegated together so they run at once.
 
@@ -113,7 +113,7 @@ The chain loses context at each hop and nobody can see what's running.
 | A constraint that must never be broken / a procedure or deep knowledge / a discipline with a scope | A rule / a skill / an agent |
 | Something the model already does well | Write nothing |
 | An agent | Description says when to pick it; the narrowest tools that let it finish, never a delegation tool; always-needed skills preloaded, Phaser references on demand |
-| The three agents | Engineering architect decides structure; game engineer implements inside it; delivery strategist decides order and cost |
+| The four agents | Game designer decides design under the vision's pillars; engineering architect decides structure; game engineer implements inside it; delivery strategist decides order and cost |
 | Delegation | Flat. An agent reports back; independent work is delegated together |
 | A skill | One topic; description written with the trigger words someone would actually use |
 | Phaser reference skills | One folder per subsystem, describing Phaser, not this game; project skills link them |

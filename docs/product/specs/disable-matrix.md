@@ -17,7 +17,7 @@
 
 ## 1. Purpose
 
-This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, the item and store commands, the pick up, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
+This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the six active-item keys, the four orders, the item and store commands, the pick up, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
 
 The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell. Its rows run in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by, stun and lift first, where the table here keeps lift beside the other rows that move a unit. One test per cell holds the two together, so a changed cell is a change to both.
 
@@ -37,7 +37,7 @@ Every cell is exactly one of five words.
 | **Closed** | The cursor closes at no cost on the first frame the hero wears the status, and nothing is sent |
 | **Continues** | The cast point or the cursor carries on as it would with no status |
 
-The twelve key, order, item, and pick up columns answer refused, allowed, or cancelled. The cast point column answers cancelled or continues. The two cursor columns answer closed or continues.
+The thirteen key, order, item, and pick up columns answer refused, allowed, or cancelled. The cast point column answers cancelled or continues. The two cursor columns answer closed or continues.
 
 ### 2.2 The columns
 
@@ -46,6 +46,8 @@ The twelve key, order, item, and pick up columns answer refused, allowed, or can
 | Q, W, E | Adding an orb. Instant, with no cast point |
 | R | Invoke. Instant, with no cast point |
 | D, F | Throwing the spell in the slot: a no-target spell on the key, a targeted one on the click that commits the cursor. An enemy's cast of any ability reads these two cells |
+| B | The town portal's key. It answers as the Active items column in every row, and under root it is allowed: refused under stun, lift, and the self-lift, allowed under silence, root, disarm, and every other row. It is neither a spell nor an item, so no status that takes one of those away takes it (21) |
+| Active items | T, X, V, C, G, and Space: activating the active item in that bank slot, on the key or on the click that commits its cursor. One column, since the six answer alike; an item is not a spell, so silence does not refuse it (17), and Slipknife alone is refused under root (18) |
 | Move | A move order, by right click, or a walk an enemy's behaviour orders |
 | Attack-target | An attack on one unit, by right click on an enemy, or an enemy's attack on the hero |
 | Attack-move | A move that attacks whatever it acquires on the way |
@@ -78,17 +80,18 @@ When two rows refuse one command, the refusal names the reason of the first in t
 
 A number in brackets points at a note in [section 4](#4-notes).
 
-| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Items | Pick up | Cast point in progress | Targeting cursor open | Attack-move cursor open |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | allowed | cancelled | cancelled | closed | closed |
-| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed | allowed | allowed | allowed | allowed | allowed | continues (2) | closed | continues |
-| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | cancelled (4) | allowed (5) | cancelled (4) | allowed | allowed | cancelled (4) | continues (6) | continues | continues (7) |
-| Disarm | `disarm` | `disarmed` | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | allowed | allowed | continues | continues | continues |
-| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Damage over time | `burn`, `glacier_chill` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | allowed | allowed (11) | continues (12) | continues | continues |
-| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | refused (13) | cancelled | closed | closed |
-| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Active items | Move | Attack-target | Attack-move | Stop | Items | Pick up | Cast point in progress | Targeting cursor open | Attack-move cursor open |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | allowed | cancelled | cancelled | closed | closed |
+| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed (17) | allowed | allowed | allowed | allowed | allowed | allowed | continues (2) | closed (17) | continues |
+| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | allowed (18) | cancelled (4) | allowed (5) | cancelled (4) | allowed | allowed | cancelled (4) | continues (6) | continues | continues (7) |
+| Disarm | `disarm`, `veilblade_ethereal` | `disarmed`, and `ethereal` for Veilblade's (19) | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | allowed | allowed | continues | continues | continues |
+| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Damage over time | `burn`, `glacier_chill`, `mana_burn` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | allowed | allowed (11) | continues (12) | continues | continues |
+| Lift | `lift`, `updraft_lift`, `gyre_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | refused (13) | cancelled | closed | closed |
+| Self-lift | `gyre_self_lift` | `lifted`, `untargetable`, `invulnerable` (20) | `lifted` | allowed (20) | allowed (20) | allowed (20) | allowed (20) | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | refused (13) | cancelled | closed | closed |
+| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
 
 A death is not a status and is not a row: a dead unit refuses every command until it respawns, and every cursor closes when the hero dies. A skill point is not a column: no status refuses spending one, since a level is not an action the unit takes.
 
@@ -112,12 +115,17 @@ A death is not a status and is not a row: a dead unit refuses every command unti
 14. **Lift and Stop.** Refused, as under stun, so a stop in the air does not drop the order put aside; the unit walks it on landing.
 15. **Items under every status.** The hero may equip, unequip, move, and drop an item, and use the store, stunned, silenced, rooted, disarmed, lifted, or knocked back: handling what it carries is not something a status stops. Only death refuses them.
 16. **Pick up is a walk.** Its cell is the Move cell of the same row, so a stun ends a pick up under way and refuses a new one, a root does the same and the hero does not walk to the item, a knockback keeps it and the hero walks on once the push ends, and a lift puts it aside and gives it back on landing. The take at the end is not a separate action: once the walk is allowed, the hero takes the item on reaching it.
+17. **Silence and the active items.** An active item is not a spell, so a silenced hero activates items as it would with none, as Dota's silence leaves items alone. This is what makes Gyre Sceptre the answer to a silence already landed: cast on the hero, it lifts it and sheds the silence. An open targeting cursor closes on a silence only if it is a spell's; an active item's cursor stays open.
+18. **Root and the active items.** Every active item is allowed under root but Slipknife, which is refused with `rooted`: a rooted hero cannot blink, as in Dota. Gyre Sceptre on the hero sheds the root, and Slipknife works again when it lands.
+19. **Ethereal.** Veilblade's status raises `disarmed` beside `ethereal`, so it answers as disarm in every cell; `ethereal` makes physical damage to the holder zero and raises magical damage to it by 40%, which is damage, not a cell.
+20. **Self-lift.** The hero lifted by its own Gyre Sceptre wears no `stunned` flag, so its row is its own. It refuses every order, D, F, and the six active-item keys as a lift does, and lets Q, W, E, and R through: orbs are pressed and a spell invoked in the air, so the player lands with the pair it chose. `invulnerable` refuses any damage or new status to the holder, and on the tick it is lifted the hero sheds every status an enemy applied, as the [status effects page](../features/status-effects.md#dispel) says. Gyre Sceptre on an enemy applies `gyre_lift`, which answers as the Lift row.
+21. **B and the town portal's channel.** B is written as its own line of section 2.2, not a column of the table, since its cells are the Active items column's with root allowed. A channel already running answers as the cast point column: a stun or a lift ends it at no cost, and every other row lets it run. Any order, key, or activation the hero issues ends it too, as the [travel](../features/map-and-camera.md#the-town-portal) rules say.
 
 ---
 
 ## 5. What the player sees
 
-A square on the ability bar greys while the hero wears a status whose cell for that key says refused or cancelled, so stun, silence, and lift grey six squares and root, disarm, and knockback grey none. Death is not a row, but it refuses every key, so all six grey while the hero is dead. The HUD reads the same cells the validator refuses by, so a grey square is always a refused key and a lit one never is.
+A square on the ability bar greys while the hero wears a status whose cell for that key says refused or cancelled, so stun, silence, and lift grey the six spell squares, the self-lift greys D and F, and root, disarm, and knockback grey none. The six active-item squares grey under stun, lift, and the self-lift; under root, only Slipknife's square greys. Death is not a row, but it refuses every key, so all six grey while the hero is dead. The HUD reads the same cells the validator refuses by, so a grey square is always a refused key and a lit one never is.
 
 An open cursor closes on the first frame its column says closed, at no cost and with no flash.
 

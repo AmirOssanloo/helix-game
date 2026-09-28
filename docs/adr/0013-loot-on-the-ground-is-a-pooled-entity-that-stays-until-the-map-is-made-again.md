@@ -4,9 +4,9 @@
 
 | Field             | Value                                                             |
 | ----------------- | ----------------------------------------------------------------- |
-| **Status**        | Proposed                                                          |
+| **Status**        | Accepted, 2026-09-28                                              |
 | **Date**          | 2026-09-28                                                        |
-| **Deciders**      | The engineering architect; Proposed until the maintainer reads it |
+| **Deciders**      | The engineering architect; accepted by the game designer on the maintainer's delegation, with two revisit points the descent adds |
 | **Supersedes**    | None                                                              |
 | **Superseded by** | None                                                              |
 
@@ -35,7 +35,7 @@ The player feels the answer when a pile they walked past is still there on the w
 
 **Past capacity, or with no free cell, the drop is not made.** The pool returns `null` as every pool does, or the search finds no cell, and the drop is dropped and counted beside the pool's misses; no older ground item is released to make room. A death's drops are made best first, items from the highest rarity down with a Legendary first of all, then gold, then globes, so when the last slots or the last free cells run out it is a globe that goes without, not the boss's piece. The keyed draws of a drop are indexed by what they are, never by the order the drops are made in, so this order moves no number.
 
-**How long.** A ground item lives until the hero takes it, or until a map load or the panel's map reset makes map scope again. The hero's death leaves every one where it lies. There is no timer.
+**How long.** A ground item lives until the hero takes it, or until a map load or the panel's map reset makes map scope again. The hero's death leaves every one where it lies. There is no timer. A map kept while the hero is away through a town portal is not made again: its ground items wait with the rest of it, and are released only when the kept map is let go, which is a map made again like any other.
 
 **Not in the spatial hash.** The rule that takes gold and globes, the rule that takes an item at the end of a pick up, the ground-item views, and the right click's pick walk the pool by index, which at this capacity costs less than keeping a second index current. The views bind by the camera's world rectangle, as obstacles and checkpoint markers do.
 
@@ -84,6 +84,8 @@ export const acquireFoo = (world: World, /* … */): FooId | null => { /* null w
 - The panel's readout shows drops refused in a playtest of a shipped map.
 - A rule needs ground items near an arbitrary point at scale, such as an item-fetching summon or a magnet. Then an index of ground items is weighed.
 - The product asks for ground items to fade.
+- A map recipe for generated maps is written or changed. Its expected full-clear drops are read against the capacity for the recipe's densest map, as this record's first condition asks of a shipped map, before the recipe ships.
+- The kept map of a town portal is built. Whether a kept map's ground items count against the same capacity as the map the hero stands on, or against one of their own, is asked then; a map kept must never lose a drop to the town, whose drops are none.
 
 ## References
 

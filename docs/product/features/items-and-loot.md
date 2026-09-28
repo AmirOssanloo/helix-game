@@ -28,7 +28,7 @@ Gold and globes are taken the moment the hero's disc comes within the pickup rad
 
 An item is never taken by walking. A right click on an item's icon or its label sends the **pick up** order: the hero walks to it as a move does and takes it into the inventory on arrival, at the first place it fits. A right click on gold or a globe, its label or its icon, is a move to it, where it is taken as it is by any walk. A right click anywhere else is a move, as always.
 
-Where an item and a unit overlap, what is drawn on top wins: a label picks up its item; under it, a unit, where an enemy is attacked and any other unit takes the click with nothing sent; under that, an item's icon picks it up; then the ground is a move. Holding Alt shows every label, so an item under an enemy can always be reached by its label.
+Where an item and a unit overlap, a unit wins: an enemy is attacked, and any other unit takes the click with nothing sent; then a label picks up its item, then an item's icon, then a portal or a waypoint, then the ground is a move. So a right click aimed at an enemy in a fight is always an attack, whatever has dropped under it. **While Alt is held** the order is turned for looting: a label wins over a unit, then the unit, then an icon, then a portal or a waypoint, then the ground. Alt shows every label, so an item under an enemy can always be reached by holding Alt and clicking its label.
 
 A pick up is a walk, and the [disable matrix](../specs/disable-matrix.md) answers it as a move: a stun or a root ends one under way and refuses a new one, a knockback carries the hero and the walk goes on, and a lift puts it aside until the hero lands. A new order replaces a pick up as it replaces any order. An item taken or gone by the time the hero arrives ends the order, and so does a walk that ends out of reach of the item. The item comes into the inventory the moment the hero is within the pickup radius of it, the same reach as gold and globes.
 
@@ -87,14 +87,14 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 | A map loaded or reset | Every ground item is gone, and every store is emptied, closed, and stocked afresh the next time it opens. The inventory, the armory, and gold are run scope and are kept |
 | More on the ground than the map holds | A drop with no room, past the limit of ground items on a map or with no free spot near where the enemy died, is not made, and the developer panel counts it; nothing already on the ground is removed. A death's drops are made best first, so a globe goes without before an item, and a Legendary last of all. The limit holds at least two full clears of the long road with nothing taken |
 | The page reloaded | The inventory is lost with the session: there are no saves |
-| Active items | Listed in the store's Misc tab once they are usable; they never drop |
+| Active items | Listed in the store's Misc tab, always, beside the stock; they never drop. One the hero already holds cannot be bought again ([the bank](../specs/item-catalogue.md#72-the-bank)) |
 
 ## Deferred
 
-- **Active items as usable items**, and the bank of six keys they are worn in, which wait on the [roadmap](../roadmap.md). Their names and prices are in the [item catalogue](../specs/item-catalogue.md#7-the-active-items).
-- **A catalogue at Diablo II's scale**, about a thousand items, and item art. Icons are flat silhouettes in a rarity tint.
+- **Activating the active items**, and the bank of six keys they are held in. What each does, and the bank's rules, are the [item catalogue's](../specs/item-catalogue.md#7-the-active-items); they are listed and bought before they can be used.
+- **A catalogue at Diablo II's scale**, about a thousand items, and item art. Icons are flat silhouettes in a rarity tint. The descent needs its bases and affixes to reach item level 100 ([the descent](../specs/the-descent.md#7-loot-at-depth)).
 - **Two-handed weapons, sets, sockets, and lifesteal.**
-- **A stash**, a store that restocks or buys back what it sold, and a town.
+- **A stash**, which waits on saves and stands in the town; a store that buys back what it sold. The town's store restocks as the hero goes deeper ([travel](./map-and-camera.md#travel)).
 - **Item comparison** in a tooltip.
 - **A death penalty**, which waits on saves. Crafting is never built.
 

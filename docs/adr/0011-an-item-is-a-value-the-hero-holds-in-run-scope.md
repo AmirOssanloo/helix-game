@@ -4,9 +4,9 @@
 
 | Field             | Value                                                                         |
 | ----------------- | ----------------------------------------------------------------------------- |
-| **Status**        | Proposed                                                                      |
+| **Status**        | Accepted, 2026-09-28                                                          |
 | **Date**          | 2026-09-27                                                                    |
-| **Deciders**      | The engineering architect; Proposed until the maintainer reads it             |
+| **Deciders**      | The engineering architect; accepted by the game designer on the maintainer's delegation, with no change |
 | **Supersedes**    | None; amends [ADR 0003](./0003-layered-single-package-architecture.md)'s hero rule |
 | **Superseded by** | None                                                                          |
 

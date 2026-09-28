@@ -22,7 +22,7 @@ Every gate includes the bar. It is repeated once here so no gate can forget a ro
 | Stress test | 300 units (phase 1) or 200 enemies plus 100 projectiles (phase 3 on) hold the tick budget | `pnpm test -t "stress"` green |
 | Render benchmark | Passes per ADR 0001, in Chrome | `pnpm bench` run by an agent through browser automation, numbers recorded in the phase README |
 
-The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles; phases 6 and 7, the same 200 on the long road, woken and put to sleep by the hero's walk; phases 8 and 9, the same, with the ground-item pool at its capacity.
+The live cap per phase: phase 0 none; phase 1, 300 units with random orders; phase 2, the hero, 20 concurrent zones and effects, 100 projectiles, one dummy; phases 3 to 5, 200 enemies and 100 projectiles; phases 6 and 7, the same 200 on the long road, woken and put to sleep by the hero's walk; phases 8 and 9, the same, with the ground-item pool at its capacity; phases 10 to 16, the same 200 on a generated map, read on the densest map of each recipe's seed sweep with the ground-item pool full, the kept map standing, and a screen open.
 
 ---
 
@@ -172,14 +172,145 @@ Added 2026-09-26. Loot is measured against the one number the clean run gave: 2 
 
 ## Phase 9 gate
 
-Added 2026-09-26 as an outline; its rows are written in full with phase 9's sprint files.
+Added 2026-09-26 as an outline. Amended 2026-09-28 for Q98 and Q121, and written in full the same day with phase 9's sprint files, when the maintainer approved the outline.
 
 | Row | Holds when |
 | --- | --- |
-| Every active item is an ability cast through the pipeline; nothing item-specific was added to it | Review of `domain/abilities/` since phase 8; a simulation test per active at its catalogue numbers |
-| The disable matrix covers the six keys | One test per cell of the new column |
-| The six keys resolve in the extended tie-break order, and Space never scrolls the page | Mapper tests; in Chrome by an agent through browser automation |
-| Active items are bought in the store's Misc tab at their price and never drop | The store test; roll tests over 10 000 rolls finding none in any table |
-| The maintainer has played the long road with active items, the session replays identically, and the feedback is triaged | The stored session and its spec; the triage note |
+| Every active item is an ability cast through the pipeline; nothing item-specific was added to it | Review of `domain/abilities/` since phase 8: the activation is a cast whose source is a bank place, and nothing else; `tests/simulation/actives/*.spec.ts`, one per active item at its catalogue numbers, the damaging ones at two hero levels; `tests/simulation/items/activation.spec.ts`; `tests/content/actives.spec.ts` |
+| The bank holds by the catalogue's section 7.2 | `tests/domain/items/bank.spec.ts`: the first free place, the full bank to the inventory, one copy, the clock kept across a move and a resale; `tests/simulation/items/bank-passives.spec.ts`; `tests/presentation/inventory-screen.spec.ts`: an item moved between the bank and the grid |
+| Q121's rules hold, each read in one place | The self-lift dispels only what enemies applied, and lets Q to R through (`tests/simulation/actives/gyre-sceptre.spec.ts`, `tests/domain/abilities/primitives/dispel.spec.ts`); `invulnerable` takes no damage, no hook, and no hostile status, and `ethereal` takes no physical damage and 40% more magical (`tests/domain/combat/damage.spec.ts`, `tests/simulation/statuses/applying.spec.ts`); a projectile aimed at a blinked or lifted unit hits nothing (`tests/simulation/projectiles/disjoint.spec.ts`); Slipknife is refused while rooted and for 3 s after elite or boss damage (`tests/simulation/actives/slipknife.spec.ts`); enemies hold under a self-lifted hero and take it up on landing (`tests/simulation/ai/transitions.spec.ts`); `tests/content/statuses.spec.ts`: only the named statuses carry `invulnerable` or `physical_immune`, and only `gyre_lift` uses `dispel` |
+| The disable matrix covers the six keys, the self-lift, and `ethereal` | `tests/domain/orders/disable-matrix.spec.ts`: one test per cell of the active-item column and of the self-lift and `ethereal` rows |
+| The six keys resolve in the extended tie-break order, and Space never scrolls the page | `tests/presentation/input-mapper.spec.ts`; in Chrome by an agent through browser automation, recorded in sprint 42's exit |
+| A right click picks a unit before an item, and an item first while Alt is held | `tests/presentation/pick-order.spec.ts` and `tests/presentation/input-mapper.spec.ts` |
+| Active items are bought in the store's Misc tab at their price and never drop | `tests/simulation/store/store.spec.ts`; `tests/domain/loot/roll.spec.ts` over 10 000 rolls per tier finding none in any table |
+| The long road throws `stun_bolt` and is still finished by the driver | `tests/simulation/abilities/stun-bolt.spec.ts`; `balance-loot.json` recorded again with the bolt and green, the margin recorded; every other stored log unchanged, or re-recorded by a named ticket whose moved checksums were traced |
+| Phase 8's build is served at its own address | `https://amirossanloo.github.io/helix-game/playtest-phase-8/` serves the build stamped `19fd7dc`, checked by an agent |
+| The maintainer has played the long road with active items, the session replays identically, and the feedback is triaged | `tests/simulation/replays/long-road-actives-playtest.spec.ts` on the stored session, holding the one 12 000-gold grant and no other panel help but the jump; the triage note, with the design outline's three questions answered; the bucket's days in the phase README |
+| The docs are in sync | P9-S53-T01's checklist |
+| The bar | Every row, as phase 8's, at 200 enemies on the long road with the ground-item pool full, six items in the bank, and a screen open; the render benchmark by an agent |
+
+---
+
+## Phase 10 gate
+
+Added 2026-09-28 as an outline; its rows are written in full with phase 10's sprint files.
+
+| Row | Holds when |
+| --- | --- |
+| Travel works and the kept map is frozen | Specs for the portal down, the waypoint and the travel command, the town portal's channel and its ends, one portal at a time; a replay spec walks to town and back with the kept map's checksum unchanged, and a one-field change to the kept scope by a test door moves the checksum |
+| A generated map is a pure function of the seed, its level, and its recipe | A spec generates every map of a seed before and after a played session and finds them equal; the golden hash of a sampled sweep green |
+| Every generated map passes the map checks, or falls back and is counted | A 1000-seed sweep of the Nave: every map's packs place, the walk from arrival to waypoint to portal is open to every radius class, at most 60 enemies near any point, expected drops at most half the ground-item capacity; fallbacks at most 2% ([R42](./02-risks-and-hidden-work.md)) |
+| The recipe's figures land in their bands | The sweep's figures recorded in the phase README: enemies per map 90 to 110, the waypoint a third to a half along the walk, minutes per map at the driver's pace, the most A* expansions a tick under the re-path budget; generation under 50 ms headless for the largest map |
+| The stratum is walked from the town to the Gaolmaster's kill | The driver on a seed sweep reaches map 10 at about level 12 and kills the Gaolmaster with no panel help, using the town portal and a waypoint; the portal on map 10 opens only after the kill |
+| The live cap holds on generated maps | The Nave's stress case under `pnpm test:budget`: no `enemy_cap_reached` on a sampled sweep |
+| The Nave's families are rows of the family kind, and the long road did not move | Content tests hold the six families at variant I to the designer's table; the long road's stored logs unchanged, unless the level table's answer moved them by a named ticket |
+| Two map scopes fit the heap | The heap readout on the transition to town, against ADR 0015's revisit point |
+| The maintainer has played the town and the Nave's first maps, the session replays identically, and the feedback is triaged | The stored session, the portal and a waypoint used, and its spec; the triage note |
 | The docs are in sync | The docs-sync ticket's checklist |
-| The bar | Every row, as phase 8's |
+| The bar | Every row at 200 enemies on the densest map of the Nave's sweep, with a screen open and the kept map standing; the transition's frame read in Chrome |
+
+---
+
+## Phase 11 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| A run survives a save and a resume | A spec saves, plays, saves, resumes, and finds run scope equal by the checksum's run-scope lists; clocks as ticks remaining |
+| Every run-scope field is saved or named with its reason | The typed save list fails the typecheck on an unlisted field |
+| Every earlier save still loads | A stored save of each format version under `tests/` loads through the migrations; an id content no longer has costs that item and says so |
+| A resumed run starts in town, and a log can begin from a save | The resume spec; a feedback file taken after a resume replays |
+| The stash, the start screen, and the death penalty | Their specs: the stash refused outside town and saved; a new run only after the confirmation; 10% of carried gold lost on death, a tunable |
+| Every enemy cast is heard as its cast point begins | A content test that every enemy ability id is in the sound list; the adapter's spec with no allocation in steady state |
+| The maintainer has played the first stratum to the Gaolmaster's kill across at least two sittings, each log replays from its save, and the feedback is triaged | The stored logs and their specs; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, as phase 10's, with sound on |
+
+---
+
+## Phase 12 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| Strata 2 and 3 hold the families the descent's table names | Content tests hold the Undercroft's seven at I, the Nave's six at II and III, and the leech and the bolter at I to the designer's tables |
+| Aspects are data | Each aspect's spec; a check that no rule branches on an aspect's id; the status table's fill under its capacity for the worst boss with two aspects |
+| Mana burn and the on-death hook | `mana_burn`'s spec, the shortfall dealt as magical damage; Burning's hook resolving a death it causes on the next tick |
+| Every family has a silhouette | A content test; world draw calls unchanged; the bench |
+| Items reach level 30 | The catalogue's tables held to the files; every rarity at its weight over rolls |
+| The Hollow Abbess and Marrowleech, each with its piece | Their specs |
+| Strata 2 and 3 are walked | The driver's sweeps reach about level 21 by map 30; each recipe's stress case with no refusal |
+| ADR 0021's bench is recorded | Its figures in the phase README |
+| The maintainer has played strata 2 and 3 from saves, the sessions replay, and the feedback is triaged | The stored logs and their specs; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, on the densest map of each new recipe's sweep |
+
+---
+
+## Phase 13 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| The catalogue reaches level 100 | The content test holds the catalogue's bases and affix tiers to the files; every rarity at its weight over rolls at item levels 10 to 100 |
+| Cooldown reduction from items stops at 40% | Its spec; the cap a tunable |
+| The hero's power keeps growing | The driver's rolls put the offence and defence index within the designer's band of the descent's section 8.1 at item levels 30, 50, 70, and 100 |
+| Earlier saves still load | A stored save of each earlier version loads |
+| The maintainer has read deep drops, and the feedback is triaged | The stored session and its spec; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, as phase 12's |
+
+---
+
+## Phase 14 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| The eight families do what the descent says | A spec per ability: the hook disjointed by a blink or a lift, bursts chained on the next tick and bounded, the mend's target, fear with the active-item keys working under it, a raise once each, the brood leaving with its nest, the blink away, the trail |
+| Fear has its disable-matrix row | One test per cell |
+| The live cap holds with nests and raises | Each recipe's stress case with no refusal; the zone pool with no miss on the worst Mirrorhalls map |
+| The four stratum bosses, each with its piece | Their specs |
+| Strata 4 to 7 are walked | The driver's sweeps, the hero at about level 25 by map 50 |
+| The maintainer has played strata 4 to 7 from saves, the sessions replay, and the feedback is triaged | The stored logs and their specs; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, on the densest map of each new recipe's sweep |
+
+---
+
+## Phase 15 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| The damage function's source point changed nothing | Every stored log's checksum unchanged by its ticket |
+| The six families do what the descent says | A spec per ability: mute, thorns, the tether's stun on leaving, the silence field, splits joining the pack, the shield by angle |
+| Mute and the tether have their disable-matrix rows | One test per cell |
+| The live cap holds with splits at their worst | The Pit's stress case with no refusal |
+| The Unwound casts four sets by its health, and the run is won | Its spec; the won run saved and resumed |
+| The descent is walked to its bottom | The driver from the town to the Unwound's kill on a sweep, the hero at about level 30 near map 100 |
+| The maintainer has played strata 8 to 10 and the Unwound from saves, the sessions replay, and the feedback is triaged | The stored logs and their specs; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, on the densest map of each new recipe's sweep and in the Unwound's chamber |
+
+---
+
+## Phase 16 gate
+
+Added 2026-09-28 as an outline.
+
+| Row | Holds when |
+| --- | --- |
+| Every family, boss, floor, obstacle, and the hero has its frames | The content test |
+| Tall art sorts, occludes, and picks by its sprite | Their specs |
+| The simulation did not change | No diff under `src/domain/` or `src/simulation/` across the phase; every stored log's checksum unchanged |
+| Each stratum's page holds the budget | `pnpm bench` on each page by an agent, under 5 world draw calls; ADR 0021's criteria |
+| Every sound on the list plays with nothing allocated | The adapter's spec; the allocation sampler |
+| The maintainer has played from saves, looking and listening, and the feedback is triaged | The stored logs; the triage note |
+| The docs are in sync | The docs-sync ticket's checklist |
+| The bar | Every row, on each stratum's densest map with its page loaded |

@@ -39,15 +39,20 @@ When two people call the same thing different names, the names leak into the cod
 | The name drawn over a ground item in its rarity's tint | **Label** | Nameplate, tag, tooltip (that is the screen's) |
 | The box beside the pointer over an item, on a screen or a label: its name, rarity, base, item level, level requirement, stat lines, and price while the store is open | **Tooltip** | Popup, hover card, label (that is the ground's) |
 | The order that walks the hero to an item and takes it; gold and globes are taken by walking, with no order | **Pick up** (`pick_up` in code) | Loot, grab, collect |
-| Where the hero buys and sells items, opened from a checkpoint's ring | **Store** | Shop, vendor, merchant, town |
+| Where the hero buys and sells items, opened from a checkpoint's ring on the long road or in town | **Store** | Shop, vendor, merchant, town (that is where it stands) |
 | The items one checkpoint's store holds for sale, rolled the first time it opens and never restocked | **Stock** | Wares, goods, inventory (that is the hero's) |
 | A base's worth in gold; what the store asks for an item, its value times its rarity's price multiplier; and what it pays, a quarter of that | **Value**, **price**, **sell price** | Cost, buy price, sell value |
 | An item with a power the hero uses through the cast pipeline; using it is to **activate** it | **Active item** | Usable, consumable, item active, use (that is in the "not" column of throw) |
+| The six places active items are held in, one to each of T, X, V, C, G, and Space | **Bank** | Belt, hotbar, quickbar, active slots (a slot is D or F) |
 | The game | **Helix** | Skein (that is the hero's kit, not the product) |
 | Any actor in the world, friendly or hostile | **Unit** | Actor, mob, creature, entity as a game word |
 | A hostile unit | **Enemy** | Monster, mob, creep, NPC |
 | A kind of enemy, as a definition | **Archetype** | Type, class, race |
+| The archetypes that pose one problem with one behaviour, body, and kit, stronger deeper down | **Family** | Species, line, group, clan |
+| One archetype of a family, numbered I to IV by the depth it stands at | **Variant** | Rank, tier (that is normal, elite, or boss), level, version |
 | Normal, elite, or boss | **Tier** | Rank, rarity |
+| A named modifier an elite or boss pack of the descent rolls and all its members share, such as Swift or Stoneskin | **Aspect** | Affix (that is an item's), modifier (that is a stat pipeline row), champion, trait |
+| The one boss of a stratum's tenth map, an archetype of its own whose death opens the portal down | **Stratum boss** | Act boss, unique, raid boss |
 | A group of enemies that share aggro | **Pack** | Group, squad, wave, camp |
 | A map's pack written to be held as spawn data, costing no unit, until the hero nears | **Dormant**; a pack placed at load is **live** | Despawned, culled, frozen, inactive |
 | Where a map's pack stands now: held as spawn data, placed as units, due to be placed once there is room, or killed to the last member. It **wakes** as the hero nears and **sleeps** again once left behind at rest | **Asleep**, **awake**, **waiting**, **dead** | Dormancy (dormant is how a pack is written), active, spawned |
@@ -73,6 +78,12 @@ When two people call the same thing different names, the names leak into the cod
 | What raises every magical hit a unit deals, as a fraction of the hit, before the target's resistance | **Magic damage** (`magic_damage` in code) | Spell damage, spell amplification |
 | A lasting condition on a unit | **Status** | Buff, debuff, modifier, effect (see below) |
 | A status that blocks something: stun, silence, root, disarm, lift | **Disable** | Crowd control, CC |
+| Removing statuses before they end; only Gyre Sceptre's self-lift does it, to what enemies put on the hero | **Dispel** | Purge, cleanse |
+| A projectile aimed at a unit losing it, because the unit blinked or was lifted; it flies on to where the unit stood and ends on nothing | **Disjoint** | Dodge (that is being elsewhere when a point-aimed thing lands), evade, miss |
+| The hero lifted by its own Gyre Sceptre: invulnerable, shedding what enemies put on it, and free to press orbs and invoke | **Self-lift** | Cyclone, self-cast lift (the lift an enemy wears is plain lift) |
+| A status that drains mana every tick and deals what it cannot take as magical damage | **Mana burn** (`mana_burn` in code) | Mana drain, mana leak, Siphon (that is the hero's spell) |
+| Veilblade's status: immune to physical damage, unable to attack, and taking more magical damage | **Ethereal** | Ghost, phased, banished |
+| An ability that holds its caster for a time before it acts, ended at no cost by any order, orb press, or throw: the town portal | **Channel** | Cast time (that is the cast point), charge (that is an enemy's rush) |
 | What a status does when its unit takes or deals damage, an effect list on the definition | **Damage hook** | Trigger, proc, on-hit |
 | A status a unit holds from spawn until it dies because its definition lists it: a bash, a frost attack | **Carried status** | Aura, trait, innate ability (a passive is what an orb instance carries) |
 | Every status against every key, order, cast point, and cursor, one answer per cell | **Disable matrix** | CC table, block list |
@@ -96,7 +107,14 @@ When two people call the same thing different names, the names leak into the cod
 | The hand-authored playtest map the hero walks from level 1 | **The long road** | Campaign, the playtest map, level |
 | A stretch of a map between two chokes, or between a choke and the map's end, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |
 | A wall across the whole width of a map with one opening, where a crowd presses the hero | **Choke** | Gate, bottleneck, chokepoint |
-| A point on a map the hero comes back to after dying: the furthest one it has reached | **Checkpoint** | Save point, waypoint, respawn point, bonfire |
+| A point on a map the hero comes back to after dying: the furthest one it has reached. On a map of the descent, its arrival point and its waypoint | **Checkpoint** | Save point, respawn point, bonfire, waypoint (that is for travel, though it is also a checkpoint) |
+| The run of about a hundred generated maps below the town, each one map level deeper, to the last map at the bottom | **The descent** | Dungeon, campaign, act |
+| Ten maps of the descent that share a look and a roster and end in a stratum boss | **Stratum** (plural strata) | Act, floor, biome, zone (that is a spell's), region (that is a stretch of one map) |
+| Where the hero comes into a map of the descent through the portal above | **Arrival point** | Entrance, spawn (that is the long road's and the arena's), start |
+| The way out of a map into the next one down | **Portal** | Exit, stairs, door, gate (a choke is not one) |
+| The one place on each map the hero can travel from to any other it has reached | **Waypoint** | Teleporter, fast travel, checkpoint (that is where the hero comes back) |
+| A portal the hero opens where it stands, to town, which takes it back to the same spot | **Town portal** | Recall, scroll, hearthstone |
+| The map above the descent with no enemies in it, where the store stands | **Town** | Hub, base, camp (that is in the pack's "not" column) |
 | State that lives for the whole session: hero, tunables, seed | **Run scope** | Global state, session |
 | State that lives for one map: enemies, projectiles, zones | **Map scope** | Level state |
 | The working memory the rules write and read within a call, which the world owns and no tick leaves anything in | **Scratch** | Temp, buffer pool, cache (a cache is read on a later tick, so it is state) |

@@ -1,6 +1,6 @@
 # Implementation plan
 
-**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; loot and the store in sprint files and active items sketched, added 2026-09-26, loot re-cut 2026-09-27; phase 7, the foundation, inserted before loot on 2026-09-27 in sprint files, which renumbered loot to phase 8 and active items to phase 9
+**Written:** 2026-09-20 · **Author:** delivery strategist role · **Covers:** repository bootstrap through the end of roadmap phase 6, added 2026-09-26; loot and the store in sprint files and active items sketched, added 2026-09-26, loot re-cut 2026-09-27; phase 7, the foundation, inserted before loot on 2026-09-27 in sprint files, which renumbered loot to phase 8 and active items to phase 9; phases 10 to 16, the descent, sketched on 2026-09-28 with phase 9 re-sized, approved by the maintainer the same day, and phase 9 then cut into sprint files
 **Status of this document:** a dated plan. It captures a moment. The `docs/` pages describe the target; this folder describes the order and cost of reaching it.
 
 ---
@@ -50,13 +50,17 @@ Each ticket has a `Status` row: `planned`, `in progress`, `done`, `cut`. The eng
 | Layer | the folders it touches |
 | Size | days |
 | Depends on | ticket IDs, or none |
+| Owner | the role that does it: the game engineer, the engineering architect, the game designer, or the delivery strategist |
 | Status | planned |
 
 **Build:** what exists when this is done.
-**Acceptance:** the observable outcome, as bullets an engineer can check.
+**Acceptance:** the observable outcome, as bullets an engineer can check, ending with "It plays:" (what a person or the driver sees in the build) and "The bar:" (the rows of the bar the ticket can move, and how they are read).
 **Tests:** the specs to add, by path, and what each asserts.
+**Pages:** the pages under `docs/` the ticket updates or checks.
 **Definition of done:** which sections of `docs/workflows/definition-of-done.md` apply.
 ```
+
+The Owner row, the Pages line, and the two closing acceptance bullets were added on 2026-09-28 and are in every ticket from phase 9 on; earlier tickets keep their shape.
 
 ### Layers
 
@@ -108,7 +112,14 @@ implementation/
 ├── phase-6-the-long-road/             # Sprints 25–30
 ├── phase-7-the-foundation/            # Sprints 45–50, run before phase 8
 ├── phase-8-loot-and-the-store/        # Sprints 31–38, with 39 run first and 40 run after 33
-├── phase-9-active-items/              # Sprints 41–44, sketched in its README until phase 8's gate holds
+├── phase-9-active-items/              # Sprints 41–44 and 51–53
+├── phase-10-the-first-stratum/        # Sprints 54–65, sketched
+├── phase-11-saves/                    # Sprints 66–71, sketched
+├── phase-12-the-undercroft-and-the-ossuary/  # Sprints 72–80, sketched
+├── phase-13-loot-at-depth/            # Sprints 81–85, sketched
+├── phase-14-strata-4-to-7/            # Sprints 86–95, sketched
+├── phase-15-strata-8-to-10-and-the-last-boss/  # Sprints 96–103, sketched
+├── phase-16-art-and-audio/            # Sprints 104–110, sketched
 └── backlog/
     ├── deferred.md                    # Cut items, the phase they were cut from, the door they wait behind, and those a phase has taken
     └── open-questions.md              # Decisions still needed, each with a proposed answer
