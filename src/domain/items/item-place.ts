@@ -1,0 +1,53 @@
+import {
+  INVENTORY_COLUMNS,
+  INVENTORY_ROWS,
+} from "../definitions/item-base-def";
+
+/**
+ * A place an item may be, as one small integer: a cell of the inventory, an armory slot, a
+ * slot of a store's stock, or a slot of the bank, each in a range of its own. A command names
+ * a place, and an event and a refusal carry one, so the screen can find the item.
+ */
+
+/** No place: the neutral value of an event's place. */
+export const NO_PLACE = -1;
+
+/** The inventory's cells, counted from zero left to right, then top to bottom. */
+export const INVENTORY_CELL_COUNT = INVENTORY_COLUMNS * INVENTORY_ROWS;
+
+/** The armory's ten slots: a slot for each armory slot kind, and two for rings. */
+export const ARMORY_SLOT_COUNT = 10;
+
+/** Where each range of places begins. A cell's place is the cell itself. */
+export const ARMORY_PLACE_BASE = 100;
+export const STOCK_PLACE_BASE = 200;
+export const BANK_PLACE_BASE = 300;
+
+/** The bank's slots, places 300 to 305. */
+export const BANK_SLOT_COUNT = 6;
+
+/** Whether `cell` is a cell of the inventory: a whole number from zero to one short of the cell count. */
+export const isInventoryCell = (cell: number): boolean =>
+  Number.isInteger(cell) && cell >= 0 && cell < INVENTORY_CELL_COUNT;
+
+/** Whether `slot` is one of the armory's ten slots, counted from zero. */
+export const isArmorySlotIndex = (slot: number): boolean =>
+  Number.isInteger(slot) && slot >= 0 && slot < ARMORY_SLOT_COUNT;
+
+/** The place of armory slot `slot`. */
+export const armoryPlace = (slot: number): number => ARMORY_PLACE_BASE + slot;
+
+/** Whether `place` is an armory slot's. */
+export const isArmoryPlace = (place: number): boolean =>
+  isArmorySlotIndex(place - ARMORY_PLACE_BASE);
+
+/** The armory slot `place` names, for a place `isArmoryPlace` accepts. */
+export const armorySlotOfPlace = (place: number): number =>
+  place - ARMORY_PLACE_BASE;
+
+/** The column of the inventory `cell` lies in. */
+export const cellColumn = (cell: number): number => cell % INVENTORY_COLUMNS;
+
+/** The row of the inventory `cell` lies in. */
+export const cellRow = (cell: number): number =>
+  Math.floor(cell / INVENTORY_COLUMNS);

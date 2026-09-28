@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { heroDef } from "@content/public";
+import { contentRegistry, heroDef } from "@content/public";
+import { recordAt } from "@domain/queries";
+import { createItem, loadMap, placeItem } from "@domain/rules";
 import type { Simulation } from "@simulation/testing";
 import {
   idOf,
   makeFormDef,
+  makeMapDef,
   makeRegistry,
   makeWorld,
   spawnHero,
@@ -110,5 +113,48 @@ describe("the hero's forms", () => {
 
     expect(one.resources.health).toBe(1);
     expect(two.resources.health).toBe(300);
+  });
+
+  it("keeps the inventory, gold, and each form's armory across a map load, as it keeps the forms", () => {
+    const world = worldWithTwoForms();
+    const hero = spawnHero(world);
+    const [one, two] = world.state.run.forms;
+    const cap = contentRegistry.itemBases.find((base) => base.id === "cap");
+
+    if (one === undefined || two === undefined || cap === undefined) {
+      throw new Error("The hero has two forms and the content a cap");
+    }
+
+    const item = createItem();
+
+    item.baseId = cap.id;
+    item.rarityId = "common";
+    placeItem(world.state.run.inventory, item, cap.width, cap.height, 12);
+    world.state.run.gold = 250;
+    submit(world, {
+      kind: "equip_item",
+      tick: 0,
+      timestamp: 0,
+      cell: 12,
+      armorySlot: null,
+    });
+    world.tick();
+    placeItem(world.state.run.inventory, item, cap.width, cap.height, 12);
+    hero.activeFormIndex = 1;
+    world.tick();
+
+    const inventory = world.state.run.inventory;
+    const cells = [...inventory.cells];
+
+    loadMap(world.state, makeMapDef.build({ id: "second_map" }));
+    world.tick();
+
+    expect(world.view.map.mapId).toBe("second_map");
+    expect(world.state.run.inventory).toBe(inventory);
+    expect([...inventory.cells]).toEqual(cells);
+    expect(inventory.placed[recordAt(inventory, 12)]?.item.baseId).toBe("cap");
+    expect(world.view.run.gold).toBe(250);
+    expect(one.armory.slots[0]?.baseId).toBe("cap");
+    expect(two.armory.slots.every((worn) => worn.baseId === null)).toBe(true);
   });
 });

@@ -145,6 +145,7 @@ const damageEvent = (
   amount,
   damageType,
   checkpoint: -1,
+  place: -1,
 });
 
 /** The labels showing something this frame. */

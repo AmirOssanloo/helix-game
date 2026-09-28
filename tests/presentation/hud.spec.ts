@@ -736,6 +736,7 @@ describe("refusal flashes", () => {
         amount: 0,
         damageType: null,
         checkpoint: -1,
+        place: -1,
       },
       arranged.view,
     );

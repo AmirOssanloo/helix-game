@@ -5,6 +5,7 @@ import type { EnemyTier } from "../definitions/enemy-def";
 import type { TuningKey } from "../definitions/tuning-def";
 import type { UnitId } from "../entities/unit";
 import type { Tick } from "../tick";
+import type { ItemCommand } from "./item-commands";
 
 /**
  * A player intent entering the simulation: one variant per intent, produced by the input
@@ -24,7 +25,8 @@ export type Command =
   | AttackTargetCommand
   | SlotCommand
   | CastCommand
-  | SpendSkillPointCommand;
+  | SpendSkillPointCommand
+  | ItemCommand;
 
 /** Proves the plumbing: ordered, consumed, and logged like any command, and changes nothing. */
 export type NoopCommand = Readonly<{

@@ -9,7 +9,7 @@ import type { Tick } from "../tick";
 /**
  * The fields every event carries, so a ring slot is one shape and a write copies values,
  * never objects. A kind reads the fields its docblock names; the rest hold their neutral
- * value: `-1` for an orb or a checkpoint, `0` for a slot or an amount, `null` for an id, a
+ * value: `-1` for an orb, a checkpoint, or a place, `0` for a slot or an amount, `null` for an id, a
  * reason, or a damage type.
  */
 type EventFields = {
@@ -37,6 +37,8 @@ type EventFields = {
   damageType: DamageType | null;
   /** A checkpoint's index in the loaded map's list, from 0. */
   checkpoint: number;
+  /** A place an item is or was: an inventory cell, an armory slot, a stock slot, or a bank slot, in the ranges `domain/items/item-place.ts` owns. */
+  place: number;
 };
 
 /**
@@ -60,7 +62,10 @@ export type DomainEvent =
   | ProjectileHitEvent
   | ProjectileExpiredEvent
   | CheckpointReachedEvent
-  | ItemDroppedEvent;
+  | ItemDroppedEvent
+  | ItemEquippedEvent
+  | ItemUnequippedEvent
+  | ItemMovedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -77,7 +82,7 @@ export type SlotsChangedEvent = EventFields & { kind: "slots_changed" };
 /** A cast of `abilityId` committed: its cast point ended, its mana is spent, its clock has started, and its effects ran. */
 export type CastCommittedEvent = EventFields & { kind: "cast_committed" };
 
-/** A player command was refused for `reason`; `slot` names the key when it was a slot key and `abilityId` the spell when it was a cast, so the view can flash the square. */
+/** A player command was refused for `reason`; `slot` names the key when it was a slot key, `abilityId` the spell when it was a cast, and `place` the place an item command named, so the view can flash the square or the item. */
 export type CommandRefusedEvent = EventFields & { kind: "command_refused" };
 
 /** `unitId` took `amount` of `damageType` from `sourceId`: the amount that landed after mitigation, which is the number a view shows, even where the health it removed was less. */
@@ -116,8 +121,17 @@ export type CheckpointReachedEvent = EventFields & {
   kind: "checkpoint_reached";
 };
 
-/** `groundItemId` fell to the ground where `unitId` died, and lies there from this tick; `amount` is a pile's gold, and zero for a globe or an item. */
+/** `groundItemId` fell to the ground where `unitId` died or from the hero `unitId` dropped it, and lies there from this tick; `amount` is a pile's gold, and zero for a globe or an item. */
 export type ItemDroppedEvent = EventFields & { kind: "item_dropped" };
+
+/** The hero `unitId` put on an item, now worn in the armory slot at `place`. */
+export type ItemEquippedEvent = EventFields & { kind: "item_equipped" };
+
+/** An item the hero `unitId` wore went back to the inventory, its corner on the cell at `place`: taken off, or put back by an equip into its slot. */
+export type ItemUnequippedEvent = EventFields & { kind: "item_unequipped" };
+
+/** An item of the hero `unitId`'s inventory moved, its corner now on the cell at `place`. A swap announces one for each item. */
+export type ItemMovedEvent = EventFields & { kind: "item_moved" };
 
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
@@ -144,6 +158,7 @@ export const createDomainEvent = (): EventSlot => ({
   amount: 0,
   damageType: null,
   checkpoint: -1,
+  place: -1,
 });
 
 /** Writes `source`'s fields into `target`, so the ring stores an event without allocating. */
@@ -166,6 +181,7 @@ export const copyDomainEvent = (
   target.amount = source.amount;
   target.damageType = source.damageType;
   target.checkpoint = source.checkpoint;
+  target.place = source.place;
 };
 
 /** Puts every field back to its neutral value, so an announcer that fills only what its kind needs never carries the last event's fields. */
@@ -185,4 +201,5 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.amount = 0;
   event.damageType = null;
   event.checkpoint = -1;
+  event.place = -1;
 };

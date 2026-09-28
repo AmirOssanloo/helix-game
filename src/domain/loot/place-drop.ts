@@ -86,27 +86,19 @@ const announceDropped = (
 };
 
 /**
- * Makes one ground item of `kind` on the first free cell near `origin`, a pile of `amount`
- * gold or a copy of `item`, and announces it. With no free cell, or no slot in the pool, the
- * drop is not made and is counted in map scope's drops not made.
+ * Makes one ground item of `kind` on the free cell `cell`, a pile of `amount` gold or a copy of
+ * `item`, and announces it. With no slot in the pool, the drop is not made and is counted in
+ * map scope's drops not made; returns whether it was made.
  */
-const placeOne = (
+const makeOnCell = (
   world: World,
-  origin: Readonly<Vec2>,
+  cell: number,
   unitId: UnitId,
   kind: GroundItemKind,
   amount: number,
   item: Readonly<Item> | null,
-): void => {
+): boolean => {
   const scope = world.map;
-  const cell = findDropCell(world, origin);
-
-  if (cell === -1) {
-    scope.dropsNotMade += 1;
-
-    return;
-  }
-
   const grid = scope.walkability;
   const id = acquireGroundItem(
     world,
@@ -116,7 +108,7 @@ const placeOne = (
   );
 
   if (id === null) {
-    return;
+    return false;
   }
 
   const groundItem = scope.groundItems.resolve(id);
@@ -129,6 +121,55 @@ const placeOne = (
   }
 
   announceDropped(world, id, unitId, amount);
+
+  return true;
+};
+
+/**
+ * Makes one ground item of `kind` on the first free cell near `origin`, a pile of `amount`
+ * gold or a copy of `item`, and announces it. With no free cell, or no slot in the pool, the
+ * drop is not made and is counted in map scope's drops not made.
+ */
+const placeOne = (
+  world: World,
+  origin: Readonly<Vec2>,
+  unitId: UnitId,
+  kind: GroundItemKind,
+  amount: number,
+  item: Readonly<Item> | null,
+): void => {
+  const cell = findDropCell(world, origin);
+
+  if (cell === -1) {
+    world.map.dropsNotMade += 1;
+
+    return;
+  }
+
+  makeOnCell(world, cell, unitId, kind, amount, item);
+};
+
+/**
+ * Puts a copy of `item`, which `unitId` holds, on the ground on the free cell nearest
+ * `origin`, and announces it, as a death's drop lies. Returns whether it was made: with no
+ * slot in the pool or no free cell, nothing is made and nothing is counted, since the one
+ * holding it keeps it.
+ */
+export const dropHeldItem = (
+  world: World,
+  origin: Readonly<Vec2>,
+  unitId: UnitId,
+  item: Readonly<Item>,
+): boolean => {
+  const pool = world.map.groundItems;
+
+  if (pool.count >= pool.capacity) {
+    return false;
+  }
+
+  const cell = findDropCell(world, origin);
+
+  return cell !== -1 && makeOnCell(world, cell, unitId, "item", 0, item);
 };
 
 /** Places every rolled item of `rarity`, in the order they were rolled. */

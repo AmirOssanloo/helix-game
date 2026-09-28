@@ -57,6 +57,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "cancelled",
       attackMove: "cancelled",
       stop: "refused",
+      items: "allowed",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -77,6 +78,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "closed",
       attackMoveCursor: "continues",
@@ -97,6 +99,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "cancelled",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -117,6 +120,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "refused",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -137,6 +141,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -157,6 +162,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -177,6 +183,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -197,6 +204,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "refused",
       attackMove: "refused",
       stop: "refused",
+      items: "allowed",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -217,6 +225,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackTarget: "allowed",
       attackMove: "allowed",
       stop: "allowed",
+      items: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -236,6 +245,7 @@ const COLUMNS: readonly DisableColumn[] = [
   "attackTarget",
   "attackMove",
   "stop",
+  "items",
   "castPoint",
   "targetingCursor",
   "attackMoveCursor",
@@ -316,6 +326,8 @@ const commandFor = (column: CommandColumn, enemyId: UnitId): Command => {
       return { kind: "attack_move", ...stamp, destination: { x: FAR, y: FAR } };
     case "attackTarget":
       return { kind: "attack_target", ...stamp, targetId: enemyId };
+    case "items":
+      return { kind: "move_item", ...stamp, from: 0, to: 1 };
     default:
       return { kind: "stop", ...stamp };
   }
@@ -429,8 +441,8 @@ describe.each(EXPECTED)("the disable matrix under $name", (row) => {
 });
 
 describe("the disable matrix", () => {
-  it("is exercised in every cell: nine rows of thirteen", () => {
-    expect(EXPECTED.length * COLUMNS.length).toBe(117);
+  it("is exercised in every cell: nine rows of fourteen", () => {
+    expect(EXPECTED.length * COLUMNS.length).toBe(126);
   });
 
   it("answers two rows worn at once with the stricter: a rooted and silenced hero is refused Q through F and cancelled on a move", () => {

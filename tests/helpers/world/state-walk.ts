@@ -5,6 +5,7 @@ import {
   acquireProjectile,
   acquireUnit,
   acquireZone,
+  placeItem,
 } from "@domain/rules";
 import type { Leaf, LeafKind, Simulation } from "@simulation/testing";
 import { createSessionWorld } from "@simulation/testing";
@@ -43,8 +44,9 @@ const first = <T>(list: readonly T[], what: string): T => {
 /**
  * A session world on the arena with a live slot in every pool, a pack record, and every list
  * the state hashes holding at least one live entry: the hero walking a one-point path with a
- * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, an effect, and
- * a ground item holding an item with a line.
+ * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, an effect, a
+ * ground item holding an item with a line, and a copy of that item in the inventory and worn
+ * in the first form's first armory slot, with gold.
  * The same every call, so two arranged worlds agree until one is changed.
  */
 export const arrangeEveryRecord = (): Simulation => {
@@ -113,6 +115,25 @@ export const arrangeEveryRecord = (): Simulation => {
   groundItem.item.lineCount = 1;
   implicit.sourceId = "cap";
   implicit.value = 1;
+  placeItem(world.run.inventory, groundItem.item, 1, 1, 0);
+
+  const worn = form.armory.slots[0];
+
+  if (worn === undefined) {
+    throw new Error("An armory has a first slot");
+  }
+
+  worn.baseId = groundItem.item.baseId;
+  worn.lineCount = 1;
+
+  const wornLine = worn.lines[0];
+
+  if (wornLine !== undefined) {
+    wornLine.sourceId = "cap";
+    wornLine.value = 1;
+  }
+
+  world.run.gold = 1;
   world.map.packs.push({
     def: first(longRoadDef.packs, "a pack on the long road"),
     state: "asleep",

@@ -23,7 +23,7 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 | Layer | domain, simulation, content, tests, docs |
 | Size | 2 |
 | Depends on | P8-S32-T01, P8-S32-T03 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** the disable-matrix column is hidden work the brief's 1.5 did not name; it fits because the column reads one value in every row.
 
@@ -36,6 +36,8 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 > **Note, 2026-09-28, from P8-S32-T01:** `src/domain/items/item.ts` exists: the item value with its create, clear, and copy, which the ground item holds inline. This ticket extends it rather than making it.
 
 **Build:** run scope holds the hero's gold, an inventory of 10 by 4 cells in which each item takes the width and height in cells its base gives (Q88), and the armory's ten slots on each form record, whose `armory` field stops being `null`; all in `src/domain/items/` (`item.ts`, `item-place.ts`, `inventory.ts`, `armory.ts`). The inventory is 40 cell entries, each naming the placed record covering it or none, and 40 placed records, each an item, whether it is live, its corner, and the size copied from its base, all made with the world. An item placed without a cell named goes to the first place it fits, trying each cell as a corner left to right, then top to bottom; a command may name the cell. The commands `equip_item` (a cell, and an armory slot or `null`), `unequip_item` (an armory slot), `drop_item` (a cell), and `move_item` (a cell, and the cell its corner goes to), each under [ADR 0004](../../../../docs/adr/0004-all-mutation-enters-as-commands.md), recorded in the log and replayed, their variants in `src/domain/commands/item-commands.ts`, their shape checks in `src/domain/items/item-validation.ts`, and their application in `src/domain/items/item-commands.ts`, dispatched by the command system. The named refusals are the brief's section 4.1: `invalid_place`, `no_item_at_place`, `wrong_armory_slot`, `requirement_not_met`, `no_room`, and `dead`. Equipping into a worn slot swaps the worn item into its first fit once the new one has left its cells, and is refused if it has none. A `move_item` onto exactly one item swaps them, the covered one to its first fit, and is refused if it has none; onto two or more, refused. A ring goes to the empty ring slot, or to the one the command names. Dropping puts a ground item on the free cell nearest the hero's feet through `placeDrops` (P8-S32-T02), refused `no_room` when there is none. The fit test and the first fit read cells only and allocate nothing, and are exported through `domain/queries.ts` for the screen. Each command announces its event from the brief's section 4.2, and the event record gains `place`; a refusal names the place. The armory commands act under every disable and are refused while the hero is dead (Q91): the [disable matrix](../../../../docs/product/specs/disable-matrix.md) gains a column for them, `items`, which the store commands of P8-S36-T02 share, one answer per status, in the page and in `src/content/statuses/disable-matrix.ts`. The armory's stats are P8-S34-T01's; here an equipped item is only held. The [commands and events](../../../../docs/architecture/commands-and-events.md) page, the world model's run-scope rows, and the items and loot page state it.
+
+> **Note, 2026-09-28, at close:** the drop goes through `dropHeldItem` in `src/domain/loot/place-drop.ts`, beside `placeDrops` and sharing its cell search and its placing, not through `placeDrops` itself: a refused drop must change nothing, and `placeDrops` counts a drop it cannot make.
 
 **Acceptance:**
 - Equip, unequip, move, and drop each change run scope as stated, land in the log, and replay.
@@ -121,11 +123,11 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 
 | Check | Result |
 | --- | --- |
-| The armory commands in the log and on replay; items placed by size; the disable-matrix column | |
+| The armory commands in the log and on replay; items placed by size; the disable-matrix column | Yes: `equip_item`, `unequip_item`, `move_item`, and `drop_item` land in the input log and a session of them replays to a world the full-state comparison finds equal, and each of the fifteen refusals names its reason and place and changes nothing (`tests/simulation/items/armory-commands.spec.ts`). A 2 by 3 item fits only where six free cells make that shape; the first fit tries corners in reading order; a swap or an equip whose displaced item fits nowhere is refused with nothing moved; a ring goes to the empty ring slot; the fit test and the first fit allocate nothing (`tests/domain/items/inventory.spec.ts`). The `items` column answers allowed in every row, one test per cell (`tests/domain/orders/disable-matrix.spec.ts`); a dead hero is refused all four. The inventory, gold, and each armory survive a map load (`tests/simulation/hero/forms.spec.ts`). The inventory, the armory, and gold enter the state checksum; the disable matrix's new column moved the content version, so the six logs were re-stamped and their checksums recorded again with `pnpm restamp --checksums`; nothing they record holds an item |
 | Gold and globes taken on walk-over; items left on the ground | |
 | Labels and Alt, no miss with the pool full | |
 | The render benchmark and the densest choke with drops, by an agent in Chrome | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 (sized 2) |
 | Sprint total | |
 
 ## Risks in this sprint

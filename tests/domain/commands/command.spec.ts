@@ -15,6 +15,10 @@ const PLAYER_COMMAND_KINDS: Readonly<Record<Command["kind"], true>> = {
   slot: true,
   cast: true,
   spend_skill_point: true,
+  equip_item: true,
+  unequip_item: true,
+  move_item: true,
+  drop_item: true,
 };
 
 describe("DEBUG_COMMAND_KINDS", () => {

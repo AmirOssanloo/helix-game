@@ -3,6 +3,7 @@ import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
 import type { AnyCommand, Command } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
+import { isItemCommand } from "../commands/item-commands";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
 import { isDefinitionKey } from "../definitions/definition-keys";
@@ -12,6 +13,8 @@ import { resolveHero } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
+import { applyItemCommand, placeOfItemCommand } from "../items/item-commands";
+import { NO_PLACE } from "../items/item-place";
 import { applySkillPoint, applySlotKey } from "../kits/slot-key";
 import { resolveDestinationFor } from "../pathing/destination";
 import {
@@ -24,7 +27,7 @@ import {
 import type { RefusalReason } from "./validator";
 import { validateCommand, validateDebugCommand } from "./validator";
 
-/** Announces that `command` was refused for `reason`, naming the slot key or the spell when it had one so the view can flash the square. */
+/** Announces that `command` was refused for `reason`, naming the slot key, the spell, or the item's place when it had one so the view can flash the square or the item. */
 const announceRefusal = (
   world: World,
   command: AnyCommand,
@@ -37,6 +40,9 @@ const announceRefusal = (
   refused.tick = world.tick;
   refused.slot = slotOf(command) ?? 0;
   refused.abilityId = command.kind === "cast" ? command.abilityId : null;
+  refused.place = isItemCommand(command)
+    ? placeOfItemCommand(command)
+    : NO_PLACE;
   refused.reason = reason;
   world.events.write(refused);
 };
@@ -61,8 +67,8 @@ const resolveFor = (
 /**
  * Writes one validated player command onto the hero. The order commands replace the current
  * order through the state machine, with a destination resolved to a legal point first. A
- * slot key and a skill-point spend go to the active form's kit and a cast to the cast
- * pipeline's request stage; any of them may still refuse it, and the reason comes back for
+ * slot key and a skill-point spend go to the active form's kit, a cast to the cast
+ * pipeline's request stage, and an item command to the inventory and the armory; any of them may still refuse it, and the reason comes back for
  * the caller to announce. A slot key that applied while the hero was channeling ends the
  * channel: an orb press and an invoke interrupt one, and a cast has already replaced it.
  * The no-op is dropped by definition.
@@ -130,6 +136,12 @@ const applyCommand = (
 
     case "spend_skill_point":
       return applySkillPoint(world, hero, command.slot);
+
+    case "equip_item":
+    case "unequip_item":
+    case "move_item":
+    case "drop_item":
+      return applyItemCommand(world, hero, command);
 
     case "noop":
       break;

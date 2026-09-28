@@ -17,7 +17,7 @@
 
 ## 1. Purpose
 
-This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
+This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, the item commands, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
 
 The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell. Its rows run in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by, stun and lift first, where the table here keeps lift beside the other rows that move a unit. One test per cell holds the two together, so a changed cell is a change to both.
 
@@ -50,6 +50,7 @@ The ten key and order columns answer refused, allowed, or cancelled. The cast po
 | Attack-target | An attack on one unit, by right click on an enemy, or an enemy's attack on the hero |
 | Attack-move | A move that attacks whatever it acquires on the way |
 | Stop | S: clear the order and cancel a cast point that has not finished |
+| Items | Equipping, unequipping, moving, and dropping an item, and the store's commands: none of them is an action of the unit's body (15) |
 | Cast point in progress | A cast already under way when the status lands: turning to face, walking into range, or in its cast point. A cast past its cast point is committed, and no status reaches it |
 | Targeting cursor open | The hero's cursor for a targeted spell in D or F, including a press held on a spell aimed by press and drag |
 | Attack-move cursor open | The hero's cursor after A, waiting for the left click |
@@ -76,17 +77,17 @@ When two rows refuse one command, the refusal names the reason of the first in t
 
 A number in brackets points at a note in [section 4](#4-notes).
 
-| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Cast point in progress | Targeting cursor open | Attack-move cursor open |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | cancelled | closed | closed |
-| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed | allowed | allowed | allowed | continues (2) | closed | continues |
-| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | cancelled (4) | allowed (5) | cancelled (4) | allowed | continues (6) | continues | continues (7) |
-| Disarm | `disarm` | `disarmed` | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | continues | continues | continues |
-| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Damage over time | `burn`, `glacier_chill` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | continues (12) | continues | continues |
-| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | cancelled | closed | closed |
-| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Items | Cast point in progress | Targeting cursor open | Attack-move cursor open |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | allowed | cancelled | closed | closed |
+| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed | allowed | allowed | allowed | allowed | continues (2) | closed | continues |
+| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | cancelled (4) | allowed (5) | cancelled (4) | allowed | allowed | continues (6) | continues | continues (7) |
+| Disarm | `disarm` | `disarmed` | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | allowed | continues | continues | continues |
+| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Damage over time | `burn`, `glacier_chill` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | allowed | continues (12) | continues | continues |
+| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | cancelled | closed | closed |
+| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
 
 A death is not a status and is not a row: a dead unit refuses every command until it respawns, and every cursor closes when the hero dies. A skill point is not a column: no status refuses spending one, since a level is not an action the unit takes.
 
@@ -108,6 +109,7 @@ A death is not a status and is not a row: a dead unit refuses every command unti
 12. **Knockback and a cast under way.** The cast point keeps counting while the unit is carried, and the cast commits from wherever the push has it on the tick the point ends. A cast still walking into range waits for the push to end, then walks on.
 13. **Lift and an order.** A new order is refused, as under stun. An order running when the lift lands is neither cancelled nor kept running: it is put aside, and the unit takes it up again from where it lands. A cast is not put aside; the cast point column cancels it.
 14. **Lift and Stop.** Refused, as under stun, so a stop in the air does not drop the order put aside; the unit walks it on landing.
+15. **Items under every status.** The hero may equip, unequip, move, and drop an item, and use the store, stunned, silenced, rooted, disarmed, lifted, or knocked back: handling what it carries is not something a status stops. Only death refuses them.
 
 ---
 

@@ -19,7 +19,9 @@ import { ENEMY_LIVE_CAP, GROUND_ITEM_CAPACITY } from "@domain/queries";
 import {
   acquireGroundItem,
   createDomainEvent,
+  createItem,
   definitionFields,
+  placeItem,
 } from "@domain/rules";
 import { createRings } from "@instrumentation/public";
 import { Session } from "@simulation/testing";
@@ -818,6 +820,35 @@ describe("the developer panel", () => {
     arranged.handle.refresh();
 
     expect(readoutNamed(arranged.host, "Last drop")).toMatch(/^\d+ from \d+/);
+
+    arranged.handle.unmount();
+  });
+
+  it("shows the last item the hero equipped and the place it went to", () => {
+    const arranged = arrange();
+    const run = arranged.world.state.run;
+    const item = createItem();
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last item")).toBe("none");
+
+    item.baseId = "cap";
+    item.rarityId = "common";
+    placeItem(run.inventory, item, 2, 2, 0);
+    arranged.world.submit({
+      kind: "equip_item",
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+      cell: 0,
+      armorySlot: null,
+    });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last item")).toBe(
+      "item_equipped to 100",
+    );
 
     arranged.handle.unmount();
   });

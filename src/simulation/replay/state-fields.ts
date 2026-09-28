@@ -1,14 +1,17 @@
 import type {
+  Armory,
   DebugFlags,
   Effect,
   EffectDef,
   FormRecord,
   GroundItem,
+  Inventory,
   Item,
   ItemLine,
   KitState,
   MapScope,
   PackRecord,
+  PlacedItem,
   Projectile,
   RandomState,
   RunScope,
@@ -234,6 +237,39 @@ const ITEM_FIELDS = fieldsOf<DeepReadonly<Item>>({
   ),
 });
 
+const PLACED_ITEM_FIELDS = fieldsOf<DeepReadonly<PlacedItem>>({
+  item: record("item", (placed) => placed.item, ITEM_FIELDS),
+  live: flag("live", (placed) => placed.live),
+  corner: number("corner", (placed, into, at) => {
+    into[at] = placed.corner;
+  }),
+  width: number("width", (placed, into, at) => {
+    into[at] = placed.width;
+  }),
+  height: number("height", (placed, into, at) => {
+    into[at] = placed.height;
+  }),
+});
+
+const INVENTORY_FIELDS = fieldsOf<DeepReadonly<Inventory>>({
+  cells: bytes("cells", (inventory) => inventory.cells),
+  placed: records(
+    "placed",
+    (inventory) => inventory.placed.length,
+    (inventory, index) => itemAt(inventory.placed, index),
+    PLACED_ITEM_FIELDS,
+  ),
+});
+
+const ARMORY_FIELDS = fieldsOf<DeepReadonly<Armory>>({
+  slots: records(
+    "slots",
+    (armory) => armory.slots.length,
+    (armory, index) => itemAt(armory.slots, index),
+    ITEM_FIELDS,
+  ),
+});
+
 const GROUND_ITEM_FIELDS = fieldsOf<DeepReadonly<GroundItem>>({
   kind: text("kind", (groundItem) => groundItem.kind),
   position: record(
@@ -282,7 +318,7 @@ const FORM_FIELDS = fieldsOf<DeepReadonly<FormRecord>>({
   def: excluded(FROM_CONTENT),
   resources: record("resources", (form) => form.resources, RESOURCES_FIELDS),
   kit: record("kit", (form) => form.kit, KIT_FIELDS),
-  armory: excluded("always null: no item exists yet"),
+  armory: record("armory", (form) => form.armory, ARMORY_FIELDS),
 });
 
 const DEBUG_FIELDS = fieldsOf<DeepReadonly<DebugFlags>>({
@@ -309,6 +345,10 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
     (run, index) => itemAt(run.forms, index),
     FORM_FIELDS,
   ),
+  inventory: record("inventory", (run) => run.inventory, INVENTORY_FIELDS),
+  gold: number("gold", (run, into, at) => {
+    into[at] = run.gold;
+  }),
   spells: excluded(FROM_CONTENT),
   statuses: excluded(FROM_CONTENT),
   disableMatrix: excluded(FROM_CONTENT),

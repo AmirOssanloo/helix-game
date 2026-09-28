@@ -10,6 +10,8 @@ import { ENEMY_TIERS } from "../definitions/enemy-def";
 import type { TuningRefusal } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import { ORB_COUNT } from "../entities/world-state";
+import type { ItemRefusal } from "../items/item-commands";
+import { validateItemCommand } from "../items/item-validation";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/status.system";
 import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
@@ -21,7 +23,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * outside the six keys, a point that is not finite, an amount below zero, a damage type no
  * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
  * archetype spawns at, a checkpoint index that is not a whole number of none or more, a map
- * level that is not a whole number of one or more. The
+ * level that is not a whole number of one or more, a place outside the inventory's grid or the
+ * armory's ten slots. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -34,7 +37,10 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
  * free cells for the pack, the map has no checkpoint at the index a jump names, the content registers no map with the
  * id a map load names, a channel is
- * already running, or the status rule refused the application. A tuning change is refused
+ * already running, or the status rule refused the application. An item command is refused
+ * when it applies by the inventory and the armory: nothing lies at the place it names, the
+ * item cannot go in the armory slot named, the hero's level is below the item's requirement,
+ * or the item, or the one it puts back, fits nowhere. A tuning change is refused
  * when its value is not finite, its key is the fixed step rate, or no key of the table has it.
  */
 export type RefusalReason =
@@ -50,6 +56,7 @@ export type RefusalReason =
   | "invalid_tier"
   | "invalid_checkpoint"
   | "invalid_map_level"
+  | "invalid_place"
   | "orb_not_learned"
   | "buffer_not_full"
   | "no_spell_for_recipe"
@@ -69,6 +76,7 @@ export type RefusalReason =
   | SkillPointRefusal
   | LevelUpRefusal
   | "pool_full"
+  | ItemRefusal
   | "already_channeling"
   | StatusRefusal
   | TuningRefusal;
@@ -130,7 +138,8 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
  * invalid first. An attack point or a cast point in progress refuses nothing: the state
  * machine cancels it when the new order lands, with nothing spent. A skill-point spend is
  * refused by no disable, only by death and by a slot outside the six keys; a level is not
- * something the unit does, and has no column.
+ * something the unit does, and has no column. An item command reads the items column, which
+ * no status refuses, then the places it names.
  */
 export const validateCommand = (
   unit: Readonly<Unit>,
@@ -202,6 +211,15 @@ export const validateCommand = (
 
       return "ok";
     }
+
+    case "equip_item":
+    case "unequip_item":
+    case "move_item":
+    case "drop_item":
+      return (
+        refusalOf(matrix, unit.disables, "items") ??
+        validateItemCommand(command)
+      );
 
     case "noop":
       return "ok";

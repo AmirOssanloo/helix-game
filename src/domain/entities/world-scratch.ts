@@ -25,6 +25,8 @@ import type { HookScratch } from "../combat/damage-hooks";
 import { createHookScratch } from "../combat/damage-hooks";
 import type { EventSlot } from "../events/domain-event";
 import { createDomainEvent } from "../events/domain-event";
+import type { Item } from "../items/item";
+import { createItem } from "../items/item";
 import type { AbilityRequest } from "../kits/kit";
 import { createAbilityRequest } from "../kits/kit";
 import type { DropRoll } from "../loot/roll";
@@ -99,6 +101,8 @@ export type WorldScratch = {
   debugLanding: Vec2;
   /** What a death drops, rolled and then placed within the death's reward step. */
   drop: DropRoll;
+  /** An item held between leaving one record and entering another: the one an equip takes from the inventory while the worn item goes back there. */
+  heldItem: Item;
 };
 
 /** Every piece of scratch the rules use, each at its neutral value. Made once, with the world. */
@@ -128,4 +132,5 @@ export const createWorldScratch = (): WorldScratch => ({
   summons: createSummonScratch(),
   debugLanding: { x: 0, y: 0 },
   drop: createDropRoll(),
+  heldItem: createItem(),
 });

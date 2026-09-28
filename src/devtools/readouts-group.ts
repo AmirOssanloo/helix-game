@@ -74,7 +74,8 @@ const groundItemsText = (live: number, notMade: number): string =>
  * the loaded map's packs are awake, asleep, and waiting from the view and, from the event ring read with `reader`, the panel's own cursor, the last refusal, the last hit
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, the last ground item to
- * fall and whose death it fell from, and how many units have died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
+ * fall and whose death it fell from, the last item the hero equipped, unequipped, or moved and
+ * the place it went to, and how many units have died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
  * in the simulation. Draw calls show a dash while nothing has counted them.
  */
 export const readoutsGroup = (
@@ -103,6 +104,7 @@ export const readoutsGroup = (
   const projectile = readout(folder, "Last projectile");
   const checkpoint = readout(folder, "Last checkpoint");
   const drop = readout(folder, "Last drop");
+  const item = readout(folder, "Last item");
   const deaths = readout(folder, "Deaths");
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
@@ -111,6 +113,7 @@ export const readoutsGroup = (
   let lastProjectile = NOTHING_YET;
   let lastCheckpoint = NOTHING_YET;
   let lastDrop = NOTHING_YET;
+  let lastItem = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -157,6 +160,14 @@ export const readoutsGroup = (
         lastDrop = `${String(event.groundItemId)} from ${String(event.unitId)}${event.amount > 0 ? `, ${String(event.amount)} gold` : ""}`;
       }
 
+      if (
+        event.kind === "item_equipped" ||
+        event.kind === "item_unequipped" ||
+        event.kind === "item_moved"
+      ) {
+        lastItem = `${event.kind} to ${String(event.place)}`;
+      }
+
       if (event.kind === "unit_died") {
         deathCount += 1;
       }
@@ -201,6 +212,7 @@ export const readoutsGroup = (
       projectile.show(lastProjectile);
       checkpoint.show(lastCheckpoint);
       drop.show(lastDrop);
+      item.show(lastItem);
       deaths.show(String(deathCount));
     },
   };

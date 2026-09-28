@@ -226,6 +226,16 @@ export type {
   GroundItemKind,
 } from "./entities/ground-item";
 export type { Item, ItemLine } from "./items/item";
+export type { Armory } from "./items/armory";
+export type { Inventory, PlacedItem } from "./items/inventory";
+export type { ItemRefusal } from "./items/item-commands";
+export type {
+  DropItemCommand,
+  EquipItemCommand,
+  ItemCommand,
+  MoveItemCommand,
+  UnequipItemCommand,
+} from "./commands/item-commands";
 export type { RequirementContent } from "./items/requirement";
 export type { DropRoll, LootWorld } from "./loot/roll";
 export type { Zone, ZoneId } from "./entities/zone";
@@ -233,6 +243,9 @@ export type {
   CastCommittedEvent,
   CheckpointReachedEvent,
   ItemDroppedEvent,
+  ItemEquippedEvent,
+  ItemMovedEvent,
+  ItemUnequippedEvent,
   CommandRefusedEvent,
   DomainEvent,
   EventSink,

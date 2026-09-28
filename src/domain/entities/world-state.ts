@@ -17,6 +17,8 @@ import type { SpellRecord } from "../definitions/spell-state";
 import type { StatusRecord } from "../definitions/status-state";
 import type { UnitRecord } from "../definitions/unit-state";
 import type { EventSink } from "../events/domain-event";
+import type { Armory } from "../items/armory";
+import type { Inventory } from "../items/inventory";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
@@ -54,14 +56,14 @@ export type KitState = {
 
 /**
  * One form the hero can take: its definition in simulation units, the health and mana it
- * has, its kit state, and its armory, which is `null` until items exist. The unit holds the
- * active index; a swap changes that index and nothing else.
+ * has, its kit state, and its armory, the items it wears. The unit holds the active index; a
+ * swap changes that index and nothing else.
  */
 export type FormRecord = {
   def: FormDef;
   resources: Resources;
   kit: KitState;
-  armory: null;
+  armory: Armory;
 };
 
 /**
@@ -90,6 +92,10 @@ export type RunScope = {
   heroAttack: AttackRecord;
   /** One record per form the hero definition lists, in that order. */
   forms: FormRecord[];
+  /** The hero's inventory, shared by every form: the grid of cells and the items placed on it. */
+  inventory: Inventory;
+  /** The hero's gold, a whole number. */
+  gold: number;
   /** Every spell and every enemy ability by id, with its durations in ticks, for the composer and the cast pipeline to read. */
   spells: Map<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */

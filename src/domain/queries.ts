@@ -37,6 +37,20 @@ export {
 export { ZONE_CAPACITY } from "./entities/zone";
 export { orbAt } from "./invoke/buffer";
 export { levelRequirementOf, meetsRequirement } from "./items/requirement";
+export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
+export { firstFit, fitsAt, NO_RECORD, recordAt } from "./items/inventory";
+export {
+  ARMORY_PLACE_BASE,
+  ARMORY_SLOT_COUNT,
+  armoryPlace,
+  armorySlotOfPlace,
+  BANK_PLACE_BASE,
+  BANK_SLOT_COUNT,
+  INVENTORY_CELL_COUNT,
+  isArmoryPlace,
+  NO_PLACE,
+  STOCK_PLACE_BASE,
+} from "./items/item-place";
 export { resolveKitSlots } from "./kits/kit-registry";
 export { createAbilityRequest, createSlotDescriptor } from "./kits/kit";
 export { slotReadiness } from "./kits/slot-key";

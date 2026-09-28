@@ -48,7 +48,7 @@ describe("the disable matrix", () => {
     ).toEqual([]);
   });
 
-  it("has the page's nine rows and thirteen columns", () => {
+  it("has the page's nine rows and fourteen columns", () => {
     expect(matrix.map((row) => row.id).sort()).toEqual([
       "damage_over_time",
       "disarm",
@@ -60,7 +60,7 @@ describe("the disable matrix", () => {
       "slow",
       "stun",
     ]);
-    expect(DISABLE_COLUMNS).toHaveLength(13);
+    expect(DISABLE_COLUMNS).toHaveLength(14);
   });
 
   it.each(contentRegistry.statuses.map((status) => [status.id]))(
@@ -82,9 +82,11 @@ describe("the disable matrix", () => {
     },
   );
 
-  it("refuses every key and order under at least one row", () => {
+  it("refuses every key and order under at least one row, and the item commands under none", () => {
     for (const column of COMMAND_COLUMNS) {
-      expect(matrix.some((row) => row.cells[column] !== "allowed")).toBe(true);
+      expect(matrix.some((row) => row.cells[column] !== "allowed")).toBe(
+        column !== "items",
+      );
     }
   });
 

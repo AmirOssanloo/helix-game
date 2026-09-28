@@ -35,6 +35,7 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "invalid_tier":
     case "invalid_checkpoint":
     case "invalid_map_level":
+    case "invalid_place":
     case "orb_not_learned":
     case "buffer_not_full":
     case "no_spell_for_recipe":
@@ -54,6 +55,10 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "skill_at_cap":
     case "at_level_cap":
     case "pool_full":
+    case "no_item_at_place":
+    case "wrong_armory_slot":
+    case "requirement_not_met":
+    case "no_room":
     case "already_channeling":
     case "unknown_status":
     case "target_untargetable":

@@ -81,12 +81,15 @@ describe("createFormRecords", () => {
     expect(record?.resources).toEqual({ health: 300, mana: 150 });
   });
 
-  it("starts every orb skill at level zero, with no armory", () => {
+  it("starts every orb skill at level zero, with every armory slot empty", () => {
     const [record] = createFormRecords(hero([first.id]), [first], TUNING);
 
     expect(record?.kit.orbLevels).toHaveLength(ORB_COUNT);
     expect(record?.kit.orbLevels.every((level) => level === 0)).toBe(true);
-    expect(record?.armory).toBeNull();
+    expect(record?.armory.slots).toHaveLength(10);
+    expect(record?.armory.slots.every((item) => item.baseId === null)).toBe(
+      true,
+    );
   });
 
   it("sizes the orb buffer and the prepared slots from the tuning table, both empty", () => {

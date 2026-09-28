@@ -1,6 +1,7 @@
 import { assert } from "@shared/public";
 import type { FormRecord } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
+import { createArmory } from "../items/armory";
 import { attributesAt, deriveStats } from "../stats/derived";
 import type { ModifierTable } from "../stats/modifiers";
 import type { Attributes, FormDef, Stats } from "./form-def";
@@ -51,7 +52,7 @@ const fullAtLevelOne = (def: FormDef): Stats => {
 /**
  * One form's record: its definition in simulation units, full health and mana at level one,
  * every orb skill at level zero, an empty orb buffer and empty prepared slots sized from the
- * tuning table, and no armory.
+ * tuning table, and an empty armory.
  */
 const createFormRecord = (
   def: FormDef,
@@ -81,7 +82,7 @@ const createFormRecord = (
     def: converted,
     resources: { health: full.maxHealth, mana: full.maxMana },
     kit: { orbLevels, orbs, orbCount: 0, prepared },
-    armory: null,
+    armory: createArmory(),
   };
 };
 
