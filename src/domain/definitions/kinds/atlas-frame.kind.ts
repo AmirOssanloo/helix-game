@@ -3,6 +3,7 @@ import type { ListKind } from "../definition-kind";
 import { noCheck } from "../registry-checks";
 import type { Schema } from "../schema";
 import {
+  arrayOf,
   countSchema,
   nonNegativeSchema,
   objectOf,
@@ -41,6 +42,10 @@ const atlasShapeSchema: Schema<AtlasShape> = taggedUnion<"kind", AtlasShape>(
       thickness: nonNegativeSchema,
     }),
     icon: objectOf({ kind: oneOf(["icon"]), glyph: stringSchema }),
+    silhouette: objectOf({
+      kind: oneOf(["silhouette"]),
+      points: arrayOf(nonNegativeSchema),
+    }),
     tile: objectOf({ kind: oneOf(["tile"]), image: stringSchema }),
     glyph: objectOf({ kind: oneOf(["glyph"]), character: stringSchema }),
   },

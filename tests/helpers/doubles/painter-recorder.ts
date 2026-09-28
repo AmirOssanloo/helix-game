@@ -93,9 +93,16 @@ export class PainterRecorder implements AtlasPainter {
     this.marks += 1;
   }
 
-  lineTo(): void {}
+  /** Every point a path was moved or drawn to, in order. */
+  readonly pathPoints: Array<Readonly<{ x: number; y: number }>> = [];
 
-  moveTo(): void {}
+  lineTo(x: number, y: number): void {
+    this.pathPoints.push({ x, y });
+  }
+
+  moveTo(x: number, y: number): void {
+    this.pathPoints.push({ x, y });
+  }
 
   rect(): void {}
 

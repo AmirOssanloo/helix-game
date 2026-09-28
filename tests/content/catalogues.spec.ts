@@ -3,8 +3,13 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   affixes,
+  atlasFrames,
   enemies,
+  GLYPH_CHARACTERS,
   heroDef,
+  itemBases,
+  itemIconFrame,
+  legendaries,
   longRoadDef,
   lootTables,
   rarities,
@@ -653,6 +658,90 @@ describe("the item catalogue's affix table", () => {
         max: affix?.max,
         rarities: affix?.rarities,
       });
+    }
+  });
+});
+
+/** Every string the font must write: its characters, the ones missing from the font, and where it came from. */
+const undrawable = (
+  strings: readonly (readonly [string, string])[],
+): string[] =>
+  strings.flatMap(([where, text]) => {
+    const missing = [...new Set(text)].filter(
+      (character) => !GLYPH_CHARACTERS.includes(character),
+    );
+
+    return missing.length === 0
+      ? []
+      : [`${where} "${text}" needs ${JSON.stringify(missing.join(""))}`];
+  });
+
+/** An affix line as the screen writes it: the catalogue's "On screen" with its N as a regeneration's tenths, which use every digit sign a value can. */
+const lineWithValue = (onScreen: string): string =>
+  onScreen.replace("N", "10.5");
+
+describe("the item catalogue on screen", () => {
+  const slotRows = itemRows(5, (cells) => idIn(cells[1] ?? "") !== null);
+  const baseRows = itemRows(10, (cells) => idIn(cells[1] ?? "") !== null);
+  const legendaryRows = itemRows(7, (cells) => idIn(cells[1] ?? "") !== null);
+  const activeRows = itemRows(3, (cells) => idIn(cells[1] ?? "") !== null);
+  const affixRows = itemRows(9, (cells) => affixIdIn(cells[1] ?? "") !== null);
+
+  it("reads every table it checks", () => {
+    expect(slotRows).toHaveLength(10);
+    expect(baseRows).toHaveLength(20);
+    expect(legendaryRows).toHaveLength(3);
+    expect(activeRows).toHaveLength(8);
+    expect(affixRows).toHaveLength(affixes.length);
+  });
+
+  it("writes every name, armory slot word, and affix line the catalogue and the content hold with the atlas font, in capitals", () => {
+    const strings: (readonly [string, string])[] = [
+      ...itemBases.map((base) => ["base", base.name] as const),
+      ...rarities.map((rarity) => ["rarity", rarity.name] as const),
+      ...legendaries.map((piece) => ["Legendary piece", piece.name] as const),
+      ...baseRows.map(([name = ""]) => ["catalogue base", name] as const),
+      ...legendaryRows.map(
+        ([name = ""]) => ["catalogue Legendary piece", name] as const,
+      ),
+      ...activeRows.map(([name = ""]) => ["active item", name] as const),
+      ...slotRows.map(([, , , word = ""]) => ["armory slot", word] as const),
+      ...affixRows.map(
+        ([, , , , , , , , onScreen = ""]) =>
+          ["affix line", lineWithValue(onScreen)] as const,
+      ),
+    ];
+
+    expect(
+      undrawable(strings.map(([where, text]) => [where, text.toUpperCase()])),
+    ).toEqual([]);
+  });
+
+  it("writes every armory slot word and affix line in capitals already", () => {
+    for (const [, , , word = ""] of slotRows) {
+      expect(word).toBe(word.toUpperCase());
+    }
+
+    for (const [, , , , , , , , onScreen = ""] of affixRows) {
+      expect(onScreen).toMatch(/^\+N%? [A-Z ]+$/);
+    }
+  });
+
+  it("draws every base in its armory slot's icon, which the atlas holds", () => {
+    const frames = new Set(atlasFrames.map((frame) => frame.name));
+
+    for (const [, id = "", slot = "", , , , , , frame = ""] of baseRows) {
+      const armorySlot = SLOT_WORDS[slot.toLowerCase()];
+
+      expect(armorySlot, id).toBeDefined();
+      expect(idIn(frame), id).toBe(
+        armorySlot === undefined ? null : itemIconFrame(armorySlot),
+      );
+      expect(frames.has(idIn(frame) ?? ""), id).toBe(true);
+    }
+
+    for (const base of itemBases) {
+      expect(base.atlasFrame, base.id).toBe(itemIconFrame(base.armorySlot));
     }
   });
 });

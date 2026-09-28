@@ -5,7 +5,7 @@ import { RingBuffer } from "@shared/public";
 /** How often the numbers are retyped: slow enough to read, fast enough to see a change land. */
 const INTERVAL_MS = 250;
 
-/** The font has no space glyph, so a row is two objects: a label column and a value column. */
+/** A row is two objects, a label column and a value column, so every value starts at one x. */
 const LEFT = 16;
 const TOP = 16;
 const VALUE_LEFT = 220;

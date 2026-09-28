@@ -124,7 +124,7 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Layer | content, presentation, tests, docs |
 | Size | 0.5 |
 | Depends on | P8-S31-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27, phase 7 inserted:** since P7-S45-T01 narrows the content-version stamp to simulation data, adding glyphs, frames, and icons to the atlas no longer re-stamps the stored logs; this ticket re-stamps nothing.
 
@@ -145,6 +145,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
 
+> **Note, 2026-09-28, at close:** the catalogue's names and its "On screen" affix lines are in capitals and need two characters the font lacked, the space and `+`, and no other; every string on screen is upper-cased before it is set, as the ability squares already did. The space's cell is blank and Phaser's WebGL renderer skips char code 32 while still advancing it, which the spec proves by running Phaser's own retro font parser and renderer from its sources, outside the test stub. The icons are a new frame shape, `silhouette`, a filled outline of points in fractions of the frame: `item_<slot>` for the eight armory slots but the ring, which is a ring, `item_gold` a mound, and `item_globe` a disc, each 128 square. The cap now names `item_helm` and the band `item_ring`, which moved no stamp or checksum. The catalogue spec also reads every base's frame column against its armory slot's icon, and the recorder of painter calls keeps its path points. The bench readout's comment saying the font had no space was put right.
+
 ---
 
 ## Sprint exit
@@ -154,10 +156,10 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Ground items pooled in map scope, released by a map load | Yes: a pool of 512 in map scope with its own `GroundItemId`, the byte per cell, and `dropsNotMade`; a map load and a reset release every ground item and free every cell (`tests/domain/entities/ground-item-pool.spec.ts`, `tests/simulation/world.spec.ts`). The panel's **Ground items** readout shows live over capacity and the drops not made |
 | Drops the same on two replays, the world but its ground items unmoved | Yes: two replays of the boss encounter log agree at every tick, drops included, and with every loot table on and every table emptied the full-state comparison finds everything but the ground items and the loot tunables equal at every tick (`tests/simulation/loot/drop-on-death.spec.ts`); the roll's weights, guarantees, and Legendary rate over 10 000 rolls a tier in `tests/domain/loot/roll.spec.ts`. The six logs' checksums re-recorded, their stamps unchanged |
 | Item level from the map level; the quality-level filter | Yes: a normal, an elite, and a boss drop at the map's level, 3 and then 7, and a `set_map_level` to 7 before a panel-spawned boss pack's death drops at 7; a base of quality level 5 never drops over 10 000 rolls a tier at item level 4 and drops at 5 (`tests/domain/loot/roll.spec.ts`, `tests/simulation/loot/drop-on-death.spec.ts`). The level requirement is the highest of the base's, the affixes', and a Legendary piece's, read by `levelRequirementOf` |
-| The font writes an item's name | |
-| The render benchmark after the atlas grew | |
-| Actual days per ticket | T01: 0.5 (sized 1.5); T02: 0.75 (sized 1.5); T03: 0.25 (sized 0.5) |
-| Sprint total | |
+| The font writes an item's name | Yes: the font gains the space and `+`, and every base, rarity, Legendary piece, and active item name, every armory slot word, and every affix line the catalogue writes, upper-cased, is drawable (`tests/content/catalogues.spec.ts`); a label with a space draws one quad fewer than its characters and advances as far as a letter, through Phaser's own renderer (`tests/presentation/shape-atlas.spec.ts`). The stored logs' stamps and checksums are unchanged |
+| The render benchmark after the atlas grew | 2026-09-28, T04, by an agent: `pnpm bench` in headless Chrome over the DevTools protocol on the Apple M1 (ANGLE Metal), 30 s after an 8 s warm-up, draw calls counted by wrapping the WebGL draw methods. As configured: 60.00 fps, worst frame 16.8 ms, 1 draw call a frame, heap 66.0 → 65.6 MB. With `?textures=default`: 60.00 fps, worst frame 16.8 ms, 1 draw call, heap 65.9 → 65.9 MB. No console error. Against P7-S48-T01's 60.02 fps, 20.1 ms worst, 1 draw call, and about 63 MB, unchanged. The atlas still fits one texture, under 4096 on a side, with `maxTextures: 1` |
+| Actual days per ticket | T01: 0.5 (sized 1.5); T02: 0.75 (sized 1.5); T03: 0.25 (sized 0.5); T04: 0.25 (sized 0.5) |
+| Sprint total | Sized 4 with 1 of buffer, done in 1.75, the buffer unspent; closed 2026-09-28 on every row an agent can verify. No row needs a person |
 
 ## Risks in this sprint
 

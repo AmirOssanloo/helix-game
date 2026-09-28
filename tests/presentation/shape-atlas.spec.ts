@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { gameConfig } from "@app/game-config";
 import {
   atlasFrames,
   CONE_ANGLES,
@@ -8,10 +10,15 @@ import {
   FLOOR_FRAME,
   FLOOR_IMAGE,
   GLYPH_CHARACTERS,
+  ITEM_GLOBE_FRAME,
+  ITEM_GOLD_FRAME,
+  itemIconFrame,
   WEDGE_STEPS,
 } from "@content/public";
 import type { AtlasFrameDef } from "@domain/public";
+import { ARMORY_SLOTS } from "@domain/queries";
 import {
+  type FontLayout,
   ATLAS_WIDTH,
   FRAME_GUTTER,
   type ImageSize,
@@ -30,6 +37,148 @@ import { ART_DIAMOND_WIDTH } from "@presentation/public";
 import { PainterRecorder, REPOSITORY_ROOT } from "./../helpers";
 
 const TWO_PI = Math.PI * 2;
+
+/**
+ * The largest texture WebGL is held to support on every desktop GPU the game targets. The atlas
+ * is one canvas, so it bakes into one texture only while it fits inside this on each side.
+ */
+const MAX_TEXTURE_SIZE = 4096;
+
+/**
+ * Phaser itself, from its sources rather than the stub every spec is handed: the retro font
+ * parser the bake calls and the renderer that turns a `BitmapText` into quads, so a spec can
+ * count the quads a label draws without a GPU.
+ */
+const phaserSource = createRequire(
+  join(REPOSITORY_ROOT, "node_modules", "phaser", "src", "gameobjects", "x.js"),
+);
+
+type RetroFontEntry = Readonly<{ data: unknown }>;
+
+const parseRetroFont = phaserSource("./bitmaptext/ParseRetroFont.js") as (
+  scene: unknown,
+  config: Readonly<Record<string, unknown>>,
+) => RetroFontEntry;
+
+const getBitmapTextSize = phaserSource("./bitmaptext/GetBitmapTextSize.js") as (
+  src: unknown,
+  round: boolean,
+  updateOrigin: boolean,
+  out: unknown,
+) => unknown;
+
+const renderBitmapText = phaserSource(
+  "./bitmaptext/static/BitmapTextWebGLRenderer.js",
+) as (
+  renderer: unknown,
+  src: unknown,
+  drawingContext: unknown,
+  parentMatrix: unknown,
+) => void;
+
+const TransformMatrix = phaserSource(
+  "./components/TransformMatrix.js",
+) as new () => unknown;
+
+/** The font the bake registers, parsed by Phaser from the layout's glyph grid over an atlas of `width` by `height`. */
+const parsedFont = (
+  font: FontLayout,
+  width: number,
+  height: number,
+): unknown => {
+  const scene = {
+    sys: {
+      textures: {
+        getFrame: () => ({ cutX: 0, cutY: 0, source: { width, height } }),
+      },
+    },
+  };
+
+  return parseRetroFont(scene, {
+    image: "atlas",
+    "offset.x": font.x,
+    "offset.y": font.y,
+    width: font.glyphWidth,
+    height: font.glyphHeight,
+    chars: font.chars,
+    charsPerRow: font.charsPerRow,
+    "spacing.x": 0,
+    "spacing.y": 0,
+    lineSpacing: 0,
+  }).data;
+};
+
+/** A `BitmapText` of `text` in `fontData` as Phaser's renderer reads one: one line, untinted, at the origin, its quads counted by `onQuad`. */
+const labelOf = (fontData: unknown, text: string, onQuad: () => void) => ({
+  _text: text,
+  text,
+  fontData,
+  fontSize: 32,
+  letterSpacing: 0,
+  lineSpacing: 0,
+  maxWidth: 0,
+  wordWrapCharCode: 32,
+  charColors: [],
+  tintMode: 0,
+  tintTopLeft: 0,
+  tintTopRight: 0,
+  tintBottomLeft: 0,
+  tintBottomRight: 0,
+  _alphaTL: 1,
+  _alphaTR: 1,
+  _alphaBL: 1,
+  _alphaBR: 1,
+  dropShadowX: 0,
+  dropShadowY: 0,
+  x: 0,
+  y: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+  scrollFactorX: 1,
+  scrollFactorY: 1,
+  displayOriginX: 0,
+  displayOriginY: 0,
+  customRenderNodes: {},
+  defaultRenderNodes: {
+    Submitter: {
+      run: onQuad,
+    },
+  },
+  getTextBounds(): unknown {
+    return getBitmapTextSize(this, false, true, {
+      local: {},
+      global: {},
+      lines: { shortest: 0, longest: 0, lengths: null, height: 0 },
+      wrappedText: "",
+      words: [],
+      characters: [],
+      scaleX: 0,
+      scaleY: 0,
+    });
+  },
+});
+
+/** How many quads Phaser's WebGL renderer submits for `text` in `fontData`. */
+const quadsDrawn = (fontData: unknown, text: string): number => {
+  let quads = 0;
+  const identity = (): unknown => new TransformMatrix();
+  const label = labelOf(fontData, text, () => {
+    quads += 1;
+  });
+  const camera = {
+    addToRenderList: (): void => {},
+    matrix: identity(),
+    matrixCombined: identity(),
+    matrixExternal: identity(),
+    scrollX: 0,
+    scrollY: 0,
+  };
+
+  renderBitmapText(null, label, { camera, useCanvas: false }, null);
+
+  return quads;
+};
 
 /** The maintainer's floor tile, as the boot loads it. */
 const FLOOR_PNG = join(REPOSITORY_ROOT, "assets", "floor.png");
@@ -152,6 +301,55 @@ describe("layoutAtlas over the content frame list", () => {
     });
   });
 
+  it("holds the space and the plus among the glyphs", () => {
+    const names = atlasFrames.map((frame) => frame.name);
+
+    expect(names).toContain("glyph_ ");
+    expect(names).toContain("glyph_+");
+  });
+
+  it("holds an item icon per armory slot, gold's, and a globe's, each one square size", () => {
+    const names = [
+      ...ARMORY_SLOTS.map(itemIconFrame),
+      ITEM_GOLD_FRAME,
+      ITEM_GLOBE_FRAME,
+    ];
+    const icons = names.map((name) =>
+      atlasFrames.find((frame) => frame.name === name),
+    );
+
+    expect(icons.map((frame) => frame?.name)).toEqual(names);
+
+    for (const frame of icons) {
+      expect(frame?.width).toBe(icons[0]?.width);
+      expect(frame?.height).toBe(frame?.width);
+    }
+  });
+
+  it("gives every silhouette a closed outline of at least three points inside its frame", () => {
+    for (const frame of atlasFrames) {
+      if (frame.shape.kind !== "silhouette") {
+        continue;
+      }
+
+      const { points } = frame.shape;
+
+      expect(points.length % 2, frame.name).toBe(0);
+      expect(points.length, frame.name).toBeGreaterThanOrEqual(6);
+
+      for (const point of points) {
+        expect(point, frame.name).toBeGreaterThanOrEqual(0);
+        expect(point, frame.name).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it("bakes into one canvas no larger than one texture, for a game of one texture", () => {
+    expect(layout.width).toBeLessThanOrEqual(MAX_TEXTURE_SIZE);
+    expect(layout.height).toBeLessThanOrEqual(MAX_TEXTURE_SIZE);
+    expect(gameConfig.render?.maxTextures).toBe(1);
+  });
+
   it("holds a cone frame per angle a definition aims one at", () => {
     const cones = atlasFrames.filter((frame) => frame.shape.kind === "cone");
 
@@ -175,6 +373,50 @@ describe("layoutAtlas over the content frame list", () => {
     );
   });
 });
+
+describe("the atlas font as Phaser draws it", () => {
+  const layout = layoutAtlas(
+    sizeTileFrames(atlasFrames, () => pngSize(FLOOR_PNG)),
+  );
+  const font = layout.font;
+
+  if (font === null) {
+    throw new Error("The content frame list lays out no font");
+  }
+
+  const fontData = parsedFont(font, layout.width, layout.height);
+
+  it("advances a space as far as any glyph, so words stay apart", () => {
+    expect(widthOf(fontData, "HEAVY BELT")).toBeGreaterThan(
+      widthOf(fontData, "HEAVYBELT"),
+    );
+    expect(widthOf(fontData, "HEAVY BELT")).toBe(
+      widthOf(fontData, "HEAVYXBELT"),
+    );
+  });
+
+  it("draws one quad a character for a label with no space", () => {
+    expect(quadsDrawn(fontData, "RIMECOIL")).toBe(8);
+  });
+
+  it.each(["HEAVY BELT", "+12% MAGIC DAMAGE", "LEATHER GLOVES"])(
+    "draws %s with one quad fewer than its characters for each space",
+    (text) => {
+      const spaces = Array.from(text).filter((character) => character === " ");
+
+      expect(quadsDrawn(fontData, text)).toBe(text.length - spaces.length);
+    },
+  );
+});
+
+/** How wide Phaser measures `text` in `fontData`, in the font's pixels. */
+const widthOf = (fontData: unknown, text: string): number => {
+  const bounds = labelOf(fontData, text, () => {}).getTextBounds() as Readonly<{
+    local: Readonly<{ width: number }>;
+  }>;
+
+  return bounds.local.width;
+};
 
 describe("layoutAtlas refusals", () => {
   it("refuses a list that names a frame twice", () => {
@@ -381,6 +623,32 @@ describe("paintFrame over the content frame list", () => {
     }
 
     expect(unpainted).toEqual([]);
+  });
+
+  it("draws a silhouette as one closed outline through its points, scaled to the frame, and fills it", () => {
+    const painter = new PainterRecorder();
+
+    paintFrame(
+      painter,
+      {
+        frame: {
+          name: "item_off_hand",
+          width: 100,
+          height: 50,
+          shape: { kind: "silhouette", points: [0, 0, 1, 0, 0.5, 1] },
+        },
+        x: 10,
+        y: 20,
+      },
+      floorImages,
+    );
+
+    expect(painter.pathPoints).toEqual([
+      { x: 10, y: 20 },
+      { x: 110, y: 20 },
+      { x: 60, y: 70 },
+    ]);
+    expect(painter.fillRules).toEqual(["nonzero"]);
   });
 
   it("draws a cone as an arc from the frame's centre, half its angle either side of the rightward axis", () => {

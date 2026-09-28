@@ -1,8 +1,7 @@
 import type { ItemBaseDef } from "@domain/public";
 
 /**
- * The cap: the first helm, two cells by two, dropping from item level 1 with flat armour. Drawn
- * with the plain square until the atlas has the helm's silhouette.
+ * The cap: the first helm, two cells by two, dropping from item level 1 with flat armour.
  */
 export const capDef = {
   id: "cap",
@@ -13,6 +12,6 @@ export const capDef = {
   qualityLevel: 1,
   requirement: 1,
   implicit: { stat: "armour", kind: "flat", min: 1, max: 2 },
-  atlasFrame: "square",
+  atlasFrame: "item_helm",
   value: 25,
 } as const satisfies ItemBaseDef;

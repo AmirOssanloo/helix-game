@@ -18,6 +18,11 @@ export type AtlasShape =
   | Readonly<{ kind: "stripes"; thickness: number }>
   | Readonly<{ kind: "icon"; glyph: string }>
   /**
+   * One filled outline: `points` is x, y, x, y, … in fractions of the frame from its top-left
+   * corner, joined in order and closed. An item's icon is one, a flat shape until there is art.
+   */
+  | Readonly<{ kind: "silhouette"; points: readonly number[] }>
+  /**
    * A seamless tile a person painted, loaded at boot under the key `image` and copied in as it is,
    * in its own colours. The frame's width and height are one repeat of it, a 2:1 art diamond
    * centred in a box of that size; the image is a whole number of repeats in each direction, and

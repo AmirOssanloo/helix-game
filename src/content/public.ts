@@ -15,6 +15,9 @@ export {
   FLOOR_FRAME,
   FLOOR_IMAGE,
   GLYPH_CHARACTERS,
+  ITEM_GLOBE_FRAME,
+  ITEM_GOLD_FRAME,
+  itemIconFrame,
   statusIconFrame,
   WEDGE_STEPS,
 } from "./atlas-frames";

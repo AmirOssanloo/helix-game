@@ -31,7 +31,9 @@ A scene composes; it holds no rules and no entity state. There is no debug scene
 
 ## The shape atlas
 
-`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every one of those frames is white with alpha, and colour is always a runtime tint.
+`ShapeAtlas` draws every shape the game needs into one canvas at boot — discs, rings, a square and its outline, a triangle, a single pixel, one cone per angle content declares, a wedge sheet for cooldown sweeps, status icons, item icons, and the glyphs of the bitmap font — and registers it as one Phaser texture with named frames. Every one of those frames is white with alpha, and colour is always a runtime tint.
+
+An item icon is a flat silhouette until there is art: one frame per armory slot, named `item_` and the slot, which every base of that slot names, and one frame each for gold and a globe. A silhouette is a filled outline the frame list gives as points in fractions of the frame; the frame list, `src/content/atlas-frames.ts`, holds every name. The font holds capitals and no lower case, so every string on screen is upper-cased before it is set. It holds the space as a blank cell, which Phaser's renderer advances past and draws no quad for, so a space costs nothing.
 
 The floor frame is the exception: a tile a person painted, `assets/floor.png`, which the boot scene loads and the bake copies into the same canvas pixel for pixel, in its own colours, and never tints. Its frame in the content list is one art diamond, 160 by 80, the diamond four by four walkability cells make at the view's scale; the image is a whole number of art diamonds in each direction, at most 960 wide to fit the atlas, and the frame is baked at the image's size. An image of any other size stops the boot with that rule in the message, because a floor laid from it would drift off the cells. The bake also continues the tile one pixel past each edge of its frame, into half the gutter, with the pixels of the opposite edge: the camera's follow leaves the floor at fractional screen positions, and a sample there that reached a transparent gutter would draw a dark seam between tiles. Once copied, the loaded image is dropped, so the world still draws from one texture.
 
@@ -219,7 +221,7 @@ Baking a red square and a blue square. Two textures, two batches, and the third 
 | Phaser | Used here; the composition root imports it only to construct the game |
 | Scenes | `BootScene` bakes and checks; `PlayScene` syncs, cameras, inputs, and draws debug where the panel is; `HudScene` runs in parallel with its own camera and draws the bar and every screen; no fourth scene |
 | A scene | Composes; holds no rules and no entity state |
-| The atlas | One texture baked at boot by `ShapeAtlas`; frame names from the content frame list; every frame white but the floor tile, copied in from its image |
+| The atlas | One texture baked at boot by `ShapeAtlas`; frame names from the content frame list; every frame white but the floor tile, copied in from its image; an item icon per armory slot, `item_` and the slot, and one each for gold and a globe; the font in capitals, every string upper-cased before it is set, with a space that draws no quad |
 | Colour | Always a runtime tint on a white frame; the floor tile is its own colours, untinted |
 | `Shape` and `Graphics` objects | Never, including debug |
 | Lines, rings, cones, sweeps | A stretched pixel, a scaled ring, a rotated cone frame baked per angle with its apex at the frame's centre, a wedge frame |

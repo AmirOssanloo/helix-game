@@ -277,6 +277,26 @@ const paintShape = (
       return;
     }
 
+    case "silhouette": {
+      painter.beginPath();
+
+      for (let index = 0; index + 1 < shape.points.length; index += 2) {
+        const pointX = x + (shape.points[index] ?? 0) * width;
+        const pointY = y + (shape.points[index + 1] ?? 0) * height;
+
+        if (index === 0) {
+          painter.moveTo(pointX, pointY);
+        } else {
+          painter.lineTo(pointX, pointY);
+        }
+      }
+
+      painter.closePath();
+      painter.fill();
+
+      return;
+    }
+
     case "tile": {
       // Copied pixel for pixel, in the colours it was painted; the frame is the image's size.
       const image = images(shape.image);
