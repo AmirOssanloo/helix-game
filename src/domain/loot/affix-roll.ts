@@ -2,7 +2,7 @@ import type { AffixDef } from "../definitions/affix-def";
 import { ITEM_LINE_CAPACITY } from "../definitions/item-base-def";
 import type { ArmorySlot } from "../definitions/item-base-def";
 import type { StatusModifierKind } from "../definitions/status-def";
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { Item } from "../items/item";
 import type { DrawPurpose, DrawWorld } from "../random/keyed-draw";
 import { KEYED_DRAW_RANGE, keyedDraw } from "../random/keyed-draw";

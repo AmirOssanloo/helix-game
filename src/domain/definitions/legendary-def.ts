@@ -1,4 +1,4 @@
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { StatusModifierKind } from "./status-def";
 
 /** One fixed stat line of a Legendary piece, in the designer's units, as a rolled line's value would be. */

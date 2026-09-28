@@ -1,4 +1,4 @@
-import { STATS } from "../../entities/unit";
+import { STATS } from "../../entities/unit-tables";
 import type { ListKind } from "../definition-kind";
 import type { ItemBaseDef, StatRangeDef } from "../item-base-def";
 import {

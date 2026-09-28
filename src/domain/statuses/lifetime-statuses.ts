@@ -1,8 +1,8 @@
 import type { UnitRecord } from "../definitions/unit-state";
 import type { UnitId } from "../entities/unit";
 import type { World } from "../entities/world-state";
+import { applyStatus } from "./apply-status";
 import { STATUS_NEVER_ENDS } from "./status-table";
-import { applyStatus } from "./status.system";
 
 /** What a status an archetype carries is read at: no orb has a level, so every table reads its first entry. */
 const NO_ORB_LEVELS: readonly number[] = [];

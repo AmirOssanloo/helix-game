@@ -1,7 +1,8 @@
 import { assertNever } from "@shared/public";
 import { isDamageType } from "../combat/damage";
-import type { Command, DebugCommand } from "../commands/command";
+import type { Command } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
+import type { DebugCommand } from "../commands/debug-commands";
 import type { GrantRefusal } from "../debug/item-grants";
 import type {
   DisableMatrixDef,
@@ -14,7 +15,7 @@ import { ORB_COUNT } from "../entities/world-state";
 import type { ItemRefusal } from "../items/item-commands";
 import { validateItemCommand } from "../items/item-validation";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
-import type { StatusRefusal } from "../statuses/status.system";
+import type { StatusRefusal } from "../statuses/apply-status";
 import type { StoreRefusal } from "../store/store-commands";
 import { validateStoreCommand } from "../store/store-commands";
 import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";

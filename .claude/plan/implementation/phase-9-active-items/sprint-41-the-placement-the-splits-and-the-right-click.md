@@ -59,13 +59,14 @@ The ticket names each later phase 9 ticket that edits one of these pages, and ea
 | Size | 1.5 |
 | Depends on | none |
 | Owner | The game engineer |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-28, from P9-S41-T01:** [entities and pools](../../../../docs/architecture/entities-and-pools.md) now names the sub-record for what carries the unit, a push or a charge, as where the disjoint count goes, and the [ability pipeline](../../../../docs/architecture/ability-pipeline.md)'s "A status" bullet names one apply path in `domain/statuses/` for every caller, which is the seam the status system's split takes. This ticket's entities-and-pools edit is to check the sub-record's sentence against the split, not to write it. No checksum moves. **Size holds at 1.5.**
 
 **Build:** four files phase 9 must grow, each within 70 lines of the 500-line limit on 2026-09-28 ([R40](../02-risks-and-hidden-work.md)), split along the seams the architecture outline names before any feature touches them:
 - `src/domain/entities/unit.ts`, 499 lines: what carries the unit (knockback, charge) into a sub-record of its own, where the disjoint count will go.
 - `src/domain/commands/command.ts`, 460: the item and store variants into their own union file, where `activate_item` will go.
+  > **Note, 2026-09-28, at the build:** the item and store variants were already in `item-commands.ts`, where `activate_item` goes; what made `command.ts` long was the debug union, so that moved to `debug-commands.ts` beside it, with its kinds record and `isDebugCommand`.
 - `src/simulation/replay/state-fields.ts`, 479: the field lists by scope, run, map, and the pools, so the bank, the entry's side, and the counts each join one short list.
 - `src/domain/statuses/status.system.ts`, 430: applying a status out of the per-tick pass, where `invulnerable`'s refusal and bank passives will go.
 
@@ -146,12 +147,12 @@ No behaviour changes. Each split goes through the layer's doors; nothing new is 
 | Check | Result |
 | --- | --- |
 | The placement written into the pages | Done in P9-S41-T01, 2026-09-28: the ability pipeline, entities and pools, commands and events, where to look, the world model, and ADR 0008 (its second revisit point read, the record holding); the disable matrix and vocabulary brought to it. Notes under 17 later phase 9 tickets, 4 of them moving a stored checksum on purpose; no size moved. Readings past the outline are Q136 to Q139, decided provisionally. `tests/docs-links.spec.ts` green |
-| The four files split, every stored log unchanged | |
+| The four files split, every stored log unchanged | Done in P9-S41-T02, 2026-09-28: the push to `unit-push.ts` and the status and modifier rows to `unit-tables.ts` (unit.ts 499 to 385); the debug union to `debug-commands.ts` (command.ts 460 to 150); the field lists by scope into `run-fields.ts`, `map-fields.ts`, `pool-fields.ts`, and `item-fields.ts` (state-fields.ts 479 to 33); the one apply path to `apply-status.ts` (status.system.ts 430 to 341). Every new file under 400. No stored log re-stamped or re-recorded; the replay determinism, state checksum, architecture, and balance-loot specs green, the stress tier green, `pnpm check` green; an earlier gate run at a load average near 50 timed out two specs and missed one stress timing, each green alone and the next full run green |
 | The pinned phase 8 build served at its own address | |
 | The right click's order, with and without Alt, in Chrome | |
 | The render benchmark, by an agent | |
 | Phase 8's bucket tickets run in this sprint, if any | |
-| Actual days per ticket | T01: 1 |
+| Actual days per ticket | T01: 1 · T02: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

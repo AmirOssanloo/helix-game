@@ -1,4 +1,4 @@
-import { STATS } from "../../entities/unit";
+import { STATS } from "../../entities/unit-tables";
 import type { ListKind } from "../definition-kind";
 import { ITEM_LINE_CAPACITY } from "../item-base-def";
 import type { FixedLineDef, LegendaryDef } from "../legendary-def";

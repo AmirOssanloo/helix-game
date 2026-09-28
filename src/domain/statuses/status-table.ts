@@ -1,6 +1,6 @@
 import type { StackRule } from "../definitions/status-def";
 import type { UnitId } from "../entities/unit";
-import type { StatusEntry } from "../entities/unit";
+import type { StatusEntry } from "../entities/unit-tables";
 
 /**
  * What writing a status onto a table did: it took an empty row, it refreshed or stacked the

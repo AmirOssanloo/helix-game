@@ -8,7 +8,7 @@ import type {
   LoadMapCommand,
   SpawnPackCommand,
   SpawnZoneCommand,
-} from "../commands/command";
+} from "../commands/debug-commands";
 import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf, resolveHero } from "../entities/hero";
 import type { UnitId } from "../entities/unit";
@@ -25,7 +25,7 @@ import type { RefusalReason } from "../orders/validator";
 import { resolveDestination } from "../pathing/destination";
 import { levelUp } from "../stats/levels";
 import { refreshStats } from "../stats/stats.system";
-import { applyStatus } from "../statuses/status.system";
+import { applyStatus } from "../statuses/apply-status";
 import { grantGold, grantItem } from "./item-grants";
 
 /** The levels a status the panel applies is read at when the hero has no form to read them from. */

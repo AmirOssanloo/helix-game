@@ -1,4 +1,4 @@
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { StatusModifierKind } from "./status-def";
 
 /**

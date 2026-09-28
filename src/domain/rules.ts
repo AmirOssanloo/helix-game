@@ -44,7 +44,7 @@ export { attackSystem } from "./attack/attack.system";
 export { clearAiRecord, createAiRecord } from "./entities/unit-ai";
 export { BEHAVIOUR_KEYS, resolveBehaviour } from "./ai/behaviours/index";
 export { createPackRecords, placeMapPacks } from "./ai/packs";
-export { DEBUG_COMMAND_KINDS, isDebugCommand } from "./commands/command";
+export { DEBUG_COMMAND_KINDS, isDebugCommand } from "./commands/debug-commands";
 export { isHostile, sideOf } from "./combat/sides";
 export { applyDamage, mitigate } from "./combat/damage";
 export { deathSystem } from "./combat/death.system";
@@ -164,15 +164,14 @@ export { acquireProjectile, createProjectilePool } from "./entities/projectile";
 export {
   acquireUnit,
   clearPath,
-  clearPush,
-  clearStatusEntry,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   PATH_CAPACITY,
   releaseUnit,
-  STATS,
   countLiveEnemies,
 } from "./entities/unit";
+export { clearPush } from "./entities/unit-push";
+export { clearStatusEntry, STATS } from "./entities/unit-tables";
 export { clearAttackState, createAttackState } from "./entities/unit-attack";
 export { clearCastState, createCastState } from "./entities/unit-cast";
 export {
@@ -368,7 +367,8 @@ export {
 export { regenerate, restoreHealth } from "./stats/regeneration";
 export { refreshStats, statsSystem } from "./stats/stats.system";
 export { applyLifetimeStatuses } from "./statuses/lifetime-statuses";
-export { applyStatus, statusSystem } from "./statuses/status.system";
+export { applyStatus } from "./statuses/apply-status";
+export { statusSystem } from "./statuses/status.system";
 export {
   holdsStatus,
   STATUS_NEVER_ENDS,

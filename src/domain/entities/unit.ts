@@ -3,7 +3,6 @@ import { assert } from "@shared/public";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
 import { clearAttributes, createAttributes } from "../definitions/form-def";
-import { ORB_IDS } from "../definitions/orb-id";
 import { clearStats, createStats } from "../definitions/stat-keys";
 import { readTunable } from "../definitions/tuning-state";
 import type { DisableFlags } from "../orders/disable-flags";
@@ -22,8 +21,17 @@ import type { CastState } from "./unit-cast";
 import { clearCastState, createCastState } from "./unit-cast";
 import type { PackMembership } from "./unit-pack";
 import { clearPackMembership, createPackMembership } from "./unit-pack";
+import type { Push } from "./unit-push";
+import { clearPush, createPush } from "./unit-push";
 import type { SummonState } from "./unit-summon";
 import { clearSummonState, createSummonState } from "./unit-summon";
+import type { ModifierEntry, StatusEntry } from "./unit-tables";
+import {
+  clearModifierEntry,
+  clearStatusEntry,
+  createModifierEntry,
+  createStatusEntry,
+} from "./unit-tables";
 import type { World } from "./world-state";
 
 /** A unit's id: minted and resolved only by the unit pool. */
@@ -70,87 +78,6 @@ export type UnitKind = "hero" | "enemy" | "summon";
 export type Resources = {
   health: number;
   mana: number;
-};
-
-/**
- * One row of a unit's status table. A `null` definition id is an empty row. `orbLevels` is the
- * applier's three orb levels as they stood when the status landed, in orb order, which is what
- * every table on the definition is read at for as long as the row lasts. The two ready ticks
- * are the internal cooldowns of the definition's damage hooks: the tick each side may fire on
- * again, kept on the row so the state replays and a refresh does not hand the hook back early.
- */
-export type StatusEntry = {
-  definitionId: string | null;
-  endsAtTick: Tick;
-  stacks: number;
-  sourceId: UnitId | null;
-  orbLevels: number[];
-  damageTakenReadyAtTick: Tick;
-  damageDealtReadyAtTick: Tick;
-};
-
-/**
- * A derived value a modifier source changes. Attack damage is no derived value the stats
- * system writes: the attack rule reads its rows over the attacker's definition at the moment
- * of a shot, so an Ember instance out now is in this shot. Cooldown reduction is none either:
- * the cooldown pipeline reads its rows when a clock starts, a flat amount in ticks and a
- * fraction of the clock, and never again for that clock. Magic damage is none: the damage
- * door reads its rows off the attacker at each magical hit, over a base of nothing, a flat
- * amount being a fraction of the hit added to it.
- */
-export type Stat =
-  | "movement_speed"
-  | "attack_damage"
-  | "cooldown_reduction"
-  | "magic_damage"
-  | "max_health"
-  | "health_regen"
-  | "max_mana"
-  | "mana_regen"
-  | "armour"
-  | "attack_speed"
-  | "magic_resistance";
-
-/** Every stat a modifier row may name, for content validation to check a definition against. */
-export const STATS: readonly Stat[] = [
-  "movement_speed",
-  "attack_damage",
-  "cooldown_reduction",
-  "magic_damage",
-  "max_health",
-  "health_regen",
-  "max_mana",
-  "mana_regen",
-  "armour",
-  "attack_speed",
-  "magic_resistance",
-];
-
-/** What wrote a modifier row: a status, a held orb instance, or the ability that summoned the unit. A source removes every row of its kind. An item writes no row; it reaches a stat through the totals a table references. */
-export type ModifierKind = "status" | "orb" | "summon";
-
-/**
- * One row of a unit's modifier table: one source's contribution to one stat, a flat amount in
- * the stat's own unit and a fraction of one. A `null` stat is an empty row. The stat's stack
- * reads every row for it each tick; nothing caches the sum.
- */
-export type ModifierEntry = {
-  kind: ModifierKind | null;
-  stat: Stat | null;
-  flat: number;
-  percent: number;
-};
-
-/**
- * The push a displacement has a unit in: how far it moves each tick, and how many ticks of it
- * are left. No ticks left is no push. The movement step translates by `step` while ticks
- * remain and collision decides where that leaves the unit, which is why a push into a wall
- * stops at the wall; the `knockback` status the displacement applies beside it raises the
- * displaced flag, which is what stops the unit walking itself meanwhile.
- */
-export type Push = {
-  step: Vec2;
-  ticksLeft: number;
 };
 
 /**
@@ -245,40 +172,6 @@ export type Unit = {
   summon: SummonState;
 };
 
-const createStatusEntry = (): StatusEntry => ({
-  definitionId: null,
-  endsAtTick: 0,
-  stacks: 0,
-  sourceId: null,
-  orbLevels: ORB_IDS.map(() => 0),
-  damageTakenReadyAtTick: 0,
-  damageDealtReadyAtTick: 0,
-});
-
-/** Puts the row back to empty. The level snapshot keeps its last values; the definition id says whether the row is live. */
-export const clearStatusEntry = (entry: StatusEntry): void => {
-  entry.definitionId = null;
-  entry.endsAtTick = 0;
-  entry.stacks = 0;
-  entry.sourceId = null;
-  entry.damageTakenReadyAtTick = 0;
-  entry.damageDealtReadyAtTick = 0;
-};
-
-const createModifierEntry = (): ModifierEntry => ({
-  kind: null,
-  stat: null,
-  flat: 0,
-  percent: 0,
-});
-
-const clearModifierEntry = (entry: ModifierEntry): void => {
-  entry.kind = null;
-  entry.stat = null;
-  entry.flat = 0;
-  entry.percent = 0;
-};
-
 const createPath = (): Path => {
   const points: Vec2[] = [];
 
@@ -287,13 +180,6 @@ const createPath = (): Path => {
   }
 
   return { points, count: 0, next: 0 };
-};
-
-/** Forgets the push. The step keeps its last values; the ticks left say whether one is carrying the unit. */
-export const clearPush = (push: Push): void => {
-  push.step.x = 0;
-  push.step.y = 0;
-  push.ticksLeft = 0;
 };
 
 /** Forgets the waypoints. The points keep their last values; `count` says which ones are live. */
@@ -328,7 +214,7 @@ const createUnit = (zeros: Readonly<StatTotals>): Unit => {
     state: "idle",
     path: createPath(),
     needsPath: false,
-    push: { step: { x: 0, y: 0 }, ticksLeft: 0 },
+    push: createPush(),
     suspended: createOrder(),
     cast: createCastState(),
     stageEndsAtTick: 0,

@@ -3,7 +3,7 @@ import { assert, bearing, distanceSquared, length, sub } from "@shared/public";
 import { readTunable } from "../definitions/tuning-state";
 import type { PoolView } from "../entities/pool";
 import type { Unit, UnitId } from "../entities/unit";
-import { clearPush } from "../entities/unit";
+import { clearPush } from "../entities/unit-push";
 import type { World } from "../entities/world-state";
 import { arrive, beginMoving } from "../orders/state-machine";
 import { isPathComplete, nextWaypoint, passWaypoint } from "./path";

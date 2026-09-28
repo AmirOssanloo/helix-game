@@ -3,7 +3,11 @@ import type { StatSource, StatValues } from "../definitions/stat-keys";
 import { STAT_SOURCES } from "../definitions/stat-keys";
 import type { StatTotals } from "../entities/stat-totals";
 import { flatTotalOf, percentTotalOf } from "../entities/stat-totals";
-import type { ModifierEntry, ModifierKind, Stat } from "../entities/unit";
+import type {
+  ModifierEntry,
+  ModifierKind,
+  Stat,
+} from "../entities/unit-tables";
 
 /**
  * A modifier table, the totals it adds, how many of its rows hold a stat, and how many rows it

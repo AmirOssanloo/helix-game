@@ -1,4 +1,4 @@
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { ModifierTable } from "../stats/modifiers";
 import { modifiedValue } from "../stats/modifiers";
 import { BASE_ATTACK_SPEED } from "./attack-state";

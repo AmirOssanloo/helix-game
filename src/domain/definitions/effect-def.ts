@@ -1,5 +1,5 @@
 import type { DamageType } from "../combat/damage";
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { LevelTable, Scalar } from "./level-table";
 
 /**

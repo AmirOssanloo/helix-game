@@ -1,4 +1,4 @@
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { ArmorySlot } from "./item-base-def";
 import type { StatusModifierKind } from "./status-def";
 

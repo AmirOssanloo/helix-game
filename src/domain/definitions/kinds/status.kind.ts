@@ -1,5 +1,5 @@
 import { DAMAGE_TYPES } from "../../combat/damage";
-import { STATS } from "../../entities/unit";
+import { STATS } from "../../entities/unit-tables";
 import type { ListKind } from "../definition-kind";
 import { checkEffects } from "../effect-checks";
 import { checkFrame } from "../registry-checks";

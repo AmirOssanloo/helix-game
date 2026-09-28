@@ -1,5 +1,5 @@
 import { flatTotalOf, percentTotalOf } from "../entities/stat-totals";
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { DebugFlags } from "../entities/world-state";
 import type { ModifierTable } from "../stats/modifiers";
 import type { Tick } from "../tick";

@@ -7,7 +7,8 @@ import {
   WHORL_SPEED_KEYS,
 } from "../definitions/tuning-def";
 import { readTunable } from "../definitions/tuning-state";
-import type { Stat, Unit } from "../entities/unit";
+import type { Unit } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { KitState } from "../entities/world-state";
 import { addModifier, removeModifiers } from "../stats/modifiers";
 

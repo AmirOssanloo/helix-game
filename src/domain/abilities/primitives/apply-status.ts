@@ -1,7 +1,7 @@
 import { ticksOfSeconds } from "../../definitions/duration";
 import type { ApplyStatusEffectDef } from "../../definitions/effect-def";
 import type { World } from "../../entities/world-state";
-import { applyStatus } from "../../statuses/status.system";
+import { applyStatus } from "../../statuses/apply-status";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
 import {

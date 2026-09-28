@@ -1,4 +1,4 @@
-import { STATS } from "../../entities/unit";
+import { STATS } from "../../entities/unit-tables";
 import type { AffixDef } from "../affix-def";
 import type { ListKind } from "../definition-kind";
 import { ARMORY_SLOTS } from "../item-base-def";

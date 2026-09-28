@@ -5,8 +5,8 @@ import { tableAtOrbLevels } from "../../definitions/level-table";
 import type { UnitId } from "../../entities/unit";
 import type { Unit } from "../../entities/unit";
 import type { World } from "../../entities/world-state";
-import type { StatusResult } from "../../statuses/status.system";
-import { applyStatus } from "../../statuses/status.system";
+import type { StatusResult } from "../../statuses/apply-status";
+import { applyStatus } from "../../statuses/apply-status";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
 import {

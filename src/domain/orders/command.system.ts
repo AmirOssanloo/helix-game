@@ -2,7 +2,7 @@ import type { Vec2 } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
 import type { AnyCommand, Command } from "../commands/command";
-import { isDebugCommand } from "../commands/command";
+import { isDebugCommand } from "../commands/debug-commands";
 import type { PickUpCommand } from "../commands/item-commands";
 import { isItemCommand, isStoreCommand } from "../commands/item-commands";
 import { slotOf } from "../commands/ordering";

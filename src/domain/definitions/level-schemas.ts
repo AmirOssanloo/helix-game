@@ -1,5 +1,5 @@
 import { DAMAGE_TYPES } from "../combat/damage";
-import { STATS } from "../entities/unit";
+import { STATS } from "../entities/unit-tables";
 import { effectTargetSchema, shapeSchema } from "./common-schemas";
 import type {
   DamageAreaEffectDef,

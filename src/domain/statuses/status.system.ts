@@ -10,28 +10,18 @@ import type { StatusRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
 import { activeFormOf } from "../entities/hero";
 import type { UnitId } from "../entities/unit";
-import type { StatusEntry, Unit } from "../entities/unit";
-import { clearStatusEntry, STATUS_TABLE_SIZE } from "../entities/unit";
+import type { Unit } from "../entities/unit";
+import { STATUS_TABLE_SIZE } from "../entities/unit";
+import type { StatusEntry } from "../entities/unit-tables";
+import { clearStatusEntry } from "../entities/unit-tables";
 import type { World } from "../entities/world-state";
-import { resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
 import { isCancelled } from "../orders/disable-matrix";
 import { resumeOrder, suspendOrder } from "../orders/life-transitions";
 import { clearOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
 import { restoreHealth } from "../stats/regeneration";
-import { STATUS_NEVER_ENDS, writeStatus } from "./status-table";
-
-/** Why a status did not land: no status has the id, the unit is gone, dead, or out of reach, or every row of its table is taken. */
-export type StatusRefusal =
-  | "unknown_status"
-  | "target_not_found"
-  | "dead"
-  | "target_untargetable"
-  | "status_table_full";
-
-/** What applying a status returns: it is on the table, or the reason it is not. */
-export type StatusResult = "ok" | StatusRefusal;
+import { announceStatus } from "./apply-status";
 
 /**
  * The status pass's working memory, world-owned scratch: the context an expiry list runs
@@ -66,85 +56,6 @@ export const createStatusScratch = (): StatusScratch => {
   }
 
   return scratch;
-};
-
-const announce = (
-  world: World,
-  kind: "status_applied" | "status_expired",
-  unitId: UnitId,
-  sourceId: UnitId | null,
-  statusId: string,
-): void => {
-  const event = world.scratch.event;
-
-  resetDomainEvent(event);
-  event.kind = kind;
-  event.tick = world.tick;
-  event.unitId = unitId;
-  event.sourceId = sourceId;
-  event.statusId = statusId;
-  world.events.write(event);
-};
-
-/**
- * The one door a status enters by: `statusId` on the unit `targetId` names for `ticks`, from
- * `sourceId` or from nobody, with `orbLevels` the applier's three levels in orb order, which
- * every table on the definition is read at for as long as the row lasts.
- *
- * A unit that already holds the status is answered by the definition's stack rule: refresh
- * keeps one row, stack adds a stack to it, and ignore drops the application and changes
- * nothing. Refresh and stack both take the later of the two end ticks, so the longer remaining
- * duration wins, and both take the new applier's source and levels. Nothing lands on a unit
- * that is gone, dead, or untargetable, and nothing lands when every row of the table is taken;
- * the caller decides what a status that does not apply means. An end past `STATUS_NEVER_ENDS`
- * is held at it, so a status given that many ticks lasts as long as its holder.
- */
-export const applyStatus = (
-  world: World,
-  targetId: UnitId,
-  statusId: string,
-  ticks: number,
-  sourceId: UnitId | null,
-  orbLevels: readonly number[],
-): StatusResult => {
-  const record = world.run.statuses.get(statusId);
-
-  if (record === undefined) {
-    return "unknown_status";
-  }
-
-  const target = world.map.units.resolve(targetId);
-
-  if (target === null) {
-    return "target_not_found";
-  }
-
-  if (target.state === "dead") {
-    return "dead";
-  }
-
-  if (target.disables.untargetable) {
-    return "target_untargetable";
-  }
-
-  const write = writeStatus(
-    target.statuses,
-    statusId,
-    record.def.stack,
-    Math.min(world.tick + ticks, STATUS_NEVER_ENDS),
-    sourceId,
-    orbLevels,
-  );
-
-  if (write === "status_table_full") {
-    return "status_table_full";
-  }
-
-  if (write !== "ignored") {
-    announce(world, "status_applied", targetId, sourceId, statusId);
-  }
-
-  return "ok";
 };
 
 /** Writes every stat the status changes into the unit's modifier table, each amount multiplied by the row's stacks. */
@@ -259,7 +170,7 @@ const readTable = (world: World, unit: Unit, unitId: UnitId): number => {
     const record = world.run.statuses.get(entry.definitionId);
 
     if (record === undefined || world.tick >= entry.endsAtTick) {
-      announce(
+      announceStatus(
         world,
         "status_expired",
         unitId,

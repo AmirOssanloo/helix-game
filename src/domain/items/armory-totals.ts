@@ -3,7 +3,7 @@ import type { StatusModifierKind } from "../definitions/status-def";
 import type { TuningUnit } from "../definitions/tuning-def";
 import { convertTunable } from "../definitions/tuning-state";
 import { clearStatTotals, STAT_INDEX } from "../entities/stat-totals";
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { Armory } from "./armory";
 import type { Item } from "./item";
 import type { RequirementContent } from "./requirement";

@@ -1,5 +1,5 @@
 import type { DamageType } from "../combat/damage";
-import type { Stat } from "../entities/unit";
+import type { Stat } from "../entities/unit-tables";
 import type { EffectDef } from "./effect-def";
 import { effectsPerTick } from "./effect-state";
 import { ORB_IDS } from "./orb-id";

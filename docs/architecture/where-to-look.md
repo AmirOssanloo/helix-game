@@ -53,7 +53,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which entity kinds exist, and each pool's capacity | `src/domain/entities/` — one file per kind; the capacity is a constant at the top of each |
 | The live enemy cap, and the slots kept beside it for summons | The constants beside the unit pool's capacity, at the top of the unit file under `src/domain/entities/` |
 | Which commands the player can issue | The command union in `src/domain/commands/`, with the item and store commands in a file of their own beside it |
-| Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/` |
+| Which debug commands the developer panel can issue | The debug command union in `src/domain/commands/`, in a file of its own beside the player's |
 | Which events the tick can emit | The event union in `src/domain/events/` |
 | Which kits exist, and how a slot key becomes an orb press, an invoke, or a cast | `src/domain/kits/` — the registry, one file per kit, and the slot-key application |
 | The orb buffer, the composer, the prepared slots, the Invoke rule, and the orb passives | `src/domain/invoke/` — one file per rule |
@@ -61,7 +61,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
 | What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union, with the item and gold grants in a file of their own beside it |
 | How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system; where the hero comes back is the spawn point the checkpoint rule under `src/domain/map/` moves |
-| How a status is applied, expires, and becomes a disable flag, and how a unit takes the statuses its definition carries at spawn | `src/domain/statuses/` — the status rule, the status system, and the carried statuses |
+| How a status is applied, expires, and becomes a disable flag, and how a unit takes the statuses its definition carries at spawn | `src/domain/statuses/` — the one apply path, the status table, the status system, and the carried statuses |
 | Which derived values a unit carries, the modifier stat that changes each, the attribute that drives each on a form, and the base a definition gives each | The key list in `src/domain/definitions/stat-keys.ts`, one entry per value |
 | Which sub-records a unit groups its state into | `src/domain/entities/` — `unit.ts` and one `unit-*.ts` file per sub-record |
 | How attributes become derived values, how a modifier row changes one, how a unit levels and spends skill points, and how resources regenerate | `src/domain/stats/` — the derivation, the modifier pipeline, the level rule, the regeneration rule, and the stats system |
@@ -118,7 +118,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Which definition fields the content version leaves out as art | `PRESENTATION_FIELDS` in `src/simulation/replay/content-version.ts` |
 | How a stored log's stamp is rewritten | `pnpm restamp`, which runs `tooling/restamp.ts`; its logic is `tooling/restamp-logs.ts` |
 | What working memory the rules keep on the world | `src/domain/entities/world-scratch.ts` — one field per piece, each typed and made by the module that uses it |
-| Which fields the state checksum and the full-state comparison cover, and what they leave out | `src/simulation/replay/state-fields.ts` and `src/simulation/replay/unit-fields.ts`; `STATE_LEAVES` and `STATE_EXCLUDED` list them |
+| Which fields the state checksum and the full-state comparison cover, and what they leave out | The field lists under `src/simulation/replay/`, one file per scope: `state-fields.ts` for the world, `run-fields.ts`, `map-fields.ts`, `pool-fields.ts`, `item-fields.ts`, and `unit-fields.ts`; `STATE_LEAVES` and `STATE_EXCLUDED` list them |
 | Which commands exist | Root `package.json` → `scripts` |
 | The pinned Node and pnpm versions | `.nvmrc` and the `packageManager` field of the root `package.json` |
 | Which path aliases exist | The `paths` block of `tsconfig.json` |

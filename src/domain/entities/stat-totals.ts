@@ -1,5 +1,5 @@
-import type { Stat } from "./unit";
-import { STATS } from "./unit";
+import type { Stat } from "./unit-tables";
+import { STATS } from "./unit-tables";
 
 /**
  * Each stat's index into a sums array, in the order `STATS` lists them. The sums are a typed

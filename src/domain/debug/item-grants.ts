@@ -1,5 +1,8 @@
 import { assert } from "@shared/public";
-import type { GrantGoldCommand, GrantItemCommand } from "../commands/command";
+import type {
+  GrantGoldCommand,
+  GrantItemCommand,
+} from "../commands/debug-commands";
 import type { ItemBaseDef } from "../definitions/item-base-def";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";

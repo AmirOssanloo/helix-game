@@ -13,7 +13,7 @@ import {
   oneOf,
 } from "../../definitions/schema";
 import type { World } from "../../entities/world-state";
-import { applyStatus } from "../../statuses/status.system";
+import { applyStatus } from "../../statuses/apply-status";
 import type { Cast } from "../cast-context";
 import { push } from "../primitives/displace";
 import type { NamedEffect } from "./index";

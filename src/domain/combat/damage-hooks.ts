@@ -4,8 +4,9 @@ import { runEffects } from "../abilities/effect-runner";
 import type { StatusHookRecord } from "../definitions/status-state";
 import { amountAtOrbLevel } from "../definitions/status-state";
 import type { UnitId } from "../entities/unit";
-import type { StatusEntry, Unit } from "../entities/unit";
+import type { Unit } from "../entities/unit";
 import { STATUS_TABLE_SIZE } from "../entities/unit";
+import type { StatusEntry } from "../entities/unit-tables";
 import type { World } from "../entities/world-state";
 
 /** Which of a status's two hooks a pass is running, and which ready tick on the row it reads. */
