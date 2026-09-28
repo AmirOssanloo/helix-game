@@ -53,6 +53,8 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 | Owner | The game engineer |
 | Status | planned |
 
+> **Note, 2026-09-28, from P9-S41-T01:** the rules are written in [commands and events](../../../../docs/architecture/commands-and-events.md) ("Item and store commands", "Activating an item", the events, and their quick-reference rows), [entities and pools](../../../../docs/architecture/entities-and-pools.md) ("The bank is six places beside the inventory"), and the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("Active items"); this ticket's pages are checked against them, not written. Two things the placement adds to the build: the cast under way records that its source is the bank, and the commit cancels it with nothing spent when the bank no longer holds an item naming its ability (sold or moved to the inventory during a cast point); and an accepted activation announces on existing fields, `place`, `unitId`, and `abilityId`. **Moves a stored checksum on purpose:** the bank in run scope and the cast sub-record's source field, both in the one `--checksums` re-record already planned, after the replay proves the play unchanged. **Size holds at 1.5.**
+
 **Build:**
 - **The kind.** An active item is a definition kind of its own under `src/content/items/actives/`, in the three files a kind costs (phase 7's toy kind): id, name, price, a size of 1 by 2 cells, and a required active block naming its ability by string key (ADR 0005) and its "refused while rooted" flag. No rarity, no item level, no affix. Its items are added one by one by the tickets that write their abilities; until then a spec defines a fixture active item whose block names an existing ability.
 - **The bank.** Six places in run scope beside the inventory, with a range of their own in the place encoding (`src/domain/items/item-place.ts`), read top row first: T, X, V, then C, G, Space. A bought active item goes to the first free place, else into the inventory where it fits; buying one the hero already holds, in the bank or the inventory, is refused `already_held`. The existing move command moves an active item between the bank and the inventory and between two places of the bank; anything but an active item is refused a bank place. Selling from the bank works as from the inventory, at a quarter of the price.
@@ -81,11 +83,13 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 
 | Field | Value |
 | --- | --- |
-| Layer | presentation, tests, docs |
+| Layer | presentation, domain, simulation, tests, docs |
 | Size | 1.5 |
 | Depends on | T01, T02, P9-S41-T04 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** two parts of this ticket sit outside presentation, so the layer row gains domain and simulation, and the definition of done gains "A change under `src/domain` or `src/simulation`". The tie-break order, Q to F then T, X, V, C, G, Space, is the command buffer's sort in `src/simulation/command-buffer.ts`, as [commands and events](../../../../docs/architecture/commands-and-events.md#ordering) now says. A cursor that takes the hero reads a targeting kind of its own, **unit or self**, which the [ability pipeline](../../../../docs/architecture/ability-pipeline.md#targeting-kinds) now names: the kind in the ability definition's schema and the request stage accepting the caster for it are built here, so Gyre Sceptre and Veilblade only name it. No stored checksum moves, since no stored log holds an activation. **Size holds at 1.5**, tight; the sprint's buffer takes an overrun.
 
 **Build:**
 - **The keys.** T, X, V, C, G, and Space send `activate_item` for the bank's six places (Q82); Space's default page scroll is suppressed. The keys resolve in the tie-break order after Q, W, E, R, D, F, in that order. An item whose ability wants a target opens the targeting cursor as a spell does; Gyre Sceptre's and Veilblade's cursor accepts the hero as well as an enemy, so a left click on the hero casts on it (catalogue 7.1).
@@ -105,7 +109,7 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 
 **Pages:** [controls and orders](../../../../docs/product/features/controls-and-orders.md#the-keys) and [HUD](../../../../docs/product/features/hud.md), checked against the build; [presentation](../../../../docs/architecture/presentation.md), the bank row and the cursor that takes the hero.
 
-**Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+**Definition of done:** Every change · A change under `src/domain` or `src/simulation` · Anything under `src/presentation` · A documentation change.
 
 ---
 
@@ -118,6 +122,8 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 | Depends on | T01, T02 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** the always-stocked Misc cell is placed in [commands and events](../../../../docs/architecture/commands-and-events.md#item-and-store-commands) as **the listing of active items**: every active item content defines, at every store, in the registry's order, read from the definitions and never rolled, stocked, or emptied, with a range of its own in the place encoding that `buy_item` names; it holds no state, so nothing joins the checksum. This ticket checks that page against the build. **Size holds at 0.5**; the sprint's risk line about the Misc cell is answered.
 
 **Build:** every active item that exists is listed in the Misc tab of every store, at its catalogue price, always in stock and never rolled, so buying one does not empty its cell; its icon and label are emerald green (Q84). No loot table holds one, and the content check refuses a loot table that names one. The Deferred row "The eight active items in the store" moves to Taken.
 

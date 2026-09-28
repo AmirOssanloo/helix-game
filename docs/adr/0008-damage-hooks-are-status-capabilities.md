@@ -5,7 +5,7 @@
 | Field             | Value                                         |
 | ----------------- | --------------------------------------------- |
 | **Status**        | Accepted                                      |
-| **Date**          | 2026-09-20, amended 2026-09-21                |
+| **Date**          | 2026-09-20, amended 2026-09-21 and 2026-09-28 |
 | **Deciders**      | Amir Ossanloo, with the engineering architect |
 | **Supersedes**    | None                                          |
 | **Superseded by** | None                                          |
@@ -22,7 +22,7 @@ The people who feel it are the designer adding an archetype that bashes, who sho
 
 **A status definition carries a damage-taken hook, a damage-dealt hook, or neither. Each hook is an effect list and an internal cooldown table, written with the same primitives and named effects as a cast.**
 
-The damage function runs the damaged unit's taken hooks and the dealing unit's dealt hooks once per damage instance, after mitigation, so a hook reads the amount that landed. A hook's list is anchored on the holder and aimed at the unit on the other side of the hit: the holder itself for a taken hook, the unit it hit for a dealt one. The caster of the list is whoever applied the status, so damage a hook deals is credited where the status came from. **Damage a hook deals runs no hooks.** The cooldown's length is on the definition; the tick it is next ready is on the status table entry, so it replays and nothing allocates.
+The damage function runs the damaged unit's taken hooks and the dealing unit's dealt hooks once per damage instance, after mitigation, so a hook reads the amount that landed. A taken hook runs only for a source whose tier its required filter answers to, `any` for most. A hook's list is anchored on the holder and aimed at the unit on the other side of the hit: the holder itself for a taken hook, the unit it hit for a dealt one. The caster of the list is whoever applied the status, so damage a hook deals is credited where the status came from. **Damage a hook deals runs no hooks.** The cooldown's length is on the definition; the tick it is next ready is on the status table entry, so it replays and nothing allocates.
 
 Something an archetype does on every hit it deals is therefore a status it carries from spawn, not an ability it casts and not a field of its own:
 
@@ -67,7 +67,7 @@ export const fooBarDef = {
 ## Revisit when
 
 - A design needs one hook to set off another, such as a reflected stun. Then the depth guard is reopened, with a bound other than zero.
-- Items arrive and want on-hit rules that are not statuses. The likely answer is an item that carries a status for as long as it is worn, which this record allows; if that does not fit, the question is reopened.
+- Items arrive and want on-hit rules that are not statuses. The likely answer is an item that carries a status for as long as it is worn, which this record allows; if that does not fit, the question is reopened. **Read on 2026-09-28, and the record holds:** an active item in the bank carries its statuses for as long as it sits there, as bank passives, and a damage-taken hook gains one required field, a filter on the tier of the damage's source, `any` on a hook with no reason to filter. Neither changes what a hook is. The [ability pipeline](../architecture/ability-pipeline.md) places both.
 - A profile at the live enemy cap puts hook dispatch among the tick's top costs.
 
 ## References

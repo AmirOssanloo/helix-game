@@ -41,6 +41,9 @@ Every other architecture page says how code must be shaped. This one says where 
 | What a death drops, how it is rolled and where it lands, and how gold, globes, and a picked-up item are taken | `src/domain/loot/` — the drop on death, the roll and its item and affix rolls, the placement and its refusal, and the pickup system |
 | How a pick up order walks to a ground item, and what ends it | `src/domain/orders/pick-up-transitions.ts` — the walk and its end; the take on arrival is the pickup system under `src/domain/loot/` |
 | How an item is made, held on the grid, worn, and priced, and how a place is encoded | `src/domain/items/` — the item value, the inventory and its fit test, the armory and its totals, the item commands, the prices, and the place encoding |
+| Which active items exist, the ability each casts, and the statuses each carries while banked | `src/content/items/actives/` — one file per active item, its active block naming its ability by key |
+| How the bank holds active items, where a bought one goes, and which range of the place encoding is the bank's | `src/domain/items/` — the bank beside the inventory, and the place encoding in `item-place.ts` |
+| How an activation becomes a cast, and what refuses it | `grep -rn "activate_item" src/domain` — the variant in the item command union under `src/domain/commands/`, and where the command system hands it to the cast rules under `src/domain/abilities/` |
 | How a store is stocked, opened, closed, and traded with | `src/domain/store/` — the store records, the stock roll, the store commands, and the store system |
 | What a ground item holds, and how many there can be | `src/domain/entities/ground-item.ts` — the capacity at the top |
 | How the registry assembles content, and how it is validated | `src/content/index.ts` assembles it; `src/domain/definitions/validate-registry.ts` walks the kind list |

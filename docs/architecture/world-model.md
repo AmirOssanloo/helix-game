@@ -40,7 +40,7 @@ What the hero holds is not an entity: it has no pool and no id, and an item in i
 | Armory | `domain/items`, on each form record | Ten armory slots and the per-stat totals they add | Run |
 | Hero's item totals | `domain/items` | The active form's armory totals, copied first in the stats system for every read of a stat | Run |
 | Store | `domain/store` | One per checkpoint: whether it is stocked, and its stock slots; and which one is open | Map |
-| Bank, when it is built | `domain/items` | The items the hero activates, beside the inventory | Run |
+| Bank | `domain/items` | Six places beside the inventory, each an active item or empty | Run |
 
 ---
 

@@ -29,6 +29,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 
 > **Note, 2026-09-28, at the cut:** sized 1 in the sketch with the self-lift row. That row needs the flag `invulnerable`, which P9-S44-T01 makes, and P9-S44-T02 already carried it, so it was counted twice. This ticket is the column alone, at 0.5; the half day went to T02.
 
+> **Note, 2026-09-28, from P9-S41-T01:** the column is written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) (the "Disables" bullet and the quick reference's "The active-item column") and in [commands and events](../../../../docs/architecture/commands-and-events.md) ("Item command columns"); this ticket checks both against the build. The matrix is content, so if the content version covers it, the version moves and `pnpm restamp` re-stamps; no stored checksum moves, since no stored log holds an activation. **Size holds at 0.5.**
+
 **Build:** `DisableCellsDef` gains the active-item column and `COMMAND_COLUMNS` reads it for `activate_item`: allowed under silence, root, disarm, slow, and every row but stun and lift, which refuse it (Q121, the [disable matrix](../../../../docs/product/specs/disable-matrix.md)'s notes 17 to 20). Slipknife's refusal under root is its active block's, not the column's.
 
 **Acceptance:**
@@ -82,6 +84,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 | Depends on | P9-S41-T01 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("Every amount is `base + perLevel × L`", "Amounts" and "The cast context" rows) places the term on the one amount shape wherever it is written, an effect list's entries and a status definition's tables alike, so the content version moves once, here; this ticket puts the caster's level into the cast context at commit, and effect lists read it. A status definition's amounts read the level the entry records when it lands, which P9-S44-T01 adds beside the applier's side; until then they read the term at zero, which every amount is. No stored checksum moves. **Size holds at 1**, provided the status tables share the effect lists' amount shape, as `amountAtOrbLevel` suggests; if they do not, the status half moves to P9-S44-T01 and this size still holds.
 
 **Build:** every amount in an effect list gains a required per-level term: `base + perLevel × L`, where `L` is the caster's level when the cast commits, read once then. It is 0 on every existing amount; its tuning keys follow ADR 0009, the field path verbatim. The content version moves; `pnpm restamp` re-stamps the stored logs, and no checksum moves.
 
@@ -160,6 +164,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 | Depends on | T01, P9-S42-T04 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** `refresh_clocks` is written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("Active items" and its quick-reference row); this ticket checks the page against the build rather than writing it. No stored checksum moves. **Size holds at 1.**
 
 **Build:** the named effect `refresh_clocks` ends every clock the hero holds but the casting ability's own: the prepared spells', Invoke's, the hidden clocks of spells no longer in D or F ([R33](../02-risks-and-hidden-work.md)), and every active item's. Mainspring at the catalogue's numbers: no target, 180 s, 250 mana, 3000 gold.
 

@@ -29,6 +29,8 @@ On the long road, let a trapper throw its net and blink away with Slipknife as i
 
 > **Note, 2026-09-28, at the cut:** runs before the disjoint, not after it as the sketch listed: the disjoint is bumped by `blink_to`, which this ticket makes.
 
+> **Note, 2026-09-28, from P9-S41-T01:** `blink_to`, the active block's rooted field, and a targeting kind are written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md); this ticket checks them against the build. The build above misses one thing: the request stage walks a caster toward a point beyond its range, so "1200 toward it" cannot be `blink_to`'s own clamp. Slipknife's ability takes the **clamped point** targeting kind, which moves a point beyond the range in to the range along the bearing from the caster and never walks; `blink_to` then places at the anchor or the nearest walkable ground. The kind is built here, in the definition schema and the request stage. No stored checksum moves. **Size holds at 1**, tight; the sprint's buffer takes an overrun, as its risk line already says of `blink_to`.
+
 **Build:**
 - **`blink_to`,** a primitive in `src/domain/abilities/primitives/`: the unit is placed at the point, or the nearest walkable ground to it for its radius class, or at the range toward it if the point is further; no travel, no path.
 - **Slipknife** at the catalogue's numbers: a point within 1200, 15 s, no mana, 1400 gold. Its active block's "refused while rooted" flag is set, read by the cast pipeline with reason `rooted`.
@@ -59,6 +61,8 @@ On the long road, let a trapper throw its net and blink away with Slipknife as i
 | Depends on | T01, P9-S44-T02, P9-S41-T02, P9-S41-T03 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** the disjoint is written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("The disjoint") and [entities and pools](../../../../docs/architecture/entities-and-pools.md) (the count in the sub-record for what carries the unit, the projectile's recorded count), and its event in [commands and events](../../../../docs/architecture/commands-and-events.md) on `projectileId` and `unitId`, no new field; this ticket checks them against the build. One change to the build above: a melee swing does not check reach at every commit, since a target that walks out of a swing is hit today and a plain reach check would move every stored log where one did. The swing records its target's count when its attack point begins, a third field, on the attack's sub-record, and only a count that moved sends it through the reach check. **Moves a stored checksum on purpose:** the three fields' shape in one `--checksums` re-record after the replay proves play unchanged, and the play of any log where Updraft lifts a unit a projectile is aimed at, traced as the build says. **Size holds at 1.5.**
 
 **Build:** a disjoint count on the unit, in the sub-record for what carries it, bumped by `blink_to` and by the landing of any status that raises `lifted`, the self-lift and Updraft's included. A projectile aimed at a unit records its target's count at launch; the projectile system, on a mismatch, sends the projectile on to the point the target stood, where it ends and hits nothing. A point-aimed projectile and a zone are dodged, never disjointed. A melee swing checks its reach when it commits and lands on nothing if the target blinked out of it. Both counts join the checksum's lists.
 
@@ -91,6 +95,8 @@ If Updraft lifts an enemy with a projectile in flight at it in a stored log, tha
 | Depends on | P9-S44-T03, P9-S43-T03, P9-S42-T04 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** the expanding ring is written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("A zone's shape" and the "An expanding ring" row): a shape with a largest radius and the ticks to reach it, its radius read from the zone's age, touching a unit on the tick its edge passes between last tick's radius and this one's, so "once and never twice" needs no per-unit memory on the zone. This ticket checks the page against the build. No stored checksum should move: the shape is content and the radius is derived; if the zone gains a hashed field after all, its shape moves and is re-recorded with `--checksums` after the replay proves play unchanged. **Size holds at 1.5.**
 
 **Build:** the expanding ring, the first zone of its shape: a ring growing from the caster to 900 over 1.5 s, each enemy it reaches taking `90 + 9 × L` magical damage once and slowed 40% for 4 s. Rimeward at the catalogue's numbers: no target, 30 s, 100 mana, 2000 gold, with +4 armour as a bank passive. The zone view draws the ring as it grows from the atlas, with no new draw call.
 

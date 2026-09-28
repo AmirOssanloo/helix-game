@@ -23,9 +23,11 @@ The long road from the spawn with one 12 000-gold grant: buy six active items, r
 | --- | --- |
 | Layer | content, tests, docs |
 | Size | 1 |
-| Depends on | P9-S43-T03, P9-S42-T04 |
+| Depends on | P9-S43-T03, P9-S44-T01, P9-S42-T04 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** edits none of the placement's pages and moves no stored checksum, but the burn's `25 + 2.5 × L` a second is a status definition's amount, which reads the level the status entry records when it lands; that field is P9-S44-T01's, so it joins this ticket's dependencies (the sprint order already met it). **Size holds at 1.**
 
 **Build:** Skyfall Maul at the catalogue's numbers: a point within 600, a cast point of 2 s, then a meteor landing at the point 0.5 s later, `100 + 10 × L` magical damage to each enemy within 300 and `burn` for 3 s at `25 + 2.5 × L` a second; 28 s, 125 mana, 2200 gold. The existing `burn` status and a delayed zone, as Zenith's; the targeting preview shows the 300 radius.
 
@@ -52,6 +54,8 @@ The long road from the spawn with one 12 000-gold grant: buy six active items, r
 | Depends on | P9-S44-T01, P9-S43-T01, P9-S43-T03, P9-S42-T03 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** `physical_immune` and magical damage taken are written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("The exceptions, and where each is read"); this ticket checks them against the build. Three readings to build to: a physical instance on a `physical_immune` unit deals nothing **and runs no hooks**, so an ethereal hero is not bashed; magical damage taken is a modifier stat read at the hit off the damaged unit through the one pipeline over a base of nothing, as magic damage is, not a derived value, and scales a magical instance after its mitigation; and Veilblade's target is the **unit or self** kind P9-S42-T03 builds. The [disable matrix](../../../../docs/product/specs/disable-matrix.md) now names the flag `physical_immune` where it said `ethereal`; the status's id is `veilblade_ethereal` there and `ethereal` above, and the content file settles it. No stored checksum should move, since the stat is not a derived value; if the hero's totals are hashed by stat, adding one moves their shape, re-recorded with `--checksums` after the replay proves play unchanged. **Size holds at 1.5.**
 
 **Build:**
 - **The flag `physical_immune`,** read in the one damage function beside `invulnerable`: physical damage is zeroed.
@@ -86,6 +90,8 @@ The long road from the spawn with one 12 000-gold grant: buy six active items, r
 | Depends on | P9-S51-T02, P9-S41-T03 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** edits none of the placement's pages, and **moves stored checksums on purpose**, as its build says: the long road plays differently, so `balance-loot.json` is recorded again and every other moved log is named and traced. The bolt is a homing projectile aimed at a unit, so it records the disjoint count at launch as any such projectile does, with nothing added for it. **Size holds at 1.**
 
 **Build:** the enemy ability `stun_bolt`, as [the design outline](../../2026-09-28-design-outline-next-phases.md) sets it: a homing projectile at 700 a second, range 900, cast point 0.6 s, a 1.5 s stun and 30 physical damage, 8 s cooldown. It joins the boss abilities of the skirmisher and the brute, so pack 21 and pack 37, the last boss, throw it on the long road. The enemy catalogue and the long road spec gain it. The content version moves: `pnpm restamp` re-stamps the stored logs; `balance-loot.json` is recorded again by the driver, since the road now plays differently; every other stored log whose play moves is named and traced ([R36](../02-risks-and-hidden-work.md)).
 

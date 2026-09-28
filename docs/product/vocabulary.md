@@ -86,11 +86,12 @@ When two people call the same thing different names, the names leak into the cod
 | An ability that holds its caster for a time before it acts, ended at no cost by any order, orb press, or throw: the town portal | **Channel** | Cast time (that is the cast point), charge (that is an enemy's rush) |
 | What a status does when its unit takes or deals damage, an effect list on the definition | **Damage hook** | Trigger, proc, on-hit |
 | A status a unit holds from spawn until it dies because its definition lists it: a bash, a frost attack | **Carried status** | Aura, trait, innate ability (a passive is what an orb instance carries) |
+| A status an active item puts on the hero for as long as it sits in the bank: Rimeward's armour, Slipknife's lockout | **Bank passive** | Item aura, equip effect, carried status (that is an archetype's) |
 | Every status against every key, order, cast point, and cursor, one answer per cell | **Disable matrix** | CC table, block list |
 | A short-lived visual thing with no rules of its own | **Effect** | Particle, VFX |
-| One of the six things the pipeline knows how to do by name: damage an area, apply a status, spawn a projectile, a zone, or a unit, displace | **Primitive** | Operation, verb, action |
+| One of the eight things the pipeline knows how to do by name: damage an area, apply a status, spawn a projectile, a zone, or a unit, displace, dispel, blink | **Primitive** | Operation, verb, action |
 | A bespoke thing a definition names by string key, written as one function in the domain | **Named effect** | Script, custom effect, trigger |
-| What every primitive and named effect runs with: the caster, the ability, the orb levels at commit, an anchor with a facing, a direction or none, the target unit, the zone | **Cast context** | Payload, arguments, parameters |
+| What every primitive and named effect runs with: the caster, the ability, the orb levels and the caster's level at commit, an anchor with a facing, a direction or none, the target unit, the zone | **Cast context** | Payload, arguments, parameters |
 | An aim made of a press point and a drag: where the ability lands and the line it lies along | **Vector** (a targeting kind; not `Vec2`, which is any pair of coordinates in code) | Drag-cast, line target, two-point target |
 | A spell's presence on the ground with rules: a wall, a meteor, a updraft | **Zone** | Area, field, hazard |
 | A moving thing that hits: an arrow, a bolt | **Projectile** | Missile, bullet |

@@ -33,6 +33,8 @@ Tickets P9-S53-T03 onward are what P9-S52-T04 accepts, in the triage note's orde
 | Owner | The game engineer |
 | Status | planned |
 
+> **Note, 2026-09-28, from P9-S41-T01:** the placement wrote the target into the ability pipeline, entities and pools, commands and events, world model, and where to look under `docs/architecture/`, ADR 0008's revisit point, and three product lines: the disable matrix's `physical_immune` and note 20's "hostile", and the vocabulary's **bank passive** row, its primitive count of eight, and the cast context's level. This ticket reads those against the build like any other page. **Size holds at 0.5.**
+
 **Build:** every page phase 9 touched read against the build as it stands, and corrected: the ability pipeline, entities and pools, commands and events, presentation, and content and registries under `docs/architecture/`; the item catalogue, the disable matrix, the enemy catalogue, the long road, status effects, enemies, controls and orders, HUD, items and loot, and the developer panel under `docs/product/`; the where-to-look pointers; the vocabulary for **active item**, **activating**, **bank**, **self-lift**, **dispel**, **disjoint**, and **ethereal**. Each correction is a line in the ticket's closing note.
 
 **Acceptance:**

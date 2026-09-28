@@ -25,7 +25,7 @@ Kill an enemy on the long road and, while another stands on its drop, right-clic
 | Size | 1 |
 | Depends on | none |
 | Owner | The engineering architect |
-| Status | planned |
+| Status | done |
 
 **Build:** section 2 of [the architecture outline](../../2026-09-28-architecture-outline-next-phases.md), its Q121 table and phase 9's part of section 4, written into the pages that own each rule, as target, with placeholders:
 - **[Ability pipeline](../../../../docs/architecture/ability-pipeline.md):** an activation as a cast whose source is a bank place, with the item's clock on the hero keyed by ability id (ADR 0011) and shortened by cooldown reduction as a spell's is (Q109); the per-level amount term; the named effects `gyre_lift` and `refresh_clocks`; the primitives `dispel` and `blink_to`; the expanding ring as a zone shape; the three flags `invulnerable`, `physical_immune`, and the self-lift's let-through, each read in exactly one place; "refused while rooted" as a required field on an active block; the disjoint count on the unit and the projectile's recorded count.
@@ -60,6 +60,8 @@ The ticket names each later phase 9 ticket that edits one of these pages, and ea
 | Depends on | none |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** [entities and pools](../../../../docs/architecture/entities-and-pools.md) now names the sub-record for what carries the unit, a push or a charge, as where the disjoint count goes, and the [ability pipeline](../../../../docs/architecture/ability-pipeline.md)'s "A status" bullet names one apply path in `domain/statuses/` for every caller, which is the seam the status system's split takes. This ticket's entities-and-pools edit is to check the sub-record's sentence against the split, not to write it. No checksum moves. **Size holds at 1.5.**
 
 **Build:** four files phase 9 must grow, each within 70 lines of the 500-line limit on 2026-09-28 ([R40](../02-risks-and-hidden-work.md)), split along the seams the architecture outline names before any feature touches them:
 - `src/domain/entities/unit.ts`, 499 lines: what carries the unit (knockback, charge) into a sub-record of its own, where the disjoint count will go.
@@ -143,13 +145,13 @@ No behaviour changes. Each split goes through the layer's doors; nothing new is 
 
 | Check | Result |
 | --- | --- |
-| The placement written into the pages | |
+| The placement written into the pages | Done in P9-S41-T01, 2026-09-28: the ability pipeline, entities and pools, commands and events, where to look, the world model, and ADR 0008 (its second revisit point read, the record holding); the disable matrix and vocabulary brought to it. Notes under 17 later phase 9 tickets, 4 of them moving a stored checksum on purpose; no size moved. Readings past the outline are Q136 to Q139, decided provisionally. `tests/docs-links.spec.ts` green |
 | The four files split, every stored log unchanged | |
 | The pinned phase 8 build served at its own address | |
 | The right click's order, with and without Alt, in Chrome | |
 | The render benchmark, by an agent | |
 | Phase 8's bucket tickets run in this sprint, if any | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 1 |
 | Sprint total | |
 
 ## Risks in this sprint

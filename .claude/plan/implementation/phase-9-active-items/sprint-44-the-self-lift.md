@@ -27,6 +27,8 @@ On the long road, get silenced and rooted by a hexer and a trapper, press Gyre S
 | Owner | The game engineer |
 | Status | planned |
 
+> **Note, 2026-09-28, from P9-S41-T01:** the rules are written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("The exceptions, and where each is read", the `dispel` row, "A status" and its one apply path) and [entities and pools](../../../../docs/architecture/entities-and-pools.md) (the status table); this ticket checks them against the build. `invulnerable` is read in two places, the damage function and the apply path, and the page says so. The entry gains two fields, not one: the applier's side, and the applier's **level** beside its orb levels, which the apply path copies from the cast context, so a status definition's amounts read `base + perLevel × L` at the level its cast committed at (P9-S43-T03 put the term on them at zero). Gyre Sceptre's landing damage and Skyfall Maul's burn read it. The content test's lists are the page's: only the self-lift carries `invulnerable`, only the ethereal status `physical_immune`, only `gyre_lift` runs `dispel`. **Moves a stored checksum on purpose:** the entry's shape, both fields in the one `--checksums` re-record already planned. **Size holds at 1.5**: the second field is written where the first is and re-recorded with it.
+
 **Build:**
 - **`invulnerable`,** a derived disable flag, read first in the one damage function in `src/domain/combat/damage.ts`: no damage and no hooks. The status apply path reads it too: an invulnerable unit takes no new hostile status from any source, zones and areas included (Q125).
 - **The applier's side,** recorded on a status entry when it lands, since the applier's id may be stale by the time it is read. The entry's new field joins the checksum's list.
@@ -63,6 +65,8 @@ The stored logs' checksums move with the entry's shape only; `pnpm restamp --che
 | Owner | The game engineer |
 | Status | planned |
 
+> **Note, 2026-09-28, from P9-S41-T01:** `gyre_lift`, the self-lift's row, and the hold are written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("Active items", "Disables", "Enemies under an untargetable hero"); this ticket checks them against the build. Gyre Sceptre's target is the **unit or self** targeting kind P9-S42-T03 builds. Its enemy list's landing damage, as a lift's expiry list, reads the level the entry records (T01). The hold is a reading inside the chase and attack states, not a state of its own, with `aggro_hidden` read first. No stored checksum moves: no stored log has an untargetable hero, and the enemy lift is a new list. **Size holds at 1.5.**
+
 **Build:**
 - **Gyre Sceptre,** one ability targeting the hero or an enemy within 600, 23 s, 100 mana, 1600 gold. The named effect `gyre_lift` chooses its list by the target: on an enemy, a lift where it stands for 2.5 s, then `60 + 5 × L` magical damage on landing; on the hero, `dispel`, then the self-lift.
 - **`gyre_self_lift`,** a status of its own for 2.5 s with the flags `lifted`, `untargetable`, and `invulnerable`, and its disable-matrix row: Q, W, E, and R allowed; D, F, orders, the attack, and the six active-item keys refused (Q121's rule 4). The row is tested per cell.
@@ -95,6 +99,8 @@ The stored logs' checksums move with the entry's shape only; `pnpm restamp --che
 | Depends on | P9-S42-T02, P9-S41-T02 |
 | Owner | The game engineer |
 | Status | planned |
+
+> **Note, 2026-09-28, from P9-S41-T01:** both are written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) ("A bank passive", the damage hook's filter, and their quick-reference rows), and [ADR 0008](../../../../docs/adr/0008-damage-hooks-are-status-capabilities.md)'s second revisit point is marked read; this ticket checks them against the build. Two refinements of the build above: a bank change does not remove and re-apply every passive but makes the table hold one entry of each banked item's status, keeping one already there so no hook's ready-at tick is handed back; and a status listed as a bank passive is listed nowhere else, a content check, so its entries are known by status id and need no field. The filter is on the damage-taken hook only; a source with no tier, the hero or a summon, meets `any` alone. No stored checksum moves. **Size holds at 1.**
 
 **Build:**
 - **Bank passives.** An active item's definition lists the statuses it carries while it sits in the bank. The lifetime-status module applies them again whenever the bank changes and on respawn, and removes them when the item leaves the bank, as a form's carried statuses are applied (ADR 0008's second revisit point). An item in the inventory carries nothing.
