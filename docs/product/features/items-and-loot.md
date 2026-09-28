@@ -62,13 +62,13 @@ A worn item adds its implicit stat and its affixes to the hero's stats on the ti
 
 ## The store
 
-A store stands at every checkpoint. A left click on the checkpoint ring the hero stands in opens it; a click on a ring the hero is not in keeps its usual meaning. The store opens beside the inventory, as a Diablo II vendor does.
+A store stands at every checkpoint. A left click on the checkpoint ring the hero stands in opens it; a click on a ring the hero is not in keeps its usual meaning. The store opens on the left of the screen with the inventory beside it on the right, as Diablo II's store does, and shows gold.
 
-- **Three tabs:** Armour, Weapons, and Misc, the last holding amulets, rings, and the active items. A click on a tab shows it.
+- **Three tabs:** Armour, Weapons, and Misc, the last holding amulets, rings, and the active items. A click on a tab shows it; the store opens on Armour. Each tab is a grid of its items' icons in their rarity's tint, at their size.
 - **Stock:** 12 items from Common to Rare, rolled the first time that checkpoint's store opens, at the hero's level on that tick, and never restocked.
-- **Buying:** a left click on a stocked item buys it for its price, into the inventory where it fits.
-- **Selling:** a right click on an inventory item sells it for a quarter of its price (`store_sell_fraction`), rounded down.
-- **Closing:** Esc, or the hero leaving the ring or dying. The world keeps running while it is open.
+- **Buying:** a left click on a stocked item buys it for its price, into the inventory where it fits. The pointer over it shows the price in its tooltip.
+- **Selling:** a right click on an inventory item sells it for a quarter of its price (`store_sell_fraction`), rounded down. The pointer over it shows the sell price in its tooltip.
+- **Closing:** Esc, or the hero leaving the ring or dying. The inventory stays open until it is closed itself. The world keeps running while the store is open.
 
 ## States and edge cases
 
@@ -82,7 +82,7 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 | The hero dies holding items | Nothing is lost: the inventory, the armory, and gold are kept. The store closes |
 | The hero dies with the pick up order in flight | The order is cleared as every order is at death; the item stays |
 | A command sent while the hero is dead | Every inventory, armory, and store command is refused while the hero is dead; under every disable, it is taken |
-| Not enough gold | The buy is refused and the price flashes |
+| Not enough gold | The buy is refused and the item flashes in the store |
 | The store opened away from a ring | Refused; only the ring the hero stands in opens a store |
 | A map loaded or reset | Every ground item is gone. The inventory, the armory, and gold are run scope and are kept |
 | More on the ground than the map holds | A drop with no room, past the limit of ground items on a map or with no free spot near where the enemy died, is not made, and the developer panel counts it; nothing already on the ground is removed. A death's drops are made best first, so a globe goes without before an item, and a Legendary last of all. The limit holds at least two full clears of the long road with nothing taken |

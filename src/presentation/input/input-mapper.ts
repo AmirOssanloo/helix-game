@@ -26,8 +26,10 @@ import {
   RIGHT_BUTTON,
 } from "./key-bindings";
 import { pickUnit } from "./pick-unit";
+import { ringClicked } from "./store-ring";
 import type { TargetingCursor } from "./targeting-cursor";
 import {
+  castTargetOf,
   closeCursor,
   createTargetingCursor,
   holdPress,
@@ -243,8 +245,8 @@ export class InputMapper {
    * A button went down at a screen position. Right: what is drawn under it, top first, an
    * item's label, a unit, an item's icon, then the ground; the cursor closes either way, and
    * while a press is held the right click only closes it. Left: the cursor's commit, the press of a
-   * vector cursor, a ground point the developer panel is waiting for, or a selection that has
-   * nothing to select yet.
+   * vector cursor, a ground point the developer panel is waiting for, the store of the checkpoint
+   * whose ring the hero and the click are both in, or a selection that has nothing to select yet.
    */
   pointerDown(button: number, screenX: number, screenY: number): void {
     this.resolvePoint(screenX, screenY);
@@ -404,6 +406,8 @@ export class InputMapper {
         if (pending !== null) {
           this.groundPick.pending = null;
           pending(this.point.x, this.point.y);
+        } else {
+          this.clickRing();
         }
 
         break;
@@ -430,10 +434,30 @@ export class InputMapper {
     }
   }
 
+  /** A left click on the ring of the checkpoint the hero stands in opens its store, unless it is open already; anywhere else it selects, which sends nothing yet. */
+  private clickRing(): void {
+    const checkpoint = ringClicked(this.world, this.point);
+
+    if (checkpoint !== -1 && checkpoint !== this.world.map.openStore) {
+      this.submit({
+        kind: "open_store",
+        tick: this.driver.nextTick,
+        timestamp: this.driver.now(),
+        checkpoint,
+      });
+    }
+  }
+
   /** The confirming click: a point or a direction is always a target; a unit cast waits for a click on a unit. A vector commits on its release instead. */
   private commitCast(): void {
     const abilityId = this.cursor.abilityId;
-    const target = this.castTarget();
+    const target = castTargetOf(
+      this.cursor,
+      this.world,
+      this.point,
+      this.driver.alpha,
+      this.candidates,
+    );
 
     if (abilityId === null || target === null) {
       return;
@@ -447,38 +471,6 @@ export class InputMapper {
       abilityId,
       target,
     });
-  }
-
-  private castTarget(): CastTarget | null {
-    switch (this.cursor.targeting) {
-      case "point":
-        return {
-          kind: "point",
-          position: { x: this.point.x, y: this.point.y },
-        };
-
-      case "direction":
-        return {
-          kind: "direction",
-          position: { x: this.point.x, y: this.point.y },
-        };
-
-      case "unit": {
-        const unitId = pickUnit(
-          this.world,
-          this.point.x,
-          this.point.y,
-          this.driver.alpha,
-          this.candidates,
-        );
-
-        return unitId === null ? null : { kind: "unit", unitId };
-      }
-
-      case "vector":
-      case "none":
-        return null;
-    }
   }
 
   /** The world point under the screen position now, clamped inside the map. */

@@ -4,6 +4,7 @@ import {
   INVENTORY_CELL_COUNT,
   meetsRequirement,
   NO_RECORD,
+  NO_STORE,
   recordAt,
 } from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
@@ -19,6 +20,7 @@ import {
 import type { CommandDriver } from "../scene-context";
 import { GOLD_TINT, itemBaseOf, rarityOf } from "../views/ground-item.view";
 import type { Label, Quad, QuadFactory } from "../views/quad";
+import { heroOf } from "./hero-of";
 import { InventoryFlashes } from "./inventory-flashes";
 import {
   ARMORY_SLOT_RECTS,
@@ -94,8 +96,9 @@ const GOLD_UNSHOWN = -1;
  * sums nothing, and asks the domain whether the hero's level meets an item's requirement,
  * backing one it does not in red. A left click on an item in the grid, whose pointer does not
  * move the drag distance before the release, sends `equip_item`; a left click on a worn item
- * `unequip_item`, and a right click on an item in the grid `drop_item`; a click on nothing
- * sends nothing. A refused command flashes the item at the place the refusal names.
+ * `unequip_item`, and a right click on an item in the grid `drop_item`, or `sell_item` while
+ * the world has a store open; a click on nothing sends nothing. A refused command flashes the
+ * item at the place the refusal names.
  *
  * A left press on an item in the grid that moves the drag distance lifts it onto the pointer,
  * which the lift draws with the cells it would take. The release sends `move_item` where the
@@ -468,7 +471,7 @@ export class InventoryScreen implements ClaimScreen {
     return worn === undefined || worn.baseId === null ? null : worn;
   }
 
-  /** A press at (`x`, `y`) on grid cell `cell`: nothing on an empty cell, a held press for the left button, a drop for the right. */
+  /** A press at (`x`, `y`) on grid cell `cell`: nothing on an empty cell, a held press for the left button, a drop for the right, or a sale while a store is open. */
   private pressCell(button: number, cell: number, x: number, y: number): void {
     if (recordAt(this.world.run.inventory, cell) === NO_RECORD) {
       return;
@@ -480,7 +483,7 @@ export class InventoryScreen implements ClaimScreen {
       const driver = this.driver;
 
       driver.submit({
-        kind: "drop_item",
+        kind: this.world.map.openStore === NO_STORE ? "drop_item" : "sell_item",
         tick: driver.nextTick,
         timestamp: driver.now(),
         cell,
@@ -488,10 +491,3 @@ export class InventoryScreen implements ClaimScreen {
     }
   }
 }
-
-/** The hero the world view holds, or `null`. */
-const heroOf = (world: WorldView): DeepReadonly<Unit> | null => {
-  const heroId = world.run.heroId;
-
-  return heroId === null ? null : world.map.units.resolve(heroId);
-};

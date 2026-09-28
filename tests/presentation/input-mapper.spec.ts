@@ -1426,3 +1426,180 @@ describe("the inventory open over the mapper", () => {
     expect(driver.commands.map((command) => command.kind)).toEqual(["cast"]);
   });
 });
+
+describe("a left click on a checkpoint's ring", () => {
+  /** How far a checkpoint's ring reaches, as content writes it. */
+  const REACH = 256;
+
+  /** The second checkpoint, far from the first, at the origin. */
+  const FAR_X = 3000;
+
+  type Ringed = Readonly<{
+    world: Simulation;
+    hero: Unit;
+    driver: CommandRecorder;
+    lens: FixedLens;
+    mapper: InputMapper;
+    groundPick: GroundPick;
+  }>;
+
+  /** A mapper over a hero standing at (`x`, 0) on a map with checkpoints at the origin and far east; the lens is fixed, so canvas and world points agree. */
+  const ringed = (x = 0): Ringed => {
+    const map = makeMapDef.build({
+      bounds: {
+        minX: -MAP_REACH,
+        minY: -MAP_REACH,
+        maxX: MAP_REACH,
+        maxY: MAP_REACH,
+      },
+      checkpoints: [
+        { x: 0, y: 0 },
+        { x: FAR_X, y: 0 },
+      ],
+    });
+    const world = makeWorld({
+      seed: 1,
+      map,
+      registry: makeRegistry({
+        hero: { ...heroDef, forms: [form.id] },
+        forms: [form],
+        maps: [map],
+      }),
+    });
+    const hero = spawnHero(world, { x });
+    const driver = new CommandRecorder(world);
+    const lens = new FixedLens();
+    const groundPick = createGroundPick();
+    const mapper = new InputMapper({
+      driver,
+      lens,
+      world: world.view,
+      intents: new IntentRecorder(),
+      groundPick,
+      picks: createPickPort(PICK_ROOM, PICK_ROOM),
+    });
+
+    return { world, hero, driver, lens, mapper, groundPick };
+  };
+
+  it("opens the store of the ring the hero stands in, on its edge included, instead of a select", () => {
+    const { driver, mapper } = ringed(100);
+
+    mapper.pointerDown(LEFT_BUTTON, REACH, 0);
+
+    expect(driver.commands).toEqual([
+      { kind: "open_store", tick: 0, timestamp: 1, checkpoint: 0 },
+    ]);
+  });
+
+  it("sends nothing for the same click one unit outside the ring: it selects, as before", () => {
+    const { driver, mapper } = ringed(100);
+
+    mapper.pointerDown(LEFT_BUTTON, REACH + 1, 0);
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("names the ring the hero stands in, whichever ring that is, and the world opens it", () => {
+    const { world, driver, mapper } = ringed(FAR_X - 10);
+
+    mapper.pointerDown(LEFT_BUTTON, FAR_X + 10, 20);
+    world.tick();
+
+    expect(driver.commands).toMatchObject([
+      { kind: "open_store", checkpoint: 1 },
+    ]);
+    expect(world.view.map.openStore).toBe(1);
+  });
+
+  it("keeps its meaning on a ring the hero is not in: a click on the first ring with the hero off every ring, or on the far ring with the hero on the first, sends nothing", () => {
+    const off = ringed(REACH + 50);
+
+    off.mapper.pointerDown(LEFT_BUTTON, 0, 0);
+
+    const on = ringed(0);
+
+    on.mapper.pointerDown(LEFT_BUTTON, FAR_X, 0);
+
+    expect(off.driver.commands).toEqual([]);
+    expect(on.driver.commands).toEqual([]);
+  });
+
+  it("sends nothing while the hero is dead, or while the store it names is open already", () => {
+    const dead = ringed(0);
+
+    dead.hero.state = "dead";
+    dead.mapper.pointerDown(LEFT_BUTTON, 0, 0);
+
+    const shopping = ringed(0);
+
+    shopping.mapper.pointerDown(LEFT_BUTTON, 0, 0);
+    shopping.world.tick();
+    shopping.mapper.pointerDown(LEFT_BUTTON, 10, 0);
+
+    expect(dead.driver.commands).toEqual([]);
+    expect(shopping.driver.commands.map((command) => command.kind)).toEqual([
+      "open_store",
+    ]);
+  });
+
+  it("hands its point to a waiting ground pick first, and opens nothing", () => {
+    const { driver, mapper, groundPick } = ringed(0);
+    const picked: { x: number; y: number }[] = [];
+
+    groundPick.pending = (x, y): void => {
+      picked.push({ x, y });
+    };
+    mapper.pointerDown(LEFT_BUTTON, 10, 0);
+
+    expect(picked).toEqual([{ x: 10, y: 0 }]);
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("with a cursor open commits the cursor and opens nothing", () => {
+    const { driver, mapper } = ringed(0);
+
+    mapper.keyDown("KeyA");
+    mapper.pointerDown(LEFT_BUTTON, 10, 0);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual([
+      "attack_move",
+    ]);
+  });
+
+  it("loses to an open screen's claim: a click on the inventory over the ring opens nothing", () => {
+    const { driver, lens, mapper, world } = ringed(0);
+    const claim = new InputClaim({
+      hold: (): void => {},
+      release: (): void => {},
+    });
+    const inventory = new InventoryScreen({
+      makeQuad: (frame) => new QuadRecorder(frame),
+      makeLabel: (size) => new LabelRecorder(size),
+      frameSizes: () => 1,
+      world: world.view,
+      driver,
+      makeOverQuad: (frame) => new QuadRecorder(frame),
+    });
+    const sink = claimedSink(claim, mapper);
+    const x = (INVENTORY_RECT.minX + INVENTORY_RECT.maxX) / 2;
+    const y = (INVENTORY_RECT.minY + INVENTORY_RECT.maxY) / 2;
+
+    // The canvas point inside the inventory lies on the ring in the world.
+    lens.offset.x = -x;
+    lens.offset.y = -y;
+    claim.bindMapper(mapper);
+    claim.open(inventory);
+    sink.pointerDown(LEFT_BUTTON, x, y);
+    sink.pointerUp(LEFT_BUTTON, x, y);
+
+    expect(driver.commands).toEqual([]);
+
+    claim.close(inventory);
+    sink.pointerDown(LEFT_BUTTON, x, y);
+
+    expect(driver.commands.map((command) => command.kind)).toEqual([
+      "open_store",
+    ]);
+  });
+});

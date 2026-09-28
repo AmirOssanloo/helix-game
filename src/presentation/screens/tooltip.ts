@@ -1,4 +1,4 @@
-import type { Item, Unit } from "@domain/public";
+import type { Item } from "@domain/public";
 import {
   ITEM_LINE_CAPACITY,
   levelRequirementOf,
@@ -20,6 +20,7 @@ import type {
   Quad,
   QuadFactory,
 } from "../views/quad";
+import { heroOf } from "./hero-of";
 import { placeQuad, SCREEN_FRAME } from "./screen-parts";
 import type { TooltipPrice } from "./tooltip-text";
 import { priceText, statLineText } from "./tooltip-text";
@@ -449,10 +450,3 @@ export class Tooltip {
     }
   }
 }
-
-/** The hero the world view holds, or `null`. */
-const heroOf = (world: WorldView): DeepReadonly<Unit> | null => {
-  const heroId = world.run.heroId;
-
-  return heroId === null ? null : world.map.units.resolve(heroId);
-};

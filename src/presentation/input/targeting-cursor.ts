@@ -1,4 +1,9 @@
-import type { RefusalReason, TargetingKind } from "@domain/public";
+import type {
+  CastTarget,
+  RefusalReason,
+  TargetingKind,
+  UnitId,
+} from "@domain/public";
 import {
   createAbilityRequest,
   createSlotDescriptor,
@@ -8,6 +13,7 @@ import { resolveKitSlots } from "@domain/queries";
 import type { Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import { pickUnit } from "./pick-unit";
 
 /** Closed, waiting for a target for the ability in `slot`, or armed by A for an attack-move point. */
 export type CursorKind = "closed" | "slot" | "attack_move";
@@ -202,4 +208,35 @@ export const pressSlotKey = (
   cursor.targeting = record.def.targeting;
 
   return "opened";
+};
+
+/**
+ * The target an open cursor's confirming click at world point `point` names: a point or a
+ * direction always, the unit drawn under it at `alpha` for a unit cursor, or `null` for a
+ * unit cursor over no unit, and for a vector cursor, which commits on its release instead.
+ */
+export const castTargetOf = (
+  cursor: Readonly<TargetingCursor>,
+  world: WorldView,
+  point: Readonly<Vec2>,
+  alpha: number,
+  candidates: UnitId[],
+): CastTarget | null => {
+  switch (cursor.targeting) {
+    case "point":
+      return { kind: "point", position: { x: point.x, y: point.y } };
+
+    case "direction":
+      return { kind: "direction", position: { x: point.x, y: point.y } };
+
+    case "unit": {
+      const unitId = pickUnit(world, point.x, point.y, alpha, candidates);
+
+      return unitId === null ? null : { kind: "unit", unitId };
+    }
+
+    case "vector":
+    case "none":
+      return null;
+  }
 };

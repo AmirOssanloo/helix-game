@@ -155,6 +155,25 @@ export {
   gridCellAt,
 } from "./screens/inventory-layout";
 export type { ScreenPorts } from "./screens/screen-parts";
+export { followStore, priceAt } from "./screens/store-follow";
+export {
+  STORE_RECT,
+  STORE_TITLE,
+  StoreScreen,
+  TAB_SHOWN_TINT,
+  TAB_TINT,
+} from "./screens/store.screen";
+export type { StorePorts } from "./screens/store.screen";
+export {
+  layInLane,
+  STOCK_LANE_COUNT,
+  STOCK_RECT,
+  STORE_TABS,
+  tabAt,
+  tabCentreX,
+  TAB_CENTRE_Y,
+} from "./screens/store-layout";
+export { ringClicked } from "./input/store-ring";
 export { priceText, statLineText } from "./screens/tooltip-text";
 export {
   itemUnderPointer,

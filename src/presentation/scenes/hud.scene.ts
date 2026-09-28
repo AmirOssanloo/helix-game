@@ -18,6 +18,8 @@ import { INVENTORY_CODE } from "../input/key-bindings";
 import type { SceneContext } from "../scene-context";
 import { InventoryScreen } from "../screens/inventory.screen";
 import { PauseScreen } from "../screens/pause-screen";
+import { followStore, priceAt } from "../screens/store-follow";
+import { StoreScreen } from "../screens/store.screen";
 import type { TooltipSources } from "../screens/tooltip";
 import { itemUnderPointer, Tooltip } from "../screens/tooltip";
 import { orbSlotsOf } from "../views/orb.view";
@@ -39,8 +41,10 @@ const GLYPH_FRAME = "glyph_A";
  * `update` reads the world view once and drains the event ring with its own cursor. The bar
  * and each screen are registered on the input claim, which hands them the presses that are
  * theirs and keeps those from the world; the scene listens to no pointer itself. Screens draw
- * in a band above the bar, each its own module. The tooltip draws over them, for the item under
- * where the claim last saw the pointer: on a screen, else on a ground label the play scene drew.
+ * in a band above the bar, each its own module. The store screen follows the world's store: an
+ * opening drained from the ring opens it and the inventory beside it, and a closing closes it.
+ * The tooltip draws over them, for the item under where the claim last saw the pointer: on a
+ * screen, else on a ground label the play scene drew, with the store's price while one is open.
  */
 export class HudScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -50,6 +54,8 @@ export class HudScene extends Phaser.Scene {
   private hud: Hud | null = null;
 
   private inventory: InventoryScreen | null = null;
+
+  private store: StoreScreen | null = null;
 
   private tooltip: Tooltip | null = null;
 
@@ -99,6 +105,11 @@ export class HudScene extends Phaser.Scene {
       driver: this.context.driver,
       makeOverQuad: quadIn(HUD_DEPTH_OVER_SCREEN),
     });
+    const store = new StoreScreen({
+      ...screenPorts,
+      world: this.context.world,
+      driver: this.context.driver,
+    });
     const pause = new PauseScreen(screenPorts);
     // Made after the inventory, so it draws over the item on the pointer in the same band.
     const tooltip = new Tooltip({
@@ -120,10 +131,11 @@ export class HudScene extends Phaser.Scene {
 
     this.hud = hud;
     this.inventory = inventory;
+    this.store = store;
     this.tooltip = tooltip;
     this.tooltipSources = {
       world: this.context.world,
-      screenItemAt: (x, y) => inventory.itemAt(x, y),
+      screenItemAt: (x, y) => store.itemAt(x, y) ?? inventory.itemAt(x, y),
       covers: (x, y) => claim.covers(x, y),
       labels: this.context.picks.labels,
     };
@@ -132,12 +144,15 @@ export class HudScene extends Phaser.Scene {
     claim.setPauseScreen(pause);
     this.events.once(SHUTDOWN_EVENT, (): void => {
       claim.close(pause);
+      store.forget();
+      claim.close(store);
       claim.close(inventory);
       claim.removeToggle(INVENTORY_CODE);
       claim.setPauseScreen(null);
       claim.removeRegion(bar);
       this.hud = null;
       this.inventory = null;
+      this.store = null;
       this.tooltip = null;
       this.tooltipSources = null;
     });
@@ -146,26 +161,30 @@ export class HudScene extends Phaser.Scene {
   override update(): void {
     const hud = this.hud;
     const inventory = this.inventory;
+    const store = this.store;
 
-    if (hud === null || inventory === null) {
+    if (hud === null || inventory === null || store === null) {
       return;
     }
 
     hud.sync(this.context.world);
     inventory.sync();
-    this.syncTooltip();
+    store.sync();
+    this.syncTooltip(inventory, store);
 
     let event = this.context.events.read(this.reader);
 
     while (event !== null) {
       hud.react(event, this.context.world);
       inventory.react(event);
+      store.react(event);
+      followStore(event, this.context.claim, inventory, store);
       event = this.context.events.read(this.reader);
     }
   }
 
-  /** The tooltip of the item under the pointer, or none; with no store screen on the claim, it shows no price line. */
-  private syncTooltip(): void {
+  /** The tooltip of the item under the pointer, or none, with the price line the store asks for there. */
+  private syncTooltip(inventory: InventoryScreen, store: StoreScreen): void {
     const tooltip = this.tooltip;
     const sources = this.tooltipSources;
     const claim = this.context.claim;
@@ -181,7 +200,18 @@ export class HudScene extends Phaser.Scene {
     if (item === null) {
       tooltip.hide();
     } else {
-      tooltip.show(item, "none", claim.pointerX, claim.pointerY);
+      tooltip.show(
+        item,
+        priceAt(
+          store,
+          claim.isOpen(inventory),
+          this.context.world,
+          claim.pointerX,
+          claim.pointerY,
+        ),
+        claim.pointerX,
+        claim.pointerY,
+      );
     }
   }
 }
