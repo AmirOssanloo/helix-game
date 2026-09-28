@@ -1,9 +1,9 @@
-# Phase 11 — Saves, and the casts heard
+# Phase 11 — Saves: the run survives the tab
 
-**Sprints:** 66–71, sketched · **Sized days:** 21, sketched: 19 in tickets and 2 of bucket appetite · **Gate:** [Phase 11 gate](../04-phase-exit-gates.md#phase-11-gate), an outline
-**Written:** 2026-09-28 · **Author:** the delivery strategist, from [the design outline](../../2026-09-28-design-outline-next-phases.md) and [the architecture outline](../../2026-09-28-architecture-outline-next-phases.md)
+**Sprints:** 66–70, in sprint files. Sprint 71 is unused since its work moved to phase 16 on 2026-09-28; sprint numbers are never reused · **Sized days:** 17.5: 15.5 in tickets and 2 of bucket appetite. Was 21 sketched, then 17 when the audio moved, then 17.5 at the cut · **Gate:** [Phase 11 gate](../04-phase-exit-gates.md#phase-11-gate), an outline
+**Written:** 2026-09-28 · **Author:** the delivery strategist, from [the design outline](../../2026-09-28-design-outline-next-phases.md) and [the architecture outline](../../2026-09-28-architecture-outline-next-phases.md) · **Cut:** 2026-09-28 by the delivery strategist into sprint files, ahead of the phases before it at the maintainer's request
 
-**Status of this page:** a sketch in the outline of phases 9 to 16, **approved by the maintainer on 2026-09-28**. It stays a sketch: its sprint files are cut when phase 10 closes and [R41](../02-risks-and-hidden-work.md)'s limit allows. Ticket IDs are assigned then.
+**Status of this page:** the sketch in the outline of phases 9 to 16 was **approved by the maintainer on 2026-09-28**. The same day the maintainer asked for phases 10 to 16 to be cut into tickets ahead of the rule in STATUS.md, and moved all sound and sourced art to phase 16. The sprint files below were cut then. They are re-read at the phase's start against what phase 10 left, and a ticket that moved is edited in place with a one-line note. The phase does not start until phase 10 closes and [R41](../02-risks-and-hidden-work.md)'s limit allows.
 
 ## Goal
 
@@ -17,67 +17,81 @@ The run survives the tab. It is saved on entering town, on reaching a waypoint, 
 
 A dead hero loses 10% of the gold it carries. A new run gives up the saved one after a confirmation.
 
-**Moved here from phase 16 by the delivery strategist on 2026-09-28:** the audio adapter and a sound for every enemy cast, heard as its cast point begins. The reasons:
-- This phase's playtest is the first whole stratum, and its last fight is the Gaolmaster's `stun_bolt` every six seconds: a boss won by the player who saw, or heard, the cast.
-- The architect says the adapter depends only on the event ring and costs no more by waiting.
-- This is the smallest phase.
-
-The design is unchanged, since the tells are phase 16's in the design outline. Only the order moves. The game designer may send them back to phase 16 at no change in cost. The rest of audio stays in phase 16: the hero's spells, the active items, the interface, and ambience.
+**Sound stays in phase 16.** On 2026-09-28 the maintainer moved the audio adapter and the enemy cast tells back to phase 16, so no asset or sound is needed before it. The Gaolmaster's cast and every enemy's is read by its visual tell, the cast point's pose, as today.
 
 ## What it builds on
 
-- ADR 0017, run scope is the save, written on paper at phase 10's start. ADR 0014's revisit point is read here.
-- The designer's answers to the architect's questions 4 and 5, Q126 and Q127: a portal is closed on resume; health and mana resume as saved, statuses are cleared, and every clock is ready.
-- The map-agnostic driver from phase 10.
-- **Q132, sounds:** what a tell must say was decided by the game designer on 2026-09-28: one sound per kind of cast, heard as the cast point begins, a projectile's tell sounding while it flies, a stratum boss lower and louder, nothing the screen does not show. Where the sounds come from is the maintainer's, open, and wanted before this phase starts. Proposed: synthesised by a script under `tooling/`, so nothing is sourced or licensed ([R44](../02-risks-and-hidden-work.md)).
+- **ADR 0017, run scope is the save,** written on paper at phase 10's start, read here against what phase 10 built. ADR 0014's revisit point is read here too.
+- **Q126 and Q127, the designer's answers to the architect's questions 4 and 5:**
+  - a town portal is closed on resume;
+  - health and mana resume as saved;
+  - statuses are cleared, and every clock is ready.
+- **The map-agnostic driver from phase 10.**
+- **The travel rules** that move the save-point counter.
+- **The town map,** which gains the stash's point.
 
-## Sketched tickets
+## Sprints and tickets
+
+Cut on 2026-09-28. Each ticket block in its sprint file is self-contained: size, dependencies, owner, what to build, acceptance with "it plays" and the bar, tests, pages, and the definition of done.
 
 | Sprint | Ticket | Size |
 | --- | --- | --- |
-| 66 | Split `presentation/screens/inventory.screen.ts`, the grid apart from the armory, so the stash reuses the grid | 0.5 |
-| 66 | The engineering architect: ADR 0017 read against what phase 10 added to run scope, ADR 0014's revisit point, and the resume answers written into the pages | 0.5 |
-| 66 | The typed list of saved run-scope fields, and encode and decode in `simulation/save/`: text, a format version, and the content and generator versions. Clocks are saved as ticks remaining | 2 |
-| 66 | The engineering architect: the record for sound as a presentation adapter keyed by the ids events name | 0.5 |
-| 67 | The migration chain, one pure step per version, with a stored save of each version under `tests/`. An id content no longer has costs that item and says so, never throws | 1.5 |
-| 67 | The save-point counter moved by the rules, and the storage adapter in `app/` over `localStorage`, writing after the frame's ticks when the counter moved | 1 |
-| 67 | Placeholder cast tells synthesised by a script under `tooling/`, and the sound list as content keyed by ability id | 1 |
-| 68 | Resume as a session operation: in town, the portal closed, statuses cleared, and a log whose header carries the save it began from. A replay spec saves, plays, saves, resumes, and finds run scope equal by the checksum's run-scope lists | 2 |
-| 68 | The audio adapter in `presentation/audio/`: it drains the event ring as the views do, uses a voice pool, and unlocks on the first gesture; nothing allocates in steady state | 2 |
-| 69 | The start screen on the input claim: resume, or begin a new run after a confirmation | 1 |
-| 69 | The stash: a second grid of the inventory's shape, 10 by 8, with a range of places of its own, its commands refused outside town, and saved | 1.5 |
-| 69 | The stash screen beside the inventory | 1.5 |
-| 70 | The death penalty: 10% of the gold carried, a tunable, with its event and a line on the HUD | 0.5 |
-| 70 | The driver saves and resumes, and writes a save at any map's arrival for the playtests of phase 12 on ([R41](../02-risks-and-hidden-work.md)) | 1 |
-| 70 | Every enemy ability on the long road and in the Nave heard at the start of its cast point; a content test that every enemy ability id is in the sound list; the bench with sound on | 0.5 |
-| 70 | The maintainer's playtest and its triage: the first stratum from the town to the Gaolmaster's kill, across at least two sittings with a resume between them | 0.5 |
-| 70 | Documentation sync, beside the playtest | 0.5 |
-| 71 | The triage bucket, an appetite | 2 |
-| 71 | The phase gate | 1 |
-| | **Total** | **21** |
+| [66 — The paper, the split, and the format](./sprint-66-the-paper-the-split-and-the-format.md) | P11-S66-T01 — The engineering architect: ADR 0017 read against phase 10, and the resume written into the pages | 0.5 |
+| | P11-S66-T02 — The game designer: the stash, the start screen, and the penalty on their pages | 0.5 |
+| | P11-S66-T03 — Split the inventory screen, so the stash reuses the grid | 0.5 |
+| | P11-S66-T04 — The save format: the typed field list, encode, and decode | 2 |
+| | P11-S66-T05 — The death penalty | 0.5 |
+| [67 — The migrations, the save point, and the stash](./sprint-67-the-migrations-the-save-point-and-the-stash.md) | P11-S67-T01 — The migration chain, and a stored save of each version | 1.5 |
+| | P11-S67-T02 — The save-point counter, and the storage adapter | 1 |
+| | P11-S67-T03 — The stash in run scope | 1.5 |
+| [68 — The resume and the start screen](./sprint-68-the-resume-and-the-start-screen.md) | P11-S68-T01 — Resume as a session operation, and a log that begins from a save | 2 |
+| | P11-S68-T02 — The start screen | 1 |
+| [69 — The stash screen, the driver's saves, and the playtest](./sprint-69-the-stash-screen-the-drivers-saves-and-the-playtest.md) | P11-S69-T01 — The stash screen | 1.5 |
+| | P11-S69-T02 — The driver saves and resumes | 1 |
+| | P11-S69-T03 — The maintainer's playtest and the triage, across sittings | 0.5 |
+| [70 — The bucket, the docs, and the gate](./sprint-70-the-bucket-the-docs-and-the-gate.md) | The bucket, P11-S70-T03 onward, an appetite | 2 |
+| | P11-S70-T01 — Documentation sync | 0.5 |
+| | P11-S70-T02 — The phase gate. **M18** | 1 |
+| | **Total** | **17.5** |
+
+The sprints hold 4, 4, 3, 3, and 3.5. Sprints 68 and 69 are light on purpose. The resume and the start screen are the phase's riskiest pair, and sprint 69 waits on the maintainer's two sittings. The spare days there take phase 10's bucket first if its run comes in late.
+
+**What the cut changed,** each noted under its ticket:
+- **The audio moved out.** Four sketched tickets went to phase 16 unchanged in size, on the maintainer's decision of 2026-09-28: the architect's record for sound (0.5), the placeholder tells and the sound list (1), the audio adapter (2), and every enemy ability heard (0.5). 21 became 17.
+- **Up 0.5, a game designer's ticket,** P11-S66-T02. The design outline sets the stash, the start screen, and the penalty, but no product page holds them. [Hero](../../../../docs/product/features/hero.md#death-and-respawn) says gold survives death untouched, and the vocabulary names "stash" as a word to avoid. The gate reads "as their pages say", so the pages come first. It also asks what the outline's list leaves unsaid: held orbs, prepared spells, and whether the stash goes with a new run.
+- **Nothing resized.** The work each ticket holds but the sketch did not name:
+  - which sessions may write the save, so a replay never overwrites the maintainer's run: in T01's paper and P11-S67-T02's adapter;
+  - the log format step for a header that carries a save: in P11-S68-T01;
+  - a refused save kept rather than destroyed: in P11-S68-T02;
+  - the panel's Load file taking a save: in P11-S69-T02;
+  - the pinned `playtest-phase-11` build: in P11-S69-T03.
+- **The penalty moved first,** from the sketch's sprint 70 to sprint 66. It may move a stored log's play, and that is cheaper to find before the save's specs are written than after.
 
 ## Size and band
 
-The save is new ground: a format, migrations, and a session that begins from a save. The stash and the screens extend shapes that exist. The audio adapter is new ground in presentation only. **Expect about 0.6: about 12.5 engineer-days, in a band of 9.5 to 19.** The calendar is the maintainer's two sittings.
+The save is new ground: a format, migrations, a storage adapter, and a session that begins from a save. That is 6.5 of the 15.5 in tickets. The stash, the screens, the penalty, and the driver's steps extend shapes that exist. The audio adapter, the other piece of new ground in the sketch, left with the move to phase 16, so the ratio falls a little. **Expect about 0.55: about 9.5 engineer-days, in a band of 8 to 16.** The calendar is the maintainer's two sittings, not these days.
 
-## Cut-line, sketched
+## Cut-line
+
+What is out is in [Deferred](../backlog/deferred.md), with the phase each waits on.
 
 **In:**
 - one run saved and resumed in town;
-- the format version and migrations from the first save;
+- the format version and migrations from the first save, with a stored save of each version;
 - the stash and its screen;
 - the start screen;
 - the death penalty of 10% of gold;
-- the driver's saves;
-- the audio adapter and a placeholder tell for every enemy cast;
+- the driver's saves, and the panel loading one;
+- the product pages for all of it;
 - one playtest across sittings and a bucket of 2.
 
 **Out:**
 - more than one run, hardcore, a corpse run, and losing items or experience on death (the design leans no);
 - saving mid-map;
 - cloud saves or export;
+- two tabs on one save: the last write wins, unguarded;
 - a settings screen or volume control;
-- music, ambience, and the hero's, the active items', and the interface's sounds (phase 16);
+- the audio adapter and every sound, the enemy cast tells included (phase 16);
 - any new family or stratum.
 
 ## Gate, outlined
@@ -85,15 +99,22 @@ The save is new ground: a format, migrations, and a session that begins from a s
 In [Phase exit gates](../04-phase-exit-gates.md#phase-11-gate):
 - a save round trip equal by the run-scope checksum;
 - every run-scope field saved or named with its reason;
-- a stored save of each version loading;
+- a stored save of each version loading, an id content no longer has costing only its item;
+- a resumed run in town, and a log begun from a save replaying;
+- a replay or a loaded file never writing the stored save;
 - the stash, the start screen, and the penalty by their specs;
-- every enemy cast heard;
 - the maintainer's stratum across sittings, each log replaying from its save, and triaged;
 - the docs;
-- the bar with sound on.
+- the bar, as phase 10's, with a save point's frame read beside it.
 
 ## Risks
 
-- **A save a later phase's content cannot read.** A save holds ids and values, never content indices, and a migration spec runs per version step (the architecture outline, section 4).
+- **A save a later phase's content cannot read.** A save holds ids and values, never content indices, and a migration spec runs per version step (the architecture outline, section 4). Every later change to the save's shape adds a step and a stored save, by the testing standard's rule.
 - **The checksum and the save list drift apart.** Each run-scope field is checked and saved, or named as neither with its reason ([R38](../02-risks-and-hidden-work.md)).
-- **Sound's source** ([R44](../02-risks-and-hidden-work.md)): synthesised placeholders, so nothing waits on a person.
+- **A replay overwrites the maintainer's run.** Only a live session writes, by the adapter's spec and a gate row.
+- **The penalty moves a stored log** ([R36](../02-risks-and-hidden-work.md)). A log whose purchase is refused after a death is traced and recorded again, or retired, in P11-S66-T05.
+- **The playtest is the calendar** ([R41](../02-risks-and-hidden-work.md)). Two sittings, and the driver's saves so later sittings start deep.
+
+## Exit record
+
+Not yet walked. P11-S70-T02 records every gate row here with its numbers.

@@ -145,18 +145,17 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 
 **Done when** the driver walks the Nave from the town to the Gaolmaster's kill at about level 12 on a sweep of seeds, using a town portal and a waypoint; every map of the sweep passes its checks or falls back and is counted; the same seed and level make the same map before and after a session is played; a walk to town and back finds the kept map as it was left; the live cap holds on every generated map; the long road's recorded sessions still replay; the frame budget holds on the densest map with the kept map standing; and the maintainer has played the town and the Nave's first maps and filed feedback.
 
-## Phase 11: saves, and the casts heard
+## Phase 11: saves
 
-**Goal:** the run survives the tab, and every enemy cast is heard as it begins.
+**Goal:** the run survives the tab.
 
 - One run saved: the seed, the hero with its level and orbs, the inventory, the armory, the bank, gold, the waypoints reached, the town store's stock, and the stash. It is saved on entering town, on reaching a waypoint, and on stepping through a portal, and it resumes in town, never mid-map. A town portal that stood at the save is closed on resume; health and mana come back as saved, with no statuses and every clock ready.
 - A save written by an earlier build loads in a later one. An item the content no longer has is lost, and the game says so.
 - A stash in town of 10 by 8 cells, holding items across sessions.
 - A death costs 10% of the gold the hero carries, and nothing else.
 - A start screen resumes the run or begins a new one, which gives up the saved run after a confirmation.
-- A tell for every enemy cast, heard as its cast point begins: one sound for each kind of cast, a stratum boss's lower and louder, a projectile's sounding while it flies, and nothing heard that the screen does not also show. The sounds are placeholders until the sixteenth phase.
 
-**Done when** everything a run keeps survives a save and a resume, a save from each earlier build loads, the stash, the start screen, and the penalty work as their pages say, every enemy ability is heard at its cast point, a session begun from a save replays identically, the frame budget holds with sound on, and the maintainer has played the whole first stratum across at least two sittings and filed feedback.
+**Done when** everything a run keeps survives a save and a resume, a save from each earlier build loads, the stash, the start screen, and the penalty work as their pages say, a session begun from a save replays identically, the frame budget holds, and the maintainer has played the whole first stratum across at least two sittings and filed feedback.
 
 ## Phase 12: the Undercroft and the Ossuary
 
@@ -167,7 +166,7 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 - Aspects: ten named modifiers an elite pack or a map boss rolls, one on an elite and two on a map boss, shown as an icon over each member. An aspect changes numbers or adds a carried status; it never makes a unit immune to a disable.
 - Mana burn: mana drained every tick, and a tick that finds too little deals the rest as magical damage.
 - The Hollow Abbess on map 20 and Marrowleech on map 30, each with a Legendary piece.
-- A silhouette for every family, drawn flat in the game's current style, so fifteen families are told apart before their colour.
+- A silhouette for every family, drawn flat in the game's current style from the shapes the game paints itself, so fifteen families are told apart before their colour.
 - Items to level 30: bases and affix tiers deep enough for these strata.
 
 **Done when** every family and variant matches [the descent](./specs/the-descent.md#3-families-and-variants)'s table, aspects are data with no rule written for one, the driver walks maps 11 to 30 and kills both stratum bosses with the hero at about level 21 by map 30, every family is told apart by its silhouette with the draw calls unchanged, items to level 30 roll at their weights, recorded sessions replay identically, the frame budget holds, and the maintainer has played both strata from saves and filed feedback.
@@ -216,10 +215,10 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 
 - Isometric sprite art with animation for the hero, every family, and every boss; each variant its family's sprite with a palette and one detail of its own; a floor for each stratum, and obstacle art.
 - What the view needs once art is tall: units drawn in depth order, a tall obstacle fading over the hero, and a unit picked by its sprite.
-- The final sounds: every enemy cast's tell, the hero's spells, the active items, the interface, and an ambience for each stratum.
+- Every sound the game makes: a tell for every enemy cast, heard as its cast point begins, one sound for each kind of cast, a stratum boss's lower and louder, a projectile's sounding while it flies, and nothing heard that the screen does not also show; the hero's spells, the active items, the interface, and an ambience for each stratum.
 - How the game plays does not change.
 
-**Done when** every family, boss, floor, and obstacle has its art, depth order, fading, and picking hold by their tests, every recorded session replays unchanged, the render benchmark passes on each stratum's art under five world draw calls, every sound plays with nothing allocated, the frame budget holds, and the maintainer has played and filed feedback.
+**Done when** every family, boss, floor, and obstacle has its art, depth order, fading, and picking hold by their tests, every recorded session replays unchanged, the render benchmark passes on each stratum's art under five world draw calls, every enemy ability is heard at its cast point, every sound plays with nothing allocated, the frame budget holds with sound on, and the maintainer has played and filed feedback.
 
 ---
 
@@ -272,7 +271,7 @@ The brief raised 47 questions. Four went to discussion and became decision recor
 | Repository layout | Single package, one `src/` with eight layers, enforced by lint and an architecture test | [ADR 0003](../adr/0003-layered-single-package-architecture.md), [Architecture](../architecture/README.md) |
 | How state changes | All mutation, including developer-panel operations, enters as commands | [ADR 0004](../adr/0004-all-mutation-enters-as-commands.md) |
 | How content names behaviour | Definitions reference effects and behaviours by string key | [ADR 0005](../adr/0005-content-references-by-string-key.md) |
-| Phase numbering | Sixteen phases, with phase 4 as combat feel and tuning, phase 6 as the long road, phase 7 as the foundation, phase 8 as loot and the store, phase 9 as active items, phase 10 as the first stratum, the town, and travel, phase 11 as saves and the casts heard, phase 12 as the Undercroft and the Ossuary, phase 13 as loot at depth, phase 14 as strata 4 to 7, phase 15 as strata 8 to 10 and the last boss, and phase 16 as art and audio | This page |
+| Phase numbering | Sixteen phases, with phase 4 as combat feel and tuning, phase 6 as the long road, phase 7 as the foundation, phase 8 as loot and the store, phase 9 as active items, phase 10 as the first stratum, the town, and travel, phase 11 as saves, phase 12 as the Undercroft and the Ossuary, phase 13 as loot at depth, phase 14 as strata 4 to 7, phase 15 as strata 8 to 10 and the last boss, and phase 16 as art and audio | This page |
 | Working title | Helix | [Product overview](./overview.md) |
 
 ---

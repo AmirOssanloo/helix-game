@@ -55,7 +55,13 @@ toolchain and layers (S00)
                                                                     → Slipknife and blink_to, the disjoint, Rimeward (S51)
                                                                       → Skyfall Maul, Veilblade, stun_bolt on the long road, the maintainer's playtest (S52)
                                                                         → bucket, docs, gate (S53)  ══ phase 9 gate
-                                                                          → phases 10 to 16, sketched in their READMEs: the first stratum, saves, strata 2 and 3, loot at depth, strata 4 to 10, art and audio
+                                                                          → phase 10 (S54–65): ADRs 0015–0018, travel on fixture maps (M15), the generator and the driver (M16), the Nave, the Gaolmaster  ══ phase 10 gate
+                                                                            → phase 11 (S66–70): the save, migrations, resume, the stash, the start screen, the penalty  ══ phase 11 gate
+                                                                              → phase 12 (S72–80): ADRs 0019–0020, aspects, the on-death hook, mana burn, strata 2 and 3, painted silhouettes  ══ phase 12 gate
+                                                                                → phase 13 (S81–85): loot at depth  ══ phase 13 gate
+                                                                                  → phase 14 (S86–95): strata 4 to 7 (M21 after the Cisterns)  ══ phase 14 gate
+                                                                                    → phase 15 (S96–103): the source point, strata 8 to 10, the Unwound, the roster frozen  ══ phase 15 gate
+                                                                                      → phase 16 (S104–111): ADR 0021 and the sound record, placeholders in the final format, the audio adapter, animated views, sorting, picking, fading; then the delivered art and sounds  ══ phase 16 gate
 ```
 
 ---

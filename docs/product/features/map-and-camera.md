@@ -70,6 +70,7 @@ The descent is walked down, portal to portal; a waypoint on every map and a town
 
 - Every map of the descent has one **portal**, at the far end of the walk from its **arrival point**, behind the map's boss. A right click on it walks the hero there, as a move does, and the hero steps through on reaching it, arriving at the next map's arrival point. A walk that only passes over it does not take it.
 - On the tenth map of each stratum the portal stays shut until the stratum boss is dead.
+- A portal with no map below it reads open once its gate is met, as any other does, and refuses the step: a right click walks the hero to it, the hero stays on the map, and the words NO WAY DOWN rise over it as the checkpoint word does, in white. The way back is a waypoint or the town portal. So a stratum boss's death always reads the same, an opened portal, whether or not the next stratum is there to walk.
 - Nothing goes up by portal. The way back up is a waypoint or the town portal.
 
 ### Waypoints

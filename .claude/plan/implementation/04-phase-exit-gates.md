@@ -222,10 +222,11 @@ Added 2026-09-28 as an outline.
 | Every earlier save still loads | A stored save of each format version under `tests/` loads through the migrations; an id content no longer has costs that item and says so |
 | A resumed run starts in town, and a log can begin from a save | The resume spec; a feedback file taken after a resume replays |
 | The stash, the start screen, and the death penalty | Their specs: the stash refused outside town and saved; a new run only after the confirmation; 10% of carried gold lost on death, a tunable |
-| Every enemy cast is heard as its cast point begins | A content test that every enemy ability id is in the sound list; the adapter's spec with no allocation in steady state |
 | The maintainer has played the first stratum to the Gaolmaster's kill across at least two sittings, each log replays from its save, and the feedback is triaged | The stored logs and their specs; the triage note |
 | The docs are in sync | The docs-sync ticket's checklist |
-| The bar | Every row, as phase 10's, with sound on |
+| The bar | Every row, as phase 10's |
+
+Amended 2026-09-28: the row "Every enemy cast is heard as its cast point begins" and "with sound on" moved to the [phase 16 gate](#phase-16-gate), when the maintainer moved all sound and sourced art to phase 16.
 
 ---
 
@@ -235,14 +236,13 @@ Added 2026-09-28 as an outline.
 
 | Row | Holds when |
 | --- | --- |
-| Strata 2 and 3 hold the families the descent's table names | Content tests hold the Undercroft's seven at I, the Nave's six at II and III, and the leech and the bolter at I to the designer's tables |
+| Strata 2 and 3 hold the families the descent's table names | Content tests hold the Undercroft's seven at I and II, the Nave's six at II and III, and the leech and the bolter at I to the designer's tables |
 | Aspects are data | Each aspect's spec; a check that no rule branches on an aspect's id; the status table's fill under its capacity for the worst boss with two aspects |
 | Mana burn and the on-death hook | `mana_burn`'s spec, the shortfall dealt as magical damage; Burning's hook resolving a death it causes on the next tick |
-| Every family has a silhouette | A content test; world draw calls unchanged; the bench |
+| Every family has a silhouette, painted in code into the one atlas page | A content test; world draw calls unchanged; the bench |
 | Items reach level 30 | The catalogue's tables held to the files; every rarity at its weight over rolls |
 | The Hollow Abbess and Marrowleech, each with its piece | Their specs |
 | Strata 2 and 3 are walked | The driver's sweeps reach about level 21 by map 30; each recipe's stress case with no refusal |
-| ADR 0021's bench is recorded | Its figures in the phase README |
 | The maintainer has played strata 2 and 3 from saves, the sessions replay, and the feedback is triaged | The stored logs and their specs; the triage note |
 | The docs are in sync | The docs-sync ticket's checklist |
 | The bar | Every row, on the densest map of each new recipe's sweep |
@@ -293,6 +293,7 @@ Added 2026-09-28 as an outline.
 | Mute and the tether have their disable-matrix rows | One test per cell |
 | The live cap holds with splits at their worst | The Pit's stress case with no refusal |
 | The Unwound casts four sets by its health, and the run is won | Its spec; the won run saved and resumed |
+| The roster is frozen for phase 16's art | `pnpm roster` (P15-S99-T04) prints every family, variant, boss, and ability id with its frame, recorded in the phase README and checked against the [asset list](../2026-09-28-art-and-audio-asset-list.md); every Legendary piece's drop wired, the waiting list empty |
 | The descent is walked to its bottom | The driver from the town to the Unwound's kill on a sweep, the hero at about level 30 near map 100 |
 | The maintainer has played strata 8 to 10 and the Unwound from saves, the sessions replay, and the feedback is triaged | The stored logs and their specs; the triage note |
 | The docs are in sync | The docs-sync ticket's checklist |
@@ -306,11 +307,16 @@ Added 2026-09-28 as an outline.
 
 | Row | Holds when |
 | --- | --- |
-| Every family, boss, floor, obstacle, and the hero has its frames | The content test |
+| ADR 0021 is accepted on its bench | Its figures in the phase README; ADR 0001 superseded in part |
+| Every family, boss, floor, obstacle, and the hero has its frames | The content test, against the [asset list](../2026-09-28-art-and-audio-asset-list.md) |
+| Every enemy cast is heard as its cast point begins | A content test that every enemy ability id is in the sound list; the adapter's spec with no allocation in steady state |
+| No placeholder is left | The pipeline's content test finds every frame and sound on the list delivered, none rendered or synthesised |
 | Tall art sorts, occludes, and picks by its sprite | Their specs |
 | The simulation did not change | No diff under `src/domain/` or `src/simulation/` across the phase; every stored log's checksum unchanged |
 | Each stratum's page holds the budget | `pnpm bench` on each page by an agent, under 5 world draw calls; ADR 0021's criteria |
 | Every sound on the list plays with nothing allocated | The adapter's spec; the allocation sampler |
 | The maintainer has played from saves, looking and listening, and the feedback is triaged | The stored logs; the triage note |
 | The docs are in sync | The docs-sync ticket's checklist |
-| The bar | Every row, on each stratum's densest map with its page loaded |
+| The bar | Every row, on each stratum's densest map with its page loaded and sound on |
+
+Amended 2026-09-28: ADR 0021's row came from the phase 12 gate and the heard casts from the phase 11 gate, when the maintainer moved all sound and sourced art to phase 16.

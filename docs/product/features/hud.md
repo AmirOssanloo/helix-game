@@ -17,6 +17,7 @@ Centred at the bottom of the screen.
 | Orb buffer | Three squares, oldest on the left, newest on the right, each coloured by orb, and an outline where a slot is empty |
 | Ability squares | Q, W, E, R, D, F in a row. Each shows its key, a cooldown sweep while cooling, and a mana cost for R, D, and F |
 | Level | The hero's level, with an experience bar beneath it and a marker when a skill point is unspent |
+| Town portal square | B, one square beside the bank's row, drawn as an ability square: its key, and the town portal's 60 s clock as a sweep running from the moment a portal opens. A refused B flashes as any square does: grey while the clock runs, striped under a stun or a lift, white in town |
 
 Skill points are spent by clicking the Q, W, or E square while a point is unspent. Each square shows its orb level as a small number.
 
@@ -36,6 +37,7 @@ I opens the inventory and closes it; a left click on the checkpoint ring the her
 - **Hit flash.** A unit that takes damage goes white for a moment, body and facing marker together. Like every flash it ends on a tick, so it holds while the simulation is paused. How long it shows, like every feedback timing on this page, is a tunable the developer panel moves.
 - **Status icons.** A row of small icons above a unit, one per status on it — stun, slow, silence, and the rest — each an outlined square with its own glyph, so two statuses read apart at a glance. An icon is there while the status is and shows no duration.
 - **Damage numbers.** A hit raises a number above the unit it landed on that rises and fades over a second. It shows the amount that landed after mitigation, even where the health it removed was less. Further hits of the same type on that unit inside a short window add to that number instead of raising their own, so damage taken every tick reads as one number a window worth what the window cost; the number keeps the rise it began with, and the hit after it starts a fresh one. Each number takes the colour of its damage type — physical red, magical blue, pure gold — so the window is one per unit per type: a burn and an attack on the same unit rise as two numbers, each in its own colour.
+- **Channel ring.** Through B's 3 s channel, a ring drawn as the town portal's fills around the hero's feet, so the player reads how long is left without looking away from the fight. It is gone on the tick the channel ends, whether the portal opened or an order, a stun, or a lift broke it ([travel](./map-and-camera.md#the-town-portal)).
 - **Checkpoint word.** Reaching a checkpoint further along than any before raises the word CHECKPOINT over the hero, in the reached checkpoint's green. It rises and fades like a damage number and shares their pool, and no hit adds to it.
 - **Facing.** The hero's triangle points where the hero faces, which is what the turn rate acts on.
 
@@ -61,6 +63,7 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Damage numbers | Bitmap text | Physical red, magical blue, pure gold |
 | Checkpoints | Thin ring as wide as the checkpoint's reach | Pale grey ahead, green once reached |
 | Checkpoint word | Bitmap text | Green |
+| Channel ring | A ring at the hero's feet, filling around as the channel runs | The town portal's colour |
 | Status icons | Small outlined squares with a glyph | White; the glyph tells them apart |
 | Items on the ground | The silhouette of the armory slot the item is worn in, lying flat | The item's rarity |
 | Gold and globes on the ground | A mound of coins; a disc | Gold; health green, mana blue |
@@ -74,7 +77,7 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 
 From the bottom up, so a projectile is never hidden by the ground it flies over:
 
-1. Ground effects, zones, and checkpoint rings
+1. Ground effects, zones, checkpoint rings, and the channel ring
 2. Gold, globes, and items lying on the ground
 3. Obstacles
 4. Units
