@@ -45,7 +45,7 @@ export const groundItems: PlayViewSyncer = {
   },
 };
 
-/** The labels of what lies on the ground, every one while Alt is held, moved apart, and where each is drawn for a pick. */
+/** The labels of what lies on the ground, every one while Alt is held and any a refusal flashes, moved apart, and where each is drawn for a pick. */
 export const groundItemLabels: PlayViewSyncer = {
   name: "ground item labels",
   order: SYNC_ORDER.groundItemLabels,
@@ -59,6 +59,7 @@ export const groundItemLabels: PlayViewSyncer = {
     frame,
     mapper,
     picks,
+    itemFlashes,
   }) => {
     const labels = createGroundItemLabels(
       GROUND_ITEM_LABEL_COUNT,
@@ -73,7 +74,14 @@ export const groundItemLabels: PlayViewSyncer = {
     return {
       sync: () => {
         worldCamera.screenRect(0, canvas);
-        labels.sync(world, frame, mapper.showsEveryLabel, canvas, picks.labels);
+        labels.sync(
+          world,
+          frame,
+          mapper.showsEveryLabel,
+          itemFlashes,
+          canvas,
+          picks.labels,
+        );
       },
       misses: () => labels.misses,
     };

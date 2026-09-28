@@ -58,7 +58,7 @@ Kill a pack spawned from the panel, right-click the helm it dropped, and watch t
 | Layer | presentation, tests |
 | Size | 0.25 |
 | Depends on | P8-S40-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-28:** unplanned, added at P8-S40-T01's close. The [items and loot](../../../../docs/product/features/items-and-loot.md#states-and-edge-cases) page says a pick up with no room leaves the item on the ground "and the refusal flashes", and the brief's event table says a `command_refused` names the ground item "so the screen or the label flashes that item". P8-S40-T01 announces the refusal with `groundItemId`; nothing in presentation drains it yet, since the HUD flashes only a slot. It is paid from the sprint's buffer.
 
@@ -73,6 +73,8 @@ Kill a pack spawned from the panel, right-click the helm it dropped, and watch t
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
 
+> **Note, 2026-09-28, at close:** the record is `ItemLabelFlashes` in `src/presentation/views/item-flashes.ts`, one entry per slot of the ground-item pool, the hit flashes' shape, on the play stage beside them; the event drain writes it through `flashRefusedItem` only for an item the camera frame shows, and the label sync asks it. The flash tint is the HUD's `FLASH_REFUSED_TINT`, white. The render benchmark was rerun in Chrome on the Apple M1: 60 fps over 30 s, 0.5 ms render, 1 draw call, the heap flat, as before.
+
 ---
 
 ## Sprint exit
@@ -80,9 +82,10 @@ Kill a pack spawned from the panel, right-click the helm it dropped, and watch t
 | Check | Result |
 | --- | --- |
 | An item taken by a right click, the walk and the take in the log | P8-S40-T01: `tests/simulation/items/pick-up-order.spec.ts` walks the hero to the item and takes it within the pickup radius, and replays a recorded `pick_up` to the recording's state; `tests/presentation/input-mapper.spec.ts` sends it from an icon and from a label |
+| A refused pick up flashes the item's label | P8-S40-T02: `tests/presentation/ground-item-view.spec.ts` flashes the label in the refusal tint for the refusal flash's ticks, shows a label Alt hides for the flash, and flashes nothing for a refusal naming a place or an item off screen |
 | The disable matrix's `pick_up` column | P8-S40-T01: `pickUp`, the move's answer in all nine rows, on the page and in the data; one test per cell in `tests/domain/orders/disable-matrix.spec.ts` |
-| Actual days per ticket | P8-S40-T01: sized 1.5, done in 1 |
-| Sprint total | |
+| Actual days per ticket | P8-S40-T01: sized 1.5, done in 1. P8-S40-T02, unplanned: sized 0.25, done in 0.25, from the buffer |
+| Sprint total | Sized 1.5 with 1 of buffer; done in 1.25, 0.25 of the buffer spent on the unplanned label flash. Closed 2026-09-28 on every row an agent can verify; no row needs a person |
 
 ## Risks in this sprint
 

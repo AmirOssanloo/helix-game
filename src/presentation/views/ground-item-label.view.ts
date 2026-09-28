@@ -1,4 +1,4 @@
-import type { GroundItem, GroundItemId } from "@domain/public";
+import type { GroundItem, GroundItemId, Tick } from "@domain/public";
 import { GROUND_ITEM_CAPACITY } from "@domain/queries";
 import type { DeepReadonly, Rect, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
@@ -6,6 +6,7 @@ import type { WorldView } from "@simulation/public";
 import type { CameraFrame } from "../camera/camera-frame";
 import type { ScreenPlacement } from "../camera/projection";
 import { ScratchPoint } from "../camera/scratch";
+import { FLASH_REFUSED_TINT } from "../hud/palette";
 import type { PickList } from "../input/input-ports";
 import { writePick } from "../input/input-ports";
 import { DEPTH_ITEM_LABELS } from "./depth-bands";
@@ -16,6 +17,7 @@ import {
   legendaryOf,
   rarityOf,
 } from "./ground-item.view";
+import type { ItemLabelFlashes } from "./item-flashes";
 import type { Label, LabelFactory } from "./quad";
 import { ViewPool } from "./view-pool";
 
@@ -109,6 +111,12 @@ export class GroundItemLabelView {
   /** Whether it shows without Alt. */
   byDefault = false;
 
+  /** The tint it is drawn in when no refusal flashes it. */
+  private tint = 0;
+
+  /** Whether a refusal flashes it this frame, so its tint is the refusal's. */
+  private flashing = false;
+
   /** Where it stands before the pass, in scene points: its centre. */
   anchorX = 0;
   anchorY = 0;
@@ -150,12 +158,24 @@ export class GroundItemLabelView {
     this.anchorX = drawn.x;
     this.anchorY = drawn.y - LABEL_RISE;
     this.label.setText(text);
-    this.label.tint =
+    this.tint =
       groundItem.kind === "gold"
         ? GOLD_TINT
         : groundTintOf(this.world, groundItem);
+    this.flashing = false;
+    this.label.tint = this.tint;
     this.label.alpha = OPAQUE;
     this.hide();
+  }
+
+  /** Tints it in the refusal's tint while `flashing`, and back in its own after, writing the tint only when that changes. */
+  setFlashing(flashing: boolean): void {
+    if (flashing === this.flashing) {
+      return;
+    }
+
+    this.flashing = flashing;
+    this.label.tint = flashing ? FLASH_REFUSED_TINT : this.tint;
   }
 
   release(): void {
@@ -186,8 +206,9 @@ export type GroundItemLabelViewPool = ViewPool<
 /**
  * The labels of the ground items on screen: a pool sized to the screen, bound to every gold
  * pile and item drawn inside the widened screen whether or not its label shows, so holding Alt
- * shows the rest on the next frame with no bind and no text rewritten. Each frame, the labels
- * that show are moved apart by a bounded pass and written to the pick port.
+ * shows the rest on the next frame with no bind and no text rewritten. A label a refusal flashes
+ * shows in the refusal's tint for the flash, Alt up or not. Each frame, the labels that show are
+ * moved apart by a bounded pass and written to the pick port.
  */
 export class GroundItemLabels {
   readonly pool: GroundItemLabelViewPool;
@@ -221,13 +242,15 @@ export class GroundItemLabels {
   /**
    * One frame: binds a label to every gold pile and item drawn inside the widened screen,
    * walking the ground-item pool by index; shows those whose rarity shows by default, or all of
-   * them while `everyLabel`; moves them apart; and writes each label drawn to `picks` in drawing
-   * order, moved onto the canvas by `canvas`, the scene rectangle the camera shows.
+   * them while `everyLabel`, and those `flashes` names at the world's tick; moves them apart;
+   * and writes each label drawn to `picks` in drawing order, moved onto the canvas by `canvas`,
+   * the scene rectangle the camera shows.
    */
   sync(
     world: WorldView,
     frame: CameraFrame,
     everyLabel: boolean,
+    flashes: ItemLabelFlashes,
     canvas: Readonly<Rect>,
     picks: PickList,
   ): void {
@@ -253,14 +276,18 @@ export class GroundItemLabels {
     }
 
     pool.releaseUnkept();
-    this.gather(everyLabel);
+    this.gather(everyLabel, flashes, world.tick);
     this.sortBottomFirst();
     this.place();
     this.writePicks(canvas, picks);
   }
 
-  /** Puts every bound label that shows this frame into the ranking, and hides the rest. */
-  private gather(everyLabel: boolean): void {
+  /** Puts every bound label that shows this frame into the ranking, tinting those a refusal flashes at `now`, and hides the rest. */
+  private gather(
+    everyLabel: boolean,
+    flashes: ItemLabelFlashes,
+    now: Tick,
+  ): void {
     this.rankedCount = 0;
 
     for (let index = 0; index < this.views.length; index += 1) {
@@ -270,7 +297,11 @@ export class GroundItemLabels {
         continue;
       }
 
-      if (!everyLabel && !view.byDefault) {
+      const flashing = flashes.isFlashing(view.id, now);
+
+      view.setFlashing(flashing);
+
+      if (!everyLabel && !view.byDefault && !flashing) {
         view.hide();
 
         continue;

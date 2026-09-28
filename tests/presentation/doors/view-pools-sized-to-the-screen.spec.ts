@@ -23,6 +23,7 @@ import {
   createFloatingNumberViews,
   createUnitViewPool,
   HitFlashes,
+  ItemLabelFlashes,
   syncUnitViews,
   Projection,
   unitDefinitionsOf,
@@ -203,7 +204,14 @@ describe("the door: view pools are sized to the screen and bound by camera recta
         });
 
         icons.sync(world.view, frame, canvas, picks.icons);
-        labels.sync(world.view, frame, true, canvas, picks.labels);
+        labels.sync(
+          world.view,
+          frame,
+          true,
+          new ItemLabelFlashes(),
+          canvas,
+          picks.labels,
+        );
       }
     }
 

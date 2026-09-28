@@ -20,6 +20,7 @@ import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import { createFloatingNumberViews } from "../views/floating-number.view";
 import { HitFlashes, HitNumbers } from "../views/hit-feedback";
+import { ItemLabelFlashes } from "../views/item-flashes";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 import {
   FLOATING_NUMBER_COUNT,
@@ -156,6 +157,7 @@ export class PlayScene extends Phaser.Scene {
       numbers: sharedNumbers,
       flashes: new HitFlashes(),
       hitNumbers: new HitNumbers(),
+      itemFlashes: new ItemLabelFlashes(),
     };
 
     this.built = {

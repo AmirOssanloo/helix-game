@@ -37,7 +37,7 @@ export {
 } from "./hud/hud-layout";
 export { LevelView } from "./hud/level.view";
 export { OrbSquaresView } from "./hud/orb-squares.view";
-export { ORB_TINTS, orbTint } from "./hud/palette";
+export { FLASH_REFUSED_TINT, ORB_TINTS, orbTint } from "./hud/palette";
 export {
   type FlashKind,
   flashKindOf,
@@ -203,6 +203,7 @@ export {
   GroundItemLabelView,
   LABEL_NUDGE_LIMIT,
 } from "./views/ground-item-label.view";
+export { flashRefusedItem, ItemLabelFlashes } from "./views/item-flashes";
 export { createObstacleViews, ObstacleViews } from "./views/obstacle.view";
 export { createOrbViews, orbSlotsOf, OrbViews } from "./views/orb.view";
 export {

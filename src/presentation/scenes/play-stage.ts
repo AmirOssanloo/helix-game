@@ -10,6 +10,7 @@ import type { CameraLens, PickPort } from "../input/input-ports";
 import type { SceneContext } from "../scene-context";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import type { HitFlashes, HitNumbers } from "../views/hit-feedback";
+import type { ItemLabelFlashes } from "../views/item-flashes";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 import type { ViewSyncerEntry } from "./view-syncers";
 
@@ -55,6 +56,8 @@ export type PlayStage = Readonly<{
   /** Which units were hit and until which tick, written by the event drain and read by the unit views. */
   flashes: HitFlashes;
   hitNumbers: HitNumbers;
+  /** Which ground items' labels flash a refusal and until which tick, written by the event drain and read by the label views. */
+  itemFlashes: ItemLabelFlashes;
 }>;
 
 /** A step of the play scene's frame, as the composition root registers it. */

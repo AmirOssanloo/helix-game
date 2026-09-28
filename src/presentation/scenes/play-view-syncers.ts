@@ -25,6 +25,7 @@ import {
   FLOOR_FRAME,
 } from "../views/floor.view";
 import { showHit } from "../views/hit-feedback";
+import { flashRefusedItem } from "../views/item-flashes";
 import { createObstacleViews } from "../views/obstacle.view";
 import { createOrbViews, orbSlotsOf } from "../views/orb.view";
 import {
@@ -175,14 +176,22 @@ const floor: PlayViewSyncer = {
 
 /**
  * Reads every event since last frame and shows what each one is worth on screen, before the
- * views, so a hit the ticks just landed is flashing and counted on this frame. The HUD drains
- * the same ring with a cursor of its own.
+ * views, so a hit the ticks just landed is flashing and counted on this frame, and a refusal
+ * naming a ground item flashes its label. The HUD drains the same ring with a cursor of its own.
  */
 const events: PlayViewSyncer = {
   name: "events",
   order: SYNC_ORDER.events,
   band: DEPTH_TEXT,
-  create: ({ context, world, flashes, hitNumbers, numbers }) => {
+  create: ({
+    context,
+    world,
+    frame,
+    flashes,
+    hitNumbers,
+    numbers,
+    itemFlashes,
+  }) => {
     const reader = createEventReader();
 
     return {
@@ -192,6 +201,7 @@ const events: PlayViewSyncer = {
         while (event !== null) {
           showHit(event, world, alpha, flashes, hitNumbers, numbers());
           showCheckpointReached(event, world, alpha, numbers());
+          flashRefusedItem(event, world, frame, itemFlashes);
           event = context.events.read(reader);
         }
       },

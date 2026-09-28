@@ -1,7 +1,7 @@
 import { GCProfiler } from "node:v8";
 import { describe, expect, it } from "vitest";
 import { rarities } from "@content/public";
-import type { GroundItemId, GroundItemKind } from "@domain/public";
+import type { DomainEvent, GroundItemId, GroundItemKind } from "@domain/public";
 import { acquireGroundItem, releaseGroundItem } from "@domain/rules";
 import type { PickList } from "@presentation/public";
 import {
@@ -9,13 +9,17 @@ import {
   createGroundItemLabels,
   createPickPort,
   DEPTH_GROUND_ITEMS,
+  FLASH_REFUSED_TINT,
+  flashRefusedItem,
   DEPTH_ITEM_LABELS,
   GOLD_TINT,
   GROUND_GLOBE_FRAME,
   GROUND_GOLD_FRAME,
   GROUND_LABEL_SIZE,
+  ItemLabelFlashes,
   LABEL_NUDGE_LIMIT,
   Projection,
+  refusalFlashTicks,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
 import type { Simulation } from "@simulation/testing";
@@ -85,6 +89,7 @@ type Arranged = {
   icons: ReturnType<typeof createGroundItemIcons>;
   labelViews: ReturnType<typeof createGroundItemLabels>;
   picks: ReturnType<typeof createPickPort>;
+  itemFlashes: ItemLabelFlashes;
 };
 
 const arrange = (size = POOL_SIZE): Arranged => {
@@ -127,6 +132,7 @@ const arrange = (size = POOL_SIZE): Arranged => {
     icons,
     labelViews,
     picks: createPickPort(size, size),
+    itemFlashes: new ItemLabelFlashes(),
   };
 };
 
@@ -161,6 +167,7 @@ const sync = (
     arranged.world.view,
     frame,
     everyLabel,
+    arranged.itemFlashes,
     CANVAS,
     arranged.picks.labels,
   );
@@ -484,6 +491,140 @@ describe("ground-item labels", () => {
 });
 
 /** Frames run to warm the sync up, then frames measured; heap growth past the allowance over them fails. */
+/** A `command_refused` for `reason` at the world's tick, naming `groundItemId` and `place`. */
+const refusal = (
+  arranged: Arranged,
+  groundItemId: GroundItemId | null,
+  place = -1,
+): Readonly<DomainEvent> => ({
+  kind: "command_refused",
+  tick: arranged.world.view.tick,
+  orb: -1,
+  abilityId: null,
+  statusId: null,
+  slot: 0,
+  reason: "no_room",
+  unitId: null,
+  sourceId: null,
+  zoneId: null,
+  projectileId: null,
+  groundItemId,
+  amount: 0,
+  damageType: null,
+  checkpoint: -1,
+  place,
+});
+
+/** Hands `event` to the label flashes as the play scene's event drain does, over `screen`. */
+const drain = (
+  arranged: Arranged,
+  event: Readonly<DomainEvent>,
+  screen: Rect = SCREEN,
+): void => {
+  flashRefusedItem(
+    event,
+    arranged.world.view,
+    frameAround(screen),
+    arranged.itemFlashes,
+  );
+};
+
+/** Runs the world on by `ticks`. */
+const runTicks = (arranged: Arranged, ticks: number): void => {
+  for (let tick = 0; tick < ticks; tick += 1) {
+    arranged.world.tick();
+  }
+};
+
+describe("a refused pick up", () => {
+  it("flashes the item's label in the refusal tint for the refusal flash's ticks, then returns it to its tint", () => {
+    const arranged = arrange();
+
+    lay(arranged, cap(0, CELL * 8, "rare"));
+    sync(arranged);
+
+    const [label] = shownLabels(arranged);
+
+    expect(label?.tint).toBe(tintOf("rare"));
+
+    const id = arranged.world.view.map.groundItems.idAt(0);
+
+    if (id === null) {
+      throw new Error("The cap lies at the first index");
+    }
+
+    drain(arranged, refusal(arranged, id));
+    sync(arranged);
+
+    expect(shownLabels(arranged)).toEqual([label]);
+    expect(label?.tint).toBe(FLASH_REFUSED_TINT);
+
+    const ticks = refusalFlashTicks(arranged.world.view);
+
+    runTicks(arranged, ticks - 1);
+    sync(arranged);
+
+    expect(label?.tint).toBe(FLASH_REFUSED_TINT);
+
+    runTicks(arranged, 1);
+    sync(arranged);
+
+    expect(shownLabels(arranged)).toEqual([label]);
+    expect(label?.tint).toBe(tintOf("rare"));
+  });
+
+  it("shows a label hidden with Alt up for the flash, and hides it again after", () => {
+    const arranged = arrange();
+    const id = lay(arranged, cap(0, 0, "common"));
+
+    sync(arranged);
+
+    expect(shownLabels(arranged)).toEqual([]);
+
+    drain(arranged, refusal(arranged, id));
+    sync(arranged);
+
+    expect(shownTexts(arranged)).toEqual(["CAP"]);
+    expect(shownLabels(arranged)[0]?.tint).toBe(FLASH_REFUSED_TINT);
+    expect(entries(arranged.picks.labels).map((entry) => entry.id)).toEqual([
+      id,
+    ]);
+
+    runTicks(arranged, refusalFlashTicks(arranged.world.view));
+    sync(arranged);
+
+    expect(shownLabels(arranged)).toEqual([]);
+
+    sync(arranged, true);
+
+    expect(shownLabels(arranged)[0]?.tint).toBe(tintOf("common"));
+  });
+
+  it("flashes no label for a refusal that names a place and no ground item", () => {
+    const arranged = arrange();
+
+    lay(arranged, cap(0, 0, "common"));
+    lay(arranged, cap(0, CELL * 8, "rare"));
+    drain(arranged, refusal(arranged, null, 3));
+    sync(arranged);
+
+    expect(shownTexts(arranged)).toEqual(["CAP"]);
+    expect(shownLabels(arranged)[0]?.tint).toBe(tintOf("rare"));
+  });
+
+  it("flashes nothing for an item drawn off the screen, even once the screen reaches it", () => {
+    const arranged = arrange();
+    const id = lay(arranged, cap(0, 0, "common"));
+    const away: Rect = { minX: 4000, minY: 4000, maxX: 4600, maxY: 4600 };
+
+    drain(arranged, refusal(arranged, id), away);
+    sync(arranged, false, away);
+    sync(arranged);
+
+    expect(shownLabels(arranged)).toEqual([]);
+  });
+});
+
 const WARM_UP_FRAMES = 5_000;
 const MEASURED_FRAMES = 2_000;
 const HEAP_ALLOWANCE_BYTES = 256 * 1024;
@@ -515,13 +656,20 @@ describe("the sync with a full screen of drops", () => {
     }
 
     const view = arranged.world.view;
-    const { icons, labelViews, picks } = arranged;
+    const { icons, labelViews, picks, itemFlashes } = arranged;
     const run = (frames: number): void => {
       for (let index = 0; index < frames; index += 1) {
         const everyLabel = index % 30 < 15;
 
         icons.sync(view, frame, CANVAS, picks.icons);
-        labelViews.sync(view, frame, everyLabel, CANVAS, picks.labels);
+        labelViews.sync(
+          view,
+          frame,
+          everyLabel,
+          itemFlashes,
+          CANVAS,
+          picks.labels,
+        );
       }
     };
 
