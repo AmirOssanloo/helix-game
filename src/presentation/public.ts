@@ -128,6 +128,7 @@ export {
   HUD_DEPTH_OVER_SCREEN,
   HUD_DEPTH_SCREEN,
   HUD_DEPTH_SCREEN_TEXT,
+  HUD_DEPTH_OVER_SCREEN_TEXT,
 } from "./hud/hud-bands";
 export {
   PAUSE_TITLE,
@@ -154,6 +155,21 @@ export {
   gridCellAt,
 } from "./screens/inventory-layout";
 export type { ScreenPorts } from "./screens/screen-parts";
+export { priceText, statLineText } from "./screens/tooltip-text";
+export {
+  itemUnderPointer,
+  PRICE_TINT,
+  Tooltip,
+  TOOLTIP_LINE_CAPACITY,
+  TOOLTIP_TEXT_SIZE,
+  TOOLTIP_TEXT_TINT,
+  UNMET_REQUIREMENT_TINT,
+} from "./screens/tooltip";
+export type {
+  TooltipPorts,
+  TooltipPrice,
+  TooltipSources,
+} from "./screens/tooltip";
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";
 export { PLAY_SCENE_KEY, PlayScene } from "./scenes/play.scene";

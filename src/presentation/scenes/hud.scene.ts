@@ -8,6 +8,7 @@ import {
   HUD_DEPTH_BAR,
   HUD_DEPTH_BAR_TEXT,
   HUD_DEPTH_OVER_SCREEN,
+  HUD_DEPTH_OVER_SCREEN_TEXT,
   HUD_DEPTH_SCREEN,
   HUD_DEPTH_SCREEN_TEXT,
 } from "../hud/hud-bands";
@@ -17,6 +18,8 @@ import { INVENTORY_CODE } from "../input/key-bindings";
 import type { SceneContext } from "../scene-context";
 import { InventoryScreen } from "../screens/inventory.screen";
 import { PauseScreen } from "../screens/pause-screen";
+import type { TooltipSources } from "../screens/tooltip";
+import { itemUnderPointer, Tooltip } from "../screens/tooltip";
 import { orbSlotsOf } from "../views/orb.view";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 
@@ -27,13 +30,17 @@ const SHUTDOWN_EVENT = "shutdown";
 /** Labels are centred on their position. */
 const LABEL_ORIGIN = 0.5;
 
+/** A glyph frame of the atlas font, read once for a glyph's width over its height. */
+const GLYPH_FRAME = "glyph_A";
+
 /**
  * Runs in parallel with the play scene, with its own camera, so the play camera's zoom and
  * scroll never move the bar. `create` makes every quad and label the bar will ever hold;
  * `update` reads the world view once and drains the event ring with its own cursor. The bar
  * and each screen are registered on the input claim, which hands them the presses that are
  * theirs and keeps those from the world; the scene listens to no pointer itself. Screens draw
- * in a band above the bar, each its own module.
+ * in a band above the bar, each its own module. The tooltip draws over them, for the item under
+ * where the claim last saw the pointer: on a screen, else on a ground label the play scene drew.
  */
 export class HudScene extends Phaser.Scene {
   private readonly context: SceneContext;
@@ -43,6 +50,10 @@ export class HudScene extends Phaser.Scene {
   private hud: Hud | null = null;
 
   private inventory: InventoryScreen | null = null;
+
+  private tooltip: Tooltip | null = null;
+
+  private tooltipSources: TooltipSources | null = null;
 
   constructor(context: SceneContext) {
     super({ key: HUD_SCENE_KEY });
@@ -89,6 +100,16 @@ export class HudScene extends Phaser.Scene {
       makeOverQuad: quadIn(HUD_DEPTH_OVER_SCREEN),
     });
     const pause = new PauseScreen(screenPorts);
+    // Made after the inventory, so it draws over the item on the pointer in the same band.
+    const tooltip = new Tooltip({
+      makeQuad: quadIn(HUD_DEPTH_OVER_SCREEN),
+      makeLabel: labelIn(HUD_DEPTH_OVER_SCREEN_TEXT),
+      frameSizes,
+      world: this.context.world,
+      glyphAspect:
+        this.context.atlas.frameWidth(GLYPH_FRAME) /
+        this.context.atlas.frameHeight(GLYPH_FRAME),
+    });
     const bar: ClaimRegion = {
       contains: (x, y) => containsPoint(BAR_RECT, x, y),
       pointerDown: (button, x, y): void => {
@@ -99,6 +120,13 @@ export class HudScene extends Phaser.Scene {
 
     this.hud = hud;
     this.inventory = inventory;
+    this.tooltip = tooltip;
+    this.tooltipSources = {
+      world: this.context.world,
+      screenItemAt: (x, y) => inventory.itemAt(x, y),
+      covers: (x, y) => claim.covers(x, y),
+      labels: this.context.picks.labels,
+    };
     claim.addRegion(bar);
     claim.addToggle(INVENTORY_CODE, inventory);
     claim.setPauseScreen(pause);
@@ -110,6 +138,8 @@ export class HudScene extends Phaser.Scene {
       claim.removeRegion(bar);
       this.hud = null;
       this.inventory = null;
+      this.tooltip = null;
+      this.tooltipSources = null;
     });
   }
 
@@ -123,6 +153,7 @@ export class HudScene extends Phaser.Scene {
 
     hud.sync(this.context.world);
     inventory.sync();
+    this.syncTooltip();
 
     let event = this.context.events.read(this.reader);
 
@@ -130,6 +161,27 @@ export class HudScene extends Phaser.Scene {
       hud.react(event, this.context.world);
       inventory.react(event);
       event = this.context.events.read(this.reader);
+    }
+  }
+
+  /** The tooltip of the item under the pointer, or none; with no store screen on the claim, it shows no price line. */
+  private syncTooltip(): void {
+    const tooltip = this.tooltip;
+    const sources = this.tooltipSources;
+    const claim = this.context.claim;
+
+    if (tooltip === null || sources === null) {
+      return;
+    }
+
+    const item = claim.pointerSeen
+      ? itemUnderPointer(sources, claim.pointerX, claim.pointerY)
+      : null;
+
+    if (item === null) {
+      tooltip.hide();
+    } else {
+      tooltip.show(item, "none", claim.pointerX, claim.pointerY);
     }
   }
 }

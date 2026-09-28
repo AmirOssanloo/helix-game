@@ -234,6 +234,8 @@ export type {
   UnequipItemCommand,
 } from "./commands/item-commands";
 export type { RequirementContent } from "./items/requirement";
+export type { LineSource } from "./items/armory-totals";
+export type { PriceContent } from "./items/prices";
 export type { DropRoll, LootWorld } from "./loot/roll";
 export type { Zone, ZoneId } from "./entities/zone";
 export type {

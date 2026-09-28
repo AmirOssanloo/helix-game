@@ -1,3 +1,4 @@
+import type { DeepReadonly } from "@shared/public";
 import type { StatusModifierKind } from "../definitions/status-def";
 import type { TuningUnit } from "../definitions/tuning-def";
 import { convertTunable } from "../definitions/tuning-state";
@@ -8,7 +9,7 @@ import type { Item } from "./item";
 import type { RequirementContent } from "./requirement";
 
 /** What a line reads of its source definition: the stat it adds to and whether flat or as a percentage. */
-type LineSource = Readonly<{ stat: Stat; kind: StatusModifierKind }>;
+export type LineSource = Readonly<{ stat: Stat; kind: StatusModifierKind }>;
 
 /**
  * The unit a flat amount of each stat is written in on an item, as content writes it and a
@@ -33,7 +34,7 @@ const FLAT_UNITS: Readonly<Record<Stat, TuningUnit>> = {
 /** The fixed line `line` of the Legendary piece `item` is, or `null` when it is none. */
 const pieceLineOf = (
   content: RequirementContent,
-  item: Readonly<Item>,
+  item: DeepReadonly<Item>,
   line: number,
 ): LineSource | null => {
   for (let index = 0; index < content.legendaries.length; index += 1) {
@@ -52,9 +53,9 @@ const pieceLineOf = (
  * names the piece, its base's implicit when it names the base, or the affix it names, and
  * `null` when the content holds none of them.
  */
-const lineSourceOf = (
+export const lineSourceOf = (
   content: RequirementContent,
-  item: Readonly<Item>,
+  item: DeepReadonly<Item>,
   line: number,
 ): LineSource | null => {
   const id = item.lines[line]?.sourceId ?? null;
@@ -85,6 +86,14 @@ const lineSourceOf = (
 
   return null;
 };
+
+/**
+ * Whether a line of `source` is written as a fraction of one and read as a percentage: every
+ * percentage line, and a flat line of a stat whose flat unit is a fraction, as magic damage
+ * and magic resistance are.
+ */
+export const isPercentLine = (source: LineSource): boolean =>
+  source.kind === "percent" || FLAT_UNITS[source.stat] === "fraction";
 
 /**
  * Adds every live line of `item` to `armory`'s totals, each flat amount converted into the

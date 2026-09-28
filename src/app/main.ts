@@ -16,6 +16,9 @@ import {
   BootScene,
   createGroundPick,
   createOverlayToggles,
+  createPickPort,
+  GROUND_ITEM_LABEL_COUNT,
+  GROUND_ITEM_VIEW_COUNT,
   HudScene,
   InputClaim,
   installDrawCallCounter,
@@ -85,6 +88,8 @@ export const boot: Boot = (): void => {
         driver.setScreenPaused(false);
       },
     }),
+    // Written by the play scene's ground-item views, read by its mapper and the HUD's tooltip.
+    picks: createPickPort(GROUND_ITEM_LABEL_COUNT, GROUND_ITEM_VIEW_COUNT),
     report: (message: string): void => {
       console.log(message);
     },

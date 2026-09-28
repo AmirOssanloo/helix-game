@@ -303,6 +303,32 @@ export class InventoryScreen implements ClaimScreen {
     this.lift.cancel();
   }
 
+  /**
+   * The item drawn at (`x`, `y`), in the grid or worn in the armory, for the tooltip: `null`
+   * while closed, while a left press is held on an item, or over nothing.
+   */
+  itemAt(x: number, y: number): DeepReadonly<Item> | null {
+    if (!this.open || this.lift.held) {
+      return null;
+    }
+
+    const cell = gridCellAt(x, y);
+
+    if (cell !== -1) {
+      const record = recordAt(this.world.run.inventory, cell);
+      const entry =
+        record === NO_RECORD
+          ? undefined
+          : this.world.run.inventory.placed[record];
+
+      return entry === undefined || !entry.live ? null : entry.item;
+    }
+
+    const slot = armorySlotAt(x, y);
+
+    return slot === -1 ? null : this.wornAt(slot, heroOf(this.world));
+  }
+
   /** Its key closes it. */
   keyDown(code: string): boolean {
     return code === INVENTORY_CODE;

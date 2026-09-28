@@ -62,7 +62,6 @@ A row of the tables on this page moves here when a phase's plan takes it, with t
 | Spell amplification (lifesteal stays below) | The spells page | Phase 8: magic damage %, P8-S34-T01, amplifying all magical damage the hero deals (Q93) |
 | A pickup order: click an item to walk to it and take it | Phase 8, Q74 | Phase 8: P8-S40-T01, by Q87's answer of 2026-09-27; items are picked up only this way, gold and globes still on walk-over |
 | A sized inventory grid, where an item takes more than one cell | Phase 8, Q88 | Phase 8: P8-S33-T01 and P8-S35-T04, by Q88's answer of 2026-09-27 |
-| Tooltips, for items | The HUD page | Phase 8: P8-S36-T01. Tooltips on spells and statuses stay below |
 | Usable items as abilities | The retrospective's items sizing | Phase 9, sketched |
 | More packs on the long road, the row "Q58" pointed at if the road felt empty | Phase 6, Q58 | Phase 8: P8-S39-T01, the long road at Diablo II density, by Q58's answer of 2026-09-27 |
 
@@ -91,6 +90,7 @@ A row of the table above moves here when the sprint it waited on builds it, with
 | Enemy summon adds at the live cap | Sprint 16 | P5-S19-T04: the pending case in `tests/simulation/enemies/edges.spec.ts` is real, and `tests/simulation/abilities/summon-adds.spec.ts` covers the refusal at request and at commit |
 | A unit's own movement speed and turn rate | Sprint 09 | P3-S12-T05 |
 | A melee attack | Sprint 09 | Sprint 12; `src/domain/attack/attack.ts` lands an attack with no projectile at the end of its attack point |
+| Tooltips, for items | The HUD page | P8-S36-T01: `src/presentation/screens/tooltip.ts`, over an item on the inventory screen or a ground label, its price line waiting on the store screen, P8-S36-T03. Tooltips on spells and statuses stay deferred below |
 
 ---
 

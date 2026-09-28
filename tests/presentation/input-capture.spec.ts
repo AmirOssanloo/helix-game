@@ -250,6 +250,34 @@ describe("the input claim, before the mapper", () => {
     ]);
   });
 
+  it("remembers where the pointer was last seen, by a move or a press, and says what a screen or the bar covers", () => {
+    const { claim, sink } = recorded();
+    const panel = new ScreenRecorder(PANEL, [], false, false);
+
+    expect(claim.pointerSeen).toBe(false);
+
+    sink.pointerMove(WORLD_X, WORLD_Y);
+
+    expect([claim.pointerSeen, claim.pointerX, claim.pointerY]).toEqual([
+      true,
+      WORLD_X,
+      WORLD_Y,
+    ]);
+
+    sink.pointerDown(LEFT_BUTTON, BAR_X, BAR_Y);
+
+    expect([claim.pointerX, claim.pointerY]).toEqual([BAR_X, BAR_Y]);
+    expect(claim.covers(BAR_X, BAR_Y)).toBe(true);
+    expect(claim.covers(PANEL_X, PANEL_Y)).toBe(false);
+    expect(claim.covers(WORLD_X, WORLD_Y)).toBe(false);
+
+    claim.open(panel);
+
+    expect(claim.covers(PANEL_X, PANEL_Y)).toBe(true);
+    expect(claim.covers(WORLD_X, WORLD_Y)).toBe(false);
+    expect(panel.calls).toEqual([]);
+  });
+
   it("hands every pointer move to every open screen, and none to the mapper", () => {
     const { claim, sink, mapper } = recorded();
     const panel = new ScreenRecorder(PANEL, [], false, false);

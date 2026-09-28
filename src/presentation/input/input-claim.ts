@@ -98,6 +98,13 @@ export class InputClaim {
   /** Escape is edge-triggered: a held Escape's repeats neither open nor close anything. */
   private escapeHeld = false;
 
+  /** Where the pointer was last seen on the canvas, by a move or a press, and whether it has been seen at all. */
+  pointerX = 0;
+
+  pointerY = 0;
+
+  pointerSeen = false;
+
   constructor(pause: PausePort) {
     this.pause = pause;
 
@@ -223,8 +230,32 @@ export class InputClaim {
     }
   }
 
+  /**
+   * Whether a press at (`x`, `y`) would be claimed: an open screen or a region covers it, or a
+   * modal screen is open. Asks and changes nothing.
+   */
+  covers(x: number, y: number): boolean {
+    for (let index = 0; index < this.screens.length; index += 1) {
+      const screen = this.screens[index];
+
+      if (screen !== undefined && (screen.modal || screen.contains(x, y))) {
+        return true;
+      }
+    }
+
+    for (let index = 0; index < this.regions.length; index += 1) {
+      if (this.regions[index]?.contains(x, y) === true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /** A button went down at (`x`, `y`). Returns whether it is claimed, and hands a claimed press to its owner. */
   pointerDown(button: number, x: number, y: number): boolean {
+    this.see(x, y);
+
     for (let index = this.screens.length - 1; index >= 0; index -= 1) {
       const screen = this.screens[index];
 
@@ -285,8 +316,10 @@ export class InputClaim {
     }
   }
 
-  /** The pointer moved to (`x`, `y`): every open screen hears it, and the mapper never needs it. */
+  /** The pointer moved to (`x`, `y`): it is remembered for the tooltip, every open screen hears it, and the mapper never needs it. */
   pointerMove(x: number, y: number): void {
+    this.see(x, y);
+
     for (let index = 0; index < this.screens.length; index += 1) {
       this.screens[index]?.pointerMove(x, y);
     }
@@ -411,6 +444,12 @@ export class InputClaim {
       this.pressScreens[button] = null;
       screen?.cancelPress();
     }
+  }
+
+  private see(x: number, y: number): void {
+    this.pointerX = x;
+    this.pointerY = y;
+    this.pointerSeen = true;
   }
 
   private ownScreen(button: number, screen: ClaimScreen | null): void {

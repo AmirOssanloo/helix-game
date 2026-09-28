@@ -42,6 +42,8 @@ export {
 export { ZONE_CAPACITY } from "./entities/zone";
 export { orbAt } from "./invoke/buffer";
 export { levelRequirementOf, meetsRequirement } from "./items/requirement";
+export { isPercentLine, lineSourceOf } from "./items/armory-totals";
+export { priceOf, sellPriceOf } from "./items/prices";
 export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
 export {
   firstFit,

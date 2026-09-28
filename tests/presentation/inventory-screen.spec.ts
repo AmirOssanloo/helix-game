@@ -415,6 +415,43 @@ describe("the inventory screen's items", () => {
   });
 });
 
+describe("the item the inventory shows under the pointer, for the tooltip", () => {
+  it("is the placed record's item on any of its cells, the worn item on its slot, and none on nothing, while held, or closed", () => {
+    const { world, screen, put, clickCell, pressCell, moveToCell, step } =
+      arrange();
+    const record = put(cap, 12);
+    const [helmRect] = ARMORY_SLOT_RECTS;
+
+    if (helmRect === undefined) {
+      throw new Error("The armory has a helm slot");
+    }
+
+    const helmX = (helmRect.minX + helmRect.maxX) / 2;
+    const helmY = (helmRect.minY + helmRect.maxY) / 2;
+
+    expect(screen.itemAt(cellX(23), cellY(23))).toBe(
+      world.view.run.inventory.placed[record]?.item,
+    );
+    expect(screen.itemAt(cellX(0), cellY(0))).toBeNull();
+    expect(screen.itemAt(helmX, helmY)).toBeNull();
+
+    pressCell(LEFT_BUTTON, 12);
+    moveToCell(12);
+
+    expect(screen.itemAt(cellX(12), cellY(12))).toBeNull();
+
+    screen.cancelPress();
+    clickCell(LEFT_BUTTON, 12);
+    step();
+
+    expect(screen.itemAt(helmX, helmY)?.baseId).toBe(cap.id);
+
+    screen.hide();
+
+    expect(screen.itemAt(helmX, helmY)).toBeNull();
+  });
+});
+
 describe("the inventory screen's gestures", () => {
   it("a left click on an item in the grid, on any of its cells, sends equip_item for that cell and nothing else", () => {
     const { driver, put, clickCell } = arrange();

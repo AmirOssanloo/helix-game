@@ -18,10 +18,12 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 | Field | Value |
 | --- | --- |
-| Layer | presentation, tests, docs |
+| Layer | domain, presentation, tests, docs |
 | Size | 1 |
 | Depends on | P8-S34-T03, P8-S35-T01 |
-| Status | planned |
+| Status | done |
+
+> **Edited 2026-09-28:** the layer row gains domain: no earlier ticket made `domain/items/prices.ts`, which the tooltip asks for the price and sell price, so it lands here with its spec, `tests/domain/items/prices.spec.ts`; T02 prices by it.
 
 > **Note, 2026-09-27, from P7-S48-T04:** the tooltip draws in `HudScene`'s band over the screens, for a ground label too ([ADR 0012](../../../../docs/adr/0012-screens-draw-in-the-hud-scene-behind-one-input-claim.md)); its lines are read from the item instance's stat lines ([ADR 0011](../../../../docs/adr/0011-an-item-is-a-value-the-hero-holds-in-run-scope.md)).
 
@@ -38,6 +40,8 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 - `tests/presentation/tooltip.spec.ts`: every line from a rolled item and a Legendary; the unmet requirement; the price lines only with the store open.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+> **Note, 2026-09-28, at close:** the tooltip is `Tooltip` in `src/presentation/screens/tooltip.ts`, its line wording in `tooltip-text.ts`, drawn in the HUD band over the screens with a new text band above it: a backdrop and eleven labels made at `create`. Each frame the HUD scene asks, at the point the input claim last saw the pointer, which it now remembers from every move and press, for the item the inventory shows there (`InventoryScreen.itemAt`, none while a press is held), else, where no screen or the bar covers the point (`InputClaim.covers`), for the item under the top ground label in the pick port. The pick port is now made once by the composition root and handed to both scenes in the scene context, so the play scene's mapper and the HUD's tooltip read the same record. Every line is read from the item and run scope's definitions; a line's stat and whether it reads as a percentage are asked of the domain through two new queries, `lineSourceOf`, the totals rewrite's own read, and `isPercentLine`; the requirement of `levelRequirementOf` and `meetsRequirement`; the price of the new `priceOf` and `sellPriceOf`. The text is rewritten only when the item, the requirement mark, or the price changes, which a spec counts; following the pointer writes positions only. The tooltip takes the price line as an argument, none, buy, or sell, and the HUD passes none: with no store on the claim yet, T03 passes buy over the store's stock and sell over the inventory while the store is open. In Chrome the atlas font's size proved to be its glyph width, not its height, so the tooltip measures a glyph as its size wide and its size over the aspect tall; the ground labels measure it the other way, and that is T05, unplanned. The choices the page leaves open are [Q113](../backlog/open-questions.md), decided provisionally. `pnpm check` green, 5215 tests; at a load average near 50 from Spotlight indexing, the stats system's steady-state heap case failed in some full runs, as it did on the committed baseline in the same conditions, and passed alone and once the load fell. Definition of done walked: every change holds, no ticket reference in the code, no file past 500 lines, the domain's new reads through the queries door. Under `src/presentation`: a quad from the atlas and `BitmapText` only, in fixed bands, the new text band among them; nothing made during play; colour is a tint; the sync reads the world view and asks every verdict of the queries door; every pointer event still passes the claim first; no overlay. The render benchmark was rerun by an agent, before and after, figures in the sprint exit. Documentation: the presentation page states the tooltip, the claim's remembered pointer and cover test, and the shared pick port, in its body and quick reference; the Deferred row "Tooltips, for items" moved to built.
 
 ---
 
@@ -85,6 +89,8 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 > **Note, 2026-09-28, from P8-S31-T02:** the screen is `src/presentation/screens/store.screen.ts` and claims no key. The mapper asks the domain's queries door which checkpoint's reach the hero stands in, and the click names it; `buy_item` names a stock slot ([the brief](../../2026-09-28-where-items-loot-and-the-store-live.md), sections 1.1 and 4.1). The size stays 1.5.
 
+> **Note, 2026-09-28, from T01:** the tooltip takes its price line as an argument, and the HUD scene passes none. This ticket passes `buy` over a stocked item and `sell` over an inventory item while the store is open, asking the store screen for the item under the pointer before the inventory. The size stays 1.5.
+
 **Build:** a left click on the checkpoint ring the hero stands in, as the domain's reach query says, sends `open_store` naming that checkpoint instead of a select; a click on a ring the hero is not in keeps its meaning today (Q90). The store screen opens beside the inventory, as a Diablo II vendor's does: three tabs, **Armour**, **Weapons**, and **Misc**, the last empty until phase 9 lists the active items in it; each tab a grid of item icons in their rarity's tint; the price shown on hover in the item's tooltip (T01); gold shown. A left click on a tab shows it and sends nothing. A left click on a stocked item sends `buy_item`; while the store is open a right click on an inventory item sends `sell_item` instead of `drop_item` (Q91). The screen closes on `close_store` from Esc or the store's closing. The [map and camera](../../../../docs/product/features/map-and-camera.md) page's checkpoint and the items and loot page state it.
 
 **Acceptance:**
@@ -125,16 +131,40 @@ Stand on a checkpoint ring and click it: the store opens beside the inventory. H
 
 ---
 
+### P8-S36-T05 — Ground labels measured at the font's glyph size
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, tests |
+| Size | 0.25 |
+| Depends on | T01 |
+| Status | planned |
+
+> **Note, 2026-09-28:** unplanned, found in T01. The atlas font's size is its glyph width (Phaser's retro font sets the font's size to the glyph's width), so a label made at 16 draws glyphs 16 wide and 25.6 tall. `createGroundItemLabels` measures a glyph as the size times the aspect wide, 10, and the size tall, 16, so the pass that moves labels apart and the rectangles written to the pick port are smaller than what is drawn: two labels may overlap, and a right click or a tooltip near a label's ends misses it. Taken from the sprint's buffer.
+
+**Build:** the ground labels measure a glyph as their size wide and their size over the glyph's aspect tall, for the pass and for the pick port's rectangles, as the tooltip does.
+
+**Acceptance:**
+- A label's pick rectangle covers the glyphs it draws, end to end and top to bottom.
+- Two labels drawn side by side do not overlap after the pass.
+
+**Tests:**
+- `tests/presentation/ground-item-view.spec.ts`: the pick rectangle's width and height from the text's length and the glyph's aspect; the pass keeping two long labels apart.
+
+**Definition of done:** Every change · Anything under `src/presentation`.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| Tooltips read from the record | |
+| Tooltips read from the record | 2026-09-28, T01: every line of a rolled Rare cap and of Hallcrown matches its record and definitions, the unmet requirement reads red, the price lines show only when asked for, and following the pointer rewrites no text, in `tests/presentation/tooltip.spec.ts`. By an agent in headless Chrome over the DevTools protocol on the Apple M1 (ANGLE Metal), 1920 by 1080, the dev build with the panel: Hallcrown placed in the grid, I pressed, the pointer on it, then moved across it every 50 ms through a 30 s measurement after an 8 s warm-up: the tooltip read as the spec says, the requirement in red at hero level 1, **60.03 fps, every frame 16.5 to 16.8 ms, 2 draw calls a frame, heap after a collection 83.0 MB, no console error**; the committed baseline on the same run, the screen open with the pointer on the item and no tooltip: 60.03 fps, 16.5 to 16.8 ms, 2 draw calls, 82.8 MB |
 | The store's stock keyed by its checkpoint; buy and sell in the log | |
 | The store opened from the ring, by hand | |
 | The panel's grants and preview | |
-| The render benchmark with both screens open | |
-| Actual days per ticket | |
+| The render benchmark with both screens open | T01, before the store screen exists: `pnpm bench` in the same headless Chrome, 30 s after an 8 s warm-up, 60.03 fps, 16.5 to 16.8 ms, 1 draw call a frame, heap 64.2 MB, no console error; the committed baseline 60.03 fps, 16.5 to 16.8 ms, 1 draw call, 64.1 MB: unchanged, as the atlas did not change and the bench draws no screen. Both screens open is T03's |
+| Actual days per ticket | T01: 0.5 against 1 |
 | Sprint total | |
 
 ## Risks in this sprint

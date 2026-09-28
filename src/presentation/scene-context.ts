@@ -6,6 +6,7 @@ import type { ShapeAtlas } from "./atlas/shape-atlas";
 import type { SlotFlashes } from "./hud/slot-flashes";
 import type { GroundPick } from "./input/ground-pick";
 import type { InputClaim } from "./input/input-claim";
+import type { PickPort } from "./input/input-ports";
 import type { OverlayToggles } from "./overlays/overlay-toggles";
 
 /**
@@ -55,5 +56,7 @@ export type SceneContext = Readonly<{
   groundPick: GroundPick;
   /** Whose each pointer and key event is: the HUD scene registers the bar and its screens on it, and the play scene asks it before the mapper. */
   claim: InputClaim;
+  /** What the ground-item views say is drawn where: the play scene writes it and its mapper reads it, and the HUD's tooltip reads the labels. */
+  picks: PickPort;
   report: Reporter;
 }>;
