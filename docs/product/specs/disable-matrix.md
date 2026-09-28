@@ -37,7 +37,7 @@ Every cell is exactly one of five words.
 | **Closed** | The cursor closes at no cost on the first frame the hero wears the status, and nothing is sent |
 | **Continues** | The cast point or the cursor carries on as it would with no status |
 
-The ten key and order columns answer refused, allowed, or cancelled. The cast point column answers cancelled or continues. The two cursor columns answer closed or continues.
+The twelve key, order, item, and pick up columns answer refused, allowed, or cancelled. The cast point column answers cancelled or continues. The two cursor columns answer closed or continues.
 
 ### 2.2 The columns
 
@@ -51,6 +51,7 @@ The ten key and order columns answer refused, allowed, or cancelled. The cast po
 | Attack-move | A move that attacks whatever it acquires on the way |
 | Stop | S: clear the order and cancel a cast point that has not finished |
 | Items | Equipping, unequipping, moving, and dropping an item, and the store's commands: none of them is an action of the unit's body (15) |
+| Pick up | The hero's walk to an item on the ground, by right click on its icon or its label, and the take at the end of it. A walk, so it answers as Move in every row (16) |
 | Cast point in progress | A cast already under way when the status lands: turning to face, walking into range, or in its cast point. A cast past its cast point is committed, and no status reaches it |
 | Targeting cursor open | The hero's cursor for a targeted spell in D or F, including a press held on a spell aimed by press and drag |
 | Attack-move cursor open | The hero's cursor after A, waiting for the left click |
@@ -77,17 +78,17 @@ When two rows refuse one command, the refusal names the reason of the first in t
 
 A number in brackets points at a note in [section 4](#4-notes).
 
-| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Items | Cast point in progress | Targeting cursor open | Attack-move cursor open |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | allowed | cancelled | closed | closed |
-| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed | allowed | allowed | allowed | allowed | continues (2) | closed | continues |
-| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | cancelled (4) | allowed (5) | cancelled (4) | allowed | allowed | continues (6) | continues | continues (7) |
-| Disarm | `disarm` | `disarmed` | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | allowed | continues | continues | continues |
-| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Damage over time | `burn`, `glacier_chill` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
-| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | allowed | continues (12) | continues | continues |
-| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | cancelled | closed | closed |
-| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Status | Definitions | Flags raised | Reason | Q | W | E | R | D | F | Move | Attack-target | Attack-move | Stop | Items | Pick up | Cast point in progress | Targeting cursor open | Attack-move cursor open |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Stun | `stun` | `stunned` | `stunned` | refused | refused | refused | refused | refused | refused | cancelled | cancelled | cancelled | refused (1) | allowed | cancelled | cancelled | closed | closed |
+| Silence | `silence` | `silenced` | `silenced` | refused | refused | refused | refused | refused | refused | allowed | allowed | allowed | allowed | allowed | allowed | continues (2) | closed | continues |
+| Root | `root` | `rooted` | `rooted` | allowed | allowed | allowed | allowed | allowed (3) | allowed (3) | cancelled (4) | allowed (5) | cancelled (4) | allowed | allowed | cancelled (4) | continues (6) | continues | continues (7) |
+| Disarm | `disarm` | `disarmed` | `disarmed` | allowed | allowed | allowed | allowed | allowed | allowed | allowed | refused (8) | allowed (9) | allowed | allowed | allowed | continues | continues | continues |
+| Slow | `slow`, `wane_chill`, `wane` | none, and `aggro_hidden` for `wane` (10) | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Damage over time | `burn`, `glacier_chill` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
+| Knockback | `knockback`, `charge` | `displaced` | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed (11) | allowed (11) | allowed (11) | allowed | allowed | allowed (11) | continues (12) | continues | continues |
+| Lift | `lift`, `updraft_lift` | `lifted`, `stunned`, `untargetable` | `stunned` | refused | refused | refused | refused | refused | refused | refused (13) | refused (13) | refused (13) | refused (14) | allowed | refused (13) | cancelled | closed | closed |
+| No disable | `quicken`, `self_heal`, `hoarfrost`, `bash`, `frost_attack` | none | none | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | allowed | continues | continues | continues |
 
 A death is not a status and is not a row: a dead unit refuses every command until it respawns, and every cursor closes when the hero dies. A skill point is not a column: no status refuses spending one, since a level is not an action the unit takes.
 
@@ -110,6 +111,7 @@ A death is not a status and is not a row: a dead unit refuses every command unti
 13. **Lift and an order.** A new order is refused, as under stun. An order running when the lift lands is neither cancelled nor kept running: it is put aside, and the unit takes it up again from where it lands. A cast is not put aside; the cast point column cancels it.
 14. **Lift and Stop.** Refused, as under stun, so a stop in the air does not drop the order put aside; the unit walks it on landing.
 15. **Items under every status.** The hero may equip, unequip, move, and drop an item, and use the store, stunned, silenced, rooted, disarmed, lifted, or knocked back: handling what it carries is not something a status stops. Only death refuses them.
+16. **Pick up is a walk.** Its cell is the Move cell of the same row, so a stun ends a pick up under way and refuses a new one, a root does the same and the hero does not walk to the item, a knockback keeps it and the hero walks on once the push ends, and a lift puts it aside and gives it back on landing. The take at the end is not a separate action: once the walk is allowed, the hero takes the item on reaching it.
 
 ---
 

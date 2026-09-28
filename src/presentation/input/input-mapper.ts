@@ -1,4 +1,4 @@
-import type { UnitId } from "@domain/public";
+import type { GroundItemId, UnitId } from "@domain/public";
 import type { AnyCommand, CastTarget } from "@domain/public";
 import {
   createCandidateBuffer,
@@ -14,7 +14,9 @@ import type {
   InputDriver,
   InputIntents,
   InputPorts,
+  PickPort,
 } from "./input-ports";
+import { topPickAt } from "./input-ports";
 import {
   ALT_CODES,
   altIndexOf,
@@ -64,6 +66,8 @@ export class InputMapper {
 
   private readonly groundPick: GroundPick;
 
+  private readonly picks: PickPort;
+
   /** One flag per binding, true from key-down to key-up. */
   private readonly held: boolean[];
 
@@ -84,6 +88,7 @@ export class InputMapper {
     this.world = ports.world;
     this.intents = ports.intents;
     this.groundPick = ports.groundPick;
+    this.picks = ports.picks;
     this.cursor = createTargetingCursor();
     this.held = [];
     this.candidates = createCandidateBuffer(UNIT_CAPACITY);
@@ -235,9 +240,9 @@ export class InputMapper {
   }
 
   /**
-   * A button went down at a screen position. Right: a move to the point, an attack on the
-   * enemy under it, or nothing for any other unit; the cursor closes either way, and while a
-   * press is held the right click only closes it. Left: the cursor's commit, the press of a
+   * A button went down at a screen position. Right: what is drawn under it, top first, an
+   * item's label, a unit, an item's icon, then the ground; the cursor closes either way, and
+   * while a press is held the right click only closes it. Left: the cursor's commit, the press of a
    * vector cursor, a ground point the developer panel is waiting for, or a selection that has
    * nothing to select yet.
    */
@@ -248,7 +253,7 @@ export class InputMapper {
       if (this.cursor.held) {
         closeCursor(this.cursor);
       } else {
-        this.rightClick();
+        this.rightClick(screenX, screenY);
       }
     } else if (button === LEFT_BUTTON) {
       this.leftClick(screenX, screenY);
@@ -317,8 +322,17 @@ export class InputMapper {
     }
   }
 
-  private rightClick(): void {
+  /**
+   * A right click at a canvas point names what is drawn there, top first: an item's label from
+   * the pick port, then a unit, an attack on an enemy and nothing on any other, then an item's
+   * icon, which lies under the units, then the ground, a move.
+   */
+  private rightClick(screenX: number, screenY: number): void {
     closeCursor(this.cursor);
+
+    if (this.sendPick(topPickAt(this.picks.labels, screenX, screenY))) {
+      return;
+    }
 
     const targetId = pickUnit(
       this.world,
@@ -343,11 +357,42 @@ export class InputMapper {
       return;
     }
 
+    if (this.sendPick(topPickAt(this.picks.icons, screenX, screenY))) {
+      return;
+    }
+
+    this.sendMove(this.point.x, this.point.y);
+  }
+
+  /** Sends a pick up of `id`, or a move to it for gold or a globe, taken by walking; `false`, sending nothing, for no pick or one already gone. */
+  private sendPick(id: GroundItemId | null): boolean {
+    const groundItem =
+      id === null ? null : this.world.map.groundItems.resolve(id);
+
+    if (id === null || groundItem === null) {
+      return false;
+    }
+
+    if (groundItem.kind === "item") {
+      this.submit({
+        kind: "pick_up",
+        tick: this.driver.nextTick,
+        timestamp: this.driver.now(),
+        groundItemId: id,
+      });
+    } else {
+      this.sendMove(groundItem.position.x, groundItem.position.y);
+    }
+
+    return true;
+  }
+
+  private sendMove(x: number, y: number): void {
     this.submit({
       kind: "move",
       tick: this.driver.nextTick,
       timestamp: this.driver.now(),
-      destination: { x: this.point.x, y: this.point.y },
+      destination: { x, y },
     });
   }
 

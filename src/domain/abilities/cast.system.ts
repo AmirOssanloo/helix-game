@@ -10,14 +10,16 @@ import { resetDomainEvent } from "../events/domain-event";
 import { isPathComplete } from "../movement/path";
 import { isInsideCone, turnToward } from "../movement/turn";
 import { turnRateOf } from "../movement/unit-rates";
-import { isCancelled } from "../orders/disable-matrix";
 import {
   beginCastBackswing,
   beginCastPoint,
-  beginFacing,
-  clearOrder,
   endChannel,
   finishBackswing,
+} from "../orders/cast-transitions";
+import { isCancelled } from "../orders/disable-matrix";
+import {
+  beginFacing,
+  clearOrder,
   setApproachPoint,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";

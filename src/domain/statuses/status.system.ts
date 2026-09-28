@@ -16,7 +16,8 @@ import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
 import { clearDisableFlags, raiseDisable } from "../orders/disable-flags";
 import { isCancelled } from "../orders/disable-matrix";
-import { clearOrder, resumeOrder, suspendOrder } from "../orders/state-machine";
+import { resumeOrder, suspendOrder } from "../orders/life-transitions";
+import { clearOrder } from "../orders/state-machine";
 import { addModifier, removeModifiers } from "../stats/modifiers";
 import { restoreHealth } from "../stats/regeneration";
 import { STATUS_NEVER_ENDS, writeStatus } from "./status-table";
@@ -339,7 +340,7 @@ const runExpiries = (
 /**
  * The matrix column of what `unit` is doing, or `null` when it holds nothing a status could
  * end: a cast under way, from the approach to the channel, reads the cast point column, and a
- * move, an attack on a target, or an attack-move reads its order's.
+ * move, an attack on a target, an attack-move, or a pick up reads its order's.
  */
 const activityColumn = (unit: Readonly<Unit>): DisableColumn | null => {
   if (
@@ -358,6 +359,8 @@ const activityColumn = (unit: Readonly<Unit>): DisableColumn | null => {
       return "attackTarget";
     case "attack_move":
       return "attackMove";
+    case "pick_up":
+      return "pickUp";
     case "none":
       return null;
     default:

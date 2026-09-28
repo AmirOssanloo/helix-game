@@ -1,4 +1,5 @@
 import type { Vec2 } from "@shared/public";
+import type { GroundItemId } from "../entities/ground-item";
 import type { UnitId } from "../entities/unit";
 
 /**
@@ -6,7 +7,7 @@ import type { UnitId } from "../entities/unit";
  * state says which step of it the unit is on, and the systems that run the step read it to
  * know whether to turn, translate, hold for a cast point, or wait out a backswing.
  *
- * `idle` holds no order. `turning` and `moving` carry a move, an attack, or a cast order: a
+ * `idle` holds no order. `turning` and `moving` carry a move, an attack, a pick up, or a cast order: a
  * cast order is the approach toward the target and the turn to face it. The two attack states
  * carry an attack order. The three ability states and `channeling` carry none: a cast takes
  * the unit away from whatever it was doing, and it is idle afterwards. The cast's aim lives
@@ -25,31 +26,40 @@ export type OrderState =
   | "dead";
 
 export type OrderKind =
-  "none" | "move" | "attack_target" | "attack_move" | "cast";
+  "none" | "move" | "attack_target" | "attack_move" | "cast" | "pick_up";
 
 /**
- * What an order is aimed at: nothing, a point, or a unit. Every target carries all three
- * fields at all times, so the record keeps one shape and is written in place, but the type
- * is a union over `tag`: a reader narrows on the tag before it reads the unit, and states
- * which targets it handles. `point` holds the point aimed at for a `point` target and is at
- * the origin otherwise; `unitId` is `null` for anything but a `unit` target.
+ * What an order is aimed at: nothing, a point, a unit, or an item on the ground. Every target
+ * carries all four fields at all times, so the record keeps one shape and is written in place,
+ * but the type is a union over `tag`: a reader narrows on the tag before it reads an id, and
+ * states which targets it handles. `point` holds the point aimed at for a `point` target and
+ * the item's point for a `ground_item` target, and is at the origin otherwise; `unitId` is
+ * `null` for anything but a `unit` target, and `groundItemId` for anything but a
+ * `ground_item` target. A ground item's id is a brand of its own, so it never resolves as a
+ * unit.
  *
  * The walk goal is not part of the target. It is the order's `destination`, which the attack
  * and cast rules move to an approach point while the target stays where it was.
  */
 export type OrderTarget =
-  | { tag: "none"; point: Vec2; unitId: null }
-  | { tag: "point"; point: Vec2; unitId: null }
-  | { tag: "unit"; point: Vec2; unitId: UnitId };
+  | { tag: "none"; point: Vec2; unitId: null; groundItemId: null }
+  | { tag: "point"; point: Vec2; unitId: null; groundItemId: null }
+  | { tag: "unit"; point: Vec2; unitId: UnitId; groundItemId: null }
+  | {
+      tag: "ground_item";
+      point: Vec2;
+      unitId: null;
+      groundItemId: GroundItemId;
+    };
 
 export type OrderTargetTag = OrderTarget["tag"];
 
 /**
  * The one current order. A flat record rather than a union of variants, so a new order is
  * written into the fields in place and nothing allocates. `destination` is where the unit
- * walks, for `move`, `attack_move`, and `cast`; `target` is what the order is aimed at: the
- * point of a move or an attack-move, the unit of `attack_target` or of an attack-move that
- * acquired one, and the aim of a cast.
+ * walks, for `move`, `attack_move`, `cast`, and `pick_up`; `target` is what the order is
+ * aimed at: the point of a move or an attack-move, the unit of `attack_target` or of an
+ * attack-move that acquired one, the aim of a cast, and the ground item of a pick up.
  *
  * There is no queue. A legal order replaces this one whole, and the previous destination or
  * target is gone.
@@ -65,6 +75,7 @@ export const createOrderTarget = (): OrderTarget => ({
   tag: "none",
   point: { x: 0, y: 0 },
   unitId: null,
+  groundItemId: null,
 });
 
 /** `target` aimed at nothing, every field written with the tag. */
@@ -73,6 +84,7 @@ export const aimAtNothing = (target: OrderTarget): void => {
   target.point.x = 0;
   target.point.y = 0;
   target.unitId = null;
+  target.groundItemId = null;
 };
 
 /** `target` aimed at (`x`, `y`), every field written with the tag. */
@@ -81,6 +93,7 @@ export const aimAtPoint = (target: OrderTarget, x: number, y: number): void => {
   target.point.x = x;
   target.point.y = y;
   target.unitId = null;
+  target.groundItemId = null;
 };
 
 /** `target` aimed at the unit `unitId`, every field written with the tag. */
@@ -89,6 +102,21 @@ export const aimAtUnit = (target: OrderTarget, unitId: UnitId): void => {
   target.point.x = 0;
   target.point.y = 0;
   target.unitId = unitId;
+  target.groundItemId = null;
+};
+
+/** `target` aimed at the ground item `groundItemId` lying at (`x`, `y`), every field written with the tag. */
+export const aimAtGroundItem = (
+  target: OrderTarget,
+  groundItemId: GroundItemId,
+  x: number,
+  y: number,
+): void => {
+  target.tag = "ground_item";
+  target.point.x = x;
+  target.point.y = y;
+  target.unitId = null;
+  target.groundItemId = groundItemId;
 };
 
 /** `into` aimed at what `from` is aimed at, field by field, so neither record is replaced. */
@@ -100,6 +128,7 @@ export const copyTarget = (
   into.point.x = from.point.x;
   into.point.y = from.point.y;
   into.unitId = from.unitId;
+  into.groundItemId = from.groundItemId;
 };
 
 /** A fresh order holding nothing: a pool slot's, made once with it. */

@@ -41,6 +41,7 @@ const disableMatrixSchema: Schema<DisableMatrixDef> = arrayOf(
       attackMove: commandAnswerSchema,
       stop: commandAnswerSchema,
       items: commandAnswerSchema,
+      pickUp: commandAnswerSchema,
       castPoint: oneOf(CAST_POINT_ANSWERS),
       targetingCursor: cursorAnswerSchema,
       attackMoveCursor: cursorAnswerSchema,

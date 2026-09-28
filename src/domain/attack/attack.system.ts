@@ -15,12 +15,14 @@ import { turnRateOf } from "../movement/unit-rates";
 import {
   beginAttackBackswing,
   beginAttackWindup,
-  beginFacing,
   cancelAttackWindup,
-  clearOrder,
   disengageTarget,
   engageTarget,
-  finishBackswing,
+} from "../orders/attack-transitions";
+import { finishBackswing } from "../orders/cast-transitions";
+import {
+  beginFacing,
+  clearOrder,
   setApproachPoint,
 } from "../orders/state-machine";
 import { resolveDestinationFor } from "../pathing/destination";

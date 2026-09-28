@@ -57,6 +57,7 @@ const TARGET_FIELDS = fieldsOf<DeepReadonly<OrderTarget>>({
   tag: excluded(FROM_THE_ORDER),
   point: excluded(FROM_THE_ORDER),
   unitId: nullableId("unitId", (target) => target.unitId),
+  groundItemId: nullableId("groundItemId", (target) => target.groundItemId),
 });
 
 const ORDER_FIELDS = fieldsOf<DeepReadonly<Order>>({

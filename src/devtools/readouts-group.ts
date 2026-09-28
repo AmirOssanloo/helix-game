@@ -166,7 +166,8 @@ export const readoutsGroup = (
       if (
         event.kind === "item_equipped" ||
         event.kind === "item_unequipped" ||
-        event.kind === "item_moved"
+        event.kind === "item_moved" ||
+        event.kind === "item_picked_up"
       ) {
         lastItem = `${event.kind} to ${String(event.place)}`;
       }

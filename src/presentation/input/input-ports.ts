@@ -33,6 +33,7 @@ export type InputPorts = Readonly<{
   world: WorldView;
   intents: InputIntents;
   groundPick: GroundPick;
+  picks: PickPort;
 }>;
 
 /**
@@ -122,4 +123,30 @@ export const writePick = (
   rect.maxY = maxY;
   list.ids[list.count] = id;
   list.count += 1;
+};
+
+/**
+ * The ground item of the entry of `list` drawn on top at canvas point (`x`, `y`): the last
+ * written whose rectangle holds the point, edges included, or `null` when none does.
+ */
+export const topPickAt = (
+  list: Readonly<PickList>,
+  x: number,
+  y: number,
+): GroundItemId | null => {
+  for (let index = list.count - 1; index >= 0; index -= 1) {
+    const rect = list.rects[index];
+
+    if (
+      rect !== undefined &&
+      x >= rect.minX &&
+      x <= rect.maxX &&
+      y >= rect.minY &&
+      y <= rect.maxY
+    ) {
+      return list.ids[index] ?? null;
+    }
+  }
+
+  return null;
 };

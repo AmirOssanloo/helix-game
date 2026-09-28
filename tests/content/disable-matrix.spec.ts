@@ -48,7 +48,7 @@ describe("the disable matrix", () => {
     ).toEqual([]);
   });
 
-  it("has the page's nine rows and fourteen columns", () => {
+  it("has the page's nine rows and fifteen columns", () => {
     expect(matrix.map((row) => row.id).sort()).toEqual([
       "damage_over_time",
       "disarm",
@@ -60,7 +60,7 @@ describe("the disable matrix", () => {
       "slow",
       "stun",
     ]);
-    expect(DISABLE_COLUMNS).toHaveLength(14);
+    expect(DISABLE_COLUMNS).toHaveLength(15);
   });
 
   it.each(contentRegistry.statuses.map((status) => [status.id]))(
@@ -87,6 +87,12 @@ describe("the disable matrix", () => {
       expect(matrix.some((row) => row.cells[column] !== "allowed")).toBe(
         column !== "items",
       );
+    }
+  });
+
+  it("answers the pick up as the move in every row, since it is a walk", () => {
+    for (const row of matrix) {
+      expect(row.cells.pickUp).toBe(row.cells.move);
     }
   });
 

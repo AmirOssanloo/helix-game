@@ -15,18 +15,19 @@ import { baseSpeedOf, turnRateOf } from "./unit-rates";
 const isUnderway = (unit: Readonly<Unit>): boolean =>
   unit.state === "turning" || unit.state === "moving";
 
-/** Whether the unit's order names a point to walk to: a move, an attack-move, or the approach of a cast or an attack on a target. */
+/** Whether the unit's order names a point to walk to: a move, an attack-move, a pick up, or the approach of a cast or an attack on a target. */
 const hasDestination = (unit: Readonly<Unit>): boolean =>
   unit.order.kind === "move" ||
   unit.order.kind === "attack_move" ||
   unit.order.kind === "attack_target" ||
-  unit.order.kind === "cast";
+  unit.order.kind === "cast" ||
+  unit.order.kind === "pick_up";
 
 /**
  * Whether reaching the destination is the end of the order. A move and an attack-move that
  * has acquired nothing arrive there; a cast's approach and an attack's do not, since the
  * point they walk to is a place to act from and the rule that wrote it decides what standing
- * there means.
+ * there means. Nor does a pick up: the pickup system ends it, on the same tick, with the take.
  */
 const endsAtDestination = (unit: Readonly<Unit>): boolean =>
   unit.order.kind === "move" ||

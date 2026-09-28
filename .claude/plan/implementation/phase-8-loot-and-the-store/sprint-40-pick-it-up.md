@@ -23,7 +23,7 @@ Kill a pack spawned from the panel, right-click the helm it dropped, and watch t
 | Layer | domain, simulation, content, presentation, tests, docs |
 | Size | 1.5 |
 | Depends on | P8-S33-T01, P8-S33-T03 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** from Q87's answer. The brief the maintainer saw had no pickup order; the Deferred row "A pickup order" is taken into this ticket.
 
@@ -49,15 +49,39 @@ Kill a pack spawned from the panel, right-click the helm it dropped, and watch t
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A new command, event, or system · Anything under `src/presentation` · A documentation change.
 
+> **Note, 2026-09-28, at close:** `PickUpCommand` is a member of the `Command` union beside `ItemCommand`, not of it, since it names a ground item and no place and reads its own column; the item union and its place stay as they were. The take puts the item in through `placeAtFirstFit` in `domain/items/item-commands.ts`. `input-mapper.ts` stays under the limit at 497 lines. A refused pick up's label flash, which the items page states, is P8-S40-T02, unplanned.
+
+### P8-S40-T02 — A refused pick up flashes the item's label
+
+| Field | Value |
+| --- | --- |
+| Layer | presentation, tests |
+| Size | 0.25 |
+| Depends on | P8-S40-T01 |
+| Status | planned |
+
+> **Note, 2026-09-28:** unplanned, added at P8-S40-T01's close. The [items and loot](../../../../docs/product/features/items-and-loot.md#states-and-edge-cases) page says a pick up with no room leaves the item on the ground "and the refusal flashes", and the brief's event table says a `command_refused` names the ground item "so the screen or the label flashes that item". P8-S40-T01 announces the refusal with `groundItemId`; nothing in presentation drains it yet, since the HUD flashes only a slot. It is paid from the sprint's buffer.
+
+**Build:** the play scene's event drain hands a `command_refused` that names a ground item to the ground-item label views, which flash that item's label, and show it for the flash even when it is Common or Uncommon with Alt up, for as long as the world view's tuning state says a refusal flash shows (`refusalFlashTicks`), in the refusal tint the HUD's flash uses. A label that is not on the screen flashes nothing. No game object is made; the flash is a tint and a visibility on the pooled label. The [presentation](../../../../docs/architecture/presentation.md) page states it beside the pick port.
+
+**Acceptance:**
+- A pick up refused with `no_room` flashes the item's label for the refusal flash's ticks, then the label returns to its tint and its default visibility.
+- A refusal naming a place and not a ground item flashes no label.
+
+**Tests:**
+- `tests/presentation/ground-item-view.spec.ts`: the flash, its end, a hidden label shown for it, and a refusal with no ground item.
+
+**Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
 ---
 
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| An item taken by a right click, the walk and the take in the log | |
-| The disable matrix's `pick_up` column | |
-| Actual days per ticket | |
+| An item taken by a right click, the walk and the take in the log | P8-S40-T01: `tests/simulation/items/pick-up-order.spec.ts` walks the hero to the item and takes it within the pickup radius, and replays a recorded `pick_up` to the recording's state; `tests/presentation/input-mapper.spec.ts` sends it from an icon and from a label |
+| The disable matrix's `pick_up` column | P8-S40-T01: `pickUp`, the move's answer in all nine rows, on the page and in the data; one test per cell in `tests/domain/orders/disable-matrix.spec.ts` |
+| Actual days per ticket | P8-S40-T01: sized 1.5, done in 1 |
 | Sprint total | |
 
 ## Risks in this sprint

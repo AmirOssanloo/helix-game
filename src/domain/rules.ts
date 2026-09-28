@@ -296,28 +296,35 @@ export { hasLineOfSight, segmentCrossesRect } from "./pathing/line-of-sight";
 export { pathingSystem } from "./pathing/pathing.system";
 export { writeSmoothedPath } from "./pathing/smoothing";
 export {
-  arrive,
   beginAttackBackswing,
   beginAttackWindup,
   cancelAttackWindup,
+  disengageTarget,
+  engageTarget,
+} from "./orders/attack-transitions";
+export {
   beginCastBackswing,
   beginCastPoint,
   beginChannel,
+  endChannel,
+  finishBackswing,
+} from "./orders/cast-transitions";
+export {
+  die,
+  respawn,
+  resumeOrder,
+  suspendOrder,
+} from "./orders/life-transitions";
+export { endPickUp, issuePickUp } from "./orders/pick-up-transitions";
+export {
+  arrive,
   beginFacing,
   beginMoving,
   clearOrder,
-  die,
-  disengageTarget,
-  endChannel,
-  engageTarget,
-  finishBackswing,
   issueAttackMove,
   issueAttackTarget,
   issueCast,
   issueMove,
-  respawn,
-  resumeOrder,
-  suspendOrder,
 } from "./orders/state-machine";
 export { validateCommand, validateDebugCommand } from "./orders/validator";
 export {

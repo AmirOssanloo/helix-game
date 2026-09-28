@@ -37,6 +37,7 @@ export const SEAL_ROW: DisableRowDef = {
     attackMove: "allowed",
     stop: "allowed",
     items: "allowed",
+    pickUp: "allowed",
     castPoint: "continues",
     targetingCursor: "closed",
     attackMoveCursor: "continues",

@@ -113,12 +113,17 @@ export class PlayScene extends Phaser.Scene {
       },
     };
     const lens = cameraLens(this.cameras.main, projection);
+    const picks = createPickPort(
+      GROUND_ITEM_LABEL_COUNT,
+      GROUND_ITEM_VIEW_COUNT,
+    );
     const mapper = new InputMapper({
       driver: this.context.driver,
       lens,
       world: this.context.world,
       intents,
       groundPick: this.context.groundPick,
+      picks,
     });
 
     let numbers: FloatingNumberViews | null = null;
@@ -139,7 +144,7 @@ export class PlayScene extends Phaser.Scene {
       camera,
       lens,
       mapper,
-      picks: createPickPort(GROUND_ITEM_LABEL_COUNT, GROUND_ITEM_VIEW_COUNT),
+      picks,
       makeQuad,
       makeStandingQuad,
       makeLabel,

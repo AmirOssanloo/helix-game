@@ -40,8 +40,9 @@ export const DISABLE_REASONS: readonly DisableReason[] = [
 ];
 
 /**
- * One row's answer in every column: the six slot keys, the four orders, the item commands, a
- * cast already under way, and the hero's two cursors.
+ * One row's answer in every column: the six slot keys, the four orders, the item commands, the
+ * pick up, a cast already under way, and the hero's two cursors. The pick up is a walk, and
+ * answers as a move does.
  */
 export type DisableCellsDef = Readonly<{
   q: CommandAnswer;
@@ -55,6 +56,7 @@ export type DisableCellsDef = Readonly<{
   attackMove: CommandAnswer;
   stop: CommandAnswer;
   items: CommandAnswer;
+  pickUp: CommandAnswer;
   castPoint: CastPointAnswer;
   targetingCursor: CursorAnswer;
   attackMoveCursor: CursorAnswer;
@@ -63,7 +65,7 @@ export type DisableCellsDef = Readonly<{
 /** Every column of the matrix. */
 export type DisableColumn = keyof DisableCellsDef;
 
-/** The columns a command is validated against: the six keys, the four orders, and the item commands. */
+/** The columns a command is validated against: the six keys, the four orders, the item commands, and the pick up. */
 export type CommandColumn = Exclude<
   DisableColumn,
   "castPoint" | "targetingCursor" | "attackMoveCursor"
@@ -82,7 +84,7 @@ export const SLOT_COLUMNS: readonly CommandColumn[] = [
   "f",
 ];
 
-/** The eleven columns a command reads: the slot keys, the orders, and the item commands. */
+/** The twelve columns a command reads: the slot keys, the orders, the item commands, and the pick up. */
 export const COMMAND_COLUMNS: readonly CommandColumn[] = [
   ...SLOT_COLUMNS,
   "move",
@@ -90,6 +92,7 @@ export const COMMAND_COLUMNS: readonly CommandColumn[] = [
   "attackMove",
   "stop",
   "items",
+  "pickUp",
 ];
 
 /** Every column, in the order the matrix page writes them. */

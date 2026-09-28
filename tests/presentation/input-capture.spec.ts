@@ -10,6 +10,7 @@ import type {
 import {
   claimedSink,
   createGroundPick,
+  createPickPort,
   ESCAPE_CODE,
   InputClaim,
   InputMapper,
@@ -382,6 +383,7 @@ describe("the input claim over a real mapper", () => {
       world: world.view,
       intents: new IntentRecorder(),
       groundPick: createGroundPick(),
+      picks: createPickPort(1, 1),
     });
     const claim = new InputClaim(new PauseRecorder());
     const pauseScreen = new ScreenRecorder(WHOLE_CANVAS, [], true, true);

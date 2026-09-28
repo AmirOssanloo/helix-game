@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
-import type { Unit } from "@domain/public";
-import { acquireUnit, applyStatus } from "@domain/rules";
-import type { GroundPick } from "@presentation/public";
+import type { GroundItemId, GroundItemKind, Unit } from "@domain/public";
+import {
+  acquireGroundItem,
+  acquireUnit,
+  applyStatus,
+  releaseGroundItem,
+} from "@domain/rules";
+import type { GroundPick, PickList, PickPort } from "@presentation/public";
 import {
   createGroundPick,
+  createPickPort,
+  writePick,
   DRAG_THRESHOLD,
   InputMapper,
   LEFT_BUTTON,
@@ -75,6 +82,12 @@ const form = makeFormDef.build({
   ],
 });
 
+/** Room in each list of the pick port: more than any case writes. */
+const PICK_ROOM = 4;
+
+/** Half the side of the square a case writes to the pick port around a ground item's point. */
+const PICK_HALF = 12;
+
 /** A cursor's held press as a closed cursor, or an open one with nothing held, reads it. */
 const NOTHING_HELD = {
   held: false,
@@ -90,6 +103,7 @@ type Arranged = {
   intents: IntentRecorder;
   mapper: InputMapper;
   groundPick: GroundPick;
+  picks: PickPort;
 };
 
 /** A mapper over a world whose hero holds `prepared` in D and F, standing at the origin facing +X with every orb at level one and full mana, over a registry with whatever `options` adds. */
@@ -135,15 +149,17 @@ const arrange = (
   const lens = new FixedLens();
   const intents = new IntentRecorder();
   const groundPick = createGroundPick();
+  const picks = createPickPort(PICK_ROOM, PICK_ROOM);
   const mapper = new InputMapper({
     driver,
     lens,
     world: world.view,
     intents,
     groundPick,
+    picks,
   });
 
-  return { world, hero, driver, lens, intents, mapper, groundPick };
+  return { world, hero, driver, lens, intents, mapper, groundPick, picks };
 };
 
 /** Puts `statusId` on the hero and runs the tick whose status pass raises its flags. */
@@ -174,13 +190,50 @@ const standUnit = (
   return id;
 };
 
+/** A ground item of `kind` lying at (`x`, `y`), a helm when it is an item, by id. */
+const layItem = (
+  world: Simulation,
+  kind: GroundItemKind,
+  x: number,
+  y: number,
+): GroundItemId => {
+  const id = acquireGroundItem(world.state, kind, x, y);
+  const groundItem =
+    id === null ? null : world.state.map.groundItems.resolve(id);
+
+  if (id === null || groundItem === null) {
+    throw new Error("The ground-item pool has room");
+  }
+
+  groundItem.item.baseId = "cap";
+
+  return id;
+};
+
+/** Writes a square around canvas point (`x`, `y`) naming `id` as the next entry of `list`: the lens is fixed with no offset, so canvas and world points agree. */
+const drawPick = (
+  list: PickList,
+  id: GroundItemId,
+  x: number,
+  y: number,
+): void => {
+  writePick(
+    list,
+    id,
+    x - PICK_HALF,
+    y - PICK_HALF,
+    x + PICK_HALF,
+    y + PICK_HALF,
+  );
+};
+
 describe("the lens through the projection", () => {
   /** Where the click is meant to land, in the world, and where the camera has scrolled to, in scene pixels. */
   const TARGET = { x: 400, y: 200 };
   const SCROLL = { x: 100, y: 50 };
 
   it("resolves a canvas point to the unprojected world point under it", () => {
-    const { world, hero, driver, lens, intents, groundPick } = arrange();
+    const { world, hero, driver, lens, intents, groundPick, picks } = arrange();
     const projection = new Projection();
 
     // The fixed lens stands in for the camera: canvas plus scroll is the scene point.
@@ -195,6 +248,7 @@ describe("the lens through the projection", () => {
       world: world.view,
       intents,
       groundPick,
+      picks,
     });
     const drawn = { x: 0, y: 0 };
 
@@ -241,6 +295,109 @@ describe("the pointer", () => {
     expect(driver.commands).toEqual([
       { kind: "attack_target", tick: 0, timestamp: 1, targetId: enemyId },
     ]);
+  });
+
+  describe("on what lies on the ground", () => {
+    it("right click on an item's icon sends a pick up of it", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.icons, id, 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 305, 4);
+
+      expect(driver.commands).toEqual([
+        { kind: "pick_up", tick: 0, timestamp: 1, groundItemId: id },
+      ]);
+    });
+
+    it("right click on an item's label sends a pick up of it, wherever the label stands", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.labels, id, 300, -60);
+      mapper.pointerDown(RIGHT_BUTTON, 300, -60);
+
+      expect(driver.commands).toEqual([
+        { kind: "pick_up", tick: 0, timestamp: 1, groundItemId: id },
+      ]);
+    });
+
+    it("right click on the ground beside an item is a move", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.icons, id, 300, 0);
+      drawPick(picks.labels, id, 300, -60);
+      mapper.pointerDown(RIGHT_BUTTON, 300 + PICK_HALF + 1, 0);
+
+      expect(driver.commands).toEqual([
+        {
+          kind: "move",
+          tick: 0,
+          timestamp: 1,
+          destination: { x: 300 + PICK_HALF + 1, y: 0 },
+        },
+      ]);
+    });
+
+    it("right click on gold or a globe is a move to where it lies", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const gold = layItem(world, "gold", 300, 0);
+      const globe = layItem(world, "health_globe", 600, 0);
+
+      drawPick(picks.labels, gold, 300, -60);
+      drawPick(picks.icons, globe, 600, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, -60);
+      mapper.pointerDown(RIGHT_BUTTON, 605, 5);
+
+      expect(driver.commands).toEqual([
+        { kind: "move", tick: 0, timestamp: 1, destination: { x: 300, y: 0 } },
+        { kind: "move", tick: 0, timestamp: 2, destination: { x: 600, y: 0 } },
+      ]);
+    });
+
+    it("reads the top one where two overlap: the last drawn", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const under = layItem(world, "item", 300, 0);
+      const over = layItem(world, "item", 400, 0);
+
+      drawPick(picks.icons, under, 300, 0);
+      drawPick(picks.icons, over, 310, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 305, 0);
+
+      expect(driver.commands).toEqual([
+        { kind: "pick_up", tick: 0, timestamp: 1, groundItemId: over },
+      ]);
+    });
+
+    it("reads a label over an enemy, and an enemy over an item's icon", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const enemyId = standUnit(world, "enemy", 300, 0);
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.icons, id, 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+      drawPick(picks.labels, id, 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+
+      expect(driver.commands).toEqual([
+        { kind: "attack_target", tick: 0, timestamp: 1, targetId: enemyId },
+        { kind: "pick_up", tick: 0, timestamp: 2, groundItemId: id },
+      ]);
+    });
+
+    it("passes over an entry whose ground item is gone, as if nothing were drawn there", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.icons, id, 300, 0);
+      releaseGroundItem(world.state, id);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+
+      expect(driver.commands).toEqual([
+        { kind: "move", tick: 0, timestamp: 1, destination: { x: 300, y: 0 } },
+      ]);
+    });
   });
 
   describe("AT-C3", () => {

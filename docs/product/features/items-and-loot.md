@@ -29,7 +29,7 @@ An item is never taken by walking. A right click on an item's icon or its label 
 
 Where an item and a unit overlap, what is drawn on top wins: a label picks up its item; under it, an enemy is attacked; under that, an item's icon picks it up; then the ground is a move. Holding Alt shows every label, so an item under an enemy can always be reached by its label.
 
-A new order replaces a pick up as it replaces any order. An item taken or gone by the time the hero arrives ends the order.
+A pick up is a walk, and the [disable matrix](../specs/disable-matrix.md) answers it as a move: a stun or a root ends one under way and refuses a new one, a knockback carries the hero and the walk goes on, and a lift puts it aside until the hero lands. A new order replaces a pick up as it replaces any order. An item taken or gone by the time the hero arrives ends the order, and so does a walk that ends out of reach of the item. The item comes into the inventory the moment the hero is within the pickup radius of it, the same reach as gold and globes.
 
 ## Labels and Alt
 

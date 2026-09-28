@@ -3,6 +3,7 @@ import { assert, assertNever } from "@shared/public";
 import { requestCast } from "../abilities/cast";
 import type { AnyCommand, Command } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
+import type { PickUpCommand } from "../commands/item-commands";
 import { isItemCommand } from "../commands/item-commands";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
@@ -17,9 +18,10 @@ import { applyItemCommand, placeOfItemCommand } from "../items/item-commands";
 import { NO_PLACE } from "../items/item-place";
 import { applySkillPoint, applySlotKey } from "../kits/slot-key";
 import { resolveDestinationFor } from "../pathing/destination";
+import { endChannel } from "./cast-transitions";
+import { issuePickUp } from "./pick-up-transitions";
 import {
   clearOrder,
-  endChannel,
   issueAttackMove,
   issueAttackTarget,
   issueMove,
@@ -27,7 +29,7 @@ import {
 import type { RefusalReason } from "./validator";
 import { validateCommand, validateDebugCommand } from "./validator";
 
-/** Announces that `command` was refused for `reason`, naming the slot key, the spell, or the item's place when it had one so the view can flash the square or the item. */
+/** Announces that `command` was refused for `reason`, naming the slot key, the spell, the item's place, or the ground item when it had one so the view can flash the square or the item. */
 const announceRefusal = (
   world: World,
   command: AnyCommand,
@@ -43,6 +45,8 @@ const announceRefusal = (
   refused.place = isItemCommand(command)
     ? placeOfItemCommand(command)
     : NO_PLACE;
+  refused.groundItemId =
+    command.kind === "pick_up" ? command.groundItemId : null;
   refused.reason = reason;
   world.events.write(refused);
 };
@@ -65,8 +69,42 @@ const resolveFor = (
   );
 
 /**
+ * Sends the hero to take the ground item the command names, at the point it lies on, which is
+ * legal ground by construction. A stale id, taken or released since the click, is refused as
+ * a gone target is; gold and a globe are refused as no target of a pick up, since they are
+ * taken by walking.
+ */
+const applyPickUp = (
+  world: World,
+  hero: Unit,
+  command: PickUpCommand,
+): RefusalReason | null => {
+  const groundItem = world.map.groundItems.resolve(command.groundItemId);
+
+  if (groundItem === null) {
+    return "target_not_found";
+  }
+
+  if (groundItem.kind !== "item") {
+    return "invalid_target";
+  }
+
+  const result = issuePickUp(
+    hero,
+    command.groundItemId,
+    groundItem.position.x,
+    groundItem.position.y,
+  );
+
+  assert(result === "ok", "A validated pick up replaces the current order");
+
+  return null;
+};
+
+/**
  * Writes one validated player command onto the hero. The order commands replace the current
- * order through the state machine, with a destination resolved to a legal point first. A
+ * order through the state machine, with a destination resolved to a legal point first, and a
+ * pick up at the point its ground item lies on. A
  * slot key and a skill-point spend go to the active form's kit, a cast to the cast
  * pipeline's request stage, and an item command to the inventory and the armory; any of them may still refuse it, and the reason comes back for
  * the caller to announce. A slot key that applied while the hero was channeling ends the
@@ -110,6 +148,9 @@ const applyCommand = (
 
       break;
     }
+
+    case "pick_up":
+      return applyPickUp(world, hero, command);
 
     case "stop":
       clearOrder(hero);

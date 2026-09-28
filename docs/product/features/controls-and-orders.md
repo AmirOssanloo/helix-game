@@ -15,13 +15,15 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Right click | Walkable ground | Replaces the current order with a move to that point. No attack on the way |
 | Right click | Enemy | Replaces the current order with attack-target |
 | Right click | The hero itself or a summon | Nothing. No follow order starts |
+| Right click | An item's icon or its label on the ground | Replaces the current order with a pick up: the hero walks to the item as a move does and takes it into the inventory ([items and loot](./items-and-loot.md#picking-up-an-item)) |
+| Right click | Gold or a globe's icon or label | A move to where it lies; the hero takes it by walking there |
 | Left click | World, no targeting cursor open | Selects. Never issues a move |
 | Left click | Targeting cursor open | Commits the target and starts the cast |
 | Left click | The Q, W, or E square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
 | Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
 | Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
-A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it.
+A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it. A right click names what is drawn on top where it lands: an item's label, then a unit, then an item's icon, then the ground.
 
 ## The keys
 
@@ -41,7 +43,7 @@ Every key fires on key-down and never repeats while held. Several keys landing i
 
 ## One order at a time
 
-The hero holds one current order: move, attack-target, attack-move, the walk and turn toward a targeted cast, or none. A new order replaces the old one on the tick it is consumed, before the hero moves, so the first step toward it lands on that tick; the hero never finishes the old path first. There is no queue.
+The hero holds one current order: move, attack-target, attack-move, pick up, the walk and turn toward a targeted cast, or none. A new order replaces the old one on the tick it is consumed, before the hero moves, so the first step toward it lands on that tick; the hero never finishes the old path first. There is no queue.
 
 Q, W, E, and R are not orders. They execute on the current tick without replacing a move or attack, so the player weaves orbs while walking. They do interrupt a channel.
 
@@ -90,7 +92,7 @@ The fail column of spec section 15, in short, because it is the shortest test of
 | --- | --- |
 | Order issued while stunned | Refused. The stun already cleared the current order, or a lift has put it aside until landing. Nothing is queued for after |
 | Skill point spent while stunned or silenced | Allowed. A level is not an action of the hero, so no disable refuses it |
-| Right click while the targeting cursor is open | The click is a move order; the cursor closes at no cost |
+| Right click while the targeting cursor is open | The cursor closes at no cost, and the click orders what it would with no cursor open: a move, an attack, or a pick up |
 | Right click while the button is held on a spell aimed by press and drag | The cursor closes at no cost, and nothing is ordered: no cast and no move |
 | The window loses focus while the button is held on a spell aimed by press and drag | The cursor closes at no cost |
 | Esc with a move running | The cursor closes; the move continues |

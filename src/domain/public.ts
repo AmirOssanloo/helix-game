@@ -234,6 +234,7 @@ export type {
   EquipItemCommand,
   ItemCommand,
   MoveItemCommand,
+  PickUpCommand,
   UnequipItemCommand,
 } from "./commands/item-commands";
 export type { RequirementContent } from "./items/requirement";

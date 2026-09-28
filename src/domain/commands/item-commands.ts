@@ -1,3 +1,4 @@
+import type { GroundItemId } from "../entities/ground-item";
 import type { Tick } from "../tick";
 
 /**
@@ -48,6 +49,21 @@ export type DropItemCommand = Readonly<{
   tick: Tick;
   timestamp: number;
   cell: number;
+}>;
+
+/**
+ * A right click on an item's icon or its label: replace the current order with a pick up of
+ * the ground item `groundItemId` names. The hero walks to it as a move walks, and takes it into
+ * the inventory at its first fit on coming within reach. It names the ground item by its id,
+ * the one command about items that names no place, and it is an order, not an item command:
+ * it reads its own column of the disable matrix. A stale id resolves to nothing when the tick
+ * reads it.
+ */
+export type PickUpCommand = Readonly<{
+  kind: "pick_up";
+  tick: Tick;
+  timestamp: number;
+  groundItemId: GroundItemId;
 }>;
 
 /** The kinds of the item union, as a record over them so a variant added to the union and not here fails the typecheck. */

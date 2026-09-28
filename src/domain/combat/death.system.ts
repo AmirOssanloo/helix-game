@@ -12,7 +12,7 @@ import type { FormRecord, World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
 import { dropOnDeath } from "../loot/drop-on-death";
 import { clearDisableFlags } from "../orders/disable-flags";
-import { die, respawn } from "../orders/state-machine";
+import { die, respawn } from "../orders/life-transitions";
 import { grantExperience } from "../stats/levels";
 
 /** Empties the unit's status table and lowers everything it set, so nothing that was on it outlives it. */

@@ -3,6 +3,7 @@ import { heroDef } from "@content/public";
 import type {
   Command,
   CommandColumn,
+  GroundItemId,
   DisableAnswer,
   DisableColumn,
   DisableReason,
@@ -12,6 +13,7 @@ import type {
 } from "@domain/public";
 import { isClosed } from "@domain/queries";
 import {
+  acquireGroundItem,
   answerOf,
   SLOT_COLUMNS,
   slotRefusal,
@@ -58,6 +60,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "cancelled",
       stop: "refused",
       items: "allowed",
+      pickUp: "cancelled",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -79,6 +82,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "closed",
       attackMoveCursor: "continues",
@@ -100,6 +104,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "cancelled",
       stop: "allowed",
       items: "allowed",
+      pickUp: "cancelled",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -121,6 +126,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -142,6 +148,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -163,6 +170,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -184,6 +192,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -205,6 +214,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "refused",
       stop: "refused",
       items: "allowed",
+      pickUp: "refused",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -226,6 +236,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -246,6 +257,7 @@ const COLUMNS: readonly DisableColumn[] = [
   "attackMove",
   "stop",
   "items",
+  "pickUp",
   "castPoint",
   "targetingCursor",
   "attackMoveCursor",
@@ -272,9 +284,17 @@ const spell = makeSpellDef.build({
 
 const form = makeFormDef.build({ abilities: [spell.id] });
 
-type Arranged = Readonly<{ world: Simulation; hero: Unit; enemyId: UnitId }>;
+type Arranged = Readonly<{
+  world: Simulation;
+  hero: Unit;
+  enemyId: UnitId;
+  groundItemId: GroundItemId;
+}>;
 
-/** The hero at the origin facing +X with the spell prepared in D, and an enemy far off along +X. */
+/** The ids a command column's command names: the enemy an attack aims at, and the item a pick up walks to. */
+type Targets = Readonly<{ enemyId: UnitId; groundItemId: GroundItemId }>;
+
+/** The hero at the origin facing +X with the spell prepared in D, an enemy far off along +X, and a helm lying far off on the diagonal. */
 const arrange = (): Arranged => {
   const world = makeWorld({
     seed: 1,
@@ -294,7 +314,19 @@ const arrange = (): Arranged => {
 
   record.kit.prepared[0] = spell.id;
 
-  return { world, hero, enemyId: unitIdOf(world, enemy) };
+  const groundItemId = acquireGroundItem(world.state, "item", FAR, FAR);
+  const groundItem =
+    groundItemId === null
+      ? null
+      : world.state.map.groundItems.resolve(groundItemId);
+
+  if (groundItemId === null || groundItem === null) {
+    throw new Error("The ground-item pool has room");
+  }
+
+  groundItem.item.baseId = "cap";
+
+  return { world, hero, enemyId: unitIdOf(world, enemy), groundItemId };
 };
 
 /** Puts `statusId` on the hero by the panel's door and lets the status pass raise its flags. */
@@ -311,7 +343,7 @@ const wear = (world: Simulation, statusId: string): void => {
 };
 
 /** The command a key or order column is validated with. */
-const commandFor = (column: CommandColumn, enemyId: UnitId): Command => {
+const commandFor = (column: CommandColumn, targets: Targets): Command => {
   const stamp = { tick: 0, timestamp: 0 };
   const slot = slotOf(column);
 
@@ -325,9 +357,11 @@ const commandFor = (column: CommandColumn, enemyId: UnitId): Command => {
     case "attackMove":
       return { kind: "attack_move", ...stamp, destination: { x: FAR, y: FAR } };
     case "attackTarget":
-      return { kind: "attack_target", ...stamp, targetId: enemyId };
+      return { kind: "attack_target", ...stamp, targetId: targets.enemyId };
     case "items":
       return { kind: "move_item", ...stamp, from: 0, to: 1 };
+    case "pickUp":
+      return { kind: "pick_up", ...stamp, groundItemId: targets.groundItemId };
     default:
       return { kind: "stop", ...stamp };
   }
@@ -342,6 +376,8 @@ const orderOf = (column: DisableColumn): OrderKind | null => {
       return "attack_target";
     case "attackMove":
       return "attack_move";
+    case "pickUp":
+      return "pick_up";
     default:
       return null;
   }
@@ -351,7 +387,7 @@ const orderOf = (column: DisableColumn): OrderKind | null => {
 const startOn = (
   world: Simulation,
   column: DisableColumn,
-  enemyId: UnitId,
+  targets: Targets,
 ): void => {
   const stamp = { tick: world.view.tick, timestamp: world.view.tick };
 
@@ -363,7 +399,7 @@ const startOn = (
       target: { kind: "point", position: { x: 300, y: 0 } },
     });
   } else {
-    submit(world, commandFor(column as CommandColumn, enemyId));
+    submit(world, commandFor(column as CommandColumn, targets));
   }
 
   world.tick();
@@ -371,13 +407,14 @@ const startOn = (
 
 /** Checks what the matrix answers `column` for the hero, and what that answer does. */
 const checkCell = (row: ExpectedRow, column: DisableColumn): void => {
-  const { world, hero, enemyId } = arrange();
+  const arranged = arrange();
+  const { world, hero } = arranged;
   const matrix = world.view.run.disableMatrix;
   const answer = row.cells[column];
   const order = orderOf(column);
 
   if (order !== null || column === "castPoint") {
-    startOn(world, column, enemyId);
+    startOn(world, column, arranged);
 
     if (order !== null) {
       expect(hero.order.kind).toBe(order);
@@ -419,7 +456,7 @@ const checkCell = (row: ExpectedRow, column: DisableColumn): void => {
 
   const expected = answer === "allowed" ? "ok" : row.reason;
 
-  expect(validateCommand(hero, commandFor(column, enemyId), matrix)).toBe(
+  expect(validateCommand(hero, commandFor(column, arranged), matrix)).toBe(
     expected,
   );
 
@@ -441,8 +478,8 @@ describe.each(EXPECTED)("the disable matrix under $name", (row) => {
 });
 
 describe("the disable matrix", () => {
-  it("is exercised in every cell: nine rows of fourteen", () => {
-    expect(EXPECTED.length * COLUMNS.length).toBe(126);
+  it("is exercised in every cell: nine rows of fifteen", () => {
+    expect(EXPECTED.length * COLUMNS.length).toBe(135);
   });
 
   it("answers two rows worn at once with the stricter: a rooted and silenced hero is refused Q through F and cancelled on a move", () => {
@@ -460,13 +497,14 @@ describe("the disable matrix", () => {
   });
 
   it("answers a lifted and rooted hero as lift: the move is refused with stunned", () => {
-    const { world, hero, enemyId } = arrange();
+    const arranged = arrange();
+    const { world, hero } = arranged;
     const matrix = world.view.run.disableMatrix;
 
     wear(world, "root");
     wear(world, "lift");
 
-    expect(validateCommand(hero, commandFor("move", enemyId), matrix)).toBe(
+    expect(validateCommand(hero, commandFor("move", arranged), matrix)).toBe(
       "stunned",
     );
     expect(answerOf(matrix, hero.disables, "targetingCursor")).toBe("closed");

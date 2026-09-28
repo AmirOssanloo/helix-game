@@ -16,7 +16,11 @@ import {
   applyStatus,
   remainingCooldownTicks,
 } from "@domain/rules";
-import { createGroundPick, InputMapper } from "@presentation/public";
+import {
+  createGroundPick,
+  createPickPort,
+  InputMapper,
+} from "@presentation/public";
 import type { EventReader } from "@simulation/public";
 import { createEventReader } from "@simulation/public";
 import type { Simulation } from "@simulation/testing";
@@ -300,6 +304,7 @@ const mapperOver = (world: Simulation) => {
     world: world.view,
     intents,
     groundPick: createGroundPick(),
+    picks: createPickPort(1, 1),
   });
 
   return { driver, intents, mapper };

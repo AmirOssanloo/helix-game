@@ -275,6 +275,23 @@ const drop = (
 };
 
 /**
+ * Puts a copy of `item` into the inventory at the first place it fits, reading the grid left
+ * to right and top to bottom, and returns the cell its corner went to, or `-1` with nothing
+ * changed when it fits nowhere: an item that comes in from outside the inventory.
+ */
+export const placeAtFirstFit = (world: World, item: Readonly<Item>): number => {
+  const inventory = world.run.inventory;
+  const base = baseOf(world, item);
+  const fit = firstFit(inventory, base.width, base.height, NO_RECORD);
+
+  if (fit !== -1) {
+    placeItem(inventory, item, base.width, base.height, fit);
+  }
+
+  return fit;
+};
+
+/**
  * Applies one item command the validator passed to the hero's inventory and its active form's
  * armory, announcing what moved and where. Returns the reason it was refused, having changed
  * nothing, or `null`.

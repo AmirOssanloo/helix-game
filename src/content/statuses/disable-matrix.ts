@@ -8,7 +8,8 @@ import type { DisableMatrixDef } from "@domain/public";
  * strictest row it wears. Lift is worn by `lifted` with the `stunned` it raises, so it covers
  * stun, and refuses with `stunned`, since the stun it carries is what the player is told. The
  * rows run in the order a refusal's reason is chosen by: stun, lift, silence, root, disarm,
- * then the rows that refuse nothing.
+ * then the rows that refuse nothing. The pick up is a walk, so its column answers as the move
+ * column does in every row.
  */
 export const disableMatrix = [
   {
@@ -29,6 +30,7 @@ export const disableMatrix = [
       attackMove: "cancelled",
       stop: "refused",
       items: "allowed",
+      pickUp: "cancelled",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -52,6 +54,7 @@ export const disableMatrix = [
       attackMove: "refused",
       stop: "refused",
       items: "allowed",
+      pickUp: "refused",
       castPoint: "cancelled",
       targetingCursor: "closed",
       attackMoveCursor: "closed",
@@ -75,6 +78,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "closed",
       attackMoveCursor: "continues",
@@ -98,6 +102,7 @@ export const disableMatrix = [
       attackMove: "cancelled",
       stop: "allowed",
       items: "allowed",
+      pickUp: "cancelled",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -121,6 +126,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -144,6 +150,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -167,6 +174,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -190,6 +198,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",
@@ -213,6 +222,7 @@ export const disableMatrix = [
       attackMove: "allowed",
       stop: "allowed",
       items: "allowed",
+      pickUp: "allowed",
       castPoint: "continues",
       targetingCursor: "continues",
       attackMoveCursor: "continues",

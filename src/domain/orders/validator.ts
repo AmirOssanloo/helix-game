@@ -139,7 +139,9 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
  * machine cancels it when the new order lands, with nothing spent. A skill-point spend is
  * refused by no disable, only by death and by a slot outside the six keys; a level is not
  * something the unit does, and has no column. An item command reads the items column, which
- * no status refuses, then the places it names.
+ * no status refuses, then the places it names. A pick up reads its own column, which answers
+ * as a move does; whether the ground item it names is still there, and is an item, is the
+ * command system's to refuse when it applies.
  */
 export const validateCommand = (
   unit: Readonly<Unit>,
@@ -175,6 +177,9 @@ export const validateCommand = (
 
     case "attack_target":
       return refusalOf(matrix, unit.disables, "attackTarget") ?? "ok";
+
+    case "pick_up":
+      return refusalOf(matrix, unit.disables, "pickUp") ?? "ok";
 
     case "stop":
       return refusalOf(matrix, unit.disables, "stop") ?? "ok";

@@ -124,7 +124,12 @@ describe("issueMove", () => {
       expect(unit.order).toEqual({
         kind: "move",
         destination: { x: 3, y: 4 },
-        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
+        target: {
+          tag: "point",
+          point: { x: 3, y: 4 },
+          unitId: null,
+          groundItemId: null,
+        },
       });
     },
   );
@@ -182,7 +187,12 @@ describe("issueCast", () => {
       expect(unit.order).toEqual({
         kind: "cast",
         destination: { x: 3, y: 4 },
-        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
+        target: {
+          tag: "point",
+          point: { x: 3, y: 4 },
+          unitId: null,
+          groundItemId: null,
+        },
       });
       expect(unit.cast).toEqual({
         abilityId: "spell_1",
@@ -362,7 +372,12 @@ describe("issueAttackTarget", () => {
       expect(unit.order).toEqual({
         kind: "attack_target",
         destination: { x: 0, y: 0 },
-        target: { tag: "unit", point: { x: 0, y: 0 }, unitId: TARGET_ID },
+        target: {
+          tag: "unit",
+          point: { x: 0, y: 0 },
+          unitId: TARGET_ID,
+          groundItemId: null,
+        },
       });
     },
   );
@@ -392,7 +407,12 @@ describe("issueAttackMove", () => {
       expect(unit.order).toEqual({
         kind: "attack_move",
         destination: { x: 3, y: 4 },
-        target: { tag: "point", point: { x: 3, y: 4 }, unitId: null },
+        target: {
+          tag: "point",
+          point: { x: 3, y: 4 },
+          unitId: null,
+          groundItemId: null,
+        },
       });
     },
   );
@@ -422,7 +442,12 @@ describe("clearOrder", () => {
       expect(unit.order).toEqual({
         kind: "none",
         destination: { x: 0, y: 0 },
-        target: { tag: "none", point: { x: 0, y: 0 }, unitId: null },
+        target: {
+          tag: "none",
+          point: { x: 0, y: 0 },
+          unitId: null,
+          groundItemId: null,
+        },
       });
     },
   );
@@ -729,7 +754,12 @@ describe("die", () => {
       expect(unit.order).toEqual({
         kind: "none",
         destination: { x: 0, y: 0 },
-        target: { tag: "none", point: { x: 0, y: 0 }, unitId: null },
+        target: {
+          tag: "none",
+          point: { x: 0, y: 0 },
+          unitId: null,
+          groundItemId: null,
+        },
       });
       expect(unit.cast).toEqual(NO_CAST);
       expect(unit.needsPath).toBe(false);

@@ -66,6 +66,7 @@ export type DomainEvent =
   | ItemEquippedEvent
   | ItemUnequippedEvent
   | ItemMovedEvent
+  | ItemPickedUpEvent
   | GoldTakenEvent
   | HealthGlobeTakenEvent
   | ManaGlobeTakenEvent;
@@ -85,7 +86,7 @@ export type SlotsChangedEvent = EventFields & { kind: "slots_changed" };
 /** A cast of `abilityId` committed: its cast point ended, its mana is spent, its clock has started, and its effects ran. */
 export type CastCommittedEvent = EventFields & { kind: "cast_committed" };
 
-/** A player command was refused for `reason`; `slot` names the key when it was a slot key, `abilityId` the spell when it was a cast, and `place` the place an item command named, so the view can flash the square or the item. */
+/** A player command was refused for `reason`; `slot` names the key when it was a slot key, `abilityId` the spell when it was a cast, `place` the place an item command named, and `groundItemId` the ground item a pick up named, so the view can flash the square or the item. A pick up that finds no room on arrival is refused here too, by the pickup system. */
 export type CommandRefusedEvent = EventFields & { kind: "command_refused" };
 
 /** `unitId` took `amount` of `damageType` from `sourceId`: the amount that landed after mitigation, which is the number a view shows, even where the health it removed was less. */
@@ -135,6 +136,9 @@ export type ItemUnequippedEvent = EventFields & { kind: "item_unequipped" };
 
 /** An item of the hero `unitId`'s inventory moved, its corner now on the cell at `place`. A swap announces one for each item. */
 export type ItemMovedEvent = EventFields & { kind: "item_moved" };
+
+/** The hero `unitId` came within reach of the item `groundItemId`, now stale, that it was sent to pick up, and took it into the inventory, its corner on the cell at `place`. */
+export type ItemPickedUpEvent = EventFields & { kind: "item_picked_up" };
 
 /** The hero `unitId` walked within reach of the gold pile `groundItemId`, now stale, and took its `amount` of gold. */
 export type GoldTakenEvent = EventFields & { kind: "gold_taken" };
