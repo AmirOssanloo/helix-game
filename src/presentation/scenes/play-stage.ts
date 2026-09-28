@@ -6,7 +6,7 @@ import type { Projection } from "../camera/projection";
 import type { ScreenUnits } from "../camera/screen-units";
 import type { WorldCamera } from "../camera/world-camera";
 import type { InputMapper } from "../input/input-mapper";
-import type { CameraLens } from "../input/input-ports";
+import type { CameraLens, PickPort } from "../input/input-ports";
 import type { SceneContext } from "../scene-context";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import type { HitFlashes, HitNumbers } from "../views/hit-feedback";
@@ -28,6 +28,8 @@ export type PlayStage = Readonly<{
   camera: WorldCamera;
   lens: CameraLens;
   mapper: InputMapper;
+  /** What the ground-item views say is drawn where, rewritten by them each frame for a right click to read. */
+  picks: PickPort;
   /** A quad on the ground, written in world coordinates. */
   makeQuad: QuadFactory;
   /** A quad that stands up off the ground, placed at its projected point. */

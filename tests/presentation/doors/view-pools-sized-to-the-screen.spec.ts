@@ -1,10 +1,17 @@
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Unit } from "@domain/public";
+import type { GroundItemId, Unit } from "@domain/public";
+import { GROUND_ITEM_CAPACITY } from "@domain/queries";
+import { acquireGroundItem } from "@domain/rules";
 import {
+  createGroundItemIcons,
+  createGroundItemLabels,
   createObstacleViews,
+  createPickPort,
   FLOATING_NUMBER_COUNT,
+  GROUND_ITEM_LABEL_COUNT,
+  GROUND_ITEM_VIEW_COUNT,
   OVERLAY_AREA_COUNT,
   OVERLAY_BLOCKED_CELL_COUNT,
   OVERLAY_FACING_QUAD_COUNT,
@@ -17,6 +24,7 @@ import {
   createUnitViewPool,
   HitFlashes,
   syncUnitViews,
+  Projection,
   unitDefinitionsOf,
 } from "@presentation/public";
 import type { Rect } from "@shared/public";
@@ -131,6 +139,89 @@ describe("the door: view pools are sized to the screen and bound by camera recta
     ).toBe(true);
   });
 
+  it("draws every ground item on screen from pools far smaller than a full ground-item pool, icon and label, with no miss as the camera crosses the road", () => {
+    const world = makeWorld({ seed: 1 });
+    const across = 8;
+    const offsets = [-64, -32, 0, 32].flatMap((dx) =>
+      [-16, 16].map((dy) => [dx, dy] as const),
+    );
+    const centre = (index: number): number =>
+      (index - (across - 1) / 2) * CLUSTER_SPACING;
+    const clusters: GroundItemId[][] = [];
+
+    for (let row = 0; row < across; row += 1) {
+      for (let column = 0; column < across; column += 1) {
+        clusters.push(
+          offsets.map(([dx, dy]) => {
+            const id = acquireGroundItem(
+              world.state,
+              "item",
+              centre(column) + dx,
+              centre(row) + dy,
+            );
+            const groundItem =
+              id === null ? null : world.state.map.groundItems.resolve(id);
+
+            if (id === null || groundItem === null) {
+              throw new Error("The ground-item pool has room");
+            }
+
+            groundItem.item.baseId = "cap";
+            groundItem.item.rarityId = "rare";
+
+            return id;
+          }),
+        );
+      }
+    }
+
+    const projection = new Projection();
+    const icons = createGroundItemIcons(
+      POOL_SIZE * 2,
+      (frame) => new QuadRecorder(frame),
+      () => FRAME_WIDTH,
+      world.view,
+      projection,
+    );
+    const labels = createGroundItemLabels(
+      POOL_SIZE * 2,
+      (size) => new LabelRecorder(size),
+      world.view,
+      projection,
+      1,
+    );
+    const picks = createPickPort(POOL_SIZE * 2, POOL_SIZE * 2);
+    const canvas = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+
+    for (let row = 0; row < across; row += 1) {
+      for (let column = 0; column < across; column += 1) {
+        const frame = frameAround({
+          minX: centre(column) - SCREEN_REACH,
+          minY: centre(row) - SCREEN_REACH,
+          maxX: centre(column) + SCREEN_REACH,
+          maxY: centre(row) + SCREEN_REACH,
+        });
+
+        icons.sync(world.view, frame, canvas, picks.icons);
+        labels.sync(world.view, frame, true, canvas, picks.labels);
+      }
+    }
+
+    const last = clusters[clusters.length - 1] ?? [];
+    const first = clusters[0] ?? [];
+
+    expect(world.view.map.groundItems.count).toBe(GROUND_ITEM_CAPACITY);
+    expect(icons.pool.size).toBeLessThan(GROUND_ITEM_CAPACITY / 8);
+    expect(icons.pool.bound).toBe(offsets.length);
+    expect(labels.pool.bound).toBe(offsets.length);
+    expect(icons.misses).toBe(0);
+    expect(labels.misses).toBe(0);
+    expect(picks.icons.count).toBe(offsets.length);
+    expect(last.every((id) => icons.pool.viewOf(id) !== null)).toBe(true);
+    expect(last.every((id) => labels.pool.viewOf(id) !== null)).toBe(true);
+    expect(first.every((id) => icons.pool.viewOf(id) === null)).toBe(true);
+  });
+
   it("draws every obstacle on screen from a pool far smaller than the map's, with no miss as the camera crosses it", () => {
     const obstacles: Rect[] = [];
 
@@ -223,5 +314,7 @@ describe("the door: view pools are sized to the screen and bound by camera recta
       OVERLAY_HASH_CELL_COUNT + OVERLAY_STATE_LABEL_COUNT,
     );
     expect(numberLabels).toHaveLength(FLOATING_NUMBER_COUNT);
+    expect(GROUND_ITEM_VIEW_COUNT).toBe(GROUND_ITEM_CAPACITY);
+    expect(GROUND_ITEM_LABEL_COUNT).toBe(GROUND_ITEM_VIEW_COUNT);
   });
 });

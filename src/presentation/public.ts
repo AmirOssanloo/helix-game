@@ -71,13 +71,19 @@ export type {
   InputIntents,
   InputPorts,
   PausePort,
+  PickList,
+  PickPort,
 } from "./input/input-ports";
+export { createPickPort, writePick } from "./input/input-ports";
 export {
+  ALT_CODES,
+  type BrowserKeyEvent,
   type KeyAction,
   type KeyBinding,
   KEY_BINDINGS,
   LEFT_BUTTON,
   RIGHT_BUTTON,
+  suppressBrowserDefault,
 } from "./input/key-bindings";
 export type {
   CursorKind,
@@ -145,6 +151,8 @@ export {
   DEPTH_DEBUG,
   DEPTH_FLOOR,
   DEPTH_GROUND,
+  DEPTH_GROUND_ITEMS,
+  DEPTH_ITEM_LABELS,
   DEPTH_OBSTACLES,
   DEPTH_PROJECTILES,
   DEPTH_TEXT,
@@ -180,6 +188,21 @@ export {
   HitNumbers,
   showHit,
 } from "./views/hit-feedback";
+export {
+  createGroundItemIcons,
+  GOLD_TINT,
+  GROUND_GLOBE_FRAME,
+  GROUND_GOLD_FRAME,
+  GroundItemIcons,
+  GroundItemIconView,
+} from "./views/ground-item.view";
+export {
+  createGroundItemLabels,
+  GROUND_LABEL_SIZE,
+  GroundItemLabels,
+  GroundItemLabelView,
+  LABEL_NUDGE_LIMIT,
+} from "./views/ground-item-label.view";
 export { createObstacleViews, ObstacleViews } from "./views/obstacle.view";
 export { createOrbViews, orbSlotsOf, OrbViews } from "./views/orb.view";
 export {
@@ -224,6 +247,8 @@ export {
   ON_SCREEN_ENEMIES,
   ON_SCREEN_PROJECTILES,
   OUTLINE_VIEW_COUNT,
+  GROUND_ITEM_LABEL_COUNT,
+  GROUND_ITEM_VIEW_COUNT,
   OVERLAY_AREA_COUNT,
   OVERLAY_BLOCKED_CELL_COUNT,
   OVERLAY_FACING_QUAD_COUNT,

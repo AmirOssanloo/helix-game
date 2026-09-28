@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { InputClaim } from "./input-claim";
 import type { CameraLens } from "./input-ports";
+import { suppressBrowserDefault } from "./key-bindings";
 import type { Unprojection } from "./projected-lens";
 import { projectedLens } from "./projected-lens";
 
@@ -81,7 +82,7 @@ export const claimedSink = (
  * Listens on the scene's input plugins and hands every event to `sink`. The context menu is
  * disabled so a right click is an order and not a browser menu; a button coming up is handed
  * over whether it came up on the canvas or off it, so a held press dragged past the edge
- * still commits; a window blur releases every key. Returns the unbind, for the scene's
+ * still commits; a window blur releases every key; Alt's browser default is suppressed. Returns the unbind, for the scene's
  * shutdown.
  */
 export const bindSceneInput = (
@@ -107,6 +108,11 @@ export const bindSceneInput = (
   const onBlur = (): void => {
     sink.blur();
   };
+  // Phaser prevents the default only for an unmodified key, and Alt is its own modifier, so
+  // the page listens for Alt itself, down and up, as the key comes.
+  const onBrowserKey = (event: KeyboardEvent): void => {
+    suppressBrowserDefault(event);
+  };
 
   if (input.mouse !== null) {
     input.mouse.disableContextMenu();
@@ -116,6 +122,8 @@ export const bindSceneInput = (
   input.on(POINTER_UP_EVENT, onPointerUp);
   input.on(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
   game.events.on(BLUR_EVENT, onBlur);
+  window.addEventListener(KEY_DOWN_EVENT, onBrowserKey);
+  window.addEventListener(KEY_UP_EVENT, onBrowserKey);
 
   if (keyboard !== null) {
     keyboard.on(KEY_DOWN_EVENT, onKeyDown);
@@ -127,6 +135,8 @@ export const bindSceneInput = (
     input.off(POINTER_UP_EVENT, onPointerUp);
     input.off(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
     game.events.off(BLUR_EVENT, onBlur);
+    window.removeEventListener(KEY_DOWN_EVENT, onBrowserKey);
+    window.removeEventListener(KEY_UP_EVENT, onBrowserKey);
 
     if (keyboard !== null) {
       keyboard.off(KEY_DOWN_EVENT, onKeyDown);

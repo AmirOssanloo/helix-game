@@ -54,36 +54,15 @@ import {
   ZONE_VIEW_COUNT,
 } from "../views/view-counts";
 import { createZoneViewPool, syncZoneViews } from "../views/zone.view";
+import { groundItemLabels, groundItems } from "./ground-item-syncers";
 import type { PlayViewSyncer } from "./play-stage";
+import { SYNC_ORDER } from "./sync-order";
 import { NO_MISSES } from "./view-syncers";
+
+export { SYNC_ORDER } from "./sync-order";
 
 /** How far past the canvas the floor is laid, in pixels, so the follow's step before the render never shows a bare edge; the walkability overlay keeps to the same rectangle. */
 const FLOOR_MARGIN = 64;
-
-/**
- * The play scene's sync order: each step's place. A step reads what every step before it
- * wrote, so a new one takes a place after what it reads and before what reads it. The gaps
- * leave room for a step between two without renumbering.
- */
-export const SYNC_ORDER = {
-  camera: 100,
-  mapLoad: 200,
-  cameraFrame: 300,
-  onScreen: 350,
-  floor: 400,
-  events: 500,
-  obstacles: 600,
-  checkpoints: 700,
-  zones: 800,
-  units: 900,
-  outlines: 1000,
-  statusIcons: 1100,
-  projectiles: 1200,
-  orbs: 1300,
-  numbers: 1400,
-  cursor: 1500,
-  overlays: 1600,
-} as const;
 
 /** Points the camera at where the hero is drawn this frame. A world with no hero leaves it where it is. */
 const followHero = (
@@ -445,7 +424,8 @@ const cursor: PlayViewSyncer = {
  * Every step the play scene draws a frame with. Each walks in its place in the sync order;
  * the list is in the order the steps are made, which is the pool order and so the draw order
  * inside a band: the preview under the checkpoints and the zones, the units under their
- * outlines, the status icons under the numbers. The composition root hands this list, or this
+ * outlines, the status icons under the numbers. The ground items' icons and their labels have
+ * bands of their own. The composition root hands this list, or this
  * list and more, to the scene; a new view registers beside it and the scene is not edited. The
  * debug overlays are not in it: the composition root adds their step where the panel is.
  */
@@ -459,11 +439,13 @@ export const PLAY_VIEW_SYNCERS: readonly PlayViewSyncer[] = [
   cursor,
   obstacles,
   checkpoints,
+  groundItems,
   units,
   outlines,
   statusIcons,
   projectiles,
   zones,
   orbs,
+  groundItemLabels,
   numbers,
 ];

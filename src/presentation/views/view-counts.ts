@@ -1,4 +1,4 @@
-import { ZONE_CAPACITY } from "@domain/queries";
+import { GROUND_ITEM_CAPACITY, ZONE_CAPACITY } from "@domain/queries";
 
 /**
  * How many views of each kind the play scene makes at `create`: what the fixed view can show at
@@ -34,6 +34,18 @@ export const PROJECTILE_VIEW_COUNT =
 
 /** Zone views: the zone pool's whole capacity, since every zone alive can be on screen at once. */
 export const ZONE_VIEW_COUNT = ZONE_CAPACITY;
+
+/**
+ * Ground-item icons: the ground-item pool's whole capacity. A pack dies where it stands and
+ * leaves about two drops a body, gold and globes with the items, and nothing is taken until the
+ * hero walks there, so a fight at a choke with the cap on screen can leave every ground item
+ * the map holds on one screen. They are still bound by the screen, so a road with the pool full
+ * binds only the stretch the camera shows.
+ */
+export const GROUND_ITEM_VIEW_COUNT = GROUND_ITEM_CAPACITY;
+
+/** Ground-item labels: one per icon, since while Alt is held every ground item on screen but a globe shows its label. */
+export const GROUND_ITEM_LABEL_COUNT = GROUND_ITEM_VIEW_COUNT;
 
 /** Obstacle quads: the most rectangles the camera's world rectangle reaches on the busiest shipped map, and room past it. Bound per frame, not per map. */
 export const OBSTACLE_VIEW_COUNT = 64;

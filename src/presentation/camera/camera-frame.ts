@@ -1,5 +1,6 @@
 import type { Rect, Vec2 } from "@shared/public";
 import type { Projection } from "./projection";
+import { ScratchPoint } from "./scratch";
 
 /**
  * How far past the screen's edge a unit may be drawn and still be bound, in pixels: past the
@@ -25,7 +26,7 @@ export class CameraFrame {
   private readonly projection: Projection;
 
   /** Scratch for where a point is drawn. */
-  private readonly drawn: Vec2 = { x: 0, y: 0 };
+  private readonly drawn: Vec2 = new ScratchPoint();
 
   constructor(projection: Projection) {
     this.projection = projection;

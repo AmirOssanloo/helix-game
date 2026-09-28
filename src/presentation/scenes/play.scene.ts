@@ -14,13 +14,18 @@ import {
 } from "../input/bind-scene-input";
 import { InputMapper } from "../input/input-mapper";
 import type { InputIntents } from "../input/input-ports";
+import { createPickPort } from "../input/input-ports";
 import type { SceneContext } from "../scene-context";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { FloatingNumberViews } from "../views/floating-number.view";
 import { createFloatingNumberViews } from "../views/floating-number.view";
 import { HitFlashes, HitNumbers } from "../views/hit-feedback";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
-import { FLOATING_NUMBER_COUNT } from "../views/view-counts";
+import {
+  FLOATING_NUMBER_COUNT,
+  GROUND_ITEM_LABEL_COUNT,
+  GROUND_ITEM_VIEW_COUNT,
+} from "../views/view-counts";
 import type { PlayStage, PlayViewSyncer } from "./play-stage";
 import { ViewSyncerList } from "./view-syncers";
 
@@ -134,6 +139,7 @@ export class PlayScene extends Phaser.Scene {
       camera,
       lens,
       mapper,
+      picks: createPickPort(GROUND_ITEM_LABEL_COUNT, GROUND_ITEM_VIEW_COUNT),
       makeQuad,
       makeStandingQuad,
       makeLabel,

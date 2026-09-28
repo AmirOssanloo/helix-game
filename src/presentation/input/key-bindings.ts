@@ -41,3 +41,29 @@ export const bindingIndexOf = (code: string): number => {
 /** The DOM button numbers the pointer reports. */
 export const LEFT_BUTTON = 0;
 export const RIGHT_BUTTON = 2;
+
+/**
+ * The two Alt keys, by DOM `code`. Alt is not a binding: holding either shows every label on
+ * the ground, which is presentation state the mapper holds and never a command.
+ */
+export const ALT_CODES: readonly string[] = ["AltLeft", "AltRight"];
+
+/** The index of `code` among the Alt keys, or `-1` for any other key. */
+export const altIndexOf = (code: string): number => ALT_CODES.indexOf(code);
+
+/** What the binding hands the browser's key event to: its `code`, and the call that stops the browser's own action. */
+export type BrowserKeyEvent = Readonly<{
+  code: string;
+  preventDefault: () => void;
+}>;
+
+/**
+ * Stops the browser acting on an Alt key: a released Alt would otherwise move focus to the
+ * browser's menu bar, and the next key would drive the menu instead of the game. Any other key
+ * is left to the browser.
+ */
+export const suppressBrowserDefault = (event: BrowserKeyEvent): void => {
+  if (altIndexOf(event.code) !== -1) {
+    event.preventDefault();
+  }
+};

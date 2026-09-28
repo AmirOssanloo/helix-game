@@ -11,6 +11,7 @@ import {
   projectedLens,
   Projection,
   RIGHT_BUTTON,
+  suppressBrowserDefault,
 } from "@presentation/public";
 import type { Simulation } from "@simulation/testing";
 import {
@@ -982,5 +983,79 @@ describe("a vector cursor", () => {
     mapper.pointerUp(LEFT_BUTTON, 300, 0);
 
     expect(driver.commands.map((command) => command.kind)).toEqual(["cast"]);
+  });
+});
+
+describe("Alt", () => {
+  it("shows every label while either Alt is held and hides them on release, sending no command and no intent", () => {
+    const { driver, intents, mapper } = arrange();
+
+    expect(mapper.showsEveryLabel).toBe(false);
+
+    mapper.keyDown("AltLeft");
+    expect(mapper.showsEveryLabel).toBe(true);
+
+    mapper.keyUp("AltLeft");
+    expect(mapper.showsEveryLabel).toBe(false);
+
+    mapper.keyDown("AltRight");
+    expect(mapper.showsEveryLabel).toBe(true);
+
+    mapper.keyUp("AltRight");
+    expect(mapper.showsEveryLabel).toBe(false);
+    expect(driver.commands).toEqual([]);
+    expect(intents.refusals).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("stays held while the other Alt is still down", () => {
+    const { mapper } = arrange();
+
+    mapper.keyDown("AltLeft");
+    mapper.keyDown("AltRight");
+    mapper.keyUp("AltLeft");
+
+    expect(mapper.showsEveryLabel).toBe(true);
+  });
+
+  it("is released with every key when the window loses focus", () => {
+    const { mapper } = arrange();
+
+    mapper.keyDown("AltLeft");
+    mapper.releaseKeys();
+
+    expect(mapper.showsEveryLabel).toBe(false);
+  });
+
+  it("leaves an open cursor open and a slot key still firing while held", () => {
+    const { driver, mapper } = arrange();
+
+    mapper.keyDown("KeyD");
+    mapper.keyDown("AltLeft");
+    expect(mapper.cursor.kind).toBe("slot");
+
+    mapper.keyUp("AltLeft");
+    mapper.keyDown("KeyQ");
+    expect(driver.commands.map((command) => command.kind)).toEqual(["slot"]);
+  });
+
+  it("has its browser default prevented, down and up, and no other key has", () => {
+    const prevented: string[] = [];
+    const press = (code: string): void => {
+      suppressBrowserDefault({
+        code,
+        preventDefault: () => {
+          prevented.push(code);
+        },
+      });
+    };
+
+    press("AltLeft");
+    press("AltRight");
+    press("KeyQ");
+    press("Escape");
+    press("ShiftLeft");
+
+    expect(prevented).toEqual(["AltLeft", "AltRight"]);
   });
 });

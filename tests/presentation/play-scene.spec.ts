@@ -49,12 +49,14 @@ const PLAY_SYNC_ORDER = [
   "events",
   "obstacles",
   "checkpoints",
+  "ground items",
   "zones",
   "units",
   "outlines",
   "status icons",
   "projectiles",
   "orbs",
+  "ground item labels",
   "numbers",
   "cursor",
 ];
@@ -172,7 +174,7 @@ describe("the play scene's steps", () => {
     const journal: Journal = { made: [], ran: [] };
     const between = (SYNC_ORDER.units + SYNC_ORDER.outlines) / 2;
     const added: ViewSyncerEntry<Journal> = {
-      ...stub("ground items", between),
+      ...stub("loot beams", between),
       band: DEPTH_TEXT,
     };
 
@@ -180,9 +182,9 @@ describe("the play scene's steps", () => {
 
     const units = journal.ran.indexOf("units");
 
-    expect(journal.ran[units + 1]).toBe("ground items");
+    expect(journal.ran[units + 1]).toBe("loot beams");
     expect(journal.ran[units + 2]).toBe("outlines");
-    expect(journal.made.at(-1)).toBe("ground items");
+    expect(journal.made.at(-1)).toBe("loot beams");
   });
 
   it("hold no debug overlay: that step is the panel's, last in the order, at the debug band", () => {

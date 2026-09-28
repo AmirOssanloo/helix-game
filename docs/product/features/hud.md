@@ -58,6 +58,9 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Checkpoints | Thin ring as wide as the checkpoint's reach | Pale grey ahead, green once reached |
 | Checkpoint word | Bitmap text | Green |
 | Status icons | Small outlined squares with a glyph | White; the glyph tells them apart |
+| Items on the ground | The silhouette of the armory slot the item is worn in, lying flat | The item's rarity |
+| Gold and globes on the ground | A mound of coins; a disc | Gold; health green, mana blue |
+| Item labels | Bitmap text of the item's name, gold's amount, standing above it; Rare and better by default, every one while Alt is held, moved apart so none overlap | The item's rarity; gold for gold |
 | Overlays, in a build with the panel | The same shapes at low alpha | One per overlay |
 | Pause screen | A shade over the canvas, a panel, and a button | Black shade, dark grey panel, white words |
 
@@ -66,13 +69,15 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 From the bottom up, so a projectile is never hidden by the ground it flies over:
 
 1. Ground effects, zones, and checkpoint rings
-2. Obstacles
-3. Units
-4. Projectiles
-5. Air effects and lifted units
-6. Floating text and status icons
-7. Overlays
-8. The bottom bar, then screens such as the pause screen, over everything
+2. Gold, globes, and items lying on the ground
+3. Obstacles
+4. Units
+5. Projectiles
+6. Air effects and lifted units
+7. Item labels
+8. Floating text and status icons
+9. Overlays
+10. The bottom bar, then screens such as the pause screen, over everything
 
 There is no sorting by vertical position: everything lies flat on the floor and nothing is tall, so nothing can stand in front of what is behind it. Tall sprite art changes that; [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) says what it adds.
 

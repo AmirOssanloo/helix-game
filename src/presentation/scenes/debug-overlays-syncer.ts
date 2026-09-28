@@ -2,7 +2,7 @@ import { DebugOverlays } from "../overlays/debug-overlays";
 import { DEBUG_OVERLAYS_SENTINEL } from "../overlays/debug-overlays-sentinel";
 import { DEPTH_DEBUG } from "../views/depth-bands";
 import type { PlayViewSyncer } from "./play-stage";
-import { SYNC_ORDER } from "./play-view-syncers";
+import { SYNC_ORDER } from "./sync-order";
 
 /**
  * The debug overlays the panel's toggles ask for, as a step of the play scene's frame. It is

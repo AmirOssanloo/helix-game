@@ -16,6 +16,8 @@ import type {
   InputPorts,
 } from "./input-ports";
 import {
+  ALT_CODES,
+  altIndexOf,
   bindingIndexOf,
   KEY_BINDINGS,
   LEFT_BUTTON,
@@ -65,6 +67,9 @@ export class InputMapper {
   /** One flag per binding, true from key-down to key-up. */
   private readonly held: boolean[];
 
+  /** One flag per Alt key, true from key-down to key-up. */
+  private readonly altHeld: boolean[];
+
   /** Scratch for the world point under the pointer. Copied onto a command, never shared with one. */
   private readonly point: Vec2 = { x: 0, y: 0 };
 
@@ -86,6 +91,26 @@ export class InputMapper {
     for (let index = 0; index < KEY_BINDINGS.length; index += 1) {
       this.held.push(false);
     }
+
+    this.altHeld = [];
+
+    for (let index = 0; index < ALT_CODES.length; index += 1) {
+      this.altHeld.push(false);
+    }
+  }
+
+  /**
+   * Whether every label on the ground shows: true while either Alt key is held. Presentation
+   * state the label views read each frame; it changes nothing in the world and sends nothing.
+   */
+  get showsEveryLabel(): boolean {
+    for (let index = 0; index < this.altHeld.length; index += 1) {
+      if (this.altHeld[index] === true) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /** Whether a targeting cursor is open, which Escape closes before any screen. */
@@ -128,8 +153,16 @@ export class InputMapper {
     }
   }
 
-  /** A key went down. `code` is the DOM code. A key already held, or one not in the table, does nothing. */
+  /** A key went down. `code` is the DOM code. Alt shows every label; a key already held, or one not in the table, does nothing. */
   keyDown(code: string): void {
+    const alt = altIndexOf(code);
+
+    if (alt !== -1) {
+      this.altHeld[alt] = true;
+
+      return;
+    }
+
     const index = bindingIndexOf(code);
     const binding = KEY_BINDINGS[index];
 
@@ -166,8 +199,16 @@ export class InputMapper {
     }
   }
 
-  /** A key came up: it may fire again. */
+  /** A key came up: it may fire again, and an Alt coming up hides the labels it showed. */
   keyUp(code: string): void {
+    const alt = altIndexOf(code);
+
+    if (alt !== -1) {
+      this.altHeld[alt] = false;
+
+      return;
+    }
+
     const index = bindingIndexOf(code);
 
     if (index !== -1) {
@@ -176,12 +217,16 @@ export class InputMapper {
   }
 
   /**
-   * The window lost focus: every key is up, since its key-up will never arrive, and a held
+   * The window lost focus: every key is up, Alt included, since its key-up will never arrive, and a held
    * press is cancelled, since its button-up may not arrive either.
    */
   releaseKeys(): void {
     for (let index = 0; index < this.held.length; index += 1) {
       this.held[index] = false;
+    }
+
+    for (let index = 0; index < this.altHeld.length; index += 1) {
+      this.altHeld[index] = false;
     }
 
     if (this.cursor.held) {
