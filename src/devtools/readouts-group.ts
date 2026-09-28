@@ -75,7 +75,7 @@ const groundItemsText = (live: number, notMade: number): string =>
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, the last ground item to
  * fall and whose death it fell from, the last item the hero equipped, unequipped, moved,
- * bought, or sold, the place it went to or left, and the gold a trade moved, the last store to
+ * bought, sold, or was granted, the place it went to or left, and the gold a trade or a grant moved, the last store to
  * open or close, the last gold or globe the hero took and what it gave, and how many
  * units have died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
  * in the simulation. Draw calls show a dash while nothing has counted them.
@@ -170,13 +170,18 @@ export const readoutsGroup = (
         event.kind === "item_equipped" ||
         event.kind === "item_unequipped" ||
         event.kind === "item_moved" ||
-        event.kind === "item_picked_up"
+        event.kind === "item_picked_up" ||
+        event.kind === "item_granted"
       ) {
         lastItem = `${event.kind} to ${String(event.place)}`;
       }
 
       if (event.kind === "item_bought" || event.kind === "item_sold") {
         lastItem = `${event.kind} at ${String(event.place)} for ${String(event.amount)}`;
+      }
+
+      if (event.kind === "gold_granted") {
+        lastItem = `${event.kind} ${String(event.amount)}`;
       }
 
       if (event.kind === "store_opened" || event.kind === "store_closed") {

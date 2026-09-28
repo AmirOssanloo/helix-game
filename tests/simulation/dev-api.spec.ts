@@ -10,7 +10,7 @@ import {
 import type { DevApi, GroundPick, OverlayToggles } from "@devtools/public";
 import { createDevApi } from "@devtools/public";
 import type { TuningKey, Unit } from "@domain/public";
-import { readTunable } from "@domain/queries";
+import { NO_RECORD, readTunable, recordAt } from "@domain/queries";
 import { definitionFields } from "@domain/rules";
 import type { InstrumentationRings } from "@instrumentation/public";
 import { createRings } from "@instrumentation/public";
@@ -546,6 +546,288 @@ describe("DevApi sets the map level", () => {
 
     expect(shallow).not.toBeNull();
     expect(statsAt(60)).toEqual(shallow);
+  });
+});
+
+/** The item whose corner lies on `cell` of the run's inventory, as the view holds it. */
+const itemAt = (world: Simulation, cell: number) => {
+  const inventory = world.view.run.inventory;
+  const placed = inventory.placed[recordAt(inventory, cell)];
+
+  if (placed === undefined || !placed.live || placed.corner !== cell) {
+    throw new Error(`No item has its corner on cell ${String(cell)}`);
+  }
+
+  return placed.item;
+};
+
+/** Every grant event the world has announced, by kind, place, and amount. */
+const grants = (
+  world: Simulation,
+): { kind: string; place: number; amount: number }[] => {
+  const reader = createEventReader();
+  const found: { kind: string; place: number; amount: number }[] = [];
+
+  for (
+    let event = world.events.read(reader);
+    event !== null;
+    event = world.events.read(reader)
+  ) {
+    if (event.kind === "item_granted" || event.kind === "gold_granted") {
+      found.push({
+        kind: event.kind,
+        place: event.place,
+        amount: event.amount,
+      });
+    }
+  }
+
+  return found;
+};
+
+/** How many items the run's inventory holds. */
+const heldCount = (world: Simulation): number =>
+  world.view.run.inventory.placed.filter((placed): boolean => placed.live)
+    .length;
+
+describe("DevApi grants an item and gold", () => {
+  it("puts a Mythical sceptre at its first fit with its lines rolled, announces it, and lands in the log", () => {
+    const { api, world } = arrange();
+
+    api.submit({
+      kind: "grant_item",
+      itemId: "sceptre",
+      rarity: "mythical",
+      itemLevel: 40,
+    });
+    world.tick();
+
+    const item = itemAt(world, 0);
+
+    expect(item.baseId).toBe("sceptre");
+    expect(item.rarityId).toBe("mythical");
+    expect(item.legendaryId).toBeNull();
+    expect(item.itemLevel).toBe(40);
+    expect(item.lineCount).toBe(6);
+    expect(item.lines[0]?.sourceId).toBe("sceptre");
+    expect(grants(world)).toEqual([
+      { kind: "item_granted", place: 0, amount: 0 },
+    ]);
+    expect(world.log.commandAt(0)).toEqual({
+      kind: "grant_item",
+      tick: 0,
+      timestamp: 1,
+      itemId: "sceptre",
+      rarity: "mythical",
+      itemLevel: 40,
+    });
+  });
+
+  it("puts a Legendary piece in with its fixed lines, and adds gold", () => {
+    const { api, world } = arrange();
+    const piece = world.view.run.legendaries.find(
+      (legendary): boolean => legendary.id === "hallcrown",
+    );
+
+    api.submit({
+      kind: "grant_item",
+      itemId: "hallcrown",
+      rarity: "legendary",
+      itemLevel: 3,
+    });
+    api.submit({ kind: "grant_gold", amount: 1000 });
+    world.tick();
+
+    const item = itemAt(world, 0);
+
+    expect(item.baseId).toBe(piece?.baseId);
+    expect(item.legendaryId).toBe("hallcrown");
+    expect(item.rarityId).toBe("legendary");
+    expect(item.lineCount).toBe(piece?.lines.length);
+    expect(
+      item.lines.slice(0, item.lineCount).map((line) => line.value),
+    ).toEqual(piece?.lines.map((line) => line.value));
+    expect(world.view.run.gold).toBe(1000);
+    expect(grants(world)).toEqual([
+      { kind: "item_granted", place: 0, amount: 0 },
+      { kind: "gold_granted", place: -1, amount: 1000 },
+    ]);
+  });
+
+  it("keys a base's lines on the command's place among the tick's commands", () => {
+    const { api, world } = arrange();
+    const grant = {
+      kind: "grant_item",
+      itemId: "sceptre",
+      rarity: "mythical",
+      itemLevel: 40,
+    } as const;
+
+    api.submit(grant);
+    api.submit(grant);
+    world.tick();
+
+    const first = itemAt(world, 0).lines.map((line) => [
+      line.sourceId,
+      line.value,
+    ]);
+    const second = itemAt(world, 1).lines.map((line) => [
+      line.sourceId,
+      line.value,
+    ]);
+
+    expect(second).not.toEqual(first);
+  });
+
+  it("acts while the hero is dead", () => {
+    const { api, world } = arrange();
+
+    api.submit({ kind: "kill_hero" });
+    world.tick();
+    api.submit({
+      kind: "grant_item",
+      itemId: "cap",
+      rarity: "rare",
+      itemLevel: 5,
+    });
+    api.submit({ kind: "grant_gold", amount: 25 });
+    world.tick();
+
+    expect(heroOf(world).state).toBe("dead");
+    expect(itemAt(world, 0).baseId).toBe("cap");
+    expect(world.view.run.gold).toBe(25);
+  });
+
+  it("replays both grants from the log to the same items and gold", () => {
+    const { api, world, driver } = arrange();
+
+    api.submit({
+      kind: "grant_item",
+      itemId: "sceptre",
+      rarity: "epic",
+      itemLevel: 20,
+    });
+    api.submit({ kind: "grant_gold", amount: 300 });
+    world.tick();
+    api.submit({
+      kind: "grant_item",
+      itemId: "hallcrown",
+      rarity: "legendary",
+      itemLevel: 20,
+    });
+    api.submit({
+      kind: "grant_item",
+      itemId: "band",
+      rarity: "imperial",
+      itemLevel: 30,
+    });
+    world.tick();
+
+    const inventory = JSON.stringify(world.view.run.inventory);
+    const gold = world.view.run.gold;
+    const saved = api.saveInputLog();
+
+    expect(world.log.count).toBe(4);
+    expect(api.loadInputLog(saved)).toBeNull();
+    expect(world.view.run.gold).toBe(0);
+    expect(heldCount(world)).toBe(0);
+
+    driver.onFrame(STEP_MS * 2);
+
+    expect(world.view.tick).toBe(2);
+    expect(world.view.run.gold).toBe(gold);
+    expect(JSON.stringify(world.view.run.inventory)).toBe(inventory);
+    expect(heldCount(world)).toBe(3);
+  });
+
+  it("refuses an id no base or piece has, a rarity that does not suit the item, and a bad level or amount, changing nothing", () => {
+    const { api, world } = arrange();
+
+    api.submit({
+      kind: "grant_item",
+      itemId: "nothing",
+      rarity: "rare",
+      itemLevel: 1,
+    });
+    api.submit({
+      kind: "grant_item",
+      itemId: "cap",
+      rarity: "legendary",
+      itemLevel: 1,
+    });
+    api.submit({
+      kind: "grant_item",
+      itemId: "cap",
+      rarity: "shiny",
+      itemLevel: 1,
+    });
+    api.submit({
+      kind: "grant_item",
+      itemId: "hallcrown",
+      rarity: "rare",
+      itemLevel: 1,
+    });
+    api.submit({ kind: "grant_item", itemId: "cap", rarity: "", itemLevel: 1 });
+    api.submit({
+      kind: "grant_item",
+      itemId: "cap",
+      rarity: "rare",
+      itemLevel: 0,
+    });
+    api.submit({
+      kind: "grant_item",
+      itemId: "cap",
+      rarity: "rare",
+      itemLevel: 1.5,
+    });
+    api.submit({ kind: "grant_gold", amount: 0 });
+    api.submit({ kind: "grant_gold", amount: 2.5 });
+    world.tick();
+
+    expect(refusals(world)).toEqual([
+      "unknown_item",
+      "invalid_rarity",
+      "invalid_rarity",
+      "invalid_rarity",
+      "invalid_rarity",
+      "invalid_item_level",
+      "invalid_item_level",
+      "invalid_amount",
+      "invalid_amount",
+    ]);
+    expect(heldCount(world)).toBe(0);
+    expect(recordAt(world.view.run.inventory, 0)).toBe(NO_RECORD);
+    expect(world.view.run.gold).toBe(0);
+    expect(grants(world)).toEqual([]);
+  });
+
+  it("refuses an item that fits nowhere once the inventory is full", () => {
+    const { api, world } = arrange();
+    const cells = world.view.run.inventory.placed.length;
+
+    for (let grant = 0; grant < cells; grant += 1) {
+      api.submit({
+        kind: "grant_item",
+        itemId: "band",
+        rarity: "common",
+        itemLevel: 1,
+      });
+    }
+
+    world.tick();
+
+    const held = heldCount(world);
+
+    api.submit({
+      kind: "grant_item",
+      itemId: "band",
+      rarity: "common",
+      itemLevel: 1,
+    });
+    world.tick();
+
+    expect(refusals(world).at(-1)).toBe("no_room");
+    expect(heldCount(world)).toBe(held);
   });
 });
 

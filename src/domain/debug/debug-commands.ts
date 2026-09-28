@@ -26,6 +26,7 @@ import { resolveDestination } from "../pathing/destination";
 import { levelUp } from "../stats/levels";
 import { refreshStats } from "../stats/stats.system";
 import { applyStatus } from "../statuses/status.system";
+import { grantGold, grantItem } from "./item-grants";
 
 /** The levels a status the panel applies is read at when the hero has no form to read them from. */
 const NO_ORB_LEVELS: readonly number[] = [];
@@ -301,8 +302,9 @@ const jumpToCheckpoint = (
 };
 
 /**
- * Applies one validated debug command. The switches, the spawns, the kill, the clear, the reset, the map load, and the map level act
- * on run or map scope, hero or no hero. Every other variant acts on the hero and is dropped
+ * Applies one validated debug command, the `position`th of the tick's consumed commands. The
+ * switches, the spawns, the kill, the clear, the reset, the map load, the map level, and the
+ * grants act on run or map scope, hero or no hero; a grant keys its roll on `position`. Every other variant acts on the hero and is dropped
  * silently in a world with none, as a player command is. Returns the reason the world could
  * not take the command, for the caller to announce, or `null` when it applied. Damage goes
  * through the damage door, so the panel takes the mitigation every other hit does; a kill
@@ -313,6 +315,7 @@ const jumpToCheckpoint = (
 export const applyDebugCommand = (
   world: World,
   command: DebugCommand,
+  position: number,
 ): RefusalReason | null => {
   switch (command.kind) {
     case "debug_noop":
@@ -359,6 +362,14 @@ export const applyDebugCommand = (
 
     case "spawn_zone":
       return spawnDebugZone(world, command);
+
+    case "grant_item":
+      return grantItem(world, command, position);
+
+    case "grant_gold":
+      grantGold(world, command);
+
+      return null;
 
     case "apply_damage":
     case "drain_mana":

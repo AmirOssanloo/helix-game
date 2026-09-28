@@ -103,6 +103,8 @@ export type WorldScratch = {
   drop: DropRoll;
   /** An item held between leaving one record and entering another: the one an equip takes from the inventory while the worn item goes back there. */
   heldItem: Item;
+  /** An item the panel grants, rolled here before it is placed in the inventory. */
+  grantedItem: Item;
 };
 
 /** Every piece of scratch the rules use, each at its neutral value. Made once, with the world. */
@@ -133,4 +135,5 @@ export const createWorldScratch = (): WorldScratch => ({
   debugLanding: { x: 0, y: 0 },
   drop: createDropRoll(),
   heldItem: createItem(),
+  grantedItem: createItem(),
 });

@@ -73,7 +73,9 @@ export type DomainEvent =
   | StoreOpenedEvent
   | StoreClosedEvent
   | ItemBoughtEvent
-  | ItemSoldEvent;
+  | ItemSoldEvent
+  | ItemGrantedEvent
+  | GoldGrantedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -167,6 +169,12 @@ export type ItemBoughtEvent = EventFields & { kind: "item_bought" };
 /** The hero `unitId` sold the item whose corner lay on the cell at `place` to the open store for `amount` gold. */
 export type ItemSoldEvent = EventFields & { kind: "item_sold" };
 
+/** The panel granted the hero `unitId` an item, its corner now on the cell at `place`. `unitId` is `null` in a world with no hero, since the inventory is run scope. */
+export type ItemGrantedEvent = EventFields & { kind: "item_granted" };
+
+/** The panel granted the hero `unitId` `amount` gold. `unitId` is `null` in a world with no hero. */
+export type GoldGrantedEvent = EventFields & { kind: "gold_granted" };
+
 /**
  * A ring slot: every field, and a kind that may be any of them. Every event is one, so a
  * system announces by writing a slot. The compiler relates a slot to the union kind by kind
@@ -205,6 +213,8 @@ const EVENT_KINDS: Readonly<Record<DomainEvent["kind"], true>> = {
   store_closed: true,
   item_bought: true,
   item_sold: true,
+  item_granted: true,
+  gold_granted: true,
 };
 
 /** Whether `slot` holds an event of a kind the union has, which every slot a system wrote does: a slot read back as the event it holds. */

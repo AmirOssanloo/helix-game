@@ -72,6 +72,15 @@ A generic spawn: a count of plain units at a world position, **Spawn units**, fo
 
 A spawn that puts one bare circle on the ground at a world position, with a radius, a delay before it comes alive, and a lifetime. It has no ability behind it, so it runs no rules; it is there to drive the zone pool, the zone view, and the spell-areas overlay before a spell casts one.
 
+### Loot
+
+| Control | Does |
+| --- | --- |
+| Item, Rarity, Item level, Grant item | Puts an item into the inventory at the first place it fits. Item lists every base and every Legendary piece, and Rarity every rarity, both read from the content so a new one appears without a code change. A base comes at any rarity but Legendary, its lines rolled as a drop's are; a piece comes only as Legendary, with its fixed lines. Taken whether the hero is alive or dead. A debug command, `grant_item`, in the log like the rest |
+| Gold amount, Grant gold | Adds a whole number of gold, one or more, alive or dead. A debug command, `grant_gold`, in the log like the rest |
+| Gold | The run's gold, read from the world |
+| Preview tier, Rolls, Preview loot table | Rolls what that many enemies of the tier would drop on this tick at the map's level, through the same roll a death makes, and shows the count of gold piles and the gold in them, the globes, the items by rarity, the drops by the rarest item each held, and the Legendary pieces. No pack names a piece for it, so it shows none. It changes nothing and sends no command |
+
 ## Readouts
 
 Updated a few times per second, from the preallocated sample rings and the event ring.
@@ -96,7 +105,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last projectile | The last projectile to land, and whom it landed on, or to expire |
 | Last checkpoint | The index of the last checkpoint the hero reached, from 0 in the map's order, and the tick it reached it on |
 | Last drop | The last ground item to fall, by its id, the unit whose death it fell from or the hero that dropped it, and a pile's gold |
-| Last item | The last item the hero equipped, unequipped, moved, or picked up, and the place it went to: an inventory cell from 0, or an armory slot from 100; or the last item it bought or sold, the cell it went to or left, and the gold |
+| Last item | The last item the hero equipped, unequipped, moved, picked up, or was granted, and the place it went to: an inventory cell from 0, or an armory slot from 100; or the last item it bought or sold, the cell it went to or left, and the gold; or the last gold granted |
 | Last store | The last store to open or close, and the index of its checkpoint |
 | Last take | The last gold pile or globe the hero took by walking over or past it, and what it gave: the gold, or the health or mana restored |
 | Deaths | How many units have died while the panel was open |
@@ -128,6 +137,9 @@ The panel remembers its own layout, which overlays are on, and the last-used spa
 | Choose a map while the hero is dead | Taken, as a map choice always has been: the hero is carried dead to the new map's spawn point and stands up there when its delay runs out |
 | A map id the content does not register, from a log or the console | Refused with its reason, `unknown_map`; the world runs on the map it had |
 | A map level below one or between whole numbers, from a log or the console | Refused with its reason, `invalid_map_level`; the map keeps the level it had |
+| Grant a Legendary piece as another rarity, or a base as Legendary | Refused with its reason, `invalid_rarity`; nothing is granted |
+| Grant an item the inventory has no room for | Refused with its reason, `no_room` |
+| Grant an item level or an amount of gold below one or between whole numbers, from a log or the console | Refused with its reason, `invalid_item_level` or `invalid_amount` |
 | Jump on a map with no checkpoints | The list reads "none" and the button sends nothing; an index the map has no checkpoint at, from a log or the console, is refused |
 | Tunable changed mid-cast | The running cast keeps the old value; the next cast reads the new one |
 | Pause with the targeting cursor open | The cursor stays open; the click commits when unpaused |

@@ -8,7 +8,7 @@ import type { Item } from "../items/item";
 import { clearItem } from "../items/item";
 import type { DrawPurpose, DrawWorld } from "../random/keyed-draw";
 import { KEYED_DRAW_RANGE, keyedDraw } from "../random/keyed-draw";
-import type { AffixRollPurposes } from "./affix-roll";
+import type { AffixRollPurposes, AffixRollWorld } from "./affix-roll";
 import { pickAmong, rollAffixes, rollLineValue } from "./affix-roll";
 
 /** What an item roll reads of a world beside the draw: the item content as written. */
@@ -164,14 +164,62 @@ const affixCountOf = (rarities: RarityTableDef, rarityId: string): number => {
 };
 
 /**
+ * Clears `into`, writes an item of `base` and `rarityId` at `itemLevel` into it, and rolls
+ * its lines under `key` at draw index `roll`: its implicit's value in the base's range on line 0, and as many affixes as its rarity gives on lines 1 on, never two of
+ * one stat, each a tier its item level reaches and its rarity allows, and each value in the
+ * tier's range. Line `line` draws at `roll × ITEM_LINE_CAPACITY + line`. A drop and a stock
+ * roll the base and the rarity first; a grant names both. Allocates nothing.
+ */
+export const rollLines = (
+  world: AffixRollWorld &
+    Readonly<{ run: Readonly<{ rarities: RarityTableDef }> }>,
+  key: number,
+  purposes: AffixRollPurposes,
+  roll: number,
+  base: ItemBaseDef,
+  rarityId: string,
+  itemLevel: number,
+  into: Item,
+): boolean => {
+  const implicit = into.lines[0];
+
+  clearItem(into);
+
+  if (implicit === undefined) {
+    return false;
+  }
+
+  into.baseId = base.id;
+  into.rarityId = rarityId;
+  into.itemLevel = itemLevel;
+  implicit.sourceId = base.id;
+  implicit.value = rollLineValue(
+    base.implicit.stat,
+    base.implicit.kind,
+    base.implicit.min,
+    base.implicit.max,
+    keyedDraw(world, key, purposes.lineValue, roll * ITEM_LINE_CAPACITY),
+  );
+  into.lineCount = 1;
+  rollAffixes(
+    world,
+    key,
+    purposes,
+    roll,
+    base.armorySlot,
+    rarityId,
+    affixCountOf(world.run.rarities, rarityId),
+    into,
+  );
+
+  return true;
+};
+
+/**
  * Rolls one item into `into` under `key` at draw index `roll`: its rarity by `weights` over
- * those at `floor` or rarer, its base evenly among those `itemLevel` reaches, its implicit's
- * value in the base's range on line 0, and as many affixes as its rarity gives on lines 1 on,
- * never two of one stat, each a tier its item level reaches and its rarity allows, and each
- * value in the tier's range. Line `line` of roll `roll` draws at
- * `roll × ITEM_LINE_CAPACITY + line`. Returns whether an item was made; with no rarity allowed
- * or no base reached, `into` is left cleared. Writes into the item's own lines and allocates
- * nothing.
+ * those at `floor` or rarer, its base evenly among those `itemLevel` reaches, and its lines as
+ * `rollLines` rolls them. Returns whether an item was made; with no rarity allowed or no base
+ * reached, `into` is left cleared. Writes into the item's own lines and allocates nothing.
  */
 export const rollItem = (
   world: ItemRollWorld,
@@ -205,36 +253,12 @@ export const rollItem = (
     itemLevel,
     pickAmong(keyedDraw(world, key, purposes.base, roll), reached),
   );
-  const implicit = into.lines[0];
 
-  if (base === null || implicit === undefined) {
+  if (base === null) {
     return false;
   }
 
-  into.baseId = base.id;
-  into.rarityId = rarityId;
-  into.itemLevel = itemLevel;
-  implicit.sourceId = base.id;
-  implicit.value = rollLineValue(
-    base.implicit.stat,
-    base.implicit.kind,
-    base.implicit.min,
-    base.implicit.max,
-    keyedDraw(world, key, purposes.lineValue, roll * ITEM_LINE_CAPACITY),
-  );
-  into.lineCount = 1;
-  rollAffixes(
-    world,
-    key,
-    purposes,
-    roll,
-    base.armorySlot,
-    rarityId,
-    affixCountOf(rarities, rarityId),
-    into,
-  );
-
-  return true;
+  return rollLines(world, key, purposes, roll, base, rarityId, itemLevel, into);
 };
 
 /** The Legendary piece `id`, or `null` for one the content does not hold. */

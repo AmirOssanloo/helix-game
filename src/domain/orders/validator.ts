@@ -2,6 +2,7 @@ import { assertNever } from "@shared/public";
 import { isDamageType } from "../combat/damage";
 import type { Command, DebugCommand } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
+import type { GrantRefusal } from "../debug/item-grants";
 import type {
   DisableMatrixDef,
   DisableReason,
@@ -26,7 +27,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
  * archetype spawns at, a checkpoint index that is not a whole number of none or more, a map
  * level that is not a whole number of one or more, a place outside the inventory's grid or the
- * armory's ten slots. The
+ * armory's ten slots, a rarity that is not a name, an item level that is not a whole number of
+ * one or more. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
  * costs more mana than the form has or is still on its clock, or the slot holds nothing. Then
@@ -39,7 +41,8 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * take the live enemies past the cap, the pool has no room for the spawn, the map has too few
  * free cells for the pack, the map has no checkpoint at the index a jump names, the content registers no map with the
  * id a map load names, a channel is
- * already running, or the status rule refused the application. An item command is refused
+ * already running, the status rule refused the application, or no base or Legendary piece has
+ * the id a grant names, the rarity does not suit it, or it fits nowhere. An item command is refused
  * when it applies by the inventory and the armory: nothing lies at the place it names, the
  * item cannot go in the armory slot named, the hero's level is below the item's requirement,
  * or the item, or the one it puts back, fits nowhere. A store command is refused when it
@@ -61,6 +64,8 @@ export type RefusalReason =
   | "invalid_checkpoint"
   | "invalid_map_level"
   | "invalid_place"
+  | "invalid_rarity"
+  | "invalid_item_level"
   | "orb_not_learned"
   | "buffer_not_full"
   | "no_spell_for_recipe"
@@ -82,6 +87,7 @@ export type RefusalReason =
   | "pool_full"
   | ItemRefusal
   | StoreRefusal
+  | GrantRefusal
   | "already_channeling"
   | StatusRefusal
   | TuningRefusal;
@@ -252,7 +258,8 @@ export const validateCommand = (
  * Decides whether a debug command is well formed: a finite amount of at least zero, a damage
  * type the rules know, one non-negative integer level per orb, a count and a duration of at
  * least one, a delay of none or more, a checkpoint index of none or more, a map level of one
- * or more, and a finite position. No disable and no state refuses a debug command; the panel is not the unit acting.
+ * or more, a finite position, a grant's rarity a name and its item level and gold a whole
+ * number of one or more. No disable and no state refuses a debug command; the panel is not the unit acting.
  * What the world can take, an archetype with the id it names, room in the pool, a level below
  * the cap, an orb level under its cap, a checkpoint at the index and a living hero to stand on
  * it, no channel running, a status with the id it names, the handler refuses when the command
@@ -317,6 +324,16 @@ export const validateDebugCommand = (
 
     case "apply_status":
       return isCount(command.ticks) ? "ok" : "invalid_duration";
+
+    case "grant_item":
+      if (typeof command.rarity !== "string" || command.rarity.length === 0) {
+        return "invalid_rarity";
+      }
+
+      return isCount(command.itemLevel) ? "ok" : "invalid_item_level";
+
+    case "grant_gold":
+      return isCount(command.amount) ? "ok" : "invalid_amount";
 
     case "spawn_zone": {
       if (!isFiniteDestination(command.position)) {

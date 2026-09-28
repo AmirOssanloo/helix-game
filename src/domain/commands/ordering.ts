@@ -63,6 +63,8 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "jump_to_checkpoint":
     case "begin_channel":
     case "apply_status":
+    case "grant_item":
+    case "grant_gold":
     case "set_tuning":
       return null;
 

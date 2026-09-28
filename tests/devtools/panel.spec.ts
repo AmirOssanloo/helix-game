@@ -1054,6 +1054,115 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("lists every base and Legendary piece and every rarity, and grants the item chosen through a command in the log", () => {
+    const arranged = arrange();
+    const run = arranged.world.view.run;
+    const items = selectNamed(arranged.host, "Item");
+    const rarity = selectNamed(arranged.host, "Rarity");
+
+    expect([...items.options].map((option) => option.value)).toEqual([
+      ...run.itemBases.map((base) => base.id),
+      ...run.legendaries.map((piece) => piece.id),
+    ]);
+    expect([...rarity.options].map((option) => option.value)).toEqual(
+      run.rarities.map((entry) => entry.id),
+    );
+
+    items.value = "sceptre";
+    items.dispatchEvent(new Event("change"));
+    rarity.value = "mythical";
+    rarity.dispatchEvent(new Event("change"));
+    typeInto(numberFieldNamed(arranged.host, "Item level"), "12");
+    buttonNamed(arranged.host, "Grant item").click();
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "grant_item",
+      itemId: "sceptre",
+      rarity: "mythical",
+      itemLevel: 12,
+    });
+    expect(readoutNamed(arranged.host, "Last item")).toBe("item_granted to 0");
+
+    arranged.handle.unmount();
+  });
+
+  it("grants the gold its field names through a command in the log, and shows the run's gold", () => {
+    const arranged = arrange();
+
+    typeInto(numberFieldNamed(arranged.host, "Gold amount"), "250");
+    buttonNamed(arranged.host, "Grant gold").click();
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(arranged.world.log.commandAt(0)).toMatchObject({
+      kind: "grant_gold",
+      amount: 250,
+    });
+    expect(readoutNamed(arranged.host, "Gold")).toBe("250");
+    expect(readoutNamed(arranged.host, "Last item")).toBe("gold_granted 250");
+
+    arranged.handle.unmount();
+  });
+
+  it("previews 10 000 boss drops with every drop's rarest item Rare or better, sending nothing and changing nothing", () => {
+    const arranged = arrange();
+    const world = arranged.world;
+    const before = world.state.map.groundItems.count;
+    const preview = rowNamed(arranged.host, "Preview").querySelector(
+      "textarea",
+    );
+    const tier = selectNamed(arranged.host, "Preview tier");
+
+    tier.value = "boss";
+    tier.dispatchEvent(new Event("change"));
+    typeInto(numberFieldNamed(arranged.host, "Rolls"), "10000");
+    buttonNamed(arranged.host, "Preview loot table").click();
+    world.tick();
+
+    const text = preview?.value ?? "";
+    const rarest = /Rarest per drop: (.*), no item (\d+)/.exec(text);
+    const counted = [...(rarest?.[1] ?? "").matchAll(/(\w+) (\d+)/g)];
+
+    expect(text).toContain("10000 boss drops at level 1");
+    expect(rarest?.[2]).toBe("0");
+    expect(counted.map((match) => match[1])).not.toContain("Common");
+    expect(counted.map((match) => match[1])).not.toContain("Uncommon");
+    expect(counted.reduce((sum, match) => sum + Number(match[2]), 0)).toBe(
+      10000,
+    );
+    expect(text).toContain("Gold: 10000 piles");
+    expect(world.log.count).toBe(0);
+    expect(world.state.map.groundItems.count).toBe(before);
+    expect(world.view.run.gold).toBe(0);
+
+    arranged.handle.unmount();
+  });
+
+  it("previews a normal enemy's table at the map's level with some drops holding nothing", () => {
+    const arranged = arrange();
+    const preview = rowNamed(arranged.host, "Preview").querySelector(
+      "textarea",
+    );
+    const tier = selectNamed(arranged.host, "Preview tier");
+
+    arranged.api.submit({ kind: "set_map_level", level: 9 });
+    arranged.world.tick();
+    tier.value = "normal";
+    tier.dispatchEvent(new Event("change"));
+    typeInto(numberFieldNamed(arranged.host, "Rolls"), "500");
+    buttonNamed(arranged.host, "Preview loot table").click();
+
+    const text = preview?.value ?? "";
+
+    expect(text).toContain("500 normal drops at level 9");
+    expect(Number(/no item (\d+)/.exec(text)?.[1])).toBeGreaterThan(0);
+    expect(arranged.world.log.count).toBe(1);
+
+    arranged.handle.unmount();
+  });
+
   it("leaves nothing in the host once unmounted", () => {
     const arranged = arrange();
 

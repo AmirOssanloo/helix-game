@@ -51,6 +51,12 @@ export const DRAW_PURPOSE = {
   storeAffixTier: 16,
   /** The value a stocked item's line rolls within its range, one draw index per line of each stock slot, line 0 the implicit. */
   storeAffixValue: 17,
+  /** Which affix a granted item rolls, one draw index per line. */
+  grantAffix: 18,
+  /** Which tier of its affix a granted item's line rolls, one draw index per line. */
+  grantAffixTier: 19,
+  /** The value a granted item's line rolls within its range, one draw index per line, line 0 the implicit. */
+  grantAffixValue: 20,
 } as const;
 
 export type DrawPurpose = (typeof DRAW_PURPOSE)[keyof typeof DRAW_PURPOSE];

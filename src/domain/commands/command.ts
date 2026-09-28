@@ -160,7 +160,9 @@ export type DebugCommand =
   | JumpToCheckpointCommand
   | BeginChannelCommand
   | ApplyStatusCommand
-  | SpawnZoneCommand;
+  | SpawnZoneCommand
+  | GrantItemCommand
+  | GrantGoldCommand;
 
 /** The debug twin of `noop`: proves the panel's path through the buffer and the log. */
 export type DebugNoopCommand = Readonly<{
@@ -376,6 +378,32 @@ export type SpawnZoneCommand = Readonly<{
 }>;
 
 /**
+ * Puts an item into the inventory at the first place it fits: `itemId` names a base or a
+ * Legendary piece, `rarity` the rarity it comes as, Legendary for a piece and any other for a
+ * base, and `itemLevel` its level, a whole number of one or more. A base's lines are rolled as
+ * a drop's are, keyed on the command's position among the tick's consumed commands; a piece's
+ * are its fixed values. It acts on run scope, so it acts whether the hero is alive, dead, or
+ * absent. Refused when no base or piece has the id, the rarity does not suit it, or the item
+ * fits nowhere.
+ */
+export type GrantItemCommand = Readonly<{
+  kind: "grant_item";
+  tick: Tick;
+  timestamp: number;
+  itemId: string;
+  rarity: string;
+  itemLevel: number;
+}>;
+
+/** Adds `amount` gold, a whole number of one or more, to the run's gold, whether the hero is alive, dead, or absent. */
+export type GrantGoldCommand = Readonly<{
+  kind: "grant_gold";
+  tick: Tick;
+  timestamp: number;
+  amount: number;
+}>;
+
+/**
  * A developer-panel slider: set the tunable `key` to `value`, in the designer's units the
  * tuning table or the definition writes. `key` is an entry of the tuning table or a
  * definition number's key, `def:<kind>:<id>:<field path>[:<index>]`. The tuning state
@@ -423,6 +451,8 @@ export const DEBUG_COMMAND_KINDS: Readonly<Record<DebugCommand["kind"], true>> =
     begin_channel: true,
     apply_status: true,
     spawn_zone: true,
+    grant_item: true,
+    grant_gold: true,
   };
 
 /** Whether `command` is a developer-panel intent. */

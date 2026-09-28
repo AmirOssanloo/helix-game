@@ -247,7 +247,9 @@ export const commandSystem = (world: World): void => {
     if (isDebugCommand(command)) {
       const validation = validateDebugCommand(command);
       const refusal =
-        validation === "ok" ? applyDebugCommand(world, command) : validation;
+        validation === "ok"
+          ? applyDebugCommand(world, command, index)
+          : validation;
 
       if (refusal !== null) {
         announceRefusal(world, command, refusal);

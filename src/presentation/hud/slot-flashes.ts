@@ -36,6 +36,9 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "invalid_checkpoint":
     case "invalid_map_level":
     case "invalid_place":
+    case "invalid_rarity":
+    case "invalid_item_level":
+    case "unknown_item":
     case "orb_not_learned":
     case "buffer_not_full":
     case "no_spell_for_recipe":

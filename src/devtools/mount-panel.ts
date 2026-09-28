@@ -7,6 +7,7 @@ import { DEVTOOLS_SENTINEL } from "./devtools-sentinel";
 import { enemiesGroup } from "./enemies-group";
 import { mountFeedbackNote } from "./feedback-note";
 import { heroGroup } from "./hero-group";
+import { lootGroup } from "./loot-group";
 import { overlaysGroup } from "./overlays-group";
 import type { PanelGroup } from "./panel-group";
 import type { MemoryStore } from "./panel-memory";
@@ -89,6 +90,7 @@ export const mountPanel: PanelMount = (host, api, store): PanelHandle => {
     unitsGroup(folder("units", "Units"), api, memory, remember),
     enemiesGroup(folder("enemies", "Enemies"), api, memory, remember),
     zonesGroup(folder("zones", "Zones"), api),
+    lootGroup(folder("loot", "Loot"), api),
     overlaysGroup(folder("overlays", "Overlays"), api, memory, remember),
     readoutsGroup(folder("readouts", "Readouts"), api, reader),
   ];
