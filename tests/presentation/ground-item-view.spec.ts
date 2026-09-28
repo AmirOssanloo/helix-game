@@ -36,8 +36,9 @@ const FRAME_WIDTH = 128;
 /** A glyph of the shipped font: 20 wide, 32 tall. */
 const GLYPH_ASPECT = 20 / 32;
 
-/** How wide one glyph of a label is drawn. */
-const ADVANCE = GROUND_LABEL_SIZE * GLYPH_ASPECT;
+/** How wide and how tall one glyph of a label is drawn: the font's size is its glyph width. */
+const ADVANCE = GROUND_LABEL_SIZE;
+const GLYPH_HEIGHT = GROUND_LABEL_SIZE / GLYPH_ASPECT;
 
 /** The pools a case makes: more than any case lays on one screen. */
 const POOL_SIZE = 64;
@@ -202,7 +203,7 @@ const entries = (list: PickList): { rect: Rect; id: GroundItemId | null }[] => {
 /** The rectangle a label is drawn in on the scene, centred on it. */
 const labelRect = (label: LabelRecorder): Rect => {
   const halfWidth = ((label.text ?? "").length * ADVANCE) / 2;
-  const halfHeight = GROUND_LABEL_SIZE / 2;
+  const halfHeight = GLYPH_HEIGHT / 2;
 
   return {
     minX: label.x - halfWidth,
@@ -487,6 +488,58 @@ describe("ground-item labels", () => {
         maxY: rect.maxY - CANVAS.minY,
       });
     }
+  });
+  it("measure a pick rectangle as the font draws it: the size wide a glyph, the size over the aspect tall", () => {
+    const arranged = arrange();
+    const gloves = lay(
+      arranged,
+      drop("item", 0, 0, { baseId: "leather_gloves", rarityId: "rare" }),
+    );
+
+    sync(arranged);
+
+    const [entry] = entries(arranged.picks.labels);
+
+    expect(entry?.id).toBe(gloves);
+    expect((entry?.rect.maxX ?? 0) - (entry?.rect.minX ?? 0)).toBeCloseTo(
+      "LEATHER GLOVES".length * 16,
+    );
+    expect((entry?.rect.maxY ?? 0) - (entry?.rect.minY ?? 0)).toBeCloseTo(
+      (16 * 32) / 20,
+    );
+  });
+
+  it("keep two long labels side by side apart where the drawn glyphs would overlap", () => {
+    const arranged = arrange();
+    const reach = 72;
+
+    lay(
+      arranged,
+      drop("item", reach, -reach, {
+        baseId: "leather_gloves",
+        rarityId: "rare",
+      }),
+    );
+    lay(
+      arranged,
+      drop("item", -reach, reach, {
+        baseId: "leather_gloves",
+        rarityId: "rare",
+      }),
+    );
+    sync(arranged);
+
+    const shown = shownLabels(arranged);
+    const [first, second] = shown;
+
+    expect(shown).toHaveLength(2);
+    expect(Math.abs((first?.x ?? 0) - (second?.x ?? 0))).toBeLessThan(
+      "LEATHER GLOVES".length * 16,
+    );
+    expect(Math.abs((first?.y ?? 0) - (second?.y ?? 0))).toBeGreaterThanOrEqual(
+      (16 * 32) / 20,
+    );
+    expect(overlappingPairs(arranged)).toBe(0);
   });
 });
 

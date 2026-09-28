@@ -21,7 +21,11 @@ import type { ItemLabelFlashes } from "./item-flashes";
 import type { Label, LabelFactory } from "./quad";
 import { ViewPool } from "./view-pool";
 
-/** How tall a label's glyphs are, in pixels a line. A presentation number, tuned here. */
+/**
+ * The size a label is made at. The atlas font's size is its glyph width, so this is how wide
+ * one glyph is drawn, in pixels; a glyph is drawn this over its aspect tall. A presentation
+ * number, tuned here.
+ */
 export const GROUND_LABEL_SIZE = 16;
 
 /** How far above the point its item lies at a label's centre stands, in pixels. */
@@ -30,6 +34,12 @@ const LABEL_RISE = 18;
 /** The space kept between two labels moved apart, in pixels, across and up. */
 const LABEL_GAP_X = 4;
 const LABEL_GAP_Y = 2;
+
+/**
+ * Less than any pixel: a label moved to just above another is not taken to overlap it by a
+ * rounding error, as a glyph's height need not be a whole number of pixels.
+ */
+const PLACE_SLACK = 1 / 1024;
 
 /**
  * How many times one label may be moved up past another before the pass gives up on it and
@@ -391,7 +401,7 @@ export class GroundItemLabels {
         other.shown &&
         Math.abs(view.x - other.x) <
           (view.width + other.width) * HALF + LABEL_GAP_X &&
-        Math.abs(view.y - other.y) < this.height + LABEL_GAP_Y
+        Math.abs(view.y - other.y) < this.height + LABEL_GAP_Y - PLACE_SLACK
       ) {
         return other;
       }
@@ -437,8 +447,9 @@ export class GroundItemLabels {
 
 /**
  * `size` labels from `makeLabel` at the item-labels band, at scene `create`. `glyphAspect` is a
- * glyph's baked width over its height, so a label's width is read from its text rather than
- * asked of the renderer.
+ * glyph's baked width over its height. The font draws a glyph `GROUND_LABEL_SIZE` wide, so a
+ * label's width is read from its text and its height from the aspect, rather than asked of the
+ * renderer, and the pass and the pick port measure what is drawn.
  */
 export const createGroundItemLabels = (
   size: number,
@@ -448,7 +459,8 @@ export const createGroundItemLabels = (
   glyphAspect: number,
 ): GroundItemLabels => {
   const views: GroundItemLabelView[] = [];
-  const advance = GROUND_LABEL_SIZE * glyphAspect;
+  const advance = GROUND_LABEL_SIZE;
+  const height = GROUND_LABEL_SIZE / glyphAspect;
 
   for (let index = 0; index < size; index += 1) {
     const label = makeLabel(GROUND_LABEL_SIZE);
@@ -457,5 +469,5 @@ export const createGroundItemLabels = (
     views.push(new GroundItemLabelView(label, world, placement, advance));
   }
 
-  return new GroundItemLabels(views, GROUND_LABEL_SIZE);
+  return new GroundItemLabels(views, height);
 };
