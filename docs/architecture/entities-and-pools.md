@@ -39,7 +39,7 @@ export const releaseFoo = (world: World, id: FooId): void => { /* clear in place
 
 **A unit is one shape, grouped by concern.** The fields every system reads, such as its position, order, resources, and statuses, sit on the unit itself. The state one concern keeps between ticks sits in a sub-record of its own, declared beside the unit under `domain/entities/` with its own create and clear: the attack's, the cast under way, the AI machine's, the pack it belongs to, and what ties a summon to its owner. A sub-record is made once with the pool slot and cleared in place on release; none is replaced or reallocated. A concern that grows adds its field to its sub-record, not to the unit.
 
-**The derived values come from one key list.** The unit's stats and the base it stores at spawn are plain objects with one named field per entry of the list. Each entry names its field, the modifier stat whose rows change it, what an attribute point is worth toward it on a form, and the base a definition gives it. Creating, clearing, deriving, and spawning walk the list, so a new derived value is one entry in it and nothing else in the rules.
+**The derived values come from one key list.** The unit's stats and the base it stores at spawn are records with one named field per entry of the list, made from a class of their own so that no other object shares their shape, and so are a unit's attributes. Each entry names its field, the modifier stat whose rows change it, and the base a definition gives it. It also carries three writes of its field: its value on a form, the base plus what an attribute point is worth toward it, through the modifier rows; a stored base through the rows; and a copy. Each write names the field rather than going by key, so no fractional value is boxed on the way. Creating, clearing, deriving, and spawning walk the list, so a new derived value is one entry in it and nothing else in the rules.
 
 ---
 
@@ -160,7 +160,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | A full pool | Returns `null`; the caller decides; the instrumentation counts the miss |
 | Entity shape | Plain object, kind tag, definition id; no class hierarchy; a unit an ability spawns takes the kind its definition names |
 | A unit's layout | One shape; the state one concern keeps between ticks in its own sub-record beside the unit, made with the slot and cleared in place, never replaced; a concern that grows adds its field to its sub-record |
-| Derived values | One named field per entry of the one key list; create, clear, derive, and spawn walk it |
+| Derived values | One named field per entry of the one key list, on a record made from a class of its own, as attributes are; each entry derives, modifies, and copies its own field, never by key; create, clear, derive, and spawn walk it |
 | Typed arrays | Only after a profile shows the tick over budget |
 | Ids | A number packing index and generation; released slots bump the generation |
 | An id's kind | Tagged per pool with the generic `Id<Brand>` from `shared/`; each kind's id declared beside its pool; a pool takes and resolves only its own; no cost at run time |

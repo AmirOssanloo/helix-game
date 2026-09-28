@@ -5,7 +5,8 @@ import { ORB_COUNT } from "../entities/world-state";
 import { createArmory } from "../items/armory";
 import { attributesAt, deriveStats } from "../stats/derived";
 import type { ModifierTable } from "../stats/modifiers";
-import type { Attributes, FormDef, Stats } from "./form-def";
+import type { FormDef, Stats } from "./form-def";
+import { createAttributes } from "./form-def";
 import type { HeroDef } from "./hero-def";
 import { createStats } from "./stat-keys";
 import { readTunable } from "./tuning-state";
@@ -14,7 +15,8 @@ import { readTunable } from "./tuning-state";
  * `def` with every per-second rate divided into a per-tick one. This is the one conversion
  * for a form, run once per form when a world is created and again when a tuning command
  * changes one of its numbers, so no system ever divides by the tick rate. Everything else is
- * read as written.
+ * read as written. The base is a record of derived values like any unit's, so the one
+ * derivation reads every base on one shape.
  */
 export const formInSimulationUnits = (
   def: FormDef,
@@ -26,11 +28,10 @@ export const formInSimulationUnits = (
     healthRegenPerStrength: def.conversions.healthRegenPerStrength / simHz,
     manaRegenPerIntelligence: def.conversions.manaRegenPerIntelligence / simHz,
   },
-  baseStats: {
-    ...def.baseStats,
+  baseStats: Object.assign(createStats(), def.baseStats, {
     healthRegen: def.baseStats.healthRegen / simHz,
     manaRegen: def.baseStats.manaRegen / simHz,
-  },
+  }),
 });
 
 /**
@@ -39,7 +40,7 @@ export const formInSimulationUnits = (
  * empty table is made here rather than shared.
  */
 const fullAtLevelOne = (def: FormDef): Stats => {
-  const attributes: Attributes = { strength: 0, agility: 0, intelligence: 0 };
+  const attributes = createAttributes();
   const stats = createStats();
   const none: ModifierTable = {
     modifiers: [],

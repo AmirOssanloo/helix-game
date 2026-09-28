@@ -2,6 +2,7 @@ import type { Id, Vec2 } from "@shared/public";
 import { assert } from "@shared/public";
 import type { EnemyTier } from "../definitions/enemy-def";
 import type { Attributes, Stats } from "../definitions/form-def";
+import { clearAttributes, createAttributes } from "../definitions/form-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import { clearStats, createStats } from "../definitions/stat-keys";
 import { readTunable } from "../definitions/tuning-state";
@@ -337,7 +338,7 @@ const createUnit = (zeros: Readonly<StatTotals>): Unit => {
     liveModifierRows: 0,
     modifierMisses: 0,
     progression: { level: 1, experience: 0, skillPoints: 0 },
-    attributes: { strength: 0, agility: 0, intelligence: 0 },
+    attributes: createAttributes(),
     baseStats: createStats(),
     stats: createStats(),
     disables: createDisableFlags(),
@@ -392,9 +393,7 @@ const clearUnit = (unit: Unit, zeros: Readonly<StatTotals>): void => {
   unit.progression.level = 1;
   unit.progression.experience = 0;
   unit.progression.skillPoints = 0;
-  unit.attributes.strength = 0;
-  unit.attributes.agility = 0;
-  unit.attributes.intelligence = 0;
+  clearAttributes(unit.attributes);
   clearStats(unit.baseStats);
   clearStats(unit.stats);
   clearDisableFlags(unit.disables);

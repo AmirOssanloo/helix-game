@@ -25,6 +25,8 @@ import {
   MODIFIER_TABLE_SIZE,
   STAT_SOURCES,
   statSource,
+  createAttributes,
+  modifiedValue,
 } from "@domain/rules";
 import { idOf, makeEnemyDef } from "../../helpers";
 
@@ -50,8 +52,17 @@ const TOY_SOURCES = [
   statSource({
     key: "toughness",
     modifier: "movement_speed",
-    worth: { attribute: "agility", conversion: "armourPerAgility" },
     fromDefinition: (record) => record.def.armour * TOY_MULTIPLE_OF_ARMOUR,
+    derive: (base, attributes, conversions, table, into) => {
+      into.toughness = modifiedValue(
+        base.toughness + attributes.agility * conversions.armourPerAgility,
+        table,
+        "movement_speed",
+      );
+    },
+    modify: (base, table, into) => {
+      into.toughness = modifiedValue(base.toughness, table, "movement_speed");
+    },
     copy: (from, into) => {
       into.toughness = from.toughness;
     },
@@ -181,6 +192,23 @@ describe("the key list", () => {
       source.copy(from, into);
 
       expect(into).toEqual(from);
+    }
+  });
+
+  it("derives and modifies each value into its own field and no other", () => {
+    const nothing = createAttributes();
+
+    for (const [index, source] of STAT_SOURCES.entries()) {
+      const from = createStatValues(STAT_SOURCES);
+      const derived = createStatValues(STAT_SOURCES);
+      const modified = createStatValues(STAT_SOURCES);
+
+      from[source.key] = index + 1;
+      source.derive(from, nothing, skeinDef.conversions, emptyTable(), derived);
+      source.modify(from, emptyTable(), modified);
+
+      expect(derived).toEqual(from);
+      expect(modified).toEqual(from);
     }
   });
 });

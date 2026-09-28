@@ -9,6 +9,27 @@ export type Attributes = {
   intelligence: number;
 };
 
+/**
+ * A record of attributes, made from a class of its own: the schema that validates a form's
+ * attributes has the same keys in the same order, and a plain literal would share its shape,
+ * whose fields hold objects, so every fractional attribute written each tick would be boxed.
+ */
+class AttributeRecord implements Attributes {
+  strength = 0;
+  agility = 0;
+  intelligence = 0;
+}
+
+/** A fresh record of attributes, every one at zero. */
+export const createAttributes = (): Attributes => new AttributeRecord();
+
+/** Every attribute back to zero, in place. */
+export const clearAttributes = (attributes: Attributes): void => {
+  attributes.strength = 0;
+  attributes.agility = 0;
+  attributes.intelligence = 0;
+};
+
 /** How much of a derived value one attribute point is worth. Regeneration is per second here. */
 export type AttributeConversions = Readonly<{
   healthPerStrength: number;

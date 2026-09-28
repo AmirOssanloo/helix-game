@@ -78,7 +78,8 @@ The collector pauses when the heap fills, and at sixty frames a second a pause i
 | String concatenation for a key | Integers packed into one number |
 | A new vector per operation | A scratch vector on the world's scratch, written through the vector helpers from `shared/` |
 | A fractional number passed to, or returned from, a call the engine does not inline | The object the number lives in, for a call made per unit per tick |
-| A fractional number written each frame into a scratch made as a `{ x, y }` or rectangle literal | A scratch made from a small class of its own: every literal of one shape shares a hidden class, and one written anywhere with a value its number fields cannot hold makes every such write a new number on the heap |
+| A fractional number read or written by a computed key, `foo[key]` | A read and a write that name the field, with the arithmetic inside them |
+| A fractional number written each frame or tick into a scratch or record made as a `{ x, y }` or rectangle literal, or read back from text | A scratch or record made from a small class of its own: every object whose keys were added in one order shares a hidden class, and one written anywhere with a value its number fields cannot hold makes every such write a new number on the heap |
 | A `Map` or `Set` built per tick | A preallocated array or the spatial hash |
 | A per-frame `Text` update | `BitmapText` |
 
@@ -129,7 +130,7 @@ The stress test fails, so the tick budget becomes 5 ms. The budget is the produc
 | Render benchmark | `bench/`, run by an agent in Chrome through browser automation, never by hand; rerun after every Phaser upgrade and any atlas, view, or scene change |
 | Stress test | 200 enemies chasing with 100 projectiles, 300 units on random orders, and a walk of the longest map, in Node, in CI, asserting the tick budget; uninstrumented, outside the coverage pass |
 | Batch breaks | Second texture, blend mode, filter, mask, `Text` update in sync — each counted, none in the world scene |
-| Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections, fractional numbers passed per unit to a call not inlined, a scratch rewritten each frame made as a literal rather than a class — each with its replacement above |
+| Allocation sources | Closures, array methods, literals, string keys, per-op vectors, per-tick collections, fractional numbers passed per unit to a call not inlined, fractional numbers read or written by a computed key, a scratch or record rewritten each frame or tick made as a literal or parsed text rather than a class — each with its replacement above |
 | Re-pathing | Budgeted per tick, the budget a tunable |
 | Off-screen packs | Dormant spawn data until an activation radius, and again once left past the sleep radius at rest |
 | Typed arrays | Only when the profile shows the object layout over budget |

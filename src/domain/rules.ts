@@ -79,6 +79,7 @@ export {
   ZONE_ANCHORS,
 } from "./definitions/effect-def";
 export { effectsPerTick } from "./definitions/effect-state";
+export { createAttributes } from "./definitions/form-def";
 export { createFormRecords } from "./definitions/form-state";
 export {
   clearStats,

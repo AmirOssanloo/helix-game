@@ -1,9 +1,21 @@
+import { GCProfiler } from "node:v8";
 import { describe, expect, it } from "vitest";
 import { meleeGruntDef } from "@content/public";
 import type { DefinitionKey } from "@domain/public";
-import { addModifier, removeModifiers, statsSystem } from "@domain/rules";
+import {
+  addModifier,
+  addToTotals,
+  removeModifiers,
+  statsSystem,
+} from "@domain/rules";
 import type { Simulation } from "@simulation/testing";
-import { makeRegistry, makeWorld, spawnEnemy, submit } from "../../helpers";
+import {
+  makeRegistry,
+  makeWorld,
+  spawnEnemy,
+  spawnHero,
+  submit,
+} from "../../helpers";
 
 /** Where the spec stands its grunts: apart, with no hero to aggro on. */
 const HERE = { x: 0, y: 0 };
@@ -16,6 +28,22 @@ const HEALTH_CUT = -0.5;
 
 /** More than a grunt regenerates in the tick the spec reads it on, and less than a fill. */
 const A_TICK_OF_REGENERATION = 1;
+
+/** Enemies with a live row, as a crowded screen holds them. */
+const ENEMIES_WITH_ROWS = 200;
+
+/**
+ * Calls made before the heap is watched, and calls made while it is. The hero's part of the
+ * system runs once a call, and the engine optimises code run that rarely only after about
+ * eleven thousand calls; until then every fractional number it computes is boxed. The
+ * allowance is under one boxed number a call over the measured calls.
+ */
+const WARM_UP_CALLS = 15_000;
+const MEASURED_CALLS = 4_000;
+const HEAP_ALLOWANCE_BYTES = 64 * 1024;
+
+/** Room for the warm-up on a loaded machine. */
+const STEADY_STATE_TIMEOUT_MS = 120_000;
 
 const GRUNT_HEALTH: DefinitionKey = `def:enemy:${meleeGruntDef.id}:health`;
 
@@ -103,4 +131,60 @@ describe("statsSystem over an enemy", () => {
     expect(before.stats.maxHealth).toBe(meleeGruntDef.health);
     expect(after.stats.maxHealth).toBe(retuned);
   });
+});
+
+describe("statsSystem in steady state", () => {
+  it(
+    "allocates nothing over a warm world with statuses, orbs, and worn items on the hero and rows on its enemies",
+    () => {
+      const world = arrange();
+      const hero = spawnHero(world);
+      const state = world.state;
+      const armory = state.run.forms[0]?.armory;
+
+      if (armory === undefined) {
+        throw new Error("The hero has a form");
+      }
+
+      addModifier(hero, "status", "max_health", 0, 0.1);
+      addModifier(hero, "orb", "health_regen", 0.03, 0.07);
+      addModifier(hero, "orb", "attack_speed", 5, 0);
+      addToTotals(armory.totals, "armour", 3.5, 0.15);
+      addToTotals(armory.totals, "mana_regen", 0.05, 0);
+
+      for (let index = 0; index < ENEMIES_WITH_ROWS; index += 1) {
+        const unit = grunt(world, {
+          x: (index % 20) * 64,
+          y: 64 + Math.floor(index / 20) * 64,
+        });
+
+        addModifier(unit, "status", "armour", SHRED, 0.05);
+        addModifier(unit, "summon", "magic_resistance", RESIST, 0);
+      }
+
+      world.tick();
+
+      for (let call = 0; call < WARM_UP_CALLS; call += 1) {
+        statsSystem(state);
+      }
+
+      const profiler = new GCProfiler();
+
+      profiler.start();
+
+      const before = process.memoryUsage().heapUsed;
+
+      for (let call = 0; call < MEASURED_CALLS; call += 1) {
+        statsSystem(state);
+      }
+
+      const after = process.memoryUsage().heapUsed;
+      const collections = profiler.stop().statistics.length;
+
+      expect(hero.stats.armour).toBeGreaterThan(0);
+      expect(collections).toBe(0);
+      expect(after - before).toBeLessThan(HEAP_ALLOWANCE_BYTES);
+    },
+    STEADY_STATE_TIMEOUT_MS,
+  );
 });

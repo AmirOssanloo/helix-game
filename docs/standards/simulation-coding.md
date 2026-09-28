@@ -42,6 +42,8 @@ const cooldownTicks = toTicks(fooDef.cooldownSeconds)
 | A new vector per operation | A scratch vector on the world's scratch, written through the vector helpers from `shared/` |
 | String concatenation for a key | Integer cell coordinates packed into one number |
 | A fractional number passed to, or returned from, a call made per unit per tick | The object the number lives in: the point for two coordinates, a scratch record the callee reads and writes for an amount, as the damage door takes one. The engine boxes a fractional number that crosses a call it does not inline, one heap object per argument or result per call |
+| A fractional number read or written by a computed key, `foo[key]`, on a record written per unit per tick | A read and a write that name the field, one per key of the key list, with the arithmetic inside them, as `fooSources` carries for each derived value. A keyed access hands the number across as a boxed heap object |
+| A record of numbers made from an object literal or parsed text whose keys run in the same order as another object's | A record made from a class of its own. The engine gives objects whose keys were added in the same order one shape, and when another object of that shape holds something other than a number in a field, every fractional write to that field on the record is boxed |
 | Anything that lives longer than the tick | Acquired from its pool, released back to it |
 
 Allocation at world creation and map load is fine. That is where pools fill. The pool-miss counter in the instrumentation rings reads zero after warm-up, and [Performance standards](./performance.md#quick-reference) say what to do when it doesn't.
@@ -137,7 +139,7 @@ A pathing module with a module-level `Map` of recent paths. The second test in a
 | A rule's draw | The keyed draw, with its own purpose from the one list, a second purpose for a draw of another kind on one key and tick, and a draw index from 0 for several of one kind; the integer result scaled locally |
 | Asynchrony | None. A tick runs to completion |
 | Durations | Integer ticks, converted from seconds once at definition load, and a rate per second to a rate per tick. A system never multiplies by the tick rate |
-| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch on the world's scratch; a point passed as its object, not its coordinates, to a call made per unit per tick; pools for anything that outlives the tick |
+| Allocation | None in steady state: no literals, closures, spread, or array methods on the hot path; scratch on the world's scratch; a point passed as its object, not its coordinates, to a call made per unit per tick; a fractional field read and written by its name, never by a computed key, on a record of numbers made from a class of its own; pools for anything that outlives the tick |
 | Iteration | Pools by index from zero to `end`, skipping a `null` slot; no `Map` or `Set` order that depends on history; ties broken by id; queries in cell then slot order; commands in one tick by timestamp, then key priority |
 | A system | `(world) => void`, registered once in the ordered list, no module-level state, thin over pure rules |
 | Module scope | No mutable binding under `domain/` or `simulation/`, at any depth: constants typed read-only all the way down; the architecture test holds it |

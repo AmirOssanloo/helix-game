@@ -32,8 +32,8 @@ export const attributesAt = (
 /**
  * Writes every value of `sources` into `out`: the base plus what its driving attribute is
  * worth at `conversions`, the base alone for a value no attribute drives, run through the
- * modifier pipeline for its stat, so an orb passive now and an item later change a value the
- * same way.
+ * modifier pipeline for its stat, so an orb passive and an item change a value the same way.
+ * Each source derives its own field, so no value is boxed on the way.
  */
 export const deriveOver = <Key extends string>(
   sources: readonly StatSource<Key>[],
@@ -44,22 +44,10 @@ export const deriveOver = <Key extends string>(
   out: StatValues<Key>,
 ): StatValues<Key> => {
   for (let index = 0; index < sources.length; index += 1) {
-    const source = sources[index];
-
-    if (source === undefined) {
-      continue;
-    }
-
-    const worth = source.worth;
-
-    out[source.key] =
-      worth === null
-        ? base[source.key]
-        : base[source.key] +
-          attributes[worth.attribute] * conversions[worth.conversion];
+    sources[index]?.derive(base, attributes, conversions, modifiers, out);
   }
 
-  return applyModifiersOver(sources, out, modifiers, out);
+  return out;
 };
 
 /**

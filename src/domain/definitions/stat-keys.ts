@@ -1,35 +1,48 @@
 import type { Stat } from "../entities/unit";
+import type { ModifierTable } from "../stats/modifiers";
+import { modifiedValue } from "../stats/modifiers";
 import { BASE_ATTACK_SPEED } from "./attack-state";
 import type { Attributes, AttributeConversions } from "./form-def";
 import type { UnitRecord } from "./unit-state";
 
-/** What one attribute point is worth toward a derived value: the attribute, and the form's conversion that prices it. */
-export type AttributeWorth = Readonly<{
-  attribute: keyof Attributes;
-  conversion: keyof AttributeConversions;
-}>;
-
 /**
  * Where one derived value comes from: the field it is kept in, the modifier stat whose rows
- * change it, what an attribute point is worth toward it on a form, `null` for a value no
- * attribute drives, the base a unit spawned from a definition stores for it, read from
- * the definition's record and the health multiplier its tier asks, and the copy of its value
- * from one record to another. The copy names its field rather than writing by key: it runs for
- * every unit with no live row every tick, and a keyed copy over every stat there costs the
- * tick about twenty times what a named one does.
+ * change it, the base a unit spawned from a definition stores for it, read from the
+ * definition's record and the health multiplier its tier asks, and three writes of its field.
+ * `derive` writes a form's value: the base plus what its driving attribute is worth at the
+ * form's conversions, the base alone for a value no attribute drives, run through the modifier
+ * pipeline for its stat. `modify` writes a base run through the pipeline, and `copy` a value
+ * from one record to another.
+ *
+ * Each names its field and keeps the arithmetic inside it rather than reading or writing by key
+ * or handing a value across a call: a fractional number read or written by key, or passed to
+ * or returned from a call the engine does not inline, is boxed on the heap, and the stats
+ * system writes every value of every unit with a live row every tick. A keyed copy over every
+ * stat of a unit with none costs the tick about twenty times what a named one does.
  */
 export type StatSource<Key extends string> = Readonly<{
   key: Key;
   modifier: Stat;
-  worth: AttributeWorth | null;
   fromDefinition: (record: UnitRecord, healthMultiplier: number) => number;
+  derive: (
+    base: Readonly<StatValues<Key>>,
+    attributes: Readonly<Attributes>,
+    conversions: Readonly<AttributeConversions>,
+    table: Readonly<ModifierTable>,
+    into: StatValues<Key>,
+  ) => void;
+  modify: (
+    base: Readonly<StatValues<Key>>,
+    table: Readonly<ModifierTable>,
+    into: StatValues<Key>,
+  ) => void;
   copy: (from: Readonly<StatValues<Key>>, into: StatValues<Key>) => void;
 }>;
 
 /** One number per key of a key list: what a unit carries for each derived value. */
 export type StatValues<Key extends string> = Record<Key, number>;
 
-/** One entry of a key list, its field name read from its key so its copy names the field. */
+/** One entry of a key list, its field name read from its key so each of its writes names the field. */
 export const statSource = <Key extends string>(
   source: StatSource<Key>,
 ): StatSource<Key> => source;
@@ -43,9 +56,18 @@ export const STAT_SOURCES = [
   statSource({
     key: "maxHealth",
     modifier: "max_health",
-    worth: { attribute: "strength", conversion: "healthPerStrength" },
     fromDefinition: (record, healthMultiplier) =>
       record.def.health * healthMultiplier,
+    derive: (base, attributes, conversions, table, into) => {
+      into.maxHealth = modifiedValue(
+        base.maxHealth + attributes.strength * conversions.healthPerStrength,
+        table,
+        "max_health",
+      );
+    },
+    modify: (base, table, into) => {
+      into.maxHealth = modifiedValue(base.maxHealth, table, "max_health");
+    },
     copy: (from, into) => {
       into.maxHealth = from.maxHealth;
     },
@@ -53,8 +75,18 @@ export const STAT_SOURCES = [
   statSource({
     key: "healthRegen",
     modifier: "health_regen",
-    worth: { attribute: "strength", conversion: "healthRegenPerStrength" },
     fromDefinition: (record) => record.healthRegenPerTick,
+    derive: (base, attributes, conversions, table, into) => {
+      into.healthRegen = modifiedValue(
+        base.healthRegen +
+          attributes.strength * conversions.healthRegenPerStrength,
+        table,
+        "health_regen",
+      );
+    },
+    modify: (base, table, into) => {
+      into.healthRegen = modifiedValue(base.healthRegen, table, "health_regen");
+    },
     copy: (from, into) => {
       into.healthRegen = from.healthRegen;
     },
@@ -62,8 +94,18 @@ export const STAT_SOURCES = [
   statSource({
     key: "maxMana",
     modifier: "max_mana",
-    worth: { attribute: "intelligence", conversion: "manaPerIntelligence" },
     fromDefinition: (record) => record.def.mana,
+    derive: (base, attributes, conversions, table, into) => {
+      into.maxMana = modifiedValue(
+        base.maxMana +
+          attributes.intelligence * conversions.manaPerIntelligence,
+        table,
+        "max_mana",
+      );
+    },
+    modify: (base, table, into) => {
+      into.maxMana = modifiedValue(base.maxMana, table, "max_mana");
+    },
     copy: (from, into) => {
       into.maxMana = from.maxMana;
     },
@@ -71,11 +113,18 @@ export const STAT_SOURCES = [
   statSource({
     key: "manaRegen",
     modifier: "mana_regen",
-    worth: {
-      attribute: "intelligence",
-      conversion: "manaRegenPerIntelligence",
-    },
     fromDefinition: (record) => record.manaRegenPerTick,
+    derive: (base, attributes, conversions, table, into) => {
+      into.manaRegen = modifiedValue(
+        base.manaRegen +
+          attributes.intelligence * conversions.manaRegenPerIntelligence,
+        table,
+        "mana_regen",
+      );
+    },
+    modify: (base, table, into) => {
+      into.manaRegen = modifiedValue(base.manaRegen, table, "mana_regen");
+    },
     copy: (from, into) => {
       into.manaRegen = from.manaRegen;
     },
@@ -83,8 +132,17 @@ export const STAT_SOURCES = [
   statSource({
     key: "armour",
     modifier: "armour",
-    worth: { attribute: "agility", conversion: "armourPerAgility" },
     fromDefinition: (record) => record.def.armour,
+    derive: (base, attributes, conversions, table, into) => {
+      into.armour = modifiedValue(
+        base.armour + attributes.agility * conversions.armourPerAgility,
+        table,
+        "armour",
+      );
+    },
+    modify: (base, table, into) => {
+      into.armour = modifiedValue(base.armour, table, "armour");
+    },
     copy: (from, into) => {
       into.armour = from.armour;
     },
@@ -92,8 +150,18 @@ export const STAT_SOURCES = [
   statSource({
     key: "attackSpeed",
     modifier: "attack_speed",
-    worth: { attribute: "agility", conversion: "attackSpeedPerAgility" },
     fromDefinition: () => BASE_ATTACK_SPEED,
+    derive: (base, attributes, conversions, table, into) => {
+      into.attackSpeed = modifiedValue(
+        base.attackSpeed +
+          attributes.agility * conversions.attackSpeedPerAgility,
+        table,
+        "attack_speed",
+      );
+    },
+    modify: (base, table, into) => {
+      into.attackSpeed = modifiedValue(base.attackSpeed, table, "attack_speed");
+    },
     copy: (from, into) => {
       into.attackSpeed = from.attackSpeed;
     },
@@ -101,8 +169,21 @@ export const STAT_SOURCES = [
   statSource({
     key: "magicResistance",
     modifier: "magic_resistance",
-    worth: null,
     fromDefinition: (record) => record.def.magicResistance,
+    derive: (base, _attributes, _conversions, table, into) => {
+      into.magicResistance = modifiedValue(
+        base.magicResistance,
+        table,
+        "magic_resistance",
+      );
+    },
+    modify: (base, table, into) => {
+      into.magicResistance = modifiedValue(
+        base.magicResistance,
+        table,
+        "magic_resistance",
+      );
+    },
     copy: (from, into) => {
       into.magicResistance = from.magicResistance;
     },
@@ -121,16 +202,21 @@ export type StatKey = (typeof STAT_SOURCES)[number]["key"];
 export type Stats = StatValues<StatKey>;
 
 /**
- * Every value of `sources` at zero: a fresh record, made once with the pool slot or the form.
- * The record is read back from its text rather than kept as built. A record built one key at
- * a time holds its later keys outside the object, and every number written there is boxed
- * on the heap, which across the unit pool's two records a slot costs a world some hundred
- * and forty kilobytes; a parsed record holds every key inside the object, as a literal does.
+ * What a record of derived values is made from: a class of its own, so the engine lays every
+ * record out on a shape no other object shares. A record made from a plain object literal or
+ * read back from text takes the shape of any object whose keys run in the same order, such as
+ * the schema that validates a definition's base, whose fields hold objects; a fractional number
+ * written to a field of that shape is boxed on the heap at every write. A class also holds
+ * every key inside the object, where a plain object built one key at a time holds its later
+ * keys outside it.
  */
+class StatRecord {}
+
+/** Every value of `sources` at zero: a fresh record, made once with the pool slot or the form. */
 export const createStatValues = <Key extends string>(
   sources: readonly StatSource<Key>[],
 ): StatValues<Key> => {
-  const values: Partial<StatValues<Key>> = {};
+  const values: Partial<StatValues<Key>> = new StatRecord();
 
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
@@ -140,7 +226,7 @@ export const createStatValues = <Key extends string>(
     }
   }
 
-  return JSON.parse(JSON.stringify(values)) as StatValues<Key>;
+  return values as StatValues<Key>;
 };
 
 /** Every value of `sources` back to zero, in place. */

@@ -118,12 +118,7 @@ export type {
   FormDef,
   Stats,
 } from "./definitions/form-def";
-export type {
-  AttributeWorth,
-  StatKey,
-  StatSource,
-  StatValues,
-} from "./definitions/stat-keys";
+export type { StatKey, StatSource, StatValues } from "./definitions/stat-keys";
 export type { HeroDef } from "./definitions/hero-def";
 export type { LevelTable, Scalar } from "./definitions/level-table";
 export type { MapDef, PackDef } from "./definitions/map-def";
