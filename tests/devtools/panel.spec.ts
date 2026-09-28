@@ -853,6 +853,42 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("shows the last gold the hero took and how much", () => {
+    const arranged = arrange();
+    const heroId = arranged.world.view.run.heroId;
+    const hero =
+      heroId === null ? null : arranged.world.view.map.units.resolve(heroId);
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last take")).toBe("none");
+
+    if (hero === null) {
+      throw new Error("The session world has a hero");
+    }
+
+    const id = acquireGroundItem(
+      arranged.world.state,
+      "gold",
+      hero.curr.x,
+      hero.curr.y,
+    );
+    const pile =
+      id === null ? null : arranged.world.state.map.groundItems.resolve(id);
+
+    if (pile === null) {
+      throw new Error("The ground-item pool has room");
+    }
+
+    pile.amount = 7;
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last take")).toBe("gold_taken 7");
+
+    arranged.handle.unmount();
+  });
+
   it("shows the reason of the last refused command", () => {
     const arranged = arrange();
 

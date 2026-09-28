@@ -541,8 +541,13 @@ const REFUSALS: readonly RefusalCase[] = [
 
       const pool = world.state.map.groundItems;
 
+      // Every filler lies at the hero's feet, so each is an item, which walking never takes.
       while (pool.count < pool.capacity) {
-        pool.acquireIndex();
+        const filler = pool.at(pool.acquireIndex());
+
+        if (filler !== null) {
+          filler.kind = "item";
+        }
       }
     },
     command: (world) => ({ kind: "drop_item", ...stamp(world), cell: 0 }),

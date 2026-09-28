@@ -79,6 +79,15 @@ const replayUnder = (file: InputLogFile, registry: Registry): Replay => {
   );
 };
 
+/**
+ * Globes that restore nothing, so the hero walking past one leaves it: a globe taken heals the
+ * hero, which is a drop changing the fight by design, while the roll must change it no other way.
+ */
+const GLOBES_RESTORE_NOTHING = {
+  health_globe_restore: 0,
+  mana_globe_restore: 0,
+};
+
 /** Every loot table with nothing in it: no chance of gold, no globe, no item roll, and no Legendary. */
 const emptiedTables = (): LootTableDef[] =>
   contentRegistry.lootTables.map((table) => ({
@@ -91,10 +100,10 @@ const emptiedTables = (): LootTableDef[] =>
   }));
 
 /**
- * The first thing two worlds disagree on at this tick besides what the loot tables are and what
- * lies on the ground: the full-state comparison over `b` with its ground items, its drops not
- * made, and its tuning table taken from `a`, once every tunable but the loot tables' is found
- * equal.
+ * The first thing two worlds disagree on at this tick besides what the loot tables are, what
+ * lies on the ground, and the gold the hero took from it: the full-state comparison over `b`
+ * with its ground items, its drops not made, its gold, and its tuning table taken from `a`,
+ * once every tunable but the loot tables' is found equal.
  */
 const differenceBesideLoot = (a: World, b: World): string | null => {
   for (const [key, value] of a.run.tuning) {
@@ -105,7 +114,7 @@ const differenceBesideLoot = (a: World, b: World): string | null => {
 
   return stateDifference(a, {
     ...b,
-    run: { ...b.run, tuning: a.run.tuning },
+    run: { ...b.run, tuning: a.run.tuning, gold: a.run.gold },
     map: {
       ...b.map,
       groundItems: a.map.groundItems,
@@ -446,13 +455,19 @@ describe("a drop on death", () => {
   );
 
   it(
-    "moves nothing but the ground items over the boss encounter with every table on and every table emptied",
+    "moves nothing but the ground items and the hero's gold over the boss encounter with every table on and every table emptied",
     () => {
       const file = loadInputLog(BOSS_ENCOUNTER);
-      const on = replayUnder(file, contentRegistry);
+      const on = replayUnder(
+        file,
+        makeRegistry({ tuning: GLOBES_RESTORE_NOTHING }),
+      );
       const emptied = replayUnder(
         file,
-        makeRegistry({ lootTables: emptiedTables() }),
+        makeRegistry({
+          tuning: GLOBES_RESTORE_NOTHING,
+          lootTables: emptiedTables(),
+        }),
       );
 
       while (!on.done) {

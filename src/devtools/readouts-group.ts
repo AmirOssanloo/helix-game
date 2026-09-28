@@ -75,7 +75,8 @@ const groundItemsText = (live: number, notMade: number): string =>
  * with what mitigation left of it, the last status to land or end and whom it was on, the last
  * zone to go down or expire, the last projectile to land or expire, the last ground item to
  * fall and whose death it fell from, the last item the hero equipped, unequipped, or moved and
- * the place it went to, and how many units have died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
+ * the place it went to, the last gold or globe the hero took and what it gave, and how many
+ * units have died. The ring stores samples; the statistics are computed here, on each refresh, and nowhere
  * in the simulation. Draw calls show a dash while nothing has counted them.
  */
 export const readoutsGroup = (
@@ -105,6 +106,7 @@ export const readoutsGroup = (
   const checkpoint = readout(folder, "Last checkpoint");
   const drop = readout(folder, "Last drop");
   const item = readout(folder, "Last item");
+  const take = readout(folder, "Last take");
   const deaths = readout(folder, "Deaths");
   let lastRefusal = NOTHING_YET;
   let lastDamage = NOTHING_YET;
@@ -114,6 +116,7 @@ export const readoutsGroup = (
   let lastCheckpoint = NOTHING_YET;
   let lastDrop = NOTHING_YET;
   let lastItem = NOTHING_YET;
+  let lastTake = NOTHING_YET;
   let deathCount = 0;
 
   const drainEvents = (): void => {
@@ -168,6 +171,14 @@ export const readoutsGroup = (
         lastItem = `${event.kind} to ${String(event.place)}`;
       }
 
+      if (
+        event.kind === "gold_taken" ||
+        event.kind === "health_globe_taken" ||
+        event.kind === "mana_globe_taken"
+      ) {
+        lastTake = `${event.kind} ${String(event.amount)}`;
+      }
+
       if (event.kind === "unit_died") {
         deathCount += 1;
       }
@@ -213,6 +224,7 @@ export const readoutsGroup = (
       checkpoint.show(lastCheckpoint);
       drop.show(lastDrop);
       item.show(lastItem);
+      take.show(lastTake);
       deaths.show(String(deathCount));
     },
   };

@@ -63,7 +63,7 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 | Layer | domain, simulation, content, tests, docs |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** the paragraph on the phase 6 playtest log's fights moving is gone: P8-S39-T01 retires that log before this ticket.
 
@@ -81,6 +81,8 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 
 **Tests:**
 - `tests/simulation/loot/pickup.spec.ts`: gold and each globe, walking past and onto, the radius edge, a full pool, an item left alone, a dead hero, a hero at zero health on the tick, the cell freed.
+
+> **Note, 2026-09-28, at close:** the content version did not move: the three tunables were already in the table from P8-S31-T03, and no definition changed. What moved is behaviour, so the two logs in which the hero passes a pile or a globe, `balance-spells` and `boss-encounter`, had their state checksums recorded again with `pnpm restamp --checksums`; the six stamps stand. The hero's pools are its active form's, read through `resourcesOf`. A globe restores its fraction, held at what the pool lacks, and announces what it restored. `tests/simulation/loot/drop-on-death.spec.ts` now runs its tables-on and tables-emptied comparison with both globe restores at zero and the hero's gold set aside, since a taken globe changes the fight by design. The three take events are drained by the panel's new Last take readout.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A new command, event, or system · A documentation change.
 
@@ -124,10 +126,10 @@ Kill a pack spawned from the panel: gold, globes, and items fall with their labe
 | Check | Result |
 | --- | --- |
 | The armory commands in the log and on replay; items placed by size; the disable-matrix column | Yes: `equip_item`, `unequip_item`, `move_item`, and `drop_item` land in the input log and a session of them replays to a world the full-state comparison finds equal, and each of the fifteen refusals names its reason and place and changes nothing (`tests/simulation/items/armory-commands.spec.ts`). A 2 by 3 item fits only where six free cells make that shape; the first fit tries corners in reading order; a swap or an equip whose displaced item fits nowhere is refused with nothing moved; a ring goes to the empty ring slot; the fit test and the first fit allocate nothing (`tests/domain/items/inventory.spec.ts`). The `items` column answers allowed in every row, one test per cell (`tests/domain/orders/disable-matrix.spec.ts`); a dead hero is refused all four. The inventory, gold, and each armory survive a map load (`tests/simulation/hero/forms.spec.ts`). The inventory, the armory, and gold enter the state checksum; the disable matrix's new column moved the content version, so the six logs were re-stamped and their checksums recorded again with `pnpm restamp --checksums`; nothing they record holds an item |
-| Gold and globes taken on walk-over; items left on the ground | |
+| Gold and globes taken on walk-over; items left on the ground | Yes: a pickup system after the checkpoint rule takes gold and each globe within the hero's bound radius plus `pickup_radius`, walking past as well as onto them, and not from one unit further; a globe waits while its pool is full and is taken once the hero needs it and passes it; an item walked over stays on the ground with its cell held; a dead hero, or one at zero health on the tick, takes nothing and still dies; a take frees its cell and announces `gold_taken`, `health_globe_taken`, or `mana_globe_taken` with the amount (`tests/simulation/loot/pickup.spec.ts`). The six stored logs replay on the content version, unchanged; `balance-spells` and `boss-encounter` had their checksums recorded again |
 | Labels and Alt, no miss with the pool full | |
 | The render benchmark and the densest choke with drops, by an agent in Chrome | |
-| Actual days per ticket | T01: 0.5 (sized 2) |
+| Actual days per ticket | T01: 0.5 (sized 2); T02: 0.25 (sized 0.5) |
 | Sprint total | |
 
 ## Risks in this sprint

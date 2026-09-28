@@ -10,6 +10,7 @@ import {
   kitSystem,
   movementSystem,
   pathingSystem,
+  pickupSystem,
   projectileSystem,
   statsSystem,
   statusSystem,
@@ -37,7 +38,9 @@ export type System = (world: World) => void;
  * Collision runs after movement, so every unit is pushed out of every other unit and every
  * obstacle where this tick's moves left it. The checkpoint rule reads where collision left the
  * hero, so a hero pushed into reach reaches it this tick and a hero that dies later in the
- * tick has already taken the checkpoint it stood on. Projectiles fly after collision, so a sweep reads
+ * tick has already taken the checkpoint it stood on. Pickup reads the same settled hero, so
+ * gold and a globe are taken where the tick's walk and pushes brought it, and a hero emptied
+ * earlier in the tick takes nothing. Projectiles fly after collision, so a sweep reads
  * where the tick's pushes and walks left every unit it could touch. Zones run after them, so
  * a zone's rules read the same settled positions, and a zone that travels moves before it
  * touches anything. Death resolves last, once, so every hit the tick
@@ -57,6 +60,7 @@ export const systems: readonly System[] = [
   movementSystem,
   collisionSystem,
   checkpointSystem,
+  pickupSystem,
   projectileSystem,
   zoneSystem,
   deathSystem,

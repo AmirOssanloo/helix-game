@@ -65,7 +65,10 @@ export type DomainEvent =
   | ItemDroppedEvent
   | ItemEquippedEvent
   | ItemUnequippedEvent
-  | ItemMovedEvent;
+  | ItemMovedEvent
+  | GoldTakenEvent
+  | HealthGlobeTakenEvent
+  | ManaGlobeTakenEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -132,6 +135,17 @@ export type ItemUnequippedEvent = EventFields & { kind: "item_unequipped" };
 
 /** An item of the hero `unitId`'s inventory moved, its corner now on the cell at `place`. A swap announces one for each item. */
 export type ItemMovedEvent = EventFields & { kind: "item_moved" };
+
+/** The hero `unitId` walked within reach of the gold pile `groundItemId`, now stale, and took its `amount` of gold. */
+export type GoldTakenEvent = EventFields & { kind: "gold_taken" };
+
+/** The hero `unitId` walked within reach of the health globe `groundItemId`, now stale, and it restored `amount` health. */
+export type HealthGlobeTakenEvent = EventFields & {
+  kind: "health_globe_taken";
+};
+
+/** The hero `unitId` walked within reach of the mana globe `groundItemId`, now stale, and it restored `amount` mana. */
+export type ManaGlobeTakenEvent = EventFields & { kind: "mana_globe_taken" };
 
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };

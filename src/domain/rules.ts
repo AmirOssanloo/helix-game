@@ -194,6 +194,7 @@ export {
 export { ORB_COUNT } from "./entities/world-state";
 export { dropOnDeath } from "./loot/drop-on-death";
 export { dropHeldItem, findDropCell, placeDrops } from "./loot/place-drop";
+export { pickupSystem } from "./loot/pickup.system";
 export { createArmory } from "./items/armory";
 export { createItem } from "./items/item";
 export { createInventory, placeItem, removeItem } from "./items/inventory";
