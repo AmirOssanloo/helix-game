@@ -12,7 +12,13 @@ import {
   LEFT_BUTTON,
   RIGHT_BUTTON,
 } from "@presentation/public";
-import { LabelRecorder, QuadRecorder } from "../helpers";
+import {
+  CommandRecorder,
+  LabelRecorder,
+  makeWorld,
+  QuadRecorder,
+  spawnHero,
+} from "../helpers";
 
 /** Every frame the test atlas holds is this wide. */
 const FRAME_WIDTH = 128;
@@ -85,6 +91,9 @@ const pauseScreen: ClaimScreen = {
   hide: (): void => {},
 };
 
+/** What the open screen shows over an empty inventory: the panel, the grid's forty sockets, and the armory's ten. */
+const EMPTY_SCREEN_QUADS = 1 + 40 + 10;
+
 const arrange = (): {
   screen: InventoryScreen;
   claim: InputClaim;
@@ -97,6 +106,10 @@ const arrange = (): {
 } => {
   const quads: QuadRecorder[] = [];
   const labels: LabelRecorder[] = [];
+  const world = makeWorld({ seed: 1 });
+
+  spawnHero(world);
+
   const screen = new InventoryScreen({
     makeQuad: (frame) => {
       const quad = new QuadRecorder(frame);
@@ -113,6 +126,8 @@ const arrange = (): {
       return label;
     },
     frameSizes: () => FRAME_WIDTH,
+    world: world.view,
+    driver: new CommandRecorder(world),
   });
   const pause = new PauseRecorder();
   const claim = new InputClaim(pause);
@@ -154,19 +169,22 @@ describe("the inventory screen", () => {
     const { screen, quads, labels } = arrange();
 
     expect(shown(quads, labels).every((visible) => !visible)).toBe(true);
-    expect(labels.map((label) => label.text)).toEqual([INVENTORY_TITLE]);
+    expect(labels[0]?.text).toBe(INVENTORY_TITLE);
     expect(screen.modal).toBe(false);
     expect(screen.pauses).toBe(false);
     expect(screen.keys).toEqual([INVENTORY_CODE]);
   });
 
-  it("opens on I and shows everything it made, then closes on I and hides it, holding no pause", () => {
+  it("opens on I and shows its frame and sockets, then closes on I and hides everything, holding no pause", () => {
     const { screen, claim, pause, quads, labels, press } = arrange();
 
     press(INVENTORY_CODE);
 
     expect(claim.isOpen(screen)).toBe(true);
-    expect(shown(quads, labels).every((visible) => visible)).toBe(true);
+    expect(quads.filter((quad) => quad.visible)).toHaveLength(
+      EMPTY_SCREEN_QUADS,
+    );
+    expect(labels.every((label) => label.visible)).toBe(true);
 
     press(INVENTORY_CODE);
 
@@ -274,6 +292,7 @@ describe("the inventory screen", () => {
 
     expect(screen.keyDown(INVENTORY_CODE)).toBe(true);
     expect(screen.keyDown("KeyQ")).toBe(false);
-    expect(screen.pointerDown()).toBe(false);
+    expect(screen.pointerDown(LEFT_BUTTON, INSIDE_X, INSIDE_Y)).toBe(false);
+    expect(screen.pointerDown(RIGHT_BUTTON, INSIDE_X, INSIDE_Y)).toBe(false);
   });
 });

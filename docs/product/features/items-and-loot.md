@@ -39,8 +39,8 @@ Every ground item can carry a label: its name in its rarity's tint, drawn above 
 
 I opens and closes the inventory and armory screen; Esc closes it, after a targeting cursor if one is open. The world keeps running while it is open, and a click on it never reaches the ground beneath.
 
-- **The inventory** is a grid of 10 by 4 cells, shared by every form the hero takes. Each item fills the cells its base's size gives: a ring one, a helm 2 by 2, a body armour 2 by 3. An item that comes in without a place named goes to the first place it fits, reading the grid left to right and top to bottom.
-- **The armory** is the ten armory slots, drawn as a figure: helm, amulet, armour, main hand, off-hand, gloves, belt, boots, and two rings.
+- **The inventory** is a grid of 10 by 4 cells, shared by every form the hero takes. Each item fills the cells its base's size gives: a ring one, a helm 2 by 2, a body armour 2 by 3. An item that comes in without a place named goes to the first place it fits, reading the grid left to right and top to bottom. Each item is drawn across the cells it covers, its icon in its rarity's tint, and one whose level requirement is above the hero's level is backed in red.
+- **The armory** is the ten armory slots, drawn as a figure: helm, amulet, armour, main hand, off-hand, gloves, belt, boots, and two rings. The helm sits above the armour and the belt below it, the amulet beside the helm, a hand on each side of the armour, the gloves and the boots at the figure's feet, and a ring at each end of the belt. A worn item is drawn in its slot, scaled to it.
 - **Gold** is shown on the screen.
 
 | Gesture | On | What it does |
@@ -51,7 +51,7 @@ I opens and closes the inventory and armory screen; Esc closes it, after a targe
 | Press and move | An inventory item | Lifts it onto the pointer, drawn at its size, showing the cells it would take as free or blocked; releasing sets it down where it fits, or swaps it with the one item it would cover, which goes to the first place it then fits, and is refused if there is none; Esc or a release outside the grid puts it back |
 | Pointer over | Any item, on a screen or a ground label | Shows its tooltip: name in its tint, rarity, base, item level, level requirement, marked when above the hero's level, the implicit stat, each affix line, and the price or sell price while the store is open |
 
-A refused gesture flashes the item, as a refused key flashes its square. Every change to the inventory, the armory, or gold is a command, recorded in the input log and replayed.
+A click on an empty cell or an empty slot does nothing. A refused gesture flashes the item, as a refused key flashes its square, and the item stays where it was: an item above the hero's level flashes on a left click and is not worn. Every change to the inventory, the armory, or gold is a command, recorded in the input log and replayed.
 
 ## Wearing an item
 

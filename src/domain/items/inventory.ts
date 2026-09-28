@@ -55,9 +55,9 @@ export const createInventory = (): Inventory => {
   };
 };
 
-/** The placed record covering `cell`, or `NO_RECORD`. */
+/** The placed record covering `cell`, or `NO_RECORD`. Reads the cells alone, so the world view's inventory is read as the world's is. */
 export const recordAt = (
-  inventory: Readonly<Inventory>,
+  inventory: Readonly<{ cells: ArrayLike<number> }>,
   cell: number,
 ): number => (inventory.cells[cell] ?? 0) - 1;
 

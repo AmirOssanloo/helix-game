@@ -135,10 +135,21 @@ export {
   RESUME_WORD,
 } from "./screens/pause-screen";
 export {
+  goldText,
   INVENTORY_RECT,
   INVENTORY_TITLE,
   InventoryScreen,
+  ITEM_BACKDROP_TINT,
+  SOCKET_TINT,
+  UNMET_BACKDROP_TINT,
 } from "./screens/inventory.screen";
+export type { InventoryPorts } from "./screens/inventory.screen";
+export {
+  ARMORY_SLOT_RECTS,
+  GRID_CELL_SIZE,
+  GRID_RECT,
+  gridCellAt,
+} from "./screens/inventory-layout";
 export type { ScreenPorts } from "./screens/screen-parts";
 export { BOOT_SCENE_KEY, BootScene } from "./scenes/boot.scene";
 export { HUD_SCENE_KEY, HudScene } from "./scenes/hud.scene";

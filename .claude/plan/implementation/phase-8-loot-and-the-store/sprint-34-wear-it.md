@@ -95,7 +95,7 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 | Layer | presentation, tests, docs |
 | Size | 1.5 |
 | Depends on | T02, P8-S33-T01, P8-S40-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27, later:** the grid is 10 by 4 with items drawn at their size in cells (Q88). Moving an item within the grid by picking it up onto the pointer and placing it is split out as P8-S35-T04, 1 day, so this ticket stays 1.5.
 
@@ -115,6 +115,9 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 - `tests/presentation/inventory-screen.spec.ts`: layout, items drawn across their cells, each gesture to its command, the refusal flash, the view read with no arithmetic.
 
 **Definition of done:** Every change · Anything under `src/presentation` · A documentation change.
+
+
+> **Note, 2026-09-28, at close:** the screen is `InventoryScreen` in `src/presentation/screens/inventory.screen.ts`, its layout in `inventory-layout.ts`, an item on it an `ItemBoxView` (`item-box.view.ts`): a backdrop over the item's cells or slot, the base's icon in the rarity's tint scaled to the box's shorter side, and the refusal flash, one box per armory slot and one per placed record, made at `create`; the flashes are `InventoryFlashes` (`inventory-flashes.ts`), a tick per cell by the item's corner and one per armory slot. The HUD scene syncs the screen each frame it is open and hands it every drained event. The screen always sends the gesture's command and the domain refuses; the red backing of an item above the hero's level is asked of `meetsRequirement` through the queries door, and the armory's figure and that red are Q110, decided provisionally. Two queries the screen reads the world view through took the view's types: `recordAt` reads any `{ cells }`, and `levelRequirementOf` and `meetsRequirement` a deep-readonly item; a type widening only, no behaviour moved. `pnpm check` green, 5079 tests. Definition of done walked: every change holds, no ticket reference in the code, no file past 500 lines. Under `src/presentation`: quads from the atlas and `BitmapText` only, in the screen band; nothing made during play; colour is a tint; the sync reads the world view and writes sprites, reads none back, and asks the one verdict of the queries door; every press still goes through the claim; no overlay. The render benchmark was rerun by an agent, figures in the sprint exit. Documentation: the items and loot page states the figure, the drawing, the red backing, and that a click on nothing does nothing; the presentation page states the item box, the fixed set, and the flash by place, in its body and quick reference.
 
 ---
 
@@ -149,10 +152,10 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 | A worn item moves its derived stats and leaves cleanly | Yes: `tests/simulation/items/armory-stats.spec.ts`, each of the seven derived values by a flat line on the equip's tick and back on the unequip's, two items and a status summing in one multiplier, and the attack damage, movement speed, and cooldown reads at the moment; the door test `tests/simulation/doors/items-are-a-modifier-source.spec.ts` now wears a real item |
 | Magic damage % on magical damage alone | Yes: `tests/domain/combat/magic-damage.spec.ts`, +10% on a magical hit and a magical burn; none on physical or pure, the hero's attack, Emberling's attack, or an enemy's magical hit |
 | No click on a screen reaches the ground | Yes: `tests/presentation/input-mapper.spec.ts`, a left or right click on the open inventory, edges included, sends no command and the log gains nothing, and the same right click off it is a move; `tests/presentation/screen.spec.ts`, every press inside the rectangle and its release kept from the mapper. The world's draw calls with the screen open: 1, the HUD's 1, measured by an agent in headless Chrome |
-| The inventory and armory screen, by hand | |
-| The render benchmark with the screen open | |
+| The inventory and armory screen, by hand | Deferred until phase 8 is done, by the maintainer's standing instruction of 2026-09-24; a box under Waiting on a person in STATUS.md. Every agent-verifiable row holds: `tests/presentation/inventory-screen.spec.ts`, and the gestures driven in headless Chrome |
+| The render benchmark with the screen open | 2026-09-28, T03, by an agent: headless Chrome 153 over the DevTools protocol on the Apple M1 (ANGLE Metal), 1920 by 1080, 30 s after an 8 s warm-up, draw calls counted by wrapping the WebGL draw methods. **The game with the screen open**, the dev build with the panel: 25 items placed in the grid for the measurement (5 caps and 20 bands in every rarity, written into run scope from the page, since no grant command exists before P8-S38), gold 1234, I pressed, then a left click on a cap that wore it and a right click on a band that dropped it at the hero's feet, both through the claim, the hero standing where it was with no order: 60.00 fps, every frame 16.5 to 16.8 ms, **2 draw calls a frame** (the world's 1 and the HUD's 1, as with the screen closed at T02), heap after a collection 39.4 MB, no console error. **The render benchmark** (`pnpm bench`), as configured: 60.00 fps, 16.5 to 16.8 ms, 1 draw call a frame, heap 25.3 MB, no console error; against sprint 33's 60.00 fps, 16.8 ms worst, 1 draw call: unchanged, as the atlas did not change and the bench draws no screen |
 | Milestone M12 | |
-| Actual days per ticket | P8-S34-T01: sized 1.5, done in 1. P8-S34-T02: sized 0.5, done in 0.25 |
+| Actual days per ticket | P8-S34-T01: sized 1.5, done in 1. P8-S34-T02: sized 0.5, done in 0.25. P8-S34-T03: sized 1.5, done in 0.75 |
 | Sprint total | |
 
 ## Risks in this sprint

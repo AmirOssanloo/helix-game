@@ -41,6 +41,8 @@ export class HudScene extends Phaser.Scene {
 
   private hud: Hud | null = null;
 
+  private inventory: InventoryScreen | null = null;
+
   constructor(context: SceneContext) {
     super({ key: HUD_SCENE_KEY });
     this.context = context;
@@ -79,7 +81,11 @@ export class HudScene extends Phaser.Scene {
       makeLabel: labelIn(HUD_DEPTH_SCREEN_TEXT),
       frameSizes,
     };
-    const inventory = new InventoryScreen(screenPorts);
+    const inventory = new InventoryScreen({
+      ...screenPorts,
+      world: this.context.world,
+      driver: this.context.driver,
+    });
     const pause = new PauseScreen(screenPorts);
     const bar: ClaimRegion = {
       contains: (x, y) => containsPoint(BAR_RECT, x, y),
@@ -90,6 +96,7 @@ export class HudScene extends Phaser.Scene {
     const claim = this.context.claim;
 
     this.hud = hud;
+    this.inventory = inventory;
     claim.addRegion(bar);
     claim.addToggle(INVENTORY_CODE, inventory);
     claim.setPauseScreen(pause);
@@ -100,22 +107,26 @@ export class HudScene extends Phaser.Scene {
       claim.setPauseScreen(null);
       claim.removeRegion(bar);
       this.hud = null;
+      this.inventory = null;
     });
   }
 
   override update(): void {
     const hud = this.hud;
+    const inventory = this.inventory;
 
-    if (hud === null) {
+    if (hud === null || inventory === null) {
       return;
     }
 
     hud.sync(this.context.world);
+    inventory.sync();
 
     let event = this.context.events.read(this.reader);
 
     while (event !== null) {
       hud.react(event, this.context.world);
+      inventory.react(event);
       event = this.context.events.read(this.reader);
     }
   }

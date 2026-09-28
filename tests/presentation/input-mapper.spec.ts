@@ -1281,6 +1281,8 @@ describe("the inventory open over the mapper", () => {
       makeQuad: (frame) => new QuadRecorder(frame),
       makeLabel: (size) => new LabelRecorder(size),
       frameSizes: () => 1,
+      world: arranged.world.view,
+      driver: arranged.driver,
     });
     const pauseScreen = pauseScreenStub();
     const sink = claimedSink(claim, arranged.mapper);

@@ -1,3 +1,4 @@
+import type { DeepReadonly } from "@shared/public";
 import type { AffixDef } from "../definitions/affix-def";
 import type { ItemBaseDef } from "../definitions/item-base-def";
 import type { LegendaryDef } from "../definitions/legendary-def";
@@ -63,7 +64,7 @@ const pieceRequirement = (
  */
 export const levelRequirementOf = (
   content: RequirementContent,
-  item: Readonly<Item>,
+  item: DeepReadonly<Item>,
 ): number => {
   let requirement = Math.max(
     baseRequirement(content.itemBases, item.baseId),
@@ -87,6 +88,6 @@ export const levelRequirementOf = (
 /** Whether a hero at `heroLevel` meets `item`'s level requirement and may wear it. */
 export const meetsRequirement = (
   content: RequirementContent,
-  item: Readonly<Item>,
+  item: DeepReadonly<Item>,
   heroLevel: number,
 ): boolean => heroLevel >= levelRequirementOf(content, item);
