@@ -27,6 +27,7 @@ import type { Effect, EffectId } from "./effect";
 import type { GroundItem, GroundItemId } from "./ground-item";
 import type { Pool } from "./pool";
 import type { Projectile, ProjectileId } from "./projectile";
+import type { StatTotals } from "./stat-totals";
 import type { Resources, Unit, UnitId } from "./unit";
 import type { WorldScratch } from "./world-scratch";
 import type { Zone, ZoneId } from "./zone";
@@ -96,6 +97,10 @@ export type RunScope = {
   inventory: Inventory;
   /** The hero's gold, a whole number. */
   gold: number;
+  /** What the active form's armory adds to each stat, copied from it at the start of the stats system every tick. The hero's modifier table references it. */
+  heroTotals: StatTotals;
+  /** Totals of zeros, never written, which every unit but the hero references. */
+  zeroTotals: Readonly<StatTotals>;
   /** Every spell and every enemy ability by id, with its durations in ticks, for the composer and the cast pipeline to read. */
   spells: Map<string, SpellRecord>;
   /** Every status by id, with its tables read for the tick, for the status rule and the status system to read. */

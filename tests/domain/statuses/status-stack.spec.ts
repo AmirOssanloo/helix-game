@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StackRule, StatusEntry, UnitId } from "@domain/public";
 import { STATUS_TABLE_SIZE } from "@domain/queries";
-import { createUnitPool, writeStatus } from "@domain/rules";
+import { createStatTotals, createUnitPool, writeStatus } from "@domain/rules";
 import { idOf } from "../../helpers";
 
 /** The tick every first application in this spec ends on, and the later one a second gives. */
@@ -18,7 +18,7 @@ const SECOND_SOURCE = idOf<UnitId>(22);
 
 /** An empty status table of the fixed size, as a fresh unit wears it. */
 const table = (): readonly StatusEntry[] => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

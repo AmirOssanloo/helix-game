@@ -64,6 +64,10 @@ Projectiles are homing: once fired, an attack projectile follows its target and 
 
 The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage numbers take the colour of their type: physical red, magical blue, pure gold ([HUD](./hud.md)).
 
+## Magic damage
+
+Magic damage raises every magical hit the hero deals by its fraction, before the target's magic resistance: a spell's first hit and every tick of its burns, read at each hit. The hero has none of its own; worn items grant it ([Items and loot](./items-and-loot.md#wearing-an-item)), so a +10% line raises a 100-damage magical hit to 110 before resistance. It never raises a physical or a pure hit, so the hero's attack and Emberling's attack are untouched, and it raises no hit an enemy or a summon deals.
+
 ## States and edge cases
 
 | State | What happens |
@@ -90,7 +94,7 @@ The formulas are in [Hero](./hero.md#damage-and-mitigation). Floating damage num
 
 - **Kit upgrades and talents.** The kit is the base kit.
 - **Ally targeting** for Quicken and Hoarfrost. There are no allies.
-- **Spell-lifesteal and other item-driven multipliers.** Worn items grant magic damage, which raises every magical hit the hero deals and is read at each hit ([Items and loot](./items-and-loot.md#wearing-an-item)); lifesteal is not built.
+- **Spell-lifesteal.** Magic damage is built ([Magic damage](#magic-damage)); lifesteal is not.
 - **Enemy summons stealing Emberling aggro.** Summons target enemies only.
 - **Named-spell art and sound.** Each spell is a colour and a shape until real art arrives.
 

@@ -16,6 +16,7 @@ import type {
   RandomState,
   RunScope,
   ShapeDef,
+  StatTotals,
   World,
   Zone,
 } from "@domain/public";
@@ -261,6 +262,27 @@ const INVENTORY_FIELDS = fieldsOf<DeepReadonly<Inventory>>({
   ),
 });
 
+/** Totals, each list of sums in the stats' index order. */
+const STAT_TOTALS_FIELDS = fieldsOf<DeepReadonly<StatTotals>>({
+  flat: numbers(
+    "flat",
+    (totals) => totals.flat.length,
+    (totals, index, into, slot) => {
+      into[slot] = totals.flat[index] ?? 0;
+    },
+  ),
+  percent: numbers(
+    "percent",
+    (totals) => totals.percent.length,
+    (totals, index, into, slot) => {
+      into[slot] = totals.percent[index] ?? 0;
+    },
+  ),
+  lines: number("lines", (totals, into, at) => {
+    into[at] = totals.lines;
+  }),
+});
+
 const ARMORY_FIELDS = fieldsOf<DeepReadonly<Armory>>({
   slots: records(
     "slots",
@@ -268,6 +290,7 @@ const ARMORY_FIELDS = fieldsOf<DeepReadonly<Armory>>({
     (armory, index) => itemAt(armory.slots, index),
     ITEM_FIELDS,
   ),
+  totals: record("totals", (armory) => armory.totals, STAT_TOTALS_FIELDS),
 });
 
 const GROUND_ITEM_FIELDS = fieldsOf<DeepReadonly<GroundItem>>({
@@ -349,6 +372,8 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
   gold: number("gold", (run, into, at) => {
     into[at] = run.gold;
   }),
+  heroTotals: record("heroTotals", (run) => run.heroTotals, STAT_TOTALS_FIELDS),
+  zeroTotals: excluded("zeros, made with the world and never written"),
   spells: excluded(FROM_CONTENT),
   statuses: excluded(FROM_CONTENT),
   disableMatrix: excluded(FROM_CONTENT),

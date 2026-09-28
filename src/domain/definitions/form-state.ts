@@ -1,4 +1,5 @@
 import { assert } from "@shared/public";
+import { createStatTotals } from "../entities/stat-totals";
 import type { FormRecord } from "../entities/world-state";
 import { ORB_COUNT } from "../entities/world-state";
 import { createArmory } from "../items/armory";
@@ -42,6 +43,7 @@ const fullAtLevelOne = (def: FormDef): Stats => {
   const stats = createStats();
   const none: ModifierTable = {
     modifiers: [],
+    totals: createStatTotals(),
     liveModifierRows: 0,
     modifierMisses: 0,
   };

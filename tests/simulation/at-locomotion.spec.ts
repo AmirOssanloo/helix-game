@@ -167,7 +167,7 @@ describe("AT-M4", () => {
 
     const perTick = movementSpeed(
       readTunable(tuning, "base_ms"),
-      hero.modifiers,
+      hero,
       0,
       Infinity,
     );

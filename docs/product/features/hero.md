@@ -20,6 +20,24 @@ The hero has three attributes. Each drives two derived values, and every derived
 
 Starting values, level 1: roughly 120 base health plus strength, 75 base mana plus intelligence, 25% base magic resistance, and 0 base armour plus what agility gives. The per-point conversions and per-level gains follow the source game and live in `src/content/forms/skein.def.ts`.
 
+### Derived values
+
+Every value below runs through the one pipeline, `(base + Σflat) × (1 + Σpercent)`, where the sums take every status, orb instance, and worn item alike, so an item's +10% and a status's +10% are one +20%. Seven are written every tick from the base, the attributes, and the sources; four are read at the moment a rule needs them, so a source that arrives or leaves is in the next read and in none already made.
+
+| Value | When it is read | What a worn item's line is written in |
+| --- | --- | --- |
+| Maximum health, maximum mana | Every tick | Points |
+| Health regeneration, mana regeneration | Every tick | Points per second |
+| Armour | Every tick | Points |
+| Attack speed | Every tick | The points the hero's 100 starts at |
+| Magic resistance | Every tick | Points of the fraction the hero's 25% starts at |
+| Attack damage | At each shot | Points |
+| Movement speed | Each step | A percentage; a flat line would be units per second |
+| Cooldown reduction | When a clock starts | A percentage off the clock; a flat line would be seconds. The worn items' percentages add into one, which then multiplies with each Whorl instance's, as every cooldown percentage does, and a running clock never changes |
+| Magic damage | At each magical hit the hero deals | A fraction of the hit, over a base of nothing, so +10% raises a 100-damage magical hit to 110 before resistance ([Spells and attack](./spells-and-attack.md#magic-damage)) |
+
+An item's stats go on and come off on the tick the equip or unequip lands. Only the hero wears items: no enemy's and no summon's value moves with what the hero wears.
+
 ## Resources
 
 - **Health.** Reaching zero kills the hero. Regenerates every tick from strength and any Quartz instances out.

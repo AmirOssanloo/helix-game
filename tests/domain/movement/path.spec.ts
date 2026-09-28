@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Path } from "@domain/public";
 import {
+  createStatTotals,
   createUnitPool,
   isPathComplete,
   nextWaypoint,
@@ -10,7 +11,7 @@ import {
 
 /** A fresh unit's empty path. */
 const emptyPath = (): Path => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

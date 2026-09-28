@@ -1,4 +1,6 @@
 import type { ArmorySlot } from "../definitions/item-base-def";
+import type { StatTotals } from "../entities/stat-totals";
+import { createStatTotals } from "../entities/stat-totals";
 import type { Item } from "./item";
 import { createItem } from "./item";
 import { ARMORY_SLOT_COUNT } from "./item-place";
@@ -22,14 +24,16 @@ export const ARMORY_SLOT_KINDS: readonly ArmorySlot[] = [
 
 /**
  * The items one form wears: one item per armory slot, made once with the form record, a slot
- * whose item names no base being empty. What the worn items add to the hero's stats is read
- * from these.
+ * whose item names no base being empty, and what they add to each stat, summed from the slots
+ * in the simulation's units. The totals are rewritten whole on an equip or an unequip and
+ * never otherwise; the stats system copies the active form's to the hero each tick.
  */
 export type Armory = {
   slots: Item[];
+  totals: StatTotals;
 };
 
-/** An armory with every slot made and empty. */
+/** An armory with every slot made and empty, adding nothing. */
 export const createArmory = (): Armory => {
   const slots: Item[] = [];
 
@@ -37,7 +41,7 @@ export const createArmory = (): Armory => {
     slots.push(createItem());
   }
 
-  return { slots };
+  return { slots, totals: createStatTotals() };
 };
 
 /** Whether armory slot `slot` holds an item. */

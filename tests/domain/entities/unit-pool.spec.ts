@@ -3,6 +3,7 @@ import type { Pool, Unit, UnitId } from "@domain/public";
 import { STATUS_TABLE_SIZE, UNIT_CAPACITY } from "@domain/queries";
 import {
   createDisableFlags,
+  createStatTotals,
   createUnitPool,
   MODIFIER_TABLE_SIZE,
   PATH_CAPACITY,
@@ -17,7 +18,7 @@ const fillPool = (pool: Pool<Unit, UnitId>): void => {
 
 describe("unit pool", () => {
   it("holds exactly the unit capacity and refuses one more", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
     fillPool(pool);
 
     expect(pool.count).toBe(UNIT_CAPACITY);
@@ -26,7 +27,7 @@ describe("unit pool", () => {
   });
 
   it("gives each unit a status table of the fixed size, every row empty", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
 
     const unit = pool.acquire();
 
@@ -43,7 +44,7 @@ describe("unit pool", () => {
   });
 
   it("gives each unit an empty path of the fixed capacity and a modifier table with every row empty", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
 
     const unit = pool.acquire();
 
@@ -60,7 +61,7 @@ describe("unit pool", () => {
   });
 
   it("gives each unit an idle state with every disable flag false", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
 
     const unit = pool.acquire();
 
@@ -69,10 +70,10 @@ describe("unit pool", () => {
   });
 
   it("clears every field on release so the slot reads like a fresh one", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
     const unit = pool.acquire();
     const id = pool.idAt(0);
-    const fresh = createUnitPool().acquire();
+    const fresh = createUnitPool(createStatTotals()).acquire();
     const firstStatus = unit?.statuses[0];
     const firstModifier = unit?.modifiers[0];
 

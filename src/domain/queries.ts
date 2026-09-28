@@ -9,6 +9,11 @@
 export { isInCastRange } from "./abilities/cast";
 export { behaviourKindOf } from "./ai/behaviours/index";
 export { SLOT_COUNT } from "./commands/command";
+export {
+  flatTotalOf,
+  percentTotalOf,
+  STAT_INDEX,
+} from "./entities/stat-totals";
 export { DAMAGE_TYPES, isDamageType } from "./combat/damage";
 export { definitionKindTitle } from "./definitions/definition-tuning";
 export { ENEMY_TIERS } from "./definitions/enemy-def";

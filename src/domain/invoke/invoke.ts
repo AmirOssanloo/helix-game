@@ -116,7 +116,7 @@ export const invoke = (
     now,
     finalCooldownTicks(
       invokeCooldownTicks(tuning, totalOrbLevels(state.orbLevels)),
-      snapshotCooldownSources(hero.modifiers, snapshot),
+      snapshotCooldownSources(hero, snapshot),
     ),
   );
   insertPrepared(state, id);

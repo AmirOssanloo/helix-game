@@ -1,4 +1,10 @@
-import { activeFormOf, resolveHero, wearBody } from "../entities/hero";
+import {
+  activeForm,
+  activeFormOf,
+  resolveHero,
+  wearBody,
+} from "../entities/hero";
+import { copyStatTotals } from "../entities/stat-totals";
 import type { Unit } from "../entities/unit";
 import type { FormRecord, World } from "../entities/world-state";
 import { attributesAt, deriveFromBase, deriveStats } from "./derived";
@@ -20,6 +26,10 @@ export const refreshStats = (unit: Unit, form: FormRecord): void => {
  * after the commands are applied, so a modifier a command or a status added this tick is in
  * this tick's values.
  *
+ * Before any unit, the active form's armory totals are copied into the hero's totals on run scope, which
+ * the hero's table references, so an item put on or taken off this tick, or a form swapped to,
+ * is in this tick's values and in every read of a stat after it.
+ *
  * The hero first, from its active form: the form's body goes on the unit, the attributes are
  * read at the current level, every derived value is run through the modifier table,
  * and the form's health and mana regenerate against the maximums just derived. Nothing is
@@ -32,6 +42,12 @@ export const refreshStats = (unit: Unit, form: FormRecord): void => {
  * its own. A plain body with no definition carries no base and derives nothing.
  */
 export const statsSystem = (world: World): void => {
+  const worn = activeForm(world);
+
+  if (worn !== null) {
+    copyStatTotals(worn.armory.totals, world.run.heroTotals);
+  }
+
   const units = world.map.units;
 
   for (let index = 0; index < units.end; index += 1) {

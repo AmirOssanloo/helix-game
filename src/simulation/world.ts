@@ -5,7 +5,6 @@ import type {
   MapScope,
   Registry,
   RunScope,
-  TuningState,
   World,
 } from "@domain/public";
 import { readTunable } from "@domain/queries";
@@ -26,6 +25,7 @@ import {
   createProjectilePool,
   createSpatialHash,
   createSpellTable,
+  createStatTotals,
   createStatusTable,
   createTuningState,
   createUnitPool,
@@ -75,6 +75,8 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     forms: createFormRecords(copies.hero, copies.forms, tuning),
     inventory: createInventory(),
     gold: 0,
+    heroTotals: createStatTotals(),
+    zeroTotals: createStatTotals(),
     spells: createSpellTable(copies.spells, copies.abilities, tuning),
     statuses: createStatusTable(copies.statuses, tuning),
     disableMatrix: registry.disableMatrix,
@@ -92,14 +94,15 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `tuning`: its level, empty pools, the grid derived with no ground item on any of its cells, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
-const createMapScope = (map: MapDef, tuning: TuningState): MapScope => {
+/** Map scope for `map` under `run`'s tuning: its level, empty pools, every unit slot referencing `run`'s zeros, the grid derived with no ground item on any of its cells, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
+const createMapScope = (map: MapDef, run: RunScope): MapScope => {
+  const tuning = run.tuning;
   const walkability = deriveMapGrid(map, tuning);
 
   return {
     mapId: map.id,
     level: map.level,
-    units: createUnitPool(),
+    units: createUnitPool(run.zeroTotals),
     projectiles: createProjectilePool(),
     effects: createEffectPool(),
     zones: createZonePool(),
@@ -210,7 +213,7 @@ export class Simulation {
     this.state = {
       tick: 0,
       run,
-      map: createMapScope(options.map, run.tuning),
+      map: createMapScope(options.map, run),
       commands: this.buffer,
       events: this.events,
       scratch: createWorldScratch(),
@@ -306,7 +309,7 @@ export class Simulation {
     this.startingMap = map;
     world.tick = 0;
     world.run = createRunScope(this.registry, seed);
-    world.map = createMapScope(map, world.run.tuning);
+    world.map = createMapScope(map, world.run);
     placeMapPacks(world);
     this.buffer.clear();
     this.events.clear();

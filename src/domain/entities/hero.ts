@@ -47,9 +47,10 @@ export const wearBody = (unit: Unit, def: FormDef): void => {
 
 /**
  * The one way the hero enters the world: a hero-kind unit through the unit door, wearing the
- * first form's body, holding the skill points the hero definition starts it with, and named
- * by run scope. Returns the id, or `null` when the pool is full. The hero is acquired once
- * per session; a map load carries it, never recreates it.
+ * first form's body, referencing run scope's hero totals for what it wears, holding the skill
+ * points the hero definition starts it with, and named by run scope. Returns the id, or
+ * `null` when the pool is full. The hero is acquired once per session; a map load carries it,
+ * never recreates it.
  */
 export const acquireHero = (
   world: World,
@@ -69,6 +70,7 @@ export const acquireHero = (
     wearBody(hero, form.def);
   }
 
+  hero.totals = world.run.heroTotals;
   hero.progression.skillPoints = world.run.hero.startingSkillPoints;
   world.run.heroId = id;
 

@@ -5,6 +5,7 @@ import {
   cellIndex,
   createNearestCell,
   createPathSearch,
+  createStatTotals,
   createUnitPool,
   deriveWalkabilityGrid,
   fitPathSearch,
@@ -61,7 +62,7 @@ const cellsOf = (search: PathSearch): number[] =>
 
 /** A fresh unit's empty path buffer. */
 const emptyPath = (): Path => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

@@ -1,1 +1,828 @@
-{"seed":101,"contentVersion":"76b72c57","contentReloads":[],"mapId":"arena","ticks":5382,"checksums":[{"tick":0,"value":258019912},{"tick":30,"value":490069959},{"tick":60,"value":207960724},{"tick":90,"value":562584072},{"tick":120,"value":288144413},{"tick":150,"value":679932344},{"tick":180,"value":763558945},{"tick":210,"value":678828091},{"tick":240,"value":392370897},{"tick":270,"value":432508748},{"tick":300,"value":603095860},{"tick":330,"value":816232874},{"tick":360,"value":568421891},{"tick":390,"value":313661516},{"tick":420,"value":168073165},{"tick":450,"value":345833703},{"tick":480,"value":702636858},{"tick":510,"value":326688215},{"tick":540,"value":315777107},{"tick":570,"value":690866619},{"tick":600,"value":853964695},{"tick":630,"value":886170925},{"tick":660,"value":909131867},{"tick":690,"value":49750410},{"tick":720,"value":243467678},{"tick":750,"value":958826453},{"tick":780,"value":950621408},{"tick":810,"value":274262629},{"tick":840,"value":516984146},{"tick":870,"value":258141384},{"tick":900,"value":123858071},{"tick":930,"value":328004885},{"tick":960,"value":479476434},{"tick":990,"value":822994931},{"tick":1020,"value":213004824},{"tick":1050,"value":374974415},{"tick":1080,"value":720358564},{"tick":1110,"value":36479624},{"tick":1140,"value":721241393},{"tick":1170,"value":955122015},{"tick":1200,"value":303642141},{"tick":1230,"value":583796898},{"tick":1260,"value":337918451},{"tick":1290,"value":634020225},{"tick":1320,"value":673949811},{"tick":1350,"value":1006016236},{"tick":1380,"value":26996644},{"tick":1410,"value":52355399},{"tick":1440,"value":841126718},{"tick":1470,"value":739454544},{"tick":1500,"value":491146166},{"tick":1530,"value":66714242},{"tick":1560,"value":654054781},{"tick":1590,"value":729868036},{"tick":1620,"value":282362699},{"tick":1650,"value":745188808},{"tick":1680,"value":907367704},{"tick":1710,"value":14225001},{"tick":1740,"value":65776354},{"tick":1770,"value":636860528},{"tick":1800,"value":513303797},{"tick":1830,"value":651679395},{"tick":1860,"value":331283990},{"tick":1890,"value":825248281},{"tick":1920,"value":149468426},{"tick":1950,"value":1043540422},{"tick":1980,"value":849149326},{"tick":2010,"value":146334950},{"tick":2040,"value":239802712},{"tick":2070,"value":870988852},{"tick":2100,"value":16531918},{"tick":2130,"value":791080095},{"tick":2160,"value":253920226},{"tick":2190,"value":132612606},{"tick":2220,"value":223022012},{"tick":2250,"value":113315236},{"tick":2280,"value":337613813},{"tick":2310,"value":1064042314},{"tick":2340,"value":612966391},{"tick":2370,"value":553222834},{"tick":2400,"value":350221335},{"tick":2430,"value":313126893},{"tick":2460,"value":1051150814},{"tick":2490,"value":935046109},{"tick":2520,"value":771685429},{"tick":2550,"value":336383256},{"tick":2580,"value":570867128},{"tick":2610,"value":87280382},{"tick":2640,"value":1142842},{"tick":2670,"value":625780300},{"tick":2700,"value":506517477},{"tick":2730,"value":182195021},{"tick":2760,"value":400563363},{"tick":2790,"value":568511480},{"tick":2820,"value":483559635},{"tick":2850,"value":405609033},{"tick":2880,"value":656838991},{"tick":2910,"value":873630721},{"tick":2940,"value":641582261},{"tick":2970,"value":494530691},{"tick":3000,"value":509294368},{"tick":3030,"value":500589841},{"tick":3060,"value":612457434},{"tick":3090,"value":405038790},{"tick":3120,"value":408462319},{"tick":3150,"value":952542613},{"tick":3180,"value":53015076},{"tick":3210,"value":112361539},{"tick":3240,"value":934087448},{"tick":3270,"value":815423361},{"tick":3300,"value":10095170},{"tick":3330,"value":628080262},{"tick":3360,"value":603320582},{"tick":3390,"value":392183906},{"tick":3420,"value":839746079},{"tick":3450,"value":865363012},{"tick":3480,"value":957860422},{"tick":3510,"value":389169121},{"tick":3540,"value":427354942},{"tick":3570,"value":279933591},{"tick":3600,"value":241513302},{"tick":3630,"value":599222712},{"tick":3660,"value":1041119276},{"tick":3690,"value":607650644},{"tick":3720,"value":24536106},{"tick":3750,"value":57416302},{"tick":3780,"value":1068281350},{"tick":3810,"value":460839950},{"tick":3840,"value":797209293},{"tick":3870,"value":292900462},{"tick":3900,"value":356838073},{"tick":3930,"value":391485465},{"tick":3960,"value":87016072},{"tick":3990,"value":664688471},{"tick":4020,"value":541179732},{"tick":4050,"value":229377388},{"tick":4080,"value":223505527},{"tick":4110,"value":194365442},{"tick":4140,"value":547410786},{"tick":4170,"value":846203351},{"tick":4200,"value":2989052},{"tick":4230,"value":512803344},{"tick":4260,"value":876115498},{"tick":4290,"value":359686445},{"tick":4320,"value":573796944},{"tick":4350,"value":382477862},{"tick":4380,"value":269062909},{"tick":4410,"value":715409651},{"tick":4440,"value":643127615},{"tick":4470,"value":928473621},{"tick":4500,"value":492637584},{"tick":4530,"value":791599659},{"tick":4560,"value":758263914},{"tick":4590,"value":5319461},{"tick":4620,"value":27273921},{"tick":4650,"value":865951142},{"tick":4680,"value":178772043},{"tick":4710,"value":432446979},{"tick":4740,"value":127025991},{"tick":4770,"value":594316445},{"tick":4800,"value":901355476},{"tick":4830,"value":684549457},{"tick":4860,"value":150676650},{"tick":4890,"value":566204974},{"tick":4920,"value":895112715},{"tick":4950,"value":402141072},{"tick":4980,"value":661109621},{"tick":5010,"value":247355725},{"tick":5040,"value":215860497},{"tick":5070,"value":1023005544},{"tick":5100,"value":774875658},{"tick":5130,"value":52678596},{"tick":5160,"value":381415577},{"tick":5190,"value":50486507},{"tick":5220,"value":244100048},{"tick":5250,"value":584466758},{"tick":5280,"value":356915808},{"tick":5310,"value":46408647},{"tick":5340,"value":749589731},{"tick":5370,"value":952941893},{"tick":5382,"value":306189552}],"records":[{"tick":0,"command":{"kind":"reset_map","tick":0,"timestamp":1}},{"tick":1,"command":{"kind":"heal","tick":1,"timestamp":2}},{"tick":1,"command":{"kind":"restore_mana","tick":1,"timestamp":3}},{"tick":2,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2,"timestamp":4}},{"tick":3,"command":{"kind":"attack_target","targetId":4,"tick":3,"timestamp":5}},{"tick":111,"command":{"kind":"attack_target","targetId":3,"tick":111,"timestamp":6}},{"tick":248,"command":{"kind":"attack_target","targetId":1,"tick":248,"timestamp":7}},{"tick":463,"command":{"kind":"reset_map","tick":463,"timestamp":8}},{"tick":464,"command":{"kind":"heal","tick":464,"timestamp":9}},{"tick":464,"command":{"kind":"restore_mana","tick":464,"timestamp":10}},{"tick":465,"command":{"kind":"spawn_pack","archetypeId":"fast_runner","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":465,"timestamp":11}},{"tick":466,"command":{"kind":"attack_target","targetId":65539,"tick":466,"timestamp":12}},{"tick":492,"command":{"kind":"attack_target","targetId":65541,"tick":492,"timestamp":13}},{"tick":527,"command":{"kind":"attack_target","targetId":65537,"tick":527,"timestamp":14}},{"tick":573,"command":{"kind":"attack_target","targetId":65540,"tick":573,"timestamp":15}},{"tick":618,"command":{"kind":"attack_target","targetId":65538,"tick":618,"timestamp":16}},{"tick":663,"command":{"kind":"reset_map","tick":663,"timestamp":17}},{"tick":664,"command":{"kind":"heal","tick":664,"timestamp":18}},{"tick":664,"command":{"kind":"restore_mana","tick":664,"timestamp":19}},{"tick":665,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":665,"timestamp":20}},{"tick":666,"command":{"kind":"attack_target","targetId":131077,"tick":666,"timestamp":21}},{"tick":805,"command":{"kind":"attack_target","targetId":131074,"tick":805,"timestamp":22}},{"tick":939,"command":{"kind":"attack_target","targetId":131073,"tick":939,"timestamp":23}},{"tick":1146,"command":{"kind":"reset_map","tick":1146,"timestamp":24}},{"tick":1147,"command":{"kind":"heal","tick":1147,"timestamp":25}},{"tick":1147,"command":{"kind":"restore_mana","tick":1147,"timestamp":26}},{"tick":1148,"command":{"kind":"spawn_pack","archetypeId":"tank","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":1148,"timestamp":27}},{"tick":1149,"command":{"kind":"attack_target","targetId":196610,"tick":1149,"timestamp":28}},{"tick":1294,"command":{"kind":"attack_target","targetId":196612,"tick":1294,"timestamp":29}},{"tick":1524,"command":{"kind":"level_up","tick":1524,"timestamp":30}},{"tick":1525,"command":{"kind":"level_up","tick":1525,"timestamp":31}},{"tick":1526,"command":{"kind":"level_up","tick":1526,"timestamp":32}},{"tick":1527,"command":{"kind":"level_up","tick":1527,"timestamp":33}},{"tick":1528,"command":{"kind":"level_up","tick":1528,"timestamp":34}},{"tick":1529,"command":{"kind":"level_up","tick":1529,"timestamp":35}},{"tick":1530,"command":{"kind":"level_up","tick":1530,"timestamp":36}},{"tick":1531,"command":{"kind":"level_up","tick":1531,"timestamp":37}},{"tick":1532,"command":{"kind":"reset_map","tick":1532,"timestamp":38}},{"tick":1533,"command":{"kind":"heal","tick":1533,"timestamp":39}},{"tick":1533,"command":{"kind":"restore_mana","tick":1533,"timestamp":40}},{"tick":1534,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":1534,"timestamp":41}},{"tick":1535,"command":{"kind":"attack_target","targetId":262145,"tick":1535,"timestamp":42}},{"tick":1629,"command":{"kind":"attack_target","targetId":262149,"tick":1629,"timestamp":43}},{"tick":1747,"command":{"kind":"attack_target","targetId":262147,"tick":1747,"timestamp":44}},{"tick":1864,"command":{"kind":"attack_target","targetId":262146,"tick":1864,"timestamp":45}},{"tick":1982,"command":{"kind":"attack_target","targetId":262148,"tick":1982,"timestamp":46}},{"tick":2099,"command":{"kind":"reset_map","tick":2099,"timestamp":47}},{"tick":2100,"command":{"kind":"heal","tick":2100,"timestamp":48}},{"tick":2100,"command":{"kind":"restore_mana","tick":2100,"timestamp":49}},{"tick":2101,"command":{"kind":"spawn_pack","archetypeId":"fast_runner","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2101,"timestamp":50}},{"tick":2102,"command":{"kind":"attack_target","targetId":327685,"tick":2102,"timestamp":51}},{"tick":2139,"command":{"kind":"attack_target","targetId":327684,"tick":2139,"timestamp":52}},{"tick":2176,"command":{"kind":"attack_target","targetId":327683,"tick":2176,"timestamp":53}},{"tick":2215,"command":{"kind":"attack_target","targetId":327681,"tick":2215,"timestamp":54}},{"tick":2255,"command":{"kind":"attack_target","targetId":327682,"tick":2255,"timestamp":55}},{"tick":2294,"command":{"kind":"reset_map","tick":2294,"timestamp":56}},{"tick":2295,"command":{"kind":"heal","tick":2295,"timestamp":57}},{"tick":2295,"command":{"kind":"restore_mana","tick":2295,"timestamp":58}},{"tick":2296,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2296,"timestamp":59}},{"tick":2297,"command":{"kind":"attack_target","targetId":393220,"tick":2297,"timestamp":60}},{"tick":2420,"command":{"kind":"attack_target","targetId":393218,"tick":2420,"timestamp":61}},{"tick":2539,"command":{"kind":"attack_target","targetId":393219,"tick":2539,"timestamp":62}},{"tick":2656,"command":{"kind":"attack_target","targetId":393221,"tick":2656,"timestamp":63}},{"tick":2775,"command":{"kind":"attack_target","targetId":393217,"tick":2775,"timestamp":64}},{"tick":2892,"command":{"kind":"reset_map","tick":2892,"timestamp":65}},{"tick":2893,"command":{"kind":"heal","tick":2893,"timestamp":66}},{"tick":2893,"command":{"kind":"restore_mana","tick":2893,"timestamp":67}},{"tick":2894,"command":{"kind":"spawn_pack","archetypeId":"tank","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2894,"timestamp":68}},{"tick":2895,"command":{"kind":"attack_target","targetId":458754,"tick":2895,"timestamp":69}},{"tick":3032,"command":{"kind":"attack_target","targetId":458753,"tick":3032,"timestamp":70}},{"tick":3188,"command":{"kind":"attack_target","targetId":458755,"tick":3188,"timestamp":71}},{"tick":3344,"command":{"kind":"attack_target","targetId":458757,"tick":3344,"timestamp":72}},{"tick":3517,"command":{"kind":"level_up","tick":3517,"timestamp":73}},{"tick":3518,"command":{"kind":"level_up","tick":3518,"timestamp":74}},{"tick":3519,"command":{"kind":"level_up","tick":3519,"timestamp":75}},{"tick":3520,"command":{"kind":"level_up","tick":3520,"timestamp":76}},{"tick":3521,"command":{"kind":"level_up","tick":3521,"timestamp":77}},{"tick":3522,"command":{"kind":"level_up","tick":3522,"timestamp":78}},{"tick":3523,"command":{"kind":"level_up","tick":3523,"timestamp":79}},{"tick":3524,"command":{"kind":"level_up","tick":3524,"timestamp":80}},{"tick":3525,"command":{"kind":"level_up","tick":3525,"timestamp":81}},{"tick":3526,"command":{"kind":"reset_map","tick":3526,"timestamp":82}},{"tick":3527,"command":{"kind":"heal","tick":3527,"timestamp":83}},{"tick":3527,"command":{"kind":"restore_mana","tick":3527,"timestamp":84}},{"tick":3528,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":3528,"timestamp":85}},{"tick":3529,"command":{"kind":"attack_target","targetId":524289,"tick":3529,"timestamp":86}},{"tick":3611,"command":{"kind":"attack_target","targetId":524291,"tick":3611,"timestamp":87}},{"tick":3713,"command":{"kind":"attack_target","targetId":524293,"tick":3713,"timestamp":88}},{"tick":3815,"command":{"kind":"attack_target","targetId":524292,"tick":3815,"timestamp":89}},{"tick":3919,"command":{"kind":"attack_target","targetId":524290,"tick":3919,"timestamp":90}},{"tick":4021,"command":{"kind":"reset_map","tick":4021,"timestamp":91}},{"tick":4022,"command":{"kind":"heal","tick":4022,"timestamp":92}},{"tick":4022,"command":{"kind":"restore_mana","tick":4022,"timestamp":93}},{"tick":4023,"command":{"kind":"spawn_pack","archetypeId":"fast_runner","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4023,"timestamp":94}},{"tick":4024,"command":{"kind":"attack_target","targetId":589827,"tick":4024,"timestamp":95}},{"tick":4057,"command":{"kind":"attack_target","targetId":589826,"tick":4057,"timestamp":96}},{"tick":4089,"command":{"kind":"attack_target","targetId":589828,"tick":4089,"timestamp":97}},{"tick":4122,"command":{"kind":"attack_target","targetId":589829,"tick":4122,"timestamp":98}},{"tick":4157,"command":{"kind":"attack_target","targetId":589825,"tick":4157,"timestamp":99}},{"tick":4191,"command":{"kind":"reset_map","tick":4191,"timestamp":100}},{"tick":4192,"command":{"kind":"heal","tick":4192,"timestamp":101}},{"tick":4192,"command":{"kind":"restore_mana","tick":4192,"timestamp":102}},{"tick":4193,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4193,"timestamp":103}},{"tick":4194,"command":{"kind":"attack_target","targetId":655362,"tick":4194,"timestamp":104}},{"tick":4302,"command":{"kind":"attack_target","targetId":655361,"tick":4302,"timestamp":105}},{"tick":4406,"command":{"kind":"attack_target","targetId":655364,"tick":4406,"timestamp":106}},{"tick":4508,"command":{"kind":"attack_target","targetId":655363,"tick":4508,"timestamp":107}},{"tick":4612,"command":{"kind":"attack_target","targetId":655365,"tick":4612,"timestamp":108}},{"tick":4714,"command":{"kind":"reset_map","tick":4714,"timestamp":109}},{"tick":4715,"command":{"kind":"heal","tick":4715,"timestamp":110}},{"tick":4715,"command":{"kind":"restore_mana","tick":4715,"timestamp":111}},{"tick":4716,"command":{"kind":"spawn_pack","archetypeId":"tank","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4716,"timestamp":112}},{"tick":4717,"command":{"kind":"attack_target","targetId":720897,"tick":4717,"timestamp":113}},{"tick":4834,"command":{"kind":"attack_target","targetId":720901,"tick":4834,"timestamp":114}},{"tick":4970,"command":{"kind":"attack_target","targetId":720900,"tick":4970,"timestamp":115}},{"tick":5106,"command":{"kind":"attack_target","targetId":720898,"tick":5106,"timestamp":116}},{"tick":5244,"command":{"kind":"attack_target","targetId":720899,"tick":5244,"timestamp":117}}]}
+{
+  "seed": 101,
+  "contentVersion": "76b72c57",
+  "contentReloads": [],
+  "mapId": "arena",
+  "ticks": 5382,
+  "checksums":[{"tick":0,"value":383780920},{"tick":30,"value":449377134},{"tick":60,"value":105209151},{"tick":90,"value":976602102},{"tick":120,"value":508577417},{"tick":150,"value":997371171},{"tick":180,"value":945205352},{"tick":210,"value":740711952},{"tick":240,"value":283210314},{"tick":270,"value":795101748},{"tick":300,"value":180962399},{"tick":330,"value":738405324},{"tick":360,"value":865499902},{"tick":390,"value":595618162},{"tick":420,"value":843596418},{"tick":450,"value":759656393},{"tick":480,"value":962334522},{"tick":510,"value":951655855},{"tick":540,"value":714307871},{"tick":570,"value":740828656},{"tick":600,"value":413193123},{"tick":630,"value":284282043},{"tick":660,"value":691228774},{"tick":690,"value":874977541},{"tick":720,"value":431924410},{"tick":750,"value":678838846},{"tick":780,"value":781697501},{"tick":810,"value":617445654},{"tick":840,"value":705325067},{"tick":870,"value":495176991},{"tick":900,"value":321567711},{"tick":930,"value":589823960},{"tick":960,"value":281043319},{"tick":990,"value":618520322},{"tick":1020,"value":454874664},{"tick":1050,"value":905572674},{"tick":1080,"value":343627735},{"tick":1110,"value":417075282},{"tick":1140,"value":643318883},{"tick":1170,"value":607575692},{"tick":1200,"value":68403255},{"tick":1230,"value":45939675},{"tick":1260,"value":106742544},{"tick":1290,"value":331387144},{"tick":1320,"value":983379721},{"tick":1350,"value":841181861},{"tick":1380,"value":1051014719},{"tick":1410,"value":490702335},{"tick":1440,"value":76574099},{"tick":1470,"value":69622517},{"tick":1500,"value":977846175},{"tick":1530,"value":496410389},{"tick":1560,"value":297412239},{"tick":1590,"value":801891395},{"tick":1620,"value":355336206},{"tick":1650,"value":349619165},{"tick":1680,"value":496229626},{"tick":1710,"value":93977181},{"tick":1740,"value":238220097},{"tick":1770,"value":230434215},{"tick":1800,"value":567546707},{"tick":1830,"value":208182555},{"tick":1860,"value":353011216},{"tick":1890,"value":159419570},{"tick":1920,"value":472330168},{"tick":1950,"value":921189058},{"tick":1980,"value":989571547},{"tick":2010,"value":607677897},{"tick":2040,"value":654986282},{"tick":2070,"value":180175488},{"tick":2100,"value":22119137},{"tick":2130,"value":435351583},{"tick":2160,"value":979801719},{"tick":2190,"value":269354828},{"tick":2220,"value":499287058},{"tick":2250,"value":589717143},{"tick":2280,"value":235903174},{"tick":2310,"value":156368791},{"tick":2340,"value":678808982},{"tick":2370,"value":789921219},{"tick":2400,"value":435932554},{"tick":2430,"value":626228147},{"tick":2460,"value":484162225},{"tick":2490,"value":629184918},{"tick":2520,"value":877355600},{"tick":2550,"value":614188971},{"tick":2580,"value":749521274},{"tick":2610,"value":43813825},{"tick":2640,"value":407316353},{"tick":2670,"value":208200811},{"tick":2700,"value":490109955},{"tick":2730,"value":1043169377},{"tick":2760,"value":1059800255},{"tick":2790,"value":233102468},{"tick":2820,"value":357615846},{"tick":2850,"value":312840410},{"tick":2880,"value":223631048},{"tick":2910,"value":448149154},{"tick":2940,"value":1065596158},{"tick":2970,"value":208865196},{"tick":3000,"value":206644435},{"tick":3030,"value":3777776},{"tick":3060,"value":578380995},{"tick":3090,"value":518927},{"tick":3120,"value":46604647},{"tick":3150,"value":979100139},{"tick":3180,"value":82495595},{"tick":3210,"value":574761994},{"tick":3240,"value":888281107},{"tick":3270,"value":804651488},{"tick":3300,"value":174053470},{"tick":3330,"value":760416556},{"tick":3360,"value":716721912},{"tick":3390,"value":894786932},{"tick":3420,"value":429844803},{"tick":3450,"value":766161296},{"tick":3480,"value":246377589},{"tick":3510,"value":632377490},{"tick":3540,"value":693189647},{"tick":3570,"value":7380413},{"tick":3600,"value":1039072622},{"tick":3630,"value":940552342},{"tick":3660,"value":114894521},{"tick":3690,"value":976240737},{"tick":3720,"value":255342401},{"tick":3750,"value":954666492},{"tick":3780,"value":687427677},{"tick":3810,"value":447686943},{"tick":3840,"value":1039142890},{"tick":3870,"value":500271753},{"tick":3900,"value":324049560},{"tick":3930,"value":476883069},{"tick":3960,"value":185259940},{"tick":3990,"value":942929535},{"tick":4020,"value":425366494},{"tick":4050,"value":530953745},{"tick":4080,"value":805440558},{"tick":4110,"value":851199368},{"tick":4140,"value":69747795},{"tick":4170,"value":709646018},{"tick":4200,"value":983354725},{"tick":4230,"value":157630884},{"tick":4260,"value":266559369},{"tick":4290,"value":928815158},{"tick":4320,"value":1061887456},{"tick":4350,"value":893613986},{"tick":4380,"value":145274056},{"tick":4410,"value":72156074},{"tick":4440,"value":544895505},{"tick":4470,"value":877284252},{"tick":4500,"value":174084265},{"tick":4530,"value":77276563},{"tick":4560,"value":375379059},{"tick":4590,"value":923773695},{"tick":4620,"value":300548818},{"tick":4650,"value":185969065},{"tick":4680,"value":4149703},{"tick":4710,"value":78692083},{"tick":4740,"value":776675729},{"tick":4770,"value":620318497},{"tick":4800,"value":817679658},{"tick":4830,"value":1037215715},{"tick":4860,"value":587343160},{"tick":4890,"value":737132690},{"tick":4920,"value":513413427},{"tick":4950,"value":706918383},{"tick":4980,"value":60899395},{"tick":5010,"value":895433625},{"tick":5040,"value":468346802},{"tick":5070,"value":206290241},{"tick":5100,"value":739113725},{"tick":5130,"value":409557675},{"tick":5160,"value":256597760},{"tick":5190,"value":322048098},{"tick":5220,"value":281334061},{"tick":5250,"value":283074041},{"tick":5280,"value":397530086},{"tick":5310,"value":174604356},{"tick":5340,"value":1042669607},{"tick":5370,"value":105417990},{"tick":5382,"value":435394833}],
+  "records": [
+    {
+      "tick": 0,
+      "command": { "kind": "reset_map", "tick": 0, "timestamp": 1 }
+    },
+    { "tick": 1, "command": { "kind": "heal", "tick": 1, "timestamp": 2 } },
+    {
+      "tick": 1,
+      "command": { "kind": "restore_mana", "tick": 1, "timestamp": 3 }
+    },
+    {
+      "tick": 2,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2,
+        "timestamp": 4
+      }
+    },
+    {
+      "tick": 3,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 4,
+        "tick": 3,
+        "timestamp": 5
+      }
+    },
+    {
+      "tick": 111,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 3,
+        "tick": 111,
+        "timestamp": 6
+      }
+    },
+    {
+      "tick": 248,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 1,
+        "tick": 248,
+        "timestamp": 7
+      }
+    },
+    {
+      "tick": 463,
+      "command": { "kind": "reset_map", "tick": 463, "timestamp": 8 }
+    },
+    { "tick": 464, "command": { "kind": "heal", "tick": 464, "timestamp": 9 } },
+    {
+      "tick": 464,
+      "command": { "kind": "restore_mana", "tick": 464, "timestamp": 10 }
+    },
+    {
+      "tick": 465,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "fast_runner",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 465,
+        "timestamp": 11
+      }
+    },
+    {
+      "tick": 466,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 65539,
+        "tick": 466,
+        "timestamp": 12
+      }
+    },
+    {
+      "tick": 492,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 65541,
+        "tick": 492,
+        "timestamp": 13
+      }
+    },
+    {
+      "tick": 527,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 65537,
+        "tick": 527,
+        "timestamp": 14
+      }
+    },
+    {
+      "tick": 573,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 65540,
+        "tick": 573,
+        "timestamp": 15
+      }
+    },
+    {
+      "tick": 618,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 65538,
+        "tick": 618,
+        "timestamp": 16
+      }
+    },
+    {
+      "tick": 663,
+      "command": { "kind": "reset_map", "tick": 663, "timestamp": 17 }
+    },
+    {
+      "tick": 664,
+      "command": { "kind": "heal", "tick": 664, "timestamp": 18 }
+    },
+    {
+      "tick": 664,
+      "command": { "kind": "restore_mana", "tick": 664, "timestamp": 19 }
+    },
+    {
+      "tick": 665,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 665,
+        "timestamp": 20
+      }
+    },
+    {
+      "tick": 666,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 131077,
+        "tick": 666,
+        "timestamp": 21
+      }
+    },
+    {
+      "tick": 805,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 131074,
+        "tick": 805,
+        "timestamp": 22
+      }
+    },
+    {
+      "tick": 939,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 131073,
+        "tick": 939,
+        "timestamp": 23
+      }
+    },
+    {
+      "tick": 1146,
+      "command": { "kind": "reset_map", "tick": 1146, "timestamp": 24 }
+    },
+    {
+      "tick": 1147,
+      "command": { "kind": "heal", "tick": 1147, "timestamp": 25 }
+    },
+    {
+      "tick": 1147,
+      "command": { "kind": "restore_mana", "tick": 1147, "timestamp": 26 }
+    },
+    {
+      "tick": 1148,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "tank",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 1148,
+        "timestamp": 27
+      }
+    },
+    {
+      "tick": 1149,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 196610,
+        "tick": 1149,
+        "timestamp": 28
+      }
+    },
+    {
+      "tick": 1294,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 196612,
+        "tick": 1294,
+        "timestamp": 29
+      }
+    },
+    {
+      "tick": 1524,
+      "command": { "kind": "level_up", "tick": 1524, "timestamp": 30 }
+    },
+    {
+      "tick": 1525,
+      "command": { "kind": "level_up", "tick": 1525, "timestamp": 31 }
+    },
+    {
+      "tick": 1526,
+      "command": { "kind": "level_up", "tick": 1526, "timestamp": 32 }
+    },
+    {
+      "tick": 1527,
+      "command": { "kind": "level_up", "tick": 1527, "timestamp": 33 }
+    },
+    {
+      "tick": 1528,
+      "command": { "kind": "level_up", "tick": 1528, "timestamp": 34 }
+    },
+    {
+      "tick": 1529,
+      "command": { "kind": "level_up", "tick": 1529, "timestamp": 35 }
+    },
+    {
+      "tick": 1530,
+      "command": { "kind": "level_up", "tick": 1530, "timestamp": 36 }
+    },
+    {
+      "tick": 1531,
+      "command": { "kind": "level_up", "tick": 1531, "timestamp": 37 }
+    },
+    {
+      "tick": 1532,
+      "command": { "kind": "reset_map", "tick": 1532, "timestamp": 38 }
+    },
+    {
+      "tick": 1533,
+      "command": { "kind": "heal", "tick": 1533, "timestamp": 39 }
+    },
+    {
+      "tick": 1533,
+      "command": { "kind": "restore_mana", "tick": 1533, "timestamp": 40 }
+    },
+    {
+      "tick": 1534,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 1534,
+        "timestamp": 41
+      }
+    },
+    {
+      "tick": 1535,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 262145,
+        "tick": 1535,
+        "timestamp": 42
+      }
+    },
+    {
+      "tick": 1629,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 262149,
+        "tick": 1629,
+        "timestamp": 43
+      }
+    },
+    {
+      "tick": 1747,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 262147,
+        "tick": 1747,
+        "timestamp": 44
+      }
+    },
+    {
+      "tick": 1864,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 262146,
+        "tick": 1864,
+        "timestamp": 45
+      }
+    },
+    {
+      "tick": 1982,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 262148,
+        "tick": 1982,
+        "timestamp": 46
+      }
+    },
+    {
+      "tick": 2099,
+      "command": { "kind": "reset_map", "tick": 2099, "timestamp": 47 }
+    },
+    {
+      "tick": 2100,
+      "command": { "kind": "heal", "tick": 2100, "timestamp": 48 }
+    },
+    {
+      "tick": 2100,
+      "command": { "kind": "restore_mana", "tick": 2100, "timestamp": 49 }
+    },
+    {
+      "tick": 2101,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "fast_runner",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2101,
+        "timestamp": 50
+      }
+    },
+    {
+      "tick": 2102,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 327685,
+        "tick": 2102,
+        "timestamp": 51
+      }
+    },
+    {
+      "tick": 2139,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 327684,
+        "tick": 2139,
+        "timestamp": 52
+      }
+    },
+    {
+      "tick": 2176,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 327683,
+        "tick": 2176,
+        "timestamp": 53
+      }
+    },
+    {
+      "tick": 2215,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 327681,
+        "tick": 2215,
+        "timestamp": 54
+      }
+    },
+    {
+      "tick": 2255,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 327682,
+        "tick": 2255,
+        "timestamp": 55
+      }
+    },
+    {
+      "tick": 2294,
+      "command": { "kind": "reset_map", "tick": 2294, "timestamp": 56 }
+    },
+    {
+      "tick": 2295,
+      "command": { "kind": "heal", "tick": 2295, "timestamp": 57 }
+    },
+    {
+      "tick": 2295,
+      "command": { "kind": "restore_mana", "tick": 2295, "timestamp": 58 }
+    },
+    {
+      "tick": 2296,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2296,
+        "timestamp": 59
+      }
+    },
+    {
+      "tick": 2297,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 393220,
+        "tick": 2297,
+        "timestamp": 60
+      }
+    },
+    {
+      "tick": 2420,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 393218,
+        "tick": 2420,
+        "timestamp": 61
+      }
+    },
+    {
+      "tick": 2539,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 393219,
+        "tick": 2539,
+        "timestamp": 62
+      }
+    },
+    {
+      "tick": 2656,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 393221,
+        "tick": 2656,
+        "timestamp": 63
+      }
+    },
+    {
+      "tick": 2775,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 393217,
+        "tick": 2775,
+        "timestamp": 64
+      }
+    },
+    {
+      "tick": 2892,
+      "command": { "kind": "reset_map", "tick": 2892, "timestamp": 65 }
+    },
+    {
+      "tick": 2893,
+      "command": { "kind": "heal", "tick": 2893, "timestamp": 66 }
+    },
+    {
+      "tick": 2893,
+      "command": { "kind": "restore_mana", "tick": 2893, "timestamp": 67 }
+    },
+    {
+      "tick": 2894,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "tank",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2894,
+        "timestamp": 68
+      }
+    },
+    {
+      "tick": 2895,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 458754,
+        "tick": 2895,
+        "timestamp": 69
+      }
+    },
+    {
+      "tick": 3032,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 458753,
+        "tick": 3032,
+        "timestamp": 70
+      }
+    },
+    {
+      "tick": 3188,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 458755,
+        "tick": 3188,
+        "timestamp": 71
+      }
+    },
+    {
+      "tick": 3344,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 458757,
+        "tick": 3344,
+        "timestamp": 72
+      }
+    },
+    {
+      "tick": 3517,
+      "command": { "kind": "level_up", "tick": 3517, "timestamp": 73 }
+    },
+    {
+      "tick": 3518,
+      "command": { "kind": "level_up", "tick": 3518, "timestamp": 74 }
+    },
+    {
+      "tick": 3519,
+      "command": { "kind": "level_up", "tick": 3519, "timestamp": 75 }
+    },
+    {
+      "tick": 3520,
+      "command": { "kind": "level_up", "tick": 3520, "timestamp": 76 }
+    },
+    {
+      "tick": 3521,
+      "command": { "kind": "level_up", "tick": 3521, "timestamp": 77 }
+    },
+    {
+      "tick": 3522,
+      "command": { "kind": "level_up", "tick": 3522, "timestamp": 78 }
+    },
+    {
+      "tick": 3523,
+      "command": { "kind": "level_up", "tick": 3523, "timestamp": 79 }
+    },
+    {
+      "tick": 3524,
+      "command": { "kind": "level_up", "tick": 3524, "timestamp": 80 }
+    },
+    {
+      "tick": 3525,
+      "command": { "kind": "level_up", "tick": 3525, "timestamp": 81 }
+    },
+    {
+      "tick": 3526,
+      "command": { "kind": "reset_map", "tick": 3526, "timestamp": 82 }
+    },
+    {
+      "tick": 3527,
+      "command": { "kind": "heal", "tick": 3527, "timestamp": 83 }
+    },
+    {
+      "tick": 3527,
+      "command": { "kind": "restore_mana", "tick": 3527, "timestamp": 84 }
+    },
+    {
+      "tick": 3528,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 3528,
+        "timestamp": 85
+      }
+    },
+    {
+      "tick": 3529,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 524289,
+        "tick": 3529,
+        "timestamp": 86
+      }
+    },
+    {
+      "tick": 3611,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 524291,
+        "tick": 3611,
+        "timestamp": 87
+      }
+    },
+    {
+      "tick": 3713,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 524293,
+        "tick": 3713,
+        "timestamp": 88
+      }
+    },
+    {
+      "tick": 3815,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 524292,
+        "tick": 3815,
+        "timestamp": 89
+      }
+    },
+    {
+      "tick": 3919,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 524290,
+        "tick": 3919,
+        "timestamp": 90
+      }
+    },
+    {
+      "tick": 4021,
+      "command": { "kind": "reset_map", "tick": 4021, "timestamp": 91 }
+    },
+    {
+      "tick": 4022,
+      "command": { "kind": "heal", "tick": 4022, "timestamp": 92 }
+    },
+    {
+      "tick": 4022,
+      "command": { "kind": "restore_mana", "tick": 4022, "timestamp": 93 }
+    },
+    {
+      "tick": 4023,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "fast_runner",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4023,
+        "timestamp": 94
+      }
+    },
+    {
+      "tick": 4024,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 589827,
+        "tick": 4024,
+        "timestamp": 95
+      }
+    },
+    {
+      "tick": 4057,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 589826,
+        "tick": 4057,
+        "timestamp": 96
+      }
+    },
+    {
+      "tick": 4089,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 589828,
+        "tick": 4089,
+        "timestamp": 97
+      }
+    },
+    {
+      "tick": 4122,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 589829,
+        "tick": 4122,
+        "timestamp": 98
+      }
+    },
+    {
+      "tick": 4157,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 589825,
+        "tick": 4157,
+        "timestamp": 99
+      }
+    },
+    {
+      "tick": 4191,
+      "command": { "kind": "reset_map", "tick": 4191, "timestamp": 100 }
+    },
+    {
+      "tick": 4192,
+      "command": { "kind": "heal", "tick": 4192, "timestamp": 101 }
+    },
+    {
+      "tick": 4192,
+      "command": { "kind": "restore_mana", "tick": 4192, "timestamp": 102 }
+    },
+    {
+      "tick": 4193,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4193,
+        "timestamp": 103
+      }
+    },
+    {
+      "tick": 4194,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 655362,
+        "tick": 4194,
+        "timestamp": 104
+      }
+    },
+    {
+      "tick": 4302,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 655361,
+        "tick": 4302,
+        "timestamp": 105
+      }
+    },
+    {
+      "tick": 4406,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 655364,
+        "tick": 4406,
+        "timestamp": 106
+      }
+    },
+    {
+      "tick": 4508,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 655363,
+        "tick": 4508,
+        "timestamp": 107
+      }
+    },
+    {
+      "tick": 4612,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 655365,
+        "tick": 4612,
+        "timestamp": 108
+      }
+    },
+    {
+      "tick": 4714,
+      "command": { "kind": "reset_map", "tick": 4714, "timestamp": 109 }
+    },
+    {
+      "tick": 4715,
+      "command": { "kind": "heal", "tick": 4715, "timestamp": 110 }
+    },
+    {
+      "tick": 4715,
+      "command": { "kind": "restore_mana", "tick": 4715, "timestamp": 111 }
+    },
+    {
+      "tick": 4716,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "tank",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4716,
+        "timestamp": 112
+      }
+    },
+    {
+      "tick": 4717,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720897,
+        "tick": 4717,
+        "timestamp": 113
+      }
+    },
+    {
+      "tick": 4834,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720901,
+        "tick": 4834,
+        "timestamp": 114
+      }
+    },
+    {
+      "tick": 4970,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720900,
+        "tick": 4970,
+        "timestamp": 115
+      }
+    },
+    {
+      "tick": 5106,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720898,
+        "tick": 5106,
+        "timestamp": 116
+      }
+    },
+    {
+      "tick": 5244,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720899,
+        "tick": 5244,
+        "timestamp": 117
+      }
+    }
+  ]
+}

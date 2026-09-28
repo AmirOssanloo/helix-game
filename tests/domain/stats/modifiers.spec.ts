@@ -1,13 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
-import type { ModifierEntry, ModifierTable, Stat, Stats } from "@domain/public";
+import type {
+  ModifierEntry,
+  ModifierTable,
+  Stat,
+  Stats,
+  StatTotals,
+} from "@domain/public";
 import { STATUS_TABLE_SIZE } from "@domain/queries";
 import {
   addModifier,
+  addToTotals,
   applyModifiers,
+  clearStatTotals,
+  createStatTotals,
+  deriveFromBaseOver,
   MODIFIER_TABLE_SIZE,
   modifiedValue,
   removeModifiers,
+  STAT_SOURCES,
 } from "@domain/rules";
 
 /** A modifier table with the given rows live and the rest empty. */
@@ -33,6 +44,7 @@ const held = (
 
   return {
     modifiers,
+    totals: createStatTotals(),
     liveModifierRows: modifiers.filter((entry) => entry.stat !== null).length,
     modifierMisses: 0,
   };
@@ -62,7 +74,7 @@ describe("addModifier", () => {
     );
     const before = structuredClone(holder);
 
-    expect(addModifier(holder, "item", "max_health", 5, 0)).toBe(false);
+    expect(addModifier(holder, "status", "max_health", 5, 0)).toBe(false);
     expect(addModifier(holder, "status", "armour", 1, 0)).toBe(false);
     expect(holder.modifierMisses).toBe(2);
     expect({ ...holder, modifierMisses: 0 }).toEqual(before);
@@ -166,24 +178,24 @@ describe("removeModifiers", () => {
     removeModifiers(holder, "orb");
 
     expect(holder.liveModifierRows).toBe(0);
-    expect(addModifier(holder, "item", "armour", 1, 0)).toBe(true);
+    expect(addModifier(holder, "status", "armour", 1, 0)).toBe(true);
     expect(holder.liveModifierRows).toBe(1);
   });
 });
 
 describe("modifiedValue", () => {
   it("is the base with no rows for the stat", () => {
-    expect(modifiedValue(280, table(2), "movement_speed")).toBe(280);
+    expect(modifiedValue(280, held(2), "movement_speed")).toBe(280);
   });
 
   it("adds every flat amount before applying the summed percentage", () => {
     expect(
       modifiedValue(
         100,
-        table(
+        held(
           3,
-          { kind: "item", stat: "max_health", flat: 20 },
-          { kind: "item", stat: "max_health", flat: 30 },
+          { kind: "status", stat: "max_health", flat: 20 },
+          { kind: "status", stat: "max_health", flat: 30 },
           { kind: "orb", stat: "max_health", percent: 0.5 },
         ),
         "max_health",
@@ -195,7 +207,7 @@ describe("modifiedValue", () => {
     expect(
       modifiedValue(
         280,
-        table(
+        held(
           3,
           { kind: "orb", stat: "movement_speed", percent: 0.006 },
           { kind: "orb", stat: "movement_speed", percent: 0.006 },
@@ -210,9 +222,9 @@ describe("modifiedValue", () => {
     expect(
       modifiedValue(
         100,
-        table(
+        held(
           2,
-          { kind: "item", stat: "armour", flat: 50, percent: 0.5 },
+          { kind: "status", stat: "armour", flat: 50, percent: 0.5 },
           { flat: 50, percent: 0.5 },
         ),
         "max_health",
@@ -235,10 +247,10 @@ describe("applyModifiers", () => {
     8,
     { kind: "status", stat: "armour", flat: -2, percent: 0.1 },
     { kind: "orb", stat: "max_health", flat: 30, percent: 0.07 },
-    { kind: "item", stat: "magic_resistance", flat: -0.1 },
+    { kind: "status", stat: "magic_resistance", flat: -0.1 },
     { kind: "orb", stat: "movement_speed", percent: 0.5 },
     { kind: "status", stat: "attack_speed", flat: 40 },
-    { kind: "item", stat: "max_health", percent: 0.03 },
+    { kind: "status", stat: "max_health", percent: 0.03 },
     { kind: "orb", stat: "mana_regen", flat: 0.01, percent: 0.2 },
   );
   const keys: readonly [keyof Stats, Stat][] = [
@@ -255,7 +267,7 @@ describe("applyModifiers", () => {
     const out = applyModifiers(base, holder, { ...base });
 
     for (const [key, stat] of keys) {
-      expect(out[key]).toBe(modifiedValue(base[key], holder.modifiers, stat));
+      expect(out[key]).toBe(modifiedValue(base[key], holder, stat));
     }
   });
 
@@ -277,5 +289,105 @@ describe("applyModifiers", () => {
     expect(applyModifiers(base, sparse, { ...base }).armour).toBe(
       base.armour + 2 + 4,
     );
+  });
+});
+
+describe("the armory's totals as a source", () => {
+  const base: Readonly<Stats> = {
+    maxHealth: 500,
+    healthRegen: 0.1,
+    maxMana: 200,
+    manaRegen: 0.05,
+    armour: 3,
+    attackSpeed: 100,
+    magicResistance: 0.25,
+  };
+
+  /** A table whose totals the case writes, as an armory's rewrite would, with its rows as given. */
+  const wearing = (
+    ...rows: Partial<ModifierEntry>[]
+  ): { table: ModifierTable; totals: StatTotals } => {
+    const totals = createStatTotals();
+    const modifiers = table(4, ...rows);
+
+    return {
+      table: {
+        modifiers,
+        totals,
+        liveModifierRows: modifiers.filter((entry) => entry.stat !== null)
+          .length,
+        modifierMisses: 0,
+      },
+      totals,
+    };
+  };
+
+  it("adds its flat sum before the percentages and its percentage inside the one multiplier, beside the rows", () => {
+    const { table: worn, totals } = wearing({
+      kind: "status",
+      stat: "max_health",
+      flat: 20,
+      percent: 0.1,
+    });
+
+    addToTotals(totals, "max_health", 50, 0);
+    addToTotals(totals, "max_health", 0, 0.1);
+
+    expect(modifiedValue(100, worn, "max_health")).toBeCloseTo(
+      (100 + 20 + 50) * (1 + 0.1 + 0.1),
+    );
+    expect(modifiedValue(100, worn, "armour")).toBe(100);
+  });
+
+  it("reaches every derived value through the same pipeline as a single read", () => {
+    const { table: worn, totals } = wearing();
+
+    addToTotals(totals, "armour", 4, 0);
+    addToTotals(totals, "max_mana", 0, 0.25);
+    addToTotals(totals, "health_regen", 0.02, 0);
+
+    const out = applyModifiers(base, worn, { ...base });
+
+    expect(out.armour).toBe(base.armour + 4);
+    expect(out.maxMana).toBe(base.maxMana * 1.25);
+    expect(out.healthRegen).toBeCloseTo(base.healthRegen + 0.02);
+    expect(out.maxHealth).toBe(base.maxHealth);
+
+    for (const source of STAT_SOURCES) {
+      expect(out[source.key]).toBe(
+        modifiedValue(base[source.key], worn, source.modifier),
+      );
+    }
+  });
+
+  it("is derived from with no live row, since the copy of the base is taken only when the totals sum no line either", () => {
+    const { table: worn, totals } = wearing();
+    const out = { ...base };
+
+    addToTotals(totals, "armour", 4, 0);
+    deriveFromBaseOver(STAT_SOURCES, base, worn, out);
+
+    expect(out.armour).toBe(base.armour + 4);
+  });
+
+  it("leaves the values as they were once the totals are cleared, the rows untouched", () => {
+    const { table: worn, totals } = wearing({
+      kind: "orb",
+      stat: "armour",
+      flat: 2,
+    });
+    const before = applyModifiers(base, worn, { ...base });
+
+    addToTotals(totals, "armour", 10, 0);
+    addToTotals(totals, "armour", 0, 0.5);
+
+    expect(applyModifiers(base, worn, { ...base }).armour).toBe(
+      (base.armour + 2 + 10) * 1.5,
+    );
+
+    clearStatTotals(totals);
+
+    expect(applyModifiers(base, worn, { ...base })).toEqual(before);
+    expect(worn.liveModifierRows).toBe(1);
   });
 });

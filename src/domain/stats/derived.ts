@@ -81,14 +81,14 @@ export const deriveStats = (
     out,
   );
 
-/** Writes every value of `sources` of `base` through `table` into `out`, or copies the base when no row is live. */
+/** Writes every value of `sources` of `base` through `table` into `out`, or copies the base when no row is live and its totals sum no item line. */
 export const deriveFromBaseOver = <Key extends string>(
   sources: readonly StatSource<Key>[],
   base: Readonly<StatValues<Key>>,
   table: Readonly<ModifierTable>,
   out: StatValues<Key>,
 ): void => {
-  if (table.liveModifierRows === 0) {
+  if (table.liveModifierRows === 0 && table.totals.lines === 0) {
     copyStatValues(sources, base, out);
   } else {
     applyModifiersOver(sources, base, table, out);
@@ -97,7 +97,7 @@ export const deriveFromBaseOver = <Key extends string>(
 
 /**
  * Writes the derived values of a unit spawned from a definition: its stored base through its
- * modifier table, or the base alone when no row is live. Health and mana above a maximum that
+ * modifier table, or the base alone when no row is live and it wears no item. Health and mana above a maximum that
  * fell are brought down to it, as the hero's regeneration brings the hero's; nothing
  * regenerates here. Spawn runs it once the spawn's rows are written, and the stats system
  * every tick after.

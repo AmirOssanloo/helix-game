@@ -7,6 +7,7 @@ import type {
   UnequipItemCommand,
 } from "../commands/item-commands";
 import type { ItemBaseDef } from "../definitions/item-base-def";
+import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
@@ -14,6 +15,7 @@ import { resetDomainEvent } from "../events/domain-event";
 import { dropHeldItem } from "../loot/place-drop";
 import type { Armory } from "./armory";
 import { isWorn, slotFor, slotTakes } from "./armory";
+import { rewriteArmoryTotals } from "./armory-totals";
 import type { Inventory, PlacedItem } from "./inventory";
 import {
   coveredBy,
@@ -85,6 +87,15 @@ const placedAt = (inventory: Inventory, record: number): PlacedItem => {
   return placed;
 };
 
+/** Rewrites what `armory` adds to the hero's stats from what it now wears, on the tick the change lands. */
+const retotal = (world: World, armory: Armory): void => {
+  rewriteArmoryTotals(
+    world.run,
+    readTunable(world.run.tuning, "sim_hz"),
+    armory,
+  );
+};
+
 const armoryOf = (world: World, hero: Readonly<Unit>): Armory => {
   const form = activeFormOf(world, hero);
 
@@ -97,7 +108,7 @@ const armoryOf = (world: World, hero: Readonly<Unit>): Armory => {
  * Wears the item covering the cell. The slot is the one named or the one the base takes; the
  * hero's level must meet the item's requirement; an item already worn there goes to its first
  * fit once the new item has left its cells, and with none the command is refused and nothing
- * moves.
+ * moves. The armory's totals are rewritten, so the stats system derives from them this tick.
  */
 const equip = (
   world: World,
@@ -149,6 +160,7 @@ const equip = (
 
   copyItem(held, worn);
   clearItem(held);
+  retotal(world, armory);
   announce(world, "item_equipped", armoryPlace(slot));
 
   if (wornBase !== null) {
@@ -158,7 +170,7 @@ const equip = (
   return null;
 };
 
-/** Takes the worn item off to its first fit in the inventory, refused when it fits nowhere. */
+/** Takes the worn item off to its first fit in the inventory, refused when it fits nowhere, and rewrites the armory's totals without it. */
 const unequip = (
   world: World,
   hero: Unit,
@@ -181,6 +193,7 @@ const unequip = (
 
   placeItem(inventory, worn, base.width, base.height, fit);
   clearItem(worn);
+  retotal(world, armory);
   announce(world, "item_unequipped", fit);
 
   return null;

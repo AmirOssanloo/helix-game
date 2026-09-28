@@ -1,1 +1,70 @@
-{"seed":3289443367,"contentVersion":"76b72c57","contentReloads":[],"mapId":"arena","ticks":1554,"checksums":[{"tick":0,"value":11307915},{"tick":30,"value":892574448},{"tick":60,"value":856628022},{"tick":90,"value":183612883},{"tick":120,"value":811939958},{"tick":150,"value":14884560},{"tick":180,"value":628373808},{"tick":210,"value":342056767},{"tick":240,"value":823166926},{"tick":270,"value":607956989},{"tick":300,"value":934598603},{"tick":330,"value":1061180868},{"tick":360,"value":857675469},{"tick":390,"value":736189156},{"tick":420,"value":357146402},{"tick":450,"value":598233622},{"tick":480,"value":972874059},{"tick":510,"value":853914914},{"tick":540,"value":148381868},{"tick":570,"value":333690589},{"tick":600,"value":329876311},{"tick":630,"value":619623157},{"tick":660,"value":965916094},{"tick":690,"value":503102760},{"tick":720,"value":798466206},{"tick":750,"value":110753722},{"tick":780,"value":232911482},{"tick":810,"value":55196693},{"tick":840,"value":288313806},{"tick":870,"value":589898546},{"tick":900,"value":95500698},{"tick":930,"value":687427326},{"tick":960,"value":599266870},{"tick":990,"value":915240637},{"tick":1020,"value":618522562},{"tick":1050,"value":656787516},{"tick":1080,"value":808045216},{"tick":1110,"value":961915168},{"tick":1140,"value":71915186},{"tick":1170,"value":75355346},{"tick":1200,"value":592878290},{"tick":1230,"value":262040190},{"tick":1260,"value":15892776},{"tick":1290,"value":532583236},{"tick":1320,"value":104547807},{"tick":1350,"value":524761359},{"tick":1380,"value":89912826},{"tick":1410,"value":779417868},{"tick":1440,"value":62277034},{"tick":1470,"value":617933232},{"tick":1500,"value":1068805404},{"tick":1530,"value":253163648},{"tick":1554,"value":494336593}],"records":[{"tick":352,"command":{"kind":"move","tick":352,"timestamp":12403.20000000298,"destination":{"x":2269.6431838975295,"y":1737.548032936871}}},{"tick":371,"command":{"kind":"set_tuning","key":"base_ms","value":560,"tick":371,"timestamp":13050}},{"tick":485,"command":{"kind":"spawn_units","count":60,"position":{"x":0,"y":0},"tick":485,"timestamp":16865}},{"tick":488,"command":{"kind":"move","tick":488,"timestamp":16978.30000000447,"destination":{"x":1748.801468439966,"y":1264.3000321872498}}},{"tick":590,"command":{"kind":"move","tick":590,"timestamp":20367.39999999851,"destination":{"x":1930.6132246821928,"y":1493.7055384294767}}},{"tick":656,"command":{"kind":"kill_hero","tick":656,"timestamp":22553}},{"tick":1400,"command":{"kind":"move","tick":1400,"timestamp":47370.30000000447,"destination":{"x":2283.6962488563586,"y":2076.5782250686184}}}]}
+{
+  "seed": 3289443367,
+  "contentVersion": "76b72c57",
+  "contentReloads": [],
+  "mapId": "arena",
+  "ticks": 1554,
+  "checksums":[{"tick":0,"value":68678645},{"tick":30,"value":122694540},{"tick":60,"value":710511720},{"tick":90,"value":962581847},{"tick":120,"value":170919560},{"tick":150,"value":1023881762},{"tick":180,"value":22082263},{"tick":210,"value":358033072},{"tick":240,"value":576223756},{"tick":270,"value":469317156},{"tick":300,"value":123621201},{"tick":330,"value":691916812},{"tick":360,"value":631590576},{"tick":390,"value":1042270547},{"tick":420,"value":441629003},{"tick":450,"value":497793670},{"tick":480,"value":57425390},{"tick":510,"value":30862797},{"tick":540,"value":548446228},{"tick":570,"value":141559886},{"tick":600,"value":783694708},{"tick":630,"value":560517132},{"tick":660,"value":473094336},{"tick":690,"value":622421870},{"tick":720,"value":946140069},{"tick":750,"value":816718189},{"tick":780,"value":758410067},{"tick":810,"value":11950561},{"tick":840,"value":381018958},{"tick":870,"value":560880100},{"tick":900,"value":737400841},{"tick":930,"value":200607698},{"tick":960,"value":254119837},{"tick":990,"value":919033796},{"tick":1020,"value":411863152},{"tick":1050,"value":782291411},{"tick":1080,"value":397927436},{"tick":1110,"value":1053518524},{"tick":1140,"value":922368371},{"tick":1170,"value":850515695},{"tick":1200,"value":177507658},{"tick":1230,"value":762333790},{"tick":1260,"value":1020552931},{"tick":1290,"value":454932742},{"tick":1320,"value":11425663},{"tick":1350,"value":405842138},{"tick":1380,"value":78607577},{"tick":1410,"value":300587461},{"tick":1440,"value":767333672},{"tick":1470,"value":734529132},{"tick":1500,"value":46514935},{"tick":1530,"value":624570517},{"tick":1554,"value":931531334}],
+  "records": [
+    {
+      "tick": 352,
+      "command": {
+        "kind": "move",
+        "tick": 352,
+        "timestamp": 12403.20000000298,
+        "destination": { "x": 2269.6431838975295, "y": 1737.548032936871 }
+      }
+    },
+    {
+      "tick": 371,
+      "command": {
+        "kind": "set_tuning",
+        "key": "base_ms",
+        "value": 560,
+        "tick": 371,
+        "timestamp": 13050
+      }
+    },
+    {
+      "tick": 485,
+      "command": {
+        "kind": "spawn_units",
+        "count": 60,
+        "position": { "x": 0, "y": 0 },
+        "tick": 485,
+        "timestamp": 16865
+      }
+    },
+    {
+      "tick": 488,
+      "command": {
+        "kind": "move",
+        "tick": 488,
+        "timestamp": 16978.30000000447,
+        "destination": { "x": 1748.801468439966, "y": 1264.3000321872498 }
+      }
+    },
+    {
+      "tick": 590,
+      "command": {
+        "kind": "move",
+        "tick": 590,
+        "timestamp": 20367.39999999851,
+        "destination": { "x": 1930.6132246821928, "y": 1493.7055384294767 }
+      }
+    },
+    {
+      "tick": 656,
+      "command": { "kind": "kill_hero", "tick": 656, "timestamp": 22553 }
+    },
+    {
+      "tick": 1400,
+      "command": {
+        "kind": "move",
+        "tick": 1400,
+        "timestamp": 47370.30000000447,
+        "destination": { "x": 2283.6962488563586, "y": 2076.5782250686184 }
+      }
+    }
+  ]
+}

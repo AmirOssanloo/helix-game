@@ -34,8 +34,8 @@ describe("statsSystem over an enemy", () => {
     const unit = grunt(world);
 
     world.tick();
-    addModifier(unit, "item", "armour", SHRED, 0);
-    addModifier(unit, "item", "magic_resistance", RESIST, 0);
+    addModifier(unit, "summon", "armour", SHRED, 0);
+    addModifier(unit, "summon", "magic_resistance", RESIST, 0);
     world.tick();
 
     expect(unit.stats.armour).toBe(meleeGruntDef.armour + SHRED);
@@ -43,7 +43,7 @@ describe("statsSystem over an enemy", () => {
       meleeGruntDef.magicResistance + RESIST,
     );
 
-    removeModifiers(unit, "item");
+    removeModifiers(unit, "summon");
     world.tick();
 
     expect(unit.liveModifierRows).toBe(0);
@@ -56,13 +56,13 @@ describe("statsSystem over an enemy", () => {
     const unit = grunt(world);
     const cut = meleeGruntDef.health * (1 + HEALTH_CUT);
 
-    addModifier(unit, "item", "max_health", 0, HEALTH_CUT);
+    addModifier(unit, "summon", "max_health", 0, HEALTH_CUT);
     world.tick();
 
     expect(unit.stats.maxHealth).toBe(cut);
     expect(unit.resources.health).toBe(cut);
 
-    removeModifiers(unit, "item");
+    removeModifiers(unit, "summon");
     world.tick();
 
     expect(unit.stats.maxHealth).toBe(meleeGruntDef.health);

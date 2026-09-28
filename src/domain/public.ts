@@ -227,6 +227,7 @@ export type {
 } from "./entities/ground-item";
 export type { Item, ItemLine } from "./items/item";
 export type { Armory } from "./items/armory";
+export type { StatSums, StatTotals } from "./entities/stat-totals";
 export type { Inventory, PlacedItem } from "./items/inventory";
 export type { ItemRefusal } from "./items/item-commands";
 export type {

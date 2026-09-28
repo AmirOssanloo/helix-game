@@ -25,8 +25,9 @@ export const attackOf = (
 
 /**
  * What `unit`'s next shot lands before mitigation: the attack's damage times the unit's tier
- * multiplier, then every modifier row for it, so an Ember instance out now, a Quicken running
- * now, and later an item are all in this shot and none of them in the one already flying.
+ * multiplier, then every modifier row for it and the totals the unit's table adds, so an
+ * Ember instance out now, a Quicken running now, and an item worn now are all in this shot and
+ * none of them in the one already flying.
  */
 export const attackDamageOf = (
   unit: Readonly<Unit>,
@@ -34,7 +35,7 @@ export const attackDamageOf = (
 ): number =>
   modifiedValue(
     record.def.damage * unit.attackDamageMultiplier,
-    unit.modifiers,
+    unit,
     "attack_damage",
   );
 

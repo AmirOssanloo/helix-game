@@ -283,7 +283,7 @@ const commit = (
     world.tick,
     finalCooldownTicks(
       entryAtLevel(record.cooldownTicks, level),
-      snapshotCooldownSources(unit.modifiers, snapshot),
+      snapshotCooldownSources(unit, snapshot),
     ),
   );
   runEffects(world, contextOf(world, unit, casterId, record), record.effects);

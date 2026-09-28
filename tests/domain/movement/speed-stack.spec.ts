@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ModifierEntry } from "@domain/public";
-import { movementSpeed } from "@domain/rules";
+import { createStatTotals, movementSpeed } from "@domain/rules";
 
 /** A modifier table with the given rows live and the rest empty. */
 const table = (...rows: Partial<ModifierEntry>[]): ModifierEntry[] => {
@@ -14,7 +14,17 @@ const table = (...rows: Partial<ModifierEntry>[]): ModifierEntry[] => {
 };
 
 const speed = (base: number, rows: ModifierEntry[]): number =>
-  movementSpeed(base, rows, 100, 550);
+  movementSpeed(
+    base,
+    {
+      modifiers: rows,
+      totals: createStatTotals(),
+      liveModifierRows: rows.filter((entry) => entry.stat !== null).length,
+      modifierMisses: 0,
+    },
+    100,
+    550,
+  );
 
 describe("movementSpeed", () => {
   it("is the base with no modifiers", () => {

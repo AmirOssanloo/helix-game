@@ -330,7 +330,11 @@ export const nudgeLeaf = (world: World, leaf: Leaf): Nudge => {
     const name = last.slice(0, -2);
     const list = target[name];
 
-    if (!Array.isArray(list) && !(list instanceof Uint8Array)) {
+    if (
+      !Array.isArray(list) &&
+      !(list instanceof Uint8Array) &&
+      !(list instanceof Float64Array)
+    ) {
       throw new Error(`${leaf.path} names no list`);
     }
 

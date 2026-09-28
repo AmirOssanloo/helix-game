@@ -237,7 +237,12 @@ describe("what a drained hit shows", () => {
     arranged.hit(arranged.dummyId, HIT_AMOUNT, 0);
 
     expect(arranged.flashes.isFlashing(arranged.dummyId, 0)).toBe(true);
-    expect(arranged.dummy).toEqual(before);
+    // The totals are a reference to the world's zeros, whose typed arrays the clone rebuilds
+    // under another realm's constructor, so they are compared by value on their own.
+    expect({ ...arranged.dummy, totals: before.totals }).toEqual(before);
+    expect(Array.from(arranged.dummy.totals.flat)).toEqual(
+      Array.from(before.totals.flat),
+    );
   });
 
   it("shows nothing for a hit on a unit the tick already took away", () => {

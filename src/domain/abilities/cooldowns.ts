@@ -1,9 +1,11 @@
-import type { ModifierEntry } from "../entities/unit";
+import { flatTotalOf, percentTotalOf } from "../entities/stat-totals";
+import type { Stat } from "../entities/unit";
 import type { DebugFlags } from "../entities/world-state";
+import type { ModifierTable } from "../stats/modifiers";
 import type { Tick } from "../tick";
 
 /** The stat whose modifier rows the pipeline reads when a clock starts. */
-const COOLDOWN_STAT = "cooldown_reduction";
+const COOLDOWN_STAT: Stat = "cooldown_reduction";
 
 /**
  * What the modifier table said about cooldowns at the moment a clock started: the flat ticks
@@ -26,18 +28,21 @@ export const createCooldownSnapshot = (): CooldownSnapshot => ({
 });
 
 /**
- * Writes what `modifiers` currently takes off a cooldown into `out`: every row for the stat
- * adds its flat ticks to the flat term and its fraction to the product. Percentages multiply,
- * so two sources of a tenth each leave eighty-one hundredths of the clock, not eighty. No
- * source writes the term taken off after the percentages yet; it is here so the formula is
- * the spec's.
+ * Writes what `table` currently takes off a cooldown into `out`: every row for the stat adds
+ * its flat ticks to the flat term and its fraction to the product, and the worn items' totals
+ * add their flat ticks and their summed fraction as one factor more. Percentages multiply, so
+ * two sources of a tenth each leave eighty-one hundredths of the clock, not eighty; two items
+ * of a tenth each are one source of two tenths. No source writes the term taken off after the
+ * percentages yet; it is here so the formula is the spec's.
  */
 export const snapshotCooldownSources = (
-  modifiers: readonly ModifierEntry[],
+  table: Readonly<ModifierTable>,
   out: CooldownSnapshot,
 ): CooldownSnapshot => {
-  out.flat = 0;
-  out.multiplier = 1;
+  const modifiers = table.modifiers;
+
+  out.flat = flatTotalOf(table.totals, COOLDOWN_STAT);
+  out.multiplier = 1 - percentTotalOf(table.totals, COOLDOWN_STAT);
   out.currentFlat = 0;
 
   for (let row = 0; row < modifiers.length; row += 1) {

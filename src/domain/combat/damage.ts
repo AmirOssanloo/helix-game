@@ -49,20 +49,22 @@ export const createDamageRecord = (): DamageRecord => ({
   landed: 0,
 });
 
-/** What a magical hit's amplification is read over: nothing, so a unit with no row for it amplifies by nothing. */
+/** What a magical hit's amplification is read over: nothing, so a unit with no row and no item line for it amplifies by nothing. */
 const NO_AMPLIFICATION = 0;
 
 /**
  * The fraction the unit `sourceId` names adds to each magical hit it deals: its magic damage
- * rows over a base of nothing, read at the hit. Nothing from nobody, and nothing from a source
- * that no longer resolves.
+ * through the one pipeline, its rows plus the totals its table references, over a base of
+ * nothing, read at the hit. So a worn +10% is 0.1 on the flat sum. Only the hero's table
+ * references totals that are not zeros, so a summon's hit is amplified by its own rows alone.
+ * Nothing from nobody, and nothing from a source that no longer resolves.
  */
 const magicAmplification = (world: World, sourceId: UnitId | null): number => {
   const source = sourceId === null ? null : world.map.units.resolve(sourceId);
 
   return source === null
     ? NO_AMPLIFICATION
-    : modifiedValue(NO_AMPLIFICATION, source.modifiers, "magic_damage");
+    : modifiedValue(NO_AMPLIFICATION, source, "magic_damage");
 };
 
 /**

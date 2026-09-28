@@ -14,6 +14,7 @@ import {
   createAttackState,
   createCastState,
   createPackMembership,
+  createStatTotals,
   createStatValues,
   createSummonState,
   createTuningState,
@@ -71,7 +72,12 @@ const emptyTable = (): ModifierTable => {
     modifiers.push({ kind: null, stat: null, flat: 0, percent: 0 });
   }
 
-  return { modifiers, liveModifierRows: 0, modifierMisses: 0 };
+  return {
+    modifiers,
+    totals: createStatTotals(),
+    liveModifierRows: 0,
+    modifierMisses: 0,
+  };
 };
 
 const everyValue = (values: StatValues<ToyKey>): number[] =>
@@ -115,7 +121,7 @@ describe("the unit's sub-records", () => {
   });
 
   it("keeps every sub-record of a slot across a release, emptied and never replaced", () => {
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
     const unit = pool.acquire();
     const id = pool.idAt(0);
 
@@ -154,7 +160,7 @@ describe("the unit's sub-records", () => {
   });
 
   it("carries one field per entry of the key list in its stats and its base", () => {
-    const unit = createUnitPool().acquire();
+    const unit = createUnitPool(createStatTotals()).acquire();
 
     expect(unit === null ? [] : Object.keys(unit.stats)).toEqual(
       STAT_SOURCES.map((source) => source.key),
@@ -218,7 +224,7 @@ describe("a stat added to the key list", () => {
 
     expect(out).toEqual(base);
 
-    addModifier(table, "item", "movement_speed", TOY_FLAT, TOY_PERCENT);
+    addModifier(table, "status", "movement_speed", TOY_FLAT, TOY_PERCENT);
     deriveFromBaseOver(TOY_SOURCES, base, table, out);
 
     expect(out.toughness).toBe((base.toughness + TOY_FLAT) * (1 + TOY_PERCENT));

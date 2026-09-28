@@ -196,6 +196,13 @@ export { dropOnDeath } from "./loot/drop-on-death";
 export { dropHeldItem, findDropCell, placeDrops } from "./loot/place-drop";
 export { pickupSystem } from "./loot/pickup.system";
 export { createArmory } from "./items/armory";
+export { rewriteArmoryTotals } from "./items/armory-totals";
+export {
+  addToTotals,
+  clearStatTotals,
+  copyStatTotals,
+  createStatTotals,
+} from "./entities/stat-totals";
 export { createItem } from "./items/item";
 export { createInventory, placeItem, removeItem } from "./items/inventory";
 export { createWorldScratch } from "./entities/world-scratch";

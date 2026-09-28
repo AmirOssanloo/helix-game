@@ -11,7 +11,12 @@ import {
   isInCastRange,
   slotReadiness,
 } from "@domain/queries";
-import { castReadiness, createUnitPool, requestCast } from "@domain/rules";
+import {
+  castReadiness,
+  createStatTotals,
+  createUnitPool,
+  requestCast,
+} from "@domain/rules";
 import type { Simulation } from "@simulation/testing";
 import {
   makeFormDef,
@@ -36,7 +41,7 @@ const record: SpellRecord = {
 
 /** A live unit at the origin with a bound radius of 24. */
 const casterAtOrigin = (): Unit => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

@@ -296,6 +296,9 @@ export const UNIT_FIELDS = fieldsOf<DeepReadonly<Unit>>({
     (unit, index) => itemAt(unit.modifiers, index),
     MODIFIER_FIELDS,
   ),
+  totals: excluded(
+    "a reference to run scope's hero totals for the hero and to the world's zeros for every other unit; the hero totals are hashed",
+  ),
   liveModifierRows: excluded(
     "a count of the modifier rows holding a stat, which are hashed",
   ),

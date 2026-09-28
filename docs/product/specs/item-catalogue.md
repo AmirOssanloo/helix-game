@@ -11,7 +11,7 @@
 | Audience | Gameplay programming, combat design, the playtest |
 | Product context | Single-player. One hero, one inventory of 10 by 4 cells, ten armory slots, gold as a number |
 | Classification | What items exist and what their numbers are. How drops, pickup, the screens, and the store behave for the player is the [items and loot page](../features/items-and-loot.md) |
-| Stats | Every stat an item carries is one the hero already has, from the modifier pipeline the [hero page](../features/hero.md#attributes) describes: `(base + flat) × (1 + percent)` |
+| Stats | Every stat an item carries is one the hero already has, from the modifier pipeline the [hero page](../features/hero.md#derived-values) describes: `(base + flat) × (1 + percent)` |
 | Reference | Diablo II's item structure, at the size of a small catalogue: bases with an implicit stat, rarities by affix count, and affixes gated by level. Item level is Diablo I's: the level of the map an item drops on |
 
 ---

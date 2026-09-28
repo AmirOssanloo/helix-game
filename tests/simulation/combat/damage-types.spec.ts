@@ -581,11 +581,7 @@ describe("the damage types against live archetypes", () => {
     expect(pack).toHaveLength(PACK_COUNT);
     expect(
       pack.map((grunt) =>
-        modifiedValue(
-          meleeGruntDef.movementSpeed,
-          grunt.modifiers,
-          "movement_speed",
-        ),
+        modifiedValue(meleeGruntDef.movementSpeed, grunt, "movement_speed"),
       ),
     ).toEqual(
       pack.map(() => meleeGruntDef.movementSpeed * (1 - GLACIER_SLOW_AT_FIRST)),

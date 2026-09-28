@@ -193,7 +193,7 @@ export const movementSystem = (world: World): void => {
 
     const speed = movementSpeed(
       baseSpeedOf(world, unit, tunedSpeed),
-      unit.modifiers,
+      unit,
       minSpeed,
       maxSpeed,
     );

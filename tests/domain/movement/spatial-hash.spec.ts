@@ -9,6 +9,7 @@ import {
 import {
   CELL_CAPACITY,
   createSpatialHash,
+  createStatTotals,
   createUnitPool,
 } from "@domain/rules";
 import { packId } from "@shared/public";
@@ -233,7 +234,7 @@ describe("SpatialHash", () => {
 
   it("rebuilds from a pool's live units at a new cell size and forgets what it held", () => {
     const hash = createSpatialHash(CELL);
-    const pool = createUnitPool();
+    const pool = createUnitPool(createStatTotals());
     const first = pool.acquire();
     const second = pool.acquire();
     hash.insert(id(7), 500, 500);

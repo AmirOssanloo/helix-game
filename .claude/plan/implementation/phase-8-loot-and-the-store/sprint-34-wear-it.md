@@ -21,7 +21,7 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 | Layer | domain, simulation, content, tests, docs |
 | Size | 1.5 |
 | Depends on | P8-S33-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27, later:** the stat is magic damage %, not spell damage % (Q93): it amplifies every magical instance the hero deals, never physical or pure. Title was "Equipment as a modifier source, and spell damage".
 
@@ -34,6 +34,8 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 **Build:** each armory's totals record, in `src/domain/items/armory.ts`, is rewritten whole from its ten slots on an equip or an unequip: the base's implicit line now and its affixes from P8-S35-T01, each line read in its source definition's stat, unit, and mode, flat or percentage, and converted into simulation units there, once. The stats system copies the active form's totals into the hero's totals first each tick; every unit's modifier table references the totals it adds, the hero's for the hero and one shared record of zeros for all others; the one pipeline adds them wherever a stat is read. The derived stats move on the tick the command is consumed. A new stat, **magic damage %**, read in `magicAmplification` in `src/domain/combat/damage.ts` through the one pipeline, the attacker's rows plus the totals its table references, over a base of 0, so a +10% line is 0.1 on the flat sum, to every instance of magical damage the hero deals: a spell's initial hit and its burns, and later an active item's magical damage (Q93). It never amplifies physical damage, so neither the hero's attack nor Emberling's attack, both physical, and pure damage is not magical. The P5-S22-T03 door test for items as a modifier source becomes a test of the real armory. The [hero](../../../../docs/product/features/hero.md) page's derived-values table and the [spells and attack](../../../../docs/product/features/spells-and-attack.md) page state the new stat, and the [vocabulary](../../../../docs/product/vocabulary.md) gains it; the Deferred row for spell amplification moves to built.
 
 > **Note, 2026-09-27, from P7-S46-T02:** the stat exists. `magic_damage` is a stat the damage door reads off the attacker's modifier rows at each magical hit, over a base of 0, before mitigation; a flat row of 0.1 is +10%. The vocabulary row and the Deferred row on the spells and attack page are already written. This ticket adds the armory as the source that writes it.
+
+> **Note, 2026-09-28, at close:** the totals are `StatTotals` in `src/domain/entities/stat-totals.ts`, two `Float64Array`s of sums indexed by stat and a count of the lines summed; a record keyed by stat boxed every fractional sum read or written, which the allocation spec caught. The rewrite is `src/domain/items/armory-totals.ts`: a flat line per second is divided into per tick and a flat cooldown reduction line in seconds is read as ticks, both by the tuning table's conversion; the items' cooldown reduction percentages are one factor of the cooldown product (Q109, provisional). The `item` modifier kind is gone. Only the new work is held to "no allocation": the stats system's derivation already boxed a double on every keyed store into a `Stats` record before this ticket, the same bytes measured on the commit before it, and that is P8-S34-T04, unplanned. The six stored logs' checksums were recorded again with `pnpm restamp --checksums`, since the armory's and the hero's totals now enter the state checksum; no stamp moved.
 
 **Acceptance:**
 - Wearing and removing an item moves each derived stat it names by its value, on the same tick, and leaves the stack as it was on removal.
@@ -114,17 +116,41 @@ Kill packs until a helm drops, right-click it to pick it up, press I, click the 
 
 ---
 
+### P8-S34-T04 — The stats derivation allocates nothing
+
+| Field | Value |
+| --- | --- |
+| Layer | domain, tests |
+| Size | 0.25 |
+| Depends on | P8-S34-T01 |
+| Status | planned |
+
+> **Note, 2026-09-28:** unplanned, added at P8-S34-T01's close. T01's acceptance asks for no allocation in the stats system in steady state. Measured under Vitest after 300,000 warm-up calls, `deriveStats` allocates about 48 bytes a call and `applyModifiers` about 16, the same on the commit before T01: `deriveOver` and `applyModifiersOver` write each value with a keyed store, `out[source.key] = …`, and a fractional double stored that way into a `Stats` record is boxed on the heap. The hero derives once a tick and every enemy with a live row once a tick, so the rule of [simulation coding](../../../../docs/standards/simulation-coding.md#quick-reference) is broken on every tick with a status on screen. It is paid from the sprint's buffer.
+
+**Build:** the two derivation walks write each value through a store that names its field, as each `StatSource` already names its field for `copy`, or hold the derived values where a fractional store is not boxed; whichever keeps every reader of `unit.stats` as it is. The stats system, over a hero with rows and items and 200 enemies with rows, allocates nothing once warm.
+
+**Acceptance:**
+- The stats system allocates nothing in steady state, with statuses, orbs, and worn items live.
+- No stored log's checksum moves.
+
+**Tests:**
+- `tests/domain/stats/stats-system.spec.ts`: no allocation over a warm world with rows on the hero and on enemies.
+
+**Definition of done:** Every change · A change under `src/domain` or `src/simulation`.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
-| A worn item moves its derived stats and leaves cleanly | |
-| Magic damage % on magical damage alone | |
+| A worn item moves its derived stats and leaves cleanly | Yes: `tests/simulation/items/armory-stats.spec.ts`, each of the seven derived values by a flat line on the equip's tick and back on the unequip's, two items and a status summing in one multiplier, and the attack damage, movement speed, and cooldown reads at the moment; the door test `tests/simulation/doors/items-are-a-modifier-source.spec.ts` now wears a real item |
+| Magic damage % on magical damage alone | Yes: `tests/domain/combat/magic-damage.spec.ts`, +10% on a magical hit and a magical burn; none on physical or pure, the hero's attack, Emberling's attack, or an enemy's magical hit |
 | No click on a screen reaches the ground | |
 | The inventory and armory screen, by hand | |
 | The render benchmark with the screen open | |
 | Milestone M12 | |
-| Actual days per ticket | |
+| Actual days per ticket | P8-S34-T01: sized 1.5, done in 1 |
 | Sprint total | |
 
 ## Risks in this sprint

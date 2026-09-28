@@ -76,7 +76,7 @@ describe("the attacker's magic damage", () => {
   it("raises a magical hit before the target's resistance takes its share", () => {
     const arranged = arrange();
 
-    addModifier(arranged.attacker, "item", "magic_damage", AMPLIFICATION, 0);
+    addModifier(arranged.attacker, "summon", "magic_damage", AMPLIFICATION, 0);
 
     expect(landed(arranged, "magical", arranged.attackerId)).toBe(
       HIT * (1 + AMPLIFICATION) * (1 - RESISTANCE),
@@ -86,7 +86,7 @@ describe("the attacker's magic damage", () => {
   it("scales by its fractions like every other stat: a flat amount times one plus the fractions", () => {
     const arranged = arrange();
 
-    addModifier(arranged.attacker, "item", "magic_damage", AMPLIFICATION, 0);
+    addModifier(arranged.attacker, "summon", "magic_damage", AMPLIFICATION, 0);
     addModifier(arranged.attacker, "status", "magic_damage", 0, 0.2);
 
     expect(landed(arranged, "magical", arranged.attackerId)).toBeCloseTo(
@@ -100,7 +100,7 @@ describe("the attacker's magic damage", () => {
     const physical = landed(arranged, "physical", arranged.attackerId);
     const pure = landed(arranged, "pure", arranged.attackerId);
 
-    addModifier(arranged.attacker, "item", "magic_damage", AMPLIFICATION, 0);
+    addModifier(arranged.attacker, "summon", "magic_damage", AMPLIFICATION, 0);
 
     expect(landed(arranged, "physical", arranged.attackerId)).toBe(physical);
     expect(landed(arranged, "pure", arranged.attackerId)).toBe(pure);
@@ -109,7 +109,7 @@ describe("the attacker's magic damage", () => {
   it("is nothing from a source that no longer resolves", () => {
     const arranged = arrange();
 
-    addModifier(arranged.attacker, "item", "magic_damage", AMPLIFICATION, 0);
+    addModifier(arranged.attacker, "summon", "magic_damage", AMPLIFICATION, 0);
     releaseUnit(arranged.world.state, arranged.attackerId);
 
     expect(landed(arranged, "magical", arranged.attackerId)).toBe(

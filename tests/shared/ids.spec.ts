@@ -5,6 +5,7 @@ import type { EffectId, ProjectileId, UnitId, ZoneId } from "@domain/public";
 import {
   createEffectPool,
   createProjectilePool,
+  createStatTotals,
   createUnitPool,
   createZonePool,
 } from "@domain/rules";
@@ -99,14 +100,14 @@ const firstIdOf = <I extends Id<string>>(pool: {
 
 describe("an id's kind", () => {
   it("costs nothing at run time: a pool's id is the number it packed", () => {
-    const unitId = firstIdOf(createUnitPool());
+    const unitId = firstIdOf(createUnitPool(createStatTotals()));
 
     expect(typeof unitId).toBe("number");
     expect(unitId).toBe(packId(0, 0));
   });
 
   it("lets each pool take its own ids and no other pool's", () => {
-    const units = createUnitPool();
+    const units = createUnitPool(createStatTotals());
     const projectiles = createProjectilePool();
     const zones = createZonePool();
     const effects = createEffectPool();

@@ -1,15 +1,18 @@
 import type { Stats } from "../definitions/form-def";
 import type { StatSource, StatValues } from "../definitions/stat-keys";
 import { STAT_SOURCES } from "../definitions/stat-keys";
+import type { StatTotals } from "../entities/stat-totals";
+import { flatTotalOf, percentTotalOf } from "../entities/stat-totals";
 import type { ModifierEntry, ModifierKind, Stat } from "../entities/unit";
 
 /**
- * A modifier table, how many of its rows hold a stat, and how many rows it refused.
- * `addModifier` and `removeModifiers` keep the counts true, so a derivation over a table with
- * no live row is a copy of the base. A unit is one.
+ * A modifier table, the totals it adds, how many of its rows hold a stat, and how many rows it
+ * refused. `addModifier` and `removeModifiers` keep the counts true, so a derivation over a
+ * table with no live row and no item line in its totals is a copy of the base. A unit is one.
  */
 export type ModifierTable = {
   modifiers: readonly ModifierEntry[];
+  totals: Readonly<StatTotals>;
   liveModifierRows: number;
   modifierMisses: number;
 };
@@ -76,18 +79,20 @@ export const removeModifiers = (
 };
 
 /**
- * The modifier pipeline every derived value runs through: `(base + Σflat) × (1 + Σpercent)`
- * over the rows for `stat`. Flat amounts apply before the percentages, and the percentages sum
- * inside one multiplier, so three sources of +0.6% give +1.8%, not compounded. The result is
- * in whatever unit `base` is in.
+ * The modifier pipeline every derived value and every stat read at the moment runs through:
+ * `(base + Σflat) × (1 + Σpercent)` over the rows for `stat` and the table's totals for it.
+ * Flat amounts apply before the percentages, and the percentages sum inside one multiplier,
+ * so three sources of +0.6% give +1.8%, not compounded, and an item's +10% and a status's
+ * +10% are one +20%. The result is in whatever unit `base` is in.
  */
 export const modifiedValue = (
   base: number,
-  modifiers: readonly ModifierEntry[],
+  table: Readonly<ModifierTable>,
   stat: Stat,
 ): number => {
-  let flat = 0;
-  let percent = 0;
+  const modifiers = table.modifiers;
+  let flat = flatTotalOf(table.totals, stat);
+  let percent = percentTotalOf(table.totals, stat);
 
   for (let row = 0; row < modifiers.length; row += 1) {
     const entry = modifiers[row];
@@ -105,9 +110,9 @@ export const modifiedValue = (
 
 /**
  * Writes every value of `sources` of `base` run through `table` into `out`, by the same
- * pipeline as `modifiedValue`: for each value, the rows for its modifier stat summed in row
- * order, a walk that stops at the last live row. Rows for a stat no derived value carries are
- * read where their stat is read. `out` may be `base`.
+ * pipeline as `modifiedValue`: for each value, the table's totals for its modifier stat and
+ * then its rows summed in row order, a walk that stops at the last live row. Rows for a stat
+ * no derived value carries are read where their stat is read. `out` may be `base`.
  */
 export const applyModifiersOver = <Key extends string>(
   sources: readonly StatSource<Key>[],
@@ -125,8 +130,8 @@ export const applyModifiersOver = <Key extends string>(
     }
 
     let unread = table.liveModifierRows;
-    let flat = 0;
-    let percent = 0;
+    let flat = flatTotalOf(table.totals, source.modifier);
+    let percent = percentTotalOf(table.totals, source.modifier);
 
     for (let row = 0; unread > 0 && row < modifiers.length; row += 1) {
       const entry = modifiers[row];

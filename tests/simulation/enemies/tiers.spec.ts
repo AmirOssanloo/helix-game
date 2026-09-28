@@ -358,7 +358,7 @@ describe("a tier's attack damage", () => {
       throw new Error("A grunt swings an attack");
     }
 
-    addModifier(grunt, "item", "attack_damage", 5, 0.5);
+    addModifier(grunt, "summon", "attack_damage", 5, 0.5);
 
     expect(attackDamageOf(grunt, record)).toBe(
       (meleeGruntDef.attack.damage * BOSS_DAMAGE + 5) * 1.5,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { GroundItemId, OrderTarget, Unit, UnitId } from "@domain/public";
 import {
   clearOrder,
+  createStatTotals,
   createUnitPool,
   die,
   disengageTarget,
@@ -24,7 +25,7 @@ const TARGET_ID = idOf<UnitId>(9);
 const ITEM_ID = idOf<GroundItemId>(4);
 
 const freshUnit = (): Unit => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

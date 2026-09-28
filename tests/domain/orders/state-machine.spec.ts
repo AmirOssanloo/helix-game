@@ -10,6 +10,7 @@ import {
   beginFacing,
   beginMoving,
   clearOrder,
+  createStatTotals,
   createUnitPool,
   die,
   endChannel,
@@ -65,7 +66,7 @@ const orderKindIn = (state: OrderState): OrderKind => {
 
 /** A live unit arranged in `state`, holding the order that state implies, at facing 1 with a destination and a target set. */
 const unitIn = (state: OrderState, orderKind = orderKindIn(state)): Unit => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

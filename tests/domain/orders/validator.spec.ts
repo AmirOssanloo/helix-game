@@ -8,6 +8,7 @@ import type {
   Unit,
 } from "@domain/public";
 import {
+  createStatTotals,
   createUnitPool,
   validateCommand,
   validateDebugCommand,
@@ -76,7 +77,7 @@ const EVERY_COMMAND: readonly (readonly [string, UnitCommand])[] = [
 
 /** A live unit, idle, with every disable flag false, in `state` if one is given. */
 const unitIn = (state: OrderState = "idle"): Unit => {
-  const unit = createUnitPool().acquire();
+  const unit = createUnitPool(createStatTotals()).acquire();
 
   if (unit === null) {
     throw new Error("The first acquire succeeds on a fresh pool");

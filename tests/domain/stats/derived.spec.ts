@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Attributes, ModifierEntry, Stats } from "@domain/public";
-import { attributesAt, deriveStats } from "@domain/rules";
+import { attributesAt, createStatTotals, deriveStats } from "@domain/rules";
 import { makeFormDef } from "../../helpers";
 
 /** Round numbers a row is checked against by hand: every point of strength is 20 health and 0.1 regeneration, every point of intelligence 10 mana and 0.05 regeneration. */
@@ -59,6 +59,7 @@ const derivedAt = (level: number, modifiers: ModifierEntry[] = []): Stats =>
     attributesAt(def, level, freshAttributes()),
     {
       modifiers,
+      totals: createStatTotals(),
       liveModifierRows: modifiers.filter((entry) => entry.stat !== null).length,
       modifierMisses: 0,
     },
@@ -131,7 +132,7 @@ describe("deriveStats", () => {
     const stats = derivedAt(
       1,
       table(
-        { kind: "item", stat: "max_health", flat: 50 },
+        { kind: "status", stat: "max_health", flat: 50 },
         { kind: "orb", stat: "max_health", percent: 0.1 },
       ),
     );

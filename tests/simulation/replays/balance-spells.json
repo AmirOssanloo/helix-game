@@ -1,1 +1,3075 @@
-{"seed":202,"contentVersion":"76b72c57","contentReloads":[],"mapId":"arena","ticks":9727,"checksums":[{"tick":0,"value":941920617},{"tick":30,"value":324686679},{"tick":60,"value":942783892},{"tick":90,"value":616432178},{"tick":120,"value":922872393},{"tick":150,"value":226065038},{"tick":180,"value":784278657},{"tick":210,"value":657316966},{"tick":240,"value":312226615},{"tick":270,"value":570600202},{"tick":300,"value":956211956},{"tick":330,"value":106364318},{"tick":360,"value":464429851},{"tick":390,"value":158227367},{"tick":420,"value":164043403},{"tick":450,"value":869272021},{"tick":480,"value":148997427},{"tick":510,"value":518361580},{"tick":540,"value":16984304},{"tick":570,"value":217321327},{"tick":600,"value":673442442},{"tick":630,"value":736352473},{"tick":660,"value":940049771},{"tick":690,"value":630234901},{"tick":720,"value":541917315},{"tick":750,"value":939224923},{"tick":780,"value":163602032},{"tick":810,"value":1007252269},{"tick":840,"value":880590140},{"tick":870,"value":774531035},{"tick":900,"value":1042523010},{"tick":930,"value":634118525},{"tick":960,"value":979973252},{"tick":990,"value":48795914},{"tick":1020,"value":405425547},{"tick":1050,"value":112627605},{"tick":1080,"value":526684272},{"tick":1110,"value":679570958},{"tick":1140,"value":770698045},{"tick":1170,"value":498349894},{"tick":1200,"value":200528366},{"tick":1230,"value":770260006},{"tick":1260,"value":498099136},{"tick":1290,"value":646332582},{"tick":1320,"value":110348653},{"tick":1350,"value":102705189},{"tick":1380,"value":833349228},{"tick":1410,"value":437905764},{"tick":1440,"value":27062722},{"tick":1470,"value":299589204},{"tick":1500,"value":1072551709},{"tick":1530,"value":457997940},{"tick":1560,"value":228141943},{"tick":1590,"value":1063419819},{"tick":1620,"value":831199192},{"tick":1650,"value":546459164},{"tick":1680,"value":372007743},{"tick":1710,"value":16598463},{"tick":1740,"value":832133923},{"tick":1770,"value":949102812},{"tick":1800,"value":980252496},{"tick":1830,"value":389282990},{"tick":1860,"value":889171494},{"tick":1890,"value":216517395},{"tick":1920,"value":621583988},{"tick":1950,"value":806933950},{"tick":1980,"value":304391695},{"tick":2010,"value":633779314},{"tick":2040,"value":254415113},{"tick":2070,"value":1024777430},{"tick":2100,"value":540833395},{"tick":2130,"value":174825769},{"tick":2160,"value":89317695},{"tick":2190,"value":478837898},{"tick":2220,"value":599115326},{"tick":2250,"value":184488834},{"tick":2280,"value":577634148},{"tick":2310,"value":1007673915},{"tick":2340,"value":269097475},{"tick":2370,"value":1059380558},{"tick":2400,"value":994467361},{"tick":2430,"value":920301114},{"tick":2460,"value":6051929},{"tick":2490,"value":503079633},{"tick":2520,"value":667942758},{"tick":2550,"value":689363966},{"tick":2580,"value":686090924},{"tick":2610,"value":1005623915},{"tick":2640,"value":753075945},{"tick":2670,"value":548882281},{"tick":2700,"value":594681941},{"tick":2730,"value":128446562},{"tick":2760,"value":275152733},{"tick":2790,"value":939408436},{"tick":2820,"value":715390555},{"tick":2850,"value":178179873},{"tick":2880,"value":809718647},{"tick":2910,"value":305274639},{"tick":2940,"value":208033076},{"tick":2970,"value":832623005},{"tick":3000,"value":354759254},{"tick":3030,"value":422029869},{"tick":3060,"value":331276680},{"tick":3090,"value":206176262},{"tick":3120,"value":231979167},{"tick":3150,"value":771810685},{"tick":3180,"value":474476697},{"tick":3210,"value":259487665},{"tick":3240,"value":905974901},{"tick":3270,"value":818171783},{"tick":3300,"value":998112302},{"tick":3330,"value":381466174},{"tick":3360,"value":1057587445},{"tick":3390,"value":611799926},{"tick":3420,"value":601840534},{"tick":3450,"value":435618643},{"tick":3480,"value":443508224},{"tick":3510,"value":459298643},{"tick":3540,"value":159182580},{"tick":3570,"value":604839871},{"tick":3600,"value":55067481},{"tick":3630,"value":266747208},{"tick":3660,"value":1070437812},{"tick":3690,"value":110697500},{"tick":3720,"value":531354335},{"tick":3750,"value":588656362},{"tick":3780,"value":958880889},{"tick":3810,"value":212768375},{"tick":3840,"value":305519811},{"tick":3870,"value":969320725},{"tick":3900,"value":24583890},{"tick":3930,"value":887290102},{"tick":3960,"value":811601393},{"tick":3990,"value":314690779},{"tick":4020,"value":710453424},{"tick":4050,"value":592562426},{"tick":4080,"value":654710523},{"tick":4110,"value":134272956},{"tick":4140,"value":245978313},{"tick":4170,"value":1068387001},{"tick":4200,"value":685835612},{"tick":4230,"value":397153316},{"tick":4260,"value":648745703},{"tick":4290,"value":915394227},{"tick":4320,"value":783258629},{"tick":4350,"value":945771802},{"tick":4380,"value":212399892},{"tick":4410,"value":399405793},{"tick":4440,"value":159219004},{"tick":4470,"value":683805541},{"tick":4500,"value":963481600},{"tick":4530,"value":83068912},{"tick":4560,"value":499162174},{"tick":4590,"value":493648979},{"tick":4620,"value":372084960},{"tick":4650,"value":364210540},{"tick":4680,"value":1072221402},{"tick":4710,"value":791129394},{"tick":4740,"value":63518092},{"tick":4770,"value":586978792},{"tick":4800,"value":589616100},{"tick":4830,"value":662893159},{"tick":4860,"value":1051630894},{"tick":4890,"value":95391752},{"tick":4920,"value":447655128},{"tick":4950,"value":1063356946},{"tick":4980,"value":890600270},{"tick":5010,"value":336220019},{"tick":5040,"value":323643554},{"tick":5070,"value":341235945},{"tick":5100,"value":505856491},{"tick":5130,"value":408735472},{"tick":5160,"value":376301758},{"tick":5190,"value":120286451},{"tick":5220,"value":541289623},{"tick":5250,"value":1041310438},{"tick":5280,"value":743604146},{"tick":5310,"value":452073576},{"tick":5340,"value":164076911},{"tick":5370,"value":66204980},{"tick":5400,"value":898129903},{"tick":5430,"value":43383442},{"tick":5460,"value":484971731},{"tick":5490,"value":219144974},{"tick":5520,"value":205898782},{"tick":5550,"value":259652966},{"tick":5580,"value":901856855},{"tick":5610,"value":280654962},{"tick":5640,"value":80696872},{"tick":5670,"value":722812877},{"tick":5700,"value":963443716},{"tick":5730,"value":346853494},{"tick":5760,"value":40973236},{"tick":5790,"value":484834739},{"tick":5820,"value":710918344},{"tick":5850,"value":654684339},{"tick":5880,"value":575544926},{"tick":5910,"value":963405964},{"tick":5940,"value":226137605},{"tick":5970,"value":804742876},{"tick":6000,"value":501620184},{"tick":6030,"value":514843371},{"tick":6060,"value":9142328},{"tick":6090,"value":810703928},{"tick":6120,"value":488558327},{"tick":6150,"value":498376321},{"tick":6180,"value":365875554},{"tick":6210,"value":570705634},{"tick":6240,"value":1067437502},{"tick":6270,"value":404402716},{"tick":6300,"value":785519819},{"tick":6330,"value":455569119},{"tick":6360,"value":239244968},{"tick":6390,"value":776921820},{"tick":6420,"value":823145011},{"tick":6450,"value":472341598},{"tick":6480,"value":257775241},{"tick":6510,"value":130386617},{"tick":6540,"value":786769750},{"tick":6570,"value":219855018},{"tick":6600,"value":98555551},{"tick":6630,"value":774411985},{"tick":6660,"value":1036981601},{"tick":6690,"value":124556448},{"tick":6720,"value":89153275},{"tick":6750,"value":1045095980},{"tick":6780,"value":263212279},{"tick":6810,"value":97366068},{"tick":6840,"value":863438784},{"tick":6870,"value":1031203736},{"tick":6900,"value":58348157},{"tick":6930,"value":104603399},{"tick":6960,"value":29461316},{"tick":6990,"value":234219629},{"tick":7020,"value":1015691691},{"tick":7050,"value":871906408},{"tick":7080,"value":53928895},{"tick":7110,"value":260675425},{"tick":7140,"value":430729704},{"tick":7170,"value":248517376},{"tick":7200,"value":735253853},{"tick":7230,"value":825504331},{"tick":7260,"value":609019332},{"tick":7290,"value":46479809},{"tick":7320,"value":692148483},{"tick":7350,"value":300640642},{"tick":7380,"value":480093427},{"tick":7410,"value":328120162},{"tick":7440,"value":409943949},{"tick":7470,"value":166498020},{"tick":7500,"value":211992124},{"tick":7530,"value":996402956},{"tick":7560,"value":259239685},{"tick":7590,"value":474252365},{"tick":7620,"value":406062615},{"tick":7650,"value":816382977},{"tick":7680,"value":654374955},{"tick":7710,"value":733848084},{"tick":7740,"value":590073033},{"tick":7770,"value":991443606},{"tick":7800,"value":252092649},{"tick":7830,"value":821226231},{"tick":7860,"value":322177995},{"tick":7890,"value":418233519},{"tick":7920,"value":989273897},{"tick":7950,"value":481657418},{"tick":7980,"value":1003159750},{"tick":8010,"value":710888677},{"tick":8040,"value":305415288},{"tick":8070,"value":245519116},{"tick":8100,"value":100802553},{"tick":8130,"value":831005724},{"tick":8160,"value":884553628},{"tick":8190,"value":19587264},{"tick":8220,"value":114016783},{"tick":8250,"value":1035481568},{"tick":8280,"value":523586364},{"tick":8310,"value":753873074},{"tick":8340,"value":116038276},{"tick":8370,"value":925119885},{"tick":8400,"value":317793055},{"tick":8430,"value":183613574},{"tick":8460,"value":543266835},{"tick":8490,"value":409199278},{"tick":8520,"value":622719580},{"tick":8550,"value":682819268},{"tick":8580,"value":451896690},{"tick":8610,"value":191564080},{"tick":8640,"value":443880624},{"tick":8670,"value":680879881},{"tick":8700,"value":656516369},{"tick":8730,"value":28991748},{"tick":8760,"value":751649940},{"tick":8790,"value":475608097},{"tick":8820,"value":174145472},{"tick":8850,"value":417736283},{"tick":8880,"value":470898759},{"tick":8910,"value":735832383},{"tick":8940,"value":605107562},{"tick":8970,"value":839876442},{"tick":9000,"value":222238034},{"tick":9030,"value":919180661},{"tick":9060,"value":103720903},{"tick":9090,"value":910182366},{"tick":9120,"value":772430292},{"tick":9150,"value":7877792},{"tick":9180,"value":54716110},{"tick":9210,"value":111457772},{"tick":9240,"value":183672701},{"tick":9270,"value":922031760},{"tick":9300,"value":127257154},{"tick":9330,"value":269640957},{"tick":9360,"value":151041324},{"tick":9390,"value":367651924},{"tick":9420,"value":732304944},{"tick":9450,"value":1038805588},{"tick":9480,"value":125959435},{"tick":9510,"value":745399593},{"tick":9540,"value":154472077},{"tick":9570,"value":384392212},{"tick":9600,"value":478792074},{"tick":9630,"value":677347600},{"tick":9660,"value":369704563},{"tick":9690,"value":535483918},{"tick":9720,"value":457088606},{"tick":9727,"value":966673817}],"records":[{"tick":0,"command":{"kind":"toggle_infinite_mana","tick":0,"timestamp":1}},{"tick":0,"command":{"kind":"toggle_no_cooldowns","tick":0,"timestamp":2}},{"tick":1,"command":{"kind":"level_up","tick":1,"timestamp":3}},{"tick":2,"command":{"kind":"level_up","tick":2,"timestamp":4}},{"tick":3,"command":{"kind":"set_orb_levels","levels":[1,1,1],"tick":3,"timestamp":5}},{"tick":4,"command":{"kind":"reset_map","tick":4,"timestamp":6}},{"tick":5,"command":{"kind":"restore_mana","tick":5,"timestamp":7}},{"tick":6,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":6,"timestamp":8}},{"tick":30,"command":{"kind":"heal","tick":30,"timestamp":9}},{"tick":52,"command":{"kind":"slot","slot":1,"tick":52,"timestamp":10}},{"tick":52,"command":{"kind":"slot","slot":1,"tick":52,"timestamp":11}},{"tick":52,"command":{"kind":"slot","slot":1,"tick":52,"timestamp":12}},{"tick":53,"command":{"kind":"slot","slot":4,"tick":53,"timestamp":13}},{"tick":54,"command":{"kind":"cast","abilityId":"hoarfrost","target":{"kind":"unit","unitId":3},"tick":54,"timestamp":14}},{"tick":60,"command":{"kind":"heal","tick":60,"timestamp":15}},{"tick":62,"command":{"kind":"attack_target","targetId":3,"tick":62,"timestamp":16}},{"tick":90,"command":{"kind":"heal","tick":90,"timestamp":17}},{"tick":120,"command":{"kind":"heal","tick":120,"timestamp":18}},{"tick":150,"command":{"kind":"heal","tick":150,"timestamp":19}},{"tick":180,"command":{"kind":"heal","tick":180,"timestamp":20}},{"tick":210,"command":{"kind":"heal","tick":210,"timestamp":21}},{"tick":240,"command":{"kind":"heal","tick":240,"timestamp":22}},{"tick":270,"command":{"kind":"heal","tick":270,"timestamp":23}},{"tick":298,"command":{"kind":"reset_map","tick":298,"timestamp":24}},{"tick":299,"command":{"kind":"restore_mana","tick":299,"timestamp":25}},{"tick":300,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":300,"timestamp":26}},{"tick":300,"command":{"kind":"heal","tick":300,"timestamp":27}},{"tick":330,"command":{"kind":"heal","tick":330,"timestamp":28}},{"tick":346,"command":{"kind":"slot","slot":1,"tick":346,"timestamp":29}},{"tick":346,"command":{"kind":"slot","slot":1,"tick":346,"timestamp":30}},{"tick":346,"command":{"kind":"slot","slot":3,"tick":346,"timestamp":31}},{"tick":347,"command":{"kind":"slot","slot":4,"tick":347,"timestamp":32}},{"tick":348,"command":{"kind":"cast","abilityId":"glacier","target":{"kind":"vector","position":{"x":1733.6550472505896,"y":1980.6278354373717},"end":{"x":1733.6550472505896,"y":2280.6278354373717}},"tick":348,"timestamp":33}},{"tick":360,"command":{"kind":"heal","tick":360,"timestamp":34}},{"tick":390,"command":{"kind":"heal","tick":390,"timestamp":35}},{"tick":420,"command":{"kind":"heal","tick":420,"timestamp":36}},{"tick":450,"command":{"kind":"heal","tick":450,"timestamp":37}},{"tick":480,"command":{"kind":"heal","tick":480,"timestamp":38}},{"tick":510,"command":{"kind":"heal","tick":510,"timestamp":39}},{"tick":540,"command":{"kind":"heal","tick":540,"timestamp":40}},{"tick":570,"command":{"kind":"heal","tick":570,"timestamp":41}},{"tick":592,"command":{"kind":"reset_map","tick":592,"timestamp":42}},{"tick":593,"command":{"kind":"restore_mana","tick":593,"timestamp":43}},{"tick":594,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":594,"timestamp":44}},{"tick":600,"command":{"kind":"heal","tick":600,"timestamp":45}},{"tick":630,"command":{"kind":"heal","tick":630,"timestamp":46}},{"tick":640,"command":{"kind":"slot","slot":2,"tick":640,"timestamp":47}},{"tick":640,"command":{"kind":"slot","slot":2,"tick":640,"timestamp":48}},{"tick":640,"command":{"kind":"slot","slot":2,"tick":640,"timestamp":49}},{"tick":641,"command":{"kind":"slot","slot":4,"tick":641,"timestamp":50}},{"tick":642,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1733.6550471758558,"y":1980.627821535417}},"tick":642,"timestamp":51}},{"tick":660,"command":{"kind":"heal","tick":660,"timestamp":52}},{"tick":690,"command":{"kind":"heal","tick":690,"timestamp":53}},{"tick":720,"command":{"kind":"heal","tick":720,"timestamp":54}},{"tick":750,"command":{"kind":"heal","tick":750,"timestamp":55}},{"tick":780,"command":{"kind":"heal","tick":780,"timestamp":56}},{"tick":810,"command":{"kind":"heal","tick":810,"timestamp":57}},{"tick":840,"command":{"kind":"heal","tick":840,"timestamp":58}},{"tick":870,"command":{"kind":"heal","tick":870,"timestamp":59}},{"tick":886,"command":{"kind":"reset_map","tick":886,"timestamp":60}},{"tick":887,"command":{"kind":"restore_mana","tick":887,"timestamp":61}},{"tick":888,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":888,"timestamp":62}},{"tick":900,"command":{"kind":"heal","tick":900,"timestamp":63}},{"tick":930,"command":{"kind":"heal","tick":930,"timestamp":64}},{"tick":934,"command":{"kind":"slot","slot":2,"tick":934,"timestamp":65}},{"tick":934,"command":{"kind":"slot","slot":2,"tick":934,"timestamp":66}},{"tick":934,"command":{"kind":"slot","slot":2,"tick":934,"timestamp":67}},{"tick":935,"command":{"kind":"slot","slot":4,"tick":935,"timestamp":68}},{"tick":936,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1506.6353418934784,"y":1962.7100023252437}},"tick":936,"timestamp":69}},{"tick":960,"command":{"kind":"heal","tick":960,"timestamp":70}},{"tick":990,"command":{"kind":"heal","tick":990,"timestamp":71}},{"tick":1020,"command":{"kind":"heal","tick":1020,"timestamp":72}},{"tick":1050,"command":{"kind":"heal","tick":1050,"timestamp":73}},{"tick":1080,"command":{"kind":"heal","tick":1080,"timestamp":74}},{"tick":1110,"command":{"kind":"heal","tick":1110,"timestamp":75}},{"tick":1140,"command":{"kind":"heal","tick":1140,"timestamp":76}},{"tick":1170,"command":{"kind":"heal","tick":1170,"timestamp":77}},{"tick":1180,"command":{"kind":"reset_map","tick":1180,"timestamp":78}},{"tick":1181,"command":{"kind":"restore_mana","tick":1181,"timestamp":79}},{"tick":1182,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":1182,"timestamp":80}},{"tick":1200,"command":{"kind":"heal","tick":1200,"timestamp":81}},{"tick":1228,"command":{"kind":"slot","slot":2,"tick":1228,"timestamp":82}},{"tick":1228,"command":{"kind":"slot","slot":2,"tick":1228,"timestamp":83}},{"tick":1228,"command":{"kind":"slot","slot":1,"tick":1228,"timestamp":84}},{"tick":1229,"command":{"kind":"slot","slot":4,"tick":1229,"timestamp":85}},{"tick":1230,"command":{"kind":"cast","abilityId":"updraft","target":{"kind":"direction","position":{"x":1730.560393016637,"y":1980.8047582008307}},"tick":1230,"timestamp":86}},{"tick":1230,"command":{"kind":"heal","tick":1230,"timestamp":87}},{"tick":1260,"command":{"kind":"heal","tick":1260,"timestamp":88}},{"tick":1290,"command":{"kind":"heal","tick":1290,"timestamp":89}},{"tick":1320,"command":{"kind":"heal","tick":1320,"timestamp":90}},{"tick":1350,"command":{"kind":"heal","tick":1350,"timestamp":91}},{"tick":1380,"command":{"kind":"heal","tick":1380,"timestamp":92}},{"tick":1410,"command":{"kind":"heal","tick":1410,"timestamp":93}},{"tick":1440,"command":{"kind":"heal","tick":1440,"timestamp":94}},{"tick":1470,"command":{"kind":"heal","tick":1470,"timestamp":95}},{"tick":1474,"command":{"kind":"reset_map","tick":1474,"timestamp":96}},{"tick":1475,"command":{"kind":"restore_mana","tick":1475,"timestamp":97}},{"tick":1476,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":1476,"timestamp":98}},{"tick":1500,"command":{"kind":"heal","tick":1500,"timestamp":99}},{"tick":1522,"command":{"kind":"slot","slot":3,"tick":1522,"timestamp":100}},{"tick":1522,"command":{"kind":"slot","slot":3,"tick":1522,"timestamp":101}},{"tick":1522,"command":{"kind":"slot","slot":3,"tick":1522,"timestamp":102}},{"tick":1523,"command":{"kind":"slot","slot":4,"tick":1523,"timestamp":103}},{"tick":1524,"command":{"kind":"cast","abilityId":"zenith","target":{"kind":"point","position":{"x":1712.210921686278,"y":1978.203586354594}},"tick":1524,"timestamp":104}},{"tick":1530,"command":{"kind":"heal","tick":1530,"timestamp":105}},{"tick":1560,"command":{"kind":"heal","tick":1560,"timestamp":106}},{"tick":1590,"command":{"kind":"heal","tick":1590,"timestamp":107}},{"tick":1620,"command":{"kind":"heal","tick":1620,"timestamp":108}},{"tick":1650,"command":{"kind":"heal","tick":1650,"timestamp":109}},{"tick":1680,"command":{"kind":"heal","tick":1680,"timestamp":110}},{"tick":1710,"command":{"kind":"heal","tick":1710,"timestamp":111}},{"tick":1740,"command":{"kind":"heal","tick":1740,"timestamp":112}},{"tick":1768,"command":{"kind":"reset_map","tick":1768,"timestamp":113}},{"tick":1769,"command":{"kind":"restore_mana","tick":1769,"timestamp":114}},{"tick":1770,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":1770,"timestamp":115}},{"tick":1770,"command":{"kind":"heal","tick":1770,"timestamp":116}},{"tick":1800,"command":{"kind":"heal","tick":1800,"timestamp":117}},{"tick":1816,"command":{"kind":"slot","slot":3,"tick":1816,"timestamp":118}},{"tick":1816,"command":{"kind":"slot","slot":3,"tick":1816,"timestamp":119}},{"tick":1816,"command":{"kind":"slot","slot":2,"tick":1816,"timestamp":120}},{"tick":1817,"command":{"kind":"slot","slot":4,"tick":1817,"timestamp":121}},{"tick":1818,"command":{"kind":"cast","abilityId":"bolide","target":{"kind":"point","position":{"x":1708.9917778458755,"y":1981.0948735337618}},"tick":1818,"timestamp":122}},{"tick":1830,"command":{"kind":"heal","tick":1830,"timestamp":123}},{"tick":1860,"command":{"kind":"heal","tick":1860,"timestamp":124}},{"tick":1890,"command":{"kind":"heal","tick":1890,"timestamp":125}},{"tick":1920,"command":{"kind":"heal","tick":1920,"timestamp":126}},{"tick":1950,"command":{"kind":"heal","tick":1950,"timestamp":127}},{"tick":1980,"command":{"kind":"heal","tick":1980,"timestamp":128}},{"tick":2010,"command":{"kind":"heal","tick":2010,"timestamp":129}},{"tick":2040,"command":{"kind":"heal","tick":2040,"timestamp":130}},{"tick":2062,"command":{"kind":"reset_map","tick":2062,"timestamp":131}},{"tick":2063,"command":{"kind":"restore_mana","tick":2063,"timestamp":132}},{"tick":2064,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2064,"timestamp":133}},{"tick":2070,"command":{"kind":"heal","tick":2070,"timestamp":134}},{"tick":2100,"command":{"kind":"heal","tick":2100,"timestamp":135}},{"tick":2110,"command":{"kind":"slot","slot":1,"tick":2110,"timestamp":136}},{"tick":2110,"command":{"kind":"slot","slot":2,"tick":2110,"timestamp":137}},{"tick":2110,"command":{"kind":"slot","slot":3,"tick":2110,"timestamp":138}},{"tick":2111,"command":{"kind":"slot","slot":4,"tick":2111,"timestamp":139}},{"tick":2112,"command":{"kind":"cast","abilityId":"clarion","target":{"kind":"direction","position":{"x":1658.0760139347622,"y":1969.9099890685459}},"tick":2112,"timestamp":140}},{"tick":2130,"command":{"kind":"heal","tick":2130,"timestamp":141}},{"tick":2160,"command":{"kind":"heal","tick":2160,"timestamp":142}},{"tick":2190,"command":{"kind":"heal","tick":2190,"timestamp":143}},{"tick":2220,"command":{"kind":"heal","tick":2220,"timestamp":144}},{"tick":2250,"command":{"kind":"heal","tick":2250,"timestamp":145}},{"tick":2280,"command":{"kind":"heal","tick":2280,"timestamp":146}},{"tick":2310,"command":{"kind":"heal","tick":2310,"timestamp":147}},{"tick":2340,"command":{"kind":"heal","tick":2340,"timestamp":148}},{"tick":2356,"command":{"kind":"reset_map","tick":2356,"timestamp":149}},{"tick":2357,"command":{"kind":"restore_mana","tick":2357,"timestamp":150}},{"tick":2358,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2358,"timestamp":151}},{"tick":2370,"command":{"kind":"heal","tick":2370,"timestamp":152}},{"tick":2400,"command":{"kind":"heal","tick":2400,"timestamp":153}},{"tick":2404,"command":{"kind":"slot","slot":3,"tick":2404,"timestamp":154}},{"tick":2404,"command":{"kind":"slot","slot":3,"tick":2404,"timestamp":155}},{"tick":2404,"command":{"kind":"slot","slot":1,"tick":2404,"timestamp":156}},{"tick":2405,"command":{"kind":"slot","slot":4,"tick":2405,"timestamp":157}},{"tick":2406,"command":{"kind":"cast","abilityId":"emberling","target":{"kind":"none"},"tick":2406,"timestamp":158}},{"tick":2409,"command":{"kind":"attack_move","destination":{"x":1685.74777906126,"y":1972.389149312843},"tick":2409,"timestamp":159}},{"tick":2430,"command":{"kind":"heal","tick":2430,"timestamp":160}},{"tick":2460,"command":{"kind":"heal","tick":2460,"timestamp":161}},{"tick":2490,"command":{"kind":"heal","tick":2490,"timestamp":162}},{"tick":2520,"command":{"kind":"heal","tick":2520,"timestamp":163}},{"tick":2550,"command":{"kind":"heal","tick":2550,"timestamp":164}},{"tick":2580,"command":{"kind":"heal","tick":2580,"timestamp":165}},{"tick":2610,"command":{"kind":"heal","tick":2610,"timestamp":166}},{"tick":2640,"command":{"kind":"heal","tick":2640,"timestamp":167}},{"tick":2650,"command":{"kind":"reset_map","tick":2650,"timestamp":168}},{"tick":2651,"command":{"kind":"restore_mana","tick":2651,"timestamp":169}},{"tick":2652,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2652,"timestamp":170}},{"tick":2670,"command":{"kind":"heal","tick":2670,"timestamp":171}},{"tick":2698,"command":{"kind":"slot","slot":2,"tick":2698,"timestamp":172}},{"tick":2698,"command":{"kind":"slot","slot":2,"tick":2698,"timestamp":173}},{"tick":2698,"command":{"kind":"slot","slot":3,"tick":2698,"timestamp":174}},{"tick":2699,"command":{"kind":"slot","slot":4,"tick":2699,"timestamp":175}},{"tick":2700,"command":{"kind":"cast","abilityId":"quicken","target":{"kind":"none"},"tick":2700,"timestamp":176}},{"tick":2700,"command":{"kind":"heal","tick":2700,"timestamp":177}},{"tick":2703,"command":{"kind":"attack_move","destination":{"x":1721.2087102544451,"y":1982.0930230782337},"tick":2703,"timestamp":178}},{"tick":2730,"command":{"kind":"heal","tick":2730,"timestamp":179}},{"tick":2760,"command":{"kind":"heal","tick":2760,"timestamp":180}},{"tick":2790,"command":{"kind":"heal","tick":2790,"timestamp":181}},{"tick":2820,"command":{"kind":"heal","tick":2820,"timestamp":182}},{"tick":2850,"command":{"kind":"heal","tick":2850,"timestamp":183}},{"tick":2880,"command":{"kind":"heal","tick":2880,"timestamp":184}},{"tick":2910,"command":{"kind":"heal","tick":2910,"timestamp":185}},{"tick":2940,"command":{"kind":"heal","tick":2940,"timestamp":186}},{"tick":2944,"command":{"kind":"reset_map","tick":2944,"timestamp":187}},{"tick":2945,"command":{"kind":"restore_mana","tick":2945,"timestamp":188}},{"tick":2946,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":2946,"timestamp":189}},{"tick":2970,"command":{"kind":"heal","tick":2970,"timestamp":190}},{"tick":2992,"command":{"kind":"slot","slot":1,"tick":2992,"timestamp":191}},{"tick":2992,"command":{"kind":"slot","slot":1,"tick":2992,"timestamp":192}},{"tick":2992,"command":{"kind":"slot","slot":2,"tick":2992,"timestamp":193}},{"tick":2993,"command":{"kind":"slot","slot":4,"tick":2993,"timestamp":194}},{"tick":2994,"command":{"kind":"cast","abilityId":"wane","target":{"kind":"none"},"tick":2994,"timestamp":195}},{"tick":3000,"command":{"kind":"heal","tick":3000,"timestamp":196}},{"tick":3030,"command":{"kind":"heal","tick":3030,"timestamp":197}},{"tick":3060,"command":{"kind":"heal","tick":3060,"timestamp":198}},{"tick":3090,"command":{"kind":"heal","tick":3090,"timestamp":199}},{"tick":3120,"command":{"kind":"heal","tick":3120,"timestamp":200}},{"tick":3150,"command":{"kind":"heal","tick":3150,"timestamp":201}},{"tick":3180,"command":{"kind":"heal","tick":3180,"timestamp":202}},{"tick":3210,"command":{"kind":"heal","tick":3210,"timestamp":203}},{"tick":3238,"command":{"kind":"level_up","tick":3238,"timestamp":204}},{"tick":3239,"command":{"kind":"level_up","tick":3239,"timestamp":205}},{"tick":3240,"command":{"kind":"level_up","tick":3240,"timestamp":206}},{"tick":3241,"command":{"kind":"level_up","tick":3241,"timestamp":207}},{"tick":3242,"command":{"kind":"level_up","tick":3242,"timestamp":208}},{"tick":3243,"command":{"kind":"level_up","tick":3243,"timestamp":209}},{"tick":3244,"command":{"kind":"level_up","tick":3244,"timestamp":210}},{"tick":3245,"command":{"kind":"level_up","tick":3245,"timestamp":211}},{"tick":3246,"command":{"kind":"level_up","tick":3246,"timestamp":212}},{"tick":3247,"command":{"kind":"set_orb_levels","levels":[4,4,4],"tick":3247,"timestamp":213}},{"tick":3248,"command":{"kind":"reset_map","tick":3248,"timestamp":214}},{"tick":3249,"command":{"kind":"restore_mana","tick":3249,"timestamp":215}},{"tick":3250,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":3250,"timestamp":216}},{"tick":3270,"command":{"kind":"heal","tick":3270,"timestamp":217}},{"tick":3296,"command":{"kind":"slot","slot":1,"tick":3296,"timestamp":218}},{"tick":3296,"command":{"kind":"slot","slot":1,"tick":3296,"timestamp":219}},{"tick":3296,"command":{"kind":"slot","slot":1,"tick":3296,"timestamp":220}},{"tick":3297,"command":{"kind":"slot","slot":4,"tick":3297,"timestamp":221}},{"tick":3298,"command":{"kind":"cast","abilityId":"hoarfrost","target":{"kind":"unit","unitId":720899},"tick":3298,"timestamp":222}},{"tick":3300,"command":{"kind":"heal","tick":3300,"timestamp":223}},{"tick":3302,"command":{"kind":"attack_target","targetId":720899,"tick":3302,"timestamp":224}},{"tick":3330,"command":{"kind":"heal","tick":3330,"timestamp":225}},{"tick":3360,"command":{"kind":"heal","tick":3360,"timestamp":226}},{"tick":3390,"command":{"kind":"heal","tick":3390,"timestamp":227}},{"tick":3420,"command":{"kind":"heal","tick":3420,"timestamp":228}},{"tick":3450,"command":{"kind":"heal","tick":3450,"timestamp":229}},{"tick":3480,"command":{"kind":"heal","tick":3480,"timestamp":230}},{"tick":3510,"command":{"kind":"heal","tick":3510,"timestamp":231}},{"tick":3540,"command":{"kind":"heal","tick":3540,"timestamp":232}},{"tick":3542,"command":{"kind":"reset_map","tick":3542,"timestamp":233}},{"tick":3543,"command":{"kind":"restore_mana","tick":3543,"timestamp":234}},{"tick":3544,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":3544,"timestamp":235}},{"tick":3570,"command":{"kind":"heal","tick":3570,"timestamp":236}},{"tick":3590,"command":{"kind":"slot","slot":1,"tick":3590,"timestamp":237}},{"tick":3590,"command":{"kind":"slot","slot":1,"tick":3590,"timestamp":238}},{"tick":3590,"command":{"kind":"slot","slot":3,"tick":3590,"timestamp":239}},{"tick":3591,"command":{"kind":"slot","slot":4,"tick":3591,"timestamp":240}},{"tick":3592,"command":{"kind":"cast","abilityId":"glacier","target":{"kind":"vector","position":{"x":1709.1992066737334,"y":1977.066073870786},"end":{"x":1709.1992066737334,"y":2277.066073870786}},"tick":3592,"timestamp":241}},{"tick":3600,"command":{"kind":"heal","tick":3600,"timestamp":242}},{"tick":3630,"command":{"kind":"heal","tick":3630,"timestamp":243}},{"tick":3660,"command":{"kind":"heal","tick":3660,"timestamp":244}},{"tick":3690,"command":{"kind":"heal","tick":3690,"timestamp":245}},{"tick":3720,"command":{"kind":"heal","tick":3720,"timestamp":246}},{"tick":3750,"command":{"kind":"heal","tick":3750,"timestamp":247}},{"tick":3780,"command":{"kind":"heal","tick":3780,"timestamp":248}},{"tick":3810,"command":{"kind":"heal","tick":3810,"timestamp":249}},{"tick":3836,"command":{"kind":"reset_map","tick":3836,"timestamp":250}},{"tick":3837,"command":{"kind":"restore_mana","tick":3837,"timestamp":251}},{"tick":3838,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":3838,"timestamp":252}},{"tick":3840,"command":{"kind":"heal","tick":3840,"timestamp":253}},{"tick":3870,"command":{"kind":"heal","tick":3870,"timestamp":254}},{"tick":3884,"command":{"kind":"slot","slot":2,"tick":3884,"timestamp":255}},{"tick":3884,"command":{"kind":"slot","slot":2,"tick":3884,"timestamp":256}},{"tick":3884,"command":{"kind":"slot","slot":2,"tick":3884,"timestamp":257}},{"tick":3885,"command":{"kind":"slot","slot":4,"tick":3885,"timestamp":258}},{"tick":3886,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1733.655046726267,"y":1980.627823565983}},"tick":3886,"timestamp":259}},{"tick":3900,"command":{"kind":"heal","tick":3900,"timestamp":260}},{"tick":3930,"command":{"kind":"heal","tick":3930,"timestamp":261}},{"tick":3960,"command":{"kind":"heal","tick":3960,"timestamp":262}},{"tick":3990,"command":{"kind":"heal","tick":3990,"timestamp":263}},{"tick":4020,"command":{"kind":"heal","tick":4020,"timestamp":264}},{"tick":4050,"command":{"kind":"heal","tick":4050,"timestamp":265}},{"tick":4080,"command":{"kind":"heal","tick":4080,"timestamp":266}},{"tick":4110,"command":{"kind":"heal","tick":4110,"timestamp":267}},{"tick":4130,"command":{"kind":"reset_map","tick":4130,"timestamp":268}},{"tick":4131,"command":{"kind":"restore_mana","tick":4131,"timestamp":269}},{"tick":4132,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4132,"timestamp":270}},{"tick":4140,"command":{"kind":"heal","tick":4140,"timestamp":271}},{"tick":4170,"command":{"kind":"heal","tick":4170,"timestamp":272}},{"tick":4178,"command":{"kind":"slot","slot":2,"tick":4178,"timestamp":273}},{"tick":4178,"command":{"kind":"slot","slot":2,"tick":4178,"timestamp":274}},{"tick":4178,"command":{"kind":"slot","slot":2,"tick":4178,"timestamp":275}},{"tick":4179,"command":{"kind":"slot","slot":4,"tick":4179,"timestamp":276}},{"tick":4180,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1506.6410592423038,"y":1962.7843556606829}},"tick":4180,"timestamp":277}},{"tick":4200,"command":{"kind":"heal","tick":4200,"timestamp":278}},{"tick":4230,"command":{"kind":"heal","tick":4230,"timestamp":279}},{"tick":4260,"command":{"kind":"heal","tick":4260,"timestamp":280}},{"tick":4290,"command":{"kind":"heal","tick":4290,"timestamp":281}},{"tick":4320,"command":{"kind":"heal","tick":4320,"timestamp":282}},{"tick":4350,"command":{"kind":"heal","tick":4350,"timestamp":283}},{"tick":4380,"command":{"kind":"heal","tick":4380,"timestamp":284}},{"tick":4410,"command":{"kind":"heal","tick":4410,"timestamp":285}},{"tick":4424,"command":{"kind":"reset_map","tick":4424,"timestamp":286}},{"tick":4425,"command":{"kind":"restore_mana","tick":4425,"timestamp":287}},{"tick":4426,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4426,"timestamp":288}},{"tick":4440,"command":{"kind":"heal","tick":4440,"timestamp":289}},{"tick":4470,"command":{"kind":"heal","tick":4470,"timestamp":290}},{"tick":4472,"command":{"kind":"slot","slot":2,"tick":4472,"timestamp":291}},{"tick":4472,"command":{"kind":"slot","slot":2,"tick":4472,"timestamp":292}},{"tick":4472,"command":{"kind":"slot","slot":1,"tick":4472,"timestamp":293}},{"tick":4473,"command":{"kind":"slot","slot":4,"tick":4473,"timestamp":294}},{"tick":4474,"command":{"kind":"cast","abilityId":"updraft","target":{"kind":"direction","position":{"x":1691.5156181355628,"y":1978.6726236626375}},"tick":4474,"timestamp":295}},{"tick":4500,"command":{"kind":"heal","tick":4500,"timestamp":296}},{"tick":4530,"command":{"kind":"heal","tick":4530,"timestamp":297}},{"tick":4560,"command":{"kind":"heal","tick":4560,"timestamp":298}},{"tick":4590,"command":{"kind":"heal","tick":4590,"timestamp":299}},{"tick":4620,"command":{"kind":"heal","tick":4620,"timestamp":300}},{"tick":4650,"command":{"kind":"heal","tick":4650,"timestamp":301}},{"tick":4680,"command":{"kind":"heal","tick":4680,"timestamp":302}},{"tick":4710,"command":{"kind":"heal","tick":4710,"timestamp":303}},{"tick":4718,"command":{"kind":"reset_map","tick":4718,"timestamp":304}},{"tick":4719,"command":{"kind":"restore_mana","tick":4719,"timestamp":305}},{"tick":4720,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":4720,"timestamp":306}},{"tick":4740,"command":{"kind":"heal","tick":4740,"timestamp":307}},{"tick":4766,"command":{"kind":"slot","slot":3,"tick":4766,"timestamp":308}},{"tick":4766,"command":{"kind":"slot","slot":3,"tick":4766,"timestamp":309}},{"tick":4766,"command":{"kind":"slot","slot":3,"tick":4766,"timestamp":310}},{"tick":4767,"command":{"kind":"slot","slot":4,"tick":4767,"timestamp":311}},{"tick":4768,"command":{"kind":"cast","abilityId":"zenith","target":{"kind":"point","position":{"x":1692.8073365115263,"y":1974.5627740294167}},"tick":4768,"timestamp":312}},{"tick":4770,"command":{"kind":"heal","tick":4770,"timestamp":313}},{"tick":4800,"command":{"kind":"heal","tick":4800,"timestamp":314}},{"tick":4830,"command":{"kind":"heal","tick":4830,"timestamp":315}},{"tick":4860,"command":{"kind":"heal","tick":4860,"timestamp":316}},{"tick":4890,"command":{"kind":"heal","tick":4890,"timestamp":317}},{"tick":4920,"command":{"kind":"heal","tick":4920,"timestamp":318}},{"tick":4950,"command":{"kind":"heal","tick":4950,"timestamp":319}},{"tick":4980,"command":{"kind":"heal","tick":4980,"timestamp":320}},{"tick":5010,"command":{"kind":"heal","tick":5010,"timestamp":321}},{"tick":5012,"command":{"kind":"reset_map","tick":5012,"timestamp":322}},{"tick":5013,"command":{"kind":"restore_mana","tick":5013,"timestamp":323}},{"tick":5014,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":5014,"timestamp":324}},{"tick":5040,"command":{"kind":"heal","tick":5040,"timestamp":325}},{"tick":5060,"command":{"kind":"slot","slot":3,"tick":5060,"timestamp":326}},{"tick":5060,"command":{"kind":"slot","slot":3,"tick":5060,"timestamp":327}},{"tick":5060,"command":{"kind":"slot","slot":2,"tick":5060,"timestamp":328}},{"tick":5061,"command":{"kind":"slot","slot":4,"tick":5061,"timestamp":329}},{"tick":5062,"command":{"kind":"cast","abilityId":"bolide","target":{"kind":"point","position":{"x":1733.6550498946576,"y":1980.6278240763618}},"tick":5062,"timestamp":330}},{"tick":5070,"command":{"kind":"heal","tick":5070,"timestamp":331}},{"tick":5100,"command":{"kind":"heal","tick":5100,"timestamp":332}},{"tick":5130,"command":{"kind":"heal","tick":5130,"timestamp":333}},{"tick":5160,"command":{"kind":"heal","tick":5160,"timestamp":334}},{"tick":5190,"command":{"kind":"heal","tick":5190,"timestamp":335}},{"tick":5220,"command":{"kind":"heal","tick":5220,"timestamp":336}},{"tick":5250,"command":{"kind":"heal","tick":5250,"timestamp":337}},{"tick":5280,"command":{"kind":"heal","tick":5280,"timestamp":338}},{"tick":5306,"command":{"kind":"reset_map","tick":5306,"timestamp":339}},{"tick":5307,"command":{"kind":"restore_mana","tick":5307,"timestamp":340}},{"tick":5308,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":5308,"timestamp":341}},{"tick":5310,"command":{"kind":"heal","tick":5310,"timestamp":342}},{"tick":5340,"command":{"kind":"heal","tick":5340,"timestamp":343}},{"tick":5354,"command":{"kind":"slot","slot":1,"tick":5354,"timestamp":344}},{"tick":5354,"command":{"kind":"slot","slot":2,"tick":5354,"timestamp":345}},{"tick":5354,"command":{"kind":"slot","slot":3,"tick":5354,"timestamp":346}},{"tick":5355,"command":{"kind":"slot","slot":4,"tick":5355,"timestamp":347}},{"tick":5356,"command":{"kind":"cast","abilityId":"clarion","target":{"kind":"direction","position":{"x":1733.6550499097361,"y":1980.6278193335213}},"tick":5356,"timestamp":348}},{"tick":5370,"command":{"kind":"heal","tick":5370,"timestamp":349}},{"tick":5400,"command":{"kind":"heal","tick":5400,"timestamp":350}},{"tick":5430,"command":{"kind":"heal","tick":5430,"timestamp":351}},{"tick":5460,"command":{"kind":"heal","tick":5460,"timestamp":352}},{"tick":5490,"command":{"kind":"heal","tick":5490,"timestamp":353}},{"tick":5520,"command":{"kind":"heal","tick":5520,"timestamp":354}},{"tick":5550,"command":{"kind":"heal","tick":5550,"timestamp":355}},{"tick":5580,"command":{"kind":"heal","tick":5580,"timestamp":356}},{"tick":5600,"command":{"kind":"reset_map","tick":5600,"timestamp":357}},{"tick":5601,"command":{"kind":"restore_mana","tick":5601,"timestamp":358}},{"tick":5602,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":5602,"timestamp":359}},{"tick":5610,"command":{"kind":"heal","tick":5610,"timestamp":360}},{"tick":5640,"command":{"kind":"heal","tick":5640,"timestamp":361}},{"tick":5648,"command":{"kind":"slot","slot":3,"tick":5648,"timestamp":362}},{"tick":5648,"command":{"kind":"slot","slot":3,"tick":5648,"timestamp":363}},{"tick":5648,"command":{"kind":"slot","slot":1,"tick":5648,"timestamp":364}},{"tick":5649,"command":{"kind":"slot","slot":4,"tick":5649,"timestamp":365}},{"tick":5650,"command":{"kind":"cast","abilityId":"emberling","target":{"kind":"none"},"tick":5650,"timestamp":366}},{"tick":5653,"command":{"kind":"attack_move","destination":{"x":1733.5619073081834,"y":1982.1619050090617},"tick":5653,"timestamp":367}},{"tick":5670,"command":{"kind":"heal","tick":5670,"timestamp":368}},{"tick":5700,"command":{"kind":"heal","tick":5700,"timestamp":369}},{"tick":5730,"command":{"kind":"heal","tick":5730,"timestamp":370}},{"tick":5760,"command":{"kind":"heal","tick":5760,"timestamp":371}},{"tick":5790,"command":{"kind":"heal","tick":5790,"timestamp":372}},{"tick":5820,"command":{"kind":"heal","tick":5820,"timestamp":373}},{"tick":5850,"command":{"kind":"heal","tick":5850,"timestamp":374}},{"tick":5880,"command":{"kind":"heal","tick":5880,"timestamp":375}},{"tick":5894,"command":{"kind":"reset_map","tick":5894,"timestamp":376}},{"tick":5895,"command":{"kind":"restore_mana","tick":5895,"timestamp":377}},{"tick":5896,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":5896,"timestamp":378}},{"tick":5910,"command":{"kind":"heal","tick":5910,"timestamp":379}},{"tick":5940,"command":{"kind":"heal","tick":5940,"timestamp":380}},{"tick":5942,"command":{"kind":"slot","slot":2,"tick":5942,"timestamp":381}},{"tick":5942,"command":{"kind":"slot","slot":2,"tick":5942,"timestamp":382}},{"tick":5942,"command":{"kind":"slot","slot":3,"tick":5942,"timestamp":383}},{"tick":5943,"command":{"kind":"slot","slot":4,"tick":5943,"timestamp":384}},{"tick":5944,"command":{"kind":"cast","abilityId":"quicken","target":{"kind":"none"},"tick":5944,"timestamp":385}},{"tick":5947,"command":{"kind":"attack_move","destination":{"x":1742.8328412677863,"y":1982.1818599053804},"tick":5947,"timestamp":386}},{"tick":5970,"command":{"kind":"heal","tick":5970,"timestamp":387}},{"tick":6000,"command":{"kind":"heal","tick":6000,"timestamp":388}},{"tick":6030,"command":{"kind":"heal","tick":6030,"timestamp":389}},{"tick":6060,"command":{"kind":"heal","tick":6060,"timestamp":390}},{"tick":6090,"command":{"kind":"heal","tick":6090,"timestamp":391}},{"tick":6120,"command":{"kind":"heal","tick":6120,"timestamp":392}},{"tick":6150,"command":{"kind":"heal","tick":6150,"timestamp":393}},{"tick":6180,"command":{"kind":"heal","tick":6180,"timestamp":394}},{"tick":6188,"command":{"kind":"reset_map","tick":6188,"timestamp":395}},{"tick":6189,"command":{"kind":"restore_mana","tick":6189,"timestamp":396}},{"tick":6190,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":6190,"timestamp":397}},{"tick":6210,"command":{"kind":"heal","tick":6210,"timestamp":398}},{"tick":6236,"command":{"kind":"slot","slot":1,"tick":6236,"timestamp":399}},{"tick":6236,"command":{"kind":"slot","slot":1,"tick":6236,"timestamp":400}},{"tick":6236,"command":{"kind":"slot","slot":2,"tick":6236,"timestamp":401}},{"tick":6237,"command":{"kind":"slot","slot":4,"tick":6237,"timestamp":402}},{"tick":6238,"command":{"kind":"cast","abilityId":"wane","target":{"kind":"none"},"tick":6238,"timestamp":403}},{"tick":6240,"command":{"kind":"heal","tick":6240,"timestamp":404}},{"tick":6270,"command":{"kind":"heal","tick":6270,"timestamp":405}},{"tick":6300,"command":{"kind":"heal","tick":6300,"timestamp":406}},{"tick":6330,"command":{"kind":"heal","tick":6330,"timestamp":407}},{"tick":6360,"command":{"kind":"heal","tick":6360,"timestamp":408}},{"tick":6390,"command":{"kind":"heal","tick":6390,"timestamp":409}},{"tick":6420,"command":{"kind":"heal","tick":6420,"timestamp":410}},{"tick":6450,"command":{"kind":"heal","tick":6450,"timestamp":411}},{"tick":6480,"command":{"kind":"heal","tick":6480,"timestamp":412}},{"tick":6482,"command":{"kind":"level_up","tick":6482,"timestamp":413}},{"tick":6483,"command":{"kind":"level_up","tick":6483,"timestamp":414}},{"tick":6484,"command":{"kind":"level_up","tick":6484,"timestamp":415}},{"tick":6485,"command":{"kind":"level_up","tick":6485,"timestamp":416}},{"tick":6486,"command":{"kind":"level_up","tick":6486,"timestamp":417}},{"tick":6487,"command":{"kind":"level_up","tick":6487,"timestamp":418}},{"tick":6488,"command":{"kind":"level_up","tick":6488,"timestamp":419}},{"tick":6489,"command":{"kind":"level_up","tick":6489,"timestamp":420}},{"tick":6490,"command":{"kind":"set_orb_levels","levels":[7,7,7],"tick":6490,"timestamp":421}},{"tick":6491,"command":{"kind":"reset_map","tick":6491,"timestamp":422}},{"tick":6492,"command":{"kind":"restore_mana","tick":6492,"timestamp":423}},{"tick":6493,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":6493,"timestamp":424}},{"tick":6510,"command":{"kind":"heal","tick":6510,"timestamp":425}},{"tick":6539,"command":{"kind":"slot","slot":1,"tick":6539,"timestamp":426}},{"tick":6539,"command":{"kind":"slot","slot":1,"tick":6539,"timestamp":427}},{"tick":6539,"command":{"kind":"slot","slot":1,"tick":6539,"timestamp":428}},{"tick":6540,"command":{"kind":"slot","slot":4,"tick":6540,"timestamp":429}},{"tick":6540,"command":{"kind":"heal","tick":6540,"timestamp":430}},{"tick":6541,"command":{"kind":"cast","abilityId":"hoarfrost","target":{"kind":"unit","unitId":786437},"tick":6541,"timestamp":431}},{"tick":6544,"command":{"kind":"attack_target","targetId":786437,"tick":6544,"timestamp":432}},{"tick":6570,"command":{"kind":"heal","tick":6570,"timestamp":433}},{"tick":6600,"command":{"kind":"heal","tick":6600,"timestamp":434}},{"tick":6630,"command":{"kind":"heal","tick":6630,"timestamp":435}},{"tick":6660,"command":{"kind":"heal","tick":6660,"timestamp":436}},{"tick":6690,"command":{"kind":"heal","tick":6690,"timestamp":437}},{"tick":6720,"command":{"kind":"heal","tick":6720,"timestamp":438}},{"tick":6750,"command":{"kind":"heal","tick":6750,"timestamp":439}},{"tick":6780,"command":{"kind":"heal","tick":6780,"timestamp":440}},{"tick":6785,"command":{"kind":"reset_map","tick":6785,"timestamp":441}},{"tick":6786,"command":{"kind":"restore_mana","tick":6786,"timestamp":442}},{"tick":6787,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":6787,"timestamp":443}},{"tick":6810,"command":{"kind":"heal","tick":6810,"timestamp":444}},{"tick":6833,"command":{"kind":"slot","slot":1,"tick":6833,"timestamp":445}},{"tick":6833,"command":{"kind":"slot","slot":1,"tick":6833,"timestamp":446}},{"tick":6833,"command":{"kind":"slot","slot":3,"tick":6833,"timestamp":447}},{"tick":6834,"command":{"kind":"slot","slot":4,"tick":6834,"timestamp":448}},{"tick":6835,"command":{"kind":"cast","abilityId":"glacier","target":{"kind":"vector","position":{"x":1730.6077190217886,"y":1980.0681465593334},"end":{"x":1730.6077190217886,"y":2280.0681465593334}},"tick":6835,"timestamp":449}},{"tick":6840,"command":{"kind":"heal","tick":6840,"timestamp":450}},{"tick":6870,"command":{"kind":"heal","tick":6870,"timestamp":451}},{"tick":6900,"command":{"kind":"heal","tick":6900,"timestamp":452}},{"tick":6930,"command":{"kind":"heal","tick":6930,"timestamp":453}},{"tick":6960,"command":{"kind":"heal","tick":6960,"timestamp":454}},{"tick":6990,"command":{"kind":"heal","tick":6990,"timestamp":455}},{"tick":7020,"command":{"kind":"heal","tick":7020,"timestamp":456}},{"tick":7050,"command":{"kind":"heal","tick":7050,"timestamp":457}},{"tick":7079,"command":{"kind":"reset_map","tick":7079,"timestamp":458}},{"tick":7080,"command":{"kind":"restore_mana","tick":7080,"timestamp":459}},{"tick":7080,"command":{"kind":"heal","tick":7080,"timestamp":460}},{"tick":7081,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":7081,"timestamp":461}},{"tick":7110,"command":{"kind":"heal","tick":7110,"timestamp":462}},{"tick":7127,"command":{"kind":"slot","slot":2,"tick":7127,"timestamp":463}},{"tick":7127,"command":{"kind":"slot","slot":2,"tick":7127,"timestamp":464}},{"tick":7127,"command":{"kind":"slot","slot":2,"tick":7127,"timestamp":465}},{"tick":7128,"command":{"kind":"slot","slot":4,"tick":7128,"timestamp":466}},{"tick":7129,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1683.6742201823886,"y":1973.1429452803136}},"tick":7129,"timestamp":467}},{"tick":7140,"command":{"kind":"heal","tick":7140,"timestamp":468}},{"tick":7170,"command":{"kind":"heal","tick":7170,"timestamp":469}},{"tick":7200,"command":{"kind":"heal","tick":7200,"timestamp":470}},{"tick":7230,"command":{"kind":"heal","tick":7230,"timestamp":471}},{"tick":7260,"command":{"kind":"heal","tick":7260,"timestamp":472}},{"tick":7290,"command":{"kind":"heal","tick":7290,"timestamp":473}},{"tick":7320,"command":{"kind":"heal","tick":7320,"timestamp":474}},{"tick":7350,"command":{"kind":"heal","tick":7350,"timestamp":475}},{"tick":7373,"command":{"kind":"reset_map","tick":7373,"timestamp":476}},{"tick":7374,"command":{"kind":"restore_mana","tick":7374,"timestamp":477}},{"tick":7375,"command":{"kind":"spawn_pack","archetypeId":"ranged_archer","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":7375,"timestamp":478}},{"tick":7380,"command":{"kind":"heal","tick":7380,"timestamp":479}},{"tick":7410,"command":{"kind":"heal","tick":7410,"timestamp":480}},{"tick":7421,"command":{"kind":"slot","slot":2,"tick":7421,"timestamp":481}},{"tick":7421,"command":{"kind":"slot","slot":2,"tick":7421,"timestamp":482}},{"tick":7421,"command":{"kind":"slot","slot":2,"tick":7421,"timestamp":483}},{"tick":7422,"command":{"kind":"slot","slot":4,"tick":7422,"timestamp":484}},{"tick":7423,"command":{"kind":"cast","abilityId":"siphon","target":{"kind":"point","position":{"x":1506.6374724220557,"y":1962.679412954357}},"tick":7423,"timestamp":485}},{"tick":7440,"command":{"kind":"heal","tick":7440,"timestamp":486}},{"tick":7470,"command":{"kind":"heal","tick":7470,"timestamp":487}},{"tick":7500,"command":{"kind":"heal","tick":7500,"timestamp":488}},{"tick":7530,"command":{"kind":"heal","tick":7530,"timestamp":489}},{"tick":7560,"command":{"kind":"heal","tick":7560,"timestamp":490}},{"tick":7590,"command":{"kind":"heal","tick":7590,"timestamp":491}},{"tick":7620,"command":{"kind":"heal","tick":7620,"timestamp":492}},{"tick":7650,"command":{"kind":"heal","tick":7650,"timestamp":493}},{"tick":7667,"command":{"kind":"reset_map","tick":7667,"timestamp":494}},{"tick":7668,"command":{"kind":"restore_mana","tick":7668,"timestamp":495}},{"tick":7669,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":7669,"timestamp":496}},{"tick":7680,"command":{"kind":"heal","tick":7680,"timestamp":497}},{"tick":7710,"command":{"kind":"heal","tick":7710,"timestamp":498}},{"tick":7715,"command":{"kind":"slot","slot":2,"tick":7715,"timestamp":499}},{"tick":7715,"command":{"kind":"slot","slot":2,"tick":7715,"timestamp":500}},{"tick":7715,"command":{"kind":"slot","slot":1,"tick":7715,"timestamp":501}},{"tick":7716,"command":{"kind":"slot","slot":4,"tick":7716,"timestamp":502}},{"tick":7717,"command":{"kind":"cast","abilityId":"updraft","target":{"kind":"direction","position":{"x":1733.6550471263404,"y":1980.6278218327832}},"tick":7717,"timestamp":503}},{"tick":7740,"command":{"kind":"heal","tick":7740,"timestamp":504}},{"tick":7770,"command":{"kind":"heal","tick":7770,"timestamp":505}},{"tick":7800,"command":{"kind":"heal","tick":7800,"timestamp":506}},{"tick":7830,"command":{"kind":"heal","tick":7830,"timestamp":507}},{"tick":7860,"command":{"kind":"heal","tick":7860,"timestamp":508}},{"tick":7890,"command":{"kind":"heal","tick":7890,"timestamp":509}},{"tick":7920,"command":{"kind":"heal","tick":7920,"timestamp":510}},{"tick":7950,"command":{"kind":"heal","tick":7950,"timestamp":511}},{"tick":7961,"command":{"kind":"reset_map","tick":7961,"timestamp":512}},{"tick":7962,"command":{"kind":"restore_mana","tick":7962,"timestamp":513}},{"tick":7963,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":7963,"timestamp":514}},{"tick":7980,"command":{"kind":"heal","tick":7980,"timestamp":515}},{"tick":8009,"command":{"kind":"slot","slot":3,"tick":8009,"timestamp":516}},{"tick":8009,"command":{"kind":"slot","slot":3,"tick":8009,"timestamp":517}},{"tick":8009,"command":{"kind":"slot","slot":3,"tick":8009,"timestamp":518}},{"tick":8010,"command":{"kind":"slot","slot":4,"tick":8010,"timestamp":519}},{"tick":8010,"command":{"kind":"heal","tick":8010,"timestamp":520}},{"tick":8011,"command":{"kind":"cast","abilityId":"zenith","target":{"kind":"point","position":{"x":1715.2512498334752,"y":1978.152479276531}},"tick":8011,"timestamp":521}},{"tick":8040,"command":{"kind":"heal","tick":8040,"timestamp":522}},{"tick":8070,"command":{"kind":"heal","tick":8070,"timestamp":523}},{"tick":8100,"command":{"kind":"heal","tick":8100,"timestamp":524}},{"tick":8130,"command":{"kind":"heal","tick":8130,"timestamp":525}},{"tick":8160,"command":{"kind":"heal","tick":8160,"timestamp":526}},{"tick":8190,"command":{"kind":"heal","tick":8190,"timestamp":527}},{"tick":8220,"command":{"kind":"heal","tick":8220,"timestamp":528}},{"tick":8250,"command":{"kind":"heal","tick":8250,"timestamp":529}},{"tick":8255,"command":{"kind":"reset_map","tick":8255,"timestamp":530}},{"tick":8256,"command":{"kind":"restore_mana","tick":8256,"timestamp":531}},{"tick":8257,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":8257,"timestamp":532}},{"tick":8280,"command":{"kind":"heal","tick":8280,"timestamp":533}},{"tick":8303,"command":{"kind":"slot","slot":3,"tick":8303,"timestamp":534}},{"tick":8303,"command":{"kind":"slot","slot":3,"tick":8303,"timestamp":535}},{"tick":8303,"command":{"kind":"slot","slot":2,"tick":8303,"timestamp":536}},{"tick":8304,"command":{"kind":"slot","slot":4,"tick":8304,"timestamp":537}},{"tick":8305,"command":{"kind":"cast","abilityId":"bolide","target":{"kind":"point","position":{"x":1733.6550471263404,"y":1980.6278218327832}},"tick":8305,"timestamp":538}},{"tick":8310,"command":{"kind":"heal","tick":8310,"timestamp":539}},{"tick":8340,"command":{"kind":"heal","tick":8340,"timestamp":540}},{"tick":8370,"command":{"kind":"heal","tick":8370,"timestamp":541}},{"tick":8400,"command":{"kind":"heal","tick":8400,"timestamp":542}},{"tick":8430,"command":{"kind":"heal","tick":8430,"timestamp":543}},{"tick":8460,"command":{"kind":"heal","tick":8460,"timestamp":544}},{"tick":8490,"command":{"kind":"heal","tick":8490,"timestamp":545}},{"tick":8520,"command":{"kind":"heal","tick":8520,"timestamp":546}},{"tick":8549,"command":{"kind":"reset_map","tick":8549,"timestamp":547}},{"tick":8550,"command":{"kind":"restore_mana","tick":8550,"timestamp":548}},{"tick":8550,"command":{"kind":"heal","tick":8550,"timestamp":549}},{"tick":8551,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":8551,"timestamp":550}},{"tick":8580,"command":{"kind":"heal","tick":8580,"timestamp":551}},{"tick":8597,"command":{"kind":"slot","slot":1,"tick":8597,"timestamp":552}},{"tick":8597,"command":{"kind":"slot","slot":2,"tick":8597,"timestamp":553}},{"tick":8597,"command":{"kind":"slot","slot":3,"tick":8597,"timestamp":554}},{"tick":8598,"command":{"kind":"slot","slot":4,"tick":8598,"timestamp":555}},{"tick":8599,"command":{"kind":"cast","abilityId":"clarion","target":{"kind":"direction","position":{"x":1681.1034749375533,"y":1981.5779528860571}},"tick":8599,"timestamp":556}},{"tick":8610,"command":{"kind":"heal","tick":8610,"timestamp":557}},{"tick":8640,"command":{"kind":"heal","tick":8640,"timestamp":558}},{"tick":8670,"command":{"kind":"heal","tick":8670,"timestamp":559}},{"tick":8700,"command":{"kind":"heal","tick":8700,"timestamp":560}},{"tick":8730,"command":{"kind":"heal","tick":8730,"timestamp":561}},{"tick":8760,"command":{"kind":"heal","tick":8760,"timestamp":562}},{"tick":8790,"command":{"kind":"heal","tick":8790,"timestamp":563}},{"tick":8820,"command":{"kind":"heal","tick":8820,"timestamp":564}},{"tick":8843,"command":{"kind":"reset_map","tick":8843,"timestamp":565}},{"tick":8844,"command":{"kind":"restore_mana","tick":8844,"timestamp":566}},{"tick":8845,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":8845,"timestamp":567}},{"tick":8850,"command":{"kind":"heal","tick":8850,"timestamp":568}},{"tick":8880,"command":{"kind":"heal","tick":8880,"timestamp":569}},{"tick":8891,"command":{"kind":"slot","slot":3,"tick":8891,"timestamp":570}},{"tick":8891,"command":{"kind":"slot","slot":3,"tick":8891,"timestamp":571}},{"tick":8891,"command":{"kind":"slot","slot":1,"tick":8891,"timestamp":572}},{"tick":8892,"command":{"kind":"slot","slot":4,"tick":8892,"timestamp":573}},{"tick":8893,"command":{"kind":"cast","abilityId":"emberling","target":{"kind":"none"},"tick":8893,"timestamp":574}},{"tick":8896,"command":{"kind":"attack_move","destination":{"x":1693.5399329511595,"y":1980.7485152351928},"tick":8896,"timestamp":575}},{"tick":8910,"command":{"kind":"heal","tick":8910,"timestamp":576}},{"tick":8940,"command":{"kind":"heal","tick":8940,"timestamp":577}},{"tick":8970,"command":{"kind":"heal","tick":8970,"timestamp":578}},{"tick":9000,"command":{"kind":"heal","tick":9000,"timestamp":579}},{"tick":9030,"command":{"kind":"heal","tick":9030,"timestamp":580}},{"tick":9060,"command":{"kind":"heal","tick":9060,"timestamp":581}},{"tick":9090,"command":{"kind":"heal","tick":9090,"timestamp":582}},{"tick":9120,"command":{"kind":"heal","tick":9120,"timestamp":583}},{"tick":9137,"command":{"kind":"reset_map","tick":9137,"timestamp":584}},{"tick":9138,"command":{"kind":"restore_mana","tick":9138,"timestamp":585}},{"tick":9139,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":9139,"timestamp":586}},{"tick":9150,"command":{"kind":"heal","tick":9150,"timestamp":587}},{"tick":9180,"command":{"kind":"heal","tick":9180,"timestamp":588}},{"tick":9185,"command":{"kind":"slot","slot":2,"tick":9185,"timestamp":589}},{"tick":9185,"command":{"kind":"slot","slot":2,"tick":9185,"timestamp":590}},{"tick":9185,"command":{"kind":"slot","slot":3,"tick":9185,"timestamp":591}},{"tick":9186,"command":{"kind":"slot","slot":4,"tick":9186,"timestamp":592}},{"tick":9187,"command":{"kind":"cast","abilityId":"quicken","target":{"kind":"none"},"tick":9187,"timestamp":593}},{"tick":9190,"command":{"kind":"attack_move","destination":{"x":1722.3793046957137,"y":1981.9628190659998},"tick":9190,"timestamp":594}},{"tick":9210,"command":{"kind":"heal","tick":9210,"timestamp":595}},{"tick":9240,"command":{"kind":"heal","tick":9240,"timestamp":596}},{"tick":9270,"command":{"kind":"heal","tick":9270,"timestamp":597}},{"tick":9300,"command":{"kind":"heal","tick":9300,"timestamp":598}},{"tick":9330,"command":{"kind":"heal","tick":9330,"timestamp":599}},{"tick":9360,"command":{"kind":"heal","tick":9360,"timestamp":600}},{"tick":9390,"command":{"kind":"heal","tick":9390,"timestamp":601}},{"tick":9420,"command":{"kind":"heal","tick":9420,"timestamp":602}},{"tick":9431,"command":{"kind":"reset_map","tick":9431,"timestamp":603}},{"tick":9432,"command":{"kind":"restore_mana","tick":9432,"timestamp":604}},{"tick":9433,"command":{"kind":"spawn_pack","archetypeId":"melee_grunt","tier":"normal","count":5,"position":{"x":1500,"y":2000},"tick":9433,"timestamp":605}},{"tick":9450,"command":{"kind":"heal","tick":9450,"timestamp":606}},{"tick":9479,"command":{"kind":"slot","slot":1,"tick":9479,"timestamp":607}},{"tick":9479,"command":{"kind":"slot","slot":1,"tick":9479,"timestamp":608}},{"tick":9479,"command":{"kind":"slot","slot":2,"tick":9479,"timestamp":609}},{"tick":9480,"command":{"kind":"slot","slot":4,"tick":9480,"timestamp":610}},{"tick":9480,"command":{"kind":"heal","tick":9480,"timestamp":611}},{"tick":9481,"command":{"kind":"cast","abilityId":"wane","target":{"kind":"none"},"tick":9481,"timestamp":612}},{"tick":9510,"command":{"kind":"heal","tick":9510,"timestamp":613}},{"tick":9540,"command":{"kind":"heal","tick":9540,"timestamp":614}},{"tick":9570,"command":{"kind":"heal","tick":9570,"timestamp":615}},{"tick":9600,"command":{"kind":"heal","tick":9600,"timestamp":616}},{"tick":9630,"command":{"kind":"heal","tick":9630,"timestamp":617}},{"tick":9660,"command":{"kind":"heal","tick":9660,"timestamp":618}},{"tick":9690,"command":{"kind":"heal","tick":9690,"timestamp":619}},{"tick":9720,"command":{"kind":"heal","tick":9720,"timestamp":620}},{"tick":9725,"command":{"kind":"reset_map","tick":9725,"timestamp":621}},{"tick":9726,"command":{"kind":"heal","tick":9726,"timestamp":622}},{"tick":9726,"command":{"kind":"restore_mana","tick":9726,"timestamp":623}}]}
+{
+  "seed": 202,
+  "contentVersion": "76b72c57",
+  "contentReloads": [],
+  "mapId": "arena",
+  "ticks": 9727,
+  "checksums":[{"tick":0,"value":30895511},{"tick":30,"value":650054781},{"tick":60,"value":507609113},{"tick":90,"value":579962969},{"tick":120,"value":968336726},{"tick":150,"value":646870052},{"tick":180,"value":509781527},{"tick":210,"value":1053756891},{"tick":240,"value":203335761},{"tick":270,"value":503195671},{"tick":300,"value":1003453935},{"tick":330,"value":235262538},{"tick":360,"value":975378573},{"tick":390,"value":871078454},{"tick":420,"value":1025094270},{"tick":450,"value":1042220035},{"tick":480,"value":653431839},{"tick":510,"value":449541201},{"tick":540,"value":49215330},{"tick":570,"value":980972379},{"tick":600,"value":891699967},{"tick":630,"value":49096490},{"tick":660,"value":267162065},{"tick":690,"value":830208994},{"tick":720,"value":722230167},{"tick":750,"value":734696617},{"tick":780,"value":1044175025},{"tick":810,"value":324150546},{"tick":840,"value":42065531},{"tick":870,"value":902146997},{"tick":900,"value":826598164},{"tick":930,"value":356720221},{"tick":960,"value":963540879},{"tick":990,"value":502853303},{"tick":1020,"value":66810012},{"tick":1050,"value":498525148},{"tick":1080,"value":999016560},{"tick":1110,"value":899003274},{"tick":1140,"value":849354617},{"tick":1170,"value":20626841},{"tick":1200,"value":123496035},{"tick":1230,"value":1061711282},{"tick":1260,"value":90461157},{"tick":1290,"value":793912546},{"tick":1320,"value":972324251},{"tick":1350,"value":799121609},{"tick":1380,"value":287781223},{"tick":1410,"value":648032603},{"tick":1440,"value":943608247},{"tick":1470,"value":1042690150},{"tick":1500,"value":845583602},{"tick":1530,"value":95916714},{"tick":1560,"value":302130049},{"tick":1590,"value":910435649},{"tick":1620,"value":400774885},{"tick":1650,"value":237722931},{"tick":1680,"value":1012220721},{"tick":1710,"value":844767910},{"tick":1740,"value":895509695},{"tick":1770,"value":270439249},{"tick":1800,"value":845752083},{"tick":1830,"value":13408604},{"tick":1860,"value":972313406},{"tick":1890,"value":519924354},{"tick":1920,"value":1059333796},{"tick":1950,"value":483130814},{"tick":1980,"value":405376288},{"tick":2010,"value":259468855},{"tick":2040,"value":16833419},{"tick":2070,"value":523778304},{"tick":2100,"value":695087017},{"tick":2130,"value":272669916},{"tick":2160,"value":893764415},{"tick":2190,"value":91980579},{"tick":2220,"value":755895682},{"tick":2250,"value":146713384},{"tick":2280,"value":397978686},{"tick":2310,"value":880208679},{"tick":2340,"value":767455399},{"tick":2370,"value":99873338},{"tick":2400,"value":775091979},{"tick":2430,"value":290121036},{"tick":2460,"value":390799618},{"tick":2490,"value":1069098449},{"tick":2520,"value":158159086},{"tick":2550,"value":727464022},{"tick":2580,"value":962334750},{"tick":2610,"value":863198203},{"tick":2640,"value":390534062},{"tick":2670,"value":991009467},{"tick":2700,"value":363809768},{"tick":2730,"value":400467439},{"tick":2760,"value":871382219},{"tick":2790,"value":536882927},{"tick":2820,"value":920945476},{"tick":2850,"value":129404301},{"tick":2880,"value":759943880},{"tick":2910,"value":702266128},{"tick":2940,"value":861247335},{"tick":2970,"value":183253962},{"tick":3000,"value":916647703},{"tick":3030,"value":919919587},{"tick":3060,"value":783949921},{"tick":3090,"value":113191155},{"tick":3120,"value":271712904},{"tick":3150,"value":428668131},{"tick":3180,"value":514951720},{"tick":3210,"value":504697179},{"tick":3240,"value":55164599},{"tick":3270,"value":381181425},{"tick":3300,"value":778769357},{"tick":3330,"value":91194204},{"tick":3360,"value":982652847},{"tick":3390,"value":176778598},{"tick":3420,"value":411775153},{"tick":3450,"value":65892768},{"tick":3480,"value":163806857},{"tick":3510,"value":727052567},{"tick":3540,"value":885515728},{"tick":3570,"value":1062082310},{"tick":3600,"value":508334765},{"tick":3630,"value":776471186},{"tick":3660,"value":352048442},{"tick":3690,"value":166136563},{"tick":3720,"value":186091463},{"tick":3750,"value":886147165},{"tick":3780,"value":1062879950},{"tick":3810,"value":542109331},{"tick":3840,"value":659222179},{"tick":3870,"value":666332218},{"tick":3900,"value":600629247},{"tick":3930,"value":245524913},{"tick":3960,"value":299785896},{"tick":3990,"value":26809720},{"tick":4020,"value":976049949},{"tick":4050,"value":985639688},{"tick":4080,"value":887973772},{"tick":4110,"value":224917015},{"tick":4140,"value":1067851863},{"tick":4170,"value":534190682},{"tick":4200,"value":254639621},{"tick":4230,"value":228490274},{"tick":4260,"value":856858264},{"tick":4290,"value":681925951},{"tick":4320,"value":230901501},{"tick":4350,"value":820680140},{"tick":4380,"value":1046986193},{"tick":4410,"value":526609174},{"tick":4440,"value":287913521},{"tick":4470,"value":1063998965},{"tick":4500,"value":1026514022},{"tick":4530,"value":1063989171},{"tick":4560,"value":586607384},{"tick":4590,"value":158822216},{"tick":4620,"value":661452136},{"tick":4650,"value":1044226858},{"tick":4680,"value":28686417},{"tick":4710,"value":927606693},{"tick":4740,"value":556937071},{"tick":4770,"value":329955177},{"tick":4800,"value":395794975},{"tick":4830,"value":143933337},{"tick":4860,"value":1040414689},{"tick":4890,"value":1058077519},{"tick":4920,"value":713383644},{"tick":4950,"value":1040724040},{"tick":4980,"value":622462082},{"tick":5010,"value":760378518},{"tick":5040,"value":396339164},{"tick":5070,"value":1010832153},{"tick":5100,"value":944864997},{"tick":5130,"value":1051838999},{"tick":5160,"value":632206196},{"tick":5190,"value":685617485},{"tick":5220,"value":19043998},{"tick":5250,"value":556835002},{"tick":5280,"value":553401407},{"tick":5310,"value":822370780},{"tick":5340,"value":850239807},{"tick":5370,"value":502888127},{"tick":5400,"value":624716746},{"tick":5430,"value":282934619},{"tick":5460,"value":223252211},{"tick":5490,"value":894899588},{"tick":5520,"value":513836207},{"tick":5550,"value":37655627},{"tick":5580,"value":637207926},{"tick":5610,"value":885729667},{"tick":5640,"value":984018151},{"tick":5670,"value":351311455},{"tick":5700,"value":225867153},{"tick":5730,"value":712759605},{"tick":5760,"value":253045686},{"tick":5790,"value":963472025},{"tick":5820,"value":460927550},{"tick":5850,"value":791371966},{"tick":5880,"value":552490471},{"tick":5910,"value":253790373},{"tick":5940,"value":678382426},{"tick":5970,"value":933311397},{"tick":6000,"value":648245240},{"tick":6030,"value":516678054},{"tick":6060,"value":779022770},{"tick":6090,"value":439224770},{"tick":6120,"value":540099035},{"tick":6150,"value":995667392},{"tick":6180,"value":760347538},{"tick":6210,"value":459870902},{"tick":6240,"value":678633241},{"tick":6270,"value":130442226},{"tick":6300,"value":43331425},{"tick":6330,"value":138104990},{"tick":6360,"value":897329198},{"tick":6390,"value":863007903},{"tick":6420,"value":914831463},{"tick":6450,"value":598793218},{"tick":6480,"value":187345088},{"tick":6510,"value":814470267},{"tick":6540,"value":678695565},{"tick":6570,"value":149696544},{"tick":6600,"value":167107868},{"tick":6630,"value":610849323},{"tick":6660,"value":1025392455},{"tick":6690,"value":1004434220},{"tick":6720,"value":806469333},{"tick":6750,"value":980697332},{"tick":6780,"value":463512416},{"tick":6810,"value":959258911},{"tick":6840,"value":784809746},{"tick":6870,"value":784071522},{"tick":6900,"value":160014740},{"tick":6930,"value":127386493},{"tick":6960,"value":722422413},{"tick":6990,"value":900145239},{"tick":7020,"value":533586997},{"tick":7050,"value":150041793},{"tick":7080,"value":477403967},{"tick":7110,"value":638645513},{"tick":7140,"value":222144261},{"tick":7170,"value":904855290},{"tick":7200,"value":101728095},{"tick":7230,"value":816228983},{"tick":7260,"value":295189160},{"tick":7290,"value":1060572929},{"tick":7320,"value":731857052},{"tick":7350,"value":497583158},{"tick":7380,"value":793320373},{"tick":7410,"value":253398913},{"tick":7440,"value":989538011},{"tick":7470,"value":812356041},{"tick":7500,"value":919597037},{"tick":7530,"value":15376899},{"tick":7560,"value":134764807},{"tick":7590,"value":1037103169},{"tick":7620,"value":848911203},{"tick":7650,"value":870528175},{"tick":7680,"value":273131957},{"tick":7710,"value":965273330},{"tick":7740,"value":200234151},{"tick":7770,"value":261367124},{"tick":7800,"value":329716329},{"tick":7830,"value":567382784},{"tick":7860,"value":363171244},{"tick":7890,"value":334990565},{"tick":7920,"value":508751005},{"tick":7950,"value":234996494},{"tick":7980,"value":673511957},{"tick":8010,"value":5367490},{"tick":8040,"value":648982960},{"tick":8070,"value":326225390},{"tick":8100,"value":638577897},{"tick":8130,"value":366452825},{"tick":8160,"value":650447527},{"tick":8190,"value":1044740610},{"tick":8220,"value":1021220004},{"tick":8250,"value":938424936},{"tick":8280,"value":736377388},{"tick":8310,"value":302703243},{"tick":8340,"value":907868096},{"tick":8370,"value":748938204},{"tick":8400,"value":898825864},{"tick":8430,"value":891532894},{"tick":8460,"value":960588717},{"tick":8490,"value":763719043},{"tick":8520,"value":364690246},{"tick":8550,"value":1060103069},{"tick":8580,"value":117503784},{"tick":8610,"value":865873834},{"tick":8640,"value":38770504},{"tick":8670,"value":876594032},{"tick":8700,"value":222843233},{"tick":8730,"value":270629370},{"tick":8760,"value":494577401},{"tick":8790,"value":626327155},{"tick":8820,"value":471318170},{"tick":8850,"value":534600014},{"tick":8880,"value":584865634},{"tick":8910,"value":86776431},{"tick":8940,"value":151882582},{"tick":8970,"value":471970902},{"tick":9000,"value":701296537},{"tick":9030,"value":639365262},{"tick":9060,"value":261526046},{"tick":9090,"value":412569189},{"tick":9120,"value":81709941},{"tick":9150,"value":325921814},{"tick":9180,"value":244552313},{"tick":9210,"value":498959714},{"tick":9240,"value":935898133},{"tick":9270,"value":123300329},{"tick":9300,"value":1042225942},{"tick":9330,"value":356078358},{"tick":9360,"value":258185800},{"tick":9390,"value":1018408607},{"tick":9420,"value":626088745},{"tick":9450,"value":845623286},{"tick":9480,"value":124747844},{"tick":9510,"value":575635941},{"tick":9540,"value":237676656},{"tick":9570,"value":491869536},{"tick":9600,"value":568245185},{"tick":9630,"value":803554168},{"tick":9660,"value":151046729},{"tick":9690,"value":114298247},{"tick":9720,"value":340687178},{"tick":9727,"value":780466940}],
+  "records": [
+    {
+      "tick": 0,
+      "command": { "kind": "toggle_infinite_mana", "tick": 0, "timestamp": 1 }
+    },
+    {
+      "tick": 0,
+      "command": { "kind": "toggle_no_cooldowns", "tick": 0, "timestamp": 2 }
+    },
+    { "tick": 1, "command": { "kind": "level_up", "tick": 1, "timestamp": 3 } },
+    { "tick": 2, "command": { "kind": "level_up", "tick": 2, "timestamp": 4 } },
+    {
+      "tick": 3,
+      "command": {
+        "kind": "set_orb_levels",
+        "levels": [1, 1, 1],
+        "tick": 3,
+        "timestamp": 5
+      }
+    },
+    {
+      "tick": 4,
+      "command": { "kind": "reset_map", "tick": 4, "timestamp": 6 }
+    },
+    {
+      "tick": 5,
+      "command": { "kind": "restore_mana", "tick": 5, "timestamp": 7 }
+    },
+    {
+      "tick": 6,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 6,
+        "timestamp": 8
+      }
+    },
+    { "tick": 30, "command": { "kind": "heal", "tick": 30, "timestamp": 9 } },
+    {
+      "tick": 52,
+      "command": { "kind": "slot", "slot": 1, "tick": 52, "timestamp": 10 }
+    },
+    {
+      "tick": 52,
+      "command": { "kind": "slot", "slot": 1, "tick": 52, "timestamp": 11 }
+    },
+    {
+      "tick": 52,
+      "command": { "kind": "slot", "slot": 1, "tick": 52, "timestamp": 12 }
+    },
+    {
+      "tick": 53,
+      "command": { "kind": "slot", "slot": 4, "tick": 53, "timestamp": 13 }
+    },
+    {
+      "tick": 54,
+      "command": {
+        "kind": "cast",
+        "abilityId": "hoarfrost",
+        "target": { "kind": "unit", "unitId": 3 },
+        "tick": 54,
+        "timestamp": 14
+      }
+    },
+    { "tick": 60, "command": { "kind": "heal", "tick": 60, "timestamp": 15 } },
+    {
+      "tick": 62,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 3,
+        "tick": 62,
+        "timestamp": 16
+      }
+    },
+    { "tick": 90, "command": { "kind": "heal", "tick": 90, "timestamp": 17 } },
+    {
+      "tick": 120,
+      "command": { "kind": "heal", "tick": 120, "timestamp": 18 }
+    },
+    {
+      "tick": 150,
+      "command": { "kind": "heal", "tick": 150, "timestamp": 19 }
+    },
+    {
+      "tick": 180,
+      "command": { "kind": "heal", "tick": 180, "timestamp": 20 }
+    },
+    {
+      "tick": 210,
+      "command": { "kind": "heal", "tick": 210, "timestamp": 21 }
+    },
+    {
+      "tick": 240,
+      "command": { "kind": "heal", "tick": 240, "timestamp": 22 }
+    },
+    {
+      "tick": 270,
+      "command": { "kind": "heal", "tick": 270, "timestamp": 23 }
+    },
+    {
+      "tick": 298,
+      "command": { "kind": "reset_map", "tick": 298, "timestamp": 24 }
+    },
+    {
+      "tick": 299,
+      "command": { "kind": "restore_mana", "tick": 299, "timestamp": 25 }
+    },
+    {
+      "tick": 300,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 300,
+        "timestamp": 26
+      }
+    },
+    {
+      "tick": 300,
+      "command": { "kind": "heal", "tick": 300, "timestamp": 27 }
+    },
+    {
+      "tick": 330,
+      "command": { "kind": "heal", "tick": 330, "timestamp": 28 }
+    },
+    {
+      "tick": 346,
+      "command": { "kind": "slot", "slot": 1, "tick": 346, "timestamp": 29 }
+    },
+    {
+      "tick": 346,
+      "command": { "kind": "slot", "slot": 1, "tick": 346, "timestamp": 30 }
+    },
+    {
+      "tick": 346,
+      "command": { "kind": "slot", "slot": 3, "tick": 346, "timestamp": 31 }
+    },
+    {
+      "tick": 347,
+      "command": { "kind": "slot", "slot": 4, "tick": 347, "timestamp": 32 }
+    },
+    {
+      "tick": 348,
+      "command": {
+        "kind": "cast",
+        "abilityId": "glacier",
+        "target": {
+          "kind": "vector",
+          "position": { "x": 1733.6550472505896, "y": 1980.6278354373717 },
+          "end": { "x": 1733.6550472505896, "y": 2280.6278354373717 }
+        },
+        "tick": 348,
+        "timestamp": 33
+      }
+    },
+    {
+      "tick": 360,
+      "command": { "kind": "heal", "tick": 360, "timestamp": 34 }
+    },
+    {
+      "tick": 390,
+      "command": { "kind": "heal", "tick": 390, "timestamp": 35 }
+    },
+    {
+      "tick": 420,
+      "command": { "kind": "heal", "tick": 420, "timestamp": 36 }
+    },
+    {
+      "tick": 450,
+      "command": { "kind": "heal", "tick": 450, "timestamp": 37 }
+    },
+    {
+      "tick": 480,
+      "command": { "kind": "heal", "tick": 480, "timestamp": 38 }
+    },
+    {
+      "tick": 510,
+      "command": { "kind": "heal", "tick": 510, "timestamp": 39 }
+    },
+    {
+      "tick": 540,
+      "command": { "kind": "heal", "tick": 540, "timestamp": 40 }
+    },
+    {
+      "tick": 570,
+      "command": { "kind": "heal", "tick": 570, "timestamp": 41 }
+    },
+    {
+      "tick": 592,
+      "command": { "kind": "reset_map", "tick": 592, "timestamp": 42 }
+    },
+    {
+      "tick": 593,
+      "command": { "kind": "restore_mana", "tick": 593, "timestamp": 43 }
+    },
+    {
+      "tick": 594,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 594,
+        "timestamp": 44
+      }
+    },
+    {
+      "tick": 600,
+      "command": { "kind": "heal", "tick": 600, "timestamp": 45 }
+    },
+    {
+      "tick": 630,
+      "command": { "kind": "heal", "tick": 630, "timestamp": 46 }
+    },
+    {
+      "tick": 640,
+      "command": { "kind": "slot", "slot": 2, "tick": 640, "timestamp": 47 }
+    },
+    {
+      "tick": 640,
+      "command": { "kind": "slot", "slot": 2, "tick": 640, "timestamp": 48 }
+    },
+    {
+      "tick": 640,
+      "command": { "kind": "slot", "slot": 2, "tick": 640, "timestamp": 49 }
+    },
+    {
+      "tick": 641,
+      "command": { "kind": "slot", "slot": 4, "tick": 641, "timestamp": 50 }
+    },
+    {
+      "tick": 642,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1733.6550471758558, "y": 1980.627821535417 }
+        },
+        "tick": 642,
+        "timestamp": 51
+      }
+    },
+    {
+      "tick": 660,
+      "command": { "kind": "heal", "tick": 660, "timestamp": 52 }
+    },
+    {
+      "tick": 690,
+      "command": { "kind": "heal", "tick": 690, "timestamp": 53 }
+    },
+    {
+      "tick": 720,
+      "command": { "kind": "heal", "tick": 720, "timestamp": 54 }
+    },
+    {
+      "tick": 750,
+      "command": { "kind": "heal", "tick": 750, "timestamp": 55 }
+    },
+    {
+      "tick": 780,
+      "command": { "kind": "heal", "tick": 780, "timestamp": 56 }
+    },
+    {
+      "tick": 810,
+      "command": { "kind": "heal", "tick": 810, "timestamp": 57 }
+    },
+    {
+      "tick": 840,
+      "command": { "kind": "heal", "tick": 840, "timestamp": 58 }
+    },
+    {
+      "tick": 870,
+      "command": { "kind": "heal", "tick": 870, "timestamp": 59 }
+    },
+    {
+      "tick": 886,
+      "command": { "kind": "reset_map", "tick": 886, "timestamp": 60 }
+    },
+    {
+      "tick": 887,
+      "command": { "kind": "restore_mana", "tick": 887, "timestamp": 61 }
+    },
+    {
+      "tick": 888,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 888,
+        "timestamp": 62
+      }
+    },
+    {
+      "tick": 900,
+      "command": { "kind": "heal", "tick": 900, "timestamp": 63 }
+    },
+    {
+      "tick": 930,
+      "command": { "kind": "heal", "tick": 930, "timestamp": 64 }
+    },
+    {
+      "tick": 934,
+      "command": { "kind": "slot", "slot": 2, "tick": 934, "timestamp": 65 }
+    },
+    {
+      "tick": 934,
+      "command": { "kind": "slot", "slot": 2, "tick": 934, "timestamp": 66 }
+    },
+    {
+      "tick": 934,
+      "command": { "kind": "slot", "slot": 2, "tick": 934, "timestamp": 67 }
+    },
+    {
+      "tick": 935,
+      "command": { "kind": "slot", "slot": 4, "tick": 935, "timestamp": 68 }
+    },
+    {
+      "tick": 936,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1506.6353418934784, "y": 1962.7100023252437 }
+        },
+        "tick": 936,
+        "timestamp": 69
+      }
+    },
+    {
+      "tick": 960,
+      "command": { "kind": "heal", "tick": 960, "timestamp": 70 }
+    },
+    {
+      "tick": 990,
+      "command": { "kind": "heal", "tick": 990, "timestamp": 71 }
+    },
+    {
+      "tick": 1020,
+      "command": { "kind": "heal", "tick": 1020, "timestamp": 72 }
+    },
+    {
+      "tick": 1050,
+      "command": { "kind": "heal", "tick": 1050, "timestamp": 73 }
+    },
+    {
+      "tick": 1080,
+      "command": { "kind": "heal", "tick": 1080, "timestamp": 74 }
+    },
+    {
+      "tick": 1110,
+      "command": { "kind": "heal", "tick": 1110, "timestamp": 75 }
+    },
+    {
+      "tick": 1140,
+      "command": { "kind": "heal", "tick": 1140, "timestamp": 76 }
+    },
+    {
+      "tick": 1170,
+      "command": { "kind": "heal", "tick": 1170, "timestamp": 77 }
+    },
+    {
+      "tick": 1180,
+      "command": { "kind": "reset_map", "tick": 1180, "timestamp": 78 }
+    },
+    {
+      "tick": 1181,
+      "command": { "kind": "restore_mana", "tick": 1181, "timestamp": 79 }
+    },
+    {
+      "tick": 1182,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 1182,
+        "timestamp": 80
+      }
+    },
+    {
+      "tick": 1200,
+      "command": { "kind": "heal", "tick": 1200, "timestamp": 81 }
+    },
+    {
+      "tick": 1228,
+      "command": { "kind": "slot", "slot": 2, "tick": 1228, "timestamp": 82 }
+    },
+    {
+      "tick": 1228,
+      "command": { "kind": "slot", "slot": 2, "tick": 1228, "timestamp": 83 }
+    },
+    {
+      "tick": 1228,
+      "command": { "kind": "slot", "slot": 1, "tick": 1228, "timestamp": 84 }
+    },
+    {
+      "tick": 1229,
+      "command": { "kind": "slot", "slot": 4, "tick": 1229, "timestamp": 85 }
+    },
+    {
+      "tick": 1230,
+      "command": {
+        "kind": "cast",
+        "abilityId": "updraft",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1730.560393016637, "y": 1980.8047582008307 }
+        },
+        "tick": 1230,
+        "timestamp": 86
+      }
+    },
+    {
+      "tick": 1230,
+      "command": { "kind": "heal", "tick": 1230, "timestamp": 87 }
+    },
+    {
+      "tick": 1260,
+      "command": { "kind": "heal", "tick": 1260, "timestamp": 88 }
+    },
+    {
+      "tick": 1290,
+      "command": { "kind": "heal", "tick": 1290, "timestamp": 89 }
+    },
+    {
+      "tick": 1320,
+      "command": { "kind": "heal", "tick": 1320, "timestamp": 90 }
+    },
+    {
+      "tick": 1350,
+      "command": { "kind": "heal", "tick": 1350, "timestamp": 91 }
+    },
+    {
+      "tick": 1380,
+      "command": { "kind": "heal", "tick": 1380, "timestamp": 92 }
+    },
+    {
+      "tick": 1410,
+      "command": { "kind": "heal", "tick": 1410, "timestamp": 93 }
+    },
+    {
+      "tick": 1440,
+      "command": { "kind": "heal", "tick": 1440, "timestamp": 94 }
+    },
+    {
+      "tick": 1470,
+      "command": { "kind": "heal", "tick": 1470, "timestamp": 95 }
+    },
+    {
+      "tick": 1474,
+      "command": { "kind": "reset_map", "tick": 1474, "timestamp": 96 }
+    },
+    {
+      "tick": 1475,
+      "command": { "kind": "restore_mana", "tick": 1475, "timestamp": 97 }
+    },
+    {
+      "tick": 1476,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 1476,
+        "timestamp": 98
+      }
+    },
+    {
+      "tick": 1500,
+      "command": { "kind": "heal", "tick": 1500, "timestamp": 99 }
+    },
+    {
+      "tick": 1522,
+      "command": { "kind": "slot", "slot": 3, "tick": 1522, "timestamp": 100 }
+    },
+    {
+      "tick": 1522,
+      "command": { "kind": "slot", "slot": 3, "tick": 1522, "timestamp": 101 }
+    },
+    {
+      "tick": 1522,
+      "command": { "kind": "slot", "slot": 3, "tick": 1522, "timestamp": 102 }
+    },
+    {
+      "tick": 1523,
+      "command": { "kind": "slot", "slot": 4, "tick": 1523, "timestamp": 103 }
+    },
+    {
+      "tick": 1524,
+      "command": {
+        "kind": "cast",
+        "abilityId": "zenith",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1712.210921686278, "y": 1978.203586354594 }
+        },
+        "tick": 1524,
+        "timestamp": 104
+      }
+    },
+    {
+      "tick": 1530,
+      "command": { "kind": "heal", "tick": 1530, "timestamp": 105 }
+    },
+    {
+      "tick": 1560,
+      "command": { "kind": "heal", "tick": 1560, "timestamp": 106 }
+    },
+    {
+      "tick": 1590,
+      "command": { "kind": "heal", "tick": 1590, "timestamp": 107 }
+    },
+    {
+      "tick": 1620,
+      "command": { "kind": "heal", "tick": 1620, "timestamp": 108 }
+    },
+    {
+      "tick": 1650,
+      "command": { "kind": "heal", "tick": 1650, "timestamp": 109 }
+    },
+    {
+      "tick": 1680,
+      "command": { "kind": "heal", "tick": 1680, "timestamp": 110 }
+    },
+    {
+      "tick": 1710,
+      "command": { "kind": "heal", "tick": 1710, "timestamp": 111 }
+    },
+    {
+      "tick": 1740,
+      "command": { "kind": "heal", "tick": 1740, "timestamp": 112 }
+    },
+    {
+      "tick": 1768,
+      "command": { "kind": "reset_map", "tick": 1768, "timestamp": 113 }
+    },
+    {
+      "tick": 1769,
+      "command": { "kind": "restore_mana", "tick": 1769, "timestamp": 114 }
+    },
+    {
+      "tick": 1770,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 1770,
+        "timestamp": 115
+      }
+    },
+    {
+      "tick": 1770,
+      "command": { "kind": "heal", "tick": 1770, "timestamp": 116 }
+    },
+    {
+      "tick": 1800,
+      "command": { "kind": "heal", "tick": 1800, "timestamp": 117 }
+    },
+    {
+      "tick": 1816,
+      "command": { "kind": "slot", "slot": 3, "tick": 1816, "timestamp": 118 }
+    },
+    {
+      "tick": 1816,
+      "command": { "kind": "slot", "slot": 3, "tick": 1816, "timestamp": 119 }
+    },
+    {
+      "tick": 1816,
+      "command": { "kind": "slot", "slot": 2, "tick": 1816, "timestamp": 120 }
+    },
+    {
+      "tick": 1817,
+      "command": { "kind": "slot", "slot": 4, "tick": 1817, "timestamp": 121 }
+    },
+    {
+      "tick": 1818,
+      "command": {
+        "kind": "cast",
+        "abilityId": "bolide",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1708.9917778458755, "y": 1981.0948735337618 }
+        },
+        "tick": 1818,
+        "timestamp": 122
+      }
+    },
+    {
+      "tick": 1830,
+      "command": { "kind": "heal", "tick": 1830, "timestamp": 123 }
+    },
+    {
+      "tick": 1860,
+      "command": { "kind": "heal", "tick": 1860, "timestamp": 124 }
+    },
+    {
+      "tick": 1890,
+      "command": { "kind": "heal", "tick": 1890, "timestamp": 125 }
+    },
+    {
+      "tick": 1920,
+      "command": { "kind": "heal", "tick": 1920, "timestamp": 126 }
+    },
+    {
+      "tick": 1950,
+      "command": { "kind": "heal", "tick": 1950, "timestamp": 127 }
+    },
+    {
+      "tick": 1980,
+      "command": { "kind": "heal", "tick": 1980, "timestamp": 128 }
+    },
+    {
+      "tick": 2010,
+      "command": { "kind": "heal", "tick": 2010, "timestamp": 129 }
+    },
+    {
+      "tick": 2040,
+      "command": { "kind": "heal", "tick": 2040, "timestamp": 130 }
+    },
+    {
+      "tick": 2062,
+      "command": { "kind": "reset_map", "tick": 2062, "timestamp": 131 }
+    },
+    {
+      "tick": 2063,
+      "command": { "kind": "restore_mana", "tick": 2063, "timestamp": 132 }
+    },
+    {
+      "tick": 2064,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2064,
+        "timestamp": 133
+      }
+    },
+    {
+      "tick": 2070,
+      "command": { "kind": "heal", "tick": 2070, "timestamp": 134 }
+    },
+    {
+      "tick": 2100,
+      "command": { "kind": "heal", "tick": 2100, "timestamp": 135 }
+    },
+    {
+      "tick": 2110,
+      "command": { "kind": "slot", "slot": 1, "tick": 2110, "timestamp": 136 }
+    },
+    {
+      "tick": 2110,
+      "command": { "kind": "slot", "slot": 2, "tick": 2110, "timestamp": 137 }
+    },
+    {
+      "tick": 2110,
+      "command": { "kind": "slot", "slot": 3, "tick": 2110, "timestamp": 138 }
+    },
+    {
+      "tick": 2111,
+      "command": { "kind": "slot", "slot": 4, "tick": 2111, "timestamp": 139 }
+    },
+    {
+      "tick": 2112,
+      "command": {
+        "kind": "cast",
+        "abilityId": "clarion",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1658.0760139347622, "y": 1969.9099890685459 }
+        },
+        "tick": 2112,
+        "timestamp": 140
+      }
+    },
+    {
+      "tick": 2130,
+      "command": { "kind": "heal", "tick": 2130, "timestamp": 141 }
+    },
+    {
+      "tick": 2160,
+      "command": { "kind": "heal", "tick": 2160, "timestamp": 142 }
+    },
+    {
+      "tick": 2190,
+      "command": { "kind": "heal", "tick": 2190, "timestamp": 143 }
+    },
+    {
+      "tick": 2220,
+      "command": { "kind": "heal", "tick": 2220, "timestamp": 144 }
+    },
+    {
+      "tick": 2250,
+      "command": { "kind": "heal", "tick": 2250, "timestamp": 145 }
+    },
+    {
+      "tick": 2280,
+      "command": { "kind": "heal", "tick": 2280, "timestamp": 146 }
+    },
+    {
+      "tick": 2310,
+      "command": { "kind": "heal", "tick": 2310, "timestamp": 147 }
+    },
+    {
+      "tick": 2340,
+      "command": { "kind": "heal", "tick": 2340, "timestamp": 148 }
+    },
+    {
+      "tick": 2356,
+      "command": { "kind": "reset_map", "tick": 2356, "timestamp": 149 }
+    },
+    {
+      "tick": 2357,
+      "command": { "kind": "restore_mana", "tick": 2357, "timestamp": 150 }
+    },
+    {
+      "tick": 2358,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2358,
+        "timestamp": 151
+      }
+    },
+    {
+      "tick": 2370,
+      "command": { "kind": "heal", "tick": 2370, "timestamp": 152 }
+    },
+    {
+      "tick": 2400,
+      "command": { "kind": "heal", "tick": 2400, "timestamp": 153 }
+    },
+    {
+      "tick": 2404,
+      "command": { "kind": "slot", "slot": 3, "tick": 2404, "timestamp": 154 }
+    },
+    {
+      "tick": 2404,
+      "command": { "kind": "slot", "slot": 3, "tick": 2404, "timestamp": 155 }
+    },
+    {
+      "tick": 2404,
+      "command": { "kind": "slot", "slot": 1, "tick": 2404, "timestamp": 156 }
+    },
+    {
+      "tick": 2405,
+      "command": { "kind": "slot", "slot": 4, "tick": 2405, "timestamp": 157 }
+    },
+    {
+      "tick": 2406,
+      "command": {
+        "kind": "cast",
+        "abilityId": "emberling",
+        "target": { "kind": "none" },
+        "tick": 2406,
+        "timestamp": 158
+      }
+    },
+    {
+      "tick": 2409,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1685.74777906126, "y": 1972.389149312843 },
+        "tick": 2409,
+        "timestamp": 159
+      }
+    },
+    {
+      "tick": 2430,
+      "command": { "kind": "heal", "tick": 2430, "timestamp": 160 }
+    },
+    {
+      "tick": 2460,
+      "command": { "kind": "heal", "tick": 2460, "timestamp": 161 }
+    },
+    {
+      "tick": 2490,
+      "command": { "kind": "heal", "tick": 2490, "timestamp": 162 }
+    },
+    {
+      "tick": 2520,
+      "command": { "kind": "heal", "tick": 2520, "timestamp": 163 }
+    },
+    {
+      "tick": 2550,
+      "command": { "kind": "heal", "tick": 2550, "timestamp": 164 }
+    },
+    {
+      "tick": 2580,
+      "command": { "kind": "heal", "tick": 2580, "timestamp": 165 }
+    },
+    {
+      "tick": 2610,
+      "command": { "kind": "heal", "tick": 2610, "timestamp": 166 }
+    },
+    {
+      "tick": 2640,
+      "command": { "kind": "heal", "tick": 2640, "timestamp": 167 }
+    },
+    {
+      "tick": 2650,
+      "command": { "kind": "reset_map", "tick": 2650, "timestamp": 168 }
+    },
+    {
+      "tick": 2651,
+      "command": { "kind": "restore_mana", "tick": 2651, "timestamp": 169 }
+    },
+    {
+      "tick": 2652,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2652,
+        "timestamp": 170
+      }
+    },
+    {
+      "tick": 2670,
+      "command": { "kind": "heal", "tick": 2670, "timestamp": 171 }
+    },
+    {
+      "tick": 2698,
+      "command": { "kind": "slot", "slot": 2, "tick": 2698, "timestamp": 172 }
+    },
+    {
+      "tick": 2698,
+      "command": { "kind": "slot", "slot": 2, "tick": 2698, "timestamp": 173 }
+    },
+    {
+      "tick": 2698,
+      "command": { "kind": "slot", "slot": 3, "tick": 2698, "timestamp": 174 }
+    },
+    {
+      "tick": 2699,
+      "command": { "kind": "slot", "slot": 4, "tick": 2699, "timestamp": 175 }
+    },
+    {
+      "tick": 2700,
+      "command": {
+        "kind": "cast",
+        "abilityId": "quicken",
+        "target": { "kind": "none" },
+        "tick": 2700,
+        "timestamp": 176
+      }
+    },
+    {
+      "tick": 2700,
+      "command": { "kind": "heal", "tick": 2700, "timestamp": 177 }
+    },
+    {
+      "tick": 2703,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1721.2087102544451, "y": 1982.0930230782337 },
+        "tick": 2703,
+        "timestamp": 178
+      }
+    },
+    {
+      "tick": 2730,
+      "command": { "kind": "heal", "tick": 2730, "timestamp": 179 }
+    },
+    {
+      "tick": 2760,
+      "command": { "kind": "heal", "tick": 2760, "timestamp": 180 }
+    },
+    {
+      "tick": 2790,
+      "command": { "kind": "heal", "tick": 2790, "timestamp": 181 }
+    },
+    {
+      "tick": 2820,
+      "command": { "kind": "heal", "tick": 2820, "timestamp": 182 }
+    },
+    {
+      "tick": 2850,
+      "command": { "kind": "heal", "tick": 2850, "timestamp": 183 }
+    },
+    {
+      "tick": 2880,
+      "command": { "kind": "heal", "tick": 2880, "timestamp": 184 }
+    },
+    {
+      "tick": 2910,
+      "command": { "kind": "heal", "tick": 2910, "timestamp": 185 }
+    },
+    {
+      "tick": 2940,
+      "command": { "kind": "heal", "tick": 2940, "timestamp": 186 }
+    },
+    {
+      "tick": 2944,
+      "command": { "kind": "reset_map", "tick": 2944, "timestamp": 187 }
+    },
+    {
+      "tick": 2945,
+      "command": { "kind": "restore_mana", "tick": 2945, "timestamp": 188 }
+    },
+    {
+      "tick": 2946,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 2946,
+        "timestamp": 189
+      }
+    },
+    {
+      "tick": 2970,
+      "command": { "kind": "heal", "tick": 2970, "timestamp": 190 }
+    },
+    {
+      "tick": 2992,
+      "command": { "kind": "slot", "slot": 1, "tick": 2992, "timestamp": 191 }
+    },
+    {
+      "tick": 2992,
+      "command": { "kind": "slot", "slot": 1, "tick": 2992, "timestamp": 192 }
+    },
+    {
+      "tick": 2992,
+      "command": { "kind": "slot", "slot": 2, "tick": 2992, "timestamp": 193 }
+    },
+    {
+      "tick": 2993,
+      "command": { "kind": "slot", "slot": 4, "tick": 2993, "timestamp": 194 }
+    },
+    {
+      "tick": 2994,
+      "command": {
+        "kind": "cast",
+        "abilityId": "wane",
+        "target": { "kind": "none" },
+        "tick": 2994,
+        "timestamp": 195
+      }
+    },
+    {
+      "tick": 3000,
+      "command": { "kind": "heal", "tick": 3000, "timestamp": 196 }
+    },
+    {
+      "tick": 3030,
+      "command": { "kind": "heal", "tick": 3030, "timestamp": 197 }
+    },
+    {
+      "tick": 3060,
+      "command": { "kind": "heal", "tick": 3060, "timestamp": 198 }
+    },
+    {
+      "tick": 3090,
+      "command": { "kind": "heal", "tick": 3090, "timestamp": 199 }
+    },
+    {
+      "tick": 3120,
+      "command": { "kind": "heal", "tick": 3120, "timestamp": 200 }
+    },
+    {
+      "tick": 3150,
+      "command": { "kind": "heal", "tick": 3150, "timestamp": 201 }
+    },
+    {
+      "tick": 3180,
+      "command": { "kind": "heal", "tick": 3180, "timestamp": 202 }
+    },
+    {
+      "tick": 3210,
+      "command": { "kind": "heal", "tick": 3210, "timestamp": 203 }
+    },
+    {
+      "tick": 3238,
+      "command": { "kind": "level_up", "tick": 3238, "timestamp": 204 }
+    },
+    {
+      "tick": 3239,
+      "command": { "kind": "level_up", "tick": 3239, "timestamp": 205 }
+    },
+    {
+      "tick": 3240,
+      "command": { "kind": "level_up", "tick": 3240, "timestamp": 206 }
+    },
+    {
+      "tick": 3241,
+      "command": { "kind": "level_up", "tick": 3241, "timestamp": 207 }
+    },
+    {
+      "tick": 3242,
+      "command": { "kind": "level_up", "tick": 3242, "timestamp": 208 }
+    },
+    {
+      "tick": 3243,
+      "command": { "kind": "level_up", "tick": 3243, "timestamp": 209 }
+    },
+    {
+      "tick": 3244,
+      "command": { "kind": "level_up", "tick": 3244, "timestamp": 210 }
+    },
+    {
+      "tick": 3245,
+      "command": { "kind": "level_up", "tick": 3245, "timestamp": 211 }
+    },
+    {
+      "tick": 3246,
+      "command": { "kind": "level_up", "tick": 3246, "timestamp": 212 }
+    },
+    {
+      "tick": 3247,
+      "command": {
+        "kind": "set_orb_levels",
+        "levels": [4, 4, 4],
+        "tick": 3247,
+        "timestamp": 213
+      }
+    },
+    {
+      "tick": 3248,
+      "command": { "kind": "reset_map", "tick": 3248, "timestamp": 214 }
+    },
+    {
+      "tick": 3249,
+      "command": { "kind": "restore_mana", "tick": 3249, "timestamp": 215 }
+    },
+    {
+      "tick": 3250,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 3250,
+        "timestamp": 216
+      }
+    },
+    {
+      "tick": 3270,
+      "command": { "kind": "heal", "tick": 3270, "timestamp": 217 }
+    },
+    {
+      "tick": 3296,
+      "command": { "kind": "slot", "slot": 1, "tick": 3296, "timestamp": 218 }
+    },
+    {
+      "tick": 3296,
+      "command": { "kind": "slot", "slot": 1, "tick": 3296, "timestamp": 219 }
+    },
+    {
+      "tick": 3296,
+      "command": { "kind": "slot", "slot": 1, "tick": 3296, "timestamp": 220 }
+    },
+    {
+      "tick": 3297,
+      "command": { "kind": "slot", "slot": 4, "tick": 3297, "timestamp": 221 }
+    },
+    {
+      "tick": 3298,
+      "command": {
+        "kind": "cast",
+        "abilityId": "hoarfrost",
+        "target": { "kind": "unit", "unitId": 720899 },
+        "tick": 3298,
+        "timestamp": 222
+      }
+    },
+    {
+      "tick": 3300,
+      "command": { "kind": "heal", "tick": 3300, "timestamp": 223 }
+    },
+    {
+      "tick": 3302,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 720899,
+        "tick": 3302,
+        "timestamp": 224
+      }
+    },
+    {
+      "tick": 3330,
+      "command": { "kind": "heal", "tick": 3330, "timestamp": 225 }
+    },
+    {
+      "tick": 3360,
+      "command": { "kind": "heal", "tick": 3360, "timestamp": 226 }
+    },
+    {
+      "tick": 3390,
+      "command": { "kind": "heal", "tick": 3390, "timestamp": 227 }
+    },
+    {
+      "tick": 3420,
+      "command": { "kind": "heal", "tick": 3420, "timestamp": 228 }
+    },
+    {
+      "tick": 3450,
+      "command": { "kind": "heal", "tick": 3450, "timestamp": 229 }
+    },
+    {
+      "tick": 3480,
+      "command": { "kind": "heal", "tick": 3480, "timestamp": 230 }
+    },
+    {
+      "tick": 3510,
+      "command": { "kind": "heal", "tick": 3510, "timestamp": 231 }
+    },
+    {
+      "tick": 3540,
+      "command": { "kind": "heal", "tick": 3540, "timestamp": 232 }
+    },
+    {
+      "tick": 3542,
+      "command": { "kind": "reset_map", "tick": 3542, "timestamp": 233 }
+    },
+    {
+      "tick": 3543,
+      "command": { "kind": "restore_mana", "tick": 3543, "timestamp": 234 }
+    },
+    {
+      "tick": 3544,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 3544,
+        "timestamp": 235
+      }
+    },
+    {
+      "tick": 3570,
+      "command": { "kind": "heal", "tick": 3570, "timestamp": 236 }
+    },
+    {
+      "tick": 3590,
+      "command": { "kind": "slot", "slot": 1, "tick": 3590, "timestamp": 237 }
+    },
+    {
+      "tick": 3590,
+      "command": { "kind": "slot", "slot": 1, "tick": 3590, "timestamp": 238 }
+    },
+    {
+      "tick": 3590,
+      "command": { "kind": "slot", "slot": 3, "tick": 3590, "timestamp": 239 }
+    },
+    {
+      "tick": 3591,
+      "command": { "kind": "slot", "slot": 4, "tick": 3591, "timestamp": 240 }
+    },
+    {
+      "tick": 3592,
+      "command": {
+        "kind": "cast",
+        "abilityId": "glacier",
+        "target": {
+          "kind": "vector",
+          "position": { "x": 1709.1992066737334, "y": 1977.066073870786 },
+          "end": { "x": 1709.1992066737334, "y": 2277.066073870786 }
+        },
+        "tick": 3592,
+        "timestamp": 241
+      }
+    },
+    {
+      "tick": 3600,
+      "command": { "kind": "heal", "tick": 3600, "timestamp": 242 }
+    },
+    {
+      "tick": 3630,
+      "command": { "kind": "heal", "tick": 3630, "timestamp": 243 }
+    },
+    {
+      "tick": 3660,
+      "command": { "kind": "heal", "tick": 3660, "timestamp": 244 }
+    },
+    {
+      "tick": 3690,
+      "command": { "kind": "heal", "tick": 3690, "timestamp": 245 }
+    },
+    {
+      "tick": 3720,
+      "command": { "kind": "heal", "tick": 3720, "timestamp": 246 }
+    },
+    {
+      "tick": 3750,
+      "command": { "kind": "heal", "tick": 3750, "timestamp": 247 }
+    },
+    {
+      "tick": 3780,
+      "command": { "kind": "heal", "tick": 3780, "timestamp": 248 }
+    },
+    {
+      "tick": 3810,
+      "command": { "kind": "heal", "tick": 3810, "timestamp": 249 }
+    },
+    {
+      "tick": 3836,
+      "command": { "kind": "reset_map", "tick": 3836, "timestamp": 250 }
+    },
+    {
+      "tick": 3837,
+      "command": { "kind": "restore_mana", "tick": 3837, "timestamp": 251 }
+    },
+    {
+      "tick": 3838,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 3838,
+        "timestamp": 252
+      }
+    },
+    {
+      "tick": 3840,
+      "command": { "kind": "heal", "tick": 3840, "timestamp": 253 }
+    },
+    {
+      "tick": 3870,
+      "command": { "kind": "heal", "tick": 3870, "timestamp": 254 }
+    },
+    {
+      "tick": 3884,
+      "command": { "kind": "slot", "slot": 2, "tick": 3884, "timestamp": 255 }
+    },
+    {
+      "tick": 3884,
+      "command": { "kind": "slot", "slot": 2, "tick": 3884, "timestamp": 256 }
+    },
+    {
+      "tick": 3884,
+      "command": { "kind": "slot", "slot": 2, "tick": 3884, "timestamp": 257 }
+    },
+    {
+      "tick": 3885,
+      "command": { "kind": "slot", "slot": 4, "tick": 3885, "timestamp": 258 }
+    },
+    {
+      "tick": 3886,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1733.655046726267, "y": 1980.627823565983 }
+        },
+        "tick": 3886,
+        "timestamp": 259
+      }
+    },
+    {
+      "tick": 3900,
+      "command": { "kind": "heal", "tick": 3900, "timestamp": 260 }
+    },
+    {
+      "tick": 3930,
+      "command": { "kind": "heal", "tick": 3930, "timestamp": 261 }
+    },
+    {
+      "tick": 3960,
+      "command": { "kind": "heal", "tick": 3960, "timestamp": 262 }
+    },
+    {
+      "tick": 3990,
+      "command": { "kind": "heal", "tick": 3990, "timestamp": 263 }
+    },
+    {
+      "tick": 4020,
+      "command": { "kind": "heal", "tick": 4020, "timestamp": 264 }
+    },
+    {
+      "tick": 4050,
+      "command": { "kind": "heal", "tick": 4050, "timestamp": 265 }
+    },
+    {
+      "tick": 4080,
+      "command": { "kind": "heal", "tick": 4080, "timestamp": 266 }
+    },
+    {
+      "tick": 4110,
+      "command": { "kind": "heal", "tick": 4110, "timestamp": 267 }
+    },
+    {
+      "tick": 4130,
+      "command": { "kind": "reset_map", "tick": 4130, "timestamp": 268 }
+    },
+    {
+      "tick": 4131,
+      "command": { "kind": "restore_mana", "tick": 4131, "timestamp": 269 }
+    },
+    {
+      "tick": 4132,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4132,
+        "timestamp": 270
+      }
+    },
+    {
+      "tick": 4140,
+      "command": { "kind": "heal", "tick": 4140, "timestamp": 271 }
+    },
+    {
+      "tick": 4170,
+      "command": { "kind": "heal", "tick": 4170, "timestamp": 272 }
+    },
+    {
+      "tick": 4178,
+      "command": { "kind": "slot", "slot": 2, "tick": 4178, "timestamp": 273 }
+    },
+    {
+      "tick": 4178,
+      "command": { "kind": "slot", "slot": 2, "tick": 4178, "timestamp": 274 }
+    },
+    {
+      "tick": 4178,
+      "command": { "kind": "slot", "slot": 2, "tick": 4178, "timestamp": 275 }
+    },
+    {
+      "tick": 4179,
+      "command": { "kind": "slot", "slot": 4, "tick": 4179, "timestamp": 276 }
+    },
+    {
+      "tick": 4180,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1506.6410592423038, "y": 1962.7843556606829 }
+        },
+        "tick": 4180,
+        "timestamp": 277
+      }
+    },
+    {
+      "tick": 4200,
+      "command": { "kind": "heal", "tick": 4200, "timestamp": 278 }
+    },
+    {
+      "tick": 4230,
+      "command": { "kind": "heal", "tick": 4230, "timestamp": 279 }
+    },
+    {
+      "tick": 4260,
+      "command": { "kind": "heal", "tick": 4260, "timestamp": 280 }
+    },
+    {
+      "tick": 4290,
+      "command": { "kind": "heal", "tick": 4290, "timestamp": 281 }
+    },
+    {
+      "tick": 4320,
+      "command": { "kind": "heal", "tick": 4320, "timestamp": 282 }
+    },
+    {
+      "tick": 4350,
+      "command": { "kind": "heal", "tick": 4350, "timestamp": 283 }
+    },
+    {
+      "tick": 4380,
+      "command": { "kind": "heal", "tick": 4380, "timestamp": 284 }
+    },
+    {
+      "tick": 4410,
+      "command": { "kind": "heal", "tick": 4410, "timestamp": 285 }
+    },
+    {
+      "tick": 4424,
+      "command": { "kind": "reset_map", "tick": 4424, "timestamp": 286 }
+    },
+    {
+      "tick": 4425,
+      "command": { "kind": "restore_mana", "tick": 4425, "timestamp": 287 }
+    },
+    {
+      "tick": 4426,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4426,
+        "timestamp": 288
+      }
+    },
+    {
+      "tick": 4440,
+      "command": { "kind": "heal", "tick": 4440, "timestamp": 289 }
+    },
+    {
+      "tick": 4470,
+      "command": { "kind": "heal", "tick": 4470, "timestamp": 290 }
+    },
+    {
+      "tick": 4472,
+      "command": { "kind": "slot", "slot": 2, "tick": 4472, "timestamp": 291 }
+    },
+    {
+      "tick": 4472,
+      "command": { "kind": "slot", "slot": 2, "tick": 4472, "timestamp": 292 }
+    },
+    {
+      "tick": 4472,
+      "command": { "kind": "slot", "slot": 1, "tick": 4472, "timestamp": 293 }
+    },
+    {
+      "tick": 4473,
+      "command": { "kind": "slot", "slot": 4, "tick": 4473, "timestamp": 294 }
+    },
+    {
+      "tick": 4474,
+      "command": {
+        "kind": "cast",
+        "abilityId": "updraft",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1691.5156181355628, "y": 1978.6726236626375 }
+        },
+        "tick": 4474,
+        "timestamp": 295
+      }
+    },
+    {
+      "tick": 4500,
+      "command": { "kind": "heal", "tick": 4500, "timestamp": 296 }
+    },
+    {
+      "tick": 4530,
+      "command": { "kind": "heal", "tick": 4530, "timestamp": 297 }
+    },
+    {
+      "tick": 4560,
+      "command": { "kind": "heal", "tick": 4560, "timestamp": 298 }
+    },
+    {
+      "tick": 4590,
+      "command": { "kind": "heal", "tick": 4590, "timestamp": 299 }
+    },
+    {
+      "tick": 4620,
+      "command": { "kind": "heal", "tick": 4620, "timestamp": 300 }
+    },
+    {
+      "tick": 4650,
+      "command": { "kind": "heal", "tick": 4650, "timestamp": 301 }
+    },
+    {
+      "tick": 4680,
+      "command": { "kind": "heal", "tick": 4680, "timestamp": 302 }
+    },
+    {
+      "tick": 4710,
+      "command": { "kind": "heal", "tick": 4710, "timestamp": 303 }
+    },
+    {
+      "tick": 4718,
+      "command": { "kind": "reset_map", "tick": 4718, "timestamp": 304 }
+    },
+    {
+      "tick": 4719,
+      "command": { "kind": "restore_mana", "tick": 4719, "timestamp": 305 }
+    },
+    {
+      "tick": 4720,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 4720,
+        "timestamp": 306
+      }
+    },
+    {
+      "tick": 4740,
+      "command": { "kind": "heal", "tick": 4740, "timestamp": 307 }
+    },
+    {
+      "tick": 4766,
+      "command": { "kind": "slot", "slot": 3, "tick": 4766, "timestamp": 308 }
+    },
+    {
+      "tick": 4766,
+      "command": { "kind": "slot", "slot": 3, "tick": 4766, "timestamp": 309 }
+    },
+    {
+      "tick": 4766,
+      "command": { "kind": "slot", "slot": 3, "tick": 4766, "timestamp": 310 }
+    },
+    {
+      "tick": 4767,
+      "command": { "kind": "slot", "slot": 4, "tick": 4767, "timestamp": 311 }
+    },
+    {
+      "tick": 4768,
+      "command": {
+        "kind": "cast",
+        "abilityId": "zenith",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1692.8073365115263, "y": 1974.5627740294167 }
+        },
+        "tick": 4768,
+        "timestamp": 312
+      }
+    },
+    {
+      "tick": 4770,
+      "command": { "kind": "heal", "tick": 4770, "timestamp": 313 }
+    },
+    {
+      "tick": 4800,
+      "command": { "kind": "heal", "tick": 4800, "timestamp": 314 }
+    },
+    {
+      "tick": 4830,
+      "command": { "kind": "heal", "tick": 4830, "timestamp": 315 }
+    },
+    {
+      "tick": 4860,
+      "command": { "kind": "heal", "tick": 4860, "timestamp": 316 }
+    },
+    {
+      "tick": 4890,
+      "command": { "kind": "heal", "tick": 4890, "timestamp": 317 }
+    },
+    {
+      "tick": 4920,
+      "command": { "kind": "heal", "tick": 4920, "timestamp": 318 }
+    },
+    {
+      "tick": 4950,
+      "command": { "kind": "heal", "tick": 4950, "timestamp": 319 }
+    },
+    {
+      "tick": 4980,
+      "command": { "kind": "heal", "tick": 4980, "timestamp": 320 }
+    },
+    {
+      "tick": 5010,
+      "command": { "kind": "heal", "tick": 5010, "timestamp": 321 }
+    },
+    {
+      "tick": 5012,
+      "command": { "kind": "reset_map", "tick": 5012, "timestamp": 322 }
+    },
+    {
+      "tick": 5013,
+      "command": { "kind": "restore_mana", "tick": 5013, "timestamp": 323 }
+    },
+    {
+      "tick": 5014,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 5014,
+        "timestamp": 324
+      }
+    },
+    {
+      "tick": 5040,
+      "command": { "kind": "heal", "tick": 5040, "timestamp": 325 }
+    },
+    {
+      "tick": 5060,
+      "command": { "kind": "slot", "slot": 3, "tick": 5060, "timestamp": 326 }
+    },
+    {
+      "tick": 5060,
+      "command": { "kind": "slot", "slot": 3, "tick": 5060, "timestamp": 327 }
+    },
+    {
+      "tick": 5060,
+      "command": { "kind": "slot", "slot": 2, "tick": 5060, "timestamp": 328 }
+    },
+    {
+      "tick": 5061,
+      "command": { "kind": "slot", "slot": 4, "tick": 5061, "timestamp": 329 }
+    },
+    {
+      "tick": 5062,
+      "command": {
+        "kind": "cast",
+        "abilityId": "bolide",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1733.6550498946576, "y": 1980.6278240763618 }
+        },
+        "tick": 5062,
+        "timestamp": 330
+      }
+    },
+    {
+      "tick": 5070,
+      "command": { "kind": "heal", "tick": 5070, "timestamp": 331 }
+    },
+    {
+      "tick": 5100,
+      "command": { "kind": "heal", "tick": 5100, "timestamp": 332 }
+    },
+    {
+      "tick": 5130,
+      "command": { "kind": "heal", "tick": 5130, "timestamp": 333 }
+    },
+    {
+      "tick": 5160,
+      "command": { "kind": "heal", "tick": 5160, "timestamp": 334 }
+    },
+    {
+      "tick": 5190,
+      "command": { "kind": "heal", "tick": 5190, "timestamp": 335 }
+    },
+    {
+      "tick": 5220,
+      "command": { "kind": "heal", "tick": 5220, "timestamp": 336 }
+    },
+    {
+      "tick": 5250,
+      "command": { "kind": "heal", "tick": 5250, "timestamp": 337 }
+    },
+    {
+      "tick": 5280,
+      "command": { "kind": "heal", "tick": 5280, "timestamp": 338 }
+    },
+    {
+      "tick": 5306,
+      "command": { "kind": "reset_map", "tick": 5306, "timestamp": 339 }
+    },
+    {
+      "tick": 5307,
+      "command": { "kind": "restore_mana", "tick": 5307, "timestamp": 340 }
+    },
+    {
+      "tick": 5308,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 5308,
+        "timestamp": 341
+      }
+    },
+    {
+      "tick": 5310,
+      "command": { "kind": "heal", "tick": 5310, "timestamp": 342 }
+    },
+    {
+      "tick": 5340,
+      "command": { "kind": "heal", "tick": 5340, "timestamp": 343 }
+    },
+    {
+      "tick": 5354,
+      "command": { "kind": "slot", "slot": 1, "tick": 5354, "timestamp": 344 }
+    },
+    {
+      "tick": 5354,
+      "command": { "kind": "slot", "slot": 2, "tick": 5354, "timestamp": 345 }
+    },
+    {
+      "tick": 5354,
+      "command": { "kind": "slot", "slot": 3, "tick": 5354, "timestamp": 346 }
+    },
+    {
+      "tick": 5355,
+      "command": { "kind": "slot", "slot": 4, "tick": 5355, "timestamp": 347 }
+    },
+    {
+      "tick": 5356,
+      "command": {
+        "kind": "cast",
+        "abilityId": "clarion",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1733.6550499097361, "y": 1980.6278193335213 }
+        },
+        "tick": 5356,
+        "timestamp": 348
+      }
+    },
+    {
+      "tick": 5370,
+      "command": { "kind": "heal", "tick": 5370, "timestamp": 349 }
+    },
+    {
+      "tick": 5400,
+      "command": { "kind": "heal", "tick": 5400, "timestamp": 350 }
+    },
+    {
+      "tick": 5430,
+      "command": { "kind": "heal", "tick": 5430, "timestamp": 351 }
+    },
+    {
+      "tick": 5460,
+      "command": { "kind": "heal", "tick": 5460, "timestamp": 352 }
+    },
+    {
+      "tick": 5490,
+      "command": { "kind": "heal", "tick": 5490, "timestamp": 353 }
+    },
+    {
+      "tick": 5520,
+      "command": { "kind": "heal", "tick": 5520, "timestamp": 354 }
+    },
+    {
+      "tick": 5550,
+      "command": { "kind": "heal", "tick": 5550, "timestamp": 355 }
+    },
+    {
+      "tick": 5580,
+      "command": { "kind": "heal", "tick": 5580, "timestamp": 356 }
+    },
+    {
+      "tick": 5600,
+      "command": { "kind": "reset_map", "tick": 5600, "timestamp": 357 }
+    },
+    {
+      "tick": 5601,
+      "command": { "kind": "restore_mana", "tick": 5601, "timestamp": 358 }
+    },
+    {
+      "tick": 5602,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 5602,
+        "timestamp": 359
+      }
+    },
+    {
+      "tick": 5610,
+      "command": { "kind": "heal", "tick": 5610, "timestamp": 360 }
+    },
+    {
+      "tick": 5640,
+      "command": { "kind": "heal", "tick": 5640, "timestamp": 361 }
+    },
+    {
+      "tick": 5648,
+      "command": { "kind": "slot", "slot": 3, "tick": 5648, "timestamp": 362 }
+    },
+    {
+      "tick": 5648,
+      "command": { "kind": "slot", "slot": 3, "tick": 5648, "timestamp": 363 }
+    },
+    {
+      "tick": 5648,
+      "command": { "kind": "slot", "slot": 1, "tick": 5648, "timestamp": 364 }
+    },
+    {
+      "tick": 5649,
+      "command": { "kind": "slot", "slot": 4, "tick": 5649, "timestamp": 365 }
+    },
+    {
+      "tick": 5650,
+      "command": {
+        "kind": "cast",
+        "abilityId": "emberling",
+        "target": { "kind": "none" },
+        "tick": 5650,
+        "timestamp": 366
+      }
+    },
+    {
+      "tick": 5653,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1733.5619073081834, "y": 1982.1619050090617 },
+        "tick": 5653,
+        "timestamp": 367
+      }
+    },
+    {
+      "tick": 5670,
+      "command": { "kind": "heal", "tick": 5670, "timestamp": 368 }
+    },
+    {
+      "tick": 5700,
+      "command": { "kind": "heal", "tick": 5700, "timestamp": 369 }
+    },
+    {
+      "tick": 5730,
+      "command": { "kind": "heal", "tick": 5730, "timestamp": 370 }
+    },
+    {
+      "tick": 5760,
+      "command": { "kind": "heal", "tick": 5760, "timestamp": 371 }
+    },
+    {
+      "tick": 5790,
+      "command": { "kind": "heal", "tick": 5790, "timestamp": 372 }
+    },
+    {
+      "tick": 5820,
+      "command": { "kind": "heal", "tick": 5820, "timestamp": 373 }
+    },
+    {
+      "tick": 5850,
+      "command": { "kind": "heal", "tick": 5850, "timestamp": 374 }
+    },
+    {
+      "tick": 5880,
+      "command": { "kind": "heal", "tick": 5880, "timestamp": 375 }
+    },
+    {
+      "tick": 5894,
+      "command": { "kind": "reset_map", "tick": 5894, "timestamp": 376 }
+    },
+    {
+      "tick": 5895,
+      "command": { "kind": "restore_mana", "tick": 5895, "timestamp": 377 }
+    },
+    {
+      "tick": 5896,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 5896,
+        "timestamp": 378
+      }
+    },
+    {
+      "tick": 5910,
+      "command": { "kind": "heal", "tick": 5910, "timestamp": 379 }
+    },
+    {
+      "tick": 5940,
+      "command": { "kind": "heal", "tick": 5940, "timestamp": 380 }
+    },
+    {
+      "tick": 5942,
+      "command": { "kind": "slot", "slot": 2, "tick": 5942, "timestamp": 381 }
+    },
+    {
+      "tick": 5942,
+      "command": { "kind": "slot", "slot": 2, "tick": 5942, "timestamp": 382 }
+    },
+    {
+      "tick": 5942,
+      "command": { "kind": "slot", "slot": 3, "tick": 5942, "timestamp": 383 }
+    },
+    {
+      "tick": 5943,
+      "command": { "kind": "slot", "slot": 4, "tick": 5943, "timestamp": 384 }
+    },
+    {
+      "tick": 5944,
+      "command": {
+        "kind": "cast",
+        "abilityId": "quicken",
+        "target": { "kind": "none" },
+        "tick": 5944,
+        "timestamp": 385
+      }
+    },
+    {
+      "tick": 5947,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1742.8328412677863, "y": 1982.1818599053804 },
+        "tick": 5947,
+        "timestamp": 386
+      }
+    },
+    {
+      "tick": 5970,
+      "command": { "kind": "heal", "tick": 5970, "timestamp": 387 }
+    },
+    {
+      "tick": 6000,
+      "command": { "kind": "heal", "tick": 6000, "timestamp": 388 }
+    },
+    {
+      "tick": 6030,
+      "command": { "kind": "heal", "tick": 6030, "timestamp": 389 }
+    },
+    {
+      "tick": 6060,
+      "command": { "kind": "heal", "tick": 6060, "timestamp": 390 }
+    },
+    {
+      "tick": 6090,
+      "command": { "kind": "heal", "tick": 6090, "timestamp": 391 }
+    },
+    {
+      "tick": 6120,
+      "command": { "kind": "heal", "tick": 6120, "timestamp": 392 }
+    },
+    {
+      "tick": 6150,
+      "command": { "kind": "heal", "tick": 6150, "timestamp": 393 }
+    },
+    {
+      "tick": 6180,
+      "command": { "kind": "heal", "tick": 6180, "timestamp": 394 }
+    },
+    {
+      "tick": 6188,
+      "command": { "kind": "reset_map", "tick": 6188, "timestamp": 395 }
+    },
+    {
+      "tick": 6189,
+      "command": { "kind": "restore_mana", "tick": 6189, "timestamp": 396 }
+    },
+    {
+      "tick": 6190,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 6190,
+        "timestamp": 397
+      }
+    },
+    {
+      "tick": 6210,
+      "command": { "kind": "heal", "tick": 6210, "timestamp": 398 }
+    },
+    {
+      "tick": 6236,
+      "command": { "kind": "slot", "slot": 1, "tick": 6236, "timestamp": 399 }
+    },
+    {
+      "tick": 6236,
+      "command": { "kind": "slot", "slot": 1, "tick": 6236, "timestamp": 400 }
+    },
+    {
+      "tick": 6236,
+      "command": { "kind": "slot", "slot": 2, "tick": 6236, "timestamp": 401 }
+    },
+    {
+      "tick": 6237,
+      "command": { "kind": "slot", "slot": 4, "tick": 6237, "timestamp": 402 }
+    },
+    {
+      "tick": 6238,
+      "command": {
+        "kind": "cast",
+        "abilityId": "wane",
+        "target": { "kind": "none" },
+        "tick": 6238,
+        "timestamp": 403
+      }
+    },
+    {
+      "tick": 6240,
+      "command": { "kind": "heal", "tick": 6240, "timestamp": 404 }
+    },
+    {
+      "tick": 6270,
+      "command": { "kind": "heal", "tick": 6270, "timestamp": 405 }
+    },
+    {
+      "tick": 6300,
+      "command": { "kind": "heal", "tick": 6300, "timestamp": 406 }
+    },
+    {
+      "tick": 6330,
+      "command": { "kind": "heal", "tick": 6330, "timestamp": 407 }
+    },
+    {
+      "tick": 6360,
+      "command": { "kind": "heal", "tick": 6360, "timestamp": 408 }
+    },
+    {
+      "tick": 6390,
+      "command": { "kind": "heal", "tick": 6390, "timestamp": 409 }
+    },
+    {
+      "tick": 6420,
+      "command": { "kind": "heal", "tick": 6420, "timestamp": 410 }
+    },
+    {
+      "tick": 6450,
+      "command": { "kind": "heal", "tick": 6450, "timestamp": 411 }
+    },
+    {
+      "tick": 6480,
+      "command": { "kind": "heal", "tick": 6480, "timestamp": 412 }
+    },
+    {
+      "tick": 6482,
+      "command": { "kind": "level_up", "tick": 6482, "timestamp": 413 }
+    },
+    {
+      "tick": 6483,
+      "command": { "kind": "level_up", "tick": 6483, "timestamp": 414 }
+    },
+    {
+      "tick": 6484,
+      "command": { "kind": "level_up", "tick": 6484, "timestamp": 415 }
+    },
+    {
+      "tick": 6485,
+      "command": { "kind": "level_up", "tick": 6485, "timestamp": 416 }
+    },
+    {
+      "tick": 6486,
+      "command": { "kind": "level_up", "tick": 6486, "timestamp": 417 }
+    },
+    {
+      "tick": 6487,
+      "command": { "kind": "level_up", "tick": 6487, "timestamp": 418 }
+    },
+    {
+      "tick": 6488,
+      "command": { "kind": "level_up", "tick": 6488, "timestamp": 419 }
+    },
+    {
+      "tick": 6489,
+      "command": { "kind": "level_up", "tick": 6489, "timestamp": 420 }
+    },
+    {
+      "tick": 6490,
+      "command": {
+        "kind": "set_orb_levels",
+        "levels": [7, 7, 7],
+        "tick": 6490,
+        "timestamp": 421
+      }
+    },
+    {
+      "tick": 6491,
+      "command": { "kind": "reset_map", "tick": 6491, "timestamp": 422 }
+    },
+    {
+      "tick": 6492,
+      "command": { "kind": "restore_mana", "tick": 6492, "timestamp": 423 }
+    },
+    {
+      "tick": 6493,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 6493,
+        "timestamp": 424
+      }
+    },
+    {
+      "tick": 6510,
+      "command": { "kind": "heal", "tick": 6510, "timestamp": 425 }
+    },
+    {
+      "tick": 6539,
+      "command": { "kind": "slot", "slot": 1, "tick": 6539, "timestamp": 426 }
+    },
+    {
+      "tick": 6539,
+      "command": { "kind": "slot", "slot": 1, "tick": 6539, "timestamp": 427 }
+    },
+    {
+      "tick": 6539,
+      "command": { "kind": "slot", "slot": 1, "tick": 6539, "timestamp": 428 }
+    },
+    {
+      "tick": 6540,
+      "command": { "kind": "slot", "slot": 4, "tick": 6540, "timestamp": 429 }
+    },
+    {
+      "tick": 6540,
+      "command": { "kind": "heal", "tick": 6540, "timestamp": 430 }
+    },
+    {
+      "tick": 6541,
+      "command": {
+        "kind": "cast",
+        "abilityId": "hoarfrost",
+        "target": { "kind": "unit", "unitId": 786437 },
+        "tick": 6541,
+        "timestamp": 431
+      }
+    },
+    {
+      "tick": 6544,
+      "command": {
+        "kind": "attack_target",
+        "targetId": 786437,
+        "tick": 6544,
+        "timestamp": 432
+      }
+    },
+    {
+      "tick": 6570,
+      "command": { "kind": "heal", "tick": 6570, "timestamp": 433 }
+    },
+    {
+      "tick": 6600,
+      "command": { "kind": "heal", "tick": 6600, "timestamp": 434 }
+    },
+    {
+      "tick": 6630,
+      "command": { "kind": "heal", "tick": 6630, "timestamp": 435 }
+    },
+    {
+      "tick": 6660,
+      "command": { "kind": "heal", "tick": 6660, "timestamp": 436 }
+    },
+    {
+      "tick": 6690,
+      "command": { "kind": "heal", "tick": 6690, "timestamp": 437 }
+    },
+    {
+      "tick": 6720,
+      "command": { "kind": "heal", "tick": 6720, "timestamp": 438 }
+    },
+    {
+      "tick": 6750,
+      "command": { "kind": "heal", "tick": 6750, "timestamp": 439 }
+    },
+    {
+      "tick": 6780,
+      "command": { "kind": "heal", "tick": 6780, "timestamp": 440 }
+    },
+    {
+      "tick": 6785,
+      "command": { "kind": "reset_map", "tick": 6785, "timestamp": 441 }
+    },
+    {
+      "tick": 6786,
+      "command": { "kind": "restore_mana", "tick": 6786, "timestamp": 442 }
+    },
+    {
+      "tick": 6787,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 6787,
+        "timestamp": 443
+      }
+    },
+    {
+      "tick": 6810,
+      "command": { "kind": "heal", "tick": 6810, "timestamp": 444 }
+    },
+    {
+      "tick": 6833,
+      "command": { "kind": "slot", "slot": 1, "tick": 6833, "timestamp": 445 }
+    },
+    {
+      "tick": 6833,
+      "command": { "kind": "slot", "slot": 1, "tick": 6833, "timestamp": 446 }
+    },
+    {
+      "tick": 6833,
+      "command": { "kind": "slot", "slot": 3, "tick": 6833, "timestamp": 447 }
+    },
+    {
+      "tick": 6834,
+      "command": { "kind": "slot", "slot": 4, "tick": 6834, "timestamp": 448 }
+    },
+    {
+      "tick": 6835,
+      "command": {
+        "kind": "cast",
+        "abilityId": "glacier",
+        "target": {
+          "kind": "vector",
+          "position": { "x": 1730.6077190217886, "y": 1980.0681465593334 },
+          "end": { "x": 1730.6077190217886, "y": 2280.0681465593334 }
+        },
+        "tick": 6835,
+        "timestamp": 449
+      }
+    },
+    {
+      "tick": 6840,
+      "command": { "kind": "heal", "tick": 6840, "timestamp": 450 }
+    },
+    {
+      "tick": 6870,
+      "command": { "kind": "heal", "tick": 6870, "timestamp": 451 }
+    },
+    {
+      "tick": 6900,
+      "command": { "kind": "heal", "tick": 6900, "timestamp": 452 }
+    },
+    {
+      "tick": 6930,
+      "command": { "kind": "heal", "tick": 6930, "timestamp": 453 }
+    },
+    {
+      "tick": 6960,
+      "command": { "kind": "heal", "tick": 6960, "timestamp": 454 }
+    },
+    {
+      "tick": 6990,
+      "command": { "kind": "heal", "tick": 6990, "timestamp": 455 }
+    },
+    {
+      "tick": 7020,
+      "command": { "kind": "heal", "tick": 7020, "timestamp": 456 }
+    },
+    {
+      "tick": 7050,
+      "command": { "kind": "heal", "tick": 7050, "timestamp": 457 }
+    },
+    {
+      "tick": 7079,
+      "command": { "kind": "reset_map", "tick": 7079, "timestamp": 458 }
+    },
+    {
+      "tick": 7080,
+      "command": { "kind": "restore_mana", "tick": 7080, "timestamp": 459 }
+    },
+    {
+      "tick": 7080,
+      "command": { "kind": "heal", "tick": 7080, "timestamp": 460 }
+    },
+    {
+      "tick": 7081,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 7081,
+        "timestamp": 461
+      }
+    },
+    {
+      "tick": 7110,
+      "command": { "kind": "heal", "tick": 7110, "timestamp": 462 }
+    },
+    {
+      "tick": 7127,
+      "command": { "kind": "slot", "slot": 2, "tick": 7127, "timestamp": 463 }
+    },
+    {
+      "tick": 7127,
+      "command": { "kind": "slot", "slot": 2, "tick": 7127, "timestamp": 464 }
+    },
+    {
+      "tick": 7127,
+      "command": { "kind": "slot", "slot": 2, "tick": 7127, "timestamp": 465 }
+    },
+    {
+      "tick": 7128,
+      "command": { "kind": "slot", "slot": 4, "tick": 7128, "timestamp": 466 }
+    },
+    {
+      "tick": 7129,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1683.6742201823886, "y": 1973.1429452803136 }
+        },
+        "tick": 7129,
+        "timestamp": 467
+      }
+    },
+    {
+      "tick": 7140,
+      "command": { "kind": "heal", "tick": 7140, "timestamp": 468 }
+    },
+    {
+      "tick": 7170,
+      "command": { "kind": "heal", "tick": 7170, "timestamp": 469 }
+    },
+    {
+      "tick": 7200,
+      "command": { "kind": "heal", "tick": 7200, "timestamp": 470 }
+    },
+    {
+      "tick": 7230,
+      "command": { "kind": "heal", "tick": 7230, "timestamp": 471 }
+    },
+    {
+      "tick": 7260,
+      "command": { "kind": "heal", "tick": 7260, "timestamp": 472 }
+    },
+    {
+      "tick": 7290,
+      "command": { "kind": "heal", "tick": 7290, "timestamp": 473 }
+    },
+    {
+      "tick": 7320,
+      "command": { "kind": "heal", "tick": 7320, "timestamp": 474 }
+    },
+    {
+      "tick": 7350,
+      "command": { "kind": "heal", "tick": 7350, "timestamp": 475 }
+    },
+    {
+      "tick": 7373,
+      "command": { "kind": "reset_map", "tick": 7373, "timestamp": 476 }
+    },
+    {
+      "tick": 7374,
+      "command": { "kind": "restore_mana", "tick": 7374, "timestamp": 477 }
+    },
+    {
+      "tick": 7375,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "ranged_archer",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 7375,
+        "timestamp": 478
+      }
+    },
+    {
+      "tick": 7380,
+      "command": { "kind": "heal", "tick": 7380, "timestamp": 479 }
+    },
+    {
+      "tick": 7410,
+      "command": { "kind": "heal", "tick": 7410, "timestamp": 480 }
+    },
+    {
+      "tick": 7421,
+      "command": { "kind": "slot", "slot": 2, "tick": 7421, "timestamp": 481 }
+    },
+    {
+      "tick": 7421,
+      "command": { "kind": "slot", "slot": 2, "tick": 7421, "timestamp": 482 }
+    },
+    {
+      "tick": 7421,
+      "command": { "kind": "slot", "slot": 2, "tick": 7421, "timestamp": 483 }
+    },
+    {
+      "tick": 7422,
+      "command": { "kind": "slot", "slot": 4, "tick": 7422, "timestamp": 484 }
+    },
+    {
+      "tick": 7423,
+      "command": {
+        "kind": "cast",
+        "abilityId": "siphon",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1506.6374724220557, "y": 1962.679412954357 }
+        },
+        "tick": 7423,
+        "timestamp": 485
+      }
+    },
+    {
+      "tick": 7440,
+      "command": { "kind": "heal", "tick": 7440, "timestamp": 486 }
+    },
+    {
+      "tick": 7470,
+      "command": { "kind": "heal", "tick": 7470, "timestamp": 487 }
+    },
+    {
+      "tick": 7500,
+      "command": { "kind": "heal", "tick": 7500, "timestamp": 488 }
+    },
+    {
+      "tick": 7530,
+      "command": { "kind": "heal", "tick": 7530, "timestamp": 489 }
+    },
+    {
+      "tick": 7560,
+      "command": { "kind": "heal", "tick": 7560, "timestamp": 490 }
+    },
+    {
+      "tick": 7590,
+      "command": { "kind": "heal", "tick": 7590, "timestamp": 491 }
+    },
+    {
+      "tick": 7620,
+      "command": { "kind": "heal", "tick": 7620, "timestamp": 492 }
+    },
+    {
+      "tick": 7650,
+      "command": { "kind": "heal", "tick": 7650, "timestamp": 493 }
+    },
+    {
+      "tick": 7667,
+      "command": { "kind": "reset_map", "tick": 7667, "timestamp": 494 }
+    },
+    {
+      "tick": 7668,
+      "command": { "kind": "restore_mana", "tick": 7668, "timestamp": 495 }
+    },
+    {
+      "tick": 7669,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 7669,
+        "timestamp": 496
+      }
+    },
+    {
+      "tick": 7680,
+      "command": { "kind": "heal", "tick": 7680, "timestamp": 497 }
+    },
+    {
+      "tick": 7710,
+      "command": { "kind": "heal", "tick": 7710, "timestamp": 498 }
+    },
+    {
+      "tick": 7715,
+      "command": { "kind": "slot", "slot": 2, "tick": 7715, "timestamp": 499 }
+    },
+    {
+      "tick": 7715,
+      "command": { "kind": "slot", "slot": 2, "tick": 7715, "timestamp": 500 }
+    },
+    {
+      "tick": 7715,
+      "command": { "kind": "slot", "slot": 1, "tick": 7715, "timestamp": 501 }
+    },
+    {
+      "tick": 7716,
+      "command": { "kind": "slot", "slot": 4, "tick": 7716, "timestamp": 502 }
+    },
+    {
+      "tick": 7717,
+      "command": {
+        "kind": "cast",
+        "abilityId": "updraft",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1733.6550471263404, "y": 1980.6278218327832 }
+        },
+        "tick": 7717,
+        "timestamp": 503
+      }
+    },
+    {
+      "tick": 7740,
+      "command": { "kind": "heal", "tick": 7740, "timestamp": 504 }
+    },
+    {
+      "tick": 7770,
+      "command": { "kind": "heal", "tick": 7770, "timestamp": 505 }
+    },
+    {
+      "tick": 7800,
+      "command": { "kind": "heal", "tick": 7800, "timestamp": 506 }
+    },
+    {
+      "tick": 7830,
+      "command": { "kind": "heal", "tick": 7830, "timestamp": 507 }
+    },
+    {
+      "tick": 7860,
+      "command": { "kind": "heal", "tick": 7860, "timestamp": 508 }
+    },
+    {
+      "tick": 7890,
+      "command": { "kind": "heal", "tick": 7890, "timestamp": 509 }
+    },
+    {
+      "tick": 7920,
+      "command": { "kind": "heal", "tick": 7920, "timestamp": 510 }
+    },
+    {
+      "tick": 7950,
+      "command": { "kind": "heal", "tick": 7950, "timestamp": 511 }
+    },
+    {
+      "tick": 7961,
+      "command": { "kind": "reset_map", "tick": 7961, "timestamp": 512 }
+    },
+    {
+      "tick": 7962,
+      "command": { "kind": "restore_mana", "tick": 7962, "timestamp": 513 }
+    },
+    {
+      "tick": 7963,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 7963,
+        "timestamp": 514
+      }
+    },
+    {
+      "tick": 7980,
+      "command": { "kind": "heal", "tick": 7980, "timestamp": 515 }
+    },
+    {
+      "tick": 8009,
+      "command": { "kind": "slot", "slot": 3, "tick": 8009, "timestamp": 516 }
+    },
+    {
+      "tick": 8009,
+      "command": { "kind": "slot", "slot": 3, "tick": 8009, "timestamp": 517 }
+    },
+    {
+      "tick": 8009,
+      "command": { "kind": "slot", "slot": 3, "tick": 8009, "timestamp": 518 }
+    },
+    {
+      "tick": 8010,
+      "command": { "kind": "slot", "slot": 4, "tick": 8010, "timestamp": 519 }
+    },
+    {
+      "tick": 8010,
+      "command": { "kind": "heal", "tick": 8010, "timestamp": 520 }
+    },
+    {
+      "tick": 8011,
+      "command": {
+        "kind": "cast",
+        "abilityId": "zenith",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1715.2512498334752, "y": 1978.152479276531 }
+        },
+        "tick": 8011,
+        "timestamp": 521
+      }
+    },
+    {
+      "tick": 8040,
+      "command": { "kind": "heal", "tick": 8040, "timestamp": 522 }
+    },
+    {
+      "tick": 8070,
+      "command": { "kind": "heal", "tick": 8070, "timestamp": 523 }
+    },
+    {
+      "tick": 8100,
+      "command": { "kind": "heal", "tick": 8100, "timestamp": 524 }
+    },
+    {
+      "tick": 8130,
+      "command": { "kind": "heal", "tick": 8130, "timestamp": 525 }
+    },
+    {
+      "tick": 8160,
+      "command": { "kind": "heal", "tick": 8160, "timestamp": 526 }
+    },
+    {
+      "tick": 8190,
+      "command": { "kind": "heal", "tick": 8190, "timestamp": 527 }
+    },
+    {
+      "tick": 8220,
+      "command": { "kind": "heal", "tick": 8220, "timestamp": 528 }
+    },
+    {
+      "tick": 8250,
+      "command": { "kind": "heal", "tick": 8250, "timestamp": 529 }
+    },
+    {
+      "tick": 8255,
+      "command": { "kind": "reset_map", "tick": 8255, "timestamp": 530 }
+    },
+    {
+      "tick": 8256,
+      "command": { "kind": "restore_mana", "tick": 8256, "timestamp": 531 }
+    },
+    {
+      "tick": 8257,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 8257,
+        "timestamp": 532
+      }
+    },
+    {
+      "tick": 8280,
+      "command": { "kind": "heal", "tick": 8280, "timestamp": 533 }
+    },
+    {
+      "tick": 8303,
+      "command": { "kind": "slot", "slot": 3, "tick": 8303, "timestamp": 534 }
+    },
+    {
+      "tick": 8303,
+      "command": { "kind": "slot", "slot": 3, "tick": 8303, "timestamp": 535 }
+    },
+    {
+      "tick": 8303,
+      "command": { "kind": "slot", "slot": 2, "tick": 8303, "timestamp": 536 }
+    },
+    {
+      "tick": 8304,
+      "command": { "kind": "slot", "slot": 4, "tick": 8304, "timestamp": 537 }
+    },
+    {
+      "tick": 8305,
+      "command": {
+        "kind": "cast",
+        "abilityId": "bolide",
+        "target": {
+          "kind": "point",
+          "position": { "x": 1733.6550471263404, "y": 1980.6278218327832 }
+        },
+        "tick": 8305,
+        "timestamp": 538
+      }
+    },
+    {
+      "tick": 8310,
+      "command": { "kind": "heal", "tick": 8310, "timestamp": 539 }
+    },
+    {
+      "tick": 8340,
+      "command": { "kind": "heal", "tick": 8340, "timestamp": 540 }
+    },
+    {
+      "tick": 8370,
+      "command": { "kind": "heal", "tick": 8370, "timestamp": 541 }
+    },
+    {
+      "tick": 8400,
+      "command": { "kind": "heal", "tick": 8400, "timestamp": 542 }
+    },
+    {
+      "tick": 8430,
+      "command": { "kind": "heal", "tick": 8430, "timestamp": 543 }
+    },
+    {
+      "tick": 8460,
+      "command": { "kind": "heal", "tick": 8460, "timestamp": 544 }
+    },
+    {
+      "tick": 8490,
+      "command": { "kind": "heal", "tick": 8490, "timestamp": 545 }
+    },
+    {
+      "tick": 8520,
+      "command": { "kind": "heal", "tick": 8520, "timestamp": 546 }
+    },
+    {
+      "tick": 8549,
+      "command": { "kind": "reset_map", "tick": 8549, "timestamp": 547 }
+    },
+    {
+      "tick": 8550,
+      "command": { "kind": "restore_mana", "tick": 8550, "timestamp": 548 }
+    },
+    {
+      "tick": 8550,
+      "command": { "kind": "heal", "tick": 8550, "timestamp": 549 }
+    },
+    {
+      "tick": 8551,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 8551,
+        "timestamp": 550
+      }
+    },
+    {
+      "tick": 8580,
+      "command": { "kind": "heal", "tick": 8580, "timestamp": 551 }
+    },
+    {
+      "tick": 8597,
+      "command": { "kind": "slot", "slot": 1, "tick": 8597, "timestamp": 552 }
+    },
+    {
+      "tick": 8597,
+      "command": { "kind": "slot", "slot": 2, "tick": 8597, "timestamp": 553 }
+    },
+    {
+      "tick": 8597,
+      "command": { "kind": "slot", "slot": 3, "tick": 8597, "timestamp": 554 }
+    },
+    {
+      "tick": 8598,
+      "command": { "kind": "slot", "slot": 4, "tick": 8598, "timestamp": 555 }
+    },
+    {
+      "tick": 8599,
+      "command": {
+        "kind": "cast",
+        "abilityId": "clarion",
+        "target": {
+          "kind": "direction",
+          "position": { "x": 1681.1034749375533, "y": 1981.5779528860571 }
+        },
+        "tick": 8599,
+        "timestamp": 556
+      }
+    },
+    {
+      "tick": 8610,
+      "command": { "kind": "heal", "tick": 8610, "timestamp": 557 }
+    },
+    {
+      "tick": 8640,
+      "command": { "kind": "heal", "tick": 8640, "timestamp": 558 }
+    },
+    {
+      "tick": 8670,
+      "command": { "kind": "heal", "tick": 8670, "timestamp": 559 }
+    },
+    {
+      "tick": 8700,
+      "command": { "kind": "heal", "tick": 8700, "timestamp": 560 }
+    },
+    {
+      "tick": 8730,
+      "command": { "kind": "heal", "tick": 8730, "timestamp": 561 }
+    },
+    {
+      "tick": 8760,
+      "command": { "kind": "heal", "tick": 8760, "timestamp": 562 }
+    },
+    {
+      "tick": 8790,
+      "command": { "kind": "heal", "tick": 8790, "timestamp": 563 }
+    },
+    {
+      "tick": 8820,
+      "command": { "kind": "heal", "tick": 8820, "timestamp": 564 }
+    },
+    {
+      "tick": 8843,
+      "command": { "kind": "reset_map", "tick": 8843, "timestamp": 565 }
+    },
+    {
+      "tick": 8844,
+      "command": { "kind": "restore_mana", "tick": 8844, "timestamp": 566 }
+    },
+    {
+      "tick": 8845,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 8845,
+        "timestamp": 567
+      }
+    },
+    {
+      "tick": 8850,
+      "command": { "kind": "heal", "tick": 8850, "timestamp": 568 }
+    },
+    {
+      "tick": 8880,
+      "command": { "kind": "heal", "tick": 8880, "timestamp": 569 }
+    },
+    {
+      "tick": 8891,
+      "command": { "kind": "slot", "slot": 3, "tick": 8891, "timestamp": 570 }
+    },
+    {
+      "tick": 8891,
+      "command": { "kind": "slot", "slot": 3, "tick": 8891, "timestamp": 571 }
+    },
+    {
+      "tick": 8891,
+      "command": { "kind": "slot", "slot": 1, "tick": 8891, "timestamp": 572 }
+    },
+    {
+      "tick": 8892,
+      "command": { "kind": "slot", "slot": 4, "tick": 8892, "timestamp": 573 }
+    },
+    {
+      "tick": 8893,
+      "command": {
+        "kind": "cast",
+        "abilityId": "emberling",
+        "target": { "kind": "none" },
+        "tick": 8893,
+        "timestamp": 574
+      }
+    },
+    {
+      "tick": 8896,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1693.5399329511595, "y": 1980.7485152351928 },
+        "tick": 8896,
+        "timestamp": 575
+      }
+    },
+    {
+      "tick": 8910,
+      "command": { "kind": "heal", "tick": 8910, "timestamp": 576 }
+    },
+    {
+      "tick": 8940,
+      "command": { "kind": "heal", "tick": 8940, "timestamp": 577 }
+    },
+    {
+      "tick": 8970,
+      "command": { "kind": "heal", "tick": 8970, "timestamp": 578 }
+    },
+    {
+      "tick": 9000,
+      "command": { "kind": "heal", "tick": 9000, "timestamp": 579 }
+    },
+    {
+      "tick": 9030,
+      "command": { "kind": "heal", "tick": 9030, "timestamp": 580 }
+    },
+    {
+      "tick": 9060,
+      "command": { "kind": "heal", "tick": 9060, "timestamp": 581 }
+    },
+    {
+      "tick": 9090,
+      "command": { "kind": "heal", "tick": 9090, "timestamp": 582 }
+    },
+    {
+      "tick": 9120,
+      "command": { "kind": "heal", "tick": 9120, "timestamp": 583 }
+    },
+    {
+      "tick": 9137,
+      "command": { "kind": "reset_map", "tick": 9137, "timestamp": 584 }
+    },
+    {
+      "tick": 9138,
+      "command": { "kind": "restore_mana", "tick": 9138, "timestamp": 585 }
+    },
+    {
+      "tick": 9139,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 9139,
+        "timestamp": 586
+      }
+    },
+    {
+      "tick": 9150,
+      "command": { "kind": "heal", "tick": 9150, "timestamp": 587 }
+    },
+    {
+      "tick": 9180,
+      "command": { "kind": "heal", "tick": 9180, "timestamp": 588 }
+    },
+    {
+      "tick": 9185,
+      "command": { "kind": "slot", "slot": 2, "tick": 9185, "timestamp": 589 }
+    },
+    {
+      "tick": 9185,
+      "command": { "kind": "slot", "slot": 2, "tick": 9185, "timestamp": 590 }
+    },
+    {
+      "tick": 9185,
+      "command": { "kind": "slot", "slot": 3, "tick": 9185, "timestamp": 591 }
+    },
+    {
+      "tick": 9186,
+      "command": { "kind": "slot", "slot": 4, "tick": 9186, "timestamp": 592 }
+    },
+    {
+      "tick": 9187,
+      "command": {
+        "kind": "cast",
+        "abilityId": "quicken",
+        "target": { "kind": "none" },
+        "tick": 9187,
+        "timestamp": 593
+      }
+    },
+    {
+      "tick": 9190,
+      "command": {
+        "kind": "attack_move",
+        "destination": { "x": 1722.3793046957137, "y": 1981.9628190659998 },
+        "tick": 9190,
+        "timestamp": 594
+      }
+    },
+    {
+      "tick": 9210,
+      "command": { "kind": "heal", "tick": 9210, "timestamp": 595 }
+    },
+    {
+      "tick": 9240,
+      "command": { "kind": "heal", "tick": 9240, "timestamp": 596 }
+    },
+    {
+      "tick": 9270,
+      "command": { "kind": "heal", "tick": 9270, "timestamp": 597 }
+    },
+    {
+      "tick": 9300,
+      "command": { "kind": "heal", "tick": 9300, "timestamp": 598 }
+    },
+    {
+      "tick": 9330,
+      "command": { "kind": "heal", "tick": 9330, "timestamp": 599 }
+    },
+    {
+      "tick": 9360,
+      "command": { "kind": "heal", "tick": 9360, "timestamp": 600 }
+    },
+    {
+      "tick": 9390,
+      "command": { "kind": "heal", "tick": 9390, "timestamp": 601 }
+    },
+    {
+      "tick": 9420,
+      "command": { "kind": "heal", "tick": 9420, "timestamp": 602 }
+    },
+    {
+      "tick": 9431,
+      "command": { "kind": "reset_map", "tick": 9431, "timestamp": 603 }
+    },
+    {
+      "tick": 9432,
+      "command": { "kind": "restore_mana", "tick": 9432, "timestamp": 604 }
+    },
+    {
+      "tick": 9433,
+      "command": {
+        "kind": "spawn_pack",
+        "archetypeId": "melee_grunt",
+        "tier": "normal",
+        "count": 5,
+        "position": { "x": 1500, "y": 2000 },
+        "tick": 9433,
+        "timestamp": 605
+      }
+    },
+    {
+      "tick": 9450,
+      "command": { "kind": "heal", "tick": 9450, "timestamp": 606 }
+    },
+    {
+      "tick": 9479,
+      "command": { "kind": "slot", "slot": 1, "tick": 9479, "timestamp": 607 }
+    },
+    {
+      "tick": 9479,
+      "command": { "kind": "slot", "slot": 1, "tick": 9479, "timestamp": 608 }
+    },
+    {
+      "tick": 9479,
+      "command": { "kind": "slot", "slot": 2, "tick": 9479, "timestamp": 609 }
+    },
+    {
+      "tick": 9480,
+      "command": { "kind": "slot", "slot": 4, "tick": 9480, "timestamp": 610 }
+    },
+    {
+      "tick": 9480,
+      "command": { "kind": "heal", "tick": 9480, "timestamp": 611 }
+    },
+    {
+      "tick": 9481,
+      "command": {
+        "kind": "cast",
+        "abilityId": "wane",
+        "target": { "kind": "none" },
+        "tick": 9481,
+        "timestamp": 612
+      }
+    },
+    {
+      "tick": 9510,
+      "command": { "kind": "heal", "tick": 9510, "timestamp": 613 }
+    },
+    {
+      "tick": 9540,
+      "command": { "kind": "heal", "tick": 9540, "timestamp": 614 }
+    },
+    {
+      "tick": 9570,
+      "command": { "kind": "heal", "tick": 9570, "timestamp": 615 }
+    },
+    {
+      "tick": 9600,
+      "command": { "kind": "heal", "tick": 9600, "timestamp": 616 }
+    },
+    {
+      "tick": 9630,
+      "command": { "kind": "heal", "tick": 9630, "timestamp": 617 }
+    },
+    {
+      "tick": 9660,
+      "command": { "kind": "heal", "tick": 9660, "timestamp": 618 }
+    },
+    {
+      "tick": 9690,
+      "command": { "kind": "heal", "tick": 9690, "timestamp": 619 }
+    },
+    {
+      "tick": 9720,
+      "command": { "kind": "heal", "tick": 9720, "timestamp": 620 }
+    },
+    {
+      "tick": 9725,
+      "command": { "kind": "reset_map", "tick": 9725, "timestamp": 621 }
+    },
+    {
+      "tick": 9726,
+      "command": { "kind": "heal", "tick": 9726, "timestamp": 622 }
+    },
+    {
+      "tick": 9726,
+      "command": { "kind": "restore_mana", "tick": 9726, "timestamp": 623 }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import { createOrder, resetOrder } from "../orders/order";
 import type { Progression } from "../stats/levels";
 import type { Tick } from "../tick";
 import { Pool } from "./pool";
+import type { StatTotals } from "./stat-totals";
 import type { AiRecord } from "./unit-ai";
 import { clearAiRecord, createAiRecord } from "./unit-ai";
 import type { AttackState } from "./unit-attack";
@@ -124,8 +125,8 @@ export const STATS: readonly Stat[] = [
   "magic_resistance",
 ];
 
-/** What wrote a modifier row: a status, a held orb instance, the ability that summoned the unit, or later an item. A source removes every row of its kind. */
-export type ModifierKind = "status" | "orb" | "summon" | "item";
+/** What wrote a modifier row: a status, a held orb instance, or the ability that summoned the unit. A source removes every row of its kind. An item writes no row; it reaches a stat through the totals a table references. */
+export type ModifierKind = "status" | "orb" | "summon";
 
 /**
  * One row of a unit's modifier table: one source's contribution to one stat, a flat amount in
@@ -200,6 +201,8 @@ export type Unit = {
   /** When its next shot may land, and where an attack-move was walking. */
   attack: AttackState;
   modifiers: readonly ModifierEntry[];
+  /** What the worn items add, which the pipeline adds to the rows: run scope's hero totals for the hero, set when it is placed, and the world's zeros for every other unit, set when its slot is made. */
+  totals: Readonly<StatTotals>;
   /** How many rows of `modifiers` hold a stat. Kept by `addModifier` and `removeModifiers`; a unit with none derives its stats as a copy of its base. */
   liveModifierRows: number;
   /** How many rows `addModifier` refused because every row was taken, as a pool counts its misses. */
@@ -298,7 +301,7 @@ export const clearPath = (path: Path): void => {
   path.next = 0;
 };
 
-const createUnit = (): Unit => {
+const createUnit = (zeros: Readonly<StatTotals>): Unit => {
   const statuses: StatusEntry[] = [];
   const modifiers: ModifierEntry[] = [];
 
@@ -330,6 +333,7 @@ const createUnit = (): Unit => {
     stageEndsAtTick: 0,
     attack: createAttackState(),
     modifiers,
+    totals: zeros,
     liveModifierRows: 0,
     modifierMisses: 0,
     progression: { level: 1, experience: 0, skillPoints: 0 },
@@ -351,8 +355,8 @@ const createUnit = (): Unit => {
   };
 };
 
-/** Every field back to the value a fresh slot has. `kind` has no neutral member; the acquirer sets it. */
-const clearUnit = (unit: Unit): void => {
+/** Every field back to the value a fresh slot has, its totals the world's zeros. `kind` has no neutral member; the acquirer sets it. */
+const clearUnit = (unit: Unit, zeros: Readonly<StatTotals>): void => {
   unit.kind = "enemy";
   unit.definitionId = null;
   unit.prev.x = 0;
@@ -382,6 +386,7 @@ const clearUnit = (unit: Unit): void => {
     }
   }
 
+  unit.totals = zeros;
   unit.liveModifierRows = 0;
   unit.modifierMisses = 0;
   unit.progression.level = 1;
@@ -416,8 +421,15 @@ const clearUnit = (unit: Unit): void => {
   clearSummonState(unit.summon);
 };
 
-export const createUnitPool = (): Pool<Unit, UnitId> =>
-  new Pool(UNIT_CAPACITY, createUnit, clearUnit);
+/** The unit pool, every slot referencing `zeros` for its totals until the hero is placed in one. */
+export const createUnitPool = (
+  zeros: Readonly<StatTotals>,
+): Pool<Unit, UnitId> =>
+  new Pool(
+    UNIT_CAPACITY,
+    () => createUnit(zeros),
+    (unit) => clearUnit(unit, zeros),
+  );
 
 /**
  * The one way a unit enters the world: a slot from the pool, standing at the position with its
