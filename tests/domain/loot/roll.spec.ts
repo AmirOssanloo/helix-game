@@ -43,6 +43,10 @@ const tableOf = (id: string): LootTableDef => {
   return table;
 };
 
+/** How many affixes an item of `id` rolls, as the rarity table gives it. */
+const affixCountOf = (id: string | null): number =>
+  contentRegistry.rarities.find((rarity) => rarity.id === id)?.affixCount ?? 0;
+
 /** The rarity table's index of `id`, which ranks one rarity above another. */
 const rankOf = (id: string | null): number =>
   contentRegistry.rarities.findIndex((rarity) => rarity.id === id);
@@ -235,7 +239,7 @@ describe("the loot roll", () => {
             const implicit = item.lines[0];
 
             expect(item.itemLevel).toBe(level);
-            expect(item.lineCount).toBe(1);
+            expect(item.lineCount).toBe(1 + affixCountOf(item.rarityId));
             expect(implicit?.sourceId).toBe(item.baseId);
             expect(implicit?.value).toBeGreaterThanOrEqual(range.min);
             expect(implicit?.value).toBeLessThanOrEqual(range.max);
@@ -474,11 +478,11 @@ describe("an item's level requirement", () => {
     lineCount: sources.length,
   });
 
-  it("is its base's requirement for an item with no affix, as every item rolls today", () => {
+  it("is its base's requirement for a rolled item whose affixes ask no more", () => {
     const world = makeWorld({ seed: 11 });
     const out = createDropRoll();
 
-    world.state.map.level = 3;
+    world.state.map.level = 1;
 
     for (let key = 0; key < 200; key += 1) {
       rollDrop(world.view, "boss", key, null, out);

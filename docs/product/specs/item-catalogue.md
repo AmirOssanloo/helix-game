@@ -120,7 +120,7 @@ Seven rarities, from Common to Legendary. A rarity says how many affixes an item
 
 ## 5. The affixes
 
-An affix is one stat line an item rolls beyond its base's implicit stat. An item rolls as many as its rarity gives, and never two on the same stat: it draws a stat from those its armory slot may roll that it does not yet carry, then one tier of that stat among those its item level reaches and its rarity allows, then a value in that tier's range. A tier is reached when the item level is at least its affix level. The item's level requirement is the highest of its base's requirement and its affixes' requirements.
+An affix is one stat line an item rolls beyond its base's implicit stat. An item rolls as many as its rarity gives, and never two on the same stat: it draws a stat from those its armory slot may roll, that have a tier its item level reaches and its rarity allows, and that none of its affixes already carries, then one tier of that stat among those its item level reaches and its rarity allows, then a value in that tier's range. The implicit is not an affix, so a staff's implicit maximum mana does not keep it from rolling a mana affix. An item that finds fewer open stats than its rarity gives rolls as many as it finds. A tier is reached when the item level is at least its affix level. The item's level requirement is the highest of its base's requirement and its affixes' requirements.
 
 Every stat has a first tier at affix level 1, but for cooldown reduction, and every armory slot may roll at least five stats at affix level 1, so a Mythical item finds five affixes at any item level.
 
@@ -153,7 +153,7 @@ Every stat has a first tier at affix level 1, but for cooldown reduction, and ev
 | Cooldown reduction I | `cooldown_reduction_1` | Cooldown reduction, percent | Helm, amulet, main hand, off-hand | 4 | 4 | +2 to 4% | Rare to Mythical | +N% COOLDOWN REDUCTION |
 | Cooldown reduction II | `cooldown_reduction_2` | Cooldown reduction, percent | As I | 9 | 9 | +5 to 7% | Rare to Mythical | +N% COOLDOWN REDUCTION |
 
-A whole-number stat rolls whole numbers; a regeneration rolls in tenths. The affixes at affix level 1 of each armory slot:
+A whole-number stat rolls whole numbers; a regeneration rolls in tenths; a percentage rolls in whole percents. An implicit rolls in the same steps, and every step of a range is as likely as another. The affixes at affix level 1 of each armory slot:
 
 | Armory slot | Stats at affix level 1 |
 |---|---|

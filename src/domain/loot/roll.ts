@@ -78,6 +78,8 @@ const clearDropRoll = (out: DropRoll): void => {
 const DROP_PURPOSES: ItemRollPurposes = {
   rarity: DRAW_PURPOSE.lootRarity,
   base: DRAW_PURPOSE.lootBase,
+  affix: DRAW_PURPOSE.lootAffix,
+  affixTier: DRAW_PURPOSE.lootAffixTier,
   lineValue: DRAW_PURPOSE.lootAffixValue,
 };
 

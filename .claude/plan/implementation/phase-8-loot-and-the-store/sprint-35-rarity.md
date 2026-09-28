@@ -23,7 +23,7 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 | Layer | domain, simulation, content, tests, docs |
 | Size | 2 |
 | Depends on | P8-S32-T02, P8-S34-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** the enemy-tier tables roll Common to Mythical, Mythical at a low rate from any enemy; Legendary comes only from its named boss's table (P8-S32-T02), and active items have no rarity and are in no table (Q84). An affix rolls only when the item level reaches its affix level (Q89). Tints per Q83's answer. Six logs, not seven. Later the same day: the item level is the map's (Q89's answer), and no affix touches an orb (Q92).
 
@@ -32,6 +32,8 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 > **Note, 2026-09-28, from P8-S31-T01:** the [item catalogue](../../../../docs/product/specs/item-catalogue.md#5-the-affixes) groups an affix's tiers by stat: an item draws a stat its armory slot may roll and does not yet carry, then one tier of it the item level reaches and the rarity allows, then a value, so no item carries two affixes on one stat. "Drawn without repeat from the affixes" below reads as that.
 
 > **Note, 2026-09-28, from P8-S31-T02:** there is no "loot draw's sequence": every number is a keyed draw on the drop's key, and [the brief](../../2026-09-28-where-items-loot-and-the-store-live.md), section 3.1, fixes the purposes and indices, `lootAffix` for the stat, `lootAffixTier` for the tier, and `lootAffixValue` for the value, each at `r × L + line`. The rarity weights are read over their sum, since loot tables are tunable. A Legendary copies its piece's fixed lines into the instance when it is made. Each affix is a line the armory's totals sum, not a row. The size stays 2.
+
+> **Note, 2026-09-28, at close:** most of the frame was already built by sprints 31 to 34: the purposes, the line capacity, the tints on the label and the icon, the requirement as the highest, and a Legendary's lines copied in. What this ticket added is the affix roll itself, in its own file, `src/domain/loot/affix-roll.ts`, which `item-roll.ts` calls, since the two in one file broke the 500-line limit. A stat is open when some tier of it is open to the slot, the rarity, and the item level; the implicit's stat does not count as carried, as the catalogue's main hand needs it to find five stats (recorded as Q111, provisional). Values roll on the catalogue's steps, whole numbers, tenths for a regeneration, whole percents, the implicit included; the catalogue now states it. No content changed, so the content version did not move: `pnpm restamp --checksums` replayed the six logs and re-recorded the checksums of the four that record them. The full-state comparison over the boss encounter runs with the walk-over take left on, since it takes the same gold and globes in both worlds; it is stricter than holding it off.
 
 **Build:** an item's affixes rolled at the drop in `src/domain/loot/item-roll.ts`, on keyed draws on the drop's key (the dying unit's id) at the brief's indices, `r × L + line` for item roll `r`, the line capacity `L`, and affix lines 1 to 5: the count its rarity gives (Q83: 0 to 5); for each, a stat by `lootAffix` among those its slot may roll that it does not yet carry, a tier by `lootAffixTier` among that stat's tiers the item level reaches and the rarity allows, and a value by `lootAffixValue` in the tier's range. The same function rolls a store's stock and a grant under their own purposes (P8-S36-T02, P8-S36-T04). The level requirement becomes the highest of the base's and the rolled affixes' (P8-S32-T03's rule). The item instance holds its rolled values in its fixed number of lines, so a roll allocates nothing. A Legendary rolls nothing: its piece's fixed lines are copied into the instance when it is made, as values in designer units. Each affix is a line the armory's totals sum (P8-S34-T01), so the stats carry them unchanged. The rarity's tint reaches the label and the icon: gray, white, blue, orange, gold, purple, red, Common to Legendary. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
@@ -140,10 +142,10 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 | Check | Result |
 | --- | --- |
-| Seven rarities at their weights, affixes rolled and worn | |
+| Seven rarities at their weights, affixes rolled and worn | Yes: `tests/domain/loot/rarity.spec.ts`, `tests/domain/items/affixes.spec.ts`, and the rolled cap worn in `tests/simulation/items/armory-stats.spec.ts` |
 | The catalogue's bases, with sizes, and Legendaries as content | |
 | An item moved on the grid by its size | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 1, sized 2 |
 | Sprint total | |
 
 ## Risks in this sprint

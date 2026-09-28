@@ -12,7 +12,13 @@ import type {
   Unit,
   World,
 } from "@domain/public";
-import { flatTotalOf, percentTotalOf, readTunable } from "@domain/queries";
+import {
+  createDropRoll,
+  flatTotalOf,
+  percentTotalOf,
+  readTunable,
+  rollDrop,
+} from "@domain/queries";
 import {
   applyStatus,
   attackDamageOf,
@@ -422,5 +428,78 @@ describe("in steady state", () => {
     expect(sink).toBe((WARM_UP_CALLS + MEASURED_CALLS) * 3);
     expect(collections).toBe(0);
     expect(after - before).toBeLessThan(HEAP_ALLOWANCE_BYTES);
+  });
+});
+
+/** The derived value each stat a helm's affix may name moves, and how many of the simulation's units one of the designer's is. */
+const HELM_AFFIX_STATS: Readonly<
+  Partial<Record<Stat, readonly [StatKey, number]>>
+> = {
+  max_health: ["maxHealth", 1],
+  health_regen: ["healthRegen", 1 / SIM_HZ],
+  max_mana: ["maxMana", 1],
+  mana_regen: ["manaRegen", 1 / SIM_HZ],
+  armour: ["armour", 1],
+  magic_resistance: ["magicResistance", 1],
+};
+
+/** A copy of the first Mythical cap a boss's drop rolls on the world's tick, its affixes all at affix level 1. */
+const rolledMythicalCap = (world: Simulation): Item => {
+  const out = createDropRoll();
+
+  for (let key = 0; key < 10_000; key += 1) {
+    rollDrop(world.view, "boss", key, null, out);
+
+    for (let index = 0; index < out.itemCount; index += 1) {
+      const item = out.items[index];
+
+      if (item?.baseId === cap.id && item.rarityId === "mythical") {
+        return structuredClone(item);
+      }
+    }
+  }
+
+  throw new Error("A boss drops a Mythical cap within the keys rolled");
+};
+
+describe("a rolled item's affixes, worn", () => {
+  it("move each derived value they name by their line, the implicit's beside them, and back when it comes off", () => {
+    const { world, hero } = arrange();
+    const before = { ...hero.stats };
+    const item = rolledMythicalCap(world);
+    const expected = new Map<StatKey, number>();
+
+    expect(item.lineCount).toBe(6);
+
+    for (const [line, rolled] of item.lines.entries()) {
+      const stat =
+        line === 0
+          ? cap.implicit.stat
+          : contentRegistry.affixes.find(
+              (affix) => affix.id === rolled.sourceId,
+            )?.stat;
+      const moved = stat === undefined ? undefined : HELM_AFFIX_STATS[stat];
+
+      if (moved === undefined) {
+        throw new Error(`A helm's line ${String(line)} names a derived value`);
+      }
+
+      const [key, unit] = moved;
+
+      expected.set(key, (expected.get(key) ?? 0) + rolled.value * unit);
+    }
+
+    put(world.state, item, 0);
+    equip(world, 0);
+
+    for (const [key, delta] of expected) {
+      expect(hero.stats[key], key).toBeCloseTo(before[key] + delta, 9);
+    }
+
+    unequip(world, HELM);
+
+    for (const key of expected.keys()) {
+      expect(hero.stats[key], key).toBe(before[key]);
+    }
   });
 });

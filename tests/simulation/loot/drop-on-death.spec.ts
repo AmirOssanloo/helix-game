@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
 import type {
   GroundItem,
+  Item,
   LootTableDef,
   MapDef,
   PackDef,
@@ -122,6 +123,66 @@ const differenceBesideLoot = (a: World, b: World): string | null => {
       dropsNotMade: a.map.dropsNotMade,
     },
   });
+};
+
+/** Every item `world` holds: on the ground, in the inventory, and in every form's armory. */
+const itemsOf = (world: World): Item[] => {
+  const items: Item[] = [];
+  const pool = world.map.groundItems;
+
+  for (let index = 0; index < pool.end; index += 1) {
+    const groundItem = pool.at(index);
+
+    if (groundItem !== null) {
+      items.push(groundItem.item);
+    }
+  }
+
+  for (const placed of world.run.inventory.placed) {
+    items.push(placed.item);
+  }
+
+  for (const form of world.run.forms) {
+    items.push(...form.armory.slots);
+  }
+
+  return items;
+};
+
+/**
+ * The first thing two worlds disagree on at this tick besides their items' rolled affixes: the
+ * full-state comparison with every item's lines after its implicit set aside in both, and put
+ * back as they were, so the replays run on untouched.
+ */
+const differenceBesideAffixes = (a: World, b: World): string | null => {
+  const items = [...itemsOf(a), ...itemsOf(b)];
+  const kept = items.map((item) => structuredClone(item));
+
+  for (const item of items) {
+    for (const line of item.lines.slice(1)) {
+      line.sourceId = null;
+      line.value = 0;
+    }
+
+    item.lineCount = Math.min(item.lineCount, 1);
+  }
+
+  const difference = stateDifference(a, b);
+
+  items.forEach((item, index) => {
+    const original = kept[index];
+
+    if (original === undefined) {
+      return;
+    }
+
+    item.lineCount = original.lineCount;
+    original.lines.forEach((line, at) => {
+      Object.assign(item.lines[at] ?? {}, line);
+    });
+  });
+
+  return difference;
 };
 
 /** A pack of the map naming `legendaryId`, awake from the start. */
@@ -482,6 +543,39 @@ describe("a drop on death", () => {
 
       expect(groundItemsOf(on.world).length).toBeGreaterThan(0);
       expect(groundItemsOf(emptied.world)).toHaveLength(0);
+    },
+    REPLAY_TIMEOUT_MS,
+  );
+
+  it(
+    "moves nothing but the items' rolled affixes over the boss encounter with every affix table on and every one emptied",
+    () => {
+      const file = loadInputLog(BOSS_ENCOUNTER);
+      const on = replayUnder(file, makeRegistry());
+      const emptied = replayUnder(file, makeRegistry({ affixes: [] }));
+      let affixLines = 0;
+
+      while (!on.done) {
+        on.tick();
+        emptied.tick();
+
+        expect(
+          differenceBesideAffixes(on.world.state, emptied.world.state),
+          `after tick ${String(on.view.tick)}`,
+        ).toBeNull();
+      }
+
+      for (const item of itemsOf(on.world.state)) {
+        affixLines += Math.max(0, item.lineCount - 1);
+      }
+
+      expect(affixLines).toBeGreaterThan(0);
+      expect(
+        itemsOf(emptied.world.state).every((item) => item.lineCount <= 1),
+      ).toBe(true);
+      expect(
+        stateDifference(on.world.state, emptied.world.state),
+      ).not.toBeNull();
     },
     REPLAY_TIMEOUT_MS,
   );

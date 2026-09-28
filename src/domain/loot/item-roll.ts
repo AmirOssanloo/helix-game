@@ -1,3 +1,4 @@
+import type { AffixDef } from "../definitions/affix-def";
 import { ITEM_LINE_CAPACITY } from "../definitions/item-base-def";
 import type { ItemBaseDef } from "../definitions/item-base-def";
 import type { LegendaryDef } from "../definitions/legendary-def";
@@ -7,6 +8,8 @@ import type { Item } from "../items/item";
 import { clearItem } from "../items/item";
 import type { DrawPurpose, DrawWorld } from "../random/keyed-draw";
 import { KEYED_DRAW_RANGE, keyedDraw } from "../random/keyed-draw";
+import type { AffixRollPurposes } from "./affix-roll";
+import { pickAmong, rollAffixes, rollLineValue } from "./affix-roll";
 
 /** What an item roll reads of a world beside the draw: the item content as written. */
 export type ItemRollWorld = Readonly<{
@@ -14,17 +17,18 @@ export type ItemRollWorld = Readonly<{
   run: DrawWorld["run"] &
     Readonly<{
       itemBases: readonly ItemBaseDef[];
+      affixes: readonly AffixDef[];
       rarities: RarityTableDef;
       legendaries: readonly LegendaryDef[];
     }>;
 }>;
 
-/** The purposes one source of items draws its rarity, its base, and its lines' values under, so a drop, a stock, and a grant never share a number. */
-export type ItemRollPurposes = Readonly<{
-  rarity: DrawPurpose;
-  base: DrawPurpose;
-  lineValue: DrawPurpose;
-}>;
+/** The purposes one source of items draws its rarity, its base, each affix's stat and tier, and its lines' values under, so a drop, a stock, and a grant never share a number. */
+export type ItemRollPurposes = AffixRollPurposes &
+  Readonly<{
+    rarity: DrawPurpose;
+    base: DrawPurpose;
+  }>;
 
 /** A chance as a roll reads it: clamped to between none and always, since a tuned table may hold anything. */
 export const clampChance = (chance: number): number =>
@@ -150,13 +154,24 @@ const reachedBaseAt = (
   return null;
 };
 
+/** How many affixes an item of `rarityId` rolls: its rarity's count, and none for a fixed piece's rarity or one the table does not hold. */
+const affixCountOf = (rarities: RarityTableDef, rarityId: string): number => {
+  const rarity = rarities[rarityIndexOf(rarities, rarityId)];
+
+  return rarity === undefined || rarity.affixCount === null
+    ? 0
+    : rarity.affixCount;
+};
+
 /**
  * Rolls one item into `into` under `key` at draw index `roll`: its rarity by `weights` over
- * those at `floor` or rarer, its base evenly among those `itemLevel` reaches, and its
- * implicit's value in the base's range, on line 0. No affix is rolled yet, so an item of any
- * rarity is its base. Draw indices follow the line capacity, so line `line` of roll `roll`
- * draws at `roll × ITEM_LINE_CAPACITY + line`. Returns whether an item was made; with no
- * rarity allowed or no base reached, `into` is left cleared.
+ * those at `floor` or rarer, its base evenly among those `itemLevel` reaches, its implicit's
+ * value in the base's range on line 0, and as many affixes as its rarity gives on lines 1 on,
+ * never two of one stat, each a tier its item level reaches and its rarity allows, and each
+ * value in the tier's range. Line `line` of roll `roll` draws at
+ * `roll × ITEM_LINE_CAPACITY + line`. Returns whether an item was made; with no rarity allowed
+ * or no base reached, `into` is left cleared. Writes into the item's own lines and allocates
+ * nothing.
  */
 export const rollItem = (
   world: ItemRollWorld,
@@ -185,31 +200,39 @@ export const rollItem = (
     return false;
   }
 
-  const nth = Math.floor(
-    (keyedDraw(world, key, purposes.base, roll) * reached) / KEYED_DRAW_RANGE,
+  const base = reachedBaseAt(
+    bases,
+    itemLevel,
+    pickAmong(keyedDraw(world, key, purposes.base, roll), reached),
   );
-  const base = reachedBaseAt(bases, itemLevel, nth);
   const implicit = into.lines[0];
 
   if (base === null || implicit === undefined) {
     return false;
   }
 
-  const lineDraw = keyedDraw(
-    world,
-    key,
-    purposes.lineValue,
-    roll * ITEM_LINE_CAPACITY,
-  );
-
   into.baseId = base.id;
   into.rarityId = rarityId;
   into.itemLevel = itemLevel;
   implicit.sourceId = base.id;
-  implicit.value =
-    base.implicit.min +
-    drawFraction(lineDraw) * (base.implicit.max - base.implicit.min);
+  implicit.value = rollLineValue(
+    base.implicit.stat,
+    base.implicit.kind,
+    base.implicit.min,
+    base.implicit.max,
+    keyedDraw(world, key, purposes.lineValue, roll * ITEM_LINE_CAPACITY),
+  );
   into.lineCount = 1;
+  rollAffixes(
+    world,
+    key,
+    purposes,
+    roll,
+    base.armorySlot,
+    rarityId,
+    affixCountOf(rarities, rarityId),
+    into,
+  );
 
   return true;
 };
