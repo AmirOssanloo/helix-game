@@ -104,6 +104,7 @@ describe("a skill-point spend through the world", () => {
         sourceId: null,
         zoneId: null,
         projectileId: null,
+        groundItemId: null,
         amount: 0,
         damageType: null,
         checkpoint: -1,

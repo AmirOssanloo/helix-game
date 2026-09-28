@@ -6,9 +6,12 @@ import type { DefinitionSlot } from "../definitions/definition-slot";
 import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
 import type { FormDef } from "../definitions/form-def";
 import type { HeroDef } from "../definitions/hero-def";
+import type { ItemBaseDef } from "../definitions/item-base-def";
+import type { LegendaryDef } from "../definitions/legendary-def";
 import type { LootTableDef } from "../definitions/loot-table-def";
 import type { MapDef } from "../definitions/map-def";
 import { ORB_IDS } from "../definitions/orb-id";
+import type { RarityTableDef } from "../definitions/rarity-def";
 import type { SpellRecord } from "../definitions/spell-state";
 import type { StatusRecord } from "../definitions/status-state";
 import type { UnitRecord } from "../definitions/unit-state";
@@ -98,6 +101,12 @@ export type RunScope = {
   maps: readonly MapDef[];
   /** The world's copy of every loot table by id, which a roll reads and a tuning command on one rewrites. */
   lootTables: Map<string, LootTableDef>;
+  /** Every item base, in the registry's order, as written: no tuning command reaches one, and a roll draws among them evenly. */
+  itemBases: readonly ItemBaseDef[];
+  /** The rarity table, from the most common to the rarest, as written, which a roll ranks what it drops by. */
+  rarities: RarityTableDef;
+  /** Every Legendary piece, as written, which a boss's drop copies the piece its pack names from. */
+  legendaries: readonly LegendaryDef[];
   tuning: TuningState;
   /**
    * Every definition number's key, to where it lives in the world's own copy of its

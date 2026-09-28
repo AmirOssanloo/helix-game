@@ -27,6 +27,8 @@ import type { EventSlot } from "../events/domain-event";
 import { createDomainEvent } from "../events/domain-event";
 import type { AbilityRequest } from "../kits/kit";
 import { createAbilityRequest } from "../kits/kit";
+import type { DropRoll } from "../loot/roll";
+import { createDropRoll } from "../loot/roll";
 import type { CollisionScratch } from "../movement/collision.system";
 import { createCollisionScratch } from "../movement/collision.system";
 import { createCandidateBuffer } from "../movement/spatial-hash";
@@ -95,6 +97,8 @@ export type WorldScratch = {
   summons: SummonScratch;
   /** The legal point a unit the panel spawns lands on. */
   debugLanding: Vec2;
+  /** What a death drops, rolled and then placed within the death's reward step. */
+  drop: DropRoll;
 };
 
 /** Every piece of scratch the rules use, each at its neutral value. Made once, with the world. */
@@ -123,4 +127,5 @@ export const createWorldScratch = (): WorldScratch => ({
   packs: createPackScratch(),
   summons: createSummonScratch(),
   debugLanding: { x: 0, y: 0 },
+  drop: createDropRoll(),
 });

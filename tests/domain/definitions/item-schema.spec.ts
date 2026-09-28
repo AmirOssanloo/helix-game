@@ -8,6 +8,7 @@ import type {
   LootTableDef,
   RegistryFault,
 } from "@domain/public";
+import { LOOT_ITEM_ROLL_LIMIT } from "@domain/queries";
 import { validateRegistry } from "@domain/rules";
 import { makeMapDef, makeRegistry } from "../../helpers";
 
@@ -285,6 +286,31 @@ describe("the item schema", () => {
     );
 
     expect(fault.path).toBe("goldChance");
+  });
+
+  it("refuses a loot table with more item rolls than a drop holds", () => {
+    const [first] = contentRegistry.lootTables;
+
+    if (first === undefined) {
+      throw new Error("The content holds a loot table");
+    }
+
+    const roll = { chance: 1, weights: [{ rarity: "common", weight: 1 }] };
+    const fault = onlyFault(
+      validateRegistry(
+        makeRegistry({
+          lootTables: withLootTable({
+            ...first,
+            itemRolls: Array.from(
+              { length: LOOT_ITEM_ROLL_LIMIT + 1 },
+              () => roll,
+            ),
+          }),
+        }),
+      ),
+    );
+
+    expect(fault.path).toBe("itemRolls");
   });
 
   it("refuses a Legendary piece on a base that does not exist", () => {

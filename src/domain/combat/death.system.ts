@@ -10,6 +10,7 @@ import { clearStatusEntry, releaseUnit } from "../entities/unit";
 import { clearAiRecord } from "../entities/unit-ai";
 import type { FormRecord, World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
+import { dropOnDeath } from "../loot/drop-on-death";
 import { clearDisableFlags } from "../orders/disable-flags";
 import { die, respawn } from "../orders/state-machine";
 import { grantExperience } from "../stats/levels";
@@ -94,7 +95,8 @@ const hasHealthPool = (unit: Readonly<Unit>): boolean =>
 /**
  * The unit's health reached zero: whatever it was doing ends, the enemy state machine holds
  * it in Dead, its status table is emptied, an enemy pays its experience to the hero, the
- * death is announced once, and the tick it is due on is written. The hero respawns on
+ * death is announced once, what an enemy drops falls around its body, and the tick it is due
+ * on is written. The hero respawns on
  * that tick; every other unit is released then.
  */
 const takeDeath = (
@@ -110,6 +112,7 @@ const takeDeath = (
   clearStatuses(unit);
   grantReward(world, unit);
   announceDied(world, id);
+  dropOnDeath(world, unit, id);
   unit.stageEndsAtTick = world.tick + delay;
 };
 

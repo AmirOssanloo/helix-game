@@ -3,6 +3,9 @@ import type {
   Effect,
   EffectDef,
   FormRecord,
+  GroundItem,
+  Item,
+  ItemLine,
   KitState,
   MapScope,
   PackRecord,
@@ -14,7 +17,14 @@ import type {
   Zone,
 } from "@domain/public";
 import type { DeepReadonly } from "@shared/public";
-import { numbers, pool, records, table, texts } from "./field-collections";
+import {
+  bytes,
+  numbers,
+  pool,
+  records,
+  table,
+  texts,
+} from "./field-collections";
 import {
   excluded,
   fieldsOf,
@@ -44,9 +54,6 @@ const FROM_CONTENT =
 /** Why the copied art is left out: the stamp leaves out the definition fields it is copied from, so an art edit would move a checksum under an unchanged stamp. */
 const COPIED_ART =
   "copied from a definition's presentation-only field, which the stamp leaves out; no rule reads it";
-
-/** Why the ground items are left out: no rule makes one yet, so the pool is empty, every cell free, and the count zero on every tick of every log. */
-const NO_DROP_YET = "always empty: nothing drops yet";
 
 /** Why a map's own geometry is left out: it is the loaded map definition's, which `mapId` names and the stamp fixes. */
 const FROM_MAP = "the loaded map definition's, named by mapId";
@@ -202,6 +209,47 @@ const EFFECT_FIELDS = fieldsOf<DeepReadonly<Effect>>({
   }),
 });
 
+const ITEM_LINE_FIELDS = fieldsOf<DeepReadonly<ItemLine>>({
+  sourceId: text("sourceId", (line) => line.sourceId),
+  value: number("value", (line, into, at) => {
+    into[at] = line.value;
+  }),
+});
+
+const ITEM_FIELDS = fieldsOf<DeepReadonly<Item>>({
+  baseId: text("baseId", (item) => item.baseId),
+  rarityId: text("rarityId", (item) => item.rarityId),
+  legendaryId: text("legendaryId", (item) => item.legendaryId),
+  itemLevel: number("itemLevel", (item, into, at) => {
+    into[at] = item.itemLevel;
+  }),
+  lineCount: number("lineCount", (item, into, at) => {
+    into[at] = item.lineCount;
+  }),
+  lines: records(
+    "lines",
+    (item) => item.lineCount,
+    (item, index) => itemAt(item.lines, index),
+    ITEM_LINE_FIELDS,
+  ),
+});
+
+const GROUND_ITEM_FIELDS = fieldsOf<DeepReadonly<GroundItem>>({
+  kind: text("kind", (groundItem) => groundItem.kind),
+  position: record(
+    "position",
+    (groundItem) => groundItem.position,
+    VEC2_FIELDS,
+  ),
+  amount: number("amount", (groundItem, into, at) => {
+    into[at] = groundItem.amount;
+  }),
+  item: record("item", (groundItem) => groundItem.item, ITEM_FIELDS),
+  droppedAtTick: number("droppedAtTick", (groundItem, into, at) => {
+    into[at] = groundItem.droppedAtTick;
+  }),
+});
+
 const PACK_FIELDS = fieldsOf<DeepReadonly<PackRecord>>({
   def: excluded(FROM_MAP),
   state: text("state", (pack) => pack.state),
@@ -267,6 +315,9 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
   units: excluded(FROM_CONTENT),
   maps: excluded(FROM_CONTENT),
   lootTables: excluded(FROM_CONTENT),
+  itemBases: excluded(FROM_CONTENT),
+  rarities: excluded(FROM_CONTENT),
+  legendaries: excluded(FROM_CONTENT),
   tuning: table("tuning", (run) => run.tuning),
   definitionSlots: excluded(FROM_CONTENT),
   debug: record("debug", (run) => run.debug, DEBUG_FIELDS),
@@ -282,9 +333,15 @@ const MAP_FIELDS = fieldsOf<DeepReadonly<MapScope>>({
   projectiles: pool("projectiles", (map) => map.projectiles, PROJECTILE_FIELDS),
   effects: pool("effects", (map) => map.effects, EFFECT_FIELDS),
   zones: pool("zones", (map) => map.zones, ZONE_FIELDS),
-  groundItems: excluded(NO_DROP_YET),
-  groundItemCells: excluded(NO_DROP_YET),
-  dropsNotMade: excluded(NO_DROP_YET),
+  groundItems: pool(
+    "groundItems",
+    (map) => map.groundItems,
+    GROUND_ITEM_FIELDS,
+  ),
+  groundItemCells: bytes("groundItemCells", (map) => map.groundItemCells),
+  dropsNotMade: number("dropsNotMade", (map, into, at) => {
+    into[at] = map.dropsNotMade;
+  }),
   walkability: excluded(
     "a cache derived from the loaded map and the tuning state, both hashed",
   ),

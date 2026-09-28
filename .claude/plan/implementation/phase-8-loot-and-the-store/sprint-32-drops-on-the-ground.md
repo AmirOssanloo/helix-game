@@ -54,7 +54,7 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Layer | domain, simulation, content, tests, docs |
 | Size | 1.5 |
 | Depends on | T01, P8-S39-T01 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** Legendary equipment drops only from its named boss, and active items are in no loot table (Q84); six logs, not seven. The size stays 1.5: the boss's table is one more table on the same roll.
 
@@ -82,6 +82,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A new command, event, or system · A documentation change.
 
 > **Note, 2026-09-28, from P8-S32-T01:** `groundItems`, `groundItemCells`, and `dropsNotMade` stand in `src/simulation/replay/state-fields.ts` as left out, "always empty: nothing drops yet"; this ticket lists them there, the pool by its fields and the item inline, and `acquireGroundItem` in `src/domain/entities/ground-item.ts` is the acquire `placeDrops` calls. A drop with no free cell adds to `world.map.dropsNotMade`.
+
+> **Note, 2026-09-28, at close:** built as written, with six things the ticket did not foresee, each a few lines and folded in. First, `rollDrop` takes the pack's Legendary id as a fifth argument, since the panel's preview has no pack to read it from; it reaches past the simulation through `domain/queries.ts` alone, because the door test refuses one name in two doors, and `placeDrops` and `dropOnDeath` go through `domain/rules.ts`. Second, run scope gains the world's copies of the item bases, the rarity table, and the Legendary pieces, which the roll reads, left out of the checksum as built from the registry. Third, a loot table is refused with more than eight item rolls, `LOOT_ITEM_ROLL_LIMIT`, the room the drop's out record makes. Fourth, the elite and boss guarantees are held in the roll against any tuning, and the ring order and the gold rounding are chosen; the three are [Q106](../backlog/open-questions.md), decided provisionally. Fifth, the content version did not move, since no content changed: the six logs keep their stamps and `pnpm restamp --checksums` re-recorded their checksums, which moved only because the ground items and the cell bytes are now hashed. The full-state comparison with the tables on and emptied is in the drop spec, over `stateDifference` with the ground items and the loot tunables taken from one side. Sixth, since the definition of done removes an event nobody reads and the ground-item views walk the pool, the panel's readouts drain `item_dropped` into a **Last drop** readout (`tests/devtools/panel.spec.ts`, the [developer panel](../../../../docs/product/features/developer-panel.md) page). The cell bytes are hashed as a sparse byte list, each set cell's index, so the checksum stays cheap over a map's thousands of cells.
 
 ---
 
@@ -148,11 +150,11 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Check | Result |
 | --- | --- |
 | Ground items pooled in map scope, released by a map load | Yes: a pool of 512 in map scope with its own `GroundItemId`, the byte per cell, and `dropsNotMade`; a map load and a reset release every ground item and free every cell (`tests/domain/entities/ground-item-pool.spec.ts`, `tests/simulation/world.spec.ts`). The panel's **Ground items** readout shows live over capacity and the drops not made |
-| Drops the same on two replays, the world but its ground items unmoved | |
+| Drops the same on two replays, the world but its ground items unmoved | Yes: two replays of the boss encounter log agree at every tick, drops included, and with every loot table on and every table emptied the full-state comparison finds everything but the ground items and the loot tunables equal at every tick (`tests/simulation/loot/drop-on-death.spec.ts`); the roll's weights, guarantees, and Legendary rate over 10 000 rolls a tier in `tests/domain/loot/roll.spec.ts`. The six logs' checksums re-recorded, their stamps unchanged |
 | Item level from the map level; the quality-level filter | |
 | The font writes an item's name | |
 | The render benchmark after the atlas grew | |
-| Actual days per ticket | T01: 0.5 (sized 1.5) |
+| Actual days per ticket | T01: 0.5 (sized 1.5); T02: 0.75 (sized 1.5) |
 | Sprint total | |
 
 ## Risks in this sprint

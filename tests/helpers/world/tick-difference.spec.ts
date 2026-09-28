@@ -42,7 +42,7 @@ const unlistedUnder = (value: unknown, path: string, found: string[]): void => {
     return;
   }
 
-  if (Array.isArray(value)) {
+  if (Array.isArray(value) || value instanceof Uint8Array) {
     if (!LISTED.has(`${path}[]`)) {
       unlistedUnder(value[0], `${path}[]`, found);
     }

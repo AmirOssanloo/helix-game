@@ -192,6 +192,8 @@ export {
   releaseGroundItem,
 } from "./entities/ground-item";
 export { ORB_COUNT } from "./entities/world-state";
+export { dropOnDeath } from "./loot/drop-on-death";
+export { findDropCell, placeDrops } from "./loot/place-drop";
 export { createWorldScratch } from "./entities/world-scratch";
 export {
   acquireZone,

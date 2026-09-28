@@ -1,5 +1,12 @@
 import { HASH_RANGE, assert, hash4 } from "@shared/public";
-import type { World } from "../entities/world-state";
+import type { RandomState } from "../entities/world-state";
+import type { Tick } from "../tick";
+
+/** What a draw reads of a world: the tick and the run's seed. A live world and its read-only view are both one. */
+export type DrawWorld = Readonly<{
+  tick: Tick;
+  run: Readonly<{ random: Readonly<RandomState> }>;
+}>;
 
 /**
  * Why a rule draws. One list, so two sites that would draw the same number for one key on one
@@ -14,22 +21,28 @@ export const DRAW_PURPOSE = {
   /** How long a halt a chasing unit has just begun lasts. */
   chaseHaltLength: 2,
 
-  /** How many items a death drops. */
+  /** Whether a death's item roll drops, one draw index per item roll of its table. */
   lootDropCount: 3,
-  /** Which base an item dropped is. */
+  /** Which base an item dropped is, one draw index per item roll. */
   lootBase: 4,
-  /** Which rarity an item dropped rolls. */
+  /** Which rarity an item dropped rolls, one draw index per item roll. */
   lootRarity: 5,
-  /** Which affix an item rolls, one draw index per affix. */
+  /** Which affix an item rolls, one draw index per line of each item roll. */
   lootAffix: 6,
-  /** The value an affix rolls within its range, one draw index per affix. */
+  /** The value a line rolls within its range, one draw index per line of each item roll, line 0 the implicit. */
   lootAffixValue: 7,
-  /** Whether a death drops gold, and how much. */
+  /** Whether a death drops gold. */
   lootGold: 8,
-  /** Whether a death drops a globe. */
+  /** Whether a death drops a globe, one draw index per globe entry of its table, health entries first. */
   lootGlobe: 9,
   /** What a store stocks, one draw index per stock slot. */
   storeStock: 10,
+  /** How much gold a death drops, within its table's range at the item level. */
+  lootGoldAmount: 11,
+  /** Which tier of its affix a line rolls, one draw index per line of each item roll. */
+  lootAffixTier: 12,
+  /** Whether a boss drops the Legendary piece its pack names. */
+  lootLegendary: 13,
 } as const;
 
 export type DrawPurpose = (typeof DRAW_PURPOSE)[keyof typeof DRAW_PURPOSE];
@@ -71,7 +84,7 @@ if (PURPOSE_STRIDE * DRAW_INDEX_LIMIT > SMALL_INTEGER_LIMIT) {
  * chance or a length with its own arithmetic.
  */
 export const keyedDraw = (
-  world: Readonly<World>,
+  world: DrawWorld,
   key: number,
   purpose: DrawPurpose,
   index: number,

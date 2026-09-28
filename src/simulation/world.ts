@@ -55,7 +55,7 @@ export type CreateWorldOptions = Readonly<{
  * the world's own copy of every definition it may retune with each number under its key in
  * the tuning state, the hero's form records, its attack read for the tick, the spell,
  * status, and unit tables built over the copies, the disable matrix as written, every map the
- * registry holds for a map load to resolve, the loot tables' copies by id, both switches off, no hero yet, and the random
+ * registry holds for a map load to resolve, the loot tables' copies by id, the item bases, the rarity table, and the Legendary pieces as written, both switches off, no hero yet, and the random
  * source at the start of the seed's sequence.
  */
 const createRunScope = (registry: Registry, seed: number): RunScope => {
@@ -77,6 +77,9 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     units: createUnitTable(copies.enemies, copies.summons, tuning),
     maps: registry.maps,
     lootTables: createLootTables(copies.lootTables),
+    itemBases: registry.itemBases,
+    rarities: registry.rarities,
+    legendaries: registry.legendaries,
     tuning,
     definitionSlots,
     debug: { noCooldowns: false, infiniteMana: false },

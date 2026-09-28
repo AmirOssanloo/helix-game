@@ -141,6 +141,7 @@ const damageEvent = (
   sourceId: null,
   zoneId: null,
   projectileId: null,
+  groundItemId: null,
   amount,
   damageType,
   checkpoint: -1,

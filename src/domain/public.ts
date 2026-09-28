@@ -226,10 +226,12 @@ export type {
   GroundItemKind,
 } from "./entities/ground-item";
 export type { Item, ItemLine } from "./items/item";
+export type { DropRoll, LootWorld } from "./loot/roll";
 export type { Zone, ZoneId } from "./entities/zone";
 export type {
   CastCommittedEvent,
   CheckpointReachedEvent,
+  ItemDroppedEvent,
   CommandRefusedEvent,
   DomainEvent,
   EventSink,

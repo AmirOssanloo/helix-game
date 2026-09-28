@@ -732,6 +732,7 @@ describe("refusal flashes", () => {
         sourceId: null,
         zoneId: null,
         projectileId: null,
+        groundItemId: null,
         amount: 0,
         damageType: null,
         checkpoint: -1,

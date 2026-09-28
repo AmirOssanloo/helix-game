@@ -95,6 +95,7 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last zone | The last zone to go down or expire |
 | Last projectile | The last projectile to land, and whom it landed on, or to expire |
 | Last checkpoint | The index of the last checkpoint the hero reached, from 0 in the map's order, and the tick it reached it on |
+| Last drop | The last ground item to fall, by its id, the unit whose death it fell from, and a pile's gold |
 | Deaths | How many units have died while the panel was open |
 
 ## Overlays

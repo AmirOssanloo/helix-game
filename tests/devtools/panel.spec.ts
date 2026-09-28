@@ -797,6 +797,31 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("shows the last ground item to fall and whose death it fell from", () => {
+    const arranged = arrange();
+    const spawn = arranged.world.view.map.spawnPoint;
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last drop")).toBe("none");
+
+    arranged.api.submit({
+      kind: "spawn_pack",
+      archetypeId: "melee_grunt",
+      tier: "elite",
+      count: 1,
+      position: { x: spawn.x + 400, y: spawn.y },
+    });
+    arranged.world.tick();
+    arranged.api.submit({ kind: "kill_all" });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last drop")).toMatch(/^\d+ from \d+/);
+
+    arranged.handle.unmount();
+  });
+
   it("shows the reason of the last refused command", () => {
     const arranged = arrange();
 

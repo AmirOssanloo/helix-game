@@ -94,6 +94,54 @@ export const numbers = <T>(
   },
 });
 
+/**
+ * Every byte of a byte list that is mostly zeros, such as a flag per walkability cell: its
+ * length, then the index and value of each byte that is not zero, in order, then how many
+ * there were. That says everything the list holds, and a scan that mixes only what is set
+ * stays cheap over a map's many thousand cells.
+ */
+export const bytes = <T>(
+  name: string,
+  read: (record: T) => ArrayLike<number>,
+): Field<T> => ({
+  leaves: [{ path: `${name}[]`, kind: "bytes" }],
+  excluded: [],
+  hash: (outer, hasher) => {
+    const list = read(outer);
+    let set = 0;
+
+    mixSmall(hasher, list.length);
+
+    for (let index = 0; index < list.length; index += 1) {
+      const value = list[index] ?? 0;
+
+      if (value !== 0) {
+        mixSmall(hasher, index);
+        mixSmall(hasher, value);
+        set += 1;
+      }
+    }
+
+    mixSmall(hasher, set);
+  },
+  difference: (a, b) => {
+    const left = read(a);
+    const right = read(b);
+
+    if (left.length !== right.length) {
+      return `${name}: ${String(left.length)} vs ${String(right.length)} bytes`;
+    }
+
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) {
+        return `${name}[${String(index)}]: ${String(left[index])} vs ${String(right[index])}`;
+      }
+    }
+
+    return null;
+  },
+});
+
 /** The first `count` texts of a list, the count hashed first. */
 export const texts = <T>(
   name: string,

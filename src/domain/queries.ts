@@ -18,12 +18,16 @@ export {
   INVENTORY_ROWS,
   ITEM_LINE_CAPACITY,
 } from "./definitions/item-base-def";
-export { LOOT_TABLE_IDS } from "./definitions/loot-table-def";
+export {
+  LOOT_ITEM_ROLL_LIMIT,
+  LOOT_TABLE_IDS,
+} from "./definitions/loot-table-def";
 export { scalarAtOrbLevels } from "./definitions/level-table";
 export { ORB_IDS } from "./definitions/orb-id";
 export { TUNING_KEYS, TUNING_UNITS } from "./definitions/tuning-def";
 export { readTunable } from "./definitions/tuning-state";
 export { GROUND_ITEM_CAPACITY, holdsGroundItem } from "./entities/ground-item";
+export { createDropRoll, rollDrop } from "./loot/roll";
 export { PROJECTILE_CAPACITY } from "./entities/projectile";
 export {
   STATUS_TABLE_SIZE,

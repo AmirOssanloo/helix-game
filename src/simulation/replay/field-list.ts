@@ -32,6 +32,7 @@ export type LeafKind =
   | "text"
   | "flag"
   | "numbers"
+  | "bytes"
   | "texts"
   | "table"
   | "slot";

@@ -1,6 +1,11 @@
 import { arenaDef, contentRegistry, longRoadDef } from "@content/public";
 import type { AbilityDef, EffectDef, ShapeDef, World } from "@domain/public";
-import { acquireProjectile, acquireUnit, acquireZone } from "@domain/rules";
+import {
+  acquireGroundItem,
+  acquireProjectile,
+  acquireUnit,
+  acquireZone,
+} from "@domain/rules";
 import type { Leaf, LeafKind, Simulation } from "@simulation/testing";
 import { createSessionWorld } from "@simulation/testing";
 import { idOf } from "./ids";
@@ -38,7 +43,8 @@ const first = <T>(list: readonly T[], what: string): T => {
 /**
  * A session world on the arena with a live slot in every pool, a pack record, and every list
  * the state hashes holding at least one live entry: the hero walking a one-point path with a
- * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, and an effect.
+ * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, an effect, and
+ * a ground item holding an item with a line.
  * The same every call, so two arranged worlds agree until one is changed.
  */
 export const arrangeEveryRecord = (): Simulation => {
@@ -84,6 +90,29 @@ export const arrangeEveryRecord = (): Simulation => {
   zone.hitCount = 1;
   zone.hits[0] = idOf(1);
   world.map.effects.acquire();
+
+  const groundItemId = acquireGroundItem(
+    world,
+    "item",
+    arenaDef.spawnPoint.x,
+    arenaDef.spawnPoint.y,
+  );
+  const groundItem =
+    groundItemId === null ? null : world.map.groundItems.resolve(groundItemId);
+  const implicit = groundItem?.item.lines[0];
+
+  if (groundItem === null || implicit === undefined) {
+    throw new Error("A fresh world has room for a ground item");
+  }
+
+  groundItem.amount = 1;
+  groundItem.item.baseId = "cap";
+  groundItem.item.rarityId = "common";
+  groundItem.item.legendaryId = "rimecoil";
+  groundItem.item.itemLevel = 1;
+  groundItem.item.lineCount = 1;
+  implicit.sourceId = "cap";
+  implicit.value = 1;
   world.map.packs.push({
     def: first(longRoadDef.packs, "a pack on the long road"),
     state: "asleep",
@@ -118,6 +147,7 @@ const STEPS: Record<
   text: stepText,
   flag: (value) => value !== true,
   numbers: (value) => stepUp(Number(value)),
+  bytes: (value) => (Number(value) === 0 ? 1 : 0),
   texts: stepText,
 };
 
@@ -271,11 +301,15 @@ export const nudgeLeaf = (world: World, leaf: Leaf): Nudge => {
 
   const step = STEPS[leaf.kind];
 
-  if (leaf.kind === "numbers" || leaf.kind === "texts") {
+  if (
+    leaf.kind === "numbers" ||
+    leaf.kind === "bytes" ||
+    leaf.kind === "texts"
+  ) {
     const name = last.slice(0, -2);
     const list = target[name];
 
-    if (!Array.isArray(list)) {
+    if (!Array.isArray(list) && !(list instanceof Uint8Array)) {
       throw new Error(`${leaf.path} names no list`);
     }
 

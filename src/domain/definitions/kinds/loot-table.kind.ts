@@ -5,7 +5,7 @@ import type {
   LootTableDef,
   RarityWeightDef,
 } from "../loot-table-def";
-import { LOOT_TABLE_IDS } from "../loot-table-def";
+import { LOOT_ITEM_ROLL_LIMIT, LOOT_TABLE_IDS } from "../loot-table-def";
 import type { ValidationContext } from "../registry-checks";
 import {
   arrayOf,
@@ -77,7 +77,7 @@ export const createLootTables = (
 
 /**
  * Every loot table, one per enemy tier and the store's: chances of one or less, a gold range
- * the right way round, and item rolls weighting only rarities the rarity table rolls, each
+ * the right way round, no more item rolls than a drop holds, and item rolls weighting only rarities the rarity table rolls, each
  * once. A table names rarities and never an item, so no active item is in one. Its numbers
  * reach only what drops next, so they are tuned under `loot`; a roll reads them defensively.
  */
@@ -123,6 +123,14 @@ export const lootTableKind: ListKind<"lootTables", LootTableDef, "loot"> = {
     checkChances(context, file, "healthGlobeChances", def.healthGlobeChances);
     checkChances(context, file, "manaGlobeChances", def.manaGlobeChances);
     checkChance(faults, file, "legendaryChance", def.legendaryChance);
+
+    if (def.itemRolls.length > LOOT_ITEM_ROLL_LIMIT) {
+      faults.push({
+        file,
+        path: "itemRolls",
+        message: `expected at most ${String(LOOT_ITEM_ROLL_LIMIT)} item rolls, as many as a drop holds`,
+      });
+    }
 
     for (let index = 0; index < def.itemRolls.length; index += 1) {
       const roll = def.itemRolls[index];

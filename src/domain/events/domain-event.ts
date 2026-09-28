@@ -1,4 +1,5 @@
 import type { DamageType } from "../combat/damage";
+import type { GroundItemId } from "../entities/ground-item";
 import type { ProjectileId } from "../entities/projectile";
 import type { UnitId } from "../entities/unit";
 import type { ZoneId } from "../entities/zone";
@@ -29,6 +30,8 @@ type EventFields = {
   zoneId: ZoneId | null;
   /** The projectile the event is about. */
   projectileId: ProjectileId | null;
+  /** The ground item the event is about. */
+  groundItemId: GroundItemId | null;
   /** Health, after mitigation. */
   amount: number;
   damageType: DamageType | null;
@@ -56,7 +59,8 @@ export type DomainEvent =
   | ProjectileSpawnedEvent
   | ProjectileHitEvent
   | ProjectileExpiredEvent
-  | CheckpointReachedEvent;
+  | CheckpointReachedEvent
+  | ItemDroppedEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -112,6 +116,9 @@ export type CheckpointReachedEvent = EventFields & {
   kind: "checkpoint_reached";
 };
 
+/** `groundItemId` fell to the ground where `unitId` died, and lies there from this tick; `amount` is a pile's gold, and zero for a globe or an item. */
+export type ItemDroppedEvent = EventFields & { kind: "item_dropped" };
+
 /** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
 
@@ -133,6 +140,7 @@ export const createDomainEvent = (): EventSlot => ({
   sourceId: null,
   zoneId: null,
   projectileId: null,
+  groundItemId: null,
   amount: 0,
   damageType: null,
   checkpoint: -1,
@@ -154,6 +162,7 @@ export const copyDomainEvent = (
   target.sourceId = source.sourceId;
   target.zoneId = source.zoneId;
   target.projectileId = source.projectileId;
+  target.groundItemId = source.groundItemId;
   target.amount = source.amount;
   target.damageType = source.damageType;
   target.checkpoint = source.checkpoint;
@@ -172,6 +181,7 @@ export const resetDomainEvent = (event: EventSlot): void => {
   event.sourceId = null;
   event.zoneId = null;
   event.projectileId = null;
+  event.groundItemId = null;
   event.amount = 0;
   event.damageType = null;
   event.checkpoint = -1;

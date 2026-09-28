@@ -9,6 +9,9 @@ export const LOOT_TABLE_IDS: readonly LootTableId[] = [
   "store",
 ];
 
+/** The most item rolls one table holds: what the out record a drop is rolled into makes room for. */
+export const LOOT_ITEM_ROLL_LIMIT = 8;
+
 /** How often one rarity comes from an item roll, by its weight over the sum of the roll's weights. */
 export type RarityWeightDef = Readonly<{
   rarity: string;
