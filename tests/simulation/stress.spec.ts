@@ -9,15 +9,26 @@ import {
   summonAddsDef,
 } from "@content/public";
 import type {
+  GroundItemKind,
   PackRecord,
   SpawnProjectileEffectDef,
   SpellRecord,
   Unit,
   UnitId,
 } from "@domain/public";
-import { ENEMY_LIVE_CAP, readTunable } from "@domain/queries";
 import {
+  cellCentreX,
+  cellCentreY,
+  ENEMY_LIVE_CAP,
+  GROUND_ITEM_CAPACITY,
+  holdsGroundItem,
+  isCellBlocked,
+  readTunable,
+} from "@domain/queries";
+import {
+  acquireGroundItem,
   applyDamage,
+  cellIndex,
   countLiveEnemies,
   issueMove,
   resolveDestinationFor,
@@ -731,6 +742,83 @@ const walkOn = (walk: Walk): void => {
   }
 };
 
+/** The kinds the ground on the long road is filled with, in turn: every one a reader walks. */
+const GROUND_KINDS: readonly GroundItemKind[] = [
+  "gold",
+  "health_globe",
+  "mana_globe",
+  "item",
+];
+
+/** The ground the long road is kept full of: the free cells in turn, and the next kind. */
+type Ground = {
+  cells: readonly number[];
+  next: number;
+  kind: number;
+};
+
+/**
+ * Every cell of the long road the smallest class may stand on, spread so the pool's capacity
+ * lies along the whole road from the spawn to the last boss rather than heaped at its start.
+ */
+const arrangeGround = (world: Simulation): Ground => {
+  const grid = world.view.map.walkability;
+  const open: number[] = [];
+
+  for (let row = 0; row < grid.rows; row += 1) {
+    for (let column = 0; column < grid.columns; column += 1) {
+      if (!isCellBlocked(grid, 0, column, row)) {
+        open.push(cellIndex(grid, column, row));
+      }
+    }
+  }
+
+  const stride = Math.max(1, Math.floor(open.length / GROUND_ITEM_CAPACITY));
+
+  return {
+    cells: open.filter((_, index) => index % stride === 0),
+    next: 0,
+    kind: 0,
+  };
+};
+
+/**
+ * Drops a ground item on the next free cell in turn until the pool is full, each kind in turn,
+ * a pile of gold holding one. Runs between ticks, so what the hero took on the last tick lies
+ * again somewhere on the road before the next.
+ */
+const topUpGround = (world: Simulation, ground: Ground): void => {
+  const grid = world.view.map.walkability;
+  const pool = world.state.map.groundItems;
+  let tried = 0;
+
+  while (pool.count < pool.capacity && tried < ground.cells.length) {
+    const cell = ground.cells[ground.next % ground.cells.length] ?? 0;
+
+    ground.next += 1;
+    tried += 1;
+
+    if (holdsGroundItem(world.view.map.groundItemCells, cell)) {
+      continue;
+    }
+
+    const kind = GROUND_KINDS[ground.kind % GROUND_KINDS.length] ?? "gold";
+    const id = acquireGroundItem(
+      world.state,
+      kind,
+      cellCentreX(grid, cell % grid.columns),
+      cellCentreY(grid, Math.floor(cell / grid.columns)),
+    );
+    const groundItem = id === null ? null : pool.resolve(id);
+
+    ground.kind += 1;
+
+    if (groundItem !== null && kind === "gold") {
+      groundItem.amount = 1;
+    }
+  }
+};
+
 /**
  * Whether the pack `pack` records is beaten: dead for the map, or awake with no member left
  * standing. A pack is marked dead only once the hero walks out of its sleep radius, so the
@@ -998,7 +1086,7 @@ describe("stress", () => {
     expect(world.view.map.units.misses).toBe(0);
     expect(world.view.map.projectiles.misses).toBe(0);
   });
-  it("holds the live cap and the mean tick under the budget with the hero walking the long road from the spawn to the last boss, reaching every checkpoint in order", () => {
+  it("holds the live cap and the mean tick under the budget with the hero walking the long road from the spawn to the last boss, reaching every checkpoint in order, with the ground-item pool full", () => {
     const walk = arrangeWalk();
     const { world, hero } = walk;
     const packs = world.state.map.packs;
@@ -1026,11 +1114,17 @@ describe("stress", () => {
     let mostBehind = 0;
     let heroDeaths = 0;
     let wasDead = false;
+    let fullTicks = 0;
+    let taken = 0;
     const reader = createEventReader();
     const reached: number[] = [];
+    const ground = arrangeGround(world);
+    const groundItems = world.state.map.groundItems;
 
     while (!isBeaten(world, lastPack) && ticks < WALK_LIMIT_TICKS) {
       walkOn(walk);
+      topUpGround(world, ground);
+      fullTicks += groundItems.count === groundItems.capacity ? 1 : 0;
 
       const cursor = world.events.cursor;
       const expanded = search.expanded;
@@ -1070,6 +1164,14 @@ describe("stress", () => {
           reached.push(event.checkpoint);
         }
 
+        if (
+          event.kind === "gold_taken" ||
+          event.kind === "health_globe_taken" ||
+          event.kind === "mana_globe_taken"
+        ) {
+          taken += 1;
+        }
+
         event = world.events.read(reader);
       }
     }
@@ -1077,7 +1179,7 @@ describe("stress", () => {
     const meanMs = totalMs / ticks;
 
     console.info(
-      `long road: ${String(ticks)} ticks, mean ${meanMs.toFixed(3)} ms, worst ${maxMs.toFixed(3)} ms (${worst}), heaviest tick ${String(heaviestTickEvents)} events, most A* expansions in a tick ${String(mostExpansions)}, most live ${String(mostLive)}, most awake behind ${String(mostBehind)}, hero deaths ${String(heroDeaths)}, level ${String(hero.progression.level)}`,
+      `long road: ${String(ticks)} ticks, mean ${meanMs.toFixed(3)} ms, worst ${maxMs.toFixed(3)} ms (${worst}), heaviest tick ${String(heaviestTickEvents)} events, most A* expansions in a tick ${String(mostExpansions)}, most live ${String(mostLive)}, most awake behind ${String(mostBehind)}, hero deaths ${String(heroDeaths)}, level ${String(hero.progression.level)}, ground items ${String(groundItems.count)} of ${String(groundItems.capacity)} on ${String(fullTicks)} ticks, ${String(taken)} taken, ${String(world.state.map.dropsNotMade)} drops not made`,
     );
 
     expect(isBeaten(world, lastPack)).toBe(true);
@@ -1085,6 +1187,9 @@ describe("stress", () => {
     expect(mostLive).toBeLessThanOrEqual(ENEMY_LIVE_CAP - LARGEST_SPAWN);
     expect(waited).toBe(0);
     expect(lastBehind).toBe(0);
+    expect(fullTicks).toBe(ticks);
+    expect(taken).toBeGreaterThan(0);
+    expect(world.state.map.dropsNotMade).toBeGreaterThan(0);
     expect(
       meanMs,
       `mean tick ${meanMs.toFixed(3)} ms, max ${maxMs.toFixed(3)} ms over ${String(ticks)} ticks`,
