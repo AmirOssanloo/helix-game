@@ -46,10 +46,10 @@ I opens and closes the inventory and armory screen; Esc closes it, after a targe
 
 | Gesture | On | What it does |
 |---|---|---|
-| Left click | An inventory item | Equips it into its armory slot. A worn item there goes back into the grid where it fits, and the equip is refused if it does not |
+| Left click | An inventory item | A press whose pointer does not move a few pixels before the release. Equips it into its armory slot. A worn item there goes back into the grid where it fits, and the equip is refused if it does not |
 | Left click | A worn item | Unequips it into the grid where it fits |
 | Right click | An inventory item | Drops it on the ground at the hero's feet; while the store is open, sells it instead |
-| Press and move | An inventory item | Lifts it onto the pointer, drawn at its size, showing the cells it would take as free or blocked; releasing sets it down where it fits, or swaps it with the one item it would cover, which goes to the first place it then fits, and is refused if there is none; Esc or a release outside the grid puts it back |
+| Press and move | An inventory item | Lifts it onto the pointer once it moves a few pixels, drawn at its size where it was grabbed, showing the cells it would take as free or blocked: the cells nearest where it is held, kept inside the grid. Releasing sets it down where it fits, or swaps it with the one item it would cover, which goes to the first place it then fits; where it covers two items, or the one it covers would have no place, the cells show blocked and releasing puts it back. Esc, which closes the screen, a release outside the grid, or a release where it lay puts it back |
 | Pointer over | Any item, on a screen or a ground label | Shows its tooltip: name in its tint, rarity, base, item level, level requirement, marked when above the hero's level, the implicit stat, each affix line, and the price or sell price while the store is open |
 
 A click on an empty cell or an empty slot does nothing. A refused gesture flashes the item, as a refused key flashes its square, and the item stays where it was: an item above the hero's level flashes on a left click and is not worn. Every change to the inventory, the armory, or gold is a command, recorded in the input log and replayed.

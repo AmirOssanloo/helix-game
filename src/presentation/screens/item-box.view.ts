@@ -1,6 +1,6 @@
 import type { Rect } from "@shared/public";
 import { FLASH_ALPHA, FLASH_REFUSED_TINT, OPAQUE } from "../hud/palette";
-import type { FrameSizes, Quad } from "../views/quad";
+import type { FrameSizes, Quad, QuadFactory } from "../views/quad";
 import { placeQuad, SCREEN_FRAME } from "./screen-parts";
 
 const HALF = 0.5;
@@ -108,3 +108,35 @@ export class ItemBoxView {
     this.icon.scaleY = side / frameSize;
   }
 }
+
+/** `count` item views from `makeQuad`, every backdrop made before any icon and every icon before any flash, so each draws over the last. */
+export const makeItemBoxes = (
+  makeQuad: QuadFactory,
+  frameSizes: FrameSizes,
+  count: number,
+): ItemBoxView[] => {
+  const backdrops: Quad[] = [];
+  const icons: Quad[] = [];
+  const boxes: ItemBoxView[] = [];
+
+  for (let index = 0; index < count; index += 1) {
+    backdrops.push(makeQuad(SCREEN_FRAME));
+  }
+
+  for (let index = 0; index < count; index += 1) {
+    icons.push(makeQuad(SCREEN_FRAME));
+  }
+
+  for (let index = 0; index < count; index += 1) {
+    const backdrop = backdrops[index];
+    const icon = icons[index];
+
+    if (backdrop !== undefined && icon !== undefined) {
+      boxes.push(
+        new ItemBoxView(backdrop, icon, makeQuad(SCREEN_FRAME), frameSizes),
+      );
+    }
+  }
+
+  return boxes;
+};

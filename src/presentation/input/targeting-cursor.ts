@@ -116,8 +116,26 @@ export const isDrag = (
     return false;
   }
 
-  const dx = screenX - cursor.pressScreen.x;
-  const dy = screenY - cursor.pressScreen.y;
+  return hasDragged(
+    cursor.pressScreen.x,
+    cursor.pressScreen.y,
+    screenX,
+    screenY,
+  );
+};
+
+/**
+ * Whether canvas point (`screenX`, `screenY`) is `DRAG_THRESHOLD` logical pixels or more from
+ * a press at (`pressX`, `pressY`): the one drag test, for the cursor and for a screen's press.
+ */
+export const hasDragged = (
+  pressX: number,
+  pressY: number,
+  screenX: number,
+  screenY: number,
+): boolean => {
+  const dx = screenX - pressX;
+  const dy = screenY - pressY;
 
   return dx * dx + dy * dy >= DRAG_THRESHOLD * DRAG_THRESHOLD;
 };

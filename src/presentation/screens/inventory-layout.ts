@@ -5,11 +5,14 @@ import {
 } from "@domain/queries";
 import type { Rect } from "@shared/public";
 import { containsPoint, HUD_WIDTH } from "../hud/hud-layout";
+import type { Quad } from "../views/quad";
+import { placeQuad } from "./screen-parts";
 
 /**
  * Where everything on the inventory and armory screen sits, in the HUD scene's pixels on the
- * logical canvas: the panel, the armory's ten slots laid out as a figure, the grid, and gold.
- * A presentation number, every one of them; nothing here reads the world.
+ * logical canvas: the panel, the armory's ten slots laid out as a figure, the grid, and gold,
+ * and how a quad is laid on a cell. A presentation number, every one of them; nothing here
+ * reads the world.
  */
 
 const HALF = 0.5;
@@ -61,6 +64,34 @@ export const gridColumnCentreX = (column: number): number =>
 /** The y of the centre of the row `row` of the grid. */
 export const gridRowCentreY = (row: number): number =>
   GRID_TOP + (row + HALF) * GRID_CELL_SIZE;
+
+/** How far a socket or an item's backdrop sits inside the cells it covers, so the grid's lines show. */
+export const CELL_INSET = 2;
+
+/** The x of the left edge of the grid column `cell` lies in. */
+export const cellLeft = (cell: number): number =>
+  GRID_LEFT + (cell % INVENTORY_COLUMNS) * GRID_CELL_SIZE;
+
+/** The y of the top edge of the grid row `cell` lies in. */
+export const cellTop = (cell: number): number =>
+  GRID_TOP + Math.floor(cell / INVENTORY_COLUMNS) * GRID_CELL_SIZE;
+
+/** Centres `quad` on grid cell `cell`, inset from its lines, `frameSize` the width of the frame it is stretched from. */
+export const placeCell = (
+  quad: Quad,
+  cell: number,
+  frameSize: number,
+): void => {
+  const side = (GRID_CELL_SIZE - CELL_INSET * 2) / frameSize;
+
+  placeQuad(
+    quad,
+    gridColumnCentreX(cell % INVENTORY_COLUMNS),
+    gridRowCentreY(Math.floor(cell / INVENTORY_COLUMNS)),
+    side,
+    side,
+  );
+};
 
 /**
  * The grid cell under (`x`, `y`), counted from zero in reading order, or `-1` off the grid. A

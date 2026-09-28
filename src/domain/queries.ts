@@ -43,7 +43,15 @@ export { ZONE_CAPACITY } from "./entities/zone";
 export { orbAt } from "./invoke/buffer";
 export { levelRequirementOf, meetsRequirement } from "./items/requirement";
 export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
-export { firstFit, fitsAt, NO_RECORD, recordAt } from "./items/inventory";
+export {
+  firstFit,
+  fitsAt,
+  MOVE_BLOCKED,
+  MOVE_FITS,
+  moveOutcome,
+  NO_RECORD,
+  recordAt,
+} from "./items/inventory";
 export {
   ARMORY_PLACE_BASE,
   ARMORY_SLOT_COUNT,

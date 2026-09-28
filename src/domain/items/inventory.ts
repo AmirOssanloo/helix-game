@@ -55,11 +55,20 @@ export const createInventory = (): Inventory => {
   };
 };
 
+/** The inventory's cells alone, as the world's inventory and the world view's both hold them. */
+type InventoryCells = Readonly<{ cells: ArrayLike<number> }>;
+
+/** The cells and each placed record's corner and size, as the world's inventory and the world view's both hold them. */
+type InventoryExtents = InventoryCells &
+  Readonly<{
+    placed: ArrayLike<
+      Readonly<{ corner: number; width: number; height: number }>
+    >;
+  }>;
+
 /** The placed record covering `cell`, or `NO_RECORD`. Reads the cells alone, so the world view's inventory is read as the world's is. */
-export const recordAt = (
-  inventory: Readonly<{ cells: ArrayLike<number> }>,
-  cell: number,
-): number => (inventory.cells[cell] ?? 0) - 1;
+export const recordAt = (inventory: InventoryCells, cell: number): number =>
+  (inventory.cells[cell] ?? 0) - 1;
 
 /**
  * Whether an item of `width` by `height` cells fits with its corner on `corner`: every cell it
@@ -67,7 +76,7 @@ export const recordAt = (
  * the item being moved, whose own cells count as free. Reads at most the cells it would cover.
  */
 export const fitsAt = (
-  inventory: Readonly<Inventory>,
+  inventory: InventoryCells,
   width: number,
   height: number,
   corner: number,
@@ -107,7 +116,7 @@ export const fitsAt = (
  * it fits nowhere.
  */
 export const firstFit = (
-  inventory: Readonly<Inventory>,
+  inventory: InventoryCells,
   width: number,
   height: number,
   ignoring: number,
@@ -127,7 +136,7 @@ export const firstFit = (
  * two or more do or the cells leave the grid.
  */
 export const coveredBy = (
-  inventory: Readonly<Inventory>,
+  inventory: InventoryCells,
   width: number,
   height: number,
   corner: number,
@@ -168,6 +177,118 @@ export const coveredBy = (
   }
 
   return found;
+};
+
+/** `moveOutcome`'s answer when the moved item fits where it is set down, over nothing but its own cells. */
+export const MOVE_FITS = -1;
+
+/** `moveOutcome`'s answer when the move is refused: the cells leave the grid, cover two items or more, or leave the one covered nowhere to go. */
+export const MOVE_BLOCKED = -2;
+
+/**
+ * Whether cell `cell` is free for the item a move swaps out: covered by nothing but the two
+ * items the swap lifts, and outside the `width` by `height` cells from `corner` the moved
+ * item is set down on.
+ */
+const freeInSwap = (
+  inventory: InventoryCells,
+  cell: number,
+  record: number,
+  other: number,
+  corner: number,
+  width: number,
+  height: number,
+): boolean => {
+  const covering = recordAt(inventory, cell);
+
+  if (covering !== NO_RECORD && covering !== record && covering !== other) {
+    return false;
+  }
+
+  const across = cellColumn(cell) - cellColumn(corner);
+  const down = cellRow(cell) - cellRow(corner);
+
+  return across < 0 || across >= width || down < 0 || down >= height;
+};
+
+/**
+ * Whether the item of record `other`, `covered`'s size, fits with its corner on `corner` once
+ * it and `record` are lifted and `record`, `width` by `height`, is set down with its corner on
+ * `to`. The caller has checked the cells stay inside the grid.
+ */
+const swapFitsAt = (
+  inventory: InventoryCells,
+  covered: Readonly<{ width: number; height: number }>,
+  corner: number,
+  record: number,
+  other: number,
+  to: number,
+  width: number,
+  height: number,
+): boolean => {
+  for (let down = 0; down < covered.height; down += 1) {
+    for (let across = 0; across < covered.width; across += 1) {
+      if (
+        !freeInSwap(
+          inventory,
+          corner + down * INVENTORY_COLUMNS + across,
+          record,
+          other,
+          to,
+          width,
+          height,
+        )
+      ) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * What moving placed record `record` so its corner lies on `to` does, read without changing
+ * anything: `MOVE_FITS` when it fits there, its own cells counting as free; when its cells
+ * there cover exactly one other item, the cell that item's corner goes to, its first fit in
+ * reading order once both are lifted and the moved one is set down; else `MOVE_BLOCKED`. The
+ * screen draws a lifted item's cells from it and `move_item` applies by it, so the two agree.
+ */
+export const moveOutcome = (
+  inventory: InventoryExtents,
+  record: number,
+  to: number,
+): number => {
+  const placed = inventory.placed[record];
+
+  if (placed === undefined) {
+    return MOVE_BLOCKED;
+  }
+
+  const { width, height } = placed;
+
+  if (fitsAt(inventory, width, height, to, record)) {
+    return MOVE_FITS;
+  }
+
+  const other = coveredBy(inventory, width, height, to, record);
+  const covered = other < 0 ? undefined : inventory.placed[other];
+
+  if (covered === undefined) {
+    return MOVE_BLOCKED;
+  }
+
+  for (let corner = 0; corner < INVENTORY_CELL_COUNT; corner += 1) {
+    if (
+      cellColumn(corner) + covered.width <= INVENTORY_COLUMNS &&
+      cellRow(corner) + covered.height <= INVENTORY_ROWS &&
+      swapFitsAt(inventory, covered, corner, record, other, to, width, height)
+    ) {
+      return corner;
+    }
+  }
+
+  return MOVE_BLOCKED;
 };
 
 /** Writes `record` into every cell its corner and size cover, or `NO_RECORD` to clear them. */

@@ -125,6 +125,7 @@ export type {
 export {
   HUD_DEPTH_BAR,
   HUD_DEPTH_BAR_TEXT,
+  HUD_DEPTH_OVER_SCREEN,
   HUD_DEPTH_SCREEN,
   HUD_DEPTH_SCREEN_TEXT,
 } from "./hud/hud-bands";
@@ -135,6 +136,8 @@ export {
   RESUME_WORD,
 } from "./screens/pause-screen";
 export {
+  BLOCKED_CELL_TINT,
+  FREE_CELL_TINT,
   goldText,
   INVENTORY_RECT,
   INVENTORY_TITLE,

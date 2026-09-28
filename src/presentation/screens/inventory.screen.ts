@@ -2,7 +2,6 @@ import type { DomainEvent, Item, Unit } from "@domain/public";
 import {
   ARMORY_SLOT_COUNT,
   INVENTORY_CELL_COUNT,
-  INVENTORY_COLUMNS,
   meetsRequirement,
   NO_RECORD,
   recordAt,
@@ -19,32 +18,35 @@ import {
 } from "../input/key-bindings";
 import type { CommandDriver } from "../scene-context";
 import { GOLD_TINT, itemBaseOf, rarityOf } from "../views/ground-item.view";
-import type { Label, Quad } from "../views/quad";
+import type { Label, Quad, QuadFactory } from "../views/quad";
 import { InventoryFlashes } from "./inventory-flashes";
 import {
   ARMORY_SLOT_RECTS,
   armorySlotAt,
+  CELL_INSET,
+  cellLeft,
+  cellTop,
   GOLD_CENTRE_Y,
   GOLD_SIZE,
   GRID_CELL_SIZE,
   gridCellAt,
-  gridColumnCentreX,
-  gridRowCentreY,
-  GRID_LEFT,
-  GRID_TOP,
   INVENTORY_RECT,
   PANEL_CENTRE_X,
   PANEL_CENTRE_Y,
   PANEL_HEIGHT,
   PANEL_WIDTH,
+  placeCell,
   TITLE_CENTRE_Y,
   TITLE_SIZE,
 } from "./inventory-layout";
-import { ItemBoxView } from "./item-box.view";
+import { InventoryLift, NO_CELL } from "./inventory-lift";
+import type { ItemBoxView } from "./item-box.view";
+import { makeItemBoxes } from "./item-box.view";
 import type { ScreenPorts } from "./screen-parts";
 import { placeQuad, SCREEN_FRAME, setShown } from "./screen-parts";
 
 export { INVENTORY_RECT } from "./inventory-layout";
+export { BLOCKED_CELL_TINT, FREE_CELL_TINT } from "./inventory-lift";
 
 const PANEL_TINT = 0x101010;
 const PANEL_ALPHA = 0.9;
@@ -60,19 +62,21 @@ export const UNMET_BACKDROP_TINT = 0x7a1f1f;
 const FALLBACK_FRAME = "disc";
 const UNDRESSED_TINT = 0xffffff;
 
-/** How far a socket or an item's backdrop sits inside the cells it covers, so the grid's lines show. */
-const CELL_INSET = 2;
-
 export const INVENTORY_TITLE = "INVENTORY";
 
 /** What gold is shown as: the word and the number the world view holds, upper-cased as the atlas font needs. */
 export const goldText = (gold: number): string => `GOLD ${gold}`;
 
-/** Everything the inventory is built over: the HUD scene's factories, the world view it reads, and the door it sends commands through. */
+/**
+ * Everything the inventory is built over: the HUD scene's factories, the world view it reads,
+ * the door it sends commands through, and the factory of the band over the screens, which the
+ * item on the pointer and the cells it would take draw in.
+ */
 export type InventoryPorts = ScreenPorts &
   Readonly<{
     world: WorldView;
     driver: CommandDriver;
+    makeOverQuad: QuadFactory;
   }>;
 
 /** The value `gold` shows before any sync, so the first sync writes the text. */
@@ -88,10 +92,16 @@ const GOLD_UNSHOWN = -1;
  * drawn across the cells it covers, and gold. It reads the inventory and gold from run scope
  * and the worn items from the active form's armory on the world view each frame it is open,
  * sums nothing, and asks the domain whether the hero's level meets an item's requirement,
- * backing one it does not in red. A left click on an item in the grid sends `equip_item`, a
- * left click on a worn item `unequip_item`, and a right click on an item in the grid
- * `drop_item`; a click on nothing sends nothing. A refused command flashes the item at the
- * place the refusal names. Every object it shows is made here, once.
+ * backing one it does not in red. A left click on an item in the grid, whose pointer does not
+ * move the drag distance before the release, sends `equip_item`; a left click on a worn item
+ * `unequip_item`, and a right click on an item in the grid `drop_item`; a click on nothing
+ * sends nothing. A refused command flashes the item at the place the refusal names.
+ *
+ * A left press on an item in the grid that moves the drag distance lifts it onto the pointer,
+ * which the lift draws with the cells it would take. The release sends `move_item` where the
+ * lift says it can be set down, and nothing else; a release off the grid, a cancelled press,
+ * or the screen closing puts it back with nothing sent. Every object it shows is made here or
+ * in the lift, once.
  */
 export class InventoryScreen implements ClaimScreen {
   readonly modal = false;
@@ -116,6 +126,8 @@ export class InventoryScreen implements ClaimScreen {
 
   /** One per armory slot, in the armory's order. */
   private readonly slots: readonly ItemBoxView[];
+
+  private readonly lift: InventoryLift;
 
   private readonly flashes = new InventoryFlashes();
 
@@ -146,21 +158,18 @@ export class InventoryScreen implements ClaimScreen {
 
     for (let cell = 0; cell < INVENTORY_CELL_COUNT; cell += 1) {
       const socket = makeQuad(SCREEN_FRAME);
-      const side = (GRID_CELL_SIZE - CELL_INSET * 2) / size;
 
-      placeQuad(
-        socket,
-        gridColumnCentreX(cell % INVENTORY_COLUMNS),
-        gridRowCentreY(Math.floor(cell / INVENTORY_COLUMNS)),
-        side,
-        side,
-      );
+      placeCell(socket, cell, size);
       socket.tint = SOCKET_TINT;
       socket.alpha = OPAQUE;
       quads.push(socket);
     }
 
-    const boxes = makeBoxes(ports, INVENTORY_CELL_COUNT + ARMORY_SLOT_COUNT);
+    const boxes = makeItemBoxes(
+      makeQuad,
+      frameSizes,
+      INVENTORY_CELL_COUNT + ARMORY_SLOT_COUNT,
+    );
 
     this.slots = boxes.slice(0, ARMORY_SLOT_COUNT);
     this.items = boxes.slice(ARMORY_SLOT_COUNT);
@@ -172,6 +181,15 @@ export class InventoryScreen implements ClaimScreen {
         this.slots[slot]?.place(rect);
       }
     }
+
+    this.lift = new InventoryLift(
+      ports.world,
+      ports.makeOverQuad,
+      frameSizes,
+      (view, item): void => {
+        this.showItem(view, item, heroOf(this.world), false);
+      },
+    );
 
     const title = makeLabel(TITLE_SIZE);
     const gold = makeLabel(GOLD_SIZE);
@@ -197,14 +215,19 @@ export class InventoryScreen implements ClaimScreen {
   }
 
   /**
-   * A press inside the panel is the screen's. On an item in the grid, a left press wears it and
-   * a right press drops it; a left press on a worn item takes it off. It never asks to close.
+   * A press inside the panel is the screen's. On an item in the grid, a left press is held
+   * until it moves or comes up and a right press drops it; a left press on a worn item takes it
+   * off. While a left press is held, other presses do nothing. It never asks to close.
    */
   pointerDown(button: number, x: number, y: number): boolean {
+    if (this.lift.held) {
+      return false;
+    }
+
     const cell = gridCellAt(x, y);
 
     if (cell !== -1) {
-      this.pressCell(button, cell);
+      this.pressCell(button, cell, x, y);
 
       return false;
     }
@@ -227,6 +250,59 @@ export class InventoryScreen implements ClaimScreen {
     return false;
   }
 
+  /** The pointer moved: a held press that moves the drag distance lifts its item, drawn at once. */
+  pointerMove(x: number, y: number): void {
+    if (this.lift.move(x, y)) {
+      this.sync();
+    }
+  }
+
+  /**
+   * The held left press came up: a lifted item is set down where the lift says, and an item
+   * never lifted is worn, as a click on it.
+   */
+  pointerUp(button: number, x: number, y: number): void {
+    const lift = this.lift;
+    const pressed = lift.pressedCell;
+
+    if (button !== LEFT_BUTTON || pressed === NO_CELL) {
+      return;
+    }
+
+    const driver = this.driver;
+    const inventory = this.world.run.inventory;
+
+    if (lift.liftedRecord !== NO_RECORD) {
+      const to = lift.setDownCell(x, y);
+      const placed = inventory.placed[lift.liftedRecord];
+
+      if (to !== NO_CELL && placed !== undefined) {
+        driver.submit({
+          kind: "move_item",
+          tick: driver.nextTick,
+          timestamp: driver.now(),
+          from: placed.corner,
+          to,
+        });
+      }
+    } else if (recordAt(inventory, pressed) !== NO_RECORD) {
+      driver.submit({
+        kind: "equip_item",
+        tick: driver.nextTick,
+        timestamp: driver.now(),
+        cell: pressed,
+        armorySlot: null,
+      });
+    }
+
+    lift.cancel();
+  }
+
+  /** The held press is forgotten and a lifted item goes back where it lies, with nothing sent. */
+  cancelPress(): void {
+    this.lift.cancel();
+  }
+
   /** Its key closes it. */
   keyDown(code: string): boolean {
     return code === INVENTORY_CODE;
@@ -240,6 +316,7 @@ export class InventoryScreen implements ClaimScreen {
 
   hide(): void {
     this.open = false;
+    this.lift.cancel();
     setShown(this.quads, this.labels, false);
 
     for (let index = 0; index < this.items.length; index += 1) {
@@ -256,7 +333,7 @@ export class InventoryScreen implements ClaimScreen {
     this.flashes.react(event, this.world);
   }
 
-  /** One frame while open: every item in the grid and the armory, and gold, as the world view holds them now. */
+  /** One frame while open: every item in the grid and the armory, gold, and a lifted item, as the world view holds them now. */
   sync(): void {
     if (!this.open) {
       return;
@@ -271,6 +348,7 @@ export class InventoryScreen implements ClaimScreen {
       this.gold.setText(goldText(gold));
     }
 
+    this.lift.sync();
     this.syncGrid(hero);
     this.syncArmory(hero);
   }
@@ -278,6 +356,7 @@ export class InventoryScreen implements ClaimScreen {
   private syncGrid(hero: DeepReadonly<Unit> | null): void {
     const world = this.world;
     const placed = world.run.inventory.placed;
+    const lifted = this.lift.liftedRecord;
     const box = this.box;
 
     for (let record = 0; record < this.items.length; record += 1) {
@@ -288,19 +367,15 @@ export class InventoryScreen implements ClaimScreen {
         continue;
       }
 
-      if (entry === undefined || !entry.live) {
+      if (entry === undefined || !entry.live || record === lifted) {
         view.hide();
         continue;
       }
 
-      const column = entry.corner % INVENTORY_COLUMNS;
-      const row = Math.floor(entry.corner / INVENTORY_COLUMNS);
-
-      box.minX = GRID_LEFT + column * GRID_CELL_SIZE + CELL_INSET;
-      box.minY = GRID_TOP + row * GRID_CELL_SIZE + CELL_INSET;
-      box.maxX =
-        GRID_LEFT + (column + entry.width) * GRID_CELL_SIZE - CELL_INSET;
-      box.maxY = GRID_TOP + (row + entry.height) * GRID_CELL_SIZE - CELL_INSET;
+      box.minX = cellLeft(entry.corner) + CELL_INSET;
+      box.minY = cellTop(entry.corner) + CELL_INSET;
+      box.maxX = box.minX + entry.width * GRID_CELL_SIZE - CELL_INSET * 2;
+      box.maxY = box.minY + entry.height * GRID_CELL_SIZE - CELL_INSET * 2;
       view.place(box);
       this.showItem(
         view,
@@ -367,23 +442,17 @@ export class InventoryScreen implements ClaimScreen {
     return worn === undefined || worn.baseId === null ? null : worn;
   }
 
-  /** A press on grid cell `cell`: nothing on an empty cell, else the command its button sends. */
-  private pressCell(button: number, cell: number): void {
+  /** A press at (`x`, `y`) on grid cell `cell`: nothing on an empty cell, a held press for the left button, a drop for the right. */
+  private pressCell(button: number, cell: number, x: number, y: number): void {
     if (recordAt(this.world.run.inventory, cell) === NO_RECORD) {
       return;
     }
 
-    const driver = this.driver;
-
     if (button === LEFT_BUTTON) {
-      driver.submit({
-        kind: "equip_item",
-        tick: driver.nextTick,
-        timestamp: driver.now(),
-        cell,
-        armorySlot: null,
-      });
+      this.lift.press(cell, x, y);
     } else if (button === RIGHT_BUTTON) {
+      const driver = this.driver;
+
       driver.submit({
         kind: "drop_item",
         tick: driver.nextTick,
@@ -399,37 +468,4 @@ const heroOf = (world: WorldView): DeepReadonly<Unit> | null => {
   const heroId = world.run.heroId;
 
   return heroId === null ? null : world.map.units.resolve(heroId);
-};
-
-/** `count` item views, every backdrop made before any icon and every icon before any flash, so each draws over the last. */
-const makeBoxes = (ports: InventoryPorts, count: number): ItemBoxView[] => {
-  const backdrops: Quad[] = [];
-  const icons: Quad[] = [];
-  const boxes: ItemBoxView[] = [];
-
-  for (let index = 0; index < count; index += 1) {
-    backdrops.push(ports.makeQuad(SCREEN_FRAME));
-  }
-
-  for (let index = 0; index < count; index += 1) {
-    icons.push(ports.makeQuad(SCREEN_FRAME));
-  }
-
-  for (let index = 0; index < count; index += 1) {
-    const backdrop = backdrops[index];
-    const icon = icons[index];
-
-    if (backdrop !== undefined && icon !== undefined) {
-      boxes.push(
-        new ItemBoxView(
-          backdrop,
-          icon,
-          ports.makeQuad(SCREEN_FRAME),
-          ports.frameSizes,
-        ),
-      );
-    }
-  }
-
-  return boxes;
 };

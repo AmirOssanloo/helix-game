@@ -138,6 +138,18 @@ class ScreenRecorder implements ClaimScreen {
     return false;
   }
 
+  pointerUp(button: number): void {
+    this.calls.push(`up ${button}`);
+  }
+
+  pointerMove(): void {
+    this.calls.push("move");
+  }
+
+  cancelPress(): void {
+    this.calls.push("cancel");
+  }
+
   keyDown(code: string): boolean {
     this.calls.push(`keydown ${code}`);
 
@@ -221,7 +233,7 @@ describe("the input claim, before the mapper", () => {
     expect(bar).toEqual([]);
   });
 
-  it("hands an open screen a press inside it, and the world one outside it", () => {
+  it("hands an open screen a press inside it and its release wherever it comes up, and the world one outside it", () => {
     const { claim, sink, mapper } = recorded();
     const panel = new ScreenRecorder(PANEL, [], false, false);
 
@@ -229,9 +241,59 @@ describe("the input claim, before the mapper", () => {
     sink.pointerDown(LEFT_BUTTON, PANEL_X, PANEL_Y);
     sink.pointerUp(LEFT_BUTTON, WORLD_X, WORLD_Y);
     sink.pointerDown(RIGHT_BUTTON, WORLD_X, WORLD_Y);
+    sink.pointerUp(RIGHT_BUTTON, PANEL_X, PANEL_Y);
+
+    expect(panel.calls).toEqual([`down ${LEFT_BUTTON}`, `up ${LEFT_BUTTON}`]);
+    expect(mapper.calls).toEqual([
+      `down ${RIGHT_BUTTON}`,
+      `up ${RIGHT_BUTTON}`,
+    ]);
+  });
+
+  it("hands every pointer move to every open screen, and none to the mapper", () => {
+    const { claim, sink, mapper } = recorded();
+    const panel = new ScreenRecorder(PANEL, [], false, false);
+
+    sink.pointerMove(WORLD_X, WORLD_Y);
+    claim.open(panel);
+    sink.pointerMove(WORLD_X, WORLD_Y);
+    sink.pointerMove(PANEL_X, PANEL_Y);
+
+    expect(panel.calls).toEqual(["move", "move"]);
+    expect(mapper.calls).toEqual([]);
+  });
+
+  it("cancels a screen's held press when the window loses focus or a modal screen opens, and hands it no release after", () => {
+    const { claim, sink, pauseScreen } = recorded();
+    const panel = new ScreenRecorder(PANEL, [], false, false);
+
+    claim.open(panel);
+    sink.pointerDown(LEFT_BUTTON, PANEL_X, PANEL_Y);
+    sink.blur();
+    sink.pointerUp(LEFT_BUTTON, PANEL_X, PANEL_Y);
+    sink.pointerDown(LEFT_BUTTON, PANEL_X, PANEL_Y);
+    claim.open(pauseScreen);
+    sink.pointerUp(LEFT_BUTTON, PANEL_X, PANEL_Y);
+
+    expect(panel.calls).toEqual([
+      `down ${LEFT_BUTTON}`,
+      "cancel",
+      `down ${LEFT_BUTTON}`,
+      "cancel",
+    ]);
+  });
+
+  it("hands a screen closed while its press is held no release", () => {
+    const { claim, sink, mapper } = recorded();
+    const panel = new ScreenRecorder(PANEL, [], false, false);
+
+    claim.open(panel);
+    sink.pointerDown(LEFT_BUTTON, PANEL_X, PANEL_Y);
+    claim.close(panel);
+    sink.pointerUp(LEFT_BUTTON, PANEL_X, PANEL_Y);
 
     expect(panel.calls).toEqual([`down ${LEFT_BUTTON}`]);
-    expect(mapper.calls).toEqual([`down ${RIGHT_BUTTON}`]);
+    expect(mapper.calls).toEqual([]);
   });
 
   it("hands a key a screen names to the screen, and every other key to the mapper", () => {
@@ -280,7 +342,9 @@ describe("the input claim, before the mapper", () => {
     expect(bar).toEqual([]);
     expect(modal.calls).toEqual([
       `down ${LEFT_BUTTON}`,
+      `up ${LEFT_BUTTON}`,
       `down ${RIGHT_BUTTON}`,
+      `up ${RIGHT_BUTTON}`,
     ]);
   });
 

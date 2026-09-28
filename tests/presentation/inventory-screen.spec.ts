@@ -4,6 +4,8 @@ import type { Item, ItemBaseDef } from "@domain/public";
 import { createItem, placeItem } from "@domain/rules";
 import {
   ARMORY_SLOT_RECTS,
+  BLOCKED_CELL_TINT,
+  FREE_CELL_TINT,
   goldText,
   GRID_CELL_SIZE,
   GRID_RECT,
@@ -47,6 +49,15 @@ const BOXES = SLOTS + CELLS;
 const FIRST_BACKDROP = 1 + CELLS;
 const FIRST_ICON = FIRST_BACKDROP + BOXES;
 const FIRST_FLASH = FIRST_ICON + BOXES;
+
+/** How the screen makes its quads over the screens: the lifted item's backdrop, icon, and flash, then a mark per cell drawn over them. */
+const LIFTED_BACKDROP = 0;
+const LIFTED_ICON = 1;
+const FIRST_MARK = 3;
+
+/** Far enough for a held press to lift its item, and near enough not to. */
+const DRAGGED = 20;
+const TREMBLE = 5;
 
 /** How far a backdrop sits inside the cells it covers. */
 const CELL_INSET = 2;
@@ -103,13 +114,23 @@ type Arranged = Readonly<{
   screen: InventoryScreen;
   driver: CommandRecorder;
   quads: QuadRecorder[];
+  /** The quads made in the band over the screens. */
+  over: QuadRecorder[];
   labels: LabelRecorder[];
   /** Places an item of `base` with its corner on `corner`, and returns its placed record. */
   put: (base: ItemBaseDef, corner: number) => number;
   /** A press and its release at the centre of `rect`, handed to the screen as the claim would. */
   clickIn: (button: number, rect: Readonly<Rect>) => void;
-  /** A press at the centre of grid cell `cell`. */
+  /** A press and its release, with no move, at the centre of grid cell `cell`. */
   clickCell: (button: number, cell: number) => void;
+  /** A press at the centre of grid cell `cell`. */
+  pressCell: (button: number, cell: number) => void;
+  /** The pointer moved to the centre of grid cell `cell`, then a frame synced. */
+  moveToCell: (cell: number) => void;
+  /** The pointer moved to (`x`, `y`), then a frame synced. */
+  moveTo: (x: number, y: number) => void;
+  /** The left button came up at (`x`, `y`). */
+  releaseAt: (x: number, y: number) => void;
   /** One tick, every event since drained into the screen, and a frame synced. */
   step: () => void;
 }>;
@@ -129,6 +150,7 @@ const arrange = (): Arranged => {
   spawnHero(world);
 
   const quads: QuadRecorder[] = [];
+  const over: QuadRecorder[] = [];
   const labels: LabelRecorder[] = [];
   const driver = new CommandRecorder(world);
   const reader = createEventReader();
@@ -150,6 +172,13 @@ const arrange = (): Arranged => {
     frameSizes: () => FRAME_WIDTH,
     world: world.view,
     driver,
+    makeOverQuad: (frame) => {
+      const quad = new QuadRecorder(frame);
+
+      over.push(quad);
+
+      return quad;
+    },
   });
   const centreOf = (rect: Readonly<Rect>): [number, number] => [
     (rect.minX + rect.maxX) / 2,
@@ -158,6 +187,7 @@ const arrange = (): Arranged => {
   const clickAt = (button: number, x: number, y: number): void => {
     if (screen.contains(x, y)) {
       screen.pointerDown(button, x, y);
+      screen.pointerUp(button, x, y);
     }
   };
 
@@ -168,6 +198,7 @@ const arrange = (): Arranged => {
     screen,
     driver,
     quads,
+    over,
     labels,
     put: (base, corner) =>
       placeItem(
@@ -183,11 +214,21 @@ const arrange = (): Arranged => {
       clickAt(button, x, y);
     },
     clickCell: (button, cell) => {
-      clickAt(
-        button,
-        GRID_RECT.minX + ((cell % COLUMNS) + 0.5) * GRID_CELL_SIZE,
-        GRID_RECT.minY + (Math.floor(cell / COLUMNS) + 0.5) * GRID_CELL_SIZE,
-      );
+      clickAt(button, cellX(cell), cellY(cell));
+    },
+    pressCell: (button, cell) => {
+      screen.pointerDown(button, cellX(cell), cellY(cell));
+    },
+    moveToCell: (cell) => {
+      screen.pointerMove(cellX(cell), cellY(cell));
+      screen.sync();
+    },
+    moveTo: (x, y) => {
+      screen.pointerMove(x, y);
+      screen.sync();
+    },
+    releaseAt: (x, y) => {
+      screen.pointerUp(LEFT_BUTTON, x, y);
     },
     step: () => {
       world.tick();
@@ -203,6 +244,12 @@ const arrange = (): Arranged => {
     },
   };
 };
+
+/** The canvas point at the centre of grid cell `cell`. */
+const cellX = (cell: number): number =>
+  GRID_RECT.minX + ((cell % COLUMNS) + 0.5) * GRID_CELL_SIZE;
+const cellY = (cell: number): number =>
+  GRID_RECT.minY + (Math.floor(cell / COLUMNS) + 0.5) * GRID_CELL_SIZE;
 
 const quadAt = (
   quads: readonly QuadRecorder[],
@@ -507,5 +554,218 @@ describe("the inventory screen's gestures", () => {
 
     expect(quads.every((quad) => !quad.visible)).toBe(true);
     expect(labels.every((label) => !label.visible)).toBe(true);
+  });
+});
+
+describe("the inventory screen's lifted item", () => {
+  /** The cells whose mark shows, in reading order. */
+  const markedCells = (over: readonly QuadRecorder[]): number[] =>
+    over
+      .slice(FIRST_MARK, FIRST_MARK + CELLS)
+      .flatMap((mark, cell) => (mark.visible ? [cell] : []));
+
+  it("lifts an item held and moved the drag distance onto the pointer, drawn at its size, and sends nothing", () => {
+    const { driver, quads, over, put, pressCell, moveTo } = arrange();
+    const record = put(cap, 0);
+
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(cellX(0) + DRAGGED, cellY(0));
+
+    const lifted = quadAt(over, LIFTED_BACKDROP);
+    const icon = quadAt(over, LIFTED_ICON);
+    const side = 2 * GRID_CELL_SIZE - 2 * CELL_INSET;
+
+    expect(driver.commands).toEqual([]);
+    expect(recordQuads(quads, record).icon.visible).toBe(false);
+    expect(icon.visible).toBe(true);
+    expect(icon.frame).toBe(cap.atlasFrame);
+    expect(lifted.visible).toBe(true);
+    expect(lifted.x).toBe(GRID_RECT.minX + GRID_CELL_SIZE + DRAGGED);
+    expect(lifted.y).toBe(GRID_RECT.minY + GRID_CELL_SIZE);
+    expect(lifted.scaleX).toBeCloseTo(side / FRAME_WIDTH);
+    expect(lifted.scaleY).toBeCloseTo(side / FRAME_WIDTH);
+  });
+
+  it("keeps a press that moves less than the drag distance a click, which wears the item", () => {
+    const { driver, over, put, pressCell, moveTo, releaseAt } = arrange();
+
+    put(cap, 0);
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(cellX(0) + TREMBLE, cellY(0));
+
+    expect(quadAt(over, LIFTED_ICON).visible).toBe(false);
+
+    releaseAt(cellX(0) + TREMBLE, cellY(0));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({ kind: "equip_item", cell: 0 }),
+    ]);
+  });
+
+  it("marks the cells it would take free where it fits, and a release there sends one move_item and nothing else", () => {
+    const { driver, world, over, put, pressCell, moveToCell, releaseAt, step } =
+      arrange();
+    const record = put(cap, 0);
+
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(4);
+
+    expect(markedCells(over)).toEqual([4, 5, 14, 15]);
+    expect(quadAt(over, FIRST_MARK + 4).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(cellX(4), cellY(4));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({ kind: "move_item", from: 0, to: 4 }),
+    ]);
+    expect(markedCells(over)).toEqual([]);
+    expect(quadAt(over, LIFTED_ICON).visible).toBe(false);
+
+    step();
+
+    expect(world.view.run.inventory.placed[record]?.corner).toBe(4);
+  });
+
+  it("marks the cells blocked over two items, and a release there sends nothing and leaves the grid as it was", () => {
+    const {
+      driver,
+      world,
+      quads,
+      over,
+      put,
+      pressCell,
+      moveToCell,
+      releaseAt,
+      screen,
+    } = arrange();
+    const record = put(cap, 0);
+
+    put(band, 15);
+    put(band, 16);
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(5);
+
+    expect(markedCells(over)).toEqual([5, 6, 15, 16]);
+    expect(quadAt(over, FIRST_MARK + 5).tint).toBe(BLOCKED_CELL_TINT);
+
+    releaseAt(cellX(5), cellY(5));
+    screen.sync();
+
+    expect(driver.commands).toEqual([]);
+    expect(world.view.run.inventory.placed[record]?.corner).toBe(0);
+    expect(recordQuads(quads, record).icon.visible).toBe(true);
+  });
+
+  it("marks the cells free over exactly one item, and a release there swaps the two as move_item's rule says", () => {
+    const { driver, world, over, put, pressCell, moveToCell, releaseAt, step } =
+      arrange();
+    const helm = put(cap, 0);
+    const ring = put(band, 16);
+
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(6);
+
+    expect(markedCells(over)).toEqual([6, 7, 16, 17]);
+    expect(quadAt(over, FIRST_MARK + 6).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(cellX(6), cellY(6));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({ kind: "move_item", from: 0, to: 6 }),
+    ]);
+
+    step();
+
+    const placed = world.view.run.inventory.placed;
+
+    expect(placed[helm]?.corner).toBe(6);
+    expect(placed[ring]?.corner).toBe(0);
+  });
+
+  it("marks the cells blocked where the one item it covers would have nowhere to go, as the command would refuse", () => {
+    const { driver, world, over, put, pressCell, moveToCell, releaseAt, step } =
+      arrange();
+
+    // Four bands fill the top-left two by two, and helms every other; the helm the band lands on
+    // would find no two by two free once the band holds one of its cells.
+    const ring = put(band, 0);
+
+    put(band, 1);
+    put(band, 10);
+    put(band, 11);
+
+    for (const corner of [2, 4, 6, 8, 20, 22, 24, 26, 28]) {
+      put(cap, corner);
+    }
+
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(2);
+
+    expect(markedCells(over)).toEqual([2]);
+    expect(quadAt(over, FIRST_MARK + 2).tint).toBe(BLOCKED_CELL_TINT);
+
+    releaseAt(cellX(2), cellY(2));
+
+    expect(driver.commands).toEqual([]);
+
+    driver.submit({
+      kind: "move_item",
+      tick: driver.nextTick,
+      timestamp: driver.now(),
+      from: 0,
+      to: 2,
+    });
+    step();
+
+    expect(world.view.run.inventory.placed[ring]?.corner).toBe(0);
+  });
+
+  it("puts the item back with nothing sent on a release off the grid, a cancelled press, or the screen closing", () => {
+    const {
+      driver,
+      world,
+      quads,
+      over,
+      put,
+      pressCell,
+      moveToCell,
+      moveTo,
+      releaseAt,
+      screen,
+    } = arrange();
+    const record = put(cap, 0);
+    const offGrid = GRID_RECT.minY - GRID_CELL_SIZE;
+
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(cellX(4), offGrid);
+
+    expect(markedCells(over)).toEqual([]);
+
+    releaseAt(cellX(4), offGrid);
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(4);
+    screen.cancelPress();
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(4);
+    screen.hide();
+    screen.show();
+
+    expect(driver.commands).toEqual([]);
+    expect(world.view.run.inventory.placed[record]?.corner).toBe(0);
+    expect(recordQuads(quads, record).icon.visible).toBe(true);
+    expect(quadAt(over, LIFTED_ICON).visible).toBe(false);
+    expect(markedCells(over)).toEqual([]);
+  });
+
+  it("sends nothing for an item set down where it lay", () => {
+    const { driver, put, pressCell, moveToCell, releaseAt } = arrange();
+
+    put(cap, 0);
+    pressCell(LEFT_BUTTON, 0);
+    moveToCell(1);
+    moveToCell(0);
+    releaseAt(cellX(0), cellY(0));
+
+    expect(driver.commands).toEqual([]);
   });
 });

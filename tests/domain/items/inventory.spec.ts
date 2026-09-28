@@ -13,6 +13,9 @@ import {
   ARMORY_SLOT_KINDS,
   firstFit,
   fitsAt,
+  MOVE_BLOCKED,
+  MOVE_FITS,
+  moveOutcome,
   NO_RECORD,
   recordAt,
   slotFor,
@@ -309,6 +312,27 @@ const stamp = (world: Simulation) => ({
 });
 
 describe("a swap must fit", () => {
+  it("answers a move's outcome without changing anything: fits, the covered item's first fit, or blocked", () => {
+    const inventory = createInventory();
+    const helm = put(inventory, cap, 0);
+
+    put(inventory, band, 16);
+
+    const cells = Uint8Array.from(inventory.cells);
+
+    expect(moveOutcome(inventory, helm, 4)).toBe(MOVE_FITS);
+    expect(moveOutcome(inventory, helm, 1)).toBe(MOVE_FITS);
+    // Onto the band alone: the band goes to the first cell left free once the helm lies at 5.
+    expect(moveOutcome(inventory, helm, 5)).toBe(0);
+    // Past the grid's right edge.
+    expect(moveOutcome(inventory, helm, 9)).toBe(MOVE_BLOCKED);
+    expect(Uint8Array.from(inventory.cells)).toEqual(cells);
+
+    // Onto two bands.
+    put(inventory, band, 15);
+    expect(moveOutcome(inventory, helm, 5)).toBe(MOVE_BLOCKED);
+  });
+
   it("moves an item onto exactly one other and puts that one at its first fit", () => {
     const { world } = heroWorld();
     const inventory = world.state.run.inventory;

@@ -23,6 +23,11 @@ export type ClaimRegion = Readonly<{
  * keys it claims. A modal screen claims every pointer event anywhere and every key; a key it
  * names reaches it and any other is dropped. A screen that pauses is modal, and is made so. Its `pointerDown`
  * and `keyDown` answer whether the screen asks to be closed.
+ *
+ * A press that went down on the screen comes back to it with its release, wherever the pointer
+ * comes up, while the screen is still open; every pointer move reaches every open screen. A
+ * press the screen will never see come up, as the window loses focus or a modal screen opens
+ * over it, is cancelled with nothing sent.
  */
 export type ClaimScreen = Readonly<{
   modal: boolean;
@@ -30,6 +35,9 @@ export type ClaimScreen = Readonly<{
   keys: readonly string[];
   contains: (x: number, y: number) => boolean;
   pointerDown: (button: number, x: number, y: number) => boolean;
+  pointerUp: (button: number, x: number, y: number) => void;
+  pointerMove: (x: number, y: number) => void;
+  cancelPress: () => void;
   keyDown: (code: string) => boolean;
   show: () => void;
   hide: () => void;
@@ -77,6 +85,9 @@ export class InputClaim {
 
   private readonly presses: PressOwner[] = [];
 
+  /** Per button, the screen a claimed press went down on, which its release goes back to, or `null`. */
+  private readonly pressScreens: (ClaimScreen | null)[] = [];
+
   private mapper: ClaimedMapper = NO_MAPPER;
 
   private pauseScreen: ClaimScreen | null = null;
@@ -92,6 +103,7 @@ export class InputClaim {
 
     for (let button = 0; button < POINTER_BUTTONS; button += 1) {
       this.presses.push("none");
+      this.pressScreens.push(null);
     }
   }
 
@@ -169,6 +181,8 @@ export class InputClaim {
           this.presses[button] = "claimed";
         }
       }
+
+      this.cancelScreenPresses();
     }
 
     if (screen.pauses) {
@@ -191,6 +205,13 @@ export class InputClaim {
     }
 
     this.screens.splice(index, 1);
+
+    for (let button = 0; button < POINTER_BUTTONS; button += 1) {
+      if (this.pressScreens[button] === screen) {
+        this.pressScreens[button] = null;
+      }
+    }
+
     screen.hide();
 
     if (screen.pauses) {
@@ -209,6 +230,7 @@ export class InputClaim {
 
       if (screen !== undefined && (screen.modal || screen.contains(x, y))) {
         this.own(button, "claimed");
+        this.ownScreen(button, screen);
 
         if (screen.pointerDown(button, x, y)) {
           this.close(screen);
@@ -235,14 +257,21 @@ export class InputClaim {
   }
 
   /**
-   * A button came up, on the canvas or off it. A press that went down on the world is the
-   * world's; one that went down on a region or screen, or became a modal screen's, is claimed.
-   * A release with no press seen is claimed only while a modal screen is open.
+   * A button came up at (`x`, `y`), on the canvas or off it. A press that went down on the
+   * world is the world's; one that went down on a region or screen, or became a modal screen's,
+   * is claimed, and one that went down on a screen still open is handed back to it. A release
+   * with no press seen is claimed only while a modal screen is open.
    */
-  pointerUp(button: number): boolean {
+  pointerUp(button: number, x: number, y: number): boolean {
     const owner = this.presses[button] ?? "none";
+    const screen = this.pressScreens[button] ?? null;
 
     this.own(button, "none");
+    this.ownScreen(button, null);
+
+    if (screen !== null && this.isOpen(screen)) {
+      screen.pointerUp(button, x, y);
+    }
 
     switch (owner) {
       case "world":
@@ -253,6 +282,13 @@ export class InputClaim {
 
       case "none":
         return this.modalOpen();
+    }
+  }
+
+  /** The pointer moved to (`x`, `y`): every open screen hears it, and the mapper never needs it. */
+  pointerMove(x: number, y: number): void {
+    for (let index = 0; index < this.screens.length; index += 1) {
+      this.screens[index]?.pointerMove(x, y);
     }
   }
 
@@ -323,6 +359,7 @@ export class InputClaim {
     this.mapperKeys.clear();
     this.claimedKeys.clear();
     this.escapeHeld = false;
+    this.cancelScreenPresses();
 
     for (let button = 0; button < POINTER_BUTTONS; button += 1) {
       this.presses[button] = "none";
@@ -364,6 +401,22 @@ export class InputClaim {
     }
 
     return false;
+  }
+
+  /** Every press a screen holds is cancelled: it will not see the release. */
+  private cancelScreenPresses(): void {
+    for (let button = 0; button < POINTER_BUTTONS; button += 1) {
+      const screen = this.pressScreens[button] ?? null;
+
+      this.pressScreens[button] = null;
+      screen?.cancelPress();
+    }
+  }
+
+  private ownScreen(button: number, screen: ClaimScreen | null): void {
+    if (button >= 0 && button < POINTER_BUTTONS) {
+      this.pressScreens[button] = screen;
+    }
   }
 
   private own(button: number, owner: PressOwner): void {

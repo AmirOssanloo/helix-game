@@ -1247,6 +1247,9 @@ describe("the inventory open over the mapper", () => {
       keys: [],
       contains: (): boolean => true,
       pointerDown: (): boolean => false,
+      pointerUp: (): void => {},
+      pointerMove: (): void => {},
+      cancelPress: (): void => {},
       keyDown: (): boolean => false,
       show: (): void => {
         screen.visible = true;
@@ -1283,6 +1286,7 @@ describe("the inventory open over the mapper", () => {
       frameSizes: () => 1,
       world: arranged.world.view,
       driver: arranged.driver,
+      makeOverQuad: (frame) => new QuadRecorder(frame),
     });
     const pauseScreen = pauseScreenStub();
     const sink = claimedSink(claim, arranged.mapper);

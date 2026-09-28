@@ -86,6 +86,9 @@ const pauseScreen: ClaimScreen = {
   keys: [],
   contains: () => true,
   pointerDown: () => false,
+  pointerUp: (): void => {},
+  pointerMove: (): void => {},
+  cancelPress: (): void => {},
   keyDown: () => false,
   show: (): void => {},
   hide: (): void => {},
@@ -128,6 +131,7 @@ const arrange = (): {
     frameSizes: () => FRAME_WIDTH,
     world: world.view,
     driver: new CommandRecorder(world),
+    makeOverQuad: (frame) => new QuadRecorder(frame),
   });
   const pause = new PauseRecorder();
   const claim = new InputClaim(pause);

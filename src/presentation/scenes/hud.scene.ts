@@ -7,6 +7,7 @@ import { Hud } from "../hud/hud";
 import {
   HUD_DEPTH_BAR,
   HUD_DEPTH_BAR_TEXT,
+  HUD_DEPTH_OVER_SCREEN,
   HUD_DEPTH_SCREEN,
   HUD_DEPTH_SCREEN_TEXT,
 } from "../hud/hud-bands";
@@ -85,6 +86,7 @@ export class HudScene extends Phaser.Scene {
       ...screenPorts,
       world: this.context.world,
       driver: this.context.driver,
+      makeOverQuad: quadIn(HUD_DEPTH_OVER_SCREEN),
     });
     const pause = new PauseScreen(screenPorts);
     const bar: ClaimRegion = {

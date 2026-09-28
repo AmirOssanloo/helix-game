@@ -8,6 +8,7 @@ import { projectedLens } from "./projected-lens";
 const POINTER_DOWN_EVENT = "pointerdown";
 const POINTER_UP_EVENT = "pointerup";
 const POINTER_UP_OUTSIDE_EVENT = "pointerupoutside";
+const POINTER_MOVE_EVENT = "pointermove";
 const KEY_DOWN_EVENT = "keydown";
 const KEY_UP_EVENT = "keyup";
 const BLUR_EVENT = "blur";
@@ -30,6 +31,7 @@ export const cameraLens = (
 export type InputSink = Readonly<{
   pointerDown: (button: number, x: number, y: number) => void;
   pointerUp: (button: number, x: number, y: number) => void;
+  pointerMove: (x: number, y: number) => void;
   keyDown: (code: string) => void;
   keyUp: (code: string) => void;
   blur: () => void;
@@ -45,7 +47,8 @@ export type MapperInput = Readonly<{
 }>;
 
 /**
- * Every event asks `claim` first and reaches `mapper` only when it is not claimed. Losing
+ * Every event asks `claim` first and reaches `mapper` only when it is not claimed; a pointer
+ * move is the claim's alone, for the open screens, as the mapper reads the pointer itself. Losing
  * focus is everyone's: the claim forgets what is down and the mapper releases what it holds.
  */
 export const claimedSink = (
@@ -58,9 +61,12 @@ export const claimedSink = (
     }
   },
   pointerUp: (button, x, y): void => {
-    if (!claim.pointerUp(button)) {
+    if (!claim.pointerUp(button, x, y)) {
       mapper.pointerUp(button, x, y);
     }
+  },
+  pointerMove: (x, y): void => {
+    claim.pointerMove(x, y);
   },
   keyDown: (code): void => {
     if (!claim.keyDown(code)) {
@@ -99,6 +105,9 @@ export const bindSceneInput = (
   const onPointerUp = (pointer: Phaser.Input.Pointer): void => {
     sink.pointerUp(pointer.button, pointer.x, pointer.y);
   };
+  const onPointerMove = (pointer: Phaser.Input.Pointer): void => {
+    sink.pointerMove(pointer.x, pointer.y);
+  };
   const onKeyDown = (event: KeyboardEvent): void => {
     sink.keyDown(event.code);
   };
@@ -121,6 +130,7 @@ export const bindSceneInput = (
   input.on(POINTER_DOWN_EVENT, onPointerDown);
   input.on(POINTER_UP_EVENT, onPointerUp);
   input.on(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
+  input.on(POINTER_MOVE_EVENT, onPointerMove);
   game.events.on(BLUR_EVENT, onBlur);
   window.addEventListener(KEY_DOWN_EVENT, onBrowserKey);
   window.addEventListener(KEY_UP_EVENT, onBrowserKey);
@@ -134,6 +144,7 @@ export const bindSceneInput = (
     input.off(POINTER_DOWN_EVENT, onPointerDown);
     input.off(POINTER_UP_EVENT, onPointerUp);
     input.off(POINTER_UP_OUTSIDE_EVENT, onPointerUp);
+    input.off(POINTER_MOVE_EVENT, onPointerMove);
     game.events.off(BLUR_EVENT, onBlur);
     window.removeEventListener(KEY_DOWN_EVENT, onBrowserKey);
     window.removeEventListener(KEY_UP_EVENT, onBrowserKey);

@@ -115,6 +115,13 @@ export class PauseScreen implements ClaimScreen {
     return button === LEFT_BUTTON && containsPoint(RESUME_BUTTON_RECT, x, y);
   }
 
+  /** A release, a move, and a cancelled press are nothing to it: its button acts on the press. */
+  pointerUp(): void {}
+
+  pointerMove(): void {}
+
+  cancelPress(): void {}
+
   /** It names no key; Escape closes it through the claim. */
   keyDown(): boolean {
     return false;

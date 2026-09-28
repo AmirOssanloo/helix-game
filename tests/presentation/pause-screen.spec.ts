@@ -64,6 +64,9 @@ const panel: ClaimScreen = {
   keys: [],
   contains: () => false,
   pointerDown: () => false,
+  pointerUp: (): void => {},
+  pointerMove: (): void => {},
+  cancelPress: (): void => {},
   keyDown: () => false,
   show: (): void => {},
   hide: (): void => {},
@@ -175,15 +178,15 @@ describe("the pause screen", () => {
 
     press(ESCAPE_CODE);
     claim.pointerDown(LEFT_BUTTON, OFF_BUTTON_X, OFF_BUTTON_Y);
-    claim.pointerUp(LEFT_BUTTON);
+    claim.pointerUp(LEFT_BUTTON, OFF_BUTTON_X, OFF_BUTTON_Y);
     claim.pointerDown(RIGHT_BUTTON, BUTTON_X, BUTTON_Y);
-    claim.pointerUp(RIGHT_BUTTON);
+    claim.pointerUp(RIGHT_BUTTON, BUTTON_X, BUTTON_Y);
 
     expect(claim.isOpen(screen)).toBe(true);
 
     expect(claim.pointerDown(LEFT_BUTTON, BUTTON_X, BUTTON_Y)).toBe(true);
     // The press that closed it keeps its release.
-    expect(claim.pointerUp(LEFT_BUTTON)).toBe(true);
+    expect(claim.pointerUp(LEFT_BUTTON, BUTTON_X, BUTTON_Y)).toBe(true);
     expect(claim.isOpen(screen)).toBe(false);
     expect(pause.held).toBe(false);
   });

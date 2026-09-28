@@ -20,8 +20,10 @@ import type { Inventory, PlacedItem } from "./inventory";
 import {
   coveredBy,
   firstFit,
-  fitsAt,
   liftItem,
+  MOVE_BLOCKED,
+  MOVE_FITS,
+  moveOutcome,
   NO_RECORD,
   placeItem,
   recordAt,
@@ -202,7 +204,8 @@ const unequip = (
 /**
  * Moves the item covering `from` so its corner lies on `to`, its own cells counting as free.
  * Onto cells covering exactly one other item, the two swap: the moved item goes to `to` and
- * the other to its first fit, and with none nothing moves. Onto two or more, refused.
+ * the other to its first fit, and with none nothing moves. Onto two or more, refused. What
+ * happens is `moveOutcome`'s answer, the one the inventory screen draws a lifted item from.
  */
 const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
   const inventory = world.run.inventory;
@@ -212,9 +215,13 @@ const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
     return "no_item_at_place";
   }
 
-  const placed = placedAt(inventory, record);
+  const outcome = moveOutcome(inventory, record, command.to);
 
-  if (fitsAt(inventory, placed.width, placed.height, command.to, record)) {
+  if (outcome === MOVE_BLOCKED) {
+    return "no_room";
+  }
+
+  if (outcome === MOVE_FITS) {
     liftItem(inventory, record);
     setDownItem(inventory, record, command.to);
     announce(world, "item_moved", command.to);
@@ -222,6 +229,7 @@ const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
     return null;
   }
 
+  const placed = placedAt(inventory, record);
   const other = coveredBy(
     inventory,
     placed.width,
@@ -230,31 +238,12 @@ const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
     record,
   );
 
-  if (other < 0) {
-    return "no_room";
-  }
-
-  const covered = placedAt(inventory, other);
-  const from = placed.corner;
-  const otherFrom = covered.corner;
-
   liftItem(inventory, record);
   liftItem(inventory, other);
   setDownItem(inventory, record, command.to);
-
-  const fit = firstFit(inventory, covered.width, covered.height, NO_RECORD);
-
-  if (fit === -1) {
-    liftItem(inventory, record);
-    setDownItem(inventory, record, from);
-    setDownItem(inventory, other, otherFrom);
-
-    return "no_room";
-  }
-
-  setDownItem(inventory, other, fit);
+  setDownItem(inventory, other, outcome);
   announce(world, "item_moved", command.to);
-  announce(world, "item_moved", fit);
+  announce(world, "item_moved", outcome);
 
   return null;
 };
