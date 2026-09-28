@@ -18,10 +18,15 @@ The scheme is the click-to-move action-RPG standard, with normal cast only and f
 | Right click | An item's icon or its label on the ground | Replaces the current order with a pick up: the hero walks to the item as a move does and takes it into the inventory ([items and loot](./items-and-loot.md#picking-up-an-item)) |
 | Right click | Gold or a globe's icon or label | A move to where it lies; the hero takes it by walking there |
 | Left click | World, no targeting cursor open | Selects. Never issues a move |
+| Left click | The ring of the checkpoint the hero stands in, no targeting cursor open | Opens that checkpoint's store, and the inventory beside it. A click on any other ring selects, as a click on the world does ([items and loot](./items-and-loot.md#the-store)) |
 | Left click | Targeting cursor open | Commits the target and starts the cast |
 | Left click | The Q, W, or E square on the bottom bar, with a skill point unspent | Spends the point on that orb ([HUD](./hud.md)) |
 | Any click | The bottom bar | Belongs to the HUD and never reaches the world: a right click there is not a move |
-| Any click | An open screen, such as the inventory | Belongs to the screen and never reaches the world: it is not a move, an attack, a select, or a pick up on the ground beneath, and an open targeting cursor stays open |
+| Any click | An open screen, such as the inventory or the store | Belongs to the screen and never reaches the world: it is not a move, an attack, a select, or a pick up on the ground beneath, and an open targeting cursor stays open |
+| Left click | An item in the inventory's grid, or a worn item | Equips it, or unequips a worn one ([items and loot](./items-and-loot.md#the-inventory-and-armory)) |
+| Right click | An item in the inventory's grid | Drops it at the hero's feet; while the store is open, sells it instead |
+| Press and move | An item in the inventory's grid | Lifts it onto the pointer; the release sets it down where it fits, or puts it back |
+| Left click | A tab or a stocked item in the store | Shows the tab, or buys the item |
 | Scroll wheel | Anywhere | Nothing. The view has one scale and no zoom |
 
 A click resolves against the world at the moment of the click, so a camera move during the same tick cannot retarget it. A right click names what is drawn on top where it lands: an item's label, then a unit, then an item's icon, then the ground.
@@ -39,7 +44,10 @@ A click resolves against the world at the moment of the click, so a camera move 
 | A then left click | Attack-move | Move to the point, attacking any enemy acquired on the way |
 | S | Stop | Clear the order, close the cursor, cancel a cast whose cast point has not finished |
 | I | Inventory | Opens the inventory, and closes it when it is open. The world goes on; nothing is sent |
-| Esc | Cancel, close, or pause | In one order: an open targeting cursor closes; else the open screen closes; else the pause screen opens. A running move continues |
+| Alt, held | Every label | Shows the label of every item and gold pile on the ground while held. Nothing is sent, and the browser's own use of Alt is suppressed |
+| Esc | Cancel, close, or pause | In one order: an open targeting cursor closes; else the topmost open screen closes, the store before the inventory it opened over; else the pause screen opens. Closing the store this way closes it in the world too. A running move continues |
+
+F9 opens the [developer panel](./developer-panel.md)'s feedback note, in a build that carries the panel. It is not a game key and sends nothing.
 
 Every key fires on key-down and never repeats while held. Several keys landing in the same tick apply in the order they were pressed, with Q W E R D F breaking ties.
 
@@ -101,7 +109,10 @@ The fail column of spec section 15, in short, because it is the shortest test of
 | Esc with no cursor and no screen open | The pause screen opens and the world stops on the tick it stands on. Nothing is sent and nothing enters the input log |
 | A click anywhere, or any key but Esc, while the pause screen is open | Nothing. No order reaches the world, and none waits to land when the world goes on |
 | Esc, or a click on Resume, while the pause screen is open | The screen closes and the world goes on from the same tick, with no catch-up |
-| Q, W, E, R, D, F, A, or S while the inventory is open | Each acts as it does with no screen open, and the inventory stays open. The inventory takes I alone; T, X, V, C, G, and Space are taken by no screen |
+| Q, W, E, R, D, F, A, or S while the inventory or the store is open | Each acts as it does with no screen open, and the screen stays open. The inventory takes I alone and the store takes no key; T, X, V, C, G, and Space are taken by no screen |
+| I while the store is open | The inventory closes; the store stays open, and a right click can no longer sell until the inventory is opened again |
+| The hero walks off the ring, or dies, with the store open | The store closes on that tick; the inventory stays as it was |
+| Left click on the ring with the store there already open | Nothing is sent |
 | I held down | The inventory opens once. Repeats neither close nor reopen it |
 | I while the pause screen is open | Nothing. The pause screen takes every key but Esc |
 | A button held down on the world when a screen that stops the world opens | The press is dropped with nothing sent; a held aim closes at no cost |

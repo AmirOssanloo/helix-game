@@ -46,7 +46,7 @@ Every spell has a cast point and a short backswing after it, and the numbers per
 
 ## The attack
 
-A ranged projectile attack. Range 600, acquire radius 800, projectile speed 900, base attack time 1.7 seconds, attack point 0.4 seconds, backswing 0.7 seconds; the hero's attack damage includes the bonus from each Ember instance out. The [mechanics spec](../specs/character-movement-and-mechanics.md) section 3 owns these and `src/content/hero.ts` holds them.
+A ranged projectile attack. Range 600, acquire radius 800, projectile speed 900, base attack time 1.7 seconds, attack point 0.4 seconds, backswing 0.7 seconds; the hero's attack damage includes the bonus from each Ember instance out and from worn items, read at each shot, and its attack speed, which shortens the time between shots, includes agility's share and worn items' ([Hero](./hero.md#derived-values)). The [mechanics spec](../specs/character-movement-and-mechanics.md) section 3 owns these and `src/content/hero.ts` holds them.
 
 - **Attack-target** (right click an enemy) paths into range, turns to face, fires, and repeats until the target dies or the order changes.
 - **Attack-move** (A then left click) walks to the point and attacks any enemy acquired within 800 units on the way, then resumes the walk when the target is lost, without backtracking.

@@ -40,14 +40,15 @@ An item's stats go on and come off on the tick the equip or unequip lands. Only 
 
 ## Resources
 
-- **Health.** Reaching zero kills the hero. Regenerates every tick from strength and any Quartz instances out.
-- **Mana.** Spent by Invoke and by throwing a prepared spell. Orb presses cost nothing. A cast with insufficient mana is refused at key-down, with a HUD flash, and nothing is spent. Regenerates every tick from intelligence.
+- **Health.** Reaching zero kills the hero. Regenerates every tick from strength and any Quartz instances out. A health globe walked over restores a quarter of maximum health.
+- **Mana.** Spent by Invoke and by throwing a prepared spell. Orb presses cost nothing. A cast with insufficient mana is refused at key-down, with a HUD flash, and nothing is spent. Regenerates every tick from intelligence. A mana globe walked over restores a quarter of maximum mana.
+- **Gold.** Taken by walking over it, spent at the store, and shown on the inventory and store screens, not on the bar. It never regenerates, and death takes none of it.
 
-Both are shown as bars with numbers on the [HUD](./hud.md), and both can be pushed around from the [developer panel](./developer-panel.md) for testing.
+Health and mana are shown as bars with numbers on the [HUD](./hud.md), and both can be pushed around from the [developer panel](./developer-panel.md) for testing.
 
 ## Levels and experience
 
-Levels run 1 to 30 on the experience table in `src/content/hero.ts`. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). The hero starts at level 1 with one skill point and every orb at level 0; an orb with no level cannot be pressed. Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent by clicking the orb's square on the HUD and can also be granted or assigned from the developer panel.
+Levels run 1 to 30 on the experience table in `src/content/hero.ts`. Experience comes from enemy deaths; each archetype carries its reward in its definition ([Enemies](./enemies.md)). The hero starts at level 1 with one skill point and every orb at level 0; an orb with no level cannot be pressed. Reaching a level grants the per-level attribute gains and **one skill point**, spent on Quartz, Whorl, or Ember. Each orb caps at level 7. Skill points are spent by clicking the orb's square on the HUD and can also be granted or assigned from the developer panel. The hero's level is also what an item's level requirement is held against: an item above it can be carried but not worn ([Items and loot](./items-and-loot.md#wearing-an-item)).
 
 Orb level and orb instance are different things: a level-7 Whorl with one instance out is not a level-1 Whorl with three instances out. Level scales the size of each instance's passive; instance count is how many copies are applied ([mechanics spec](../specs/character-movement-and-mechanics.md) section 9.4).
 
@@ -83,7 +84,7 @@ The formulas follow the source game and live in `src/domain/combat/`. Armour run
 
 ## Death and respawn
 
-When health reaches zero the hero enters a death state at the end of that tick: the order is cleared, the status table is emptied, targeting closes, cooldowns keep counting, health and mana regenerate nothing, and nothing responds to input. After the `respawn_delay` tunable, three seconds by default, the hero respawns at the furthest [checkpoint](./map-and-camera.md#a-map-is-data) it has reached on the map, or at the map's spawn point if it has reached none, with full health and mana and every cooldown cleared, including hidden cooldowns on evicted prepared spells. Held orb instances, the prepared spells in D and F, the orb levels, and the level survive death. There is no experience penalty and no drop.
+When health reaches zero the hero enters a death state at the end of that tick: the order is cleared, the status table is emptied, targeting closes, cooldowns keep counting, health and mana regenerate nothing, and nothing responds to input. After the `respawn_delay` tunable, three seconds by default, the hero respawns at the furthest [checkpoint](./map-and-camera.md#a-map-is-data) it has reached on the map, or at the map's spawn point if it has reached none, with full health and mana and every cooldown cleared, including hidden cooldowns on evicted prepared spells. Held orb instances, the prepared spells in D and F, the orb levels, the level, the inventory, the armory, and gold survive death. There is no experience penalty and the hero drops nothing. An open store closes.
 
 ## States and edge cases
 

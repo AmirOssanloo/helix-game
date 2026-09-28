@@ -18,7 +18,7 @@
 
 ## 1. Purpose
 
-This page fixes items as data before any is built: every armory slot, every base with its size, gate, and value, the rarity table, the affix table, the Legendary pieces, the drop table of each enemy tier, the store's stock and prices, and the arithmetic that says what a full clear of the long road pays. The item definitions under `src/content/items/` are written from it, and a test reads its base, rarity, affix, and Legendary tables against those files, and each Legendary piece against the boss pack that names it in the long road's map file.
+This page fixes items as data: every armory slot, every base with its size, gate, and value, the rarity table, the affix table, the Legendary pieces, the loot table of each enemy tier, the store's stock and prices, and the arithmetic that says what a full clear of the long road pays. The item definitions under `src/content/items/` are written from it, and a test reads its base, rarity, affix, and Legendary tables against those files, and each Legendary piece against the boss pack that names it in the long road's map file.
 
 Every number is a starting value. The definition file owns it once the file exists, and the file wins when this page disagrees; the playtest and the balance pass move numbers in the file and in this page together. What this page owns is the shape: which slot takes what, which stat an item may roll where, and what the economy is set to cover.
 
@@ -226,7 +226,7 @@ A store stands at every checkpoint, opened by standing in its ring and clicking 
 | Property | Value |
 |---|---|
 | Tabs | **Armour**: helm, armour, gloves, belt, and boots. **Weapons**: main hand and off-hand. **Misc**: amulets, rings, and the active items |
-| Stock | 12 items, rolled on the store's first opening at its checkpoint and never restocked |
+| Stock | 12 items, rolled on the store's first opening at its checkpoint and never restocked while the map stays loaded; a map load or reset empties every store |
 | Stock level | The hero's level on the tick the store first opens, as the item level: its bases and affixes are gated by it as a drop's are by the map's |
 | Stock rarities | Common to Rare, on the store weights of [section 4](#4-the-rarities) |
 | Buying | The base's value times the rarity's price multiplier. A Legendary is never stocked; the active items at their own prices |
@@ -238,7 +238,7 @@ A stock of 12 at a Rare weight of 15% holds at least one Rare 86% of the time, a
 
 ## 10. The economy on the long road
 
-A full clear of [the long road](./the-long-road.md#4-the-packs): 89 normal enemies, 10 elites, and 5 bosses, at map level 3, of which regions 1 to 4 hold 58 normal enemies, 8 elites, and 4 bosses. Sections 10.1 and 10.3 are expectations over the drop tables of [section 8](#8-drops). Section 10.2 is measured: the balance pass's walk of the road, stored as `tests/simulation/replays/balance-loot.json`, whose spec reads every figure there.
+A full clear of [the long road](./the-long-road.md#4-the-packs): 89 normal enemies, 10 elites, and 5 bosses, at map level 3, of which regions 1 to 4 hold 58 normal enemies, 8 elites, and 4 bosses. Sections 10.1 and 10.3 are expectations over the loot tables of [section 8](#8-drops). Section 10.2 is measured: the balance pass's walk of the road, stored as `tests/simulation/replays/balance-loot.json`, whose spec reads every figure there.
 
 ### 10.1 What a full clear drops
 
@@ -255,7 +255,7 @@ The items of a full clear by rarity: 10.9 Common, 9.0 Uncommon, 7.5 Rare, 2.5 Ep
 
 The clean run of the old road needed 2 **Heal** and 8 **Restore mana** from the developer panel to finish. Each sets its pool to its maximum, so each is worth at most one full pool: 2 health pools and 8 mana pools is the least the drops must cover.
 
-The walk measures it on the new road. A driver plays the hero from the spawn at level 1 to the last boss's kill on seed 3742014961, checkpoint to checkpoint, sending only what a player sends. It fights what wakes within 800 of its line, spends each skill point as it comes, and turns aside for a globe within 600 of it when the pool it restores is below half. It walks over gold, picks up items by the order, wears what fits an empty armory slot, and sells and buys at each store. It kills 45 normal enemies, 6 elites, and the 5 bosses, 56 of the road's 104, and the last boss falls on tick 8489 with the hero at level 9, with no panel command and no death.
+The walk measures it on the long road. A driver plays the hero from the spawn at level 1 to the last boss's kill on seed 3742014961, checkpoint to checkpoint, sending only what a player sends. It fights what wakes within 800 of its line, spends each skill point as it comes, and turns aside for a globe within 600 of it when the pool it restores is below half. It walks over gold, picks up items by the order, wears what fits an empty armory slot, and sells and buys at each store. It kills 45 normal enemies, 6 elites, and the 5 bosses, 56 of the road's 104, and the last boss falls on tick 8489 with the hero at level 9, with no panel command and no death.
 
 | Pool | The clean run's panel use, at most | Globes dropped on the walk | Globes the walk took | Taken against the panel use |
 |---|---|---|---|---|
@@ -269,7 +269,7 @@ The economy holds two margins:
 - **Health:** outside the boss fights, the hero's health never falls below **25%** of its maximum. A boss fight is any tick a living boss stands within 1200 of the hero. On the walk the lowest is 44%.
 - **Pools:** the globes the walk takes restore at least the clean run's panel use, 2 health pools and 8 mana pools.
 
-A normal enemy's mana globe chance is 50%, raised from 35%. At 35% the walk's kills dropped 33 mana globes, 8.25 pools, which only just covers the 8. A full clear at 50% drops 16.1 mana pools, above the 15.4 the clean run's 8 would reach if the hero's spending grew with the road's length. A hero that clears more of the road than the walk does takes more of both.
+A normal enemy's mana globe chance is 50%, not 35%: at 35% the walk's kills drop 33 mana globes, 8.25 pools, which only just covers the 8. A full clear at 50% drops 16.1 mana pools, above the 15.4 the clean run's 8 would reach if the hero's spending grew with the road's length. A hero that clears more of the road than the walk does takes more of both.
 
 ### 10.3 Gold against the store
 

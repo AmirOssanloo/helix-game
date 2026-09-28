@@ -38,7 +38,7 @@ src/
 ├── shared/           # Pure helpers with no game knowledge
 ├── domain/           # Decides. Rules over plain state
 ├── simulation/       # Orchestrates. The world, the tick, the system order
-├── content/          # Typed data: every spell, enemy, status, and map
+├── content/          # Typed data: every definition, from spells and enemies to maps and items
 ├── instrumentation/  # Preallocated sample rings for timing and counts
 ├── presentation/     # Adapts. Where Phaser is used
 ├── devtools/         # The developer panel and its API

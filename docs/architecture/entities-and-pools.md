@@ -83,7 +83,7 @@ The world has two scopes, and every pool belongs to one.
 | Scope | Holds | Reset when |
 | --- | --- | --- |
 | **Run** | The hero and its form records, the tuning state, the world's copies of the definitions, the maps the content registers, the random source, and the hero's items and gold | Never during a session |
-| **Map** | Enemies, summons, projectiles, zones, effects, ground items, which cells hold a ground item, each checkpoint's store, and which store is open | A map is loaded |
+| **Map** | The map's level, enemies, summons, projectiles, zones, effects, ground items, which cells hold a ground item, the packs, the checkpoints and the furthest reached, each checkpoint's store, and which store is open | A map is loaded |
 
 **Beside the two scopes sits the world's scratch**: the working memory the rules write and read within a call, such as a candidate buffer, a scratch point, the context an effect list runs with, the event an announcement is written through, and a re-entrancy guard. It is made once with the world, never grows, and nothing in it is read on a later tick, so it is not world state: the state checksum leaves it out and the world view does not show it. A value a later tick reads is state, and lives in run or map scope.
 
@@ -170,7 +170,7 @@ A system caching the unit it targeted last tick as an object. The unit died, the
 | A stale id | Resolves to `null` |
 | Status table | Per unit, fixed size, entries reference a status definition |
 | Run scope | Hero and its form records, tuning state, the definition copies, the maps, random source, the hero's items and gold; never reset during a session |
-| Map scope | Enemies, summons, projectiles, zones, effects, ground items and the byte per cell saying where they lie, each checkpoint's store, and the open store; released by `loadMap`, which keeps the hero's slot in the unit pool |
+| Map scope | The map's level, enemies, summons, projectiles, zones, effects, ground items and the byte per cell saying where they lie, the packs, the checkpoints and the furthest reached, each checkpoint's store, and the open store; released by `loadMap`, which keeps the hero's slot in the unit pool |
 | A store | One record per checkpoint of the loaded map, made on the load: stocked or not, and a fixed number of stock slots; which one is open is map scope; a load or reset makes them unstocked and closed |
 | The world's scratch | Working memory dead at the end of every tick, made with the world; not state, left out of the checksum. A value read on a later tick is state instead |
 | `loadMap` | Runs only as a `load_map` command, whose id resolves against the maps in run scope; resets map scope, rebuilds the grid and the spatial hash, gives the hero the map's spawn point with no checkpoint reached, leaves run scope alone |

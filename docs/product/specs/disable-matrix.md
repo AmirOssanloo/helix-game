@@ -17,7 +17,7 @@
 
 ## 1. Purpose
 
-This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, the item commands, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
+This page fills in every cell of the disable matrix: every status against Q, W, E, R, D, F, the four orders, the item and store commands, the pick up, a cast point in progress, and the two cursors. The status effects page says what each status blocks in a line; this page says it for every pair, and where the two disagree this page wins.
 
 The matrix is data in `src/content/statuses/disable-matrix.ts`, which mirrors the table in [section 3](#3-the-matrix) cell for cell. Its rows run in the order [section 2.4](#24-two-statuses-at-once) chooses a refusal's reason by, stun and lift first, where the table here keeps lift beside the other rows that move a unit. One test per cell holds the two together, so a changed cell is a change to both.
 
@@ -50,8 +50,8 @@ The twelve key, order, item, and pick up columns answer refused, allowed, or can
 | Attack-target | An attack on one unit, by right click on an enemy, or an enemy's attack on the hero |
 | Attack-move | A move that attacks whatever it acquires on the way |
 | Stop | S: clear the order and cancel a cast point that has not finished |
-| Items | Equipping, unequipping, moving, and dropping an item, and the store's commands: none of them is an action of the unit's body (15) |
-| Pick up | The hero's walk to an item on the ground, by right click on its icon or its label, and the take at the end of it. A walk, so it answers as Move in every row (16) |
+| Items | Every item command, `equip_item`, `unequip_item`, `move_item`, and `drop_item`, and every store command, `open_store`, `close_store`, `buy_item`, and `sell_item`: one column, since none of them is an action of the unit's body (15) |
+| Pick up | `pick_up`: the hero's walk to an item on the ground, by right click on its icon or its label, and the take at the end of it. A walk, so it answers as Move in every row (16) |
 | Cast point in progress | A cast already under way when the status lands: turning to face, walking into range, or in its cast point. A cast past its cast point is committed, and no status reaches it |
 | Targeting cursor open | The hero's cursor for a targeted spell in D or F, including a press held on a spell aimed by press and drag |
 | Attack-move cursor open | The hero's cursor after A, waiting for the left click |

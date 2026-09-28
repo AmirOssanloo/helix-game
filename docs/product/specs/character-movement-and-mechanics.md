@@ -48,7 +48,7 @@ The engineering goal is that the character faces the direction of a move command
 - Shift-queue and any other order queue. The unit holds at most one current order.
 - Follow (right-click ally) and hold position.
 - Multiplayer, spectating, lockstep, client-side prediction against a remote server, and lag compensation.
-- Item inventory, shop, and talent trees as content, except where they would change orb count, orb level, or slot count.
+- Item inventory, store, and talent trees as content, except where they would change orb count, orb level, or slot count.
 - Team vision, fog of war as a networking problem, and map geometry except as they constrain pathing.
 
 ---

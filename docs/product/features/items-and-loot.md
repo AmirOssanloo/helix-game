@@ -8,7 +8,7 @@ Enemies drop gold, health globes, mana globes, and items. The hero takes gold an
 
 ## Drops
 
-When an enemy dies, it rolls its tier's drop table: gold, a health globe, a mana globe, each by its chance, and items by their rarity weights. An elite always drops an item, and a boss always drops one Rare or better and one more. An add drops nothing. Three bosses on the long road each also drop their own Legendary piece, at a low rate; no other enemy drops a Legendary.
+When an enemy dies, it rolls its tier's loot table: gold, a health globe, a mana globe, each by its chance, and items by their rarity weights. An elite always drops an item, and a boss always drops one Rare or better and one more. An add drops nothing. Three bosses on the long road each also drop their own Legendary piece, at a low rate; no other enemy drops a Legendary.
 
 - **The roll is on a draw of its own.** A drop never changes a fight, and a replay of the same session drops the same things in the same places.
 - **Rarity and affixes.** An item drops in one of seven rarities, Common to Mythical by its roll's weights, or Legendary only as a named boss's piece. It rolls as many affixes as its rarity gives, none to five, never two on one stat, each value in its range; a Legendary rolls nothing and carries its piece's fixed stats. Its label and icon are drawn in its rarity's tint.
@@ -26,9 +26,9 @@ Gold and globes are taken the moment the hero's disc comes within the pickup rad
 
 ## Picking up an item
 
-An item is never taken by walking. A right click on an item's icon or its label sends the **pick up** order: the hero walks to it as a move does and takes it into the inventory on arrival, at the first place it fits. A right click anywhere else is a move, as always.
+An item is never taken by walking. A right click on an item's icon or its label sends the **pick up** order: the hero walks to it as a move does and takes it into the inventory on arrival, at the first place it fits. A right click on gold or a globe, its label or its icon, is a move to it, where it is taken as it is by any walk. A right click anywhere else is a move, as always.
 
-Where an item and a unit overlap, what is drawn on top wins: a label picks up its item; under it, an enemy is attacked; under that, an item's icon picks it up; then the ground is a move. Holding Alt shows every label, so an item under an enemy can always be reached by its label.
+Where an item and a unit overlap, what is drawn on top wins: a label picks up its item; under it, a unit, where an enemy is attacked and any other unit takes the click with nothing sent; under that, an item's icon picks it up; then the ground is a move. Holding Alt shows every label, so an item under an enemy can always be reached by its label.
 
 A pick up is a walk, and the [disable matrix](../specs/disable-matrix.md) answers it as a move: a stun or a root ends one under way and refuses a new one, a knockback carries the hero and the walk goes on, and a lift puts it aside until the hero lands. A new order replaces a pick up as it replaces any order. An item taken or gone by the time the hero arrives ends the order, and so does a walk that ends out of reach of the item. The item comes into the inventory the moment the hero is within the pickup radius of it, the same reach as gold and globes.
 
@@ -62,13 +62,13 @@ A worn item adds its implicit stat and its affixes to the hero's stats on the ti
 
 ## The store
 
-A store stands at every checkpoint. A left click on the checkpoint ring the hero stands in opens it; a click on a ring the hero is not in keeps its usual meaning. The store opens on the left of the screen with the inventory beside it on the right, as Diablo II's store does, and shows gold.
+A store stands at every checkpoint. A left click on the checkpoint ring the hero stands in opens it; a click on a ring the hero is not in keeps its usual meaning, and a click by a dead hero, or on the ring of the store already open, sends nothing. The store opens on the left of the screen with the inventory beside it on the right, as Diablo II's store does, and shows gold.
 
-- **Three tabs:** Armour, Weapons, and Misc, the last holding amulets, rings, and the active items. A click on a tab shows it; the store opens on Armour. Each tab is a grid of its items' icons in their rarity's tint, at their size.
-- **Stock:** 12 items from Common to Rare, rolled the first time that checkpoint's store opens, at the hero's level on that tick, and never restocked.
+- **Three tabs:** Armour, Weapons, and Misc, the last holding amulets, rings, and the active items. A click on a tab shows it; the store opens on Armour. Each tab is a grid of its items' icons in their rarity's tint, at their size, one whose level requirement is above the hero's level backed in red.
+- **Stock:** 12 items from Common to Rare, rolled the first time that checkpoint's store opens, at the hero's level on that tick, and never restocked while the map stays loaded.
 - **Buying:** a left click on a stocked item buys it for its price, into the inventory where it fits. The pointer over it shows the price in its tooltip.
 - **Selling:** a right click on an inventory item sells it for a quarter of its price (`store_sell_fraction`), rounded down. The pointer over it shows the sell price in its tooltip.
-- **Closing:** Esc, or the hero leaving the ring or dying. The inventory stays open until it is closed itself. The world keeps running while the store is open.
+- **Closing:** Esc, or the hero leaving the ring or dying. Esc closes the store first and a second Esc the inventory; the inventory stays open until it is closed itself. The world keeps running while the store is open.
 
 ## States and edge cases
 
@@ -84,7 +84,7 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 | A command sent while the hero is dead | Every inventory, armory, and store command is refused while the hero is dead; under every disable, it is taken |
 | Not enough gold | The buy is refused and the item flashes in the store |
 | The store opened away from a ring | Refused; only the ring the hero stands in opens a store |
-| A map loaded or reset | Every ground item is gone. The inventory, the armory, and gold are run scope and are kept |
+| A map loaded or reset | Every ground item is gone, and every store is emptied, closed, and stocked afresh the next time it opens. The inventory, the armory, and gold are run scope and are kept |
 | More on the ground than the map holds | A drop with no room, past the limit of ground items on a map or with no free spot near where the enemy died, is not made, and the developer panel counts it; nothing already on the ground is removed. A death's drops are made best first, so a globe goes without before an item, and a Legendary last of all. The limit holds at least two full clears of the long road with nothing taken |
 | The page reloaded | The inventory is lost with the session: there are no saves |
 | Active items | Listed in the store's Misc tab once they are usable; they never drop |
@@ -102,7 +102,7 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 
 ## Related documentation
 
-- [Item catalogue](../specs/item-catalogue.md) — every slot, base, rarity, affix, drop table, and price, and the economy of the long road
+- [Item catalogue](../specs/item-catalogue.md) — every slot, base, rarity, affix, loot table, and price, and the economy of the long road
 - [Hero](./hero.md) — the stats a worn item joins
 - [Controls and orders](./controls-and-orders.md) — the right click, the pointer, and the keys
 - [Map and camera](./map-and-camera.md) — the checkpoints a store stands at, and the map level

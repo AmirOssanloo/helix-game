@@ -53,25 +53,25 @@ const foo = modifiedValue(fooBase, fooTable, "foo_stat")   // the table's rows f
 
 **The clock of an active item stays where [ADR 0003](./0003-layered-single-package-architecture.md) put cooldown clocks**, on the hero's unit, keyed by ability id. Moving an item touches no clock, so its cooldown survives any move with no rule for moves; two copies of one active item share one clock, and selling a cooling item and buying another does not reset it. If the bank's design wants a clock per copy, that clock is one field on the instance and is copied with the rest.
 
-**What the equipment ticket builds.** The armory's totals record and its rewrite on equip and unequip, the copy at the start of the stats system, the totals reference on the modifier table and its addition in the one pipeline, and magic damage % read through that pipeline off the attacker. It adds no row, no source kind, and no capacity to the unit's table.
+**What wearing an item builds.** The armory's totals record and its rewrite on equip and unequip, the copy at the start of the stats system, the totals reference on the modifier table and its addition in the one pipeline, and magic damage % read through that pipeline off the attacker. It adds no row, no source kind, and no capacity to the unit's table.
 
 ## Consequences
 
 ### What this makes easy
 
-**An enemy never pays for the hero's gear.** The 512 slots of the unit pool keep their table at 22 rows whatever the hero wears, so the heap stays where the last measurement put it and the stats system's walk over 200 enemies does the same work it does today.
+**An enemy never pays for what the hero wears.** The 512 slots of the unit pool keep their table at 22 rows whatever the hero wears, so the heap stays where the last measurement put it and the stats system's walk over 200 enemies does the same work it does today.
 
 **An item means the same thing everywhere it goes.** A designer who retunes an affix's range changes what drops next, never what the player is holding. A bug report with an inventory in it reads the same on the next build as on this one.
 
 **A move is a copy, and a command names a place.** The inventory, the armory, the ground, and the bank are records made once with their owner; moving an item between them is a handful of field writes, and the input log reads "equip from cell 3, 1", which replays without any item id having to be minted the same way twice.
 
-**A stat reads one way for every unit.** Attack damage, magic damage, cooldown reduction, and movement speed each have one read, and the hero's gear is in it without a branch. A test of the pipeline hands a table any totals it likes.
+**A stat reads one way for every unit.** Attack damage, magic damage, cooldown reduction, and movement speed each have one read, and what the hero wears is in it without a branch. A test of the pipeline hands a table any totals it likes.
 
 **Forms stay one index.** The armory follows the form, as the product pages say, and a swap still changes the active index and nothing else; the stats system sees the new form's armory on the tick of the swap.
 
 ### What this makes hard
 
-**Two things sum into a stat, not one.** A reader who looks only at the rows of a table misses the gear. The pipeline is the one place that adds both, and a test holds every read to it, but a new read that walks the rows by hand is a bug this shape invites.
+**Two things sum into a stat, not one.** A reader who looks only at the rows of a table misses the worn items. The pipeline is the one place that adds both, and a test holds every read to it, but a new read that walks the rows by hand is a bug this shape invites.
 
 **An item's size is fixed by the catalogue.** The count of lines is a constant, so an item with more lines than the most the catalogue gives needs the constant raised, which grows every inventory, armory, and ground-item record at once. It is small, and it is not free.
 

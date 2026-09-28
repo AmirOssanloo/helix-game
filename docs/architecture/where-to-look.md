@@ -38,7 +38,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a pack is placed, from the panel or a map, and when a map's pack wakes or sleeps | `src/domain/ai/packs.ts` — the one door a pack enters by, and the wake and sleep rule the AI pass ends with |
 | The walkability grid a unit is placed and paths on, what a map load resets, and when a checkpoint is reached | `src/domain/map/` — the grid and its radius classes, the map-scope reset, and the checkpoint rule |
 | How a unit attacks: which attack it swings, what it reaches, whom it acquires, and the stages of a swing | `src/domain/attack/` — the attack rule, the acquire, and the attack system |
-| What a death drops, how it is rolled and where it lands, and how gold, globes, and a picked-up item are taken | `src/domain/loot/` — the roll, the placement and its refusal, and the pickup system |
+| What a death drops, how it is rolled and where it lands, and how gold, globes, and a picked-up item are taken | `src/domain/loot/` — the drop on death, the roll and its item and affix rolls, the placement and its refusal, and the pickup system |
+| How a pick up order walks to a ground item, and what ends it | `src/domain/orders/pick-up-transitions.ts` — the walk and its end; the take on arrival is the pickup system under `src/domain/loot/` |
 | How an item is made, held on the grid, worn, and priced, and how a place is encoded | `src/domain/items/` — the item value, the inventory and its fit test, the armory and its totals, the item commands, the prices, and the place encoding |
 | How a store is stocked, opened, closed, and traded with | `src/domain/store/` — the store records, the stock roll, the store commands, and the store system |
 | What a ground item holds, and how many there can be | `src/domain/entities/ground-item.ts` — the capacity at the top |
@@ -55,7 +56,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | The orb buffer, the composer, the prepared slots, the Invoke rule, and the orb passives | `src/domain/invoke/` — one file per rule |
 | The order state machine, and which disable blocks what | `src/domain/orders/` — the state machine's files, one per family of transitions, the validator beside them, and the matrix lookup. The matrix itself is data, in `src/content/statuses/disable-matrix.ts` |
 | How a consumed command reaches run scope or the hero | The command system under `src/domain/orders/` — the first entry in the system list |
-| What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union |
+| What each debug command does to the world, and what it refuses | `src/domain/debug/` — one handler over the debug union, with the item and gold grants in a file of their own beside it |
 | How damage lands, what a hit's statuses do about it, how a unit dies and respawns, and the experience an enemy's death grants | `src/domain/combat/` — the damage rule, the damage hooks, and the death system; where the hero comes back is the spawn point the checkpoint rule under `src/domain/map/` moves |
 | How a status is applied, expires, and becomes a disable flag, and how a unit takes the statuses its definition carries at spawn | `src/domain/statuses/` — the status rule, the status system, and the carried statuses |
 | Which derived values a unit carries, the modifier stat that changes each, the attribute that drives each on a form, and the base a definition gives each | The key list in `src/domain/definitions/stat-keys.ts`, one entry per value |
@@ -76,8 +77,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a world point becomes a screen point, and the scale the ground is drawn at | `src/presentation/camera/projection.ts` — the projection and its scale constant |
 | What is drawn on the ground and what stands up | `src/presentation/scenes/play.scene.ts` — the ground layer's factory and the scene's own; `play-view-syncers.ts` says which pool takes which; the ground layer is `src/presentation/camera/ground-layer.ts` |
 | How the floor is laid | `src/presentation/views/floor.view.ts` — the tiles and the void around the bounds; the floor frame is in the content frame list, and its image is `assets/floor.png` |
-| The depth bands | The depth constants in `src/presentation/views/` |
-| Which views exist | `src/presentation/views/` — one file per view, each named `*.view.ts`, plus the feedback a hit raises |
+| The depth bands | `src/presentation/views/depth-bands.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
+| Which views exist | `src/presentation/views/` — one file per view, each named `*.view.ts`; beside them the feedback a hit raises, the refusal flashes, the pool and quad helpers the views share, and the depth bands and view counts |
 | What the HUD draws | `src/presentation/hud/` — the layout, and one view per part; `src/presentation/scenes/hud.scene.ts` binds them |
 | How the shape atlas is baked from the frame list | `src/presentation/atlas/` — the layout, the painter, and the atlas |
 | How draw calls are counted | `src/presentation/render/draw-call-counter.ts` |
@@ -85,11 +86,16 @@ Every other architecture page says how code must be shaped. This one says where 
 | What the camera shows this frame, as the views bind by it | `src/presentation/camera/camera-frame.ts` — the widened screen, the world box the hash is asked, and the screen margin |
 | How input becomes commands | `src/presentation/input/` |
 | Whose a click or a key is, a screen's, the bar's, or the world's | `src/presentation/input/input-claim.ts` — the input claim; the play scene's binding asks it in `bind-scene-input.ts` |
+| How a ground item is drawn, and how its label is shown, moved apart from others, and flashed on a refusal | `src/presentation/views/ground-item.view.ts` and `ground-item-label.view.ts`, the refusal flashes in `item-flashes.ts` beside them; the two steps that make them are `src/presentation/scenes/ground-item-syncers.ts` |
 | What a right click can name on the ground | The pick port in `src/presentation/input/input-ports.ts` — the labels and icons the ground-item views write each frame |
-| Which screens exist | `src/presentation/screens/` — one file per screen, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
+| Which screens exist | `src/presentation/screens/` — one module per screen, with its layout and the parts it is built from beside it, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
+| How an item is lifted and set down on the grid, and how a refused item command flashes on a screen | `src/presentation/screens/inventory-lift.ts` and `inventory-flashes.ts` |
+| What an item's tooltip shows, and what it is over | `src/presentation/screens/tooltip.ts` and `tooltip-text.ts`; `store-follow.ts` beside them picks the price line and ties the store screen to the world's store |
+| Which click opens a store | `src/presentation/input/store-ring.ts` — a left click on the checkpoint ring the hero stands in |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |
 | What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |
+| How the panel previews a loot table | `src/devtools/loot-preview.ts` — the rolls it makes through the queries door and what it counts |
 | What a feedback file holds, how it is written and read, and the note the feedback key opens | `src/devtools/feedback-file.ts` and `src/devtools/feedback-note.ts` |
 | How a build knows its commit, and whether its tree was dirty | `src/app/build-stamp.ts`; the stamp is defined in `vite.config.ts` and declared in `src/app/build-flags.d.ts` |
 | Which debug overlays exist | The overlay toggles under `src/presentation/overlays/` — one flag per overlay, and one file per overlay beside them |

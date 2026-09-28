@@ -44,7 +44,7 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 | Layer | docs |
 | Size | 0.5 |
 | Depends on | every bucket ticket |
-| Status | planned |
+| Status | done |
 
 **Build:** the world model's ground item and run-scope rows, the where-to-look pointers for items, loot, the inventory, the store, and the screens, the feature pages (items and loot, hero, HUD, enemies, spells and attack, controls and orders, map and camera, developer panel), the vocabulary, the disable matrix's new columns for the armory commands and `pick_up`, the long road spec's packs, budget, and map level, and the item catalogue against its files and against any number the bucket moved, each read against the build and corrected.
 
@@ -55,6 +55,8 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 
 **Definition of done:** Every change · A documentation change.
 
+> **Closed, 2026-09-28:** `pnpm check` green, 5329 tests passed and 8 skipped, the docs-links test over the repository among them. No bucket ticket exists (Q118), so the dependency held. Every page the build names was read against the build and corrected. The world model now says a load or reset also removes every ground item and leaves every store unstocked and closed, and names `stat-totals.ts`. Every path in where to look resolves; the depth bands, screens, views, loot, and debug rows were sharpened, and rows were added for the pick up order, the ground item views and labels, lifting an item, the tooltip, the store's ring, and the loot preview. The feature pages gained gold and globes on the hero, the inventory and store screens on the HUD, loot by tier on enemies, worn items in the attack, the store's ring, Alt, and the Esc order in the controls, map scope's ground items and stores on the map, and every panel control under its real label. The disable matrix names the eight item and store commands its one Items column covers and `pick_up` its Pick up column; the build has one column for all eight, not one each, so the page follows the data. The long road spec was recomputed from the map file and matched, with the store's stock at the hero's level and the Legendary bosses named. Every number of the item catalogue matched its file and the balance spec's print, so none moved; no bucket moved one. The vocabulary gained implicit stat, loot, drop, tooltip, stock, and value, price, and sell price, and "drop table", "shop", "bag", "gear", and "equipment" were swept from the pages, decision records 0011 and 0014, the roadmap, and the mechanics spec. The tooltip's REQUIRED LEVEL line against the vocabulary's **Level requirement** went to [Q119](../backlog/open-questions.md), decided provisionally: the build stands. Also not moved: `pause-screen.ts` is named unlike `inventory.screen.ts` and `store.screen.ts`, a code rename left for a code ticket; where to look says one module per screen, which holds for both.
+
 ---
 
 ## Sprint exit
@@ -63,5 +65,5 @@ The long road with loot and the store, as the maintainer's feedback left it. Mil
 | --- | --- |
 | The gate walk | |
 | Milestone M13 | |
-| Actual days per ticket | |
+| Actual days per ticket | T02: 0.5, sized 0.5 |
 | Sprint total | |

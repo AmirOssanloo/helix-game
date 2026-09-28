@@ -4,7 +4,7 @@
 
 ## Overview
 
-Everything the player reads during a fight: the bars, the orbs, the ability squares, floating damage numbers, the checkpoint word, status icons, and the targeting preview. The HUD reads the simulation and never changes it. Everything on it is drawn from the same atlas of flat shapes as the world.
+Everything the player reads during a fight: the bars, the orbs, the ability squares, floating damage numbers, the checkpoint word, status icons, the targeting preview, item labels and tooltips, and the screens drawn over it all. The HUD reads the simulation and never changes it. Everything on it is drawn from the same atlas of flat shapes as the world.
 
 ## The bottom bar
 
@@ -25,6 +25,10 @@ D and F show the prepared spell's colour and a short label. Empty slots show an 
 ## The pause screen
 
 Escape, with no targeting cursor open and no screen to close, opens the pause screen: a dark shade over the whole canvas, a panel in the middle reading PAUSED, and one button, RESUME. The world stops on the tick it stands on. While it is open no click and no key but Escape reaches the world. Escape or a click on RESUME closes it, and the world goes on from the same tick. [Controls and orders](./controls-and-orders.md) has the keys.
+
+## The inventory and the store
+
+I opens the inventory and closes it; a left click on the checkpoint ring the hero stands in opens the store, with the inventory beside it. Both are screens, drawn over the bar like the pause screen, and unlike it they leave the world running. Gold is shown on each, never on the bar. The pointer over an item on a screen, or over an item's label on the ground where no screen or the bar covers it, shows the item's tooltip over everything, and an item lifted onto the pointer draws there too. What each screen does is in [Items and loot](./items-and-loot.md#the-inventory-and-armory).
 
 ## Around the hero
 
@@ -63,6 +67,8 @@ Flat colour, no gradients, no textures, no animation. Every shape is a tinted qu
 | Item labels | Bitmap text of the item's name, gold's amount, standing above it; Rare and better by default, every one while Alt is held, moved apart so none overlap | The item's rarity; gold for gold |
 | Overlays, in a build with the panel | The same shapes at low alpha | One per overlay |
 | Pause screen | A shade over the canvas, a panel, and a button | Black shade, dark grey panel, white words |
+| Inventory and store | A panel of cells, the armory's slots, and each item as its slot's silhouette | The item's rarity; gold's line in gold |
+| Tooltip | A dark box of bitmap text lines | The name in its rarity, the rest pale grey, an unmet requirement red, a price gold |
 
 ## Depth order
 
@@ -77,7 +83,7 @@ From the bottom up, so a projectile is never hidden by the ground it flies over:
 7. Item labels
 8. Floating text and status icons
 9. Overlays
-10. The bottom bar, then screens such as the pause screen, over everything
+10. The bottom bar, then screens such as the inventory, the store, and the pause screen, then a tooltip or a lifted item, over everything
 
 There is no sorting by vertical position: everything lies flat on the floor and nothing is tall, so nothing can stand in front of what is behind it. Tall sprite art changes that; [ADR 0006](../../adr/0006-isometric-view-over-a-square-world.md) says what it adds.
 
@@ -102,8 +108,7 @@ There is no sorting by vertical position: everything lies flat on the floor and 
 
 - **A second kit's layout.** The six squares are filled from whatever kit the hero's active form uses; today that is only Invoke. A hotbar form fills the same six squares from its ability list and hides the orb display.
 - **Minimap.** The arena is small enough to learn by walking it, and the long road runs one way.
-- **Item slots, inventory, and equipment.** They are a screen opened over the world, not part of the HUD: [Items and loot](./items-and-loot.md#the-inventory-and-armory).
-- **Tooltips** on hover for spells and statuses. Items have theirs, on the [inventory screen](./items-and-loot.md#the-inventory-and-armory).
+- **Tooltips** on hover for spells and statuses. Items have theirs, on a screen or a ground label ([Items and loot](./items-and-loot.md#the-inventory-and-armory)).
 - **Sound cues.** No audio.
 - **Crit styling** for damage numbers. Nothing crits yet.
 - **Animated art.** Shapes only until the sprite atlas arrives.

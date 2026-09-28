@@ -110,11 +110,11 @@ Every row is measured by an agent: the tick, the stress tests, and determinism h
 **Goal:** enemies on the long road drop what the hero needs, so the road is finished without the developer panel's heal and mana.
 
 - The long road grows to the density of the classic loot-driven games: normal packs of three to six, elite packs of two or three, about a hundred to a hundred and thirty enemies, most of the hero's experience from normal enemies, and the last boss's kill at about level 11 to 13. A crowd presses the hero far less than before. Every map has a level, the long road one level for its whole length, and an item dropped on it takes that level.
-- Enemies drop gold, health globes, mana globes, and equipment on the ground; an elite drops more and a boss something Rare or better, never at a higher item level. Drops roll on a draw of their own, so a drop never changes a fight's outcome and a replay drops the same things.
+- Enemies drop gold, health globes, mana globes, and items on the ground; an elite drops more and a boss something Rare or better, never at a higher item level. Drops roll on a draw of their own, so a drop never changes a fight's outcome and a replay drops the same things.
 - The hero takes gold and globes by walking over or past them, and picks up an item by right-clicking it. Ground items carry labels in their rarity's colour; Alt shows every label.
 - Ten armory slots, about twenty one-handed bases, seven rarities from Common to Legendary with rolled affixes, Legendary pieces dropped only by named bosses, a level requirement from an item's parts, and magic damage %, which amplifies all magical damage the hero deals.
 - An inventory of ten by four cells in which an item takes as many cells as its size, and an armory screen, the game's first, and tooltips.
-- A store at each checkpoint, opened by standing on its ring and clicking it, laid out as a classic vendor with Armour, Weapons, and Misc tabs, that sells equipment at the hero's level and buys items for gold.
+- A store at each checkpoint, opened by standing on its ring and clicking it, laid out as the classic games' store with Armour, Weapons, and Misc tabs, that sells items at the hero's level and buys items for gold.
 
 **Done when** the hero walks the long road from level 1 to the last boss's kill with no heal or mana from the panel, every kind of drop appears and is taken, gold and globes by walking and items by a right click, a worn item changes the hero's derived stats, the store buys and sells at a checkpoint, a recorded session with loot replays identically, the frame budget holds with drops on the ground, and the maintainer has played it and filed feedback.
 
@@ -160,7 +160,7 @@ Recorded so that no decision inside the phases closes them. Each page named owns
 | [Enemy catalogue](./specs/enemy-catalogue.md) | Archetypes, the roster, tiers, abilities | Phases 3 and 5 |
 | Disable matrix | Every status against Q, W, E, R, D, F, movement, and attack | Phase 5 |
 | The long road | Its regions, packs, checkpoints, and experience budget | Phase 6 |
-| [Item catalogue](./specs/item-catalogue.md) | Armory slots, bases, rarities, affixes, drop tables, the store, and the economy on the long road; later the active items | Phases 8 and 9 |
+| [Item catalogue](./specs/item-catalogue.md) | Armory slots, bases, rarities, affixes, loot tables, the store, and the economy on the long road; later the active items | Phases 8 and 9 |
 
 ---
 

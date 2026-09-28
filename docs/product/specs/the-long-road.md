@@ -28,7 +28,7 @@ This page fixes the map as data: the bounds, the regions, one row per pack, ever
 
 | Property | Value |
 |---|---|
-| Map level | 3, one for the whole road: a map is not split into regions by level. The road takes the hero from level 1 to about 12, as Diablo I's Cathedral, dungeon levels 1 to 4, does, and 3 sits in that band, so the catalogue's lower bases and affixes drop and are worn early. A base or an affix above level 3 is reached on the road only by the [developer panel](../features/developer-panel.md)'s map level, which is how item-level gating is tested here. No enemy stat reads it |
+| Map level | 3, one for the whole road: a map is not split into regions by level. The road takes the hero from level 1 to about 12, as Diablo I's Cathedral, dungeon levels 1 to 4, does, and 3 sits in that band, so the catalogue's lower bases and affixes drop and are worn early. A base or an affix above level 3 drops on the road only under the [developer panel](../features/developer-panel.md)'s map level, which is how item-level gating is tested here; a store's stock is made at the hero's level, not the map's. No enemy stat reads it |
 | Bounds | 4000 by 24000 world units, `minX 0`, `minY 0`, `maxX 4000`, `maxY 24000`, walled on every side |
 | Direction | Along the long axis: the spawn at low `y`, the last boss at high `y` |
 | On screen | The square world is drawn as the [isometric view](../../adr/0006-isometric-view-over-a-square-world.md) draws every map, so a strip along `y` runs diagonally across the screen, from upper right to lower left. That is the road's look, not a mistake |
@@ -123,7 +123,7 @@ The experience column is the archetype's experience from the catalogue, times th
 
 A hundred and four enemies, so loot has volume, and most of the experience is theirs: the normal packs pay 4747 of the 7931 a full clear pays, 60%, and the five bosses at five times their archetype's experience 1570, 20%. The budget decides the number. Region 5 holds the most because its level is the dearest; more packs anywhere else means a hero past its region's two levels before the region's boss.
 
-**The Legendary bosses.** Three boss packs each drop one of the three Legendary pieces, at a low rate, and no other enemy drops a Legendary: pack 14, the boss frost raider closing region 2; pack 28, the boss troll closing region 4; and pack 37, the last boss. They are the first, second, and third Legendary pieces in the order the item catalogue lists them, so one piece can fall early in a run, one late, and one at its end.
+**The Legendary bosses.** Three boss packs each name one of the three [Legendary pieces](./item-catalogue.md#6-the-legendary-pieces) and drop it at a low rate, and no other enemy drops a Legendary: pack 14, the boss frost raider closing region 2, drops Rimecoil; pack 28, the boss troll closing region 4, Trollhide; and pack 37, the last boss, Hallcrown. So one piece can fall early in a run, one late, and one at its end.
 
 ---
 
@@ -149,7 +149,7 @@ Inside a region, blocks break up the open ground so the road is not a straight l
 
 ## 6. The checkpoints
 
-A checkpoint is a point on the road the hero comes back to after dying. The furthest one reached is where it comes back; walking back to an earlier one changes nothing. There is one at the spawn, one at each region's entrance, and one before the last boss, in order along the road. Each stands on open ground, walkable for every radius class, and more than 1000 units from every pack.
+A checkpoint is a point on the road the hero comes back to after dying. The furthest one reached is where it comes back; walking back to an earlier one changes nothing. There is one at the spawn, one at each region's entrance, and one before the last boss, in order along the road. Each has its own store, opened from its ring, as the [items and loot page](../features/items-and-loot.md) says. Each stands on open ground, walkable for every radius class, and more than 1000 units from every pack.
 
 | # | Where | `x` | `y` | Nearest pack |
 |---|---|---|---|---|

@@ -25,7 +25,7 @@ An entity is a pooled runtime thing with an id. Every entity that carries rules 
 
 Hero, enemy, and summon are one unit pool with a kind tag, not three pools. Movement, collision, statuses, and death treat every unit alike; what differs is who drives it.
 
-Some files beside the unit in `domain/entities` are parts of it, not kinds: its attack, its cast, its AI machine, its pack, and what ties a summon to its owner, each a sub-record the unit holds, with no pool of its own. The world's scratch sits there too, and is working memory, not an entity.
+Some files beside the unit in `domain/entities` are parts of it, not kinds: its attack, its cast, its AI machine, its pack, and what ties a summon to its owner, each a sub-record the unit holds, with no pool of its own. The world's scratch sits there too, and is working memory, not an entity. So does the shape of the per-stat totals the hero's items add, which the armory and the hero's item totals below are made of.
 
 ---
 
@@ -84,7 +84,7 @@ The tuning table becomes state: the world copies it at creation so a tuning comm
 - An enemy's death rolls the loot table its tier names, at the map level, unless the enemy has an owner: an add drops nothing. A boss whose pack record names a Legendary piece rolls that piece too; a pack the panel spawns has no record, so its boss drops none.
 - A ground item holds an item by value, never a reference into the inventory. A pick up order names the ground item by its id; a stale id ends the order. A command that moves an item names a place in a held record, never the item.
 - The map level is map scope, read from the definition on every load. A `set_map_level` debug command sets another for the rest of the map's stay; a reset keeps it and the next load reads the definition's again. It drives only loot, an item's level among it; no enemy stat reads it.
-- The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it, gives the hero the map's spawn point back, and makes every pack of the map whole again. The hero's death clears neither: the hero comes back at the furthest checkpoint, and a killed pack stays dead.
+- The furthest checkpoint reached is map scope, and the hero's spawn point follows it. A load or a reset clears it, gives the hero the map's spawn point back, makes every pack of the map whole again, takes every ground item away, and leaves every store unstocked and closed. The hero's death clears neither: the hero comes back at the furthest checkpoint, and a killed pack stays dead.
 
 ---
 

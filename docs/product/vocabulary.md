@@ -17,25 +17,31 @@ When two people call the same thing different names, the names leak into the cod
 | One shape the hero can take: its body, kit, resources, and armory | **Form** (the hero has an active form) | Character, class, stance, mode |
 | What the six slot keys mean for a form: Invoke for the caster, a plain hotbar for another | **Kit** | Loadout, spellbook, ability set |
 | The caster kit: three orbs, the Invoke composer, two slots | **Skein** | Any other name for the caster's kit |
-| Per-form equipment that modifies stats | **Armory** | Inventory (that is the shared item bag), gear |
+| Per-form set of armory slots whose worn items modify stats | **Armory** | Inventory (that is the shared grid of items), equipment, gear |
 | One of the ten places in the armory an item is worn in: helm, amulet, armour, main hand, off-hand, gloves, belt, boots, and two rings | **Armory slot**, always with the word armory; the Armour slot is `body` in code | Slot (that is D or F), equipment slot, socket |
 | The grid of 10 by 4 cells the hero carries items in, shared by every form, in run scope | **Inventory** | Bag, backpack, stash |
 | One thing the hero can carry, wear, drop, buy, or sell: a base at a rarity with its rolled values | **Item** | Gear, equipment, loot (that is what drops, all of it), object |
 | What an item is before its rarity: its armory slot, size in cells, quality level, requirement, implicit stat, and value | **Base** | Item type, template, blueprint |
+| The one stat line a base gives every item made on it, rolled within the base's range | **Implicit stat** | Base stat, inherent, affix (that is beyond the base) |
 | One stat line an item rolls beyond its base's implicit stat | **Affix** | Mod, modifier (that is a row of the stat pipeline), property, enchantment |
 | Common, Uncommon, Rare, Epic, Imperial, Mythical, Legendary: how many affixes an item rolls, and its tint | **Rarity** | Quality (that is a base's level), tier (that is an enemy's), grade |
 | The level an item is made at, which gates its base and affixes: the map's level for a drop, the hero's for the store's stock | **Item level** | Drop level, ilvl |
 | The lowest item level at which a base drops or is stocked | **Quality level** | Base level, tier |
 | The lowest item level at which an affix rolls | **Affix level** | Mod level, affix tier |
-| The hero level an item needs to be worn: the highest of its base's and its affixes' | **Level requirement** | Required level, item level (that is where it was made) |
+| The hero level an item needs to be worn: the highest of its base's and its affixes' | **Level requirement** (the tooltip's line reads REQUIRED LEVEL, Diablo II's words on screen) | Required level anywhere else, item level (that is where it was made) |
 | One Legendary item with a fixed identity: a base with fixed stat lines, dropped only by the boss whose pack names it | **Legendary piece** | Unique, artifact, set item |
-| What an enemy tier drops, or what a store stocks: the chances of gold, each globe, and each item, and the weight of each rarity | **Loot table** | Treasure class, loot list |
+| What an enemy tier drops, or what a store stocks: the chances of gold, each globe, and each item, and the weight of each rarity | **Loot table** | Drop table, treasure class, loot list |
+| Everything deaths put on the ground, gold, globes, and items, taken as a whole | **Loot** | Treasure, spoils |
+| To put a ground item on a map, a death's roll or the hero from the inventory; as a noun, one ground item a death made | **Drop** | Spawn (that is a unit's), loot (that is all of it) |
 | The one currency, a number the hero holds, never an item | **Gold** | Money, coins, currency |
 | A drop that restores a quarter of its pool, taken by walking over or past it | **Health globe**, **mana globe** | Potion, orb (that is Quartz, Whorl, or Ember), heart |
-| Gold, a globe, or an item lying on a map | **Ground item** | Drop (that is the verb), loot pile, pickup |
+| Gold, a globe, or an item lying on a map | **Ground item** | Drop (that is how it got there), loot pile, pickup |
 | The name drawn over a ground item in its rarity's tint | **Label** | Nameplate, tag, tooltip (that is the screen's) |
+| The box beside the pointer over an item, on a screen or a label: its name, rarity, base, item level, level requirement, stat lines, and price while the store is open | **Tooltip** | Popup, hover card, label (that is the ground's) |
 | The order that walks the hero to an item and takes it; gold and globes are taken by walking, with no order | **Pick up** (`pick_up` in code) | Loot, grab, collect |
 | Where the hero buys and sells items, opened from a checkpoint's ring | **Store** | Shop, vendor, merchant, town |
+| The items one checkpoint's store holds for sale, rolled the first time it opens and never restocked | **Stock** | Wares, goods, inventory (that is the hero's) |
+| A base's worth in gold; what the store asks for an item, its value times its rarity's price multiplier; and what it pays, a quarter of that | **Value**, **price**, **sell price** | Cost, buy price, sell value |
 | An item with a power the hero uses through the cast pipeline; using it is to **activate** it | **Active item** | Usable, consumable, item active, use (that is in the "not" column of throw) |
 | The game | **Helix** | Skein (that is the hero's kit, not the product) |
 | Any actor in the world, friendly or hostile | **Unit** | Actor, mob, creature, entity as a game word |
@@ -85,7 +91,7 @@ When two people call the same thing different names, the names leak into the cod
 | How many touching units stand between a unit and the hero: the hero zero, a unit touching it one, a unit touching that one two | **Contact rank** | Depth, layer, row |
 | A number design may change without code | **Tunable** | Constant, setting, config value |
 | The playable space with its grid and obstacles | **Map** | Level, stage, scene (scene is Phaser's word) |
-| How deep a map is in the descent, which an item's level is read from and nothing else | **Map level** | Area level, dungeon level, depth, difficulty |
+| How deep a map is in the descent, which a drop's item level is read from and nothing else | **Map level** | Area level, dungeon level, depth, difficulty |
 | The hand-authored test map | **The arena** | Test level, sandbox |
 | The hand-authored playtest map the hero walks from level 1 | **The long road** | Campaign, the playtest map, level |
 | A stretch of a map between two chokes, or between a choke and the map's end, one step of its difficulty | **Region** | Zone (that is a spell's), area, biome, act |

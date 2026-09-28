@@ -16,28 +16,28 @@ Every action on the panel that changes the world is a command that goes through 
 
 | Control | Does |
 | --- | --- |
-| Apply damage | Deals the entered amount as a chosen damage type, through mitigation like any other hit |
-| Drain mana | Removes the entered amount of mana |
+| Damage, Type, Apply damage | Deals the entered amount as the chosen damage type, through mitigation like any other hit |
+| Mana, Drain mana | Removes the entered amount of mana |
 | Heal | Sets health to maximum |
 | Restore mana | Sets mana to maximum |
 | Level up | Grants one level, with its skill point |
-| Set orb levels | Sets Quartz, Whorl, and Ember to chosen levels, 0 to 7 |
-| Infinite mana | Casts never spend mana |
-| No cooldowns | Every cooldown reads as ready |
-| Apply status | Puts a chosen status on the hero for a chosen duration, as a row of its status table |
+| quartz, whorl, ember, Set orb levels | Sets Quartz, Whorl, and Ember to the levels entered, 0 to 7 |
+| Infinite mana | A toggle: casts never spend mana |
+| No cooldowns | A toggle: every cooldown reads as ready |
+| Status, Status seconds, Apply status | Puts the chosen status on the hero for the seconds entered, as a row of its status table |
 | Kill hero | Health to zero, to test death and respawn |
 | Checkpoint, Jump to checkpoint | Stands the hero on a checkpoint chosen from the current map's list, by its index from 0 in the map's order, with its order cleared. The list follows the map a person or a loaded log chooses. The checkpoint rule reads where the hero stands on the tick the jump lands: one further along than any reached becomes the furthest, and an earlier one changes nothing. A debug command, `jump_to_checkpoint`, in the log like the rest |
-| Begin channel | Puts the hero into the channeling state for a chosen duration, to test what interrupts a channel |
+| Channel seconds, Begin channel | Puts the hero into the channeling state for the seconds entered, to test what interrupts a channel |
 
 ### Tuning
 
-Every entry of the tuning table is a slider showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, the push-out passes and the hero's push share, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, halt, and hold numbers, and the packs' activation, sleep, and placement radii; the checkpoint reach radius; and the elite and boss health, damage, and experience multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
+Every entry of the tuning table is a slider labelled with its key and showing its value, one per entry, so a new tunable appears without a code change. Among them are the parameters the [mechanics spec](../specs/character-movement-and-mechanics.md) section 17 exposes, such as base movement speed, turn rate, turn ramp ticks, action cone, the collision and bound radii, the push-out passes and the hero's push share, simulation rate, orb capacity, prepared slots, the Invoke cooldown and mana, and Whorl's speed and cooldown reduction per instance; the respawn and corpse delays; the armour constant; the enemies' wander, re-path, halt, and hold numbers, and the packs' activation, sleep, and placement radii; the checkpoint reach radius; and the elite and boss health, damage, and experience multipliers. A number that belongs to one definition, such as a spell's cooldown, is under [Definitions](#definitions) instead. The feedback timings are sliders too: how long a hit flash and a refusal flash show, how far a damage number rises and over how long it fades, how many steps a cooldown wedge sweeps in, and how much of the distance to the hero the camera closes each frame. A flash or a number already showing keeps the length it began with; the next one takes the new value. Each reaches four times its default, so a number can be pushed well past sane. The simulation rate is fixed when the world is made, so its slider shows the value and moves nothing. A change applies on the next tick and is recorded in the input log.
 
 **Reset tunables** puts every slider a person moved back to its default, one command each, so the way back from a session of pushing numbers around is a click and is in the log like the rest.
 
 ### Definitions
 
-Every number of every hero, form, spell, enemy ability, status, enemy, summon, and loot table definition is a slider, generated from the registry, so a new definition's numbers appear without a code change. They are grouped in a folder per kind and one per definition, and a search box at the top opens every definition whose keys contain what is typed, showing only the matching sliders. A slider is labelled with its field path, "level n" for an entry of a level table, and its default in brackets, in the units the definition file writes: seconds, degrees, per second. A change reaches the next cast or the next spawn; a unit already standing keeps what it was spawned with. Colours are not sliders. **Reset definitions** puts every definition slider a person moved back, one command each.
+Every number of every hero, form, spell, enemy ability, status, enemy, summon, and loot table definition is a slider, generated from the registry, so a new definition's numbers appear without a code change. They are grouped in a folder per kind and one per definition, and a search box at the top, labelled **search**, opens every definition whose keys contain what is typed, showing only the matching sliders. A slider is labelled with its field path, "level n" for an entry of a level table, and its default in brackets, in the units the definition file writes: seconds, degrees, per second. A change reaches the next cast or the next spawn; a unit already standing keeps what it was spawned with. Colours are not sliders. **Reset definitions** puts every definition slider a person moved back, one command each.
 
 Each slider carries a tuning key, the name its command and the input log use for the number, and the search box matches it. `def:spell:hoarfrost:cooldownSeconds:2` is Hoarfrost's cooldown at level 3, labelled `cooldownSeconds level 3 (18)` in the Hoarfrost folder; `def:spell:hoarfrost:effects.0.seconds.byLevel:2` is how long the status it applies lasts at Quartz 3; `def:enemy:melee_grunt:health` is the grunt's health; `def:hero:hero:attack.damage` is the damage of the hero's attack. So typing `hoarfrost:cooldown` opens the seven cooldown sliders and nothing else. The format is owned by [Content and registries](../../architecture/content-and-registries.md#tunables).
 
@@ -45,7 +45,7 @@ Each slider carries a tuning key, the name its command and the input log use for
 
 | Control | Does |
 | --- | --- |
-| Pause | Stops the clock; the picture stays, and the button reads Resume until pressed again. Not a command: nothing in the world changes and nothing is logged |
+| Pause, or Resume | Stops the clock; the picture stays, and the button reads Resume until pressed again. Not a command: nothing in the world changes and nothing is logged |
 | Step | Runs exactly one tick while paused. Not a command, for the same reason |
 | Catch-up cap | How many ticks one frame may run after a stall; default 3. A driver setting, not a command |
 | Seed | The seed this session's world was created under, shown so a log can be named after it. Choosing another begins a new run under it on the map loaded now, hero and map made again and a new log begun: a driver operation, not a command |
@@ -53,7 +53,7 @@ Each slider carries a tuning key, the name its command and the input log use for
 | Map level | The loaded map's level, shown from the world and following each map load, which reads the new map's definition again. Typing a whole number of one or more sets it for the rest of the map's stay, a reset included, so item-level gating can be tested on any map. It drives only loot; no enemy's stats change. A debug command, `set_map_level`, in the log like the rest |
 | Save input log | Downloads the session's seed, the map it started on, and its commands, a map change among them |
 | Load input log | Replays a saved log from the start, on the map it was recorded on, whichever map the world runs now. A status line under the controls says what it is replaying and on which map, or why the log cannot run. It takes a feedback file too: the log inside replays, the world runs to the note's tick faster than it was played and pauses there, and the note is shown under **Note** |
-| Feedback, or F9 | Opens a note above the panel and pauses the world. **Save** downloads a [feedback file](../vocabulary.md): the note, the tick, the build stamp, the content version with and without the art, and the input log up to that tick. **Cancel** or Escape closes it unsaved. Either way the pause goes back to what it was. Not a command: feedback changes nothing in the world and nothing of it is in the log |
+| Feedback, or F9 | Opens a note above the panel, headed "Feedback: the world is paused while you write", and pauses the world. **Save** downloads a [feedback file](../vocabulary.md): the note, the tick, the build stamp, the content version with and without the art, and the input log up to that tick. **Cancel** or Escape closes it unsaved. Either way the pause goes back to what it was. Not a command: feedback changes nothing in the world and nothing of it is in the log |
 | Status | What the last log or feedback file loaded is replaying and on which map, or why it cannot run |
 | Note | The note of the last feedback file loaded, read-only; empty after a plain log is loaded |
 | Reset map | Reloads the current map; the hero keeps run scope, and stands at the map's spawn point with no checkpoint reached |
@@ -62,15 +62,28 @@ Each slider carries a tuning key, the name its command and the input log use for
 
 ### Enemies
 
-A dropdown of every archetype, read from the registry so a new one appears without a code change, a tier selector, a group size, and a spawn mode: at a world position, at a chosen distance in front of the hero, or at the pointer on click. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap, or with too few free cells within the `pack_placement_radius` tunable of the point, is refused whole. Plus clear all, which removes every unit but the hero without deaths, and kill all, which kills every enemy that can die, with experience; the training dummy stays standing.
+A spawn of one pack. The pack fills the free cells nearest the point it names, every member shares one pack id and leashes from the cell it landed on, and a spawn past the live cap, or with too few free cells within the `pack_placement_radius` tunable of the point, is refused whole.
+
+| Control | Does |
+| --- | --- |
+| Archetype, Tier, Group size | What each spawn below makes: an archetype, read from the registry so a new one appears without a code change, a tier, and how many |
+| X, Y, Spawn at point | Spawns the pack at that world position |
+| Ahead, Spawn ahead | Spawns the pack that many units in front of the hero |
+| Spawn at click | Spawns the pack at the next left click on the world |
+| Kill all | Kills every enemy that can die, with experience; the training dummy stays standing |
+| Clear all | Removes every unit but the hero, without deaths |
 
 ### Units
 
-A generic spawn: a count of plain units at a world position, **Spawn units**, for the stress test. It is refused whole when the unit pool cannot take every one.
+| Control | Does |
+| --- | --- |
+| Count, X, Y, Spawn units | Spawns that many plain units at the world position, for the stress test. Refused whole when the unit pool cannot take every one |
 
 ### Zones
 
-A spawn that puts one bare circle on the ground at a world position, with a radius, a delay before it comes alive, and a lifetime. It has no ability behind it, so it runs no rules; it is there to drive the zone pool, the zone view, and the spell-areas overlay before a spell casts one.
+| Control | Does |
+| --- | --- |
+| X, Y, Radius, Delay s, Life s, Spawn zone | Puts one bare circle on the ground at the world position, with the radius, the seconds before it comes alive, and the seconds it lasts. It has no ability behind it, so it runs no rules; it is there to drive the zone pool, the zone view, and the spell-areas overlay before a spell casts one |
 
 ### Loot
 
@@ -79,7 +92,7 @@ A spawn that puts one bare circle on the ground at a world position, with a radi
 | Item, Rarity, Item level, Grant item | Puts an item into the inventory at the first place it fits. Item lists every base and every Legendary piece, and Rarity every rarity, both read from the content so a new one appears without a code change. A base comes at any rarity but Legendary, its lines rolled as a drop's are; a piece comes only as Legendary, with its fixed lines. Taken whether the hero is alive or dead. A debug command, `grant_item`, in the log like the rest |
 | Gold amount, Grant gold | Adds a whole number of gold, one or more, alive or dead. A debug command, `grant_gold`, in the log like the rest |
 | Gold | The run's gold, read from the world |
-| Preview tier, Rolls, Preview loot table | Rolls what that many enemies of the tier would drop on this tick at the map's level, through the same roll a death makes, and shows the count of gold piles and the gold in them, the globes, the items by rarity, the drops by the rarest item each held, and the Legendary pieces. No pack names a piece for it, so it shows none. It changes nothing and sends no command |
+| Preview tier, Rolls, Preview loot table | Rolls what that many enemies of the tier would drop on this tick at the map's level, through the same roll a death makes, and shows under **Preview** the count of gold piles and the gold in them, the globes, the items by rarity, the drops by the rarest item each held, and the Legendary pieces. No pack names a piece for it, so it shows none. It changes nothing and sends no command |
 
 ## Readouts
 
@@ -114,14 +127,17 @@ Updated a few times per second, from the preallocated sample rings and the event
 
 Toggles, each drawn over the world in its own colour at low alpha. Like every toggle, turning one on changes nothing in the world and is not in the log. The overlays are part of the panel: a build without the panel draws none and carries none of their code.
 
-- Collision discs, and bound radii as a separate toggle, because tuning the wrong one is the classic mistake
-- Facing and the action cone
-- Attack range and acquire radius on the hero; aggro and leash radius on enemies
-- Path lines, from each moving unit to its destination through its waypoints
-- Spell areas as the simulation sees them, not as the HUD draws them, faint while a zone waits out its delay
-- Unit state labels: Idle, Chase, Attack, and the rest, above each enemy, and the hero's order state above the hero
-- Spatial hash cells, with the count of units in each
-- The walkability grid: the cells the hero's size may not stand in
+| Toggle | Draws |
+| --- | --- |
+| Collision discs | Each unit's collision disc |
+| Bound radii | Each unit's bound radius, a separate toggle because tuning the wrong one is the classic mistake |
+| Facing and action cone | Each unit's facing and its action cone |
+| Attack and aggro ranges | Attack range and acquire radius on the hero; aggro and leash radius on enemies |
+| Path lines | From each moving unit to its destination through its waypoints |
+| Spell areas | Spell areas as the simulation sees them, not as the HUD draws them, faint while a zone waits out its delay |
+| Unit state labels | Idle, Chase, Attack, and the rest, above each enemy, and the hero's order state above the hero |
+| Spatial hash cells | The hash's cells, with the count of units in each |
+| Walkability grid | The cells the hero's size may not stand in |
 
 ## Persistence
 

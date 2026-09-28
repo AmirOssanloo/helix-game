@@ -57,8 +57,8 @@ A long strip the hero walks from level 1 at the spawn to about level 12 at the l
 
 Two things live for different lengths of time, and the player can feel the difference:
 
-- **Run scope** — the hero, its level, its orb levels, its prepared spells, and every tunable. Created once per session.
-- **Map scope** — enemies, projectiles, zones, summons, and floating numbers. Created when a map loads and thrown away when it unloads.
+- **Run scope** — the hero, its level, its orb levels, its prepared spells, its inventory, armory, and gold, and every tunable. Created once per session.
+- **Map scope** — enemies, projectiles, zones, summons, floating numbers, the items and gold on the ground, the stores and their stock, and the checkpoints reached. Created when a map loads and thrown away when it unloads.
 
 Loading a map never recreates the hero. Later, walking through an exit keeps the hero exactly as it was and gives it a fresh map.
 
@@ -95,6 +95,9 @@ The camera is a presentation concern. Nothing inside the simulation knows where 
 | Dead hero lying within reach of a checkpoint | Nothing is reached until it stands up again |
 | Hero jumped to a checkpoint from the developer panel | Read as a hero standing there: one further along than the furthest is reached on that tick, an earlier one changes nothing. A jump is refused while the hero is dead |
 | Hero walks back past a checkpoint it reached | Its ring stays green and no word rises: only a new furthest raises one |
+| An item, gold, or a globe left on the ground | It stays where it lies for as long as the map does: nothing on the ground expires. A map load or a reset from the panel clears it |
+| A store opened again after a map load or a reset | It is stocked again on that opening, at the hero's level then: every store of the map is made unstocked by the load or the reset, and the open one closes |
+| A map reset after the panel set the map level | The level set stays; only a map load reads the level from the definition again |
 
 ## Deferred
 

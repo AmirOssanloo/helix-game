@@ -41,7 +41,7 @@ def:loot:foo:bar.0.weights:2      a table entry inside the first entry of a list
 
 ### What this makes easy
 
-**A slider never breaks what the player holds.** No tuning command can resize an item in the grid, reprice the bag, or move a requirement under an item already worn, because no key names those numbers.
+**A slider never breaks what the player holds.** No tuning command can resize an item in the grid, reprice the inventory, or move a requirement under an item already worn, because no key names those numbers.
 
 **The balance lever is live.** The designer can slide the normal enemy's mana globe chance, a boss's gold, or a tier's rarity weights mid-session, watch the next deaths, and send the log; the change replays.
 
@@ -59,11 +59,11 @@ def:loot:foo:bar.0.weights:2      a table entry inside the first entry of a list
 
 ## Alternatives considered
 
-**Every item kind tunable, as ADR 0009's rule would have it by default.** The most uniform, and it was close for the affixes, whose ranges already reach only the next item. It lost on the bases and the rarity table: a size tuned under a filled grid and a price tuned under a full bag change what the player holds, which [ADR 0011](./0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) exists to prevent, and a tuning command cannot run the checks that keep a size inside the grid. Tuning the affixes alone would split the item kinds three ways instead of two.
+**Every item kind tunable, as ADR 0009's rule would have it by default.** The most uniform, and it was close for the affixes, whose ranges already reach only the next item. It lost on the bases and the rarity table: a size tuned under a filled grid and a price tuned under a full inventory change what the player holds, which [ADR 0011](./0011-an-item-is-a-value-the-hero-holds-in-run-scope.md) exists to prevent, and a tuning command cannot run the checks that keep a size inside the grid. Tuning the affixes alone would split the item kinds three ways instead of two.
 
 **No item content tunable, the loot tables included, as a map's is not.** The simplest line to state. It lost because the loot tables are exactly what the balance moves, their numbers reach nothing already made, and the catalogue names one of them as the lever a playtest may need.
 
-**The drop chances as flat entries of the tuning table, beside the globe values.** A slider without a definition kind being tunable at all. It lost because the chances and the weights belong together, one table per tier, and splitting a tier's table between a content file and the tuning table gives the catalogue's drop table two owners.
+**The drop chances as flat entries of the tuning table, beside the globe values.** A slider without a definition kind being tunable at all. It lost because the chances and the weights belong together, one table per tier, and splitting a tier's table between a content file and the tuning table gives a tier's loot table two owners.
 
 ## Revisit when
 
