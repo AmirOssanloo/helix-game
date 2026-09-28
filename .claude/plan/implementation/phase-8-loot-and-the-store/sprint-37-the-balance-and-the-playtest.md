@@ -49,7 +49,7 @@ The long road from level 1 to the last boss's kill with the panel closed but for
 | Layer | tests, docs |
 | Size | 0.5 |
 | Depends on | T01 |
-| Status | planned |
+| Status | done |
 
 **Build:** the maintainer plays the published playtest build from the spawn at level 1 to the last boss's kill, the panel closed but for **Jump to checkpoint**, in one tab with no reload, since a reload loses the inventory (R30), wearing what drops and using the store at least once, pressing F9 for each note, and saving the input log at the end: a box under Waiting on a person in STATUS.md with the steps. An agent stores the session as `tests/simulation/replays/long-road-loot-playtest.json`, the long road's new reference log in place of the phase 6 one P8-S39-T01 retired, and each feedback file under `notes/`, and a spec beside the log replays it. The triage is held with the maintainer by the phase 6 method, in a dated note, `notes/<date>-loot-triage.md`: each note gets one outcome, a bug, a tuning change, a screen fix, or no change, with a new system to Deferred. Accepted items are written as P8-S37-T03 onward in the bucket's order until two days are spent.
 
@@ -62,6 +62,8 @@ The long road from level 1 to the last boss's kill with the panel closed but for
 - `tests/simulation/replays/long-road-loot-playtest.spec.ts`: skips until the log exists; then the replay, the commands it must not hold, the kill, the counts, and the level at the kill printed.
 
 **Definition of done:** Every change · A documentation change.
+
+Closed 2026-09-28 on what an agent can verify. `tests/simulation/replays/long-road-loot-playtest.spec.ts` skips with its owner and condition until the maintainer's log is saved; then it checks the log holds no command but a player's and **Jump to checkpoint**, at least one `equip_item`, `buy_item`, and `sell_item`, two replays agreeing at every tick, the last boss's kill, a pickup of each kind, and every `<date>-long-road-loot-feedback-*.json` file under `notes/` stopping at its tick, printing the tick and level at the kill. It was run once against a copy of `balance-loot.json` standing in for the log, and all four cases passed; the copy was removed. [The triage note](../notes/2026-09-28-loot-triage.md) lists no note, writes no ticket, and commits no day of the bucket, with the steps for when the run comes in ([Q118](../backlog/open-questions.md), decided provisionally). The maintainer's run, the feedback files, and the triage wait on a person, deferred until phase 8 is done by the maintainer's standing instruction of 2026-09-24, in STATUS.md.
 
 ---
 
@@ -76,10 +78,10 @@ Tickets P8-S37-T03 onward are what P8-S37-T02 accepts, in the order the [phase R
 | Check | Result |
 | --- | --- |
 | The driver's walk with no panel heal or mana | 2026-09-28, T01, in `tests/simulation/replays/balance-loot.spec.ts` on `balance-loot.json`, seed 3742014961, content version `01423cb9`: the hero walks the long road from level 1 at the spawn and the last boss falls on tick 8489 at level 9, with no command a player does not send and no death. It kills 45 normal enemies, 6 elites, and 5 bosses; outside the boss fights its health never falls below 44%, against the catalogue's margin of 25%. It takes 24 gold piles, 1236 gold, 23 health globes, 4.1 pools, and 38 mana globes, 9.3 pools, against the clean run's 2 and 8; it picks up 20 items by 23 `pick_up` orders, wears 8, sells 16, and buys four Rares at the stores up to region 5's entrance. Tuned: a normal enemy's mana globe chance from 35% to 50%, Q86's other values unchanged. The margin is the stored seed's: of eight seeds walked, three hold it, three dip to 8% to 22%, and two die once at level 2 in region 1, all reaching the kill with no panel command ([Q117](../backlog/open-questions.md)) |
-| The maintainer's run | |
-| Triage | |
-| Actual days per ticket | T01: 0.5 against 1 |
-| Sprint total | |
+| The maintainer's run | Waits on a person, deferred until phase 8 is done by the maintainer's standing instruction of 2026-09-24, in STATUS.md. T02 built `tests/simulation/replays/long-road-loot-playtest.spec.ts`, which skips until `long-road-loot-playtest.json` is stored and passed its four cases on a stand-in copy of the loot walk's log |
+| Triage | [The triage note](../notes/2026-09-28-loot-triage.md), 2026-09-28: no note yet, no bucket ticket; committed 0 of 2 days, 2 uncommitted until the maintainer's run is triaged ([Q118](../backlog/open-questions.md), decided provisionally) |
+| Actual days per ticket | T01: 0.5 against 1; T02: 0.25 against 0.5 |
+| Sprint total | Sized 1.5 in tickets with 2 of bucket appetite and 1 of buffer, done in 0.75; no buffer spent; the bucket's 2 days uncommitted. Closed 2026-09-28 on every row an agent can verify; the maintainer's run and the triage wait under Waiting on a person, deferred until phase 8 is done by the maintainer's standing instruction of 2026-09-24, and any bucket ticket the triage writes goes here as T03 onward, ahead of sprint 38 |
 
 ## Risks in this sprint
 
