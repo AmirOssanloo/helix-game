@@ -9,7 +9,9 @@ import type { MapDef } from "@domain/public";
  * checkpoints stand at the spawn, at each region's entrance, and before the last boss, in order
  * along the road. Every pack is dormant, listed in the spec's order, so it costs no unit until
  * the hero comes near. The spec's pack table and experience budget are checked against this file.
- * Its map level is 3, one level for the whole road, as the spec states.
+ * Its map level is 3, one level for the whole road, as the spec states. Three boss packs name the
+ * Legendary piece they drop: the frost raider closing region 2, the troll closing region 4, and
+ * the last boss.
  */
 export const longRoadDef = {
   id: "long_road",
@@ -293,7 +295,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 9040 },
       dormant: true,
-      legendaryId: null,
+      legendaryId: "rimecoil",
     },
     // Region 3, the hexes.
     {
@@ -407,7 +409,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 18640 },
       dormant: true,
-      legendaryId: null,
+      legendaryId: "trollhide",
     },
     // Region 5, the hall.
     {
@@ -480,7 +482,7 @@ export const longRoadDef = {
       count: 1,
       position: { x: 2000, y: 23560 },
       dormant: true,
-      legendaryId: null,
+      legendaryId: "hallcrown",
     },
   ],
 } as const satisfies MapDef;

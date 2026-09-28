@@ -25,10 +25,10 @@ const onlyFault = (faults: readonly RegistryFault[]): RegistryFault => {
   return first;
 };
 
-/** A well-formed base the content does not hold: a two-by-three armour of flat armour. */
-const ROBE: ItemBaseDef = {
-  id: "robe",
-  name: "Robe",
+/** A well-formed base the content does not hold: a two-by-three armour of flat maximum mana. */
+const VESTMENT: ItemBaseDef = {
+  id: "vestment",
+  name: "Vestment",
   armorySlot: "body",
   width: 2,
   height: 3,
@@ -78,18 +78,18 @@ describe("the item schema", () => {
 
   it("takes a well-formed base", () => {
     expect(
-      validateRegistry(makeRegistry({ itemBases: withBases(ROBE) })),
+      validateRegistry(makeRegistry({ itemBases: withBases(VESTMENT) })),
     ).toEqual([]);
   });
 
   it("refuses a base missing a field, naming the field", () => {
-    const { value: _value, ...missing } = ROBE;
+    const { value: _value, ...missing } = VESTMENT;
     const fault = onlyFault(
       validateRegistry(makeRegistry({ itemBases: withBases(missing) })),
     );
 
     expect(fault).toEqual({
-      file: "items/bases/robe.def.ts",
+      file: "items/bases/vestment.def.ts",
       path: "value",
       message: "missing field",
     });
@@ -99,12 +99,12 @@ describe("the item schema", () => {
     const fault = onlyFault(
       validateRegistry(
         makeRegistry({
-          itemBases: withBases({ ...ROBE, armorySlot: "shoulders" }),
+          itemBases: withBases({ ...VESTMENT, armorySlot: "shoulders" }),
         }),
       ),
     );
 
-    expect(fault.file).toBe("items/bases/robe.def.ts");
+    expect(fault.file).toBe("items/bases/vestment.def.ts");
     expect(fault.path).toBe("armorySlot");
     expect(fault.message).toContain("helm");
   });
@@ -119,7 +119,7 @@ describe("the item schema", () => {
     (field, size) => {
       const fault = onlyFault(
         validateRegistry(
-          makeRegistry({ itemBases: withBases({ ...ROBE, ...size }) }),
+          makeRegistry({ itemBases: withBases({ ...VESTMENT, ...size }) }),
         ),
       );
 
@@ -132,15 +132,15 @@ describe("the item schema", () => {
     const fault = onlyFault(
       validateRegistry(
         makeRegistry({
-          itemBases: withBases({ ...ROBE, atlasFrame: "item_robe" }),
+          itemBases: withBases({ ...VESTMENT, atlasFrame: "item_vestment" }),
         }),
       ),
     );
 
     expect(fault).toEqual({
-      file: "items/bases/robe.def.ts",
+      file: "items/bases/vestment.def.ts",
       path: "atlasFrame",
-      message: '"item_robe" is not in the atlas frame list',
+      message: '"item_vestment" is not in the atlas frame list',
     });
   });
 
@@ -149,8 +149,8 @@ describe("the item schema", () => {
       validateRegistry(
         makeRegistry({
           itemBases: withBases({
-            ...ROBE,
-            implicit: { ...ROBE.implicit, stat: "luck" },
+            ...VESTMENT,
+            implicit: { ...VESTMENT.implicit, stat: "luck" },
           }),
         }),
       ),
@@ -159,8 +159,8 @@ describe("the item schema", () => {
       validateRegistry(
         makeRegistry({
           itemBases: withBases({
-            ...ROBE,
-            implicit: { ...ROBE.implicit, min: 50 },
+            ...VESTMENT,
+            implicit: { ...VESTMENT.implicit, min: 50 },
           }),
         }),
       ),
@@ -173,7 +173,9 @@ describe("the item schema", () => {
   it("refuses a quality level of none", () => {
     const fault = onlyFault(
       validateRegistry(
-        makeRegistry({ itemBases: withBases({ ...ROBE, qualityLevel: 0 }) }),
+        makeRegistry({
+          itemBases: withBases({ ...VESTMENT, qualityLevel: 0 }),
+        }),
       ),
     );
 
@@ -183,7 +185,9 @@ describe("the item schema", () => {
   it("refuses a base and a Legendary piece sharing an id", () => {
     const fault = onlyFault(
       validateRegistry(
-        makeRegistry({ itemBases: withBases({ ...ROBE, id: rimecoilDef.id }) }),
+        makeRegistry({
+          itemBases: withBases({ ...VESTMENT, id: rimecoilDef.id }),
+        }),
       ),
     );
 
@@ -315,9 +319,10 @@ describe("the item schema", () => {
 
   it("refuses a Legendary piece on a base that does not exist", () => {
     const piece: LegendaryDef = { ...rimecoilDef, baseId: "hoop" };
-    const fault = onlyFault(
-      validateRegistry(makeRegistry({ legendaries: [piece] })),
+    const legendaries = contentRegistry.legendaries.map((entry) =>
+      entry.id === piece.id ? piece : entry,
     );
+    const fault = onlyFault(validateRegistry(makeRegistry({ legendaries })));
 
     expect(fault).toEqual({
       file: "items/legendaries/rimecoil.def.ts",

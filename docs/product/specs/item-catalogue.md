@@ -18,7 +18,7 @@
 
 ## 1. Purpose
 
-This page fixes items as data before any is built: every armory slot, every base with its size, gate, and value, the rarity table, the affix table, the Legendary pieces, the drop table of each enemy tier, the store's stock and prices, and the arithmetic that says what a full clear of the long road pays. The item definitions under `src/content/items/` are written from it, and a test reads its rarity and affix tables against those files.
+This page fixes items as data before any is built: every armory slot, every base with its size, gate, and value, the rarity table, the affix table, the Legendary pieces, the drop table of each enemy tier, the store's stock and prices, and the arithmetic that says what a full clear of the long road pays. The item definitions under `src/content/items/` are written from it, and a test reads its base, rarity, affix, and Legendary tables against those files, and each Legendary piece against the boss pack that names it in the long road's map file.
 
 Every number is a starting value. The definition file owns it once the file exists, and the file wins when this page disagrees; the playtest and the balance pass move numbers in the file and in this page together. What this page owns is the shape: which slot takes what, which stat an item may roll where, and what the economy is set to cover.
 

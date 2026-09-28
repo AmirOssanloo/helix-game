@@ -394,40 +394,60 @@ describe("in steady state", () => {
     const simHz = readTunable(state.run.tuning, "sim_hz");
     const attack = state.run.heroAttack;
     const snapshot = createCooldownSnapshot();
-    /** One tick's worth of what this adds: a rewrite, the copy, and the three reads at the moment, counted rather than summed so the count stays a small integer. */
-    const once = (): number => {
+    /** What an equip or an unequip adds: the rewrite and the copy to the hero. */
+    const rewrite = (): number => {
       rewriteArmoryTotals(state.run, simHz, armory);
       copyStatTotals(armory.totals, state.run.heroTotals);
 
-      return (
-        (attackDamageOf(hero, attack) > 0 ? 1 : 0) +
-        (movementSpeed(100, hero, 0, Infinity) > 0 ? 1 : 0) +
-        (snapshotCooldownSources(hero, snapshot).flat > 0 ? 1 : 0)
-      );
+      return 1;
     };
-    let sink = 0;
+    /** What a tick adds: the three reads at the moment, counted rather than summed so the count stays a small integer. */
+    const read = (): number =>
+      (attackDamageOf(hero, attack) > 0 ? 1 : 0) +
+      (movementSpeed(100, hero, 0, Infinity) > 0 ? 1 : 0) +
+      (snapshotCooldownSources(hero, snapshot).flat > 0 ? 1 : 0);
 
-    for (let call = 0; call < WARM_UP_CALLS; call += 1) {
-      sink += once();
-    }
+    /**
+     * Warms `calls` up, then counts the collections and the heap's growth over a window of
+     * them, with the sum of their counts. Each caller is warmed and measured on its own, so
+     * the engine inlines the rewrite into one and the reads into the other rather than
+     * running out of room for the reads behind the rewrite.
+     */
+    const steadyState = (
+      calls: () => number,
+    ): readonly [number, number, number] => {
+      let sink = 0;
 
-    const profiler = new GCProfiler();
+      for (let call = 0; call < WARM_UP_CALLS; call += 1) {
+        sink += calls();
+      }
 
-    profiler.start();
+      const profiler = new GCProfiler();
 
-    const before = process.memoryUsage().heapUsed;
+      profiler.start();
 
-    for (let call = 0; call < MEASURED_CALLS; call += 1) {
-      sink += once();
-    }
+      const before = process.memoryUsage().heapUsed;
 
-    const after = process.memoryUsage().heapUsed;
-    const collections = profiler.stop().statistics.length;
+      for (let call = 0; call < MEASURED_CALLS; call += 1) {
+        sink += calls();
+      }
+
+      const after = process.memoryUsage().heapUsed;
+
+      return [profiler.stop().statistics.length, after - before, sink];
+    };
+
+    const [rewriteCollections, rewriteGrown, rewrites] = steadyState(rewrite);
+    const [readCollections, readGrown, reads] = steadyState(read);
 
     expect(armory.totals.lines).toBe(6);
-    expect(sink).toBe((WARM_UP_CALLS + MEASURED_CALLS) * 3);
-    expect(collections).toBe(0);
-    expect(after - before).toBeLessThan(HEAP_ALLOWANCE_BYTES);
+    expect([rewrites, reads]).toEqual([
+      WARM_UP_CALLS + MEASURED_CALLS,
+      (WARM_UP_CALLS + MEASURED_CALLS) * 3,
+    ]);
+    expect([rewriteCollections, readCollections]).toEqual([0, 0]);
+    expect(rewriteGrown).toBeLessThan(HEAP_ALLOWANCE_BYTES);
+    expect(readGrown).toBeLessThan(HEAP_ALLOWANCE_BYTES);
   });
 });
 

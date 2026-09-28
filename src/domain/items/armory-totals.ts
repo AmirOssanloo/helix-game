@@ -1,7 +1,7 @@
 import type { StatusModifierKind } from "../definitions/status-def";
 import type { TuningUnit } from "../definitions/tuning-def";
 import { convertTunable } from "../definitions/tuning-state";
-import { addToTotals, clearStatTotals } from "../entities/stat-totals";
+import { clearStatTotals, STAT_INDEX } from "../entities/stat-totals";
 import type { Stat } from "../entities/unit";
 import type { Armory } from "./armory";
 import type { Item } from "./item";
@@ -86,7 +86,12 @@ const lineSourceOf = (
   return null;
 };
 
-/** Adds every live line of `item` to `armory`'s totals, each flat amount converted into the simulation's units at `simHz`. */
+/**
+ * Adds every live line of `item` to `armory`'s totals, each flat amount converted into the
+ * simulation's units at `simHz`. Each line is added into the sums in place, and a percentage
+ * is read where it is added, never beside a call: a percentage is a fraction, and a fraction
+ * handed to a call the engine leaves out of line is boxed on the heap.
+ */
 const addItemLines = (
   content: RequirementContent,
   simHz: number,
@@ -97,22 +102,23 @@ const addItemLines = (
 
   for (let line = 0; line < item.lineCount; line += 1) {
     const source = lineSourceOf(content, item, line);
-    const value = item.lines[line]?.value ?? 0;
+    const entry = item.lines[line];
 
-    if (source === null) {
+    if (source === null || entry === undefined) {
       continue;
     }
 
+    const index = STAT_INDEX[source.stat];
+
     if (source.kind === "flat") {
-      addToTotals(
-        totals,
-        source.stat,
-        convertTunable(FLAT_UNITS[source.stat], value, simHz),
-        0,
-      );
+      totals.flat[index] =
+        (totals.flat[index] ?? 0) +
+        convertTunable(FLAT_UNITS[source.stat], entry.value, simHz);
     } else {
-      addToTotals(totals, source.stat, 0, value);
+      totals.percent[index] = (totals.percent[index] ?? 0) + entry.value;
     }
+
+    totals.lines += 1;
   }
 };
 

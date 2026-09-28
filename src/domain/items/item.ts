@@ -22,12 +22,22 @@ export type Item = {
   lineCount: number;
 };
 
+/**
+ * A line naming nothing, made from a class of its own: an object literal with these keys in
+ * this order would share its shape with any other object written so, and a field of that
+ * shape holding something other than a number boxes every fractional value on the line.
+ */
+class ItemLineRecord implements ItemLine {
+  sourceId: string | null = null;
+  value = 0;
+}
+
 /** An item naming nothing, with every line made. Called once by the record that holds it. */
 export const createItem = (): Item => {
   const lines: ItemLine[] = [];
 
   for (let line = 0; line < ITEM_LINE_CAPACITY; line += 1) {
-    lines.push({ sourceId: null, value: 0 });
+    lines.push(new ItemLineRecord());
   }
 
   return {

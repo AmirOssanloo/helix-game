@@ -89,13 +89,15 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 | Layer | content, tests, docs |
 | Size | 1 |
 | Depends on | P8-S31-T01 approved, T01, P8-S32-T04 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-27:** each Legendary is tied to the named boss P8-S39-T01's spec gives it (Q84); six logs, not seven.
 
 > **Note, 2026-09-27, later:** the Legendaries carry fixed values of existing stats, not +1 to an orb (Q92), and each base carries its size in cells (Q88); T02 no longer a dependency, since it is cut.
 
 > **Note, 2026-09-28, from P8-S31-T02:** a Legendary piece is a definition kind of its own, and its boss names it in the `legendaryId` field of its pack in the long road's map file, with the 10% chance on the boss loot table ([the brief](../../2026-09-28-where-items-loot-and-the-store-live.md), section 6). Loot tables name rarities, never bases: a base is drawn among those the item level reaches. The size stays 1.
+
+> **Note, 2026-09-28, at close:** written from the catalogue as drafted, since its approval waits under Waiting on a person, as this sprint's risks allow. The twenty bases are listed in the armory's order, the catalogue's; the two fixture bases and Rimecoil are catalogue entries already, so they are kept as they are, and the item schema spec's made-up base is renamed from robe, now a real base, to vestment. A piece's value is its base's, so the catalogue's Legendary value column is checked against the base. Every base's icon frame is its armory slot's, which the atlas already held. The bases change which base a drop draws, so `pnpm restamp --checksums` re-recorded the four checksum lists with the six stamps. The catalogue's purpose line now says the base and Legendary tables are read against the files. The new content made the steady-state case of `tests/simulation/items/armory-stats.spec.ts` fail in every full run, from boxing in the armory's totals that predates this ticket; that is the unplanned T05, done in the same change since the gate needed it.
 
 **Build:** about twenty base definitions under `src/content/items/bases/` from the approved catalogue, each with its size in cells and its quality level, and the three Legendary pieces under `src/content/items/legendaries/`, each on its base with fixed values of existing, simple stats such as +10% magic damage. Packs 14, 28, and 37 of the long road's map name them in `legendaryId` (Q84, Q100), and the boss loot table's Legendary chance is the catalogue's 10%. The fixture bases and piece of P8-S31-T03 stay for tests. Each base's icon frame exists. The content version moves; the six logs are re-stamped by `pnpm restamp`.
 
@@ -138,14 +140,38 @@ Kill an elite pack from the panel and see an item whose affix count is its rarit
 
 ---
 
+### P8-S35-T05 — The armory's totals allocate nothing with fractional lines
+
+| Field | Value |
+| --- | --- |
+| Layer | domain, tests, docs |
+| Size | 0.5 |
+| Depends on | P8-S34-T04 |
+| Status | done |
+
+> **Note, 2026-09-28:** unplanned, found and done at P8-S35-T03's close, paid from the sprint's buffer, since the gate could not go green without it. With the twenty bases and three pieces in the content, the steady-state case of `tests/simulation/items/armory-stats.spec.ts` failed in every full run at 48 bytes a call, exactly 4.8 MB over its 100,000 calls with no collection; on the commit before T03 it passed, as the engine happened to inline the same calls. Setting the spec's three 0.1 percentage lines to whole numbers made it clean, so each fractional line was boxed once a rewrite. Three causes: (1) `addItemLines` handed each line to `addToTotals`, a fraction crossing a call; (2) it read the line's value once before the flat or percentage branch, and the flat side hands it to `convertTunable`, so the engine boxed it on both sides; (3) the item line was an object literal whose keys run as `ITEM_LINE_FIELDS`' do in `src/simulation/replay/state-fields.ts`, whose `value` holds an object. The fix, in `src/domain/items/armory-totals.ts` and `src/domain/items/item.ts`: each line is added into the totals' typed arrays in place, its value read inside the branch that uses it, and every line is an `ItemLineRecord`, a class of its own. The case also measured the rewrite and the reads in one closure, where the engine inlines the rewrite and can run out of room for the reads, which then box their fractional results, 16 bytes a call; it now warms and measures the rewrite with the copy and the three reads each in its own caller, both held to the same allowance. The [simulation coding](../../../../docs/standards/simulation-coding.md#allocation) standard's row on a fraction crossing a call, and its quick reference, gain the read before a branch. No stored log's checksum moved. The text below is written as built.
+
+**Build:** `addItemLines` adds each line into the armory's totals in place, reading a line's value in the branch that uses it; `createItem` makes its lines from `ItemLineRecord`; the steady-state case measures the rewrite with the copy and the reads apart.
+
+**Acceptance:**
+- The steady-state case passes alone and in the full gate, with the content's Legendary pieces in its registry.
+- No stored log's checksum moves.
+
+**Tests:**
+- `tests/simulation/items/armory-stats.spec.ts`: the rewrite with the copy, and the three reads, each warmed and measured on its own.
+
+**Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
+
+---
+
 ## Sprint exit
 
 | Check | Result |
 | --- | --- |
 | Seven rarities at their weights, affixes rolled and worn | Yes: `tests/domain/loot/rarity.spec.ts`, `tests/domain/items/affixes.spec.ts`, and the rolled cap worn in `tests/simulation/items/armory-stats.spec.ts` |
-| The catalogue's bases, with sizes, and Legendaries as content | |
+| The catalogue's bases, with sizes, and Legendaries as content | Yes: twenty bases and three Legendary pieces, read against the catalogue in `tests/content/catalogues.spec.ts`, every armory slot covered in `tests/content/items.spec.ts` |
 | An item moved on the grid by its size | |
-| Actual days per ticket | T01: 1, sized 2 |
+| Actual days per ticket | T01: 1, sized 2; T03: 0.5, sized 1; T05, unplanned: 0.5, sized 0.5 from the buffer |
 | Sprint total | |
 
 ## Risks in this sprint

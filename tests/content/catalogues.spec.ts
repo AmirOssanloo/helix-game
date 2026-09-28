@@ -745,3 +745,142 @@ describe("the item catalogue on screen", () => {
     }
   });
 });
+
+/** The catalogue's lower-case name for each stat, as a Legendary's fixed stats write it, to the stat it names in code. */
+const LOWER_STAT_WORDS: Readonly<Record<string, AffixDef["stat"]>> =
+  Object.fromEntries(
+    Object.entries(STAT_WORDS).map(([word, stat]) => [
+      word.toLowerCase(),
+      stat,
+    ]),
+  );
+
+/** A range or a fixed value as a definition holds it: a percentage as a fraction of one, anything else as written. */
+const valuesIn = (cell: string): number[] =>
+  numbersIn(cell).map((value) =>
+    cell.includes("%") ? asFraction(value) : value,
+  );
+
+describe("the item catalogue's base table", () => {
+  const rows = itemRows(10, (cells) => idIn(cells[1] ?? "") !== null);
+
+  it("lists every base the content holds, in its order, and no other", () => {
+    expect(rows.map((cells) => [idIn(cells[1] ?? ""), cells[0]])).toEqual(
+      itemBases.map((base) => [base.id, base.name]),
+    );
+  });
+
+  it("gives each base the content's armory slot, size, quality level, requirement, implicit, frame, and value", () => {
+    expect(
+      rows.map(
+        ([
+          ,
+          id = "",
+          slot = "",
+          size = "",
+          quality = "",
+          requirement = "",
+          implicit = "",
+          range = "",
+          frame = "",
+          value = "",
+        ]) => {
+          const [statName = "", kind = "flat"] = implicit.split(", ");
+          const [width, height] = numbersIn(size);
+          const [min, max] = valuesIn(range);
+
+          return {
+            id: idIn(id),
+            armorySlot: SLOT_WORDS[slot.toLowerCase()],
+            width,
+            height,
+            qualityLevel: Number(quality),
+            requirement: Number(requirement),
+            implicit: { stat: STAT_WORDS[statName], kind, min, max },
+            atlasFrame: idIn(frame),
+            value: Number(value),
+          };
+        },
+      ),
+    ).toEqual(
+      itemBases.map((base) => ({
+        id: base.id,
+        armorySlot: base.armorySlot,
+        width: base.width,
+        height: base.height,
+        qualityLevel: base.qualityLevel,
+        requirement: base.requirement,
+        implicit: base.implicit,
+        atlasFrame: base.atlasFrame,
+        value: base.value,
+      })),
+    );
+  });
+});
+
+describe("the item catalogue's Legendary table", () => {
+  const rows = itemRows(7, (cells) => idIn(cells[1] ?? "") !== null);
+  const baseIdOf = (name: string): string | null =>
+    itemBases.find((base) => base.name === name)?.id ?? null;
+
+  it("lists every Legendary piece the content holds, in its order, and no other", () => {
+    expect(rows.map((cells) => [idIn(cells[1] ?? ""), cells[0]])).toEqual(
+      legendaries.map((piece) => [piece.id, piece.name]),
+    );
+  });
+
+  it("gives each piece the content's base, requirement, fixed stats, and its base's value", () => {
+    expect(
+      rows.map(
+        ([
+          ,
+          id = "",
+          base = "",
+          ,
+          requirement = "",
+          fixed = "",
+          value = "",
+        ]) => ({
+          id: idIn(id),
+          baseId: baseIdOf(base),
+          requirement: Number(requirement),
+          lines: fixed.split(", ").map((line) => {
+            const [, number = "", percent = "", statName = ""] =
+              /^\+(\d+(?:\.\d+)?)(%?) (.+)$/.exec(line) ?? [];
+
+            return {
+              stat: LOWER_STAT_WORDS[statName],
+              value:
+                percent === "" ? Number(number) : asFraction(Number(number)),
+            };
+          }),
+          value: Number(value),
+        }),
+      ),
+    ).toEqual(
+      legendaries.map((piece) => ({
+        id: piece.id,
+        baseId: piece.baseId,
+        requirement: piece.requirement,
+        lines: piece.lines.map(({ stat, value }) => ({ stat, value })),
+        value: itemBases.find((base) => base.id === piece.baseId)?.value,
+      })),
+    );
+  });
+
+  it("names each piece on the boss pack that drops it in the long road's map, and on no other pack", () => {
+    const named = longRoadDef.packs.flatMap((pack, index) =>
+      pack.legendaryId === null
+        ? []
+        : [[index + 1, pack.legendaryId, pack.tier]],
+    );
+
+    expect(named).toEqual(
+      rows.map(([, id = "", , droppedBy = ""]) => [
+        numbersIn(droppedBy)[0],
+        idIn(id),
+        "boss",
+      ]),
+    );
+  });
+});
