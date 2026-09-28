@@ -1,7 +1,7 @@
 import type { LootTableDef } from "@domain/public";
 
 /**
- * What a normal enemy drops: gold at 40%, a health globe at 25% and a mana globe at 35%, and an
+ * What a normal enemy drops: gold at 40%, a health globe at 25% and a mana globe at 50%, and an
  * item at 12% on the normal weights. A pile of gold is between the least and the greatest per
  * level times the item level. Every number is tunable under `loot`, and a starting value design
  * retunes here.
@@ -12,7 +12,7 @@ export const normalLootDef = {
   goldMinPerLevel: 4, // tunable
   goldMaxPerLevel: 8, // tunable
   healthGlobeChances: [0.25], // tunable
-  manaGlobeChances: [0.35], // tunable
+  manaGlobeChances: [0.5], // tunable
   itemRolls: [
     {
       chance: 0.12,

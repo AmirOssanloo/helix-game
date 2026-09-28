@@ -122,6 +122,12 @@ export {
   recordSpellsSession,
   saveInputLog,
 } from "./recording/balance-sessions";
+export {
+  GLOBE_REACH,
+  isPackBeaten,
+  LOOT_WALK_SEED,
+  recordLootWalk,
+} from "./recording/loot-walk";
 export { makeCast, type MakeCastOptions } from "./world/make-cast";
 export { makeWorld, type MakeWorldOptions } from "./world/make-world";
 export { makeWorldView } from "./world/make-world-view";

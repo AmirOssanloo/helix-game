@@ -208,7 +208,7 @@ When an enemy dies, it rolls its tier's table on a draw of its own, so a drop ne
 
 | Tier | Gold | Health globe | Mana globe | Items |
 |---|---|---|---|---|
-| Normal | 40%: one pile of `4 × L` to `8 × L` | 25%: one | 35%: one | 12%: one, on the normal weights |
+| Normal | 40%: one pile of `4 × L` to `8 × L` | 25%: one | 50%: one | 12%: one, on the normal weights |
 | Elite | Always: one pile of `12 × L` to `24 × L` | One | One | One, on the elite weights |
 | Boss | Always: one pile of `30 × L` to `60 × L` | Two | Two | Two: one Rare or better on the boss weights, and one on the elite weights; and a named boss's Legendary at 10% |
 | Add | Nothing | Nothing | Nothing | Nothing |
@@ -238,7 +238,7 @@ A stock of 12 at a Rare weight of 15% holds at least one Rare 86% of the time, a
 
 ## 10. The economy on the long road
 
-A full clear of [the long road](./the-long-road.md#4-the-packs): 89 normal enemies, 10 elites, and 5 bosses, at map level 3, of which regions 1 to 4 hold 58 normal enemies, 8 elites, and 4 bosses. Every figure is an expectation over the drop tables of [section 8](#8-drops).
+A full clear of [the long road](./the-long-road.md#4-the-packs): 89 normal enemies, 10 elites, and 5 bosses, at map level 3, of which regions 1 to 4 hold 58 normal enemies, 8 elites, and 4 bosses. Sections 10.1 and 10.3 are expectations over the drop tables of [section 8](#8-drops). Section 10.2 is measured: the balance pass's walk of the road, stored as `tests/simulation/replays/balance-loot.json`, whose spec reads every figure there.
 
 ### 10.1 What a full clear drops
 
@@ -246,27 +246,36 @@ A full clear of [the long road](./the-long-road.md#4-the-packs): 89 normal enemi
 |---|---|---|---|---|---|
 | Gold | 89 × 40% × 18 = 640.8 | 10 × 54 = 540 | 5 × 135 = 675 | **1856** | **1390** |
 | Health globes | 89 × 25% = 22.25 | 10 | 10 | **42.25** | 30.5 |
-| Mana globes | 89 × 35% = 31.15 | 10 | 10 | **51.15** | 36.3 |
+| Mana globes | 89 × 50% = 44.5 | 10 | 10 | **64.5** | 45 |
 | Items | 89 × 12% = 10.7 | 10 | 10 | **30.7**, and 0.3 Legendary | 23.0 |
 
 The items of a full clear by rarity: 10.9 Common, 9.0 Uncommon, 7.5 Rare, 2.5 Epic, 0.64 Imperial, 0.19 Mythical, and 0.3 Legendary, one piece in about three runs.
 
 ### 10.2 Health and mana against the clean run
 
-The clean run of the old road needed 2 **Heal** and 8 **Restore mana** from the developer panel to finish. Each sets its pool to its maximum, so each is worth at most one full pool: 2 health pools and 8 mana pools is the most the clean run took. A globe restores a quarter of a pool.
+The clean run of the old road needed 2 **Heal** and 8 **Restore mana** from the developer panel to finish. Each sets its pool to its maximum, so each is worth at most one full pool: 2 health pools and 8 mana pools is the least the drops must cover.
 
-| Pool | The clean run's panel use, at most | A full clear's globes | Margin |
-|---|---|---|---|
-| Health | 2 pools | 42.25 × 25% = 10.6 pools | 5.3 times |
-| Mana | 8 pools | 51.15 × 25% = 12.8 pools | 1.6 times |
+The walk measures it on the new road. A driver plays the hero from the spawn at level 1 to the last boss's kill on seed 3742014961, checkpoint to checkpoint, sending only what a player sends. It fights what wakes within 800 of its line, spends each skill point as it comes, and turns aside for a globe within 600 of it when the pool it restores is below half. It walks over gold, picks up items by the order, wears what fits an empty armory slot, and sells and buys at each store. It kills 45 normal enemies, 6 elites, and the 5 bosses, 56 of the road's 104, and the last boss falls on tick 8489 with the hero at level 9, with no panel command and no death.
 
-The margin the economy is set to is at least 1.5 times, to cover a globe taken into a pool not far from full and the globes a hero walks past. Both hold.
+| Pool | The clean run's panel use, at most | Globes dropped on the walk | Globes the walk took | Taken against the panel use |
+|---|---|---|---|---|
+| Health | 2 pools | 29, 7.25 pools | 23, 4.1 pools | 2.1 times |
+| Mana | 8 pools | 40, 10 pools | 38, 9.3 pools | 1.2 times |
 
-The new road holds 104 enemies against the old road's 54, 1.93 times as many, and a longer road may spend more. If the hero's spending grows with the road, the need is 3.9 health pools, still covered 2.7 times, and 15.4 mana pools, which 12.8 does not cover. The normal enemy's mana globe chance is the lever: at 50% a full clear drops 64.5 mana globes, 16.1 pools. The balance pass reads the new road's spending and moves the chance if it must.
+A globe taken into a pool not far from full restores less than its quarter, so the pools taken are fewer than the globes times a quarter.
+
+The economy holds two margins:
+
+- **Health:** outside the boss fights, the hero's health never falls below **25%** of its maximum. A boss fight is any tick a living boss stands within 1200 of the hero. On the walk the lowest is 44%.
+- **Pools:** the globes the walk takes restore at least the clean run's panel use, 2 health pools and 8 mana pools.
+
+A normal enemy's mana globe chance is 50%, raised from 35%. At 35% the walk's kills dropped 33 mana globes, 8.25 pools, which only just covers the 8. A full clear at 50% drops 16.1 mana pools, above the 15.4 the clean run's 8 would reach if the hero's spending grew with the road's length. A hero that clears more of the road than the walk does takes more of both.
 
 ### 10.3 Gold against the store
 
 A hero reaching region 5 has, in expectation, 1390 gold from drops alone, before selling anything. The dearest Rare the store stocks there, at hero level 9, is chain mail at 600, so the hero buys at least one Rare before the last region with 2.3 times the gold. Selling the 23 items that dropped by then, most of them Common and Uncommon, at a quarter of their price adds more. An active item, at 1400 to 3000, is a run's savings.
+
+The walk takes 1236 gold from 24 of the 25 piles its kills drop, sells 16 items, and buys four Rares at the stores up to region 5's entrance.
 
 ---
 

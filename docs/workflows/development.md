@@ -62,6 +62,7 @@ pnpm test -t "replay"                    # The determinism test
 pnpm test -t "stress"                    # The stress tests: 200 chasing, the zones, the boss and its adds, 300 on random orders, the long road
 pnpm test:watch tests/domain/invoke/     # Rerun a folder on save
 HELIX_RECORD=balance pnpm test tests/simulation/replays/record-balance.spec.ts  # Record the balance hero, spells, and archetypes sessions again, overwriting their logs
+HELIX_RECORD=loot pnpm test tests/simulation/replays/record-balance.spec.ts     # Record the loot walk of the long road again, overwriting balance-loot.json
 pnpm restamp --checksums  # Then record the new logs' state checksums, since a recording writes none
 ```
 
