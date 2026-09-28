@@ -226,6 +226,7 @@ export type {
   GroundItemKind,
 } from "./entities/ground-item";
 export type { Item, ItemLine } from "./items/item";
+export type { RequirementContent } from "./items/requirement";
 export type { DropRoll, LootWorld } from "./loot/roll";
 export type { Zone, ZoneId } from "./entities/zone";
 export type {

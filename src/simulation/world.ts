@@ -78,6 +78,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     maps: registry.maps,
     lootTables: createLootTables(copies.lootTables),
     itemBases: registry.itemBases,
+    affixes: registry.affixes,
     rarities: registry.rarities,
     legendaries: registry.legendaries,
     tuning,

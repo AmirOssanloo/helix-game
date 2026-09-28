@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
-import type { DropRoll, EnemyTier, LootTableDef, UnitId } from "@domain/public";
-import { createDropRoll, rollDrop } from "@domain/queries";
+import type {
+  DropRoll,
+  EnemyTier,
+  Item,
+  ItemBaseDef,
+  LootTableDef,
+  UnitId,
+} from "@domain/public";
+import {
+  createDropRoll,
+  ITEM_LINE_CAPACITY,
+  levelRequirementOf,
+  meetsRequirement,
+  rollDrop,
+} from "@domain/queries";
 import { dropOnDeath } from "@domain/rules";
 import type { Simulation } from "@simulation/testing";
 import { createHasher, stateChecksum } from "@simulation/testing";
@@ -33,6 +46,17 @@ const tableOf = (id: string): LootTableDef => {
 /** The rarity table's index of `id`, which ranks one rarity above another. */
 const rankOf = (id: string | null): number =>
   contentRegistry.rarities.findIndex((rarity) => rarity.id === id);
+
+/** The cap, the base a test copies to make one the content does not hold. */
+const capBase = (): ItemBaseDef => {
+  const found = contentRegistry.itemBases.find((entry) => entry.id === "cap");
+
+  if (found === undefined) {
+    throw new Error("The content holds the cap");
+  }
+
+  return found;
+};
 
 const base = (id: string | null): { min: number; max: number } => {
   const found = contentRegistry.itemBases.find((entry) => entry.id === id);
@@ -371,6 +395,147 @@ describe("the loot roll", () => {
 
     expect(stateChecksum(previewed.state, hasher)).toBe(before);
     expect(previewed.events.cursor).toBe(0);
+  });
+});
+
+describe("an item's level", () => {
+  /** Every item level the rolls of `tier` under keys 0 to 199 drop at, the Legendary's included. */
+  const itemLevelsOf = (world: Simulation, tier: EnemyTier): Set<number> => {
+    const out = createDropRoll();
+    const levels = new Set<number>();
+
+    for (let key = 0; key < 200; key += 1) {
+      rollDrop(world.view, tier, key, tier === "boss" ? PIECE : null, out);
+
+      for (const item of out.items.slice(0, out.itemCount)) {
+        levels.add(item.itemLevel);
+      }
+
+      if (out.hasLegendary) {
+        levels.add(out.legendary.itemLevel);
+      }
+    }
+
+    return levels;
+  };
+
+  it.each(["normal", "elite", "boss"] as const)(
+    "is the map's level for a %s enemy, and the new level once the map's changes",
+    (tier) => {
+      const world = makeWorld({ seed: 5 });
+
+      world.state.map.level = 3;
+      expect([...itemLevelsOf(world, tier)]).toEqual([3]);
+
+      world.state.map.level = 7;
+      expect([...itemLevelsOf(world, tier)]).toEqual([7]);
+    },
+  );
+
+  it("never drops a base whose quality level is above it, over 10 000 rolls a tier, and drops it once the level reaches it", () => {
+    const world = makeWorld({ seed: 11 });
+
+    world.state.run.itemBases = [
+      ...contentRegistry.itemBases,
+      { ...capBase(), id: "crown", qualityLevel: 5 },
+    ];
+    world.state.map.level = 4;
+
+    for (const tier of ["normal", "elite", "boss"] as const) {
+      expect(tally(world, tier, null).bases.get("crown")).toBeUndefined();
+    }
+
+    world.state.map.level = 5;
+    expect(tally(world, "boss", null).bases.get("crown")).toBeGreaterThan(0);
+  });
+});
+
+describe("an item's level requirement", () => {
+  const content = {
+    itemBases: contentRegistry.itemBases,
+    affixes: contentRegistry.affixes,
+    legendaries: contentRegistry.legendaries,
+  };
+
+  /** An item of `baseId` whose live lines come from `sources`, in order. */
+  const itemOf = (
+    baseId: string,
+    legendaryId: string | null,
+    sources: readonly string[],
+  ): Item => ({
+    baseId,
+    rarityId: legendaryId === null ? "magic" : "legendary",
+    legendaryId,
+    itemLevel: 12,
+    lines: Array.from({ length: ITEM_LINE_CAPACITY }, (_, line) => ({
+      sourceId: sources[line] ?? null,
+      value: line < sources.length ? 1 : 0,
+    })),
+    lineCount: sources.length,
+  });
+
+  it("is its base's requirement for an item with no affix, as every item rolls today", () => {
+    const world = makeWorld({ seed: 11 });
+    const out = createDropRoll();
+
+    world.state.map.level = 3;
+
+    for (let key = 0; key < 200; key += 1) {
+      rollDrop(world.view, "boss", key, null, out);
+
+      for (const item of out.items.slice(0, out.itemCount)) {
+        const base = contentRegistry.itemBases.find(
+          (entry) => entry.id === item.baseId,
+        );
+
+        expect(levelRequirementOf(world.view.run, item)).toBe(
+          base?.requirement,
+        );
+      }
+    }
+  });
+
+  it("is the highest of its base's and its affixes' requirements", () => {
+    const item = itemOf("cap", null, [
+      "cap",
+      "health_1",
+      "health_3",
+      "armour_2",
+    ]);
+
+    expect(levelRequirementOf(content, item)).toBe(9);
+    expect(meetsRequirement(content, item, 8)).toBe(false);
+    expect(meetsRequirement(content, item, 9)).toBe(true);
+  });
+
+  it("is the base's when the base asks more than every affix", () => {
+    const circlet = { ...capBase(), id: "circlet", requirement: 4 };
+    const item = itemOf("circlet", null, ["circlet", "health_1"]);
+
+    expect(levelRequirementOf({ ...content, itemBases: [circlet] }, item)).toBe(
+      4,
+    );
+  });
+
+  it("is a Legendary piece's own requirement, whatever its base asks", () => {
+    const item = itemOf("band", PIECE, [PIECE, PIECE, PIECE]);
+
+    expect(levelRequirementOf(content, item)).toBe(4);
+  });
+
+  it("asks nothing of a cleared item", () => {
+    const cleared = itemOf("cap", null, []);
+
+    cleared.baseId = null;
+    cleared.rarityId = null;
+    expect(levelRequirementOf(content, cleared)).toBe(0);
+  });
+
+  it("reads no line past the live ones", () => {
+    const stale = itemOf("cap", null, ["cap", "health_3"]);
+
+    stale.lineCount = 1;
+    expect(levelRequirementOf(content, stale)).toBe(1);
   });
 });
 

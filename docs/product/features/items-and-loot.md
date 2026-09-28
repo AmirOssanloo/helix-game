@@ -55,7 +55,7 @@ A refused gesture flashes the item, as a refused key flashes its square. Every c
 
 ## Wearing an item
 
-A worn item adds its implicit stat and its affixes to the hero's stats on the tick it goes on, and takes them away on the tick it comes off. Its stats join the same pipeline the orb passives do, so an item's +20 maximum health and a Quartz instance's regeneration add up the same way. An item can be worn only once the hero's level reaches its level requirement, the highest of its base's and its affixes'.
+A worn item adds its implicit stat and its affixes to the hero's stats on the tick it goes on, and takes them away on the tick it comes off. Its stats join the same pipeline the orb passives do, so an item's +20 maximum health and a Quartz instance's regeneration add up the same way. An item can be worn only once the hero's level reaches its level requirement, the highest of its base's and its affixes'; a Legendary piece's is the higher of its own and its base's.
 
 **Magic damage** raises every magical hit the hero deals by its fraction, before the target's resistance: a spell's first hit and its burns. It never raises a physical hit, so neither the hero's attack nor Emberling's, and pure damage is not magical. No item raises an orb level.
 

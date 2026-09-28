@@ -1,6 +1,7 @@
 import type { Rect, Vec2 } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { AffixDef } from "../definitions/affix-def";
 import type { AttackRecord } from "../definitions/attack-state";
 import type { DefinitionSlot } from "../definitions/definition-slot";
 import type { DisableMatrixDef } from "../definitions/disable-matrix-def";
@@ -103,6 +104,8 @@ export type RunScope = {
   lootTables: Map<string, LootTableDef>;
   /** Every item base, in the registry's order, as written: no tuning command reaches one, and a roll draws among them evenly. */
   itemBases: readonly ItemBaseDef[];
+  /** Every affix tier, as written, which an item's level requirement reads its lines' requirements from. */
+  affixes: readonly AffixDef[];
   /** The rarity table, from the most common to the rarest, as written, which a roll ranks what it drops by. */
   rarities: RarityTableDef;
   /** Every Legendary piece, as written, which a boss's drop copies the piece its pack names from. */

@@ -36,6 +36,7 @@ export {
 } from "./entities/unit";
 export { ZONE_CAPACITY } from "./entities/zone";
 export { orbAt } from "./invoke/buffer";
+export { levelRequirementOf, meetsRequirement } from "./items/requirement";
 export { resolveKitSlots } from "./kits/kit-registry";
 export { createAbilityRequest, createSlotDescriptor } from "./kits/kit";
 export { slotReadiness } from "./kits/slot-key";

@@ -94,7 +94,7 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | Layer | domain, tests, docs |
 | Size | 0.5 |
 | Depends on | T02, P8-S39-T02 |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-26:** split out of the loot ticket, which the brief the maintainer saw sized at 1.5 with it.
 
@@ -112,6 +112,8 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 - `tests/simulation/loot/drop-on-death.spec.ts`: drops after `set_map_level` take the new level.
 
 **Definition of done:** Every change · A change under `src/domain` or `src/simulation` · A documentation change.
+
+> **Note, 2026-09-28, at close:** P8-S32-T02 had already built the item level from the map level and the quality-level filter in the roll, so this ticket proved both and built the level requirement: `levelRequirementOf` and `meetsRequirement` in `src/domain/items/requirement.ts`, through `domain/queries.ts` for the screens and the equip command, reading the item's parts by id since an item holds no requirement of its own. Run scope gains the world's copy of the affix tiers for it, left out of the checksum as built from the registry, so no stored log's stamp or checksum moved. A Legendary piece's requirement is the higher of its own and its base's, which no page said; it is [Q107](../backlog/open-questions.md), decided provisionally. The [entities and pools](../../../../docs/architecture/entities-and-pools.md) and [items and loot](../../../../docs/product/features/items-and-loot.md) pages state the rule.
 
 ---
 
@@ -151,10 +153,10 @@ Spawn a grunt pack from the panel and kill it: the panel's readouts show **Groun
 | --- | --- |
 | Ground items pooled in map scope, released by a map load | Yes: a pool of 512 in map scope with its own `GroundItemId`, the byte per cell, and `dropsNotMade`; a map load and a reset release every ground item and free every cell (`tests/domain/entities/ground-item-pool.spec.ts`, `tests/simulation/world.spec.ts`). The panel's **Ground items** readout shows live over capacity and the drops not made |
 | Drops the same on two replays, the world but its ground items unmoved | Yes: two replays of the boss encounter log agree at every tick, drops included, and with every loot table on and every table emptied the full-state comparison finds everything but the ground items and the loot tunables equal at every tick (`tests/simulation/loot/drop-on-death.spec.ts`); the roll's weights, guarantees, and Legendary rate over 10 000 rolls a tier in `tests/domain/loot/roll.spec.ts`. The six logs' checksums re-recorded, their stamps unchanged |
-| Item level from the map level; the quality-level filter | |
+| Item level from the map level; the quality-level filter | Yes: a normal, an elite, and a boss drop at the map's level, 3 and then 7, and a `set_map_level` to 7 before a panel-spawned boss pack's death drops at 7; a base of quality level 5 never drops over 10 000 rolls a tier at item level 4 and drops at 5 (`tests/domain/loot/roll.spec.ts`, `tests/simulation/loot/drop-on-death.spec.ts`). The level requirement is the highest of the base's, the affixes', and a Legendary piece's, read by `levelRequirementOf` |
 | The font writes an item's name | |
 | The render benchmark after the atlas grew | |
-| Actual days per ticket | T01: 0.5 (sized 1.5); T02: 0.75 (sized 1.5) |
+| Actual days per ticket | T01: 0.5 (sized 1.5); T02: 0.75 (sized 1.5); T03: 0.25 (sized 0.5) |
 | Sprint total | |
 
 ## Risks in this sprint

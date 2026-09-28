@@ -316,6 +316,7 @@ const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
   maps: excluded(FROM_CONTENT),
   lootTables: excluded(FROM_CONTENT),
   itemBases: excluded(FROM_CONTENT),
+  affixes: excluded(FROM_CONTENT),
   rarities: excluded(FROM_CONTENT),
   legendaries: excluded(FROM_CONTENT),
   tuning: table("tuning", (run) => run.tuning),

@@ -398,6 +398,31 @@ describe("a drop on death", () => {
     expect(world.view.map.dropsNotMade).toBe(0);
   });
 
+  it("drops at the level a set_map_level gives the map, a panel-spawned pack's items included", () => {
+    const world = makeWorld({ seed: 17 });
+
+    submit(world, { kind: "set_map_level", tick: 0, timestamp: 0, level: 7 });
+    submit(world, {
+      kind: "spawn_pack",
+      tick: 0,
+      timestamp: 0,
+      archetypeId: "melee_grunt",
+      tier: "boss",
+      count: 2,
+      position: { x: 600, y: 600 },
+    });
+    world.tick();
+    submit(world, { kind: "kill_all", tick: 1, timestamp: 0 });
+    world.tick();
+
+    const levels = groundItemsOf(world)
+      .filter((item) => item.kind === "item")
+      .map((item) => item.item.itemLevel);
+
+    expect(levels.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(levels)).toEqual(new Set([7]));
+  });
+
   it(
     "drops the same things in the same places on two replays of the boss encounter",
     () => {
