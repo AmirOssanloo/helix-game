@@ -9,6 +9,7 @@ import type {
   ProjectileId,
   RunScope,
   SpatialHashView,
+  StoreRecord,
   Tick,
   Unit,
   UnitId,
@@ -43,6 +44,8 @@ export type WorldView = DeepReadonly<{
     spawnPoint: Readonly<Vec2>;
     checkpoints: readonly Readonly<Vec2>[];
     furthestCheckpoint: number;
+    stores: readonly StoreRecord[];
+    openStore: number;
     packs: readonly PackRecord[];
   };
 }>;

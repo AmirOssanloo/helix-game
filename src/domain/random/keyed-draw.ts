@@ -35,7 +35,7 @@ export const DRAW_PURPOSE = {
   lootGold: 8,
   /** Whether a death drops a globe, one draw index per globe entry of its table, health entries first. */
   lootGlobe: 9,
-  /** What a store stocks, one draw index per stock slot. */
+  /** Which base a stock slot is, one draw index per stock slot. */
   storeStock: 10,
   /** How much gold a death drops, within its table's range at the item level. */
   lootGoldAmount: 11,
@@ -43,6 +43,14 @@ export const DRAW_PURPOSE = {
   lootAffixTier: 12,
   /** Whether a boss drops the Legendary piece its pack names. */
   lootLegendary: 13,
+  /** Which rarity a stock slot rolls, one draw index per stock slot. */
+  storeRarity: 14,
+  /** Which affix a stocked item rolls, one draw index per line of each stock slot. */
+  storeAffix: 15,
+  /** Which tier of its affix a stocked item's line rolls, one draw index per line of each stock slot. */
+  storeAffixTier: 16,
+  /** The value a stocked item's line rolls within its range, one draw index per line of each stock slot, line 0 the implicit. */
+  storeAffixValue: 17,
 } as const;
 
 export type DrawPurpose = (typeof DRAW_PURPOSE)[keyof typeof DRAW_PURPOSE];

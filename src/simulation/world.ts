@@ -7,7 +7,7 @@ import type {
   RunScope,
   World,
 } from "@domain/public";
-import { readTunable } from "@domain/queries";
+import { NO_STORE, readTunable } from "@domain/queries";
 import {
   cellCount,
   copyTunableDefinitions,
@@ -18,6 +18,7 @@ import {
   createFormRecords,
   createGroundItemCells,
   createGroundItemPool,
+  createStores,
   createInventory,
   createLootTables,
   createPackRecords,
@@ -94,7 +95,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
   };
 };
 
-/** Map scope for `map` under `run`'s tuning: its level, empty pools, every unit slot referencing `run`'s zeros, the grid derived with no ground item on any of its cells, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached. Nothing is placed until the world is whole. */
+/** Map scope for `map` under `run`'s tuning: its level, empty pools, every unit slot referencing `run`'s zeros, the grid derived with no ground item on any of its cells, the hash at the tuned cell size, the path search fitted to the grid, an asleep record per pack the map lists, every member alive, and the map's spawn point and checkpoints with none reached, an unstocked store at each and none open. Nothing is placed until the world is whole. */
 const createMapScope = (map: MapDef, run: RunScope): MapScope => {
   const tuning = run.tuning;
   const walkability = deriveMapGrid(map, tuning);
@@ -119,6 +120,8 @@ const createMapScope = (map: MapDef, run: RunScope): MapScope => {
     spawnPoint: map.spawnPoint,
     checkpoints: map.checkpoints,
     furthestCheckpoint: -1,
+    stores: createStores(map.checkpoints.length),
+    openStore: NO_STORE,
   };
 };
 

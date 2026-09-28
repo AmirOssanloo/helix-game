@@ -14,6 +14,8 @@ import type { ItemRefusal } from "../items/item-commands";
 import { validateItemCommand } from "../items/item-validation";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/status.system";
+import type { StoreRefusal } from "../store/store-commands";
+import { validateStoreCommand } from "../store/store-commands";
 import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
 
 /**
@@ -40,7 +42,9 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * already running, or the status rule refused the application. An item command is refused
  * when it applies by the inventory and the armory: nothing lies at the place it names, the
  * item cannot go in the armory slot named, the hero's level is below the item's requirement,
- * or the item, or the one it puts back, fits nowhere. A tuning change is refused
+ * or the item, or the one it puts back, fits nowhere. A store command is refused when it
+ * applies by the store: the hero stands outside the reach of the checkpoint it names, no store
+ * is open, the gold is short of the price, or the rest as an item command's. A tuning change is refused
  * when its value is not finite, its key is the fixed step rate, or no key of the table has it.
  */
 export type RefusalReason =
@@ -77,6 +81,7 @@ export type RefusalReason =
   | LevelUpRefusal
   | "pool_full"
   | ItemRefusal
+  | StoreRefusal
   | "already_channeling"
   | StatusRefusal
   | TuningRefusal;
@@ -138,8 +143,8 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
  * invalid first. An attack point or a cast point in progress refuses nothing: the state
  * machine cancels it when the new order lands, with nothing spent. A skill-point spend is
  * refused by no disable, only by death and by a slot outside the six keys; a level is not
- * something the unit does, and has no column. An item command reads the items column, which
- * no status refuses, then the places it names. A pick up reads its own column, which answers
+ * something the unit does, and has no column. An item or a store command reads the items
+ * column, which no status refuses, then the places or the checkpoint it names. A pick up reads its own column, which answers
  * as a move does; whether the ground item it names is still there, and is an item, is the
  * command system's to refuse when it applies.
  */
@@ -224,6 +229,15 @@ export const validateCommand = (
       return (
         refusalOf(matrix, unit.disables, "items") ??
         validateItemCommand(command)
+      );
+
+    case "open_store":
+    case "close_store":
+    case "buy_item":
+    case "sell_item":
+      return (
+        refusalOf(matrix, unit.disables, "items") ??
+        validateStoreCommand(command)
       );
 
     case "noop":

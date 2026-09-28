@@ -9,6 +9,7 @@ const CAPACITY = 3;
 
 const tickCompleted = (tick: number): DomainEvent => ({
   ...createDomainEvent(),
+  kind: "tick_completed",
   tick,
 });
 

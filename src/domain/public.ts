@@ -232,7 +232,14 @@ export type {
   MoveItemCommand,
   PickUpCommand,
   UnequipItemCommand,
+  OpenStoreCommand,
+  CloseStoreCommand,
+  BuyItemCommand,
+  SellItemCommand,
+  StoreCommand,
 } from "./commands/item-commands";
+export type { StoreRecord, StoreTab, ReachWorld } from "./store/store";
+export type { StoreRefusal } from "./store/store-commands";
 export type { RequirementContent } from "./items/requirement";
 export type { LineSource } from "./items/armory-totals";
 export type { PriceContent } from "./items/prices";
@@ -245,6 +252,10 @@ export type {
   ItemEquippedEvent,
   ItemMovedEvent,
   ItemUnequippedEvent,
+  ItemBoughtEvent,
+  ItemSoldEvent,
+  StoreOpenedEvent,
+  StoreClosedEvent,
   CommandRefusedEvent,
   DomainEvent,
   EventSink,

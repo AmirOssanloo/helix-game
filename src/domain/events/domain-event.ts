@@ -69,7 +69,11 @@ export type DomainEvent =
   | ItemPickedUpEvent
   | GoldTakenEvent
   | HealthGlobeTakenEvent
-  | ManaGlobeTakenEvent;
+  | ManaGlobeTakenEvent
+  | StoreOpenedEvent
+  | StoreClosedEvent
+  | ItemBoughtEvent
+  | ItemSoldEvent;
 
 /** Written once per tick, last, carrying the tick that just completed. */
 export type TickCompletedEvent = EventFields & { kind: "tick_completed" };
@@ -86,7 +90,7 @@ export type SlotsChangedEvent = EventFields & { kind: "slots_changed" };
 /** A cast of `abilityId` committed: its cast point ended, its mana is spent, its clock has started, and its effects ran. */
 export type CastCommittedEvent = EventFields & { kind: "cast_committed" };
 
-/** A player command was refused for `reason`; `slot` names the key when it was a slot key, `abilityId` the spell when it was a cast, `place` the place an item command named, and `groundItemId` the ground item a pick up named, so the view can flash the square or the item. A pick up that finds no room on arrival is refused here too, by the pickup system. */
+/** A player command was refused for `reason`; `slot` names the key when it was a slot key, `abilityId` the spell when it was a cast, `place` the place an item or store command named, `checkpoint` the checkpoint an opening named, and `groundItemId` the ground item a pick up named, so the view can flash the square or the item. A pick up that finds no room on arrival is refused here too, by the pickup system. */
 export type CommandRefusedEvent = EventFields & { kind: "command_refused" };
 
 /** `unitId` took `amount` of `damageType` from `sourceId`: the amount that landed after mitigation, which is the number a view shows, even where the health it removed was less. */
@@ -151,12 +155,66 @@ export type HealthGlobeTakenEvent = EventFields & {
 /** The hero `unitId` walked within reach of the mana globe `groundItemId`, now stale, and it restored `amount` mana. */
 export type ManaGlobeTakenEvent = EventFields & { kind: "mana_globe_taken" };
 
-/** A ring slot: every field, and a kind that may be any of them. It is assignable to the union, so a reader narrows on `kind`. */
+/** The hero `unitId` opened the store at checkpoint `checkpoint`: an `open_store` took it, stocking it if it had never opened. */
+export type StoreOpenedEvent = EventFields & { kind: "store_opened" };
+
+/** The store at checkpoint `checkpoint` closed: a `close_store`, another store opening, the hero leaving its reach or dying, or the map made again. */
+export type StoreClosedEvent = EventFields & { kind: "store_closed" };
+
+/** The hero `unitId` bought an item from the open store for `amount` gold, its corner now on the cell at `place`. */
+export type ItemBoughtEvent = EventFields & { kind: "item_bought" };
+
+/** The hero `unitId` sold the item whose corner lay on the cell at `place` to the open store for `amount` gold. */
+export type ItemSoldEvent = EventFields & { kind: "item_sold" };
+
+/**
+ * A ring slot: every field, and a kind that may be any of them. Every event is one, so a
+ * system announces by writing a slot. The compiler relates a slot to the union kind by kind
+ * only up to 25 kinds, so a slot is read back as an event through `isDomainEvent`, and a
+ * reader narrows on `kind`.
+ */
 export type EventSlot = EventFields & { kind: DomainEvent["kind"] };
+
+/** Every event kind, as a record over them so a variant added to the union and not here fails the typecheck. */
+const EVENT_KINDS: Readonly<Record<DomainEvent["kind"], true>> = {
+  tick_completed: true,
+  orb_added: true,
+  spell_invoked: true,
+  slots_changed: true,
+  cast_committed: true,
+  command_refused: true,
+  unit_damaged: true,
+  unit_died: true,
+  status_applied: true,
+  status_expired: true,
+  zone_spawned: true,
+  zone_expired: true,
+  projectile_spawned: true,
+  projectile_hit: true,
+  projectile_expired: true,
+  checkpoint_reached: true,
+  item_dropped: true,
+  item_equipped: true,
+  item_unequipped: true,
+  item_moved: true,
+  item_picked_up: true,
+  gold_taken: true,
+  health_globe_taken: true,
+  mana_globe_taken: true,
+  store_opened: true,
+  store_closed: true,
+  item_bought: true,
+  item_sold: true,
+};
+
+/** Whether `slot` holds an event of a kind the union has, which every slot a system wrote does: a slot read back as the event it holds. */
+export const isDomainEvent = (
+  slot: Readonly<EventSlot>,
+): slot is Readonly<DomainEvent> => Object.hasOwn(EVENT_KINDS, slot.kind);
 
 /** Where a system announces an event: the ring's write side, and nothing else of it. */
 export type EventSink = {
-  write: (event: Readonly<DomainEvent>) => void;
+  write: (event: Readonly<EventSlot>) => void;
 };
 
 /** One slot's starting value: a `tick_completed` at tick zero with every other field neutral. Made once per slot when a ring is built, and once per module that announces. */
@@ -182,7 +240,7 @@ export const createDomainEvent = (): EventSlot => ({
 /** Writes `source`'s fields into `target`, so the ring stores an event without allocating. */
 export const copyDomainEvent = (
   target: EventSlot,
-  source: Readonly<DomainEvent>,
+  source: Readonly<EventSlot>,
 ): void => {
   target.kind = source.kind;
   target.tick = source.tick;

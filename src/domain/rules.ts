@@ -196,6 +196,8 @@ export { ORB_COUNT } from "./entities/world-state";
 export { dropOnDeath } from "./loot/drop-on-death";
 export { dropHeldItem, findDropCell, placeDrops } from "./loot/place-drop";
 export { pickupSystem } from "./loot/pickup.system";
+export { storeSystem } from "./store/store.system";
+export { createStores } from "./store/store";
 export { createArmory } from "./items/armory";
 export { rewriteArmoryTotals } from "./items/armory-totals";
 export {
@@ -204,7 +206,7 @@ export {
   copyStatTotals,
   createStatTotals,
 } from "./entities/stat-totals";
-export { createItem } from "./items/item";
+export { copyItem, createItem } from "./items/item";
 export { createInventory, placeItem, removeItem } from "./items/inventory";
 export { createWorldScratch } from "./entities/world-scratch";
 export {
@@ -215,6 +217,7 @@ export {
 } from "./entities/zone";
 export {
   copyDomainEvent,
+  isDomainEvent,
   createDomainEvent,
   resetDomainEvent,
 } from "./events/domain-event";

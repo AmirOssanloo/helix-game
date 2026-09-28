@@ -4,7 +4,7 @@ import { requestCast } from "../abilities/cast";
 import type { AnyCommand, Command } from "../commands/command";
 import { isDebugCommand } from "../commands/command";
 import type { PickUpCommand } from "../commands/item-commands";
-import { isItemCommand } from "../commands/item-commands";
+import { isItemCommand, isStoreCommand } from "../commands/item-commands";
 import { slotOf } from "../commands/ordering";
 import { applyDebugCommand } from "../debug/debug-commands";
 import { isDefinitionKey } from "../definitions/definition-keys";
@@ -18,6 +18,10 @@ import { applyItemCommand, placeOfItemCommand } from "../items/item-commands";
 import { NO_PLACE } from "../items/item-place";
 import { applySkillPoint, applySlotKey } from "../kits/slot-key";
 import { resolveDestinationFor } from "../pathing/destination";
+import {
+  applyStoreCommand,
+  placeOfStoreCommand,
+} from "../store/store-commands";
 import { endChannel } from "./cast-transitions";
 import { issuePickUp } from "./pick-up-transitions";
 import {
@@ -29,7 +33,7 @@ import {
 import type { RefusalReason } from "./validator";
 import { validateCommand, validateDebugCommand } from "./validator";
 
-/** Announces that `command` was refused for `reason`, naming the slot key, the spell, the item's place, or the ground item when it had one so the view can flash the square or the item. */
+/** Announces that `command` was refused for `reason`, naming the slot key, the spell, the item's place, the checkpoint, or the ground item when it had one so the view can flash the square or the item. */
 const announceRefusal = (
   world: World,
   command: AnyCommand,
@@ -44,7 +48,10 @@ const announceRefusal = (
   refused.abilityId = command.kind === "cast" ? command.abilityId : null;
   refused.place = isItemCommand(command)
     ? placeOfItemCommand(command)
-    : NO_PLACE;
+    : isStoreCommand(command)
+      ? placeOfStoreCommand(command)
+      : NO_PLACE;
+  refused.checkpoint = command.kind === "open_store" ? command.checkpoint : -1;
   refused.groundItemId =
     command.kind === "pick_up" ? command.groundItemId : null;
   refused.reason = reason;
@@ -106,7 +113,8 @@ const applyPickUp = (
  * order through the state machine, with a destination resolved to a legal point first, and a
  * pick up at the point its ground item lies on. A
  * slot key and a skill-point spend go to the active form's kit, a cast to the cast
- * pipeline's request stage, and an item command to the inventory and the armory; any of them may still refuse it, and the reason comes back for
+ * pipeline's request stage, an item command to the inventory and the armory, and a store
+ * command to the store; any of them may still refuse it, and the reason comes back for
  * the caller to announce. A slot key that applied while the hero was channeling ends the
  * channel: an orb press and an invoke interrupt one, and a cast has already replaced it.
  * The no-op is dropped by definition.
@@ -183,6 +191,12 @@ const applyCommand = (
     case "move_item":
     case "drop_item":
       return applyItemCommand(world, hero, command);
+
+    case "open_store":
+    case "close_store":
+    case "buy_item":
+    case "sell_item":
+      return applyStoreCommand(world, hero, command);
 
     case "noop":
       break;

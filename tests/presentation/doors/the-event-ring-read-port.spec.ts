@@ -11,6 +11,7 @@ const CAPACITY = 4;
 
 const eventAt = (tick: number): DomainEvent => ({
   ...createDomainEvent(),
+  kind: "tick_completed",
   tick,
 });
 

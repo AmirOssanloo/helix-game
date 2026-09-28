@@ -96,7 +96,8 @@ Updated a few times per second, from the preallocated sample rings and the event
 | Last projectile | The last projectile to land, and whom it landed on, or to expire |
 | Last checkpoint | The index of the last checkpoint the hero reached, from 0 in the map's order, and the tick it reached it on |
 | Last drop | The last ground item to fall, by its id, the unit whose death it fell from or the hero that dropped it, and a pile's gold |
-| Last item | The last item the hero equipped, unequipped, moved, or picked up, and the place it went to: an inventory cell from 0, or an armory slot from 100 |
+| Last item | The last item the hero equipped, unequipped, moved, or picked up, and the place it went to: an inventory cell from 0, or an armory slot from 100; or the last item it bought or sold, the cell it went to or left, and the gold |
+| Last store | The last store to open or close, and the index of its checkpoint |
 | Last take | The last gold pile or globe the hero took by walking over or past it, and what it gave: the gold, or the health or mana restored |
 | Deaths | How many units have died while the panel was open |
 

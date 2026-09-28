@@ -5,6 +5,8 @@ import {
   acquireProjectile,
   acquireUnit,
   acquireZone,
+  copyItem,
+  createStores,
   placeItem,
 } from "@domain/rules";
 import type { Leaf, LeafKind, Simulation } from "@simulation/testing";
@@ -46,7 +48,7 @@ const first = <T>(list: readonly T[], what: string): T => {
  * the state hashes holding at least one live entry: the hero walking a one-point path with a
  * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, an effect, a
  * ground item holding an item with a line, and a copy of that item in the inventory and worn
- * in the first form's first armory slot, with gold.
+ * in the first form's first armory slot and in the first slot of a stocked store, with gold.
  * The same every call, so two arranged worlds agree until one is changed.
  */
 export const arrangeEveryRecord = (): Simulation => {
@@ -134,6 +136,17 @@ export const arrangeEveryRecord = (): Simulation => {
   }
 
   world.run.gold = 1;
+
+  const [store] = createStores(1);
+  const stocked = store?.stock[0];
+
+  if (store === undefined || stocked === undefined) {
+    throw new Error("A store has a first stock slot");
+  }
+
+  store.stocked = true;
+  copyItem(groundItem.item, stocked);
+  world.map.stores.push(store);
   world.map.packs.push({
     def: first(longRoadDef.packs, "a pack on the long road"),
     state: "asleep",

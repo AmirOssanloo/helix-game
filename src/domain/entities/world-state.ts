@@ -22,6 +22,7 @@ import type { Inventory } from "../items/inventory";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
+import type { StoreRecord } from "../store/store";
 import type { Tick } from "../tick";
 import type { Effect, EffectId } from "./effect";
 import type { GroundItem, GroundItemId } from "./ground-item";
@@ -168,6 +169,10 @@ export type MapScope = {
   checkpoints: readonly Readonly<Vec2>[];
   /** The index of the furthest checkpoint the hero has reached on this map, or `-1` for none. Only ever rises until a map reset clears it. */
   furthestCheckpoint: number;
+  /** One store per checkpoint of the loaded map, in the checkpoints' order: made by the map load, made unstocked again by a map reset. */
+  stores: StoreRecord[];
+  /** The index of the checkpoint whose store is open, or `-1` for none. */
+  openStore: number;
 };
 
 /**

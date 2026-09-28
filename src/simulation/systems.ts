@@ -14,6 +14,7 @@ import {
   projectileSystem,
   statsSystem,
   statusSystem,
+  storeSystem,
   zoneSystem,
 } from "@domain/rules";
 
@@ -46,7 +47,8 @@ export type System = (world: World) => void;
  * touches anything. Death resolves last, once, so every hit the tick
  * landed is counted, a damage over time that emptied a unit is read on the tick it emptied
  * it, and a hero at zero dies where collision left it; the table it empties is read by the
- * next tick's status pass.
+ * next tick's status pass. The store closes after it, so a hero that walked off the ring or
+ * died closes the open store on that tick.
  */
 export const systems: readonly System[] = [
   commandSystem,
@@ -64,4 +66,5 @@ export const systems: readonly System[] = [
   projectileSystem,
   zoneSystem,
   deathSystem,
+  storeSystem,
 ];

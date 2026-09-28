@@ -23,6 +23,9 @@ export const ARMORY_PLACE_BASE = 100;
 export const STOCK_PLACE_BASE = 200;
 export const BANK_PLACE_BASE = 300;
 
+/** A store's stock slots, places 200 to 211. */
+export const STOCK_SLOT_COUNT = 12;
+
 /** The bank's slots, places 300 to 305. */
 export const BANK_SLOT_COUNT = 6;
 
@@ -51,3 +54,18 @@ export const cellColumn = (cell: number): number => cell % INVENTORY_COLUMNS;
 /** The row of the inventory `cell` lies in. */
 export const cellRow = (cell: number): number =>
   Math.floor(cell / INVENTORY_COLUMNS);
+
+/** Whether `slot` is one of a store's stock slots, counted from zero. */
+export const isStockSlotIndex = (slot: number): boolean =>
+  Number.isInteger(slot) && slot >= 0 && slot < STOCK_SLOT_COUNT;
+
+/** The place of stock slot `slot`. */
+export const stockPlace = (slot: number): number => STOCK_PLACE_BASE + slot;
+
+/** Whether `place` is a stock slot's. */
+export const isStockPlace = (place: number): boolean =>
+  isStockSlotIndex(place - STOCK_PLACE_BASE);
+
+/** The stock slot `place` names, for a place `isStockPlace` accepts. */
+export const stockSlotOfPlace = (place: number): number =>
+  place - STOCK_PLACE_BASE;

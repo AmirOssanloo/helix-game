@@ -63,9 +63,19 @@ export {
   BANK_SLOT_COUNT,
   INVENTORY_CELL_COUNT,
   isArmoryPlace,
+  isStockPlace,
   NO_PLACE,
   STOCK_PLACE_BASE,
+  STOCK_SLOT_COUNT,
+  stockPlace,
+  stockSlotOfPlace,
 } from "./items/item-place";
+export {
+  checkpointInReach,
+  isWithinReach,
+  NO_STORE,
+  storeTabOf,
+} from "./store/store";
 export { resolveKitSlots } from "./kits/kit-registry";
 export { createAbilityRequest, createSlotDescriptor } from "./kits/kit";
 export { slotReadiness } from "./kits/slot-key";

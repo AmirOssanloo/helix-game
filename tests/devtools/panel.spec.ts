@@ -853,6 +853,43 @@ describe("the developer panel", () => {
     arranged.handle.unmount();
   });
 
+  it("shows the last store to open or close and the last item sold with its gold", () => {
+    const arranged = arrange();
+    const run = arranged.world.state.run;
+    const item = createItem();
+    const stamp = () => ({
+      tick: arranged.world.view.tick,
+      timestamp: arranged.world.view.tick,
+    });
+
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last store")).toBe("none");
+
+    item.baseId = "cap";
+    item.rarityId = "common";
+    placeItem(run.inventory, item, 2, 2, 0);
+    arranged.world.submit({ kind: "open_store", ...stamp(), checkpoint: 0 });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last store")).toBe("store_opened at 0");
+
+    arranged.world.submit({ kind: "sell_item", ...stamp(), cell: 0 });
+    arranged.world.tick();
+    arranged.world.submit({ kind: "close_store", ...stamp() });
+    arranged.world.tick();
+    arranged.handle.refresh();
+
+    expect(readoutNamed(arranged.host, "Last item")).toBe(
+      `item_sold at 0 for ${String(run.gold)}`,
+    );
+    expect(run.gold).toBeGreaterThan(0);
+    expect(readoutNamed(arranged.host, "Last store")).toBe("store_closed at 0");
+
+    arranged.handle.unmount();
+  });
+
   it("shows the last gold the hero took and how much", () => {
     const arranged = arrange();
     const heroId = arranged.world.view.run.heroId;

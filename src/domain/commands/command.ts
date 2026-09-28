@@ -5,7 +5,7 @@ import type { EnemyTier } from "../definitions/enemy-def";
 import type { TuningKey } from "../definitions/tuning-def";
 import type { UnitId } from "../entities/unit";
 import type { Tick } from "../tick";
-import type { ItemCommand, PickUpCommand } from "./item-commands";
+import type { ItemCommand, PickUpCommand, StoreCommand } from "./item-commands";
 
 /**
  * A player intent entering the simulation: one variant per intent, produced by the input
@@ -27,6 +27,7 @@ export type Command =
   | CastCommand
   | SpendSkillPointCommand
   | ItemCommand
+  | StoreCommand
   | PickUpCommand;
 
 /** Proves the plumbing: ordered, consumed, and logged like any command, and changes nothing. */

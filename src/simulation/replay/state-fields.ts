@@ -14,6 +14,7 @@ import type {
   PlacedItem,
   Projectile,
   RandomState,
+  StoreRecord,
   RunScope,
   ShapeDef,
   StatTotals,
@@ -309,6 +310,16 @@ const GROUND_ITEM_FIELDS = fieldsOf<DeepReadonly<GroundItem>>({
   }),
 });
 
+const STORE_FIELDS = fieldsOf<DeepReadonly<StoreRecord>>({
+  stocked: flag("stocked", (store) => store.stocked),
+  stock: records(
+    "stock",
+    (store) => store.stock.length,
+    (store, index) => itemAt(store.stock, index),
+    ITEM_FIELDS,
+  ),
+});
+
 const PACK_FIELDS = fieldsOf<DeepReadonly<PackRecord>>({
   def: excluded(FROM_MAP),
   state: text("state", (pack) => pack.state),
@@ -432,6 +443,15 @@ const MAP_FIELDS = fieldsOf<DeepReadonly<MapScope>>({
   checkpoints: excluded(FROM_MAP),
   furthestCheckpoint: number("furthestCheckpoint", (map, into, at) => {
     into[at] = map.furthestCheckpoint;
+  }),
+  stores: records(
+    "stores",
+    (map) => map.stores.length,
+    (map, index) => itemAt(map.stores, index),
+    STORE_FIELDS,
+  ),
+  openStore: number("openStore", (map, into, at) => {
+    into[at] = map.openStore;
   }),
 });
 

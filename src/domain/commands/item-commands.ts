@@ -66,6 +66,50 @@ export type PickUpCommand = Readonly<{
   groundItemId: GroundItemId;
 }>;
 
+/**
+ * The hero's commands at a checkpoint's store. The store is the one at the checkpoint the hero
+ * opened, so buying names a slot of its stock and selling a cell of the inventory; the domain
+ * checks the shape, and refuses what the store, the gold, or the inventory cannot take when
+ * it applies.
+ */
+export type StoreCommand =
+  OpenStoreCommand | CloseStoreCommand | BuyItemCommand | SellItemCommand;
+
+/**
+ * Opens the store at `checkpoint`, an index into the loaded map's checkpoints, while the hero
+ * stands within its reach, closing any other open store. The first opening at a checkpoint
+ * stocks it.
+ */
+export type OpenStoreCommand = Readonly<{
+  kind: "open_store";
+  tick: Tick;
+  timestamp: number;
+  checkpoint: number;
+}>;
+
+/** Closes the open store; with none open it changes nothing. */
+export type CloseStoreCommand = Readonly<{
+  kind: "close_store";
+  tick: Tick;
+  timestamp: number;
+}>;
+
+/** Buys the item in stock slot `stockSlot` of the open store for its price, into the inventory at the first place it fits. */
+export type BuyItemCommand = Readonly<{
+  kind: "buy_item";
+  tick: Tick;
+  timestamp: number;
+  stockSlot: number;
+}>;
+
+/** Sells the item covering `cell` to the open store for its sell price. The item is gone. */
+export type SellItemCommand = Readonly<{
+  kind: "sell_item";
+  tick: Tick;
+  timestamp: number;
+  cell: number;
+}>;
+
 /** The kinds of the item union, as a record over them so a variant added to the union and not here fails the typecheck. */
 const ITEM_COMMAND_KINDS: Readonly<Record<ItemCommand["kind"], true>> = {
   equip_item: true,
@@ -78,3 +122,16 @@ const ITEM_COMMAND_KINDS: Readonly<Record<ItemCommand["kind"], true>> = {
 export const isItemCommand = (
   command: Readonly<{ kind: string }>,
 ): command is ItemCommand => Object.hasOwn(ITEM_COMMAND_KINDS, command.kind);
+
+/** The kinds of the store union, as a record over them so a variant added to the union and not here fails the typecheck. */
+const STORE_COMMAND_KINDS: Readonly<Record<StoreCommand["kind"], true>> = {
+  open_store: true,
+  close_store: true,
+  buy_item: true,
+  sell_item: true,
+};
+
+/** Whether `command` is one of the hero's store commands. */
+export const isStoreCommand = (
+  command: Readonly<{ kind: string }>,
+): command is StoreCommand => Object.hasOwn(STORE_COMMAND_KINDS, command.kind);

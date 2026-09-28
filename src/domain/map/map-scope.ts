@@ -5,10 +5,12 @@ import { resolveHero } from "../entities/hero";
 import { releaseUnit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { clearOrder } from "../orders/state-machine";
+import { resetStores } from "../store/store";
+import { closeStore } from "../store/store-commands";
 
 /**
  * Empties map scope around the hero: every unit but the hero, every projectile, effect,
- * zone, and ground item is released with every cell free of one and no drop counted as not made, no checkpoint is reached any more, the hero is given the map's spawn point
+ * zone, and ground item is released with every cell free of one and no drop counted as not made, no checkpoint is reached any more, the open store closes and every store is unstocked, the hero is given the map's spawn point
  * back and carried to it with its order cleared and its
  * previous position written so nothing interpolates the carry, pack ids count from zero again, the spatial hash is
  * rebuilt at the tuned cell size over what is left, and the map's packs are set back to what
@@ -36,6 +38,8 @@ export const resetMapScope = (world: World): void => {
   releaseAllGroundItems(world);
   scope.nextPackId = 0;
   scope.furthestCheckpoint = -1;
+  closeStore(world);
+  resetStores(scope.stores);
 
   if (hero !== null) {
     hero.spawnPoint.x = scope.spawnPoint.x;

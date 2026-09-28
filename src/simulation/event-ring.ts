@@ -1,5 +1,9 @@
 import type { DomainEvent, EventSlot } from "@domain/public";
-import { copyDomainEvent, createDomainEvent } from "@domain/rules";
+import {
+  copyDomainEvent,
+  createDomainEvent,
+  isDomainEvent,
+} from "@domain/rules";
 import { assert } from "@shared/public";
 
 /**
@@ -83,7 +87,7 @@ export class EventRing {
   }
 
   /** Copies `event` into the next slot, over the oldest event when the ring is full. */
-  write(event: Readonly<DomainEvent>): void {
+  write(event: Readonly<EventSlot>): void {
     copyDomainEvent(this.slotAt(this.writeCursor % this.capacity), event);
     this.writeCursor += 1;
   }
@@ -98,7 +102,9 @@ export class EventRing {
       return null;
     }
 
-    return this.slotAt(sequence % this.capacity);
+    const slot = this.slotAt(sequence % this.capacity);
+
+    return isDomainEvent(slot) ? slot : null;
   }
 
   /** Events written since `reader` last read, counting only the ones still in the ring. */
