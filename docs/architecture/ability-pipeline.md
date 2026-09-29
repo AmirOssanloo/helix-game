@@ -48,7 +48,7 @@ A vector is aimed with two inputs: the press is where the ability lands and what
 
 A **clamped point** is never walked toward: a position beyond the range is moved in to the range along the bearing from the caster at the request, and cast from where the caster stands. A **unit or self** ability takes a unit hostile to the caster, as a unit ability does, or the caster itself, and the effect it runs sees which from the cast context. Both are kinds of their own, so an ability that needs neither changes nothing.
 
-**The targeting cursor is presentation state.** Pressing a slot key for a point, unit, direction, or vector ability opens a cursor on screen and sends nothing to the simulation. The click sends the command with the world position resolved at click time; for a vector, the button going down holds the press, resolved then, and the button coming up sends the command with the release resolved then. Escape closes the cursor and sends nothing, and so does a right click while a press is held. A cursor being open does not stop a move in progress, because the simulation does not know it is open.
+**The targeting cursor is presentation state.** Pressing a slot key, or a bank key, for a point, unit, unit-or-self, direction, or vector ability opens a cursor on screen and sends nothing to the simulation. The click sends the command with the world position resolved at click time; for a vector, the button going down holds the press, resolved then, and the button coming up sends the command with the release resolved then. Escape closes the cursor and sends nothing, and so does a right click while a press is held. A cursor being open does not stop a move in progress, because the simulation does not know it is open.
 
 ---
 

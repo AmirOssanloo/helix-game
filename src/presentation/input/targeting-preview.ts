@@ -6,6 +6,7 @@ import type {
   Unit,
 } from "@domain/public";
 import {
+  aimsAtUnit,
   createCandidateBuffer,
   isInCastRange,
   scalarAtOrbLevels,
@@ -19,6 +20,7 @@ import type { FrameSizes, Quad, QuadFactory } from "../views/quad";
 import { interpolate } from "../views/quad";
 import { pickUnit } from "./pick-unit";
 import type { TargetingCursor } from "./targeting-cursor";
+import { aimsAbility } from "./targeting-cursor";
 import { isDrag } from "./targeting-cursor";
 
 const RING_FRAME = "ring_thin";
@@ -131,7 +133,7 @@ export class TargetingPreview {
     const heroId = world.run.heroId;
     const hero = heroId === null ? null : world.map.units.resolve(heroId);
     const record =
-      cursor.kind === "slot" && cursor.abilityId !== null
+      aimsAbility(cursor) && cursor.abilityId !== null
         ? world.run.spells.get(cursor.abilityId)
         : undefined;
 
@@ -181,7 +183,7 @@ export class TargetingPreview {
     kind: TargetingKind,
     alpha: number,
   ): boolean {
-    if (kind === "unit") {
+    if (aimsAtUnit(kind)) {
       const targetId = pickUnit(
         world,
         centre.x,

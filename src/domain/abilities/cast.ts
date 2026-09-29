@@ -1,5 +1,6 @@
 import type { DeepReadonly } from "@shared/public";
 import { assert, assertNever, bearing } from "@shared/public";
+import { isHostile } from "../combat/sides";
 import type { CastTarget } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
 import type { TargetingKind } from "../definitions/ability-def";
@@ -100,7 +101,7 @@ export const holdsAbility = (
  * Whether `unit` may cast `record` from where it stands at an aim of `kind` at (`x`, `y`):
  * a point, or the point a vector was pressed at, within the definition's range, centre to
  * point; a unit within the range plus the caster's bound radius and the target's,
- * `targetBound`; a direction or nothing, always.
+ * `targetBound`, which the caster itself always is; a direction or nothing, always.
  */
 export const isInCastRange = (
   unit: DeepReadonly<Unit>,
@@ -124,6 +125,7 @@ export const isInCastRange = (
       break;
 
     case "unit":
+    case "unit_or_self":
       reach = record.def.range + unit.boundRadius + targetBound;
 
       break;
@@ -228,7 +230,7 @@ const refusesRoot = (world: World, source: number): boolean =>
  * rooted caster is refused with `rooted` when its item's active block says so. Refused, with the reason for the caller to announce and
  * nothing changed, when no spell or ability has the id, the unit does not hold it, the target
  * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
- * unit is, `castReadiness` refuses it, the enemies it would spawn would take the live cap past
+ * unit is, or, for a unit or self, a unit neither the caster nor hostile to it, `castReadiness` refuses it, the enemies it would spawn would take the live cap past
  * its limit, or the unit is rooted with the target out of range. A target in range is cast
  * where the unit stands; one out of range is walked toward first. A vector is aimed at the point pressed,
  * along the bearing from it to the point released, or along nothing when the two are one.
@@ -284,6 +286,29 @@ export const requestCastFrom = (
 
       if (aimed === null) {
         return "target_not_found";
+      }
+
+      if (aimed.disables.untargetable) {
+        return "target_untargetable";
+      }
+
+      x = aimed.curr.x;
+      y = aimed.curr.y;
+      targetId = target.unitId;
+      targetBound = aimed.boundRadius;
+
+      break;
+    }
+
+    case "unit_or_self": {
+      const aimed = world.map.units.resolve(target.unitId);
+
+      if (aimed === null) {
+        return "target_not_found";
+      }
+
+      if (aimed !== unit && !isHostile(unit.kind, aimed.kind)) {
+        return "invalid_target";
       }
 
       if (aimed.disables.untargetable) {

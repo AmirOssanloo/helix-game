@@ -7,6 +7,7 @@
  * @see docs/architecture/layers-and-dependency-rule.md#the-public-doors
  */
 export { isInCastRange } from "./abilities/cast";
+export { aimsAtUnit } from "./definitions/ability-def";
 export { behaviourKindOf } from "./ai/behaviours/index";
 export { SLOT_COUNT } from "./commands/command";
 export {
@@ -47,6 +48,11 @@ export { priceOf, sellPriceOf } from "./items/prices";
 export { firstFreeBankSlot, holdsActiveItem } from "./items/bank";
 export { incomingOutcome } from "./items/inventory";
 export { activationReadiness } from "./abilities/cast";
+export {
+  activeItemCooldownSeconds,
+  describeActiveItem,
+} from "./abilities/activation-view";
+export { activeItemById } from "./items/item-defs";
 export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
 export {
   firstFit,

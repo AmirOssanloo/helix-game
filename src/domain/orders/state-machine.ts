@@ -1,4 +1,5 @@
 import type { TargetingKind } from "../definitions/ability-def";
+import { aimsAtUnit } from "../definitions/ability-def";
 import type { Unit, UnitId } from "../entities/unit";
 import { clearPath } from "../entities/unit";
 import { aimAtUnit } from "./order";
@@ -147,7 +148,7 @@ export const issueCast = (
   unit.cast.targetId = targetId;
   unit.cast.direction = direction;
   unit.needsPath =
-    targetKind === "point" || targetKind === "unit" || targetKind === "vector";
+    targetKind === "point" || aimsAtUnit(targetKind) || targetKind === "vector";
 
   return "ok";
 };

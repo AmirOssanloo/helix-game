@@ -33,7 +33,8 @@ export const createAbilityAimScratch = (): AbilityAimScratch => ({
 /**
  * The aim a behaviour supplies for an ability of `kind` at `target`: the unit itself, the
  * point it stands on, or nothing, for an ability aimed at its caster. A direction and a
- * vector need a line only a player draws, so the machine supplies neither and returns `null`.
+ * vector need a line only a player draws, and a unit or self is an active item's, which only
+ * the hero casts, so the machine supplies none of the three and returns `null`.
  */
 const aimAt = (
   world: World,
@@ -59,6 +60,7 @@ const aimAt = (
 
       return pointTarget;
 
+    case "unit_or_self":
     case "direction":
     case "vector":
       return null;

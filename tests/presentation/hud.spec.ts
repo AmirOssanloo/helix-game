@@ -1,17 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { heroDef, tuningTable, WEDGE_STEPS } from "@content/public";
 import type {
+  ActiveItemDef,
   FormRecord,
   Kit,
   RefusalReason,
   SlotDescriptor,
   Unit,
 } from "@domain/public";
-import { createAbilityRequest, slotReadiness } from "@domain/queries";
+import {
+  bankPlace,
+  createAbilityRequest,
+  slotReadiness,
+} from "@domain/queries";
 import { applyStatus, resolveKit, validateRegistry } from "@domain/rules";
 import type { KitResolver } from "@presentation/public";
 import {
+  ACTIVE_ITEM_TINT,
+  BANK_KEY_LABELS,
+  BANK_SQUARE_SIZE,
+  bankSquareAt,
+  bankSquareCentreX,
+  bankSquareCentreY,
+  bankSquareOf,
+  BAR_RECT,
+  containsPoint,
   flashKindOf,
+  GREYED_ALPHA,
   Hud,
   ORB_ROW_CENTRE_Y,
   ORB_TINTS,
@@ -20,6 +35,7 @@ import {
   SQUARES_CENTRE_Y,
 } from "@presentation/public";
 import type { WorldView } from "@simulation/public";
+import { createEventReader } from "@simulation/public";
 import type { Simulation } from "@simulation/testing";
 import {
   CommandRecorder,
@@ -963,5 +979,257 @@ describe("the orb row and a second kit", () => {
 
     expect(arranged.quads.every((quad) => !quad.visible)).toBe(true);
     expect(arranged.labels.every((label) => !label.visible)).toBe(true);
+  });
+});
+
+describe("the bank row", () => {
+  /** An ability only the bank casts, its tint, cost, and clock its own, so nothing on the kit's row shares them. */
+  const bankSpell = makeSpellDef.build({
+    recipe: ["ember", "ember", "whorl"],
+    tint: 0x654321,
+    manaCost: [30, 30, 30, 30, 30, 30, 30],
+    targeting: "none",
+    range: 0,
+  });
+  const VIAL: ActiveItemDef = {
+    id: "vial",
+    name: "Vial",
+    price: 1000,
+    width: 1,
+    height: 2,
+    active: { abilityId: bankSpell.id, refusedWhileRooted: false },
+  };
+
+  /** A HUD whose bank holds the vial at T, every other place empty. */
+  const arrangeBank = (): Arranged => {
+    const arranged = arrange(resolveKit, {
+      spells: [preparedSpell, bankSpell],
+      activeItems: [VIAL],
+    });
+    const item = arranged.world.state.run.bank[0];
+
+    if (item === undefined) {
+      throw new Error("The bank has its first place");
+    }
+
+    item.activeId = VIAL.id;
+
+    return arranged;
+  };
+
+  /** The quads laid on the bank's square for place `slot`, in creation order: backdrop, fill, socket, wedge, flash. */
+  const bankQuadsOf = (arranged: Arranged, slot: number): QuadRecorder[] =>
+    arranged.quads.filter(
+      (quad) =>
+        quad.x === bankSquareCentreX(slot) &&
+        quad.y === bankSquareCentreY(slot),
+    );
+
+  /** The labels showing `text` inside the bank's column. */
+  const bankLabelsShowing = (
+    arranged: Arranged,
+    text: string,
+  ): LabelRecorder[] =>
+    labelsShowing(arranged, text).filter(
+      (label) => label.x >= bankSquareCentreX(0) - BANK_SQUARE_SIZE,
+    );
+
+  it("describes each place from the bank on the world view: the item's ability, clock, and cost, and a socket for an empty place", () => {
+    const arranged = arrangeBank();
+
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hud.bank.descriptorOf(0)).toMatchObject({
+      kind: "prepared",
+      abilityId: bankSpell.id,
+      readyAtTick: 0,
+      clockTicks: CLOCK_TICKS,
+      cost: 30,
+    });
+
+    for (let slot = 1; slot < 6; slot += 1) {
+      expect(arranged.hud.bank.descriptorOf(slot)?.abilityId).toBeNull();
+      expect(bankQuadsOf(arranged, slot)[2]?.visible).toBe(true);
+    }
+  });
+
+  it("draws a banked item in emerald with its short name, its cost, and its key, and no key over an empty place", () => {
+    const arranged = arrangeBank();
+
+    arranged.hud.sync(arranged.view);
+
+    const fill = bankQuadsOf(arranged, 0)[1];
+
+    expect(fill?.visible).toBe(true);
+    expect(fill?.tint).toBe(ACTIVE_ITEM_TINT);
+    expect(bankLabelsShowing(arranged, "VIA")).toHaveLength(1);
+    expect(bankLabelsShowing(arranged, "30")).toHaveLength(1);
+    expect(bankLabelsShowing(arranged, BANK_KEY_LABELS[0] ?? "")).toHaveLength(
+      1,
+    );
+
+    for (const key of BANK_KEY_LABELS.slice(1)) {
+      expect(bankLabelsShowing(arranged, key)).toHaveLength(0);
+    }
+  });
+
+  it("lays the six squares T X V above C G Space, to the right of the level block, inside the bar", () => {
+    for (let slot = 0; slot < 6; slot += 1) {
+      const x = bankSquareCentreX(slot);
+      const y = bankSquareCentreY(slot);
+
+      expect(bankSquareAt(x, y)).toBe(slot);
+      expect(containsPoint(BAR_RECT, x, y)).toBe(true);
+    }
+
+    expect(bankSquareCentreY(0)).toBeLessThan(bankSquareCentreY(3));
+    expect(bankSquareCentreX(0)).toBeLessThan(bankSquareCentreX(1));
+    expect(bankSquareCentreX(0)).toBe(bankSquareCentreX(3));
+    expect(bankSquareAt(OFF_BAR_X, OFF_BAR_Y)).toBe(-1);
+  });
+
+  it("sweeps a wedge over the item's square while its clock runs, and over no other square", () => {
+    const arranged = arrangeBank();
+
+    arranged.hero.cooldowns.set(bankSpell.id, CLOCK_END_TICK);
+    arranged.hud.sync(arranged.view);
+
+    const wedges = quadsOf(arranged, `wedge_${WEDGE_STEPS}`).filter(
+      (quad) => quad.visible,
+    );
+
+    expect(wedges).toHaveLength(1);
+    expect(wedges[0]?.x).toBe(bankSquareCentreX(0));
+    expect(wedges[0]?.y).toBe(bankSquareCentreY(0));
+  });
+
+  it("runs the wedge after an activation, from the clock the commit started", () => {
+    const arranged = arrangeBank();
+
+    submit(arranged.world, {
+      kind: "activate_item",
+      tick: arranged.view.tick,
+      timestamp: arranged.view.tick,
+      place: bankPlace(0),
+      target: { kind: "none" },
+    });
+    tickUntil(
+      arranged.world,
+      () => arranged.hero.cooldowns.has(bankSpell.id),
+      CLOCK_TICKS,
+    );
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hud.bank.descriptorOf(0)?.readyAtTick).toBeGreaterThan(
+      arranged.view.tick,
+    );
+    expect(bankQuadsOf(arranged, 0)[3]?.visible).toBe(true);
+  });
+
+  it("greys the cost of an item the pool is short of, and leaves the kit's costs as they are", () => {
+    const arranged = arrangeBank();
+    const record = arranged.world.state.run.forms[0];
+
+    if (record === undefined) {
+      throw new Error("The hero has a form");
+    }
+
+    record.resources.mana = 10;
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hud.bank.refusalOf(0)).toBe("not_enough_mana");
+    expect(bankLabelsShowing(arranged, "30")[0]?.alpha).toBe(GREYED_ALPHA);
+    expect(labelsShowing(arranged, "50")[0]?.alpha).toBe(1);
+    expect(bankQuadsOf(arranged, 0)[1]?.alpha).toBe(1);
+  });
+
+  it("greys every banked square while the hero is dead", () => {
+    const arranged = arrangeBank();
+
+    submit(arranged.world, {
+      kind: "kill_hero",
+      tick: arranged.view.tick,
+      timestamp: arranged.view.tick,
+    });
+    arranged.world.tick();
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.hud.bank.refusalOf(0)).toBe("dead");
+    expect(bankQuadsOf(arranged, 0)[1]?.alpha).toBe(GREYED_ALPHA);
+  });
+
+  it("flashes the item's square when the world refuses its activation, grey for its clock", () => {
+    const arranged = arrangeBank();
+    const reader = createEventReader();
+
+    while (arranged.world.events.read(reader) !== null) {
+      // Past the spawn.
+    }
+
+    arranged.hero.cooldowns.set(bankSpell.id, CLOCK_END_TICK);
+    submit(arranged.world, {
+      kind: "activate_item",
+      tick: arranged.view.tick,
+      timestamp: arranged.view.tick,
+      place: bankPlace(0),
+      target: { kind: "none" },
+    });
+    arranged.world.tick();
+
+    let event = arranged.world.events.read(reader);
+
+    while (event !== null) {
+      arranged.hud.react(event, arranged.view);
+      event = arranged.world.events.read(reader);
+    }
+
+    arranged.hud.sync(arranged.view);
+
+    expect(arranged.flashes.kindAt(bankSquareOf(0), arranged.view.tick)).toBe(
+      "cooldown",
+    );
+
+    const flash = bankQuadsOf(arranged, 0)[4];
+
+    expect(flash?.visible).toBe(true);
+    expect(flash?.tint).toBe(0x9a9a9a);
+
+    for (const slot of SLOTS) {
+      expect(arranged.flashes.kindAt(slot, arranged.view.tick)).toBe("none");
+    }
+  });
+
+  it("names the item under a bank square for its tooltip, and nothing over an empty place", () => {
+    const arranged = arrangeBank();
+
+    expect(
+      arranged.hud.bankItemAt(
+        arranged.view,
+        bankSquareCentreX(0),
+        bankSquareCentreY(0),
+      )?.activeId,
+    ).toBe(VIAL.id);
+    expect(
+      arranged.hud.bankItemAt(
+        arranged.view,
+        bankSquareCentreX(1),
+        bankSquareCentreY(1),
+      ),
+    ).toBeNull();
+    expect(
+      arranged.hud.bankItemAt(arranged.view, OFF_BAR_X, OFF_BAR_Y),
+    ).toBeNull();
+  });
+
+  it("hides with the bar when the world has no hero", () => {
+    const arranged = arrangeBank();
+
+    arranged.hud.sync(arranged.view);
+    arranged.hud.sync({
+      ...arranged.view,
+      run: { ...arranged.view.run, heroId: null },
+    });
+
+    expect(bankQuadsOf(arranged, 0).some((quad) => quad.visible)).toBe(false);
   });
 });

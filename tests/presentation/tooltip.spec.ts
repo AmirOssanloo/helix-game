@@ -4,6 +4,7 @@ import type { Item, Unit } from "@domain/public";
 import { acquireGroundItem, createItem } from "@domain/rules";
 import type { TooltipPrice } from "@presentation/public";
 import {
+  ACTIVE_ITEM_TINT,
   createPickPort,
   itemUnderPointer,
   PRICE_TINT,
@@ -15,7 +16,15 @@ import {
   writePick,
 } from "@presentation/public";
 import type { Simulation } from "@simulation/testing";
-import { LabelRecorder, makeWorld, QuadRecorder, spawnHero } from "../helpers";
+import {
+  FIXTURE_ACTIVES,
+  GLASS,
+  LabelRecorder,
+  makeRegistry,
+  makeWorld,
+  QuadRecorder,
+  spawnHero,
+} from "../helpers";
 
 const FRAME_WIDTH = 128;
 const GLYPH_ASPECT = 0.625;
@@ -83,6 +92,24 @@ const hallcrownItem = (): Item => {
   return item;
 };
 
+/** Glass, the fixture active item casting Quicken, as a buy leaves it: its active id and nothing else. */
+const glassItem = (): Item => {
+  const item = createItem();
+
+  item.activeId = GLASS.id;
+
+  return item;
+};
+
+/** Quicken, the ability Glass casts; the hero casts it at the first level, every orb at one. */
+const quicken = find(contentRegistry.spells, GLASS.active.abilityId);
+const GLASS_COOLDOWN = `COOLDOWN ${String(quicken.cooldownSeconds[0])}`;
+const GLASS_MANA = `MANA ${String(quicken.manaCost[0])}`;
+
+/** Whether a shown line is one only an active item's tooltip holds. */
+const isActiveLine = (text: string | null): boolean =>
+  text !== null && (text.startsWith("COOLDOWN ") || text.startsWith("MANA "));
+
 type Arranged = Readonly<{
   world: Simulation;
   hero: Unit;
@@ -94,8 +121,11 @@ type Arranged = Readonly<{
 }>;
 
 const arrange = (): Arranged => {
-  const world = makeWorld({ seed: 1 });
-  const hero = spawnHero(world);
+  const world = makeWorld({
+    seed: 1,
+    registry: makeRegistry({ activeItems: FIXTURE_ACTIVES }),
+  });
+  const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
   const quads: QuadRecorder[] = [];
   const labels: LabelRecorder[] = [];
   const tooltip = new Tooltip({
@@ -267,6 +297,74 @@ describe("the tooltip", () => {
     arranged.tooltip.show(hallcrownItem(), "none", 440, 360);
 
     expect(arranged.shownText()[0]).toBe("HALLCROWN");
+  });
+
+  it("shows an active item's name in emerald, then COOLDOWN and MANA, and no rarity, item level, or requirement", () => {
+    const arranged = arrange();
+
+    arranged.tooltip.show(glassItem(), "none", 400, 400);
+
+    expect(arranged.shownText()).toEqual([
+      GLASS.name.toUpperCase(),
+      GLASS_COOLDOWN,
+      GLASS_MANA,
+    ]);
+    expect(tintOf(arranged, GLASS.name.toUpperCase())).toBe(ACTIVE_ITEM_TINT);
+    expect(tintOf(arranged, GLASS_COOLDOWN)).toBe(TOOLTIP_TEXT_TINT);
+    expect(tintOf(arranged, GLASS_MANA)).toBe(TOOLTIP_TEXT_TINT);
+  });
+
+  it("puts an active item's price under its two lines while the store is open", () => {
+    const arranged = arrange();
+
+    arranged.tooltip.show(glassItem(), "buy", 400, 400);
+
+    expect(arranged.shownText()).toEqual([
+      GLASS.name.toUpperCase(),
+      GLASS_COOLDOWN,
+      GLASS_MANA,
+      `PRICE ${String(GLASS.price)} GOLD`,
+    ]);
+  });
+
+  it("shows COOLDOWN and MANA on an active item and on nothing else", () => {
+    const arranged = arrange();
+
+    arranged.hero.progression.level = hallcrown.requirement;
+
+    for (const item of [rolledCap(), hallcrownItem()]) {
+      for (const price of ["none", "buy", "sell"] as const) {
+        arranged.tooltip.show(item, price, 400, 400);
+
+        expect(arranged.shownText().filter(isActiveLine)).toEqual([]);
+      }
+    }
+
+    arranged.tooltip.show(glassItem(), "sell", 400, 400);
+
+    expect(arranged.shownText().filter(isActiveLine)).toEqual([
+      GLASS_COOLDOWN,
+      GLASS_MANA,
+    ]);
+  });
+
+  it("rewrites its lines going from a piece of equipment to an active item and back", () => {
+    const arranged = arrange();
+
+    arranged.tooltip.show(rolledCap(), "none", 400, 400);
+    arranged.tooltip.show(glassItem(), "none", 400, 400);
+
+    expect(arranged.shownText()[0]).toBe(GLASS.name.toUpperCase());
+
+    const rewrites = arranged.labels.map((label) => label.rewrites);
+
+    arranged.tooltip.show(glassItem(), "none", 420, 380);
+
+    expect(arranged.labels.map((label) => label.rewrites)).toEqual(rewrites);
+
+    arranged.tooltip.show(rolledCap(), "none", 400, 400);
+
+    expect(arranged.shownText()[0]).toBe("CAP");
   });
 
   it("stays on the canvas at its edges", () => {

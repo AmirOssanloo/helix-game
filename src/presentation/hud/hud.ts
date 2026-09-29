@@ -1,24 +1,29 @@
 import type {
   DomainEvent,
+  Item,
   KitSlots,
   RefusalReason,
   SlotDescriptor,
   Tick,
 } from "@domain/public";
 import {
+  bankSlotOfPlace,
   createAbilityRequest,
   createSlotDescriptor,
   experienceProgress,
+  isBankPlace,
   readTunable,
   skillPointRefusal,
   SLOT_COUNT,
   slotReadiness,
 } from "@domain/queries";
+import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import type { CommandDriver } from "../scene-context";
 import type { FrameSizes, LabelFactory, QuadFactory } from "../views/quad";
 import type { SquareInput } from "./ability-square.view";
 import { AbilitySquareView } from "./ability-square.view";
+import { BankRow } from "./bank-row";
 import { BarView } from "./bar.view";
 import {
   BAR_HEIGHT,
@@ -29,6 +34,7 @@ import {
   containsPoint,
   EXPERIENCE_BAR_CENTRE_Y,
   HEALTH_BAR_CENTRE_Y,
+  KIT_KEY_LABELS,
   KEY_LABEL_SIZE,
   LEVEL_CENTRE_X,
   LEVEL_LABEL_CENTRE_Y,
@@ -37,6 +43,7 @@ import {
   ORB_ROW_CENTRE_Y,
   orbSquareCentreX,
   SMALL_LABEL_SIZE,
+  SQUARE_SIZE,
   squareAt,
   squareCentreX,
   SQUARES_CENTRE_Y,
@@ -45,7 +52,7 @@ import { LevelView } from "./level.view";
 import { OrbSquaresView } from "./orb-squares.view";
 import { GREYED_ALPHA, HEALTH_TINT, MANA_TINT, OPAQUE } from "./palette";
 import type { SlotFlashes } from "./slot-flashes";
-import { refusalFlashTicks } from "./slot-flashes";
+import { bankSquareOf, refusalFlashTicks } from "./slot-flashes";
 
 /** The kit registered under a form's kit key, or `null`. The scene hands the domain registry's; a test hands a fake. */
 export type KitResolver = (key: string) => KitSlots | null;
@@ -68,15 +75,16 @@ export type HudPorts = Readonly<{
 const LEFT_BUTTON = 0;
 
 /**
- * The bottom bar: the two resource bars, the orb squares, the six ability squares, and the
- * level block, read from the world view once per frame. It names no spell and no kit: the
+ * The bottom bar: the two resource bars, the orb squares, the six ability squares, the level
+ * block, and the bank's row, read from the world view once per frame. It names no spell and no kit: the
  * active form's kit describes each slot, the spell table gives a prepared spell its colour,
  * and the orb row shows only while the kit describes an orb. Each square's reason is the
  * domain's `slotReadiness`, read each frame and written nowhere in the world: a square the
  * reason is a disable or death for greys, so every square greys while the hero is dead, as
  * the validator refuses its keys, and the orb row with them. A click on an orb square with a
  * point unspent, as the domain's `skillPointRefusal` says, becomes a `spend_skill_point`
- * command naming the slot; a refusal comes back as an event and flashes the square.
+ * command naming the slot; a refusal comes back as an event and flashes the square, and one
+ * naming a place of the bank flashes that place's square.
  */
 export class Hud {
   private readonly kits: KitResolver;
@@ -95,6 +103,9 @@ export class Hud {
 
   private readonly level: LevelView;
 
+  /** The bank's six squares, beside the level block. */
+  readonly bank: BankRow;
+
   /** One per slot from one; index zero is unused. Rewritten by the kit each frame. */
   private readonly descriptors: readonly SlotDescriptor[];
 
@@ -108,6 +119,8 @@ export class Hud {
   private readonly input: {
     descriptor: Readonly<SlotDescriptor>;
     spellTint: number | null;
+    nameId: string | null;
+    greysShortCost: boolean;
     tick: Tick;
     flash: SquareInput["flash"];
     refusal: RefusalReason | null;
@@ -155,9 +168,14 @@ export class Hud {
         makeLabel(SMALL_LABEL_SIZE),
         makeLabel(SMALL_LABEL_SIZE),
         ports.wedgeSteps,
+        SQUARE_SIZE,
       );
 
-      square.place(squareCentreX(slot), SQUARES_CENTRE_Y, slot);
+      square.place(
+        squareCentreX(slot),
+        SQUARES_CENTRE_Y,
+        KIT_KEY_LABELS[slot] ?? "",
+      );
       squares.push(square);
     }
 
@@ -169,9 +187,17 @@ export class Hud {
       frameSizes,
       makeLabel(LEVEL_LABEL_SIZE),
     );
+    this.bank = new BankRow({
+      makeQuad,
+      makeLabel,
+      frameSizes,
+      wedgeSteps: ports.wedgeSteps,
+    });
     this.input = {
       descriptor: descriptors[0] ?? createSlotDescriptor(),
       spellTint: null,
+      nameId: null,
+      greysShortCost: false,
       tick: 0,
       flash: "none",
       refusal: null,
@@ -270,6 +296,8 @@ export class Hud {
 
       this.input.descriptor = descriptor;
       this.input.spellTint = record === undefined ? null : record.def.tint;
+      this.input.nameId =
+        descriptor.kind === "prepared" ? descriptor.abilityId : null;
       this.input.tick = world.tick;
       this.input.flash = this.flashes.kindAt(slot, world.tick);
       this.input.refusal = refusal;
@@ -281,11 +309,23 @@ export class Hud {
     } else {
       this.orbs.hide();
     }
+
+    this.bank.sync(world, hero, this.flashes, this.input.sweepSteps);
+  }
+
+  /** The item in the bank's square under (`x`, `y`), for its tooltip, or `null`. */
+  bankItemAt(
+    world: WorldView,
+    x: number,
+    y: number,
+  ): DeepReadonly<Item> | null {
+    return this.bank.itemAt(world, x, y);
   }
 
   /**
-   * Reacts to one event: a refused slot key, cast, or spend flashes its square, for as long as
-   * the world view's tuning state says a refusal flash shows.
+   * Reacts to one event: a refused slot key, cast, or spend flashes its square, and a refused
+   * command naming a place of the bank, an activation among them, flashes that place's, for as
+   * long as the world view's tuning state says a refusal flash shows.
    */
   react(event: Readonly<DomainEvent>, world: WorldView): void {
     if (event.kind !== "command_refused" || event.reason === null) {
@@ -295,6 +335,13 @@ export class Hud {
     if (event.slot !== 0) {
       this.flashes.flash(
         event.slot,
+        event.reason,
+        event.tick,
+        refusalFlashTicks(world),
+      );
+    } else if (isBankPlace(event.place)) {
+      this.flashes.flash(
+        bankSquareOf(bankSlotOfPlace(event.place)),
         event.reason,
         event.tick,
         refusalFlashTicks(world),
@@ -347,5 +394,7 @@ export class Hud {
     for (let index = 0; index < this.squares.length; index += 1) {
       this.squares[index]?.hide();
     }
+
+    this.bank.hide();
   }
 }

@@ -5,8 +5,12 @@ import type {
   UnitId,
 } from "@domain/public";
 import {
+  activationReadiness,
+  activeItemById,
+  bankPlace,
   createAbilityRequest,
   createSlotDescriptor,
+  NO_PLACE,
   slotReadiness,
 } from "@domain/queries";
 import { resolveKitSlots } from "@domain/queries";
@@ -15,13 +19,17 @@ import { assert } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { pickUnit } from "./pick-unit";
 
-/** Closed, waiting for a target for the ability in `slot`, or armed by A for an attack-move point. */
-export type CursorKind = "closed" | "slot" | "attack_move";
+/**
+ * Closed, waiting for a target for the ability in `slot`, waiting for one for the active item
+ * in the bank's `place`, or armed by A for an attack-move point.
+ */
+export type CursorKind = "closed" | "slot" | "item" | "attack_move";
 
 /**
  * The one piece of state the presentation holds that the world does not: which cursor is open.
  * `slot`, `abilityId`, and `targeting` describe the open slot cursor and read `0`, `null`, and
- * `none` otherwise. A vector cursor is aimed with the button held: `held` says the press
+ * `none` otherwise; an item cursor reads its bank `place`, its item's ability, and that
+ * ability's targeting, with `slot` at `0`, and every other cursor reads `NO_PLACE`. A vector cursor is aimed with the button held: `held` says the press
  * went down and has not come up, `press` is the world point it went down at, clamped to the
  * map, and `pressScreen` the canvas point, in logical pixels, which a drag is measured from.
  * All three read `false` and zero while nothing is held. One record per mapper, its points
@@ -30,6 +38,7 @@ export type CursorKind = "closed" | "slot" | "attack_move";
 export type TargetingCursor = {
   kind: CursorKind;
   slot: number;
+  place: number;
   abilityId: string | null;
   targeting: TargetingKind;
   held: boolean;
@@ -50,6 +59,13 @@ export const DRAG_THRESHOLD = 16;
  */
 export type SlotKeyOutcome = "send" | "opened" | RefusalReason;
 
+/**
+ * What a bank key-down became: an activation with no target to send, a cursor that opened
+ * and sends nothing until the click, nothing at all for an empty place, or the reason the
+ * cursor stayed shut.
+ */
+export type BankKeyOutcome = "send" | "opened" | "empty" | RefusalReason;
+
 /** Scratch for the slot's description, reused for every key-down. */
 const descriptor = createSlotDescriptor();
 
@@ -60,6 +76,7 @@ const asked = createAbilityRequest();
 export const createTargetingCursor = (): TargetingCursor => ({
   kind: "closed",
   slot: 0,
+  place: NO_PLACE,
   abilityId: null,
   targeting: "none",
   held: false,
@@ -79,6 +96,7 @@ const releasePress = (cursor: TargetingCursor): void => {
 export const closeCursor = (cursor: TargetingCursor): void => {
   cursor.kind = "closed";
   cursor.slot = 0;
+  cursor.place = NO_PLACE;
   cursor.abilityId = null;
   cursor.targeting = "none";
   releasePress(cursor);
@@ -88,6 +106,7 @@ export const closeCursor = (cursor: TargetingCursor): void => {
 export const openAttackMoveCursor = (cursor: TargetingCursor): void => {
   cursor.kind = "attack_move";
   cursor.slot = 0;
+  cursor.place = NO_PLACE;
   cursor.abilityId = null;
   cursor.targeting = "none";
   releasePress(cursor);
@@ -204,6 +223,7 @@ export const pressSlotKey = (
 
   cursor.kind = "slot";
   cursor.slot = slot;
+  cursor.place = NO_PLACE;
   cursor.abilityId = abilityId;
   cursor.targeting = record.def.targeting;
 
@@ -211,9 +231,64 @@ export const pressSlotKey = (
 };
 
 /**
+ * What the bank key for place `slot`, from zero, asks of the mapper, read off the world view.
+ * An empty place asks nothing. An item whose ability takes no target, or one the ability
+ * table cannot name, is the world's to cast or refuse, so the key is sent as an activation
+ * with no target. A targeted one needs a click first: the cursor opens when the domain's
+ * `activationReadiness` refuses it nothing, the death, the clock, and the cost the world would
+ * check, and stays shut with its reason otherwise, as a slot key's does.
+ */
+export const pressBankKey = (
+  world: WorldView,
+  slot: number,
+  cursor: TargetingCursor,
+): BankKeyOutcome => {
+  const item = world.run.bank[slot];
+  const active =
+    item === undefined
+      ? null
+      : activeItemById(world.run.activeItems, item.activeId);
+
+  if (active === null) {
+    return "empty";
+  }
+
+  const abilityId = active.active.abilityId;
+  const record = world.run.spells.get(abilityId);
+
+  if (record === undefined || record.def.targeting === "none") {
+    return "send";
+  }
+
+  const heroId = world.run.heroId;
+  const hero = heroId === null ? null : world.map.units.resolve(heroId);
+  const refusal =
+    hero === null
+      ? null
+      : activationReadiness(world.run, world.tick, hero, abilityId, record);
+
+  if (refusal !== null) {
+    return refusal;
+  }
+
+  cursor.kind = "item";
+  cursor.slot = 0;
+  cursor.place = bankPlace(slot);
+  cursor.abilityId = abilityId;
+  cursor.targeting = record.def.targeting;
+
+  return "opened";
+};
+
+/** Whether `cursor` waits for an ability's target: a slot's or an item's. */
+export const aimsAbility = (cursor: Readonly<TargetingCursor>): boolean =>
+  cursor.kind === "slot" || cursor.kind === "item";
+
+/**
  * The target an open cursor's confirming click at world point `point` names: a point or a
- * direction always, the unit drawn under it at `alpha` for a unit cursor, or `null` for a
- * unit cursor over no unit, and for a vector cursor, which commits on its release instead.
+ * direction always, the unit drawn under it at `alpha` for a unit cursor or a unit-or-self
+ * one, which takes the hero as well, or `null` for either over no unit, and for a vector
+ * cursor, which commits on its release instead.
  */
 export const castTargetOf = (
   cursor: Readonly<TargetingCursor>,
@@ -233,6 +308,12 @@ export const castTargetOf = (
       const unitId = pickUnit(world, point.x, point.y, alpha, candidates);
 
       return unitId === null ? null : { kind: "unit", unitId };
+    }
+
+    case "unit_or_self": {
+      const unitId = pickUnit(world, point.x, point.y, alpha, candidates);
+
+      return unitId === null ? null : { kind: "unit_or_self", unitId };
     }
 
     case "vector":

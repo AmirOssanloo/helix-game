@@ -1,5 +1,8 @@
-import type { Item } from "@domain/public";
+import type { Item, Unit } from "@domain/public";
 import {
+  activeItemCooldownSeconds,
+  createSlotDescriptor,
+  describeActiveItem,
   ITEM_LINE_CAPACITY,
   meetsRequirement,
   priceOf,
@@ -19,6 +22,7 @@ import type {
 } from "../views/quad";
 import { heroOf } from "./hero-of";
 import { placeQuad, SCREEN_FRAME } from "./screen-parts";
+import type { ActiveFigures } from "./tooltip-lines";
 import { TOOLTIP_TEXT_SIZE, TooltipLines } from "./tooltip-lines";
 import type { TooltipPrice } from "./tooltip-text";
 
@@ -89,7 +93,8 @@ export type TooltipPorts = Readonly<{
  * a backdrop and one label a line. It shows the name in the rarity's tint, the rarity and the
  * base, the item level, the level requirement, marked when above the hero's level, each stat
  * line in the order the item holds them, the implicit first, and, while a store is open, the
- * price or the sell price. Its lines are written by its `TooltipLines`, and the requirement
+ * price or the sell price; an active item shows its name, COOLDOWN and MANA, and the price.
+ * Its lines are written by its `TooltipLines`, and the requirement
  * and prices are asked of the domain; it sums nothing.
  *
  * The text is written only when what it shows changes: another item, the hero's level crossing
@@ -116,6 +121,19 @@ export class Tooltip {
   private shownRarityId: string | null = null;
 
   private shownLegendaryId: string | null = null;
+
+  private shownActiveId: string | null = null;
+
+  private readonly shownFigures: ActiveFigures = {
+    cooldownSeconds: 0,
+    mana: 0,
+  };
+
+  /** An active item's figures for the item shown now, asked of the domain each frame. */
+  private readonly figures: ActiveFigures = { cooldownSeconds: 0, mana: 0 };
+
+  /** Scratch for what the domain says of an active item, reused every frame. */
+  private readonly descriptor = createSlotDescriptor();
 
   private shownItemLevel = 0;
 
@@ -177,6 +195,8 @@ export class Tooltip {
       meetsRequirement(world.run, item, hero.progression.level);
     const gold = this.goldOf(item, price);
 
+    this.figuresOf(item, hero);
+
     if (!this.showing(item, met, price, gold)) {
       this.remember(item, met, price, gold);
       this.write(item, met, price, gold);
@@ -199,6 +219,34 @@ export class Tooltip {
     this.visible = false;
     this.backdrop.visible = false;
     this.lines.setShown(false);
+  }
+
+  /** Writes the active item's cooldown and mana cost for `hero` into the figures, or zeros for equipment. */
+  private figuresOf(
+    item: DeepReadonly<Item>,
+    hero: DeepReadonly<Unit> | null,
+  ): void {
+    const run = this.world.run;
+    const figures = this.figures;
+
+    if (item.activeId === null) {
+      figures.cooldownSeconds = 0;
+      figures.mana = 0;
+
+      return;
+    }
+
+    figures.cooldownSeconds = activeItemCooldownSeconds(
+      run,
+      hero,
+      item.activeId,
+    );
+    figures.mana = describeActiveItem(
+      run,
+      hero,
+      item.activeId,
+      this.descriptor,
+    ).cost;
   }
 
   /** The gold the price line names, asked of the domain, or 0 with no price line. */
@@ -233,6 +281,9 @@ export class Tooltip {
       item.baseId !== this.shownBaseId ||
       item.rarityId !== this.shownRarityId ||
       item.legendaryId !== this.shownLegendaryId ||
+      item.activeId !== this.shownActiveId ||
+      this.figures.cooldownSeconds !== this.shownFigures.cooldownSeconds ||
+      this.figures.mana !== this.shownFigures.mana ||
       item.itemLevel !== this.shownItemLevel ||
       item.lineCount !== this.shownLineCount ||
       met !== this.shownMet ||
@@ -266,6 +317,9 @@ export class Tooltip {
     this.shownBaseId = item.baseId;
     this.shownRarityId = item.rarityId;
     this.shownLegendaryId = item.legendaryId;
+    this.shownActiveId = item.activeId;
+    this.shownFigures.cooldownSeconds = this.figures.cooldownSeconds;
+    this.shownFigures.mana = this.figures.mana;
     this.shownItemLevel = item.itemLevel;
     this.shownLineCount = item.lineCount;
     this.shownMet = met;
@@ -289,7 +343,7 @@ export class Tooltip {
   ): void {
     const lines = this.lines;
 
-    lines.write(this.world, item, met, price, gold, this.visible);
+    lines.write(this.world, item, met, price, gold, this.figures, this.visible);
     this.width = lines.widest * TOOLTIP_TEXT_SIZE + PADDING * 2;
     this.height = lines.lineCount * this.lineHeight - LINE_GAP + PADDING * 2;
     this.backdrop.scaleX = this.width / this.frameSize;

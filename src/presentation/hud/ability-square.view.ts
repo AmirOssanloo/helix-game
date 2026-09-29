@@ -2,7 +2,6 @@ import type { RefusalReason, SlotDescriptor, Tick } from "@domain/public";
 import { ORB_IDS } from "@domain/queries";
 import { clamp } from "@shared/public";
 import type { FrameSizes, Label, Quad, QuadFactory } from "../views/quad";
-import { SQUARE_SIZE } from "./hud-layout";
 import {
   BACKDROP_ALPHA,
   BACKDROP_TINT,
@@ -29,9 +28,6 @@ const SQUARE_FRAME = "square";
 const SOCKET_FRAME = "square_outline";
 const STRIPES_FRAME = "stripes";
 const WEDGE_FRAME_PREFIX = "wedge_";
-
-/** The key labels, by slot from one. */
-const KEY_LABELS: readonly string[] = ["", "Q", "W", "E", "R", "D", "F"];
 
 /** How much of the square the wedge sweep covers. */
 const WEDGE_SHARE = 0.9;
@@ -76,8 +72,12 @@ export const wedgeFrameFor = (
 /** What the square shows: read from a descriptor and the spell table each frame. */
 export type SquareInput = Readonly<{
   descriptor: Readonly<SlotDescriptor>;
-  /** The tint a prepared spell is drawn in, or `null` for an empty socket and the other kinds. */
+  /** The tint a prepared spell, or an active item, is drawn in, or `null` for an empty socket and the other kinds. */
   spellTint: number | null;
+  /** The id whose first letters label the square: a prepared spell's, an active item's, or `null` for none. */
+  nameId: string | null;
+  /** Whether the cost label greys for a pool short of it: a place of the bank's, never a kit square's. */
+  greysShortCost: boolean;
   tick: Tick;
   flash: FlashKind;
   /** Why the domain would refuse the key now, whatever it aims at, or `null`: a disable or death greys the square. */
@@ -87,11 +87,12 @@ export type SquareInput = Readonly<{
 }>;
 
 /**
- * One ability square: a backdrop, a fill coloured by what the slot holds, a socket outline
- * for an empty slot, a wedge over it sweeping down as the clock runs, a flash over that for
- * a refusal, and four labels for the key, the cost, the level, and a prepared spell's short
- * name. Every quad and label is made once; the sync writes fields and rewrites a label only
- * when its text changes. The wedge's frame changes as the clock runs, at most once per step.
+ * One ability square, of the kit's row or of the bank's: a backdrop, a fill coloured by what
+ * the slot holds, a socket outline for an empty slot, a wedge over it sweeping down as the
+ * clock runs, a flash over that for a refusal, and four labels for the key, the cost, the
+ * level, and a prepared spell's or an item's short name. Every quad and label is made once,
+ * at the size it is handed; the sync writes fields and rewrites a label only when its text
+ * changes. The wedge's frame changes as the clock runs, at most once per step.
  */
 export class AbilitySquareView {
   private readonly backdrop: Quad;
@@ -113,6 +114,9 @@ export class AbilitySquareView {
   private readonly nameLabel: Label;
 
   private readonly wedgeSteps: number;
+
+  /** The square's side, in pixels. */
+  private readonly size: number;
 
   private readonly scalePerPixel: number;
 
@@ -138,6 +142,7 @@ export class AbilitySquareView {
     levelLabel: Label,
     nameLabel: Label,
     wedgeSteps: number,
+    size: number,
   ) {
     this.backdrop = makeQuad(SQUARE_FRAME);
     this.fill = makeQuad(SQUARE_FRAME);
@@ -149,6 +154,7 @@ export class AbilitySquareView {
     this.levelLabel = levelLabel;
     this.nameLabel = nameLabel;
     this.wedgeSteps = wedgeSteps;
+    this.size = size;
     this.scalePerPixel = 1 / frameSizes(SQUARE_FRAME);
     this.wedgeScalePerPixel =
       1 / frameSizes(`${WEDGE_FRAME_PREFIX}${wedgeSteps}`);
@@ -165,10 +171,11 @@ export class AbilitySquareView {
     this.nameLabel.tint = WHITE;
   }
 
-  /** Puts the square's centre at (`x`, `y`) and writes its key label. Once, at layout. */
-  place(x: number, y: number, slot: number): void {
-    const half = SQUARE_SIZE * HALF;
-    const scale = SQUARE_SIZE * this.scalePerPixel;
+  /** Puts the square's centre at (`x`, `y`) and writes `key` as its key label. Once, at layout. */
+  place(x: number, y: number, key: string): void {
+    const size = this.size;
+    const half = size * HALF;
+    const scale = size * this.scalePerPixel;
 
     this.backdrop.x = x;
     this.backdrop.y = y;
@@ -181,13 +188,13 @@ export class AbilitySquareView {
     this.socket.scale = scale;
     this.wedge.x = x;
     this.wedge.y = y;
-    this.wedge.scale = SQUARE_SIZE * WEDGE_SHARE * this.wedgeScalePerPixel;
+    this.wedge.scale = size * WEDGE_SHARE * this.wedgeScalePerPixel;
     this.flash.x = x;
     this.flash.y = y;
     this.flash.scale = scale;
     this.keyLabel.x = x + half * KEY_OFFSET_X;
     this.keyLabel.y = y + half * KEY_OFFSET_Y;
-    this.keyLabel.setText(KEY_LABELS[slot] ?? "");
+    this.keyLabel.setText(key);
     this.costLabel.x = x + half * COST_OFFSET_X;
     this.costLabel.y = y + half * COST_OFFSET_Y;
     this.levelLabel.x = x + half * LEVEL_OFFSET_X;
@@ -212,9 +219,14 @@ export class AbilitySquareView {
     this.keyLabel.alpha = alpha;
     this.syncWedge(descriptor, tick, sweepSteps);
     this.syncFlash(flash);
-    this.syncCost(descriptor, alpha);
+    this.syncCost(
+      descriptor,
+      input.greysShortCost && refusal === "not_enough_mana"
+        ? GREYED_ALPHA
+        : alpha,
+    );
     this.syncLevel(descriptor, alpha);
-    this.syncName(descriptor, alpha);
+    this.syncName(input.nameId, alpha);
   }
 
   hide(): void {
@@ -286,7 +298,7 @@ export class AbilitySquareView {
       this.flashFrame = frame;
       this.flash.setFrame(frame);
       this.flash.scale =
-        SQUARE_SIZE *
+        this.size *
         (frame === STRIPES_FRAME
           ? this.stripesScalePerPixel
           : this.scalePerPixel);
@@ -332,9 +344,7 @@ export class AbilitySquareView {
     this.levelLabel.visible = true;
   }
 
-  private syncName(descriptor: Readonly<SlotDescriptor>, alpha: number): void {
-    const id = descriptor.kind === "prepared" ? descriptor.abilityId : null;
-
+  private syncName(id: string | null, alpha: number): void {
     if (id === null) {
       this.nameLabel.visible = false;
 

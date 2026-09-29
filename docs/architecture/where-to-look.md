@@ -97,6 +97,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | What an item's tooltip shows, and what it is over | `src/presentation/screens/tooltip.ts`, its lines built in `tooltip-lines.ts` and worded in `tooltip-text.ts`; `store-follow.ts` beside them picks the price line and ties the store screen to the world's store |
 | What a store tab lists | `src/presentation/screens/store-tabs.ts` — the tabs' buttons and the shown tab's items, beside `store.screen.ts` |
 | Which click opens a store | `src/presentation/input/store-ring.ts` — a left click on the checkpoint ring the hero stands in |
+| What a click or a committed cursor sends | `src/presentation/input/click-commands.ts` — a right click's command and a ring's opening; `aimed-command.ts` — a cast for a slot's cursor, an activation for an item's |
+| What the bank row on the HUD draws | `src/presentation/hud/bank-row.ts`, from `describeActiveItem` in `src/domain/abilities/activation-view.ts` |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |
 | What the developer panel can do | `src/devtools/` — one `*-group.ts` file per panel group, each naming its controls and readouts; the `DevApi` is what they reach the game through |

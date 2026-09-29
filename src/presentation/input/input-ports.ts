@@ -15,12 +15,13 @@ export type CameraLens = Readonly<{
 }>;
 
 /**
- * What the mapper says that is not a command. A refused slot is a cursor the mapper would not
- * open, for the HUD to flash the square with the reason, since nothing reached the buffer to
- * be refused there.
+ * What the mapper says that is not a command. A refused slot, or a refused place of the bank,
+ * from zero, is a cursor the mapper would not open, for the HUD to flash the square with the
+ * reason, since nothing reached the buffer to be refused there.
  */
 export type InputIntents = Readonly<{
   slotRefused: (slot: number, reason: RefusalReason) => void;
+  bankRefused: (slot: number, reason: RefusalReason) => void;
 }>;
 
 /** The driver as the mapper sees it: the command door, and the fraction between ticks the frame is drawn at, so a pick names what is drawn. */

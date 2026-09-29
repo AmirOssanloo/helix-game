@@ -94,13 +94,14 @@ const isNonDecreasing = (values: readonly number[]): boolean =>
 
 /**
  * The preview each targeting kind draws with: a no-target spell commits on the key and shows
- * nothing, a unit spell puts a reticle on whoever is under the pointer, a point spell puts a
- * circle there, a direction spell lays the ground it would cover on the hero, which is a
+ * nothing, a unit spell and a unit-or-self one put a reticle on whoever is under the pointer,
+ * a point spell puts a circle there, a direction spell lays the ground it would cover on the hero, which is a
  * rectangle or a cone, and a vector spell draws the drag from the point pressed to the pointer.
  */
 const PREVIEW_KINDS: Readonly<Record<TargetingKind, readonly string[]>> = {
   none: ["none"],
   unit: ["unit"],
+  unit_or_self: ["unit"],
   point: ["circle"],
   direction: ["rectangle", "cone"],
   vector: ["line"],

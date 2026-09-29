@@ -5,6 +5,7 @@ import type {
   RefusalReason,
   SpellRecord,
   Unit,
+  UnitId,
 } from "@domain/public";
 import {
   createAbilityRequest,
@@ -12,6 +13,7 @@ import {
   slotReadiness,
 } from "@domain/queries";
 import {
+  acquireUnit,
   castReadiness,
   createStatTotals,
   createUnitPool,
@@ -87,6 +89,18 @@ describe("isInCastRange", () => {
 
     expect(isInCastRange(unit, record, "unit", reach, 0, 30)).toBe(true);
     expect(isInCastRange(unit, record, "unit", reach + 1, 0, 30)).toBe(false);
+  });
+
+  it("adds both bound radii for a unit or self, as for a unit", () => {
+    const unit = casterAtOrigin();
+    const reach = RANGE + 24 + 30;
+
+    expect(isInCastRange(unit, record, "unit_or_self", reach, 0, 30)).toBe(
+      true,
+    );
+    expect(isInCastRange(unit, record, "unit_or_self", reach + 1, 0, 30)).toBe(
+      false,
+    );
   });
 
   it("always holds for a direction and for no target", () => {
@@ -248,5 +262,138 @@ describe("castReadiness", () => {
       slot: "dead",
       request: "dead",
     });
+  });
+});
+
+describe("the request stage over a unit-or-self ability", () => {
+  const selfSpell = makeSpellDef.build({
+    recipe: ["quartz", "whorl", "ember"],
+    targeting: "unit_or_self",
+    range: RANGE,
+  });
+  const unitSpell = makeSpellDef.build({
+    recipe: ["whorl", "whorl", "whorl"],
+    targeting: "unit",
+    range: RANGE,
+  });
+  const form = makeFormDef.build({
+    abilities: [selfSpell.id, unitSpell.id],
+  });
+
+  type Arranged = Readonly<{ world: Simulation; hero: Unit; heroId: UnitId }>;
+
+  /** A hero holding the unit-or-self spell in D and the unit spell in F, ready to cast either. */
+  const arrangeHero = (): Arranged => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        hero: { ...heroDef, forms: [form.id] },
+        forms: [form],
+        spells: [selfSpell, unitSpell],
+      }),
+    });
+    const hero = spawnHero(world, { orbLevels: [1, 1, 1] });
+    const formRecord = world.state.run.forms[0];
+    const heroId = world.state.run.heroId;
+
+    if (formRecord === undefined || heroId === null) {
+      throw new Error("The hero has a form and an id");
+    }
+
+    formRecord.kit.prepared[0] = selfSpell.id;
+    formRecord.kit.prepared[1] = unitSpell.id;
+
+    return { world, hero, heroId };
+  };
+
+  /** A unit of `kind` standing within range of the hero, by id. */
+  const stand = (world: Simulation, kind: "enemy" | "summon"): UnitId => {
+    const id = acquireUnit(world.state, kind, 100, 0);
+
+    if (id === null) {
+      throw new Error("The unit pool has room");
+    }
+
+    return id;
+  };
+
+  it("takes the caster itself, aimed where it stands", () => {
+    const { world, hero, heroId } = arrangeHero();
+
+    expect(
+      requestCast(world.state, hero, selfSpell.id, {
+        kind: "unit_or_self",
+        unitId: heroId,
+      }),
+    ).toBeNull();
+    expect(hero.cast.abilityId).toBe(selfSpell.id);
+    expect(hero.cast.targetKind).toBe("unit_or_self");
+    expect(hero.cast.targetId).toBe(heroId);
+  });
+
+  it("takes a unit hostile to the caster", () => {
+    const { world, hero } = arrangeHero();
+    const enemyId = stand(world, "enemy");
+
+    expect(
+      requestCast(world.state, hero, selfSpell.id, {
+        kind: "unit_or_self",
+        unitId: enemyId,
+      }),
+    ).toBeNull();
+    expect(hero.cast.targetId).toBe(enemyId);
+  });
+
+  it("refuses a unit on the caster's side that is not the caster, and changes nothing", () => {
+    const { world, hero } = arrangeHero();
+    const summonId = stand(world, "summon");
+
+    expect(
+      requestCast(world.state, hero, selfSpell.id, {
+        kind: "unit_or_self",
+        unitId: summonId,
+      }),
+    ).toBe("invalid_target");
+    expect(hero.cast.abilityId).toBeNull();
+  });
+
+  it("refuses a target of the other kind either way: a unit target for it, and a unit-or-self target for a unit spell", () => {
+    const { world, hero, heroId } = arrangeHero();
+
+    expect(
+      requestCast(world.state, hero, selfSpell.id, {
+        kind: "unit",
+        unitId: heroId,
+      }),
+    ).toBe("invalid_target");
+    expect(
+      requestCast(world.state, hero, unitSpell.id, {
+        kind: "unit_or_self",
+        unitId: heroId,
+      }),
+    ).toBe("invalid_target");
+  });
+
+  it("commits on the caster the tick its cast point ends, with the caster as the cast's unit", () => {
+    const { world, hero, heroId } = arrangeHero();
+
+    submit(world, {
+      kind: "cast",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+      abilityId: selfSpell.id,
+      target: { kind: "unit_or_self", unitId: heroId },
+    });
+
+    for (
+      let tick = 0;
+      tick < 30 && !hero.cooldowns.has(selfSpell.id);
+      tick += 1
+    ) {
+      world.tick();
+    }
+
+    expect(hero.cooldowns.has(selfSpell.id)).toBe(true);
+    expect(hero.cast.abilityId).toBeNull();
   });
 });

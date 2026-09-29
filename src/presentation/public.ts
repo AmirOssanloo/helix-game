@@ -24,9 +24,15 @@ export {
   wedgeFrameFor,
   wedgeStepFor,
 } from "./hud/ability-square.view";
+export { BankRow, type BankRowPorts } from "./hud/bank-row";
 export { BarView } from "./hud/bar.view";
 export { Hud, type HudPorts, type KitResolver } from "./hud/hud";
 export {
+  BANK_KEY_LABELS,
+  BANK_SQUARE_SIZE,
+  bankSquareAt,
+  bankSquareCentreX,
+  bankSquareCentreY,
   BAR_RECT,
   containsPoint,
   ORB_ROW_CENTRE_Y,
@@ -37,8 +43,15 @@ export {
 } from "./hud/hud-layout";
 export { LevelView } from "./hud/level.view";
 export { OrbSquaresView } from "./hud/orb-squares.view";
-export { FLASH_REFUSED_TINT, ORB_TINTS, orbTint } from "./hud/palette";
 export {
+  ACTIVE_ITEM_TINT,
+  FLASH_REFUSED_TINT,
+  GREYED_ALPHA,
+  ORB_TINTS,
+  orbTint,
+} from "./hud/palette";
+export {
+  bankSquareOf,
   type FlashKind,
   flashKindOf,
   refusalFlashTicks,
@@ -92,9 +105,11 @@ export {
   KEY_BINDINGS,
   LEFT_BUTTON,
   RIGHT_BUTTON,
+  SPACE_CODE,
   suppressBrowserDefault,
 } from "./input/key-bindings";
 export type {
+  BankKeyOutcome,
   CursorKind,
   SlotKeyOutcome,
   TargetingCursor,

@@ -1,5 +1,7 @@
 import { assertNever } from "@shared/public";
+import { bankSlotOfPlace, isBankPlace } from "../items/item-place";
 import type { AnyCommand } from "./command";
+import { SLOT_COUNT } from "./command";
 
 /**
  * The sort key of one submitted command. The buffer fills one per entry at submit time, so the
@@ -7,14 +9,14 @@ import type { AnyCommand } from "./command";
  */
 export type CommandOrder = {
   timestamp: number;
-  /** The slot a slot-key command names, 1 to 6, or `null` for every other command. */
-  slot: number | null;
+  /** The key a command sorts as, from `keyOf`, or `null` for a command that names no key. */
+  key: number | null;
   /** The position the command arrived at, the last tie-break. */
   arrival: number;
 };
 
-/** Sorts after every slot, so a command with no slot follows the slot-key commands it ties with. */
-const NO_SLOT = Number.MAX_SAFE_INTEGER;
+/** Sorts after every key, so a command with no key follows the key commands it ties with. */
+const NO_KEY = Number.MAX_SAFE_INTEGER;
 
 /**
  * The slot a command names, or `null`. The six slot keys are one variant carrying a slot
@@ -75,9 +77,25 @@ export const slotOf = (command: AnyCommand): number | null => {
 };
 
 /**
- * The ordering rule: by timestamp; on a tie, a slot-key command before any other, and the slots
- * in the order Q, W, E, R, D, F, which is ascending slot index; then by arrival. Two different
- * entries never compare equal, so the order is the same in every run.
+ * The key a command sorts as on a timestamp tie: the slot it names, 1 to 6, for Q, W, E, R, D,
+ * F and a skill-point spend; for an activation, the place of the bank it names, 7 to 12, for
+ * T, X, V, C, G, Space; `null` for every other command, an activation naming a place outside
+ * the bank among them.
+ */
+export const keyOf = (command: AnyCommand): number | null => {
+  if (command.kind === "activate_item") {
+    return isBankPlace(command.place)
+      ? SLOT_COUNT + 1 + bankSlotOfPlace(command.place)
+      : null;
+  }
+
+  return slotOf(command);
+};
+
+/**
+ * The ordering rule: by timestamp; on a tie, a key command before any other, in the order Q,
+ * W, E, R, D, F, then T, X, V, C, G, Space, which is ascending key; then by arrival. Two
+ * different entries never compare equal, so the order is the same in every run.
  */
 export const compareCommandOrder = (
   a: CommandOrder,
@@ -87,11 +105,11 @@ export const compareCommandOrder = (
     return a.timestamp - b.timestamp;
   }
 
-  const slotA = a.slot ?? NO_SLOT;
-  const slotB = b.slot ?? NO_SLOT;
+  const keyA = a.key ?? NO_KEY;
+  const keyB = b.key ?? NO_KEY;
 
-  if (slotA !== slotB) {
-    return slotA - slotB;
+  if (keyA !== keyB) {
+    return keyA - keyB;
   }
 
   return a.arrival - b.arrival;

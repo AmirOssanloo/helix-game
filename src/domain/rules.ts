@@ -49,7 +49,7 @@ export { isHostile, sideOf } from "./combat/sides";
 export { applyDamage, mitigate } from "./combat/damage";
 export { deathSystem } from "./combat/death.system";
 export { applyDebugCommand } from "./debug/debug-commands";
-export { compareCommandOrder, slotOf } from "./commands/ordering";
+export { compareCommandOrder, keyOf, slotOf } from "./commands/ordering";
 export { TARGETING_KINDS } from "./definitions/ability-def";
 export {
   attackTicks,

@@ -12,6 +12,8 @@ export const WHITE = 0xffffff;
 export const BACKDROP_TINT = 0x101010;
 export const SOCKET_TINT = 0x5a5a5a;
 export const COMPOSER_TINT = 0xe0c060;
+/** An active item's emerald, on its bank square. */
+export const ACTIVE_ITEM_TINT = 0x50c878;
 export const KEY_LABEL_TINT = 0xffffff;
 export const DIMMED_TINT = 0x404040;
 export const WEDGE_TINT = 0x000000;

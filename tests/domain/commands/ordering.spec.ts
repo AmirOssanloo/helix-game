@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest";
-import type { CommandOrder } from "@domain/public";
-import { compareCommandOrder, slotOf } from "@domain/rules";
+import type { AnyCommand, CommandOrder } from "@domain/public";
+import { bankPlace } from "@domain/queries";
+import { compareCommandOrder, keyOf, slotOf } from "@domain/rules";
 
 const order = (
   timestamp: number,
-  slot: number | null,
+  key: number | null,
   arrival: number,
-): CommandOrder => ({ timestamp, slot, arrival });
+): CommandOrder => ({ timestamp, key, arrival });
+
+const activation = (place: number): AnyCommand => ({
+  kind: "activate_item",
+  tick: 0,
+  timestamp: 0,
+  place,
+  target: { kind: "none" },
+});
 
 describe("compareCommandOrder", () => {
   it("puts the earlier timestamp first whatever arrived first", () => {
@@ -31,6 +40,17 @@ describe("compareCommandOrder", () => {
 
     expect(compareCommandOrder(invoke, quartz)).toBeGreaterThan(0);
     expect(compareCommandOrder(quartz, invoke)).toBeLessThan(0);
+  });
+
+  it("puts every slot key before an activation, and the activations T, X, V, C, G, Space", () => {
+    const flask = order(10, 6, 0);
+    const tKey = order(10, keyOf(activation(bankPlace(0))), 1);
+    const space = order(10, keyOf(activation(bankPlace(5))), 2);
+    const plain = order(10, null, 3);
+
+    expect(compareCommandOrder(tKey, flask)).toBeGreaterThan(0);
+    expect(compareCommandOrder(space, tKey)).toBeGreaterThan(0);
+    expect(compareCommandOrder(plain, space)).toBeGreaterThan(0);
   });
 
   it("falls back to arrival on the same timestamp and slot", () => {
@@ -82,5 +102,26 @@ describe("slotOf", () => {
         value: 300,
       }),
     ).toBeNull();
+  });
+});
+
+describe("keyOf", () => {
+  it("is the slot for a slot key and a skill-point spend", () => {
+    expect(keyOf({ kind: "slot", tick: 0, timestamp: 0, slot: 4 })).toBe(4);
+    expect(
+      keyOf({ kind: "spend_skill_point", tick: 0, timestamp: 0, slot: 2 }),
+    ).toBe(2);
+  });
+
+  it("is 7 to 12 for an activation of the bank's places, T to Space", () => {
+    for (let slot = 0; slot < 6; slot += 1) {
+      expect(keyOf(activation(bankPlace(slot)))).toBe(7 + slot);
+    }
+  });
+
+  it("is null for an activation naming a place outside the bank, and for a command naming no key", () => {
+    expect(keyOf(activation(0))).toBeNull();
+    expect(keyOf(activation(bankPlace(6)))).toBeNull();
+    expect(keyOf({ kind: "stop", tick: 0, timestamp: 0 })).toBeNull();
   });
 });

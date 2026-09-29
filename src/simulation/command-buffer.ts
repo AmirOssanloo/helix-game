@@ -1,5 +1,5 @@
 import type { AnyCommand, CommandOrder } from "@domain/public";
-import { compareCommandOrder, slotOf } from "@domain/rules";
+import { compareCommandOrder, keyOf } from "@domain/rules";
 import { assert } from "@shared/public";
 
 /** Commands one tick can hold. Input arrives a few per frame; the panel's bursts stay well under this. */
@@ -13,7 +13,7 @@ type Entry = CommandOrder & {
 const createEntry = (): Entry => ({
   command: null,
   timestamp: 0,
-  slot: null,
+  key: null,
   arrival: 0,
 });
 
@@ -22,7 +22,7 @@ const createEntry = (): Entry => ({
  * in the constructor, and the sort at tick start moves entries in place, so a full session
  * allocates nothing here after creation.
  *
- * The buffer stores the command by reference and reads only its `timestamp` and its slot, so
+ * The buffer stores the command by reference and reads only its `timestamp` and its key, so
  * a command is a value the buffer never changes.
  */
 export class CommandBuffer {
@@ -69,7 +69,7 @@ export class CommandBuffer {
 
     entry.command = command;
     entry.timestamp = command.timestamp;
-    entry.slot = slotOf(command);
+    entry.key = keyOf(command);
     entry.arrival = this.size;
     this.size += 1;
 
@@ -77,7 +77,7 @@ export class CommandBuffer {
   }
 
   /**
-   * Puts the waiting commands into the order the tick consumes them: by timestamp, then slot
+   * Puts the waiting commands into the order the tick consumes them: by timestamp, then key
    * priority, then arrival. An insertion sort, because a tick holds a handful of commands and
    * the sort must not allocate.
    */

@@ -1,7 +1,12 @@
 import type { Item } from "@domain/public";
-import { ITEM_LINE_CAPACITY, levelRequirementOf } from "@domain/queries";
+import {
+  activeItemById,
+  ITEM_LINE_CAPACITY,
+  levelRequirementOf,
+} from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import { ACTIVE_ITEM_TINT } from "../hud/palette";
 import { itemBaseOf, legendaryOf, rarityOf } from "../views/ground-item.view";
 import type { Label, LabelFactory } from "../views/quad";
 import type { TooltipPrice } from "./tooltip-text";
@@ -23,6 +28,15 @@ export const TOOLTIP_LINE_CAPACITY = 4 + ITEM_LINE_CAPACITY + 1;
 export const TOOLTIP_TEXT_TINT = 0xd8d8d8;
 export const UNMET_REQUIREMENT_TINT = 0xe04040;
 export const PRICE_TINT = 0xf2c230;
+
+/**
+ * What an active item's tooltip names beside its name and price: its ability's cooldown in
+ * seconds and its mana cost, at the level the hero casts it at, as the domain says.
+ */
+export type ActiveFigures = {
+  cooldownSeconds: number;
+  mana: number;
+};
 
 const OPAQUE = 1;
 const HALF = 0.5;
@@ -72,7 +86,8 @@ export class TooltipLines {
    * Writes every line of `item` with this requirement mark and price, and shows the labels it
    * fills when `visible`, hiding the rest: the name in the rarity's tint, the rarity and the
    * base, the item level, the level requirement, each stat line in the order the item holds
-   * them, and the price when there is one.
+   * them, and the price when there is one. An active item has no rarity, level, or stat line:
+   * its name in emerald, COOLDOWN and MANA from `figures`, and the price.
    */
   write(
     world: WorldView,
@@ -80,7 +95,30 @@ export class TooltipLines {
     met: boolean,
     price: TooltipPrice,
     gold: number,
+    figures: Readonly<ActiveFigures>,
     visible: boolean,
+  ): void {
+    this.count = 0;
+    this.widestGlyphs = 0;
+
+    if (item.activeId === null) {
+      this.writeEquipment(world, item, met);
+    } else {
+      this.writeActive(world, item.activeId, figures);
+    }
+
+    if (price !== "none") {
+      this.writeLine(priceText(price, gold), PRICE_TINT);
+    }
+
+    this.setShown(visible);
+  }
+
+  /** The lines of a piece of equipment above its price. */
+  private writeEquipment(
+    world: WorldView,
+    item: DeepReadonly<Item>,
+    met: boolean,
   ): void {
     const base = itemBaseOf(world, item.baseId);
     const rarity = rarityOf(world, item.rarityId);
@@ -89,8 +127,6 @@ export class TooltipLines {
     const name = piece === null ? baseName : piece.name.toUpperCase();
     const rarityName = rarity === null ? "" : `${rarity.name.toUpperCase()} `;
 
-    this.count = 0;
-    this.widestGlyphs = 0;
     this.writeLine(name, rarity === null ? TOOLTIP_TEXT_TINT : rarity.tint);
     this.writeLine(`${rarityName}${baseName}`, TOOLTIP_TEXT_TINT);
     this.writeLine(`ITEM LEVEL ${String(item.itemLevel)}`, TOOLTIP_TEXT_TINT);
@@ -102,12 +138,25 @@ export class TooltipLines {
     for (let line = 0; line < item.lineCount; line += 1) {
       this.writeLine(statLineText(world, item, line), TOOLTIP_TEXT_TINT);
     }
+  }
 
-    if (price !== "none") {
-      this.writeLine(priceText(price, gold), PRICE_TINT);
-    }
+  /** The lines of the active item `activeId` above its price: its name, its cooldown, and its mana cost. */
+  private writeActive(
+    world: WorldView,
+    activeId: string,
+    figures: Readonly<ActiveFigures>,
+  ): void {
+    const active = activeItemById(world.run.activeItems, activeId);
 
-    this.setShown(visible);
+    this.writeLine(
+      active === null ? UNNAMED : active.name.toUpperCase(),
+      ACTIVE_ITEM_TINT,
+    );
+    this.writeLine(
+      `COOLDOWN ${String(figures.cooldownSeconds)}`,
+      TOOLTIP_TEXT_TINT,
+    );
+    this.writeLine(`MANA ${String(figures.mana)}`, TOOLTIP_TEXT_TINT);
   }
 
   /** Shows the labels the shown item fills, or hides every label. */

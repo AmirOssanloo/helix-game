@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
-import type { GroundItemId, GroundItemKind, Unit } from "@domain/public";
+import type {
+  ActiveItemDef,
+  GroundItemId,
+  GroundItemKind,
+  Unit,
+} from "@domain/public";
+import { bankPlace, NO_PLACE } from "@domain/queries";
 import {
   acquireGroundItem,
   acquireUnit,
@@ -32,6 +38,7 @@ import {
   RIGHT_BUTTON,
   suppressBrowserDefault,
 } from "@presentation/public";
+import { createEventReader } from "@simulation/public";
 import type { Simulation } from "@simulation/testing";
 import {
   CommandRecorder,
@@ -85,6 +92,25 @@ const vectorSpell = makeSpellDef.build({
   recipe: ["quartz", "quartz", "ember"],
   targeting: "vector",
 });
+const selfSpell = makeSpellDef.build({
+  recipe: ["quartz", "whorl", "whorl"],
+  targeting: "unit_or_self",
+});
+const quickSpell = makeSpellDef.build({
+  recipe: ["whorl", "whorl", "ember"],
+  targeting: "none",
+  range: 0,
+});
+const wardSpell = makeSpellDef.build({
+  recipe: ["whorl", "ember", "ember"],
+  targeting: "none",
+  range: 0,
+});
+const calmSpell = makeSpellDef.build({
+  recipe: ["quartz", "ember", "ember"],
+  targeting: "none",
+  range: 0,
+});
 
 const form = makeFormDef.build({
   abilities: [
@@ -137,6 +163,10 @@ const arrange = (
         unitSpell,
         directionSpell,
         vectorSpell,
+        selfSpell,
+        quickSpell,
+        wardSpell,
+        calmSpell,
       ],
     }),
     map: makeMapDef.build({
@@ -597,6 +627,7 @@ describe("the keys", () => {
     expect(mapper.cursor).toEqual({
       kind: "slot",
       slot: D,
+      place: NO_PLACE,
       abilityId: pointSpell.id,
       targeting: "point",
       ...NOTHING_HELD,
@@ -612,6 +643,7 @@ describe("the keys", () => {
     expect(mapper.cursor).toEqual({
       kind: "slot",
       slot: F,
+      place: NO_PLACE,
       abilityId: unitSpell.id,
       targeting: "unit",
       ...NOTHING_HELD,
@@ -1003,6 +1035,7 @@ describe("a vector cursor", () => {
     expect(mapper.cursor).toEqual({
       kind: "slot",
       slot: D,
+      place: NO_PLACE,
       abilityId: vectorSpell.id,
       targeting: "vector",
       held: true,
@@ -1026,6 +1059,7 @@ describe("a vector cursor", () => {
     expect(mapper.cursor).toEqual({
       kind: "closed",
       slot: 0,
+      place: NO_PLACE,
       abilityId: null,
       targeting: "none",
       ...NOTHING_HELD,
@@ -1245,7 +1279,7 @@ describe("Alt", () => {
     expect(driver.commands.map((command) => command.kind)).toEqual(["slot"]);
   });
 
-  it("has its browser default prevented, down and up, and no other key has", () => {
+  it("has its browser default prevented, down and up, and no other key has but Space", () => {
     const prevented: string[] = [];
     const press = (code: string): void => {
       suppressBrowserDefault({
@@ -1261,8 +1295,10 @@ describe("Alt", () => {
     press("KeyQ");
     press("Escape");
     press("ShiftLeft");
+    press("Space");
+    press("KeyT");
 
-    expect(prevented).toEqual(["AltLeft", "AltRight"]);
+    expect(prevented).toEqual(["AltLeft", "AltRight", "Space"]);
   });
 });
 
@@ -1636,5 +1672,285 @@ describe("a left click on a checkpoint's ring", () => {
     expect(driver.commands.map((command) => command.kind)).toEqual([
       "open_store",
     ]);
+  });
+});
+
+/** An active item named `id` casting `abilityId`, at a price no case reads. */
+const activeItem = (id: string, abilityId: string): ActiveItemDef => ({
+  id,
+  name: id,
+  price: 1000,
+  width: 1,
+  height: 2,
+  active: { abilityId, refusedWhileRooted: false },
+});
+
+/** Three items with no target, each casting an ability of its own, for T, V, and Space. */
+const TIE_ITEMS: readonly ActiveItemDef[] = [
+  activeItem("quick", quickSpell.id),
+  activeItem("ward", wardSpell.id),
+  activeItem("calm", calmSpell.id),
+];
+
+const POINT_ITEM = activeItem("reticle", pointSpell.id);
+const SELF_ITEM = activeItem("sceptre", selfSpell.id);
+const INSTANT_ITEM = activeItem("flask", instantSpell.id);
+
+/** The bank's keys by DOM code, in its order: T, X, V, then C, G, Space. */
+const BANK_CODES: readonly string[] = [
+  "KeyT",
+  "KeyX",
+  "KeyV",
+  "KeyC",
+  "KeyG",
+  "Space",
+];
+
+/** Puts the active item `activeId` in the bank's place `slot`, as a buy would leave it. */
+const bank = (world: Simulation, slot: number, activeId: string): void => {
+  const item = world.state.run.bank[slot];
+
+  if (item === undefined) {
+    throw new Error("The bank has the place");
+  }
+
+  item.activeId = activeId;
+};
+
+/** An activation of the bank's place `slot`, at `target`, as the recorder stamps it, for a spec to compare with. */
+const activation = (
+  slot: number,
+  timestamp: number,
+  target: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, unknown>> => ({
+  kind: "activate_item",
+  tick: 0,
+  timestamp,
+  place: bankPlace(slot),
+  target,
+});
+
+/** A recorder whose clock never moves: every key of a frame lands on one timestamp. */
+class FrozenRecorder extends CommandRecorder {
+  override now(): number {
+    return 1;
+  }
+}
+
+describe("the bank's keys", () => {
+  it("send an activation naming each key's place, T X V C G Space, for an item with no target", () => {
+    const instantItems = BANK_CODES.map((_, slot) =>
+      activeItem(`flask_${String(slot)}`, instantSpell.id),
+    );
+    const { world, driver, mapper } = arrange(undefined, {
+      activeItems: instantItems,
+    });
+
+    instantItems.forEach((item, slot) => {
+      bank(world, slot, item.id);
+    });
+    BANK_CODES.forEach((code) => {
+      mapper.keyDown(code);
+      mapper.keyUp(code);
+    });
+
+    expect(driver.commands).toEqual(
+      BANK_CODES.map((_, slot) => activation(slot, slot + 1, { kind: "none" })),
+    );
+  });
+
+  it("send nothing over an empty place, and flash nothing", () => {
+    const { driver, intents, mapper } = arrange(undefined, {
+      activeItems: [INSTANT_ITEM],
+    });
+
+    BANK_CODES.forEach((code) => {
+      mapper.keyDown(code);
+      mapper.keyUp(code);
+    });
+
+    expect(driver.commands).toEqual([]);
+    expect(intents.bankRefusals).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+  });
+
+  it("fire once on key-down and not again while held", () => {
+    const { world, driver, mapper } = arrange(undefined, {
+      activeItems: [INSTANT_ITEM],
+    });
+
+    bank(world, 0, INSTANT_ITEM.id);
+    mapper.keyDown("KeyT");
+    mapper.keyDown("KeyT");
+
+    expect(driver.commands).toHaveLength(1);
+  });
+
+  it("apply in the order Q W E R D F, then T X V C G Space, when they land on one timestamp", () => {
+    const { world, hero } = arrange([instantSpell.id, null], {
+      activeItems: TIE_ITEMS,
+    });
+    const driver = new FrozenRecorder(world);
+    const mapper = new InputMapper({
+      driver,
+      lens: new FixedLens(),
+      world: world.view,
+      intents: new IntentRecorder(),
+      groundPick: createGroundPick(),
+      picks: createPickPort(PICK_ROOM, PICK_ROOM),
+    });
+    const reader = createEventReader();
+
+    while (world.events.read(reader) !== null) {
+      // Past the spawn.
+    }
+
+    bank(world, 0, TIE_ITEMS[0]?.id ?? "");
+    bank(world, 2, TIE_ITEMS[1]?.id ?? "");
+    bank(world, 5, TIE_ITEMS[2]?.id ?? "");
+    mapper.keyDown("Space");
+    mapper.keyDown("KeyV");
+    mapper.keyDown("KeyT");
+    mapper.keyDown("KeyD");
+    world.tick();
+
+    const places: number[] = [];
+    let event = world.events.read(reader);
+
+    while (event !== null) {
+      if (event.kind === "item_activated") {
+        places.push(event.place);
+      }
+
+      event = world.events.read(reader);
+    }
+
+    expect(driver.commands.map((command) => command.timestamp)).toEqual([
+      1, 1, 1, 1,
+    ]);
+    expect(places).toEqual([bankPlace(0), bankPlace(2), bankPlace(5)]);
+    // D applied first and Space last, so Space's cast is the one the hero holds.
+    expect(hero.cast.abilityId).toBe(calmSpell.id);
+  });
+
+  it("open an item's cursor for a targeted item and send nothing, then the click activates its place at the point", () => {
+    const { world, hero, driver, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 1, POINT_ITEM.id);
+    mapper.keyDown("KeyX");
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor).toEqual({
+      kind: "item",
+      slot: 0,
+      place: bankPlace(1),
+      abilityId: pointSpell.id,
+      targeting: "point",
+      ...NOTHING_HELD,
+    });
+
+    mapper.pointerDown(LEFT_BUTTON, 120, 40);
+    world.tick();
+
+    expect(driver.commands).toEqual([
+      activation(1, 1, { kind: "point", position: { x: 120, y: 40 } }),
+    ]);
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(hero.cast.abilityId).toBe(pointSpell.id);
+    expect(hero.cast.source).toBe(bankPlace(1));
+  });
+
+  it("keep an item's cursor shut with its reason, flashing its place, when its clock runs", () => {
+    const { world, hero, driver, intents, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 3, POINT_ITEM.id);
+    hero.cooldowns.set(pointSpell.id, COOLDOWN_END_TICK);
+    mapper.keyDown("KeyC");
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(intents.bankRefusals).toEqual([{ slot: 3, reason: "on_cooldown" }]);
+    expect(intents.refusals).toEqual([]);
+  });
+
+  it("take the hero itself as the target of a unit-or-self item, by a left click on it", () => {
+    const { world, hero, driver, mapper } = arrange(undefined, {
+      activeItems: [SELF_ITEM],
+    });
+    const heroId = world.state.run.heroId;
+
+    bank(world, 4, SELF_ITEM.id);
+    mapper.keyDown("KeyG");
+    mapper.pointerDown(LEFT_BUTTON, 0, 0);
+    world.tick();
+
+    expect(heroId).not.toBeNull();
+    expect(driver.commands).toEqual([
+      activation(4, 1, { kind: "unit_or_self", unitId: heroId }),
+    ]);
+    expect(hero.cast.abilityId).toBe(selfSpell.id);
+    expect(hero.cast.targetId).toBe(heroId);
+  });
+
+  it("take an enemy as the target of a unit-or-self item, and nothing on bare ground", () => {
+    const { world, hero, driver, mapper } = arrange(undefined, {
+      activeItems: [SELF_ITEM],
+    });
+    const enemyId = standUnit(world, "enemy", 300, 0);
+
+    bank(world, 4, SELF_ITEM.id);
+    mapper.keyDown("KeyG");
+    mapper.pointerDown(LEFT_BUTTON, 150, 150);
+
+    expect(driver.commands).toEqual([]);
+    expect(mapper.cursor.kind).toBe("item");
+
+    mapper.pointerDown(LEFT_BUTTON, 300, 0);
+    world.tick();
+
+    expect(driver.commands).toEqual([
+      activation(4, 1, { kind: "unit_or_self", unitId: enemyId }),
+    ]);
+    expect(hero.cast.targetId).toBe(enemyId);
+  });
+
+  it("close an item's cursor on the frame the hero dies, with nothing sent", () => {
+    const { world, driver, intents, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 0, POINT_ITEM.id);
+    mapper.keyDown("KeyT");
+
+    expect(mapper.cursor.kind).toBe("item");
+
+    world.submit({
+      kind: "kill_hero",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+    });
+    world.tick();
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(driver.commands).toEqual([]);
+    expect(intents.bankRefusals).toEqual([]);
+  });
+
+  it("leave an item's cursor open under a silence, which refuses no item", () => {
+    const { world, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 0, POINT_ITEM.id);
+    mapper.keyDown("KeyT");
+    wear(world, "silence");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("item");
   });
 });

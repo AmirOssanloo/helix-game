@@ -135,7 +135,10 @@ export class HudScene extends Phaser.Scene {
     this.tooltip = tooltip;
     this.tooltipSources = {
       world: this.context.world,
-      screenItemAt: (x, y) => store.itemAt(x, y) ?? inventory.itemAt(x, y),
+      screenItemAt: (x, y) =>
+        store.itemAt(x, y) ??
+        inventory.itemAt(x, y) ??
+        hud.bankItemAt(this.context.world, x, y),
       covers: (x, y) => claim.covers(x, y),
       labels: this.context.picks.labels,
     };

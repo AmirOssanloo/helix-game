@@ -6,7 +6,7 @@ import { GroundLayer } from "../camera/ground-layer";
 import { Projection, VIEW_SCALE } from "../camera/projection";
 import { ScreenUnits } from "../camera/screen-units";
 import { WorldCamera } from "../camera/world-camera";
-import { refusalFlashTicks } from "../hud/slot-flashes";
+import { bankSquareOf, refusalFlashTicks } from "../hud/slot-flashes";
 import {
   bindSceneInput,
   cameraLens,
@@ -102,6 +102,14 @@ export class PlayScene extends Phaser.Scene {
       slotRefused: (slot, reason): void => {
         this.context.flashes.flash(
           slot,
+          reason,
+          this.context.driver.nextTick,
+          refusalFlashTicks(this.context.world),
+        );
+      },
+      bankRefused: (slot, reason): void => {
+        this.context.flashes.flash(
+          bankSquareOf(slot),
           reason,
           this.context.driver.nextTick,
           refusalFlashTicks(this.context.world),

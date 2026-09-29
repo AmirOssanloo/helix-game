@@ -1,5 +1,6 @@
 import type { Vec2 } from "@shared/public";
 import { assert, bearing, distanceSquared } from "@shared/public";
+import { aimsAtUnit } from "../definitions/ability-def";
 import type { SpellRecord } from "../definitions/spell-state";
 import { entryAtLevel } from "../definitions/spell-state";
 import { readTunable } from "../definitions/tuning-state";
@@ -97,7 +98,7 @@ const isApproaching = (unit: Readonly<Unit>): boolean =>
  * nothing may land on.
  */
 const aimOf = (world: World, unit: Readonly<Unit>, out: Vec2): number => {
-  if (unit.cast.targetKind === "unit") {
+  if (aimsAtUnit(unit.cast.targetKind)) {
     const target =
       unit.cast.targetId === null
         ? null
@@ -232,7 +233,7 @@ const contextOf = (
   const aim = world.scratch.cast.aim;
   const context = world.scratch.cast.context;
   const kind = unit.cast.targetKind;
-  const onTarget = kind === "point" || kind === "unit" || kind === "vector";
+  const onTarget = kind === "point" || aimsAtUnit(kind) || kind === "vector";
   const isUnderCaster = aim.x === unit.curr.x && aim.y === unit.curr.y;
   const faces =
     kind === "vector" && !isUnderCaster ? bearing(unit.curr, aim) : unit.facing;

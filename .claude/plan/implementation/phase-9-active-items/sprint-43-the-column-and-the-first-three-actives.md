@@ -33,6 +33,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 
 > **Note, 2026-09-29, from P9-S42-T02:** the validator's `activate_item` case in `src/domain/orders/validator.ts` checks the place and the target only, and `activationReadiness` in `src/domain/abilities/cast.ts` death, the clock, and the cost; the column goes into both, so the validator refuses by it and the HUD greys by it. The active block's root refusal is already in the request stage. A stored log now holds an activation only in a spec's own recording, so the note above holds: no stored checksum moves. **Size holds at 0.5.**
 
+> **Note, 2026-09-29, from P9-S42-T03:** the presentation reads the column in two places this ticket's build reaches. The HUD's bank row greys a square from `activationReadiness`, so the column added there greys it and the flash stripes it with no presentation change. The item's cursor in `src/presentation/input/input-mapper.ts` (`syncCursor`) closes on death alone and skips the matrix for `cursor.kind === "item"`; with the column, it closes when the column says closed, as a slot cursor reads `targetingCursor` (Q141 (6)). `tests/presentation/input-mapper.spec.ts` has the case "leave an item's cursor open under a silence", which stays true, and gains one for a stun. **Size holds at 0.5.**
+
 **Build:** `DisableCellsDef` gains the active-item column and `COMMAND_COLUMNS` reads it for `activate_item`: allowed under silence, root, disarm, slow, and every row but stun and lift, which refuse it (Q121, the [disable matrix](../../../../docs/product/specs/disable-matrix.md)'s notes 17 to 20). Slipknife's refusal under root is its active block's, not the column's.
 
 **Acceptance:**

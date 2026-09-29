@@ -4,21 +4,28 @@ import type { Scalar } from "./level-table";
 /**
  * What a cast is aimed at. A no-target ability commits on the key-down; point and unit open
  * a cursor on screen and commit on the click that confirms it, carrying a position or a
- * unit; direction turns the caster toward the click, commits, and is never out of range;
+ * unit; unit or self does the same for a unit hostile to the caster or the caster itself;
+ * direction turns the caster toward the click, commits, and is never out of range;
  * vector commits on the release of a press, carrying the point pressed, which is where the
  * ability lands and what the range is measured to, and the point released, whose bearing
  * from the first is the line the ability lies along.
  */
-export type TargetingKind = "none" | "point" | "unit" | "direction" | "vector";
+export type TargetingKind =
+  "none" | "point" | "unit" | "unit_or_self" | "direction" | "vector";
 
 /** Every targeting kind, for content validation to check a definition against. */
 export const TARGETING_KINDS: readonly TargetingKind[] = [
   "none",
   "point",
   "unit",
+  "unit_or_self",
   "direction",
   "vector",
 ];
+
+/** Whether a cast of `kind` is aimed at a unit it names: a unit, or a unit or the caster itself. */
+export const aimsAtUnit = (kind: TargetingKind): boolean =>
+  kind === "unit" || kind === "unit_or_self";
 
 /**
  * The shape the targeting cursor draws while an ability waits for its click: nothing, a

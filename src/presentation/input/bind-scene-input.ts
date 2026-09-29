@@ -88,8 +88,8 @@ export const claimedSink = (
  * Listens on the scene's input plugins and hands every event to `sink`. The context menu is
  * disabled so a right click is an order and not a browser menu; a button coming up is handed
  * over whether it came up on the canvas or off it, so a held press dragged past the edge
- * still commits; a window blur releases every key; Alt's browser default is suppressed. Returns the unbind, for the scene's
- * shutdown.
+ * still commits; a window blur releases every key; Alt's and Space's browser defaults are
+ * suppressed. Returns the unbind, for the scene's shutdown.
  */
 export const bindSceneInput = (
   scene: Phaser.Scene,
@@ -117,8 +117,8 @@ export const bindSceneInput = (
   const onBlur = (): void => {
     sink.blur();
   };
-  // Phaser prevents the default only for an unmodified key, and Alt is its own modifier, so
-  // the page listens for Alt itself, down and up, as the key comes.
+  // Phaser prevents the default only for a key it captures, and Alt is its own modifier, so
+  // the page listens for Alt and Space itself, down and up, as the key comes.
   const onBrowserKey = (event: KeyboardEvent): void => {
     suppressBrowserDefault(event);
   };

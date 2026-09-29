@@ -17,6 +17,7 @@ Centred at the bottom of the screen.
 | Orb buffer | Three squares, oldest on the left, newest on the right, each coloured by orb, and an outline where a slot is empty |
 | Ability squares | Q, W, E, R, D, F in a row. Each shows its key, a cooldown sweep while cooling, and a mana cost for R, D, and F |
 | Level | The hero's level, with an experience bar beneath it and a marker when a skill point is unspent |
+| Bank | Six squares to the right of the level, T X V above C G Space, each drawn as an ability square: the active item in emerald with a short name, its key, a cooldown sweep while its clock runs, and its mana cost, greyed while the hero's mana is short of it. An empty place is an empty socket. A refused key flashes its square as any square does, and every square greys while the hero is dead |
 | Town portal square | B, one square beside the bank's row, drawn as an ability square: its key, and the town portal's 60 s clock as a sweep running from the moment a portal opens. A refused B flashes as any square does: grey while the clock runs, striped under a stun or a lift, white in town |
 
 Skill points are spent by clicking the Q, W, or E square while a point is unspent. Each square shows its orb level as a small number.
@@ -29,7 +30,7 @@ Escape, with no targeting cursor open and no screen to close, opens the pause sc
 
 ## The inventory and the store
 
-I opens the inventory and closes it; a left click on the checkpoint ring the hero stands in opens the store, with the inventory beside it. Both are screens, drawn over the bar like the pause screen, and unlike it they leave the world running. Gold is shown on each, never on the bar. The pointer over an item on a screen, or over an item's label on the ground where no screen or the bar covers it, shows the item's tooltip over everything, and an item lifted onto the pointer draws there too. What each screen does is in [Items and loot](./items-and-loot.md#the-inventory-and-armory).
+I opens the inventory and closes it; a left click on the checkpoint ring the hero stands in opens the store, with the inventory beside it. Both are screens, drawn over the bar like the pause screen, and unlike it they leave the world running. Gold is shown on each, never on the bar. The pointer over an item on a screen or on a square of the bank, or over an item's label on the ground where no screen or the bar covers it, shows the item's tooltip over everything, and an item lifted onto the pointer draws there too. What each screen does is in [Items and loot](./items-and-loot.md#the-inventory-and-armory).
 
 ## Around the hero
 

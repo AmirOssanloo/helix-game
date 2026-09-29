@@ -1,6 +1,7 @@
-import type { GroundItemId, UnitId } from "@domain/public";
+import type { UnitId } from "@domain/public";
 import type { AnyCommand, CastTarget } from "@domain/public";
 import {
+  bankPlace,
   createCandidateBuffer,
   isClosed,
   UNIT_CAPACITY,
@@ -8,6 +9,8 @@ import {
 import type { Vec2 } from "@shared/public";
 import { clamp } from "@shared/public";
 import type { WorldView } from "@simulation/public";
+import { aimedCommand } from "./aimed-command";
+import { rightClickCommand, ringCommand } from "./click-commands";
 import type { GroundPick } from "./ground-pick";
 import type {
   CameraLens,
@@ -25,7 +28,6 @@ import {
 } from "./key-bindings";
 import type { Pick, PickSources } from "./pick-order";
 import { createPick, pickOrder } from "./pick-order";
-import { ringClicked } from "./store-ring";
 import type { TargetingCursor } from "./targeting-cursor";
 import {
   castTargetOf,
@@ -34,6 +36,7 @@ import {
   holdPress,
   isDrag,
   openAttackMoveCursor,
+  pressBankKey,
   pressSlotKey,
 } from "./targeting-cursor";
 
@@ -136,8 +139,9 @@ export class InputMapper {
    * closed. Every cursor goes when the hero dies, since a dead hero takes no order. Otherwise
    * a cursor goes when the disable matrix's cell for it says closed under a status the hero
    * wears: a slot cursor on a stun, a silence, or a lift, the attack-move cursor on a stun or
-   * a lift, since silence leaves movement and attacks to the hero. Nothing flashes: the
-   * player asked for nothing yet.
+   * a lift, since silence leaves movement and attacks to the hero. An item's cursor reads no
+   * cell, as its activation reads none, and goes on death alone. Nothing flashes: the player
+   * asked for nothing yet.
    */
   syncCursor(): void {
     if (this.cursor.kind === "closed") {
@@ -153,13 +157,14 @@ export class InputMapper {
 
     const blocked =
       hero.state === "dead" ||
-      isClosed(
-        this.world.run.disableMatrix,
-        hero.disables,
-        this.cursor.kind === "attack_move"
-          ? "attackMoveCursor"
-          : "targetingCursor",
-      );
+      (this.cursor.kind !== "item" &&
+        isClosed(
+          this.world.run.disableMatrix,
+          hero.disables,
+          this.cursor.kind === "attack_move"
+            ? "attackMoveCursor"
+            : "targetingCursor",
+        ));
 
     if (blocked) {
       closeCursor(this.cursor);
@@ -189,6 +194,13 @@ export class InputMapper {
       case "slot":
         if (binding.slot !== null) {
           this.pressSlot(binding.slot);
+        }
+
+        break;
+
+      case "bank":
+        if (binding.slot !== null) {
+          this.pressBank(binding.slot);
         }
 
         break;
@@ -291,19 +303,10 @@ export class InputMapper {
       this.end.y = press.y;
     }
 
-    const target: CastTarget = {
+    this.sendAim({
       kind: "vector",
       position: { x: press.x, y: press.y },
       end: { x: this.end.x, y: this.end.y },
-    };
-
-    closeCursor(this.cursor);
-    this.submit({
-      kind: "cast",
-      tick: this.driver.nextTick,
-      timestamp: this.driver.now(),
-      abilityId,
-      target,
     });
   }
 
@@ -331,6 +334,33 @@ export class InputMapper {
     }
   }
 
+  /** A bank key for place `slot`, from zero: an activation with no target, a cursor, nothing for an empty place, or a refusal the bank square flashes. */
+  private pressBank(slot: number): void {
+    closeCursor(this.cursor);
+
+    const outcome = pressBankKey(this.world, slot, this.cursor);
+
+    switch (outcome) {
+      case "send":
+        this.submit({
+          kind: "activate_item",
+          tick: this.driver.nextTick,
+          timestamp: this.driver.now(),
+          place: bankPlace(slot),
+          target: { kind: "none" },
+        });
+        break;
+
+      case "opened":
+      case "empty":
+        break;
+
+      default:
+        this.intents.bankRefused(slot, outcome);
+        break;
+    }
+  }
+
   /**
    * A right click does what the pick order names under it, the label first while Alt shows
    * every label: an enemy is attacked and any other unit takes the click with nothing sent, an
@@ -348,51 +378,10 @@ export class InputMapper {
       this.showsEveryLabel,
       this.pick,
     );
-    const unitId = pick.unitId;
-    const unit = unitId === null ? null : this.world.map.units.resolve(unitId);
 
-    if (pick.entry === "ground") {
-      this.sendMove(this.point.x, this.point.y);
-    } else if (pick.entry !== "unit") {
-      this.sendPick(pick.groundItemId);
-    } else if (unitId !== null && unit !== null && unit.kind === "enemy") {
-      this.submit({
-        kind: "attack_target",
-        tick: this.driver.nextTick,
-        timestamp: this.driver.now(),
-        targetId: unitId,
-      });
-    }
-  }
-
-  /** Sends a pick up of `id`, or a move to it for gold or a globe, taken by walking; nothing for none or one already gone. */
-  private sendPick(id: GroundItemId | null): void {
-    const groundItem =
-      id === null ? null : this.world.map.groundItems.resolve(id);
-
-    if (id === null || groundItem === null) {
-      return;
-    }
-
-    if (groundItem.kind === "item") {
-      this.submit({
-        kind: "pick_up",
-        tick: this.driver.nextTick,
-        timestamp: this.driver.now(),
-        groundItemId: id,
-      });
-    } else {
-      this.sendMove(groundItem.position.x, groundItem.position.y);
-    }
-  }
-
-  private sendMove(x: number, y: number): void {
-    this.submit({
-      kind: "move",
-      tick: this.driver.nextTick,
-      timestamp: this.driver.now(),
-      destination: { x, y },
-    });
+    this.submitIfAny(
+      rightClickCommand(this.world, pick, this.point, this.driver),
+    );
   }
 
   private leftClick(screenX: number, screenY: number): void {
@@ -404,7 +393,7 @@ export class InputMapper {
           this.groundPick.pending = null;
           pending(this.point.x, this.point.y);
         } else {
-          this.clickRing();
+          this.submitIfAny(ringCommand(this.world, this.point, this.driver));
         }
 
         break;
@@ -421,6 +410,7 @@ export class InputMapper {
         break;
 
       case "slot":
+      case "item":
         if (this.cursor.targeting === "vector") {
           holdPress(this.cursor, this.point, screenX, screenY);
         } else {
@@ -431,23 +421,8 @@ export class InputMapper {
     }
   }
 
-  /** A left click on the ring of the checkpoint the hero stands in opens its store, unless it is open already; anywhere else it selects, which sends nothing yet. */
-  private clickRing(): void {
-    const checkpoint = ringClicked(this.world, this.point);
-
-    if (checkpoint !== -1 && checkpoint !== this.world.map.openStore) {
-      this.submit({
-        kind: "open_store",
-        tick: this.driver.nextTick,
-        timestamp: this.driver.now(),
-        checkpoint,
-      });
-    }
-  }
-
   /** The confirming click: a point or a direction is always a target; a unit cast waits for a click on a unit. A vector commits on its release instead. */
   private commitCast(): void {
-    const abilityId = this.cursor.abilityId;
     const target = castTargetOf(
       this.cursor,
       this.world,
@@ -456,18 +431,20 @@ export class InputMapper {
       this.candidates,
     );
 
-    if (abilityId === null || target === null) {
-      return;
+    if (target !== null) {
+      this.sendAim(target);
     }
+  }
+
+  /**
+   * Closes the open cursor and sends what it aimed at `target`: a cast of a slot's ability,
+   * or an activation of an item's place of the bank. A cursor with no ability sends nothing.
+   */
+  private sendAim(target: CastTarget): void {
+    const command = aimedCommand(this.cursor, target, this.driver);
 
     closeCursor(this.cursor);
-    this.submit({
-      kind: "cast",
-      tick: this.driver.nextTick,
-      timestamp: this.driver.now(),
-      abilityId,
-      target,
-    });
+    this.submitIfAny(command);
   }
 
   /** The world point under the screen position now, clamped inside the map. */
@@ -482,5 +459,12 @@ export class InputMapper {
   /** Hands the command to the driver. A refusal, hidden or full, is the driver's to count. */
   private submit(command: AnyCommand): void {
     this.driver.submit(command);
+  }
+
+  /** Hands the command to the driver, or nothing for `null`. */
+  private submitIfAny(command: AnyCommand | null): void {
+    if (command !== null) {
+      this.driver.submit(command);
+    }
   }
 }

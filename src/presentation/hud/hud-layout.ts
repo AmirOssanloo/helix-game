@@ -1,4 +1,4 @@
-import { SLOT_COUNT } from "@domain/queries";
+import { BANK_SLOT_COUNT, SLOT_COUNT } from "@domain/queries";
 import type { Rect } from "@shared/public";
 
 /**
@@ -32,11 +32,37 @@ export const EXPERIENCE_BAR_WIDTH = 160;
 export const EXPERIENCE_BAR_HEIGHT = 12;
 export const MARKER_SIZE = 16;
 
+/** The bank's squares: a grid of three a row, T X V above C G Space, to the right of the level block. */
+export const BANK_SQUARE_SIZE = 56;
+export const BANK_SQUARE_GAP = 8;
+export const BANK_MARGIN = 32;
+export const BANK_COLUMNS = 3;
+
+/** What each square's key label reads: the kit's by slot from one, the bank's by place from zero. */
+export const KIT_KEY_LABELS: readonly string[] = [
+  "",
+  "Q",
+  "W",
+  "E",
+  "R",
+  "D",
+  "F",
+];
+export const BANK_KEY_LABELS: readonly string[] = [
+  "T",
+  "X",
+  "V",
+  "C",
+  "G",
+  "SPC",
+];
+
 /** Text sizes, in pixels a line. */
 export const KEY_LABEL_SIZE = 28;
 export const SMALL_LABEL_SIZE = 18;
 export const BAR_LABEL_SIZE = 18;
 export const LEVEL_LABEL_SIZE = 32;
+export const BANK_LABEL_SIZE = 12;
 
 const HALF = 0.5;
 
@@ -86,11 +112,30 @@ export const LEVEL_LABEL_CENTRE_Y = SQUARES_CENTRE_Y - LEVEL_LABEL_SIZE * HALF;
 export const EXPERIENCE_BAR_CENTRE_Y =
   SQUARES_CENTRE_Y + LEVEL_LABEL_SIZE * HALF + EXPERIENCE_BAR_HEIGHT;
 
+/** The x of the bank's first column's left edge. */
+export const BANK_LEFT =
+  LEVEL_CENTRE_X + EXPERIENCE_BAR_WIDTH * HALF + BANK_MARGIN;
+
+/** The x of the centre of the bank's square for place `slot`, from zero. */
+export const bankSquareCentreX = (slot: number): number =>
+  BANK_LEFT +
+  (slot % BANK_COLUMNS) * (BANK_SQUARE_SIZE + BANK_SQUARE_GAP) +
+  BANK_SQUARE_SIZE * HALF;
+
+/** The y of the centre of the bank's square for place `slot`, from zero: the two rows straddle the ability squares' centre line. */
+export const bankSquareCentreY = (slot: number): number =>
+  SQUARES_CENTRE_Y +
+  (Math.floor(slot / BANK_COLUMNS) - HALF) *
+    (BANK_SQUARE_SIZE + BANK_SQUARE_GAP);
+
 /** The rectangle the whole bar covers: a click inside it belongs to the HUD and never reaches the world. */
 export const BAR_RECT: Readonly<Rect> = {
   minX: BARS_CENTRE_X - BAR_WIDTH * HALF,
   minY: ORB_ROW_CENTRE_Y - ORB_SQUARE_SIZE * HALF,
-  maxX: LEVEL_CENTRE_X + EXPERIENCE_BAR_WIDTH * HALF,
+  maxX:
+    BANK_LEFT +
+    BANK_COLUMNS * BANK_SQUARE_SIZE +
+    (BANK_COLUMNS - 1) * BANK_SQUARE_GAP,
   maxY: HUD_HEIGHT,
 };
 
@@ -119,4 +164,25 @@ export const squareAt = (x: number, y: number): number => {
   }
 
   return 0;
+};
+
+/** The bank's square under (`x`, `y`), its place from zero, or `-1` when none is. */
+export const bankSquareAt = (x: number, y: number): number => {
+  const half = BANK_SQUARE_SIZE * HALF;
+
+  for (let slot = 0; slot < BANK_SLOT_COUNT; slot += 1) {
+    const centreX = bankSquareCentreX(slot);
+    const centreY = bankSquareCentreY(slot);
+
+    if (
+      x >= centreX - half &&
+      x <= centreX + half &&
+      y >= centreY - half &&
+      y <= centreY + half
+    ) {
+      return slot;
+    }
+  }
+
+  return -1;
 };

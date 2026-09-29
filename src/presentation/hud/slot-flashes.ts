@@ -1,9 +1,15 @@
 import type { RefusalReason, Tick } from "@domain/public";
-import { readTunable, SLOT_COUNT } from "@domain/queries";
+import { BANK_SLOT_COUNT, readTunable, SLOT_COUNT } from "@domain/queries";
 import type { WorldView } from "@simulation/public";
 
 /** What a square flashes for: mana is red, a clock grey, a disable or death striped, and any other refusal a plain white blink. */
 export type FlashKind = "none" | "mana" | "cooldown" | "disable" | "refused";
+
+/** How many squares flash: the six of the kit, one to six, then the bank's six, seven to twelve. */
+export const FLASH_SQUARE_COUNT = SLOT_COUNT + BANK_SLOT_COUNT;
+
+/** The square the bank's place `slot`, from zero, flashes on: seven for T to twelve for Space. */
+export const bankSquareOf = (slot: number): number => SLOT_COUNT + 1 + slot;
 
 /** How long a refusal flash shows, in ticks, as the world view's tuning state holds it now. */
 export const refusalFlashTicks = (world: WorldView): number =>
@@ -79,8 +85,9 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
 };
 
 /**
- * The refusal flash on each of the six squares: what it shows and the tick it stops. Two
- * writers share one record: the play scene's input mapper, for a cursor it would not open,
+ * The refusal flash on each of the twelve squares, the kit's six and the bank's six: what it
+ * shows and the tick it stops. Two writers share one record: the play scene's input mapper,
+ * for a cursor it would not open,
  * which never reaches the buffer to be refused there, and the HUD, for a refused-command
  * event. The end is a tick, not a frame count, so a flash pauses with the simulation. How
  * long it shows comes with the flash, from the tuning table, so one already showing keeps the
@@ -92,20 +99,20 @@ export class SlotFlashes {
   private readonly untilTicks: Tick[] = [];
 
   constructor() {
-    for (let slot = 0; slot <= SLOT_COUNT; slot += 1) {
+    for (let slot = 0; slot <= FLASH_SQUARE_COUNT; slot += 1) {
       this.kinds.push("none");
       this.untilTicks.push(0);
     }
   }
 
-  /** Starts a flash on `slot` for `reason` at tick `now`, showing for `durationTicks`. A slot outside the six is ignored. */
+  /** Starts a flash on square `slot` for `reason` at tick `now`, showing for `durationTicks`. A square outside the twelve is ignored. */
   flash(
     slot: number,
     reason: RefusalReason,
     now: Tick,
     durationTicks: number,
   ): void {
-    if (!Number.isInteger(slot) || slot < 1 || slot > SLOT_COUNT) {
+    if (!Number.isInteger(slot) || slot < 1 || slot > FLASH_SQUARE_COUNT) {
       return;
     }
 

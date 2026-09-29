@@ -1,16 +1,22 @@
-/** What a bound key does: names a slot, arms an attack-move, stops, or closes the cursor. */
-export type KeyAction = "slot" | "attack_move" | "stop" | "cancel";
+/** What a bound key does: names a slot, names a place of the bank, arms an attack-move, stops, or closes the cursor. */
+export type KeyAction = "slot" | "bank" | "attack_move" | "stop" | "cancel";
 
-/** One key the mapper listens for, by its DOM `code`. `slot` is the slot index for a slot key and `null` for the rest. */
+/**
+ * One key the mapper listens for, by its DOM `code`. `slot` is the slot index for a slot key,
+ * the place of the bank from zero for a bank key, and `null` for the rest.
+ */
 export type KeyBinding = Readonly<{
   code: string;
   action: KeyAction;
   slot: number | null;
 }>;
 
+/** The Space bar, by DOM `code`: a bank key whose browser default scrolls the page. */
+export const SPACE_CODE = "Space";
+
 /**
- * The layout: Q W E R D F are slots one to six, A arms an attack-move, S stops, Escape
- * cancels. A key absent here, Shift included, produces nothing. Rebinding is a settings-menu
+ * The layout: Q W E R D F are slots one to six, T X V C G Space are the bank's six places in
+ * its order, top row first, A arms an attack-move, S stops, Escape cancels. A key absent here, Shift included, produces nothing. Rebinding is a settings-menu
  * feature and lands as a different table, not a different mapper.
  */
 export const KEY_BINDINGS: readonly KeyBinding[] = [
@@ -20,6 +26,12 @@ export const KEY_BINDINGS: readonly KeyBinding[] = [
   { code: "KeyR", action: "slot", slot: 4 },
   { code: "KeyD", action: "slot", slot: 5 },
   { code: "KeyF", action: "slot", slot: 6 },
+  { code: "KeyT", action: "bank", slot: 0 },
+  { code: "KeyX", action: "bank", slot: 1 },
+  { code: "KeyV", action: "bank", slot: 2 },
+  { code: "KeyC", action: "bank", slot: 3 },
+  { code: "KeyG", action: "bank", slot: 4 },
+  { code: SPACE_CODE, action: "bank", slot: 5 },
   { code: "KeyA", action: "attack_move", slot: null },
   { code: "KeyS", action: "stop", slot: null },
   { code: "Escape", action: "cancel", slot: null },
@@ -64,12 +76,12 @@ export type BrowserKeyEvent = Readonly<{
 }>;
 
 /**
- * Stops the browser acting on an Alt key: a released Alt would otherwise move focus to the
- * browser's menu bar, and the next key would drive the menu instead of the game. Any other key
- * is left to the browser.
+ * Stops the browser acting on an Alt key and on Space: a released Alt would otherwise move
+ * focus to the browser's menu bar, and the next key would drive the menu instead of the game,
+ * and Space would scroll the page. Any other key is left to the browser.
  */
 export const suppressBrowserDefault = (event: BrowserKeyEvent): void => {
-  if (altIndexOf(event.code) !== -1) {
+  if (altIndexOf(event.code) !== -1 || event.code === SPACE_CODE) {
     event.preventDefault();
   }
 };
