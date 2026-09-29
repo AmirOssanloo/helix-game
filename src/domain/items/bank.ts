@@ -123,6 +123,62 @@ export const bankHoldsAbility = (
   return false;
 };
 
+/** What the read of a move with the bank reads of run scope: the bank, the inventory, and the active items. */
+type BankMoves = DeepReadonly<{
+  bank: Item[];
+  inventory: Inventory;
+  activeItems: ActiveItemDef[];
+}>;
+
+/**
+ * Whether a move with a place of the bank at either end, `from` and `to` each a cell or a
+ * place of the bank, would go through as `moveWithBank` applies it, read without changing
+ * anything: within the bank from a place holding an item; out of it where the grid takes the
+ * item, as an item from outside the grid is set down; into it with an active item, over an
+ * empty place or over one whose item then fits in the grid. The inventory screen marks a
+ * bank square and the cells under an item lifted from the bank by it.
+ */
+export const movesWithBank = (
+  run: BankMoves,
+  from: number,
+  to: number,
+): boolean => {
+  const inventory = run.inventory;
+
+  if (isBankPlace(from)) {
+    const moved = activeItemById(
+      run.activeItems,
+      run.bank[bankSlotOfPlace(from)]?.activeId ?? null,
+    );
+
+    if (moved === null) {
+      return false;
+    }
+
+    return (
+      isBankPlace(to) ||
+      incomingOutcome(inventory, moved.width, moved.height, to) !== MOVE_BLOCKED
+    );
+  }
+
+  const record = recordAt(inventory, from);
+  const placed = record === NO_RECORD ? undefined : inventory.placed[record];
+
+  if (placed === undefined || !placed.live || placed.item.activeId === null) {
+    return false;
+  }
+
+  const target = activeItemById(
+    run.activeItems,
+    run.bank[bankSlotOfPlace(to)]?.activeId ?? null,
+  );
+
+  return (
+    target === null ||
+    firstFit(inventory, target.width, target.height, record) !== -1
+  );
+};
+
 /**
  * Puts a copy of the active item `item` in the bank's first free place, else in the
  * inventory's first fit, and returns the place it went to, or `-1` with nothing changed when

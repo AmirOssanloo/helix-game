@@ -42,7 +42,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How a pick up order walks to a ground item, and what ends it | `src/domain/orders/pick-up-transitions.ts` — the walk and its end; the take on arrival is the pickup system under `src/domain/loot/` |
 | How an item is made, held on the grid, worn, and priced, and how a place is encoded | `src/domain/items/` — the item value, the inventory and its fit test, the armory and its totals, the item commands, the prices, and the place encoding |
 | Which active items exist, the ability each casts, and the statuses each carries while banked | `src/content/items/actives/` — one file per active item, its active block naming its ability by key |
-| How the bank holds active items, where a bought one goes, and which range of the place encoding is the bank's | `src/domain/items/` — the bank beside the inventory, and the place encoding in `item-place.ts` |
+| How the bank holds active items, where a bought one goes, whether a move with it goes through, and which range of the place encoding is the bank's | `src/domain/items/` — the bank beside the inventory, and the place encoding in `item-place.ts` |
 | How an activation becomes a cast, and what refuses it | `grep -rn "activate_item" src/domain` — the variant in the item command union under `src/domain/commands/`, and where the command system hands it to the cast rules under `src/domain/abilities/` |
 | How a store is stocked, opened, closed, and traded with | `src/domain/store/` — the store records, the stock roll, the store commands, and the store system |
 | What a ground item holds, and how many there can be | `src/domain/entities/ground-item.ts` — the capacity at the top |
@@ -93,7 +93,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | In what order a right click reads a unit, a label, an icon, and the ground | `src/presentation/input/pick-order.ts` — the one list, and the walk that turns it for Alt |
 | What a right click can name on the ground | The pick port in `src/presentation/input/input-ports.ts` — the labels and icons the ground-item views write each frame |
 | Which screens exist | `src/presentation/screens/` — one module per screen, with its layout and the parts it is built from beside it, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
-| How an item is lifted and set down on the grid, and how a refused item command flashes on a screen | `src/presentation/screens/inventory-lift.ts` and `inventory-flashes.ts` |
+| How an item is lifted and set down on the grid or the bank's row, and how a refused item command flashes on a screen | `src/presentation/screens/inventory-lift.ts` and `inventory-flashes.ts` |
+| How the inventory dresses an item: its frame, its tint, and its backdrop | `src/presentation/screens/inventory-dress.ts` |
 | What an item's tooltip shows, and what it is over | `src/presentation/screens/tooltip.ts`, its lines built in `tooltip-lines.ts` and worded in `tooltip-text.ts`; `store-follow.ts` beside them picks the price line and ties the store screen to the world's store |
 | What a store tab lists | `src/presentation/screens/store-tabs.ts` — the tabs' buttons and the shown tab's items, beside `store.screen.ts`; the Misc tab's listing of active items in `store-listing.ts` |
 | Which click opens a store | `src/presentation/input/store-ring.ts` — a left click on the checkpoint ring the hero stands in |

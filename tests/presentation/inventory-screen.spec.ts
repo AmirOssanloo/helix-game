@@ -1,9 +1,14 @@
+import { GCProfiler } from "node:v8";
 import { describe, expect, it } from "vitest";
 import { contentRegistry, heroDef } from "@content/public";
-import type { Item, ItemBaseDef } from "@domain/public";
+import type { ActiveItemDef, Item, ItemBaseDef } from "@domain/public";
+import { bankPlace, createActiveItem } from "@domain/queries";
 import { createItem, placeItem } from "@domain/rules";
 import {
+  ACTIVE_ITEM_TINT,
   ARMORY_SLOT_RECTS,
+  bankSquareCentreX,
+  bankSquareCentreY,
   BLOCKED_CELL_TINT,
   FREE_CELL_TINT,
   goldText,
@@ -18,6 +23,7 @@ import {
   SOCKET_TINT,
   UNMET_BACKDROP_TINT,
 } from "@presentation/public";
+import type { Quad } from "@presentation/public";
 import type { Rect } from "@shared/public";
 import { createEventReader } from "@simulation/public";
 import type { Simulation } from "@simulation/testing";
@@ -55,6 +61,9 @@ const LIFTED_BACKDROP = 0;
 const LIFTED_ICON = 1;
 const FIRST_MARK = 3;
 
+/** The mark over the bank's first square, after the cells'. */
+const FIRST_BANK_MARK = 3 + 40;
+
 /** Far enough for a held press to lift its item, and near enough not to. */
 const DRAGGED = 20;
 const TREMBLE = 5;
@@ -77,6 +86,28 @@ const baseOf = (id: string): ItemBaseDef => {
 
 const cap = baseOf("cap");
 const band = baseOf("band");
+
+/** An active item one cell across and two down, casting the first spell the content holds. */
+const VIAL: ActiveItemDef = {
+  id: "vial",
+  name: "Vial",
+  price: 1000,
+  width: 1,
+  height: 2,
+  active: {
+    abilityId: contentRegistry.spells[0]?.id ?? "",
+    refusedWhileRooted: false,
+  },
+};
+
+/** A second, two cells square, so the bank can hold two and the grid can lack room for it. */
+const FLASK: ActiveItemDef = {
+  ...VIAL,
+  id: "flask",
+  name: "Flask",
+  width: 2,
+  height: 2,
+};
 
 /** A helm only a hero of level five may wear. */
 const crown: ItemBaseDef = { ...cap, id: "crown", requirement: 5 };
@@ -119,6 +150,10 @@ type Arranged = Readonly<{
   labels: LabelRecorder[];
   /** Places an item of `base` with its corner on `corner`, and returns its placed record. */
   put: (base: ItemBaseDef, corner: number) => number;
+  /** Places the active item `active` with its corner on `corner`, and returns its placed record. */
+  putActive: (active: ActiveItemDef, corner: number) => number;
+  /** Puts the active item `active` in the bank's place `slot`. */
+  bank: (active: ActiveItemDef, slot: number) => void;
   /** A press and its release at the centre of `rect`, handed to the screen as the claim would. */
   clickIn: (button: number, rect: Readonly<Rect>) => void;
   /** A press and its release, with no move, at the centre of grid cell `cell`. */
@@ -144,6 +179,7 @@ const arrange = (): Arranged => {
       hero: { ...heroDef, forms: [form.id] },
       forms: [form],
       itemBases: [...contentRegistry.itemBases, crown],
+      activeItems: [VIAL, FLASK],
     }),
   });
 
@@ -208,6 +244,23 @@ const arrange = (): Arranged => {
         base.height,
         corner,
       ),
+    putActive: (active, corner) =>
+      placeItem(
+        world.state.run.inventory,
+        createActiveItem(active.id),
+        active.width,
+        active.height,
+        corner,
+      ),
+    bank: (active, slot) => {
+      const item = world.state.run.bank[slot];
+
+      if (item === undefined) {
+        throw new Error(`The bank has its place ${slot}`);
+      }
+
+      item.activeId = active.id;
+    },
     clickIn: (button, rect) => {
       const [x, y] = centreOf(rect);
 
@@ -806,3 +859,335 @@ describe("the inventory screen's lifted item", () => {
     expect(driver.commands).toEqual([]);
   });
 });
+
+describe("the inventory screen's lift with the bank", () => {
+  /** The bank squares whose mark shows, by place from zero. */
+  const markedSquares = (over: readonly QuadRecorder[]): number[] =>
+    over
+      .slice(FIRST_BANK_MARK, FIRST_BANK_MARK + 6)
+      .flatMap((mark, slot) => (mark.visible ? [slot] : []));
+
+  const markedCells = (over: readonly QuadRecorder[]): number[] =>
+    over
+      .slice(FIRST_MARK, FIRST_MARK + CELLS)
+      .flatMap((mark, cell) => (mark.visible ? [cell] : []));
+
+  const squareX = (slot: number): number => bankSquareCentreX(slot);
+  const squareY = (slot: number): number => bankSquareCentreY(slot);
+
+  /** A press on the bank's square `slot`, and a move the drag distance, then a frame synced. */
+  const liftFromSquare = (arranged: Arranged, slot: number): void => {
+    arranged.screen.pointerDown(LEFT_BUTTON, squareX(slot), squareY(slot));
+    arranged.moveTo(squareX(slot) + DRAGGED, squareY(slot));
+  };
+
+  it("draws an active item in the grid in emerald", () => {
+    const { quads, putActive, screen } = arrange();
+    const record = putActive(VIAL, 0);
+
+    screen.sync();
+
+    expect(recordQuads(quads, record).icon.tint).toBe(ACTIVE_ITEM_TINT);
+  });
+
+  it("sets an active item lifted from the grid down on an empty bank square with one move_item, the square marked free", () => {
+    const {
+      driver,
+      world,
+      over,
+      putActive,
+      pressCell,
+      moveTo,
+      releaseAt,
+      step,
+    } = arrange();
+
+    putActive(VIAL, 3);
+    pressCell(LEFT_BUTTON, 3);
+    moveTo(squareX(4), squareY(4));
+
+    expect(markedSquares(over)).toEqual([4]);
+    expect(markedCells(over)).toEqual([]);
+    expect(quadAt(over, FIRST_BANK_MARK + 4).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(squareX(4), squareY(4));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({ kind: "move_item", from: 3, to: bankPlace(4) }),
+    ]);
+    expect(markedSquares(over)).toEqual([]);
+
+    step();
+
+    expect(world.view.run.bank[4]?.activeId).toBe(VIAL.id);
+    expect(world.view.run.inventory.placed.some((each) => each.live)).toBe(
+      false,
+    );
+  });
+
+  it("sets an item lifted from a bank square down in the grid with one move_item, the cells it would take marked", () => {
+    const arranged = arrange();
+    const { driver, world, over, bank, moveToCell, releaseAt, step } = arranged;
+
+    bank(VIAL, 0);
+    liftFromSquare(arranged, 0);
+
+    expect(quadAt(over, LIFTED_ICON).visible).toBe(true);
+    expect(quadAt(over, LIFTED_ICON).tint).toBe(ACTIVE_ITEM_TINT);
+    expect(driver.commands).toEqual([]);
+
+    moveToCell(12);
+
+    expect(markedCells(over)).toEqual([12, 22]);
+    expect(quadAt(over, FIRST_MARK + 12).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(cellX(12), cellY(12));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({
+        kind: "move_item",
+        from: bankPlace(0),
+        to: 12,
+      }),
+    ]);
+
+    step();
+
+    expect(world.view.run.bank[0]?.activeId).toBe(null);
+    expect(world.view.run.inventory.placed[0]?.corner).toBe(12);
+    expect(world.view.run.inventory.placed[0]?.item.activeId).toBe(VIAL.id);
+  });
+
+  it("sets an item lifted from a bank square down on another with one move_item, and the two swap places", () => {
+    const arranged = arrange();
+    const { driver, world, over, bank, moveTo, releaseAt, step } = arranged;
+
+    bank(VIAL, 0);
+    bank(FLASK, 4);
+    liftFromSquare(arranged, 0);
+    moveTo(squareX(4), squareY(4));
+
+    expect(markedSquares(over)).toEqual([4]);
+    expect(quadAt(over, FIRST_BANK_MARK + 4).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(squareX(4), squareY(4));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({
+        kind: "move_item",
+        from: bankPlace(0),
+        to: bankPlace(4),
+      }),
+    ]);
+
+    step();
+
+    expect(world.view.run.bank[0]?.activeId).toBe(FLASK.id);
+    expect(world.view.run.bank[4]?.activeId).toBe(VIAL.id);
+  });
+
+  it("marks a bank square blocked under an item that is not active, and a release there sends nothing", () => {
+    const { driver, world, over, put, pressCell, moveTo, releaseAt } =
+      arrange();
+
+    put(cap, 0);
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(squareX(2), squareY(2));
+
+    expect(markedSquares(over)).toEqual([2]);
+    expect(quadAt(over, FIRST_BANK_MARK + 2).tint).toBe(BLOCKED_CELL_TINT);
+
+    releaseAt(squareX(2), squareY(2));
+
+    expect(driver.commands).toEqual([]);
+    expect(world.view.run.bank[2]?.activeId).toBe(null);
+  });
+
+  it("marks an occupied bank square free while the grid has room for the item it puts out, and blocked while it has none", () => {
+    const { over, put, putActive, bank, pressCell, moveTo, releaseAt } =
+      arrange();
+
+    bank(FLASK, 1);
+    putActive(VIAL, 0);
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(squareX(1), squareY(1));
+
+    expect(quadAt(over, FIRST_BANK_MARK + 1).tint).toBe(FREE_CELL_TINT);
+
+    releaseAt(squareX(1), squareY(1));
+
+    // Every cell but the vial's two covered, so the flask has nowhere to go.
+    for (let corner = 1; corner < CELLS; corner += 1) {
+      if (corner !== 10) {
+        put(band, corner);
+      }
+    }
+
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(squareX(1), squareY(1));
+
+    expect(quadAt(over, FIRST_BANK_MARK + 1).tint).toBe(BLOCKED_CELL_TINT);
+  });
+
+  it("marks the cells blocked under an item from the bank where the grid would refuse it, and sends nothing there", () => {
+    const arranged = arrange();
+    const { driver, over, put, bank, moveToCell, releaseAt } = arranged;
+
+    put(band, 12);
+    put(band, 22);
+    bank(VIAL, 0);
+    liftFromSquare(arranged, 0);
+    moveToCell(12);
+
+    expect(markedCells(over)).toEqual([12, 22]);
+    expect(quadAt(over, FIRST_MARK + 12).tint).toBe(BLOCKED_CELL_TINT);
+
+    releaseAt(cellX(12), cellY(12));
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("sends nothing for an item from the bank set down on its own square, or a press on a square that never moves", () => {
+    const arranged = arrange();
+    const { driver, screen, bank, moveTo, releaseAt } = arranged;
+
+    bank(VIAL, 0);
+    liftFromSquare(arranged, 0);
+    moveTo(squareX(0), squareY(0));
+    releaseAt(squareX(0), squareY(0));
+    screen.pointerDown(LEFT_BUTTON, squareX(0), squareY(0));
+    releaseAt(squareX(0), squareY(0));
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("takes no press on the bank's row while it is closed, and lifts nothing there", () => {
+    const { driver, screen, over, bank, moveTo, releaseAt } = arrange();
+
+    bank(VIAL, 0);
+
+    expect(screen.contains(squareX(0), squareY(0))).toBe(true);
+
+    screen.hide();
+
+    expect(screen.contains(squareX(0), squareY(0))).toBe(false);
+
+    screen.pointerDown(LEFT_BUTTON, squareX(0), squareY(0));
+    moveTo(squareX(0) + DRAGGED, squareY(0));
+
+    expect(screen.held).toBe(false);
+    expect(over.every((quad) => !quad.visible)).toBe(true);
+
+    releaseAt(cellX(0), cellY(0));
+
+    expect(driver.commands).toEqual([]);
+  });
+
+  it("flashes the item when the move into the bank is refused, and it stays where it was", () => {
+    const {
+      driver,
+      world,
+      quads,
+      put,
+      putActive,
+      bank,
+      pressCell,
+      moveTo,
+      releaseAt,
+      step,
+    } = arrange();
+    const record = putActive(VIAL, 0);
+
+    bank(FLASK, 3);
+    pressCell(LEFT_BUTTON, 0);
+    moveTo(bankSquareCentreX(3), bankSquareCentreY(3));
+    releaseAt(bankSquareCentreX(3), bankSquareCentreY(3));
+
+    expect(driver.commands).toEqual([
+      expect.objectContaining({ kind: "move_item", from: 0, to: bankPlace(3) }),
+    ]);
+
+    // The grid fills before the move applies, so the flask it would put out has nowhere to go.
+    for (let corner = 1; corner < CELLS; corner += 1) {
+      if (corner !== 10) {
+        put(band, corner);
+      }
+    }
+
+    step();
+
+    expect(recordQuads(quads, record).flash.visible).toBe(true);
+    expect(world.view.run.inventory.placed[record]?.corner).toBe(0);
+    expect(world.view.run.bank[3]?.activeId).toBe(FLASK.id);
+  });
+
+  it("allocates nothing while an item is lifted and carried between the grid and the bank", () => {
+    const { world, driver, bank } = arrange();
+    // Quads that keep no writes, as the game's do not; a recorder's list of writes would grow.
+    const silentQuad = (): Quad => ({
+      x: 0,
+      y: 0,
+      rotation: 0,
+      scale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      tint: 0,
+      alpha: 1,
+      visible: false,
+      setFrame: () => undefined,
+      setDepth: () => undefined,
+      setDisplaySize: () => undefined,
+      setTintMode: () => undefined,
+    });
+    const screen = new InventoryScreen({
+      makeQuad: silentQuad,
+      makeLabel: (size) => new LabelRecorder(size),
+      frameSizes: () => FRAME_WIDTH,
+      world: world.view,
+      driver,
+      makeOverQuad: silentQuad,
+    });
+    const points: readonly (readonly [number, number])[] = [
+      [cellX(5), cellY(5)],
+      [bankSquareCentreX(1), bankSquareCentreY(1)],
+      [bankSquareCentreX(0) + 3.5, bankSquareCentreY(0) - 1.25],
+      [cellX(33) + 7.75, cellY(33)],
+      [INVENTORY_RECT.minX + 4, INVENTORY_RECT.minY + 4],
+    ];
+    const run = (frames: number): void => {
+      for (let index = 0; index < frames; index += 1) {
+        const point = points[index % points.length];
+
+        if (point !== undefined) {
+          screen.pointerMove(point[0], point[1]);
+          screen.sync();
+        }
+      }
+    };
+
+    bank(VIAL, 0);
+    screen.show();
+    screen.pointerDown(LEFT_BUTTON, bankSquareCentreX(0), bankSquareCentreY(0));
+    screen.pointerMove(bankSquareCentreX(0) + DRAGGED, bankSquareCentreY(0));
+    run(WARM_UP_FRAMES);
+
+    const profiler = new GCProfiler();
+
+    profiler.start();
+
+    const before = process.memoryUsage().heapUsed;
+
+    run(MEASURED_FRAMES);
+
+    const after = process.memoryUsage().heapUsed;
+    const collections = profiler.stop().statistics.length;
+
+    expect(screen.held).toBe(true);
+    expect(collections).toBe(0);
+    expect(after - before).toBeLessThan(HEAP_ALLOWANCE_BYTES);
+  });
+});
+
+const WARM_UP_FRAMES = 5_000;
+const MEASURED_FRAMES = 2_000;
+const HEAP_ALLOWANCE_BYTES = 256 * 1024;

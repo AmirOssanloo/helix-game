@@ -6,7 +6,7 @@ import { ScratchRect } from "../camera/scratch";
 import { containsPoint } from "../hud/hud-layout";
 import { ACTIVE_ITEM_TINT, OPAQUE } from "../hud/palette";
 import type { Label } from "../views/quad";
-import { ITEM_BACKDROP_TINT } from "./inventory.screen";
+import { ITEM_BACKDROP_TINT } from "./inventory-dress";
 import type { ItemBoxView } from "./item-box.view";
 import { makeItemBoxes } from "./item-box.view";
 import type { ScreenPorts } from "./screen-parts";

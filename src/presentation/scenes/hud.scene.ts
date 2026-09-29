@@ -138,7 +138,7 @@ export class HudScene extends Phaser.Scene {
       screenItemAt: (x, y) =>
         store.itemAt(x, y) ??
         inventory.itemAt(x, y) ??
-        hud.bankItemAt(this.context.world, x, y),
+        (inventory.held ? null : hud.bankItemAt(this.context.world, x, y)),
       covers: (x, y) => claim.covers(x, y),
       labels: this.context.picks.labels,
     };

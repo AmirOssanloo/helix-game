@@ -45,7 +45,11 @@ export { orbAt } from "./invoke/buffer";
 export { levelRequirementOf, meetsRequirement } from "./items/requirement";
 export { isPercentLine, lineSourceOf } from "./items/armory-totals";
 export { priceOf, sellPriceOf } from "./items/prices";
-export { firstFreeBankSlot, holdsActiveItem } from "./items/bank";
+export {
+  firstFreeBankSlot,
+  holdsActiveItem,
+  movesWithBank,
+} from "./items/bank";
 export { incomingOutcome } from "./items/inventory";
 export { activationReadiness } from "./abilities/cast";
 export {

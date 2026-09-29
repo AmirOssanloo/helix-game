@@ -13,12 +13,12 @@ import { containsPoint } from "../hud/hud-layout";
 import { itemBaseOf, rarityOf } from "../views/ground-item.view";
 import type { Label, Quad } from "../views/quad";
 import { heroOf } from "./hero-of";
-import { GRID_CELL_SIZE } from "./inventory-layout";
 import {
   ITEM_BACKDROP_TINT,
   SOCKET_TINT,
   UNMET_BACKDROP_TINT,
-} from "./inventory.screen";
+} from "./inventory-dress";
+import { GRID_CELL_SIZE } from "./inventory-layout";
 import type { ItemBoxView } from "./item-box.view";
 import { makeItemBoxes } from "./item-box.view";
 import type { ScreenPorts } from "./screen-parts";

@@ -12,8 +12,10 @@ import type {
 import {
   BANK_SLOT_COUNT,
   bankPlace,
+  createActiveItem,
   holdsActiveItem,
   listingPlace,
+  movesWithBank,
   NO_RECORD,
   recordAt,
 } from "@domain/queries";
@@ -434,6 +436,82 @@ describe("moving with the bank", () => {
     expect(collections).toBe(0);
     expect(after - before).toBeLessThan(256 * 1024);
   });
+});
+
+describe("the read of a move with the bank", () => {
+  /** Glass, and one two cells square, so an item put out of the bank can lack room. */
+  const WIDE: ActiveItemDef = {
+    ...GLASS,
+    id: "wide",
+    name: "Wide",
+    width: 2,
+    height: 2,
+  };
+
+  /**
+   * The wide one at T and Glass at X, V empty; Glass A second copy in the grid at cell 0 over
+   * cells 0 and 10, and a band at cell 1. Crowded, every other cell holds a band too.
+   */
+  const stage = (crowded: boolean): Simulation => {
+    const world = makeWorld({
+      seed: 1,
+      registry: makeRegistry({
+        activeItems: [GLASS, WIDE, { ...GLASS, id: "glass_b" }],
+      }),
+    });
+    const bank = world.state.run.bank;
+    const inventory = world.state.run.inventory;
+
+    spawnHero(world);
+
+    if (bank[0] !== undefined && bank[1] !== undefined) {
+      bank[0].activeId = WIDE.id;
+      bank[1].activeId = GLASS.id;
+    }
+
+    placeItem(inventory, createActiveItem("glass_b"), 1, 2, 0);
+
+    for (let cell = 1; cell < (crowded ? 40 : 2); cell += 1) {
+      if (cell !== 10) {
+        placeItem(inventory, aBand(), 1, 1, cell);
+      }
+    }
+
+    return world;
+  };
+
+  it.each([
+    [false, bankPlace(0), bankPlace(1), true],
+    [false, bankPlace(0), bankPlace(2), true],
+    [false, bankPlace(2), bankPlace(0), false],
+    [false, bankPlace(1), 5, true],
+    [false, bankPlace(1), 1, true],
+    [false, bankPlace(0), 9, false],
+    [false, 0, bankPlace(2), true],
+    [false, 0, bankPlace(0), true],
+    [false, 1, bankPlace(2), false],
+    [false, 3, bankPlace(2), false],
+    [true, 0, bankPlace(0), false],
+    [true, 0, bankPlace(1), true],
+    [true, 0, bankPlace(2), true],
+    [true, bankPlace(0), 5, false],
+  ] as const)(
+    "reads crowded %s, %i to %i as going through: %s, as the move then applies",
+    (crowded, from, to, goes) => {
+      const world = stage(crowded);
+      const reader = createEventReader();
+
+      expect(movesWithBank(world.view.run, from, to)).toBe(goes);
+
+      move(world, from, to);
+
+      expect(
+        itemEvents(world, reader).some(
+          (event) => event.kind === "command_refused",
+        ),
+      ).toBe(!goes);
+    },
+  );
 });
 
 describe("selling from the bank", () => {

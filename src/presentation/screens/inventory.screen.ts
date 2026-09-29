@@ -1,8 +1,9 @@
 import type { DomainEvent, Item, Unit } from "@domain/public";
 import {
   ARMORY_SLOT_COUNT,
+  bankPlace,
   INVENTORY_CELL_COUNT,
-  meetsRequirement,
+  NO_PLACE,
   NO_RECORD,
   NO_STORE,
   recordAt,
@@ -10,7 +11,7 @@ import {
 import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { ScratchRect } from "../camera/scratch";
-import { containsPoint } from "../hud/hud-layout";
+import { bankSquareAt, containsPoint } from "../hud/hud-layout";
 import type { ClaimScreen } from "../input/input-claim";
 import {
   INVENTORY_CODE,
@@ -18,9 +19,10 @@ import {
   RIGHT_BUTTON,
 } from "../input/key-bindings";
 import type { CommandDriver } from "../scene-context";
-import { GOLD_TINT, itemBaseOf, rarityOf } from "../views/ground-item.view";
+import { GOLD_TINT } from "../views/ground-item.view";
 import type { Label, Quad, QuadFactory } from "../views/quad";
 import { heroOf } from "./hero-of";
+import { dressItem, SOCKET_TINT, wornItemAt } from "./inventory-dress";
 import { InventoryFlashes } from "./inventory-flashes";
 import {
   ARMORY_SLOT_RECTS,
@@ -41,28 +43,24 @@ import {
   TITLE_CENTRE_Y,
   TITLE_SIZE,
 } from "./inventory-layout";
-import { InventoryLift, NO_CELL } from "./inventory-lift";
+import { InventoryLift } from "./inventory-lift";
 import type { ItemBoxView } from "./item-box.view";
 import { makeItemBoxes } from "./item-box.view";
 import type { ScreenPorts } from "./screen-parts";
 import { placeQuad, SCREEN_FRAME, setShown } from "./screen-parts";
 
 export { INVENTORY_RECT } from "./inventory-layout";
+export {
+  ITEM_BACKDROP_TINT,
+  SOCKET_TINT,
+  UNMET_BACKDROP_TINT,
+} from "./inventory-dress";
 export { BLOCKED_CELL_TINT, FREE_CELL_TINT } from "./inventory-lift";
 
 const PANEL_TINT = 0x101010;
 const PANEL_ALPHA = 0.9;
 const TEXT_TINT = 0xffffff;
 const OPAQUE = 1;
-
-/** An empty cell or armory slot, the backdrop of an item the hero may wear, and of one it may not yet. */
-export const SOCKET_TINT = 0x262626;
-export const ITEM_BACKDROP_TINT = 0x3c3c3c;
-export const UNMET_BACKDROP_TINT = 0x7a1f1f;
-
-/** An item whose base or rarity run scope does not hold is drawn as a plain disc, in white, so a content error still shows. */
-const FALLBACK_FRAME = "disc";
-const UNDRESSED_TINT = 0xffffff;
 
 export const INVENTORY_TITLE = "INVENTORY";
 
@@ -101,8 +99,10 @@ const GOLD_UNSHOWN = -1;
  * item at the place the refusal names.
  *
  * A left press on an item in the grid that moves the drag distance lifts it onto the pointer,
- * which the lift draws with the cells it would take. The release sends `move_item` where the
- * lift says it can be set down, and nothing else; a release off the grid, a cancelled press,
+ * which the lift draws with the cells it would take. While it is open the bank's row on the
+ * bar is its too: an item lifted from a bank square is set down in the grid or on another
+ * square, and one lifted from the grid on a square. The release sends `move_item` where the
+ * lift says it can be set down, and nothing else; a release on neither, a cancelled press,
  * or the screen closing puts it back with nothing sent. Every object it shows is made here or
  * in the lift, once.
  */
@@ -190,7 +190,7 @@ export class InventoryScreen implements ClaimScreen {
       ports.makeOverQuad,
       frameSizes,
       (view, item): void => {
-        this.showItem(view, item, heroOf(this.world), false);
+        dressItem(this.world, view, item, heroOf(this.world), false);
       },
     );
 
@@ -213,17 +213,43 @@ export class InventoryScreen implements ClaimScreen {
     this.hide();
   }
 
+  /** Whether a left press is held on an item, in the grid or the bank, lifted or not: no tooltip shows while it is. */
+  get held(): boolean {
+    return this.lift.held;
+  }
+
+  /** Its panel, and while it is open the bank's squares, which take a lift. */
   contains(x: number, y: number): boolean {
-    return containsPoint(INVENTORY_RECT, x, y);
+    return (
+      containsPoint(INVENTORY_RECT, x, y) ||
+      (this.open && bankSquareAt(x, y) !== -1)
+    );
   }
 
   /**
    * A press inside the panel is the screen's. On an item in the grid, a left press is held
    * until it moves or comes up and a right press drops it; a left press on a worn item takes it
-   * off. While a left press is held, other presses do nothing. It never asks to close.
+   * off, and one on an item in the bank is held until it moves. While a left press is held,
+   * other presses do nothing. It never asks to close.
    */
   pointerDown(button: number, x: number, y: number): boolean {
     if (this.lift.held) {
+      return false;
+    }
+
+    const banked = this.open ? bankSquareAt(x, y) : -1;
+
+    if (banked !== -1) {
+      const item = this.world.run.bank[banked];
+
+      if (
+        button === LEFT_BUTTON &&
+        item !== undefined &&
+        item.activeId !== null
+      ) {
+        this.lift.press(bankPlace(banked), x, y);
+      }
+
       return false;
     }
 
@@ -240,7 +266,7 @@ export class InventoryScreen implements ClaimScreen {
     if (
       slot !== -1 &&
       button === LEFT_BUTTON &&
-      this.wornAt(slot, heroOf(this.world)) !== null
+      wornItemAt(this.world, slot, heroOf(this.world)) !== null
     ) {
       this.driver.submit({
         kind: "unequip_item",
@@ -261,34 +287,36 @@ export class InventoryScreen implements ClaimScreen {
   }
 
   /**
-   * The held left press came up: a lifted item is set down where the lift says, and an item
-   * never lifted is worn, as a click on it.
+   * The held left press came up: a lifted item is set down where the lift says, an item in the
+   * grid never lifted is worn, as a click on it, and one in the bank never lifted stays.
    */
   pointerUp(button: number, x: number, y: number): void {
     const lift = this.lift;
-    const pressed = lift.pressedCell;
+    const pressed = lift.pressedPlace;
 
-    if (button !== LEFT_BUTTON || pressed === NO_CELL) {
+    if (button !== LEFT_BUTTON || pressed === NO_PLACE) {
       return;
     }
 
     const driver = this.driver;
-    const inventory = this.world.run.inventory;
 
-    if (lift.liftedRecord !== NO_RECORD) {
-      const to = lift.setDownCell(x, y);
-      const placed = inventory.placed[lift.liftedRecord];
+    if (lift.lifted) {
+      const from = lift.liftedPlace;
+      const to = lift.setDownPlace(x, y);
 
-      if (to !== NO_CELL && placed !== undefined) {
+      if (to !== NO_PLACE) {
         driver.submit({
           kind: "move_item",
           tick: driver.nextTick,
           timestamp: driver.now(),
-          from: placed.corner,
+          from,
           to,
         });
       }
-    } else if (recordAt(inventory, pressed) !== NO_RECORD) {
+    } else if (
+      pressed < INVENTORY_CELL_COUNT &&
+      recordAt(this.world.run.inventory, pressed) !== NO_RECORD
+    ) {
       driver.submit({
         kind: "equip_item",
         tick: driver.nextTick,
@@ -329,7 +357,9 @@ export class InventoryScreen implements ClaimScreen {
 
     const slot = armorySlotAt(x, y);
 
-    return slot === -1 ? null : this.wornAt(slot, heroOf(this.world));
+    return slot === -1
+      ? null
+      : wornItemAt(this.world, slot, heroOf(this.world));
   }
 
   /** Its key closes it. */
@@ -406,7 +436,8 @@ export class InventoryScreen implements ClaimScreen {
       box.maxX = box.minX + entry.width * GRID_CELL_SIZE - CELL_INSET * 2;
       box.maxY = box.minY + entry.height * GRID_CELL_SIZE - CELL_INSET * 2;
       view.place(box);
-      this.showItem(
+      dressItem(
+        this.world,
         view,
         entry.item,
         hero,
@@ -423,12 +454,13 @@ export class InventoryScreen implements ClaimScreen {
         continue;
       }
 
-      const worn = this.wornAt(slot, hero);
+      const worn = wornItemAt(this.world, slot, hero);
 
       if (worn === null) {
         view.showEmpty(SOCKET_TINT);
       } else {
-        this.showItem(
+        dressItem(
+          this.world,
           view,
           worn,
           hero,
@@ -436,39 +468,6 @@ export class InventoryScreen implements ClaimScreen {
         );
       }
     }
-  }
-
-  private showItem(
-    view: ItemBoxView,
-    item: DeepReadonly<Item>,
-    hero: DeepReadonly<Unit> | null,
-    flashing: boolean,
-  ): void {
-    const world = this.world;
-    const base = itemBaseOf(world, item.baseId);
-    const rarity = rarityOf(world, item.rarityId);
-    const met =
-      hero === null ||
-      meetsRequirement(world.run, item, hero.progression.level);
-
-    view.showItem(
-      base === null ? FALLBACK_FRAME : base.atlasFrame,
-      rarity === null ? UNDRESSED_TINT : rarity.tint,
-      met ? ITEM_BACKDROP_TINT : UNMET_BACKDROP_TINT,
-      flashing,
-    );
-  }
-
-  /** The item worn in armory slot `slot` by the hero's active form, or `null` for none or no hero. */
-  private wornAt(
-    slot: number,
-    hero: DeepReadonly<Unit> | null,
-  ): DeepReadonly<Item> | null {
-    const form =
-      hero === null ? undefined : this.world.run.forms[hero.activeFormIndex];
-    const worn = form === undefined ? undefined : form.armory.slots[slot];
-
-    return worn === undefined || worn.baseId === null ? null : worn;
   }
 
   /** A press at (`x`, `y`) on grid cell `cell`: nothing on an empty cell, a held press for the left button, a drop for the right, or a sale while a store is open. */
