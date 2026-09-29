@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contentRegistry } from "@content/public";
 import type { Item, ItemBaseDef, MapDef, Unit } from "@domain/public";
 import {
+  listingPlace,
   NO_RECORD,
   NO_STORE,
   priceOf,
@@ -13,6 +14,7 @@ import {
 } from "@domain/queries";
 import { createItem, placeItem } from "@domain/rules";
 import {
+  ACTIVE_ITEM_TINT,
   ESCAPE_CODE,
   followStore,
   GRID_CELL_SIZE,
@@ -21,6 +23,8 @@ import {
   InventoryScreen,
   layInLane,
   LEFT_BUTTON,
+  LISTING_FRAME,
+  LISTING_LABEL_SIZE,
   priceAt,
   priceText,
   RIGHT_BUTTON,
@@ -41,6 +45,8 @@ import { createEventReader } from "@simulation/public";
 import type { Simulation } from "@simulation/testing";
 import {
   CommandRecorder,
+  FIXTURE_ACTIVES,
+  GLASS,
   LabelRecorder,
   makeMapDef,
   makeRegistry,
@@ -112,6 +118,7 @@ type Arranged = Readonly<{
   store: StoreScreen;
   driver: CommandRecorder;
   quads: QuadRecorder[];
+  labels: LabelRecorder[];
   /** Sends `open_store` for `checkpoint` straight to the world, not through the screen's driver, and steps. */
   openStore: (checkpoint: number) => void;
   /** One tick, every event since drained into the screens and the claim as the HUD scene drains them, and a frame synced. */
@@ -120,18 +127,22 @@ type Arranged = Readonly<{
   click: (button: number, x: number, y: number) => void;
 }>;
 
-/** A hero on the first checkpoint's ring, the store screen and the inventory registered as the HUD scene registers them, and neither open. */
-const arrange = (seed = 1, secondX = 3000): Arranged => {
+/** A hero on the first checkpoint's ring, the store screen and the inventory registered as the HUD scene registers them, and neither open. The content holds the fixture active items when `actives` says so. */
+const arrange = (seed = 1, secondX = 3000, actives = false): Arranged => {
   const map = storeMap(secondX);
   const world = makeWorld({
     seed,
     map,
-    registry: makeRegistry({ maps: [map] }),
+    registry: makeRegistry({
+      maps: [map],
+      ...(actives ? { activeItems: FIXTURE_ACTIVES } : {}),
+    }),
   });
 
   spawnHero(world);
 
   const quads: QuadRecorder[] = [];
+  const labels: LabelRecorder[] = [];
   const driver = new CommandRecorder(world);
   const reader = createEventReader();
   const claim = new InputClaim({
@@ -154,7 +165,13 @@ const arrange = (seed = 1, secondX = 3000): Arranged => {
 
       return quad;
     },
-    makeLabel: (size) => new LabelRecorder(size),
+    makeLabel: (size) => {
+      const label = new LabelRecorder(size);
+
+      labels.push(label);
+
+      return label;
+    },
     frameSizes: () => FRAME_WIDTH,
     world: world.view,
     driver,
@@ -182,6 +199,7 @@ const arrange = (seed = 1, secondX = 3000): Arranged => {
     store,
     driver,
     quads,
+    labels,
     openStore: (checkpoint) => {
       submit(world, {
         kind: "open_store",
@@ -695,5 +713,176 @@ describe("the gestures", () => {
     expect(
       claim.pointerUp(LEFT_BUTTON, STORE_RECT.minX + 5, STORE_RECT.maxY - 5),
     ).toBe(true);
+  });
+});
+
+describe("the listing of active items on the Misc tab", () => {
+  const MISC = STORE_TABS.indexOf("misc");
+  const ENTRIES = FIXTURE_ACTIVES.length;
+
+  /** The listing's quads, made after the stock's: a backdrop, an icon, and a flash per entry, each kind together. */
+  const FIRST_ENTRY_BACKDROP = FIRST_FLASH + STOCK_SLOT_COUNT;
+  const FIRST_ENTRY_ICON = FIRST_ENTRY_BACKDROP + ENTRIES;
+  const FIRST_ENTRY_FLASH = FIRST_ENTRY_ICON + ENTRIES;
+
+  /** The entries whose icon is drawn now. */
+  const shownEntries = (quads: readonly QuadRecorder[]): number[] => {
+    const entries: number[] = [];
+
+    for (let entry = 0; entry < ENTRIES; entry += 1) {
+      if (quadAt(quads, FIRST_ENTRY_ICON + entry).visible) {
+        entries.push(entry);
+      }
+    }
+
+    return entries;
+  };
+
+  /** The name labels of the listing, one per entry, in its order. */
+  const namesOf = (labels: readonly LabelRecorder[]): LabelRecorder[] =>
+    labels.filter((label) => label.size === LISTING_LABEL_SIZE);
+
+  /** The rectangle entry `entry`'s backdrop covers, as drawn now. */
+  const entryBox = (quads: readonly QuadRecorder[], entry: number): Rect =>
+    boxOf(quads, FIRST_ENTRY_BACKDROP - FIRST_BACKDROP + entry);
+
+  const openOnMisc = (seed = 1) => {
+    const arranged = arrange(seed, 3000, true);
+
+    arranged.openStore(0);
+    arranged.store.pointerDown(LEFT_BUTTON, tabCentreX(MISC), TAB_CENTRE_Y);
+
+    return arranged;
+  };
+
+  it("makes an entry's quads and name at construction, one per active item, and none with no active item", () => {
+    const { quads, labels } = arrange(1, 3000, true);
+
+    expect(quads).toHaveLength(FIRST_ENTRY_FLASH + ENTRIES);
+    expect(namesOf(labels).map((label) => label.text)).toEqual(
+      FIXTURE_ACTIVES.map((active) => active.id.slice(0, 3).toUpperCase()),
+    );
+    expect(arrange().quads).toHaveLength(FIRST_FLASH + STOCK_SLOT_COUNT);
+  });
+
+  it("lists every active item after the stocked amulets and rings, in its order, at its size, inside the grid and apart from them", () => {
+    for (let seed = 1; seed < 6; seed += 1) {
+      const { world, quads } = openOnMisc(seed);
+      const stocked = shownSlots(quads).map((slot) => boxOf(quads, slot));
+      const boxes = shownEntries(quads).map((entry) => entryBox(quads, entry));
+
+      expect(shownEntries(quads)).toEqual([0, 1, 2]);
+      expect(shownSlots(quads)).toEqual(slotsInTab(world, MISC));
+
+      for (const [index, box] of boxes.entries()) {
+        expect(box.maxY - box.minY).toBeGreaterThan(
+          (box.maxX - box.minX) * 1.5,
+        );
+        expect(box.minX).toBeGreaterThanOrEqual(STOCK_RECT.minX);
+        expect(box.maxX).toBeLessThanOrEqual(STOCK_RECT.maxX);
+        expect(box.minY).toBeGreaterThanOrEqual(STOCK_RECT.minY);
+        expect(box.maxY).toBeLessThanOrEqual(STOCK_RECT.maxY);
+        expect(stocked.some((other) => overlap(box, other))).toBe(false);
+        expect(
+          boxes.some((other, at) => at !== index && overlap(box, other)),
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("draws each entry's icon and name in emerald, and shows neither on the other tabs", () => {
+    const { store, quads, labels } = openOnMisc();
+    const names = namesOf(labels);
+
+    for (let entry = 0; entry < ENTRIES; entry += 1) {
+      const icon = quadAt(quads, FIRST_ENTRY_ICON + entry);
+      const box = entryBox(quads, entry);
+
+      expect(icon.frame).toBe(LISTING_FRAME);
+      expect(icon.tint).toBe(ACTIVE_ITEM_TINT);
+      expect(names[entry]?.tint).toBe(ACTIVE_ITEM_TINT);
+      expect(names[entry]?.visible).toBe(true);
+      expect(names[entry]?.y).toBeGreaterThan(icon.y);
+      expect(names[entry]?.y).toBeLessThan(box.maxY);
+    }
+
+    for (const tab of [0, 1]) {
+      store.pointerDown(LEFT_BUTTON, tabCentreX(tab), TAB_CENTRE_Y);
+
+      expect(shownEntries(quads)).toEqual([]);
+      expect(names.some((label) => label.visible)).toBe(false);
+    }
+  });
+
+  it("puts the item and its price under the pointer for the tooltip", () => {
+    const { world, claim, inventory, store, quads } = openOnMisc();
+    const icon = quadAt(quads, FIRST_ENTRY_ICON);
+    const item = store.itemAt(icon.x, icon.y);
+
+    expect(item?.activeId).toBe(GLASS.id);
+    expect(item?.baseId).toBeNull();
+    expect(
+      priceAt(store, claim.isOpen(inventory), world.view, icon.x, icon.y),
+    ).toBe("buy");
+    expect(item === null ? 0 : priceOf(world.view.run, item)).toBe(GLASS.price);
+  });
+
+  it("a left click on an entry sends buy_item naming it; the item goes to the bank and the entry stays listed", () => {
+    const { world, driver, quads, step, click } = openOnMisc();
+    const icon = quadAt(quads, FIRST_ENTRY_ICON + 1);
+
+    world.state.run.gold = RICH;
+    click(LEFT_BUTTON, icon.x, icon.y);
+
+    expect(driver.commands).toEqual([
+      {
+        kind: "buy_item",
+        tick: world.view.tick,
+        timestamp: 1,
+        place: listingPlace(1),
+      },
+    ]);
+
+    step();
+
+    expect(world.view.run.bank[0]?.activeId).toBe(FIXTURE_ACTIVES[1]?.id);
+    expect(shownEntries(quads)).toEqual([0, 1, 2]);
+  });
+
+  it("a second buy of an item held is refused and flashes its entry, and only its entry", () => {
+    const { world, quads, step, click } = openOnMisc();
+    const icon = quadAt(quads, FIRST_ENTRY_ICON);
+
+    world.state.run.gold = RICH;
+    click(LEFT_BUTTON, icon.x, icon.y);
+    step();
+
+    expect(quadAt(quads, FIRST_ENTRY_FLASH).visible).toBe(false);
+
+    click(LEFT_BUTTON, icon.x, icon.y);
+    step();
+
+    expect(quadAt(quads, FIRST_ENTRY_FLASH).visible).toBe(true);
+    expect(quadAt(quads, FIRST_ENTRY_FLASH + 1).visible).toBe(false);
+
+    for (let tick = 0; tick < 60; tick += 1) {
+      step();
+    }
+
+    expect(quadAt(quads, FIRST_ENTRY_FLASH).visible).toBe(false);
+  });
+
+  it("hides every entry and name when the store closes", () => {
+    const { world, quads, labels, step } = openOnMisc();
+
+    submit(world, {
+      kind: "close_store",
+      tick: world.view.tick,
+      timestamp: world.view.tick,
+    });
+    step();
+
+    expect(shownEntries(quads)).toEqual([]);
+    expect(namesOf(labels).some((label) => label.visible)).toBe(false);
   });
 });

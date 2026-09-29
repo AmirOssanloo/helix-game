@@ -1,8 +1,9 @@
 import type { DomainEvent, Item } from "@domain/public";
 import {
+  isListingPlace,
   isStockPlace,
+  listingEntryOfPlace,
   NO_STORE,
-  stockPlace,
   stockSlotOfPlace,
 } from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
@@ -51,14 +52,15 @@ export type StorePorts = ScreenPorts &
 /**
  * The store at a checkpoint, as Diablo II's is: a panel along the left of the canvas,
  * across from the inventory, with three tabs, **Armour**, **Weapons**, and **Misc**, each a
- * grid of the stocked items whose base's armory slot sits in it, and gold. It is neither modal
- * nor pausing and claims no key; the world goes on while it is open.
+ * grid of the stocked items whose base's armory slot sits in it, Misc listing every active item
+ * after its stock, and gold. It is neither modal nor pausing and claims no key; the world goes
+ * on while it is open.
  *
  * It follows the world's store rather than a key: the HUD opens it when a store opens and
  * closes it when the store closes, sending nothing. Escape closes it through the claim, and
  * then it sends `close_store`. A left click on a tab shows that tab and sends nothing; a left
- * click on a stocked item sends `buy_item` naming its stock slot, and a refusal naming that
- * slot flashes it. Selling is the inventory's right click while the store is open.
+ * click on a stocked item sends `buy_item` naming its stock slot, or on a listed active item
+ * naming its entry, and a refusal naming that place flashes it. Selling is the inventory's right click while the store is open.
  *
  * It reads gold from the world view each frame it is open, and its `StoreTabs` lays the shown
  * tab's items in the grid; it sums nothing. Every object it shows is made here, once.
@@ -148,7 +150,7 @@ export class StoreScreen implements ClaimScreen {
     return containsPoint(STORE_RECT, x, y);
   }
 
-  /** A press inside the panel is the screen's: a left press on a tab shows it, and on a stocked item buys it. It never asks to close. */
+  /** A press inside the panel is the screen's: a left press on a tab shows it, and on a stocked or listed item buys it. It never asks to close. */
   pointerDown(button: number, x: number, y: number): boolean {
     if (button !== LEFT_BUTTON) {
       return false;
@@ -160,16 +162,16 @@ export class StoreScreen implements ClaimScreen {
       return false;
     }
 
-    const stockSlot = this.stockSlotAt(x, y);
+    const place = this.open ? this.tabs.placeAt(x, y) : -1;
 
-    if (stockSlot !== -1) {
+    if (place !== -1) {
       const driver = this.driver;
 
       driver.submit({
         kind: "buy_item",
         tick: driver.nextTick,
         timestamp: driver.now(),
-        place: stockPlace(stockSlot),
+        place,
       });
     }
 
@@ -186,7 +188,7 @@ export class StoreScreen implements ClaimScreen {
     return false;
   }
 
-  /** The stocked item drawn at (`x`, `y`), for the tooltip, or `null` while closed or over nothing. */
+  /** The stocked or listed item drawn at (`x`, `y`), for the tooltip, or `null` while closed or over nothing. */
   itemAt(x: number, y: number): DeepReadonly<Item> | null {
     return this.open ? this.tabs.itemAt(x, y) : null;
   }
@@ -217,13 +219,18 @@ export class StoreScreen implements ClaimScreen {
     });
   }
 
-  /** One drained event: a refused command naming a stock slot flashes the item there. */
+  /** One drained event: a refused command naming a stock slot or a listing entry flashes the item there. */
   react(event: Readonly<DomainEvent>): void {
-    if (event.kind === "command_refused" && isStockPlace(event.place)) {
-      this.tabs.flash(
-        stockSlotOfPlace(event.place),
-        event.tick + refusalFlashTicks(this.world),
-      );
+    if (event.kind !== "command_refused") {
+      return;
+    }
+
+    const until = event.tick + refusalFlashTicks(this.world);
+
+    if (isStockPlace(event.place)) {
+      this.tabs.flash(stockSlotOfPlace(event.place), until);
+    } else if (isListingPlace(event.place)) {
+      this.tabs.flashEntry(listingEntryOfPlace(event.place), until);
     }
   }
 
@@ -241,11 +248,6 @@ export class StoreScreen implements ClaimScreen {
     }
 
     this.tabs.sync();
-  }
-
-  /** The stock slot whose item is laid at (`x`, `y`) this frame, or `-1` while closed. */
-  private stockSlotAt(x: number, y: number): number {
-    return this.open ? this.tabs.stockSlotAt(x, y) : -1;
   }
 
   /** Every object hidden, the items included. */

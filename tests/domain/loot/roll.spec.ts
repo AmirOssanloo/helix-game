@@ -18,7 +18,12 @@ import {
 import { dropOnDeath } from "@domain/rules";
 import type { Simulation } from "@simulation/testing";
 import { createHasher, stateChecksum } from "@simulation/testing";
-import { makeWorld, spawnEnemy } from "../../helpers";
+import {
+  FIXTURE_ACTIVES,
+  makeRegistry,
+  makeWorld,
+  spawnEnemy,
+} from "../../helpers";
 
 /** Rolls per tier: enough that four standard deviations of any outcome's share is a few hundredths or less. */
 const ROLLS = 10_000;
@@ -586,4 +591,37 @@ describe("a death's drop", () => {
     dropOnDeath(world.state, summoner, idOfUnit(world, 200));
     expect(dropsOf(world)).toBeGreaterThan(0);
   });
+});
+
+describe("the active items", () => {
+  it.each(["normal", "elite", "boss"] as const)(
+    "never drop from a %s enemy over 10 000 rolls, with active items in the content",
+    (tier) => {
+      const world = makeWorld({
+        seed: 11,
+        registry: makeRegistry({ activeItems: FIXTURE_ACTIVES }),
+      });
+      const out = createDropRoll();
+      let items = 0;
+      let actives = 0;
+
+      expect(world.view.run.activeItems).toHaveLength(FIXTURE_ACTIVES.length);
+
+      for (let key = 0; key < ROLLS; key += 1) {
+        rollDrop(world.view, tier, key, PIECE, out);
+
+        for (let index = 0; index < out.itemCount; index += 1) {
+          const item = out.items[index];
+
+          items += item === undefined || item.baseId === null ? 0 : 1;
+          actives += item === undefined || item.activeId === null ? 0 : 1;
+        }
+
+        actives += out.legendary.activeId === null ? 0 : 1;
+      }
+
+      expect(items).toBeGreaterThan(0);
+      expect(actives).toBe(0);
+    },
+  );
 });

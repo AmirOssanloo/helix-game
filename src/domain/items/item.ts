@@ -54,6 +54,15 @@ export const createItem = (): Item => {
   };
 };
 
+/** An item that is the active item `activeId` and nothing more, as the store's listing shows an entry. Called once by the view that shows it. */
+export const createActiveItem = (activeId: string): Item => {
+  const item = createItem();
+
+  item.activeId = activeId;
+
+  return item;
+};
+
 /** Whether `item` holds nothing: it names no base and no active item. */
 export const isEmptyItem = (item: Readonly<Item>): boolean =>
   item.baseId === null && item.activeId === null;

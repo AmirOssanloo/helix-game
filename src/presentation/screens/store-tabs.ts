@@ -1,7 +1,9 @@
 import type { Item, Tick } from "@domain/public";
 import {
+  listingPlace,
   meetsRequirement,
   STOCK_SLOT_COUNT,
+  stockPlace,
   storeTabOf,
 } from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
@@ -37,6 +39,7 @@ import {
   tabAt,
   tabCentreX,
 } from "./store-layout";
+import { StoreListing } from "./store-listing";
 
 const TEXT_TINT = 0xffffff;
 const OPAQUE = 1;
@@ -55,9 +58,10 @@ const SOCKET_INSET = 2;
 /**
  * The store's tabs and what the shown one lists: a button per tab, the grid's sockets, and
  * the stocked items whose base's armory slot sits in the shown tab, laid in stock order in the
- * grid's lanes. It reads the open store's stock from the world view, sums nothing, sends
- * nothing, and asks the domain whether the hero's level meets an item's requirement, backing
- * one it does not in red. Every object it shows is made here, once.
+ * grid's lanes, then, on the Misc tab, the listing of active items after them. It reads the
+ * open store's stock from the world view, sums nothing, sends nothing, and asks the domain
+ * whether the hero's level meets an item's requirement, backing one it does not in red. Every
+ * object it shows is made here, once.
  */
 export class StoreTabs {
   private readonly world: WorldView;
@@ -81,6 +85,9 @@ export class StoreTabs {
 
   /** Per stock slot, the tick its refusal flash ends. */
   private readonly flashUntil: Tick[] = [];
+
+  /** The active items, shown on the Misc tab after the stock. */
+  private readonly listing: StoreListing;
 
   private tab = 0;
 
@@ -146,6 +153,7 @@ export class StoreTabs {
     }
 
     this.items = makeItemBoxes(makeQuad, frameSizes, STOCK_SLOT_COUNT);
+    this.listing = new StoreListing(ports, world);
     this.boxes = boxes;
     this.quads = quads;
     this.buttons = buttons;
@@ -180,18 +188,39 @@ export class StoreTabs {
     this.flashUntil[stockSlot] = until;
   }
 
-  /** The stocked item laid at (`x`, `y`) this frame, or `null` over nothing. */
+  /** Flashes the listing's entry `entry` until `until`. */
+  flashEntry(entry: number, until: Tick): void {
+    this.listing.flash(entry, until);
+  }
+
+  /** The stocked item or listed active item laid at (`x`, `y`) this frame, or `null` over nothing. */
   itemAt(x: number, y: number): DeepReadonly<Item> | null {
     const stockSlot = this.stockSlotAt(x, y);
+
+    if (stockSlot === -1) {
+      return this.listing.itemOf(this.listing.entryAt(x, y));
+    }
+
     const stock = this.stock();
 
-    return stockSlot === -1 || stock === null
-      ? null
-      : (stock[stockSlot] ?? null);
+    return stock === null ? null : (stock[stockSlot] ?? null);
+  }
+
+  /** The place a buy names for the item laid at (`x`, `y`) this frame: a stock slot's, a listing entry's, or `-1`. */
+  placeAt(x: number, y: number): number {
+    const stockSlot = this.stockSlotAt(x, y);
+
+    if (stockSlot !== -1) {
+      return stockPlace(stockSlot);
+    }
+
+    const entry = this.listing.entryAt(x, y);
+
+    return entry === -1 ? -1 : listingPlace(entry);
   }
 
   /** The stock slot whose item is laid at (`x`, `y`) this frame, or `-1`. */
-  stockSlotAt(x: number, y: number): number {
+  private stockSlotAt(x: number, y: number): number {
     for (let slot = 0; slot < STOCK_SLOT_COUNT; slot += 1) {
       const box = this.boxes[slot];
 
@@ -230,6 +259,8 @@ export class StoreTabs {
       this.items[slot]?.hide();
       this.laid[slot] = false;
     }
+
+    this.listing.hide();
   }
 
   private syncStock(): void {
@@ -276,6 +307,8 @@ export class StoreTabs {
         world.tick < (this.flashUntil[slot] ?? 0),
       );
     }
+
+    this.listing.sync(this.laneRows, stock !== null && shown === "misc");
   }
 
   /** The open store's stock slots, or `null` with none open. */

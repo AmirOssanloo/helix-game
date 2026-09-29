@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { activeItems, contentRegistry } from "@content/public";
-import type { ActiveItemDef, Registry } from "@domain/public";
+import type { ActiveItemDef, LootTableDef, Registry } from "@domain/public";
 import { validateRegistry } from "@domain/rules";
 import { FIXTURE_ACTIVES, GLASS, makeRegistry } from "../helpers";
 
@@ -66,6 +66,38 @@ describe("the active items", () => {
     ).toEqual(["active.refusedWhileRooted: missing field"]);
     expect(faultsOf([GLASS, GLASS])).toEqual([
       expect.stringMatching(/already the id of an active item/u),
+    ]);
+  });
+
+  it("are in no loot table: a table naming one, as a rarity or as a field, is refused", () => {
+    const tables = (table: unknown): string[] =>
+      validateRegistry(
+        makeRegistry({
+          activeItems: FIXTURE_ACTIVES,
+          lootTables: contentRegistry.lootTables.map((each) =>
+            each.id === "store" ? (table as LootTableDef) : each,
+          ),
+        }),
+      ).map((fault) => `${fault.path}: ${fault.message}`);
+    const store = contentRegistry.lootTables.find(
+      (each) => each.id === "store",
+    );
+
+    if (store === undefined) {
+      throw new Error("The content holds the store's loot table");
+    }
+
+    expect(tables(store)).toEqual([]);
+    expect(
+      tables({
+        ...store,
+        itemRolls: [{ chance: 1, weights: [{ rarity: GLASS.id, weight: 1 }] }],
+      }),
+    ).toEqual([
+      `itemRolls[0].weights[0].rarity: "${GLASS.id}" is not the id of any rarity`,
+    ]);
+    expect(tables({ ...store, activeItems: [GLASS.id] })).toEqual([
+      "activeItems: unknown field",
     ]);
   });
 });

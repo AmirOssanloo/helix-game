@@ -10,6 +10,8 @@ import type {
   World,
 } from "@domain/public";
 import {
+  bankPlace,
+  listingPlace,
   NO_PLACE,
   NO_RECORD,
   NO_STORE,
@@ -35,6 +37,9 @@ import {
   stateDifference,
 } from "@simulation/testing";
 import {
+  FIXTURE_ACTIVES,
+  GLASS,
+  KNIFE,
   makeMapDef,
   makeRegistry,
   makeWorld,
@@ -106,13 +111,16 @@ const fillWithBands = (world: World): void => {
 
 type Arranged = Readonly<{ world: Simulation; reader: EventReader }>;
 
-/** A hero at `x`, on the first checkpoint's ring by default, on the store map, and a reader at the start of the ring. */
-const arrange = (seed = 1, x = 0): Arranged => {
+/** A hero at `x`, on the first checkpoint's ring by default, on the store map, and a reader at the start of the ring. The content holds the fixture active items when `actives` says so. */
+const arrange = (seed = 1, x = 0, actives = false): Arranged => {
   const map = storeMap();
   const world = makeWorld({
     seed,
     map,
-    registry: makeRegistry({ maps: [map] }),
+    registry: makeRegistry({
+      maps: [map],
+      ...(actives ? { activeItems: FIXTURE_ACTIVES } : {}),
+    }),
   });
 
   spawnHero(world, { x });
@@ -427,6 +435,168 @@ describe("buy_item", () => {
     expect(storeEvents(world, reader)).toMatchObject([
       { kind: "item_bought", place: 1, amount: price, checkpoint: 0 },
     ]);
+  });
+});
+
+describe("the listing of active items", () => {
+  /** Every item the bank and the inventory hold that is an active item, by id. */
+  const activesHeld = (world: Simulation): string[] => [
+    ...world.view.run.bank
+      .map((item) => item.activeId)
+      .filter((id) => id !== null),
+    ...world.view.run.inventory.placed
+      .filter((entry) => entry.live && entry.item.activeId !== null)
+      .map((entry) => String(entry.item.activeId)),
+  ];
+
+  it("is every active item the content defines, in its order, the same at every store, and in no stock", () => {
+    const { world } = arrange(1, 0, true);
+
+    expect(world.view.run.activeItems.map((active) => active.id)).toEqual(
+      FIXTURE_ACTIVES.map((active) => active.id),
+    );
+
+    openAt(world, 0);
+
+    const stocked = world.view.map.stores.flatMap((store) => store.stock);
+
+    expect(stocked.filter((item) => item.baseId !== null)).toHaveLength(
+      STOCK_SLOT_COUNT,
+    );
+    expect(stocked.every((item) => item.activeId === null)).toBe(true);
+
+    world.state.run.gold = 1_000_000;
+    send(world, {
+      kind: "buy_item",
+      ...stamp(world),
+      place: listingPlace(FIXTURE_ACTIVES.length - 1),
+    });
+
+    expect(activesHeld(world)).toEqual([
+      FIXTURE_ACTIVES[FIXTURE_ACTIVES.length - 1]?.id,
+    ]);
+  });
+
+  it("buys an entry at its price into the bank's first free place, and leaves the stock and the listing as they were", () => {
+    const { world, reader } = arrange(4, 0, true);
+
+    openAt(world, 0);
+    storeEvents(world, reader);
+    world.state.run.gold = GLASS.price + 7;
+
+    const stock = stockOf(world, 0);
+
+    send(world, { kind: "buy_item", ...stamp(world), place: listingPlace(0) });
+
+    expect(world.view.run.gold).toBe(7);
+    expect(world.view.run.bank[0]?.activeId).toBe(GLASS.id);
+    expect(stockOf(world, 0)).toEqual(stock);
+    expect(world.view.run.activeItems).toHaveLength(FIXTURE_ACTIVES.length);
+    expect(storeEvents(world, reader)).toMatchObject([
+      {
+        kind: "item_bought",
+        place: bankPlace(0),
+        amount: GLASS.price,
+        checkpoint: 0,
+      },
+    ]);
+
+    world.state.run.gold = KNIFE.price;
+    send(world, { kind: "buy_item", ...stamp(world), place: listingPlace(1) });
+
+    expect(world.view.run.bank[1]?.activeId).toBe(KNIFE.id);
+    expect(world.view.run.gold).toBe(0);
+  });
+
+  it("refuses a second buy of an item held, at this store or another, naming the entry, and changes nothing", () => {
+    const { world, reader } = arrange(4, 0, true);
+
+    world.state.run.gold = 1_000_000;
+    openAt(world, 0);
+    send(world, { kind: "buy_item", ...stamp(world), place: listingPlace(0) });
+    storeEvents(world, reader);
+
+    const before = holdings(world);
+    const bank = world.view.run.bank.map((item) => item.activeId);
+
+    send(world, { kind: "buy_item", ...stamp(world), place: listingPlace(0) });
+
+    expect(holdings(world)).toEqual(before);
+    expect(world.view.run.bank.map((item) => item.activeId)).toEqual(bank);
+    expect(storeEvents(world, reader)).toMatchObject([
+      {
+        kind: "command_refused",
+        reason: "already_held",
+        place: listingPlace(0),
+      },
+    ]);
+
+    const heroId = world.state.run.heroId;
+    const hero = heroId === null ? null : world.state.map.units.resolve(heroId);
+
+    if (hero === null) {
+      throw new Error("The world holds its hero");
+    }
+
+    hero.curr.x = 3000;
+    hero.prev.x = 3000;
+    world.tick();
+    openAt(world, 1);
+    storeEvents(world, reader);
+    send(world, { kind: "buy_item", ...stamp(world), place: listingPlace(0) });
+
+    expect(world.view.map.openStore).toBe(1);
+    expect(storeEvents(world, reader)).toMatchObject([
+      { kind: "command_refused", reason: "already_held" },
+    ]);
+    expect(activesHeld(world)).toEqual([GLASS.id]);
+  });
+
+  it("refuses an entry past the last active item, with no active item at all included", () => {
+    for (const actives of [true, false]) {
+      const { world, reader } = arrange(4, 0, actives);
+      const past = actives ? FIXTURE_ACTIVES.length : 0;
+
+      world.state.run.gold = 1_000_000;
+      openAt(world, 0);
+      storeEvents(world, reader);
+      send(world, {
+        kind: "buy_item",
+        ...stamp(world),
+        place: listingPlace(past),
+      });
+
+      expect(storeEvents(world, reader)).toMatchObject([
+        {
+          kind: "command_refused",
+          reason: "no_item_at_place",
+          place: listingPlace(past),
+        },
+      ]);
+      expect(world.view.run.gold).toBe(1_000_000);
+    }
+  });
+
+  it("is never stocked: over 10 000 stock slots rolled, no item is an active item", () => {
+    const { world } = arrange(9, 0, true);
+    const store = world.state.map.stores[0];
+    let rolled = 0;
+
+    if (store === undefined) {
+      throw new Error("The map has a store at its first checkpoint");
+    }
+
+    while (rolled < 10_000) {
+      store.stocked = false;
+      openAt(world, 0);
+
+      for (const item of store.stock) {
+        expect(item.activeId).toBeNull();
+        rolled += item.baseId === null ? 0 : 1;
+      }
+
+      send(world, { kind: "close_store", ...stamp(world) });
+    }
   });
 });
 

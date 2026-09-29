@@ -64,6 +64,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 
 > **Note, 2026-09-28, at the cut:** not in the sketch. The item catalogue's section 7.2 says the player moves an active item between the bank and the inventory, and between two places of the bank, as any item is moved; the sketch built the domain half in the bank ticket and no gesture. Paid for by T01's half day.
 
+> **Note, 2026-09-29, from P9-S42-T04:** an active item in the inventory's grid is still drawn as a white `disc`, since `inventory.screen.ts`'s `showItem` tints by rarity and an active item has none ([Q142](../backlog/open-questions.md) (5)). This ticket's lift makes that visible, so the grid's item takes `ACTIVE_ITEM_TINT` here, a line in `showItem` beside the lift; `inventory.screen.ts` is 494 lines, so it may need to move with the lift's code. **Size holds at 0.5.**
+
 **Build:** the inventory's lift gesture (`src/presentation/screens/inventory-lift.ts`) reaches the bank row: with the inventory open, an item lifted from a bank square can be set down in the grid or on another bank square, and one lifted from the grid set down on a bank square, each sending the existing move command naming the bank place. A bank square shows green or red under a held item as a cell does. With the inventory closed the bank row takes no lift.
 
 **Acceptance:**

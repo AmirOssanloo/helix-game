@@ -53,6 +53,7 @@ export {
   describeActiveItem,
 } from "./abilities/activation-view";
 export { activeItemById } from "./items/item-defs";
+export { createActiveItem } from "./items/item";
 export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
 export {
   firstFit,
@@ -77,6 +78,7 @@ export {
   isBankPlace,
   isListingPlace,
   isStockPlace,
+  LISTING_ENTRY_CAPACITY,
   LISTING_PLACE_BASE,
   listingEntryOfPlace,
   listingPlace,
