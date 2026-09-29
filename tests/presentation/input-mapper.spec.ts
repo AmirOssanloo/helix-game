@@ -384,7 +384,7 @@ describe("the pointer", () => {
       ]);
     });
 
-    it("reads a label over an enemy, and an enemy over an item's icon", () => {
+    it("reads an enemy over an item's label and its icon: the click aimed at the enemy is an attack", () => {
       const { driver, mapper, picks, world } = arrange();
       const enemyId = standUnit(world, "enemy", 300, 0);
       const id = layItem(world, "item", 300, 0);
@@ -396,7 +396,42 @@ describe("the pointer", () => {
 
       expect(driver.commands).toEqual([
         { kind: "attack_target", tick: 0, timestamp: 1, targetId: enemyId },
+        { kind: "attack_target", tick: 0, timestamp: 2, targetId: enemyId },
+      ]);
+    });
+
+    it("reads a label over an enemy while Alt is held, and the enemy over an icon still", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const enemyId = standUnit(world, "enemy", 300, 0);
+      const id = layItem(world, "item", 300, 0);
+
+      drawPick(picks.icons, id, 300, 0);
+      mapper.keyDown("AltLeft");
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+      drawPick(picks.labels, id, 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+      mapper.keyUp("AltLeft");
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+
+      expect(driver.commands).toEqual([
+        { kind: "attack_target", tick: 0, timestamp: 1, targetId: enemyId },
         { kind: "pick_up", tick: 0, timestamp: 2, groundItemId: id },
+        { kind: "attack_target", tick: 0, timestamp: 3, targetId: enemyId },
+      ]);
+    });
+
+    it("lets a summon standing on a label take the click with nothing sent, and Alt reach the label", () => {
+      const { driver, mapper, picks, world } = arrange();
+      const id = layItem(world, "item", 300, 0);
+
+      standUnit(world, "summon", 300, 0);
+      drawPick(picks.labels, id, 300, 0);
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+      mapper.keyDown("AltRight");
+      mapper.pointerDown(RIGHT_BUTTON, 300, 0);
+
+      expect(driver.commands).toEqual([
+        { kind: "pick_up", tick: 0, timestamp: 1, groundItemId: id },
       ]);
     });
 

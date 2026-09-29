@@ -63,6 +63,14 @@ export {
   type Unprojection,
 } from "./input/projected-lens";
 export { InputMapper } from "./input/input-mapper";
+export {
+  createPick,
+  type Pick,
+  type PickEntry,
+  pickEntries,
+  pickOrder,
+  type PickSources,
+} from "./input/pick-order";
 export { pickUnit } from "./input/pick-unit";
 export type {
   CameraLens,

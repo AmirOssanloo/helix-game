@@ -101,7 +101,7 @@ if (!claim.pointerDown(fooButton, fooX, fooY)) mapper.pointerDown(fooButton, foo
 Nothing enforces it until the capture layer is built; its tests will:
 
 - The capture spec under `tests/presentation/` asserts every pointer and key event passes the claim before the mapper, the release of a claimed press included, and a modal screen claims every event but its own keys.
-- The input mapper's spec under `tests/presentation/` holds the pick order: a unit before a label with Alt up, a label before a unit with Alt down, then an icon, then the ground.
+- The pick order's spec and the input mapper's spec under `tests/presentation/` hold the pick order: a unit before a label with Alt up, a label before a unit with Alt down, then an icon, then the ground.
 - The driver's spec under `tests/app/` asserts the screen's pause reason is held apart from the panel's, and a release runs no catch-up burst.
 - The lint rule under `src/presentation` that bans the `Shape`, `Graphics`, and `Text` factories holds screens to the atlas, as it holds the bar.
 - The layer allow-list keeps presentation from importing `app/`, so the pause can only reach the driver through its port.

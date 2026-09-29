@@ -27,6 +27,8 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 | Owner | The game engineer |
 | Status | planned |
 
+> **Note, 2026-09-29, from P9-S41-T04:** `src/presentation/input/input-mapper.ts` is 486 lines after the pick moved into `pick-order.ts`. The mapper keeps the right click's dispatch because it builds the commands. P9-S42-T03 adds the six keys there. If more than their table rows in `key-bindings.ts` land in the mapper, it passes 500, so this split may need the mapper as well, for instance the left click's commit and store ring into a file beside it. Read at the sprint's start; the size holds until then.
+
 **Build:** two screens files phase 9 grows, split before they grow ([R40](../02-risks-and-hidden-work.md)): `src/presentation/screens/tooltip.ts`, 452 lines, its line builders out into a file of their own, where the active item's COOLDOWN and MANA lines will go; `src/presentation/screens/store.screen.ts`, 450, its tabs out, where the Misc tab's listing will go. No behaviour changes.
 
 **Acceptance:**

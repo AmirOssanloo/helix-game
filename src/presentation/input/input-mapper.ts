@@ -14,9 +14,7 @@ import type {
   InputDriver,
   InputIntents,
   InputPorts,
-  PickPort,
 } from "./input-ports";
-import { topPickAt } from "./input-ports";
 import {
   ALT_CODES,
   altIndexOf,
@@ -25,7 +23,8 @@ import {
   LEFT_BUTTON,
   RIGHT_BUTTON,
 } from "./key-bindings";
-import { pickUnit } from "./pick-unit";
+import type { Pick, PickSources } from "./pick-order";
+import { createPick, pickOrder } from "./pick-order";
 import { ringClicked } from "./store-ring";
 import type { TargetingCursor } from "./targeting-cursor";
 import {
@@ -68,7 +67,10 @@ export class InputMapper {
 
   private readonly groundPick: GroundPick;
 
-  private readonly picks: PickPort;
+  /** What the right click reads, and what it last named. */
+  private readonly sources: PickSources;
+
+  private readonly pick: Pick = createPick();
 
   /** One flag per binding, true from key-down to key-up. */
   private readonly held: boolean[];
@@ -90,10 +92,14 @@ export class InputMapper {
     this.world = ports.world;
     this.intents = ports.intents;
     this.groundPick = ports.groundPick;
-    this.picks = ports.picks;
     this.cursor = createTargetingCursor();
     this.held = [];
     this.candidates = createCandidateBuffer(UNIT_CAPACITY);
+    this.sources = {
+      world: ports.world,
+      picks: ports.picks,
+      candidates: this.candidates,
+    };
 
     for (let index = 0; index < KEY_BINDINGS.length; index += 1) {
       this.held.push(false);
@@ -242,8 +248,9 @@ export class InputMapper {
   }
 
   /**
-   * A button went down at a screen position. Right: what is drawn under it, top first, an
-   * item's label, a unit, an item's icon, then the ground; the cursor closes either way, and
+   * A button went down at a screen position. Right: what is drawn under it, in the pick order,
+   * a unit, an item's label, an item's icon, then the ground, with the label first while Alt
+   * is held; the cursor closes either way, and
    * while a press is held the right click only closes it. Left: the cursor's commit, the press of a
    * vector cursor, a ground point the developer panel is waiting for, the store of the checkpoint
    * whose ring the hero and the click are both in, or a selection that has nothing to select yet.
@@ -325,54 +332,46 @@ export class InputMapper {
   }
 
   /**
-   * A right click at a canvas point names what is drawn there, top first: an item's label from
-   * the pick port, then a unit, an attack on an enemy and nothing on any other, then an item's
-   * icon, which lies under the units, then the ground, a move.
+   * A right click does what the pick order names under it, the label first while Alt shows
+   * every label: an enemy is attacked and any other unit takes the click with nothing sent, an
+   * item's label or icon is picked, and the ground is a move.
    */
   private rightClick(screenX: number, screenY: number): void {
     closeCursor(this.cursor);
 
-    if (this.sendPick(topPickAt(this.picks.labels, screenX, screenY))) {
-      return;
-    }
-
-    const targetId = pickUnit(
-      this.world,
-      this.point.x,
-      this.point.y,
+    const pick = pickOrder(
+      this.sources,
+      screenX,
+      screenY,
+      this.point,
       this.driver.alpha,
-      this.candidates,
+      this.showsEveryLabel,
+      this.pick,
     );
-    const target =
-      targetId === null ? null : this.world.map.units.resolve(targetId);
+    const unitId = pick.unitId;
+    const unit = unitId === null ? null : this.world.map.units.resolve(unitId);
 
-    if (targetId !== null && target !== null) {
-      if (target.kind === "enemy") {
-        this.submit({
-          kind: "attack_target",
-          tick: this.driver.nextTick,
-          timestamp: this.driver.now(),
-          targetId,
-        });
-      }
-
-      return;
+    if (pick.entry === "ground") {
+      this.sendMove(this.point.x, this.point.y);
+    } else if (pick.entry !== "unit") {
+      this.sendPick(pick.groundItemId);
+    } else if (unitId !== null && unit !== null && unit.kind === "enemy") {
+      this.submit({
+        kind: "attack_target",
+        tick: this.driver.nextTick,
+        timestamp: this.driver.now(),
+        targetId: unitId,
+      });
     }
-
-    if (this.sendPick(topPickAt(this.picks.icons, screenX, screenY))) {
-      return;
-    }
-
-    this.sendMove(this.point.x, this.point.y);
   }
 
-  /** Sends a pick up of `id`, or a move to it for gold or a globe, taken by walking; `false`, sending nothing, for no pick or one already gone. */
-  private sendPick(id: GroundItemId | null): boolean {
+  /** Sends a pick up of `id`, or a move to it for gold or a globe, taken by walking; nothing for none or one already gone. */
+  private sendPick(id: GroundItemId | null): void {
     const groundItem =
       id === null ? null : this.world.map.groundItems.resolve(id);
 
     if (id === null || groundItem === null) {
-      return false;
+      return;
     }
 
     if (groundItem.kind === "item") {
@@ -385,8 +384,6 @@ export class InputMapper {
     } else {
       this.sendMove(groundItem.position.x, groundItem.position.y);
     }
-
-    return true;
   }
 
   private sendMove(x: number, y: number): void {

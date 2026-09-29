@@ -90,6 +90,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | How input becomes commands | `src/presentation/input/` |
 | Whose a click or a key is, a screen's, the bar's, or the world's | `src/presentation/input/input-claim.ts` — the input claim; the play scene's binding asks it in `bind-scene-input.ts` |
 | How a ground item is drawn, and how its label is shown, moved apart from others, and flashed on a refusal | `src/presentation/views/ground-item.view.ts` and `ground-item-label.view.ts`, the refusal flashes in `item-flashes.ts` beside them; the two steps that make them are `src/presentation/scenes/ground-item-syncers.ts` |
+| In what order a right click reads a unit, a label, an icon, and the ground | `src/presentation/input/pick-order.ts` — the one list, and the walk that turns it for Alt |
 | What a right click can name on the ground | The pick port in `src/presentation/input/input-ports.ts` — the labels and icons the ground-item views write each frame |
 | Which screens exist | `src/presentation/screens/` — one module per screen, with its layout and the parts it is built from beside it, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
 | How an item is lifted and set down on the grid, and how a refused item command flashes on a screen | `src/presentation/screens/inventory-lift.ts` and `inventory-flashes.ts` |
