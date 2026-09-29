@@ -183,15 +183,14 @@ export {
 } from "./screens/store-layout";
 export { ringClicked } from "./input/store-ring";
 export { priceText, statLineText } from "./screens/tooltip-text";
+export { itemUnderPointer, Tooltip } from "./screens/tooltip";
 export {
-  itemUnderPointer,
   PRICE_TINT,
-  Tooltip,
   TOOLTIP_LINE_CAPACITY,
   TOOLTIP_TEXT_SIZE,
   TOOLTIP_TEXT_TINT,
   UNMET_REQUIREMENT_TINT,
-} from "./screens/tooltip";
+} from "./screens/tooltip-lines";
 export type {
   TooltipPorts,
   TooltipPrice,

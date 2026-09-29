@@ -25,7 +25,7 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 | Size | 0.5 |
 | Depends on | none |
 | Owner | The game engineer |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-29, from P9-S41-T04:** `src/presentation/input/input-mapper.ts` is 486 lines after the pick moved into `pick-order.ts`. The mapper keeps the right click's dispatch because it builds the commands. P9-S42-T03 adds the six keys there. If more than their table rows in `key-bindings.ts` land in the mapper, it passes 500, so this split may need the mapper as well, for instance the left click's commit and store ring into a file beside it. Read at the sprint's start; the size holds until then.
 
@@ -42,6 +42,8 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 **Pages:** [presentation](../../../../docs/architecture/presentation.md), if it names a moved file.
 
 **Definition of done:** Every change · Anything under `src/presentation`.
+
+> **Note, 2026-09-29, at close:** the tooltip's line builders are `TooltipLines` in `src/presentation/screens/tooltip-lines.ts`, 154 lines: the labels, made once, the builders in the order the lines are shown, one call a line, so the COOLDOWN and MANA lines are two builders in their place, and the tooltip's text size, capacity, and tints; `tooltip.ts` keeps the pointer's item, the change test, the prices asked of the domain, the backdrop, and placement, 335 lines. The store's tabs are `StoreTabs` in `store-tabs.ts`, 283 lines: the tabs' buttons, the grid's sockets, and the shown tab's items laid in lanes, their refusal flashes, and the pointer's stock slot, where the Misc listing will go; `store.screen.ts` keeps the panel, the title, gold, the claim's screen, and the commands, 251 lines. Every object is made in the order it was, so the specs' quad indices hold; the public door exports the same names, the tooltip's constants now from `tooltip-lines.ts`. No behaviour changed and no spec was edited. **The mapper, read at the sprint's start:** left to T03. It stands at 486; whether it passes 500 depends on what T03's dispatch adds beyond the rows in `key-bindings.ts`, and by R40 the ticket that would trip the limit splits along the seam the note names, the left click's commit and store ring into a file beside it. `pnpm check` green, 5456 tests; the stress tier green. The stats system's steady-state heap case, in `tests/domain/stats/stats-system.spec.ts`, measured 73 728 and 72 992 bytes against its 65 536 allowance in two of six full runs on this change, at a load average near 8, and passed in the other four; on the committed head it passed three full runs of three in the same session, and sprint 36 recorded it failing there under load. It passed three times alone, on this change and on the head, and nothing this change touches is loaded by a domain spec. It is a heap allowance that the machine's load reaches, not a determinism flake; it is recorded here and in the report, and no ticket is raised for it. Played by an agent in headless Chrome over the DevTools protocol on the Apple M1 (ANGLE Metal), 1920 by 1080, the dev build with the panel: a left click on the hero on the long road's first ring opened the store with twelve items beside the inventory; the Armour tab laid its nine items in lanes, the tooltip over the Uncommon leather gloves read its name, rarity and base, item level, requirement, two stat lines, and PRICE 50 GOLD; the Weapons tab showed the wand alone and the Misc tab its two rings; a buy with 0 gold changed nothing; no console error. Definition of done walked: every change holds, no optional property, no non-null assertion, no ticket reference in the code, no file past 500 lines, imports through the doors; under `src/presentation`, quads and `BitmapText` only, nothing made during play, colour a tint, the fixed bands, the sync reading the world view and asking the queries door, input through the claim, no overlay; the render benchmark rerun, figures in the sprint exit. Documentation: [where to look](../../../../docs/architecture/where-to-look.md) names `tooltip-lines.ts` and `store-tabs.ts`; the presentation page names no moved file.
 
 ---
 
@@ -150,14 +152,14 @@ Grant 12 000 gold from the panel on the long road, open the store at the first c
 
 | Check | Result |
 | --- | --- |
-| The two presentation files split, behaviour unchanged | |
+| The two presentation files split, behaviour unchanged | Done in T01, 2026-09-29: `tooltip.ts` 335 lines and `tooltip-lines.ts` 154; `store.screen.ts` 251 and `store-tabs.ts` 283; `tests/presentation/tooltip.spec.ts` and `tests/presentation/store-screen.spec.ts` green unedited, 31 cases. In headless Chrome by an agent, the store, its three tabs, and the tooltip with its price as before. The store screen's frame, by an agent in headless Chrome over the DevTools protocol on the Apple M1 (ANGLE Metal), 1920 by 1080, the dev build with the panel, the store and the inventory open and the pointer moving across the store's grid every 50 ms, 30 s after an 8 s warm-up: **60.00 fps, every frame 16.5 to 16.8 ms, 2 draw calls a frame, heap after a collection 84.1 MB, no console error**; against sprint 36's 60.03 fps, 16.5 to 16.8 ms, 2 draw calls, 83.5 MB: unchanged within noise |
 | The bank: first free place, one copy, the clock kept across a move and a resale | |
 | `activate_item` through the pipeline, in the log and on replay | |
 | The six keys and the tie-break order; Space not scrolling the page in Chrome | |
 | The Misc tab and no active item in any table | |
-| The render benchmark and the HUD's frame with the bank row, by an agent | |
+| The render benchmark and the HUD's frame with the bank row, by an agent | T01, 2026-09-29: `pnpm bench` in the same headless Chrome, 30 s after an 8 s warm-up, draw calls counted by wrapping the WebGL draw methods: 60.00 fps, frames 16.5 to 16.8 ms, 1 draw call a frame, heap after a collection 64.6 MB, no console error; against sprint 41's 60.01 fps, 16.5 to 16.8 ms, 1 draw call: unchanged. No view or atlas changed. The HUD's frame with the bank row waits on T03 |
 | Phase 8's bucket tickets run in this sprint, if any | |
-| Actual days per ticket | |
+| Actual days per ticket | T01 0.5 of 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

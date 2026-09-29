@@ -1,7 +1,6 @@
 import type { Item } from "@domain/public";
 import {
   ITEM_LINE_CAPACITY,
-  levelRequirementOf,
   meetsRequirement,
   priceOf,
   readTunable,
@@ -12,26 +11,18 @@ import type { WorldView } from "@simulation/public";
 import { HUD_HEIGHT, HUD_WIDTH } from "../hud/hud-layout";
 import type { PickList } from "../input/input-ports";
 import { topPickAt } from "../input/input-ports";
-import { itemBaseOf, legendaryOf, rarityOf } from "../views/ground-item.view";
 import type {
   FrameSizes,
-  Label,
   LabelFactory,
   Quad,
   QuadFactory,
 } from "../views/quad";
 import { heroOf } from "./hero-of";
 import { placeQuad, SCREEN_FRAME } from "./screen-parts";
+import { TOOLTIP_TEXT_SIZE, TooltipLines } from "./tooltip-lines";
 import type { TooltipPrice } from "./tooltip-text";
-import { priceText, statLineText } from "./tooltip-text";
 
 export type { TooltipPrice } from "./tooltip-text";
-
-/**
- * The size a tooltip's labels are made at. The atlas font's size is its glyph width, so this is
- * how wide one glyph is drawn, in pixels; a glyph is drawn this over its aspect tall.
- */
-export const TOOLTIP_TEXT_SIZE = 16;
 
 /** The gap between two of a tooltip's lines, in pixels. */
 const LINE_GAP = 4;
@@ -40,24 +31,9 @@ const LINE_GAP = 4;
 const PADDING = 12;
 const POINTER_OFFSET = 16;
 
-/**
- * The most lines a tooltip holds: the name, the rarity and base, the item level, the
- * requirement, every stat line an item holds, and the price.
- */
-export const TOOLTIP_LINE_CAPACITY = 4 + ITEM_LINE_CAPACITY + 1;
-
 const BACKDROP_TINT = 0x0a0a0a;
 const BACKDROP_ALPHA = 0.92;
-const OPAQUE = 1;
 const HALF = 0.5;
-
-/** The tint of every line but the name, of an unmet requirement, and of a price. */
-export const TOOLTIP_TEXT_TINT = 0xd8d8d8;
-export const UNMET_REQUIREMENT_TINT = 0xe04040;
-export const PRICE_TINT = 0xf2c230;
-
-/** What a name reads when run scope cannot name the item: a content error still shows. */
-const UNNAMED = "ITEM";
 
 /** What the pointer can be over that has a tooltip: the item a screen shows there, else an item's label on the ground. */
 export type TooltipSources = Readonly<{
@@ -113,8 +89,8 @@ export type TooltipPorts = Readonly<{
  * a backdrop and one label a line. It shows the name in the rarity's tint, the rarity and the
  * base, the item level, the level requirement, marked when above the hero's level, each stat
  * line in the order the item holds them, the implicit first, and, while a store is open, the
- * price or the sell price. Every line is read from the item and run scope's definitions, and
- * the requirement and prices are asked of the domain; it sums nothing.
+ * price or the sell price. Its lines are written by its `TooltipLines`, and the requirement
+ * and prices are asked of the domain; it sums nothing.
  *
  * The text is written only when what it shows changes: another item, the hero's level crossing
  * the requirement, or the price. Following the pointer moves the backdrop and the labels and
@@ -125,7 +101,7 @@ export class Tooltip {
 
   private readonly backdrop: Quad;
 
-  private readonly lines: readonly Label[];
+  private readonly lines: TooltipLines;
 
   /** How tall one glyph is drawn, and how far one line is below the last, in pixels, and the backdrop frame's baked width. */
   private readonly glyphHeight: number;
@@ -155,9 +131,7 @@ export class Tooltip {
 
   private shownGold = 0;
 
-  /** How many labels the shown item fills, and how wide and tall the backdrop is, in pixels. */
-  private lineCount = 0;
-
+  /** How wide and tall the backdrop is, in pixels. */
   private width = 0;
 
   private height = 0;
@@ -165,8 +139,6 @@ export class Tooltip {
   private visible = false;
 
   constructor(ports: TooltipPorts) {
-    const lines: Label[] = [];
-
     this.world = ports.world;
     this.glyphHeight = TOOLTIP_TEXT_SIZE / ports.glyphAspect;
     this.lineHeight = this.glyphHeight + LINE_GAP;
@@ -175,21 +147,12 @@ export class Tooltip {
     this.backdrop.tint = BACKDROP_TINT;
     this.backdrop.alpha = BACKDROP_ALPHA;
     this.backdrop.visible = false;
-
-    for (let line = 0; line < TOOLTIP_LINE_CAPACITY; line += 1) {
-      const label = ports.makeLabel(TOOLTIP_TEXT_SIZE);
-
-      label.alpha = OPAQUE;
-      label.visible = false;
-      lines.push(label);
-    }
+    this.lines = new TooltipLines(ports.makeLabel);
 
     for (let line = 0; line < ITEM_LINE_CAPACITY; line += 1) {
       this.shownSources.push(null);
       this.shownValues.push(0);
     }
-
-    this.lines = lines;
   }
 
   /** Whether it is drawn. */
@@ -224,14 +187,7 @@ export class Tooltip {
     if (!this.visible) {
       this.visible = true;
       this.backdrop.visible = true;
-
-      for (let line = 0; line < this.lines.length; line += 1) {
-        const label = this.lines[line];
-
-        if (label !== undefined) {
-          label.visible = line < this.lineCount;
-        }
-      }
+      this.lines.setShown(true);
     }
   }
 
@@ -242,14 +198,7 @@ export class Tooltip {
 
     this.visible = false;
     this.backdrop.visible = false;
-
-    for (let line = 0; line < this.lines.length; line += 1) {
-      const label = this.lines[line];
-
-      if (label !== undefined) {
-        label.visible = false;
-      }
-    }
+    this.lines.setShown(false);
   }
 
   /** The gold the price line names, asked of the domain, or 0 with no price line. */
@@ -280,7 +229,7 @@ export class Tooltip {
     gold: number,
   ): boolean {
     if (
-      this.lineCount === 0 ||
+      this.lines.lineCount === 0 ||
       item.baseId !== this.shownBaseId ||
       item.rarityId !== this.shownRarityId ||
       item.legendaryId !== this.shownLegendaryId ||
@@ -331,83 +280,20 @@ export class Tooltip {
     }
   }
 
-  /** Writes every line's text and tint, hides the labels past the last, and sizes the backdrop to the widest. */
+  /** Writes every line's text and tint, and sizes the backdrop to the widest. */
   private write(
     item: DeepReadonly<Item>,
     met: boolean,
     price: TooltipPrice,
     gold: number,
   ): void {
-    const world = this.world;
-    const base = itemBaseOf(world, item.baseId);
-    const rarity = rarityOf(world, item.rarityId);
-    const piece = legendaryOf(world, item.legendaryId);
-    const baseName = base === null ? UNNAMED : base.name.toUpperCase();
-    const name = piece === null ? baseName : piece.name.toUpperCase();
-    const rarityName = rarity === null ? "" : `${rarity.name.toUpperCase()} `;
-    let widest = 0;
+    const lines = this.lines;
 
-    this.lineCount = 0;
-    widest = this.writeLine(
-      name,
-      rarity === null ? TOOLTIP_TEXT_TINT : rarity.tint,
-      widest,
-    );
-    widest = this.writeLine(
-      `${rarityName}${baseName}`,
-      TOOLTIP_TEXT_TINT,
-      widest,
-    );
-    widest = this.writeLine(
-      `ITEM LEVEL ${String(item.itemLevel)}`,
-      TOOLTIP_TEXT_TINT,
-      widest,
-    );
-    widest = this.writeLine(
-      `REQUIRED LEVEL ${String(levelRequirementOf(world.run, item))}`,
-      met ? TOOLTIP_TEXT_TINT : UNMET_REQUIREMENT_TINT,
-      widest,
-    );
-
-    for (let line = 0; line < item.lineCount; line += 1) {
-      widest = this.writeLine(
-        statLineText(world, item, line),
-        TOOLTIP_TEXT_TINT,
-        widest,
-      );
-    }
-
-    if (price !== "none") {
-      widest = this.writeLine(priceText(price, gold), PRICE_TINT, widest);
-    }
-
-    for (let line = 0; line < this.lines.length; line += 1) {
-      const label = this.lines[line];
-
-      if (label !== undefined) {
-        label.visible = this.visible && line < this.lineCount;
-      }
-    }
-
-    this.width = widest * TOOLTIP_TEXT_SIZE + PADDING * 2;
-    this.height = this.lineCount * this.lineHeight - LINE_GAP + PADDING * 2;
+    lines.write(this.world, item, met, price, gold, this.visible);
+    this.width = lines.widest * TOOLTIP_TEXT_SIZE + PADDING * 2;
+    this.height = lines.lineCount * this.lineHeight - LINE_GAP + PADDING * 2;
     this.backdrop.scaleX = this.width / this.frameSize;
     this.backdrop.scaleY = this.height / this.frameSize;
-  }
-
-  /** Writes the next label, and returns the widest line so far in glyphs. */
-  private writeLine(text: string, tint: number, widest: number): number {
-    const label = this.lines[this.lineCount];
-
-    if (label === undefined) {
-      return widest;
-    }
-
-    label.setText(text);
-    label.tint = tint;
-    this.lineCount += 1;
-
-    return Math.max(widest, text.length);
   }
 
   /**
@@ -439,14 +325,6 @@ export class Tooltip {
       this.height / this.frameSize,
     );
 
-    for (let line = 0; line < this.lineCount; line += 1) {
-      const label = this.lines[line];
-
-      if (label !== undefined) {
-        label.x = centreX;
-        label.y =
-          top + PADDING + line * this.lineHeight + this.glyphHeight * HALF;
-      }
-    }
+    this.lines.place(centreX, top + PADDING, this.lineHeight, this.glyphHeight);
   }
 }

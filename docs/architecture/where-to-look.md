@@ -94,7 +94,8 @@ Every other architecture page says how code must be shaped. This one says where 
 | What a right click can name on the ground | The pick port in `src/presentation/input/input-ports.ts` — the labels and icons the ground-item views write each frame |
 | Which screens exist | `src/presentation/screens/` — one module per screen, with its layout and the parts it is built from beside it, registered on the claim by `src/presentation/scenes/hud.scene.ts`; the HUD's bands are `src/presentation/hud/hud-bands.ts` |
 | How an item is lifted and set down on the grid, and how a refused item command flashes on a screen | `src/presentation/screens/inventory-lift.ts` and `inventory-flashes.ts` |
-| What an item's tooltip shows, and what it is over | `src/presentation/screens/tooltip.ts` and `tooltip-text.ts`; `store-follow.ts` beside them picks the price line and ties the store screen to the world's store |
+| What an item's tooltip shows, and what it is over | `src/presentation/screens/tooltip.ts`, its lines built in `tooltip-lines.ts` and worded in `tooltip-text.ts`; `store-follow.ts` beside them picks the price line and ties the store screen to the world's store |
+| What a store tab lists | `src/presentation/screens/store-tabs.ts` — the tabs' buttons and the shown tab's items, beside `store.screen.ts` |
 | Which click opens a store | `src/presentation/input/store-ring.ts` — a left click on the checkpoint ring the hero stands in |
 | Where the wall clock lives | `src/app/fixed-step-driver.ts` — tick time; `grep -rn "Date.now\|setInterval" src/app src/devtools` — the two reads outside the tick |
 | The Phaser configuration | `src/app/game-config.ts` |
