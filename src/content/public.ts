@@ -2,6 +2,7 @@ export { abilities } from "./abilities/index";
 export { arrowDef } from "./abilities/arrow.def";
 export { chargeDef } from "./abilities/charge.def";
 export { rootNetDef } from "./abilities/root-net.def";
+export { scorchglassDef } from "./abilities/scorchglass.def";
 export { selfHealDef } from "./abilities/self-heal.def";
 export { silenceCurseDef } from "./abilities/silence-curse.def";
 export { slamDef } from "./abilities/slam.def";
@@ -54,6 +55,7 @@ export {
   lootTables,
   rarities,
 } from "./items/index";
+export { scorchglassItemDef } from "./items/actives/scorchglass.def";
 export { bandDef } from "./items/bases/band.def";
 export { capDef } from "./items/bases/cap.def";
 export { rimecoilDef } from "./items/legendaries/rimecoil.def";

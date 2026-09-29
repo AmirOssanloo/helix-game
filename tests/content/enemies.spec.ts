@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   abilities,
+  activeItems,
   atlasFrames,
   bruteDef,
   contentRegistry,
@@ -301,7 +302,14 @@ describe("the long roster", () => {
       ...def.statuses,
     ]);
 
-    for (const id of [...abilities.map((def) => def.id), ...ON_HIT_STATUSES]) {
+    const enemyAbilities = abilities.filter(
+      (def) => !activeItems.some((item) => item.active.abilityId === def.id),
+    );
+
+    for (const id of [
+      ...enemyAbilities.map((def) => def.id),
+      ...ON_HIT_STATUSES,
+    ]) {
       expect(own).toContain(id);
     }
   });

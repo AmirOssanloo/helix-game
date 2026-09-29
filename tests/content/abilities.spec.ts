@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   abilities as contentAbilities,
+  activeItems,
   arenaDef,
   contentRegistry,
   enemies,
@@ -27,8 +28,11 @@ import {
   makeSpellDef,
 } from "../helpers";
 
-/** The content layer's abilities, read as the registry reads them. */
-const abilities: readonly AbilityDef[] = contentAbilities;
+/** The content layer's enemy abilities, read as the registry reads them: every ability no active item casts. */
+const abilities: readonly AbilityDef[] = contentAbilities.filter(
+  (ability) =>
+    !activeItems.some((item) => item.active.abilityId === ability.id),
+);
 
 /** The content layer's archetypes, read as the registry reads them. */
 const archetypes: readonly EnemyDef[] = enemies;
@@ -43,11 +47,12 @@ const FROST_ARCHER = makeEnemyDef.build({
 });
 
 /**
- * A registry built from `options` over the shipped content, with the arena as its one map:
- * the other maps' packs name the shipped roster, which most registries here replace.
+ * A registry built from `options` over the shipped content, with the arena as its one map and
+ * no active item: the other maps' packs name the shipped roster, and the active items the
+ * shipped abilities, which most registries here replace.
  */
 const registryOf = (options: Parameters<typeof makeRegistry>[0]) =>
-  makeRegistry({ maps: [arenaDef], ...options });
+  makeRegistry({ maps: [arenaDef], activeItems: [], ...options });
 
 const onlyFault = (faults: readonly RegistryFault[]): RegistryFault => {
   const [first] = faults;
@@ -379,11 +384,11 @@ describe("every amount content writes", () => {
     expect(missing).toEqual([]);
   });
 
-  it("reads zero on its term, until an active item gives one a use", () => {
+  it("reads zero on its term but for the damage an active item deals, which grows with the hero", () => {
     const levelled = writtenAmounts()
       .filter((written) => perLevelOf(written.amount) !== 0)
-      .map((written) => written.at);
+      .map((written) => [written.at, perLevelOf(written.amount)]);
 
-    expect(levelled).toEqual([]);
+    expect(levelled).toEqual([["ability:scorchglass.effects.0.amount", 12]]);
   });
 });

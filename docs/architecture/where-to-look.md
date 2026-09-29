@@ -14,7 +14,7 @@ Every other architecture page says how code must be shaped. This one says where 
 | Question | Look at |
 | --- | --- |
 | Which spells exist | `src/content/spells/` — one file per spell |
-| Which enemy abilities exist | `src/content/abilities/` — one file per ability; the same shape as a spell, without an orb recipe |
+| Which enemy abilities, and which abilities active items cast, exist | `src/content/abilities/` — one file per ability; the same shape as a spell, without an orb recipe; an active item's is named by its active block |
 | Which enemies exist, and their tiers | `src/content/enemies/` — one file per archetype. A unit's tier is chosen where it spawns: a pack of a map definition under `src/content/maps/`, or the panel's spawn command |
 | What a tier multiplies, and the abilities it adds | The tier multipliers in the tuning table in `src/content/`; the elite and boss ability lists are fields of each enemy definition |
 | Which summons exist, and how far each keeps from its owner | `src/content/summons/` — one file per summon; the follow distance is a field of each definition |

@@ -53,7 +53,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Hero definition | `content/hero.ts`, typed in `domain/definitions` | The hero's forms, and what is shared across them: the attack every form swings, and how the hero levels | Content |
 | Form definition | `content/forms/`, typed in `domain/definitions` | One shape the hero can take: body, base attributes, growth, ability list, kit key, atlas frame | Content |
 | Spell definition | `content/spells/`, typed in `domain/definitions` | One of the ten hero spells: its orb recipe, targeting, timing, cost, and the effects it runs | Content |
-| Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
+| Ability definition | `content/abilities/`, typed in `domain/definitions` | An ability an enemy, or an active item in the bank, casts through the same pipeline as a spell: the same shape, with no orb recipe | Content |
 | Enemy definition | `content/enemies/`, typed in `domain/definitions` | One archetype: body, stats, the attack it swings, tier, behaviour key, the abilities it may cast and those an elite or a boss adds, and the statuses it carries from spawn | Content |
 | Status definition | `content/statuses/`, typed in `domain/definitions` | One lasting condition: what it blocks or modifies, and how a second application stacks | Content |
 | Disable matrix | `content/statuses/disable-matrix.ts`, typed in `domain/definitions` | Every status against every key, order, cast in progress, and cursor: one row per group of statuses, one answer per cell | Content |

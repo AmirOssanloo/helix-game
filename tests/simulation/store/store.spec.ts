@@ -111,7 +111,7 @@ const fillWithBands = (world: World): void => {
 
 type Arranged = Readonly<{ world: Simulation; reader: EventReader }>;
 
-/** A hero at `x`, on the first checkpoint's ring by default, on the store map, and a reader at the start of the ring. The content holds the fixture active items when `actives` says so. */
+/** A hero at `x`, on the first checkpoint's ring by default, on the store map, and a reader at the start of the ring. The registry holds the fixture active items when `actives` says so, and none otherwise. */
 const arrange = (seed = 1, x = 0, actives = false): Arranged => {
   const map = storeMap();
   const world = makeWorld({
@@ -119,7 +119,7 @@ const arrange = (seed = 1, x = 0, actives = false): Arranged => {
     map,
     registry: makeRegistry({
       maps: [map],
-      ...(actives ? { activeItems: FIXTURE_ACTIVES } : {}),
+      activeItems: actives ? FIXTURE_ACTIVES : [],
     }),
   });
 

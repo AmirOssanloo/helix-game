@@ -2,12 +2,16 @@ import type { AbilityDef } from "@domain/public";
 import { arrowDef } from "./arrow.def";
 import { chargeDef } from "./charge.def";
 import { rootNetDef } from "./root-net.def";
+import { scorchglassDef } from "./scorchglass.def";
 import { selfHealDef } from "./self-heal.def";
 import { silenceCurseDef } from "./silence-curse.def";
 import { slamDef } from "./slam.def";
 import { summonAddsDef } from "./summon-adds.def";
 
-/** Every enemy ability, in the order the content tier validates them. An ability not listed here does not exist. */
+/**
+ * Every enemy ability, and every ability an active item casts, in the order the content tier
+ * validates them. An ability not listed here does not exist.
+ */
 export const abilities = [
   silenceCurseDef,
   rootNetDef,
@@ -16,4 +20,5 @@ export const abilities = [
   selfHealDef,
   summonAddsDef,
   chargeDef,
+  scorchglassDef,
 ] as const satisfies readonly AbilityDef[];

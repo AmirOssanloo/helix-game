@@ -127,7 +127,7 @@ type Arranged = Readonly<{
   click: (button: number, x: number, y: number) => void;
 }>;
 
-/** A hero on the first checkpoint's ring, the store screen and the inventory registered as the HUD scene registers them, and neither open. The content holds the fixture active items when `actives` says so. */
+/** A hero on the first checkpoint's ring, the store screen and the inventory registered as the HUD scene registers them, and neither open. The registry holds the fixture active items when `actives` says so, and none otherwise. */
 const arrange = (seed = 1, secondX = 3000, actives = false): Arranged => {
   const map = storeMap(secondX);
   const world = makeWorld({
@@ -135,7 +135,7 @@ const arrange = (seed = 1, secondX = 3000, actives = false): Arranged => {
     map,
     registry: makeRegistry({
       maps: [map],
-      ...(actives ? { activeItems: FIXTURE_ACTIVES } : {}),
+      activeItems: actives ? FIXTURE_ACTIVES : [],
     }),
   });
 

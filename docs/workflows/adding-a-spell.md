@@ -16,7 +16,7 @@ The example below adds a made-up spell called **Frost Lance**: a point-targeted 
 
 ## 2. Write the definition
 
-One file per spell. Hero spells live under `src/content/spells/`; enemy abilities under `src/content/abilities/`. The file name is the id.
+One file per spell. Hero spells live under `src/content/spells/`; enemy abilities, and the abilities active items cast, under `src/content/abilities/`. The file name is the id.
 
 ```bash
 touch src/content/spells/frost-lance.def.ts
