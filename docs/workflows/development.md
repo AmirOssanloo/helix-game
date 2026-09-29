@@ -89,7 +89,22 @@ A push to `main` builds the game and publishes it to GitHub Pages at **https://a
 
 The workflow runs `pnpm build:playtest` and nothing else; `ci.yml` runs the gate on the same push, in parallel. A red gate does not hold the deploy back, so a push that builds but fails a test still reaches the site — read CI, not the site, for whether a change is good.
 
-**The panel on a public address is a deliberate call for this phase, not a permanent one.** Anyone with the link can spawn three hundred units, set every orb to seven, and retune the world. That is the point while the game is being shown to people who are meant to poke at it; when the game is played by people who are not, the workflow builds `pnpm build` instead and the playtest build goes back to being a thing you run locally. Nothing but the one line in the workflow has to change.
+**The panel on a public address is a deliberate call while the game is shown to people meant to poke at it, not a permanent one.** Anyone with the link can spawn three hundred units, set every orb to seven, and retune the world. That is the point while the game is being shown to people who are meant to poke at it; when the game is played by people who are not, the workflow builds `pnpm build` instead and the playtest build goes back to being a thing you run locally. Nothing but the one line in the workflow has to change.
+
+### Pinned playtest builds
+
+A playtest's log replays only on the code it was played on, so a build handed to someone to play is a **pinned build**: a tag named `playtest-<name>` on the commit is published under its own path, **https://amirossanloo.github.io/helix-game/playtest-<name>/**, beside the head of `main` at the root. The same workflow builds both: the head of `main` into the root, then each `playtest-*` tag at its own commit, in a worktree of its own, with `pnpm build:playtest`, into a folder named for the tag. Each build reads its stamp from its own checkout, so a pinned build names its tag's commit and the root names the head of `main`.
+
+To pin a build, tag the commit and push the tag:
+
+```sh
+git tag -a playtest-<name> <commit> -m "<what it pins>"
+git push origin playtest-<name>
+```
+
+The push runs the workflow, which publishes `main` at the root and every tag under its path, the new one included. Every run rebuilds the whole site, so each tag is built again on every push to `main` and keeps its path; deleting a tag drops its path on the next run. A tag is built by the workflow of the head of `main`, at the tag's lockfile and scripts, so a pinned commit needs a `build:playtest` script and a lockfile the pinned pnpm reads.
+
+Once a pinned build's playtest is played and triaged, its log is proved on the tag, by running its replay spec in a worktree at the tag, where it must pass, not skip. If `main`'s content has moved since, the log is then retired on `main` with a note, and the next session on the head becomes the reference log for its road.
 
 The build asks for its bundle beside itself rather than at the server root, which is what lets one build serve from the repository-name path a project page uses. Nothing in the page knows the repository name, so a rename or a custom domain needs no change here.
 

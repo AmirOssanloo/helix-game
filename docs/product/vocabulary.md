@@ -121,6 +121,7 @@ When two people call the same thing different names, the names leak into the cod
 | The working memory the rules write and read within a call, which the world owns and no tick leaves anything in | **Scratch** | Temp, buffer pool, cache (a cache is read on a later tick, so it is state) |
 | The HTML panel for spawning, tuning, and instrumentation | **Developer panel** | Debug menu, cheats, admin |
 | The build published for people to play with: the game as it ships, with the developer panel beside it | **Playtest build** | Demo, preview, staging, dev build |
+| A playtest build published at a path of its own from a `playtest-` tag on its commit, so a log played on it replays after `main` has moved on | **Pinned build** | Release, snapshot, archived build |
 | Drawn diagnostics over the world | **Overlay** | Gizmo, debug draw |
 | The recorded commands of a session | **Input log** | Replay file (a replay is what you do with it) |
 | A person's note saved with the input log up to the tick it was written on, the content version, and the build it was played on | **Feedback file** | Bug report, playtest report, note |

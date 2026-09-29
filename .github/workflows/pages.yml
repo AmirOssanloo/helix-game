@@ -3,6 +3,8 @@ name: Pages
 on:
   push:
     branches: [main]
+    # A pinned build: a new playtest tag publishes its own path beside the ones already there.
+    tags: ["playtest-*"]
   workflow_dispatch:
 
 # One live site: a run waits for the one ahead of it instead of racing it to the same URL.
@@ -23,7 +25,12 @@ jobs:
       # The commit hook is for a working tree; install must not try to register it here.
       HUSKY: 0
     steps:
+      # The head of main, whatever pushed: a tag's run still publishes main at the root. Every tag
+      # comes with it, so each pinned build can be built at its own commit.
       - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
 
       # Reads the pnpm version from the packageManager field, so the pin has one owner.
       - uses: pnpm/action-setup@v6
@@ -39,6 +46,19 @@ jobs:
       # anyone with the link can drive it. The page asks for its bundle beside itself, so it runs
       # under the repository name without knowing it.
       - run: pnpm build:playtest
+
+      # Every playtest tag, built at its own commit in a worktree of its own and published under a
+      # path named for the tag, so a log recorded on it replays there after main has moved on. The
+      # site is rebuilt whole on each run, so every tag is built every time, and a deleted tag's path
+      # goes with it. Each build reads its stamp from its own worktree, so it names the tag's commit.
+      - name: Build the pinned playtest builds
+        run: |
+          for tag in $(git tag --list 'playtest-*'); do
+            tree="$RUNNER_TEMP/$tag"
+            git worktree add --detach "$tree" "refs/tags/$tag"
+            (cd "$tree" && pnpm install --frozen-lockfile && pnpm build:playtest)
+            cp -R "$tree/dist" "dist/$tag"
+          done
 
       - uses: actions/upload-pages-artifact@v4
         with:
