@@ -1,6 +1,7 @@
 import type { Rect, Vec2 } from "@shared/public";
 import type { PackRecord } from "../ai/packs";
 import type { ConsumedCommands } from "../commands/consumed-commands";
+import type { ActiveItemDef } from "../definitions/active-item-def";
 import type { AffixDef } from "../definitions/affix-def";
 import type { AttackRecord } from "../definitions/attack-state";
 import type { DefinitionSlot } from "../definitions/definition-slot";
@@ -19,6 +20,7 @@ import type { UnitRecord } from "../definitions/unit-state";
 import type { EventSink } from "../events/domain-event";
 import type { Armory } from "../items/armory";
 import type { Inventory } from "../items/inventory";
+import type { Item } from "../items/item";
 import type { WalkabilityGrid } from "../map/walkability";
 import type { SpatialHash } from "../movement/spatial-hash";
 import type { PathSearch } from "../pathing/astar";
@@ -96,6 +98,8 @@ export type RunScope = {
   forms: FormRecord[];
   /** The hero's inventory, shared by every form: the grid of cells and the items placed on it. */
   inventory: Inventory;
+  /** The hero's bank, shared by every form: six item records, each an active item or empty, in the bank's place order, T, X, V, then C, G, Space. */
+  bank: Item[];
   /** The hero's gold, a whole number. */
   gold: number;
   /** What the active form's armory adds to each stat, copied from it at the start of the stats system every tick. The hero's modifier table references it. */
@@ -122,6 +126,8 @@ export type RunScope = {
   rarities: RarityTableDef;
   /** Every Legendary piece, as written, which a boss's drop copies the piece its pack names from. */
   legendaries: readonly LegendaryDef[];
+  /** Every active item, as written, in the registry's order: the store's listing, and what a bank place's item casts. */
+  activeItems: readonly ActiveItemDef[];
   tuning: TuningState;
   /**
    * Every definition number's key, to where it lives in the world's own copy of its

@@ -7,6 +7,8 @@ import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
+import { bankHoldsAbility } from "../items/bank";
+import { NO_PLACE } from "../items/item-place";
 import { isPathComplete } from "../movement/path";
 import { isInsideCone, turnToward } from "../movement/turn";
 import { turnRateOf } from "../movement/unit-rates";
@@ -254,9 +256,10 @@ const contextOf = (
  * The commit stage, on the tick the cast point ends: the mana is spent, the clock starts for
  * the definition's cooldown at the unit's current level with the percentage the unit holds
  * at this moment baked in, the effect list runs in order with the cast as its context, the
- * commit is announced, and the backswing begins. Mana that left since the request, or a live
- * cap that no longer has room for the enemies the list spawns, cancels instead, with nothing
- * spent and no clock started.
+ * commit is announced, and the backswing begins. Mana that left since the request, a live
+ * cap that no longer has room for the enemies the list spawns, or, for an activation, a bank
+ * that no longer holds an item naming the ability, sold or moved to the inventory during the
+ * cast point, cancels instead, with nothing spent and no clock started.
  */
 const commit = (
   world: World,
@@ -270,7 +273,12 @@ const commit = (
   const resources = resourcesOf(world, unit);
   const cost = entryAtLevel(record.def.manaCost, level);
 
-  if (!hasMana(resources, cost, flags) || !spawnsFit(world, record.def)) {
+  if (
+    !hasMana(resources, cost, flags) ||
+    !spawnsFit(world, record.def) ||
+    (unit.cast.source !== NO_PLACE &&
+      !bankHoldsAbility(world.run, record.def.id))
+  ) {
     cancel(unit);
 
     return;

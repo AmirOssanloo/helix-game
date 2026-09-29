@@ -8,15 +8,18 @@ export type ItemLine = {
 
 /**
  * An item as a value: its base's id, its rarity's id, the Legendary piece it is when it is
- * one, its item level, and its stat lines, the first `lineCount` of them live. Every field is
+ * one, its item level, and its stat lines, the first `lineCount` of them live. An active item
+ * names its definition in `activeId` and nothing else: no base, rarity, level, or line. Every field is
  * present on every item, and the lines are made once with the record that holds it, so moving
- * an item between the ground, a cell, and a slot is a copy into the destination's record and a
- * clear of the source's, and allocates nothing. A cleared item names no base.
+ * an item between the ground, a cell, a slot, and a place of the bank is a copy into the
+ * destination's record and a clear of the source's, and allocates nothing. A cleared item names
+ * no base and no active item.
  */
 export type Item = {
   baseId: string | null;
   rarityId: string | null;
   legendaryId: string | null;
+  activeId: string | null;
   itemLevel: number;
   lines: ItemLine[];
   lineCount: number;
@@ -44,17 +47,23 @@ export const createItem = (): Item => {
     baseId: null,
     rarityId: null,
     legendaryId: null,
+    activeId: null,
     itemLevel: 0,
     lines,
     lineCount: 0,
   };
 };
 
+/** Whether `item` holds nothing: it names no base and no active item. */
+export const isEmptyItem = (item: Readonly<Item>): boolean =>
+  item.baseId === null && item.activeId === null;
+
 /** Every field back to what `createItem` made, in place. */
 export const clearItem = (item: Item): void => {
   item.baseId = null;
   item.rarityId = null;
   item.legendaryId = null;
+  item.activeId = null;
   item.itemLevel = 0;
 
   for (let line = 0; line < item.lines.length; line += 1) {
@@ -74,6 +83,7 @@ export const copyItem = (from: Readonly<Item>, into: Item): void => {
   into.baseId = from.baseId;
   into.rarityId = from.rarityId;
   into.legendaryId = from.legendaryId;
+  into.activeId = from.activeId;
   into.itemLevel = from.itemLevel;
 
   for (let line = 0; line < into.lines.length; line += 1) {

@@ -62,6 +62,12 @@ export {
 export { REPOSITORY_ROOT, SOURCE_DIR } from "./architecture/repository";
 export { always } from "./content/always";
 export { FEEDBACK_TIMINGS } from "./content/feedback-timings";
+export {
+  FIXTURE_ACTIVES,
+  GLASS,
+  KNIFE,
+  SHAFT,
+} from "./content/fixture-actives";
 export { FROST_VOLLEY } from "./content/frost-volley";
 export { makeAbilityDef } from "./content/make-ability-def";
 export { makeAttackDef } from "./content/make-attack-def";

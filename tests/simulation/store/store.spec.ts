@@ -318,7 +318,7 @@ describe("the stock", () => {
 
     openAt(world, 0);
     world.state.run.gold = 100_000;
-    send(world, { kind: "buy_item", ...stamp(world), stockSlot: 4 });
+    send(world, { kind: "buy_item", ...stamp(world), place: stockPlace(4) });
     send(world, { kind: "close_store", ...stamp(world) });
 
     const left = stockOf(world, 0);
@@ -415,7 +415,7 @@ describe("buy_item", () => {
     const price = priceOf(world.view.run, item);
 
     world.state.run.gold = price + 7;
-    send(world, { kind: "buy_item", ...stamp(world), stockSlot: 2 });
+    send(world, { kind: "buy_item", ...stamp(world), place: stockPlace(2) });
 
     const inventory = world.view.run.inventory;
 
@@ -441,7 +441,7 @@ describe("sell_item", () => {
 
     const gold = Math.floor(priceOf(world.view.run, aBand()) * SELL_FRACTION);
 
-    send(world, { kind: "sell_item", ...stamp(world), cell: 5 });
+    send(world, { kind: "sell_item", ...stamp(world), place: 5 });
 
     expect(gold).toBeGreaterThan(0);
     expect(world.view.run.gold).toBe(10 + gold);
@@ -508,7 +508,11 @@ const REFUSALS: readonly RefusalCase[] = [
     name: "a buy from a slot past the twelve",
     open: true,
     arrange: () => undefined,
-    command: (world) => ({ kind: "buy_item", ...stamp(world), stockSlot: 12 }),
+    command: (world) => ({
+      kind: "buy_item",
+      ...stamp(world),
+      place: stockPlace(12),
+    }),
     reason: "invalid_place",
     place: stockPlace(12),
     checkpoint: -1,
@@ -517,7 +521,7 @@ const REFUSALS: readonly RefusalCase[] = [
     name: "a sell from a cell off the grid",
     open: true,
     arrange: () => undefined,
-    command: (world) => ({ kind: "sell_item", ...stamp(world), cell: 40 }),
+    command: (world) => ({ kind: "sell_item", ...stamp(world), place: 40 }),
     reason: "invalid_place",
     place: 40,
     checkpoint: -1,
@@ -528,7 +532,11 @@ const REFUSALS: readonly RefusalCase[] = [
     arrange: (world) => {
       world.run.gold = 100_000;
     },
-    command: (world) => ({ kind: "buy_item", ...stamp(world), stockSlot: 0 }),
+    command: (world) => ({
+      kind: "buy_item",
+      ...stamp(world),
+      place: stockPlace(0),
+    }),
     reason: "store_closed",
     place: stockPlace(0),
     checkpoint: -1,
@@ -539,7 +547,7 @@ const REFUSALS: readonly RefusalCase[] = [
     arrange: (world) => {
       put(world, 0);
     },
-    command: (world) => ({ kind: "sell_item", ...stamp(world), cell: 0 }),
+    command: (world) => ({ kind: "sell_item", ...stamp(world), place: 0 }),
     reason: "store_closed",
     place: 0,
     checkpoint: -1,
@@ -559,7 +567,11 @@ const REFUSALS: readonly RefusalCase[] = [
         item.baseId = null;
       }
     },
-    command: (world) => ({ kind: "buy_item", ...stamp(world), stockSlot: 3 }),
+    command: (world) => ({
+      kind: "buy_item",
+      ...stamp(world),
+      place: stockPlace(3),
+    }),
     reason: "no_item_at_place",
     place: stockPlace(3),
     checkpoint: -1,
@@ -568,7 +580,7 @@ const REFUSALS: readonly RefusalCase[] = [
     name: "a sell from an empty cell",
     open: true,
     arrange: () => undefined,
-    command: (world) => ({ kind: "sell_item", ...stamp(world), cell: 9 }),
+    command: (world) => ({ kind: "sell_item", ...stamp(world), place: 9 }),
     reason: "no_item_at_place",
     place: 9,
     checkpoint: -1,
@@ -581,7 +593,11 @@ const REFUSALS: readonly RefusalCase[] = [
 
       world.run.gold = item === undefined ? 0 : priceOf(world.run, item) - 1;
     },
-    command: (world) => ({ kind: "buy_item", ...stamp(world), stockSlot: 0 }),
+    command: (world) => ({
+      kind: "buy_item",
+      ...stamp(world),
+      place: stockPlace(0),
+    }),
     reason: "not_enough_gold",
     place: stockPlace(0),
     checkpoint: -1,
@@ -593,7 +609,11 @@ const REFUSALS: readonly RefusalCase[] = [
       world.run.gold = 100_000;
       fillWithBands(world);
     },
-    command: (world) => ({ kind: "buy_item", ...stamp(world), stockSlot: 0 }),
+    command: (world) => ({
+      kind: "buy_item",
+      ...stamp(world),
+      place: stockPlace(0),
+    }),
     reason: "no_room",
     place: stockPlace(0),
     checkpoint: -1,
@@ -642,8 +662,8 @@ describe("a refused store command", () => {
 
     submit(world, { kind: "open_store", ...stamp(world), checkpoint: 0 });
     submit(world, { kind: "close_store", ...stamp(world) });
-    submit(world, { kind: "buy_item", ...stamp(world), stockSlot: 0 });
-    submit(world, { kind: "sell_item", ...stamp(world), cell: 0 });
+    submit(world, { kind: "buy_item", ...stamp(world), place: stockPlace(0) });
+    submit(world, { kind: "sell_item", ...stamp(world), place: 0 });
     world.tick();
 
     expect(holdings(world)).toEqual(before);
@@ -677,7 +697,7 @@ describe("a refused store command", () => {
     });
     world.tick();
     openAt(world, 0);
-    send(world, { kind: "sell_item", ...stamp(world), cell: 0 });
+    send(world, { kind: "sell_item", ...stamp(world), place: 0 });
 
     expect(world.view.map.openStore).toBe(0);
     expect(recordAt(world.view.run.inventory, 0)).toBe(NO_RECORD);
@@ -794,13 +814,13 @@ const prepare = (world: World): void => {
 /** The session's commands, one on each of these ticks. */
 const SESSION: readonly ((tick: number) => StoreCommand)[] = [
   (tick) => ({ kind: "open_store", tick, timestamp: tick, checkpoint: 0 }),
-  (tick) => ({ kind: "buy_item", tick, timestamp: tick, stockSlot: 0 }),
-  (tick) => ({ kind: "sell_item", tick, timestamp: tick, cell: 0 }),
-  (tick) => ({ kind: "buy_item", tick, timestamp: tick, stockSlot: 0 }),
+  (tick) => ({ kind: "buy_item", tick, timestamp: tick, place: stockPlace(0) }),
+  (tick) => ({ kind: "sell_item", tick, timestamp: tick, place: 0 }),
+  (tick) => ({ kind: "buy_item", tick, timestamp: tick, place: stockPlace(0) }),
   (tick) => ({ kind: "close_store", tick, timestamp: tick }),
-  (tick) => ({ kind: "sell_item", tick, timestamp: tick, cell: 1 }),
+  (tick) => ({ kind: "sell_item", tick, timestamp: tick, place: 1 }),
   (tick) => ({ kind: "open_store", tick, timestamp: tick, checkpoint: 0 }),
-  (tick) => ({ kind: "buy_item", tick, timestamp: tick, stockSlot: 7 }),
+  (tick) => ({ kind: "buy_item", tick, timestamp: tick, place: stockPlace(7) }),
 ];
 
 describe("the store commands in the log", () => {

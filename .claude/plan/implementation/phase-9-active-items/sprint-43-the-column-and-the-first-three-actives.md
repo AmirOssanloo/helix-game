@@ -31,6 +31,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 
 > **Note, 2026-09-28, from P9-S41-T01:** the column is written in the [ability pipeline](../../../../docs/architecture/ability-pipeline.md) (the "Disables" bullet and the quick reference's "The active-item column") and in [commands and events](../../../../docs/architecture/commands-and-events.md) ("Item command columns"); this ticket checks both against the build. The matrix is content, so if the content version covers it, the version moves and `pnpm restamp` re-stamps; no stored checksum moves, since no stored log holds an activation. **Size holds at 0.5.**
 
+> **Note, 2026-09-29, from P9-S42-T02:** the validator's `activate_item` case in `src/domain/orders/validator.ts` checks the place and the target only, and `activationReadiness` in `src/domain/abilities/cast.ts` death, the clock, and the cost; the column goes into both, so the validator refuses by it and the HUD greys by it. The active block's root refusal is already in the request stage. A stored log now holds an activation only in a spec's own recording, so the note above holds: no stored checksum moves. **Size holds at 0.5.**
+
 **Build:** `DisableCellsDef` gains the active-item column and `COMMAND_COLUMNS` reads it for `activate_item`: allowed under silence, root, disarm, slow, and every row but stun and lift, which refuse it (Q121, the [disable matrix](../../../../docs/product/specs/disable-matrix.md)'s notes 17 to 20). Slipknife's refusal under root is its active block's, not the column's.
 
 **Acceptance:**

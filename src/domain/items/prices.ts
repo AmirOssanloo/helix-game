@@ -1,12 +1,15 @@
 import type { DeepReadonly } from "@shared/public";
+import type { ActiveItemDef } from "../definitions/active-item-def";
 import type { ItemBaseDef } from "../definitions/item-base-def";
 import type { RarityDef } from "../definitions/rarity-def";
 import type { Item } from "./item";
+import { activeItemById } from "./item-defs";
 
-/** What a price reads of run scope: the bases and the rarity table as written, which no tuning command reaches. */
+/** What a price reads of run scope: the bases, the rarity table, and the active items as written, which no tuning command reaches. */
 export type PriceContent = Readonly<{
   itemBases: readonly ItemBaseDef[];
   rarities: readonly RarityDef[];
+  activeItems: readonly ActiveItemDef[];
 }>;
 
 const baseValue = (
@@ -40,16 +43,24 @@ const priceMultiplier = (
 };
 
 /**
- * What the store asks for `item`, in gold: its base's value times its rarity's price
- * multiplier. A Legendary piece is priced on the base it is built on. A part the content does
- * not name is worth nothing, so a cleared item costs 0.
+ * What the store asks for `item`, in gold: an active item's price as its definition writes
+ * it, or its base's value times its rarity's price multiplier. A Legendary piece is priced on
+ * the base it is built on. A part the content does not name is worth nothing, so a cleared
+ * item costs 0.
  */
 export const priceOf = (
   content: PriceContent,
   item: DeepReadonly<Item>,
-): number =>
-  baseValue(content.itemBases, item.baseId) *
-  priceMultiplier(content.rarities, item.rarityId);
+): number => {
+  if (item.activeId !== null) {
+    return activeItemById(content.activeItems, item.activeId)?.price ?? 0;
+  }
+
+  return (
+    baseValue(content.itemBases, item.baseId) *
+    priceMultiplier(content.rarities, item.rarityId)
+  );
+};
 
 /** What the store gives for `item`, in gold: its price times `sellFraction`, rounded down. */
 export const sellPriceOf = (

@@ -65,6 +65,8 @@ export const flashKindOf = (reason: RefusalReason): FlashKind => {
     case "not_at_checkpoint":
     case "store_closed":
     case "not_enough_gold":
+    case "already_held":
+    case "not_active_item":
     case "already_channeling":
     case "unknown_status":
     case "target_untargetable":

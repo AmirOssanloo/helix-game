@@ -4,7 +4,12 @@ import type { TuningKey } from "../definitions/tuning-def";
 import type { UnitId } from "../entities/unit";
 import type { Tick } from "../tick";
 import type { DebugCommand } from "./debug-commands";
-import type { ItemCommand, PickUpCommand, StoreCommand } from "./item-commands";
+import type {
+  ActivateItemCommand,
+  ItemCommand,
+  PickUpCommand,
+  StoreCommand,
+} from "./item-commands";
 
 /**
  * A player intent entering the simulation: one variant per intent, produced by the input
@@ -27,7 +32,8 @@ export type Command =
   | SpendSkillPointCommand
   | ItemCommand
   | StoreCommand
-  | PickUpCommand;
+  | PickUpCommand
+  | ActivateItemCommand;
 
 /** Proves the plumbing: ordered, consumed, and logged like any command, and changes nothing. */
 export type NoopCommand = Readonly<{

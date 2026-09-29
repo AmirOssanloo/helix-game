@@ -23,6 +23,7 @@ const PLAYER_COMMAND_KINDS: Readonly<Record<Command["kind"], true>> = {
   close_store: true,
   buy_item: true,
   sell_item: true,
+  activate_item: true,
   pick_up: true,
 };
 

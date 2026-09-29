@@ -25,6 +25,7 @@ const CLEARED: GroundItem = {
     baseId: null,
     rarityId: null,
     legendaryId: null,
+    activeId: null,
     itemLevel: 0,
     lines: [
       { sourceId: null, value: 0 },

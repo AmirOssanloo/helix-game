@@ -481,13 +481,14 @@ export class InventoryScreen implements ClaimScreen {
       this.lift.press(cell, x, y);
     } else if (button === RIGHT_BUTTON) {
       const driver = this.driver;
+      const tick = driver.nextTick;
+      const timestamp = driver.now();
 
-      driver.submit({
-        kind: this.world.map.openStore === NO_STORE ? "drop_item" : "sell_item",
-        tick: driver.nextTick,
-        timestamp: driver.now(),
-        cell,
-      });
+      driver.submit(
+        this.world.map.openStore === NO_STORE
+          ? { kind: "drop_item", tick, timestamp, cell }
+          : { kind: "sell_item", tick, timestamp, place: cell },
+      );
     }
   }
 }

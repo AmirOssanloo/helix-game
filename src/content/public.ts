@@ -47,6 +47,7 @@ export { skeinDef } from "./forms/skein.def";
 export { heroDef } from "./hero";
 export { contentRegistry } from "./index";
 export {
+  activeItems,
   affixes,
   itemBases,
   legendaries,

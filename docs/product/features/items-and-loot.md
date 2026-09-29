@@ -70,6 +70,16 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 - **Selling:** a right click on an inventory item sells it for a quarter of its price (`store_sell_fraction`), rounded down. The pointer over it shows the sell price in its tooltip.
 - **Closing:** Esc, or the hero leaving the ring or dying. Esc closes the store first and a second Esc the inventory; the inventory stays open until it is closed itself. The world keeps running while the store is open.
 
+## The bank
+
+The hero holds up to six active items in the bank, beside the inventory and shared by every form, one to each of T, X, V on the top row and C, G, Space below. An item in the bank is activated by its key; one in the inventory is carried and never activated. What each active item does, and its price, are the [item catalogue's](../specs/item-catalogue.md#7-the-active-items).
+
+- **Where a bought one goes:** the first free place, reading T, X, V, then C, G, Space, and into the inventory where it fits, 1 by 2 cells, when all six are full.
+- **One of each:** buying an active item the hero already holds, in the bank or the inventory, is refused and flashes.
+- **Moving:** an active item moves between the bank and the inventory, and between two places of the bank, so the player chooses its key. Anything but an active item is refused a place of the bank. One moved onto a place that holds another sends that one to the inventory where it fits, and is refused when it fits nowhere.
+- **Selling and dropping:** an active item sells from the bank or the inventory for a quarter of its price. It is dropped from the inventory, never straight from the bank.
+- **Its clock** is the hero's, by the ability the item casts, so moving it, or selling it and buying it again, keeps the clock running. An activation whose item leaves the bank before its cast point ends is cancelled, with no mana spent and no clock started.
+
 ## States and edge cases
 
 | State | What happens |
@@ -91,7 +101,6 @@ A store stands at every checkpoint. A left click on the checkpoint ring the hero
 
 ## Deferred
 
-- **Activating the active items**, and the bank of six keys they are held in. What each does, and the bank's rules, are the [item catalogue's](../specs/item-catalogue.md#7-the-active-items); they are listed and bought before they can be used.
 - **A catalogue at Diablo II's scale**, about a thousand items, and item art. Icons are flat silhouettes in a rarity tint. The descent needs its bases and affixes to reach item level 100 ([the descent](../specs/the-descent.md#7-loot-at-depth)).
 - **Two-handed weapons, sets, sockets, and lifesteal.**
 - **A stash**, which waits on saves and stands in the town; a store that buys back what it sold. The town's store restocks as the hero goes deeper ([travel](./map-and-camera.md#travel)).

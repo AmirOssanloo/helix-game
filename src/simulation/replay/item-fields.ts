@@ -21,6 +21,7 @@ export const ITEM_FIELDS = fieldsOf<DeepReadonly<Item>>({
   baseId: text("baseId", (item) => item.baseId),
   rarityId: text("rarityId", (item) => item.rarityId),
   legendaryId: text("legendaryId", (item) => item.legendaryId),
+  activeId: text("activeId", (item) => item.activeId),
   itemLevel: number("itemLevel", (item, into, at) => {
     into[at] = item.itemLevel;
   }),

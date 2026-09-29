@@ -1,6 +1,6 @@
 import { assertNever } from "@shared/public";
 import { isDamageType } from "../combat/damage";
-import type { Command } from "../commands/command";
+import type { CastTarget, Command } from "../commands/command";
 import { SLOT_COUNT } from "../commands/command";
 import type { DebugCommand } from "../commands/debug-commands";
 import type { GrantRefusal } from "../debug/item-grants";
@@ -13,6 +13,7 @@ import type { TuningRefusal } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import { ORB_COUNT } from "../entities/world-state";
 import type { ItemRefusal } from "../items/item-commands";
+import { isBankPlace } from "../items/item-place";
 import { validateItemCommand } from "../items/item-validation";
 import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/apply-status";
@@ -28,7 +29,7 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * rule knows, an orb level outside the cap, a count or a duration below one, a tier no
  * archetype spawns at, a checkpoint index that is not a whole number of none or more, a map
  * level that is not a whole number of one or more, a place outside the inventory's grid or the
- * armory's ten slots, a rarity that is not a name, an item level that is not a whole number of
+ * armory's ten slots, the bank, the stock, or the listing, a rarity that is not a name, an item level that is not a whole number of
  * one or more. The
  * next are the active kit's, decided when it resolves a slot key after validation: the orb
  * has no level yet, the buffer is short of full, no spell answers to the buffer, the composer
@@ -48,7 +49,9 @@ import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
  * item cannot go in the armory slot named, the hero's level is below the item's requirement,
  * or the item, or the one it puts back, fits nowhere. A store command is refused when it
  * applies by the store: the hero stands outside the reach of the checkpoint it names, no store
- * is open, the gold is short of the price, or the rest as an item command's. A tuning change is refused
+ * is open, the gold is short of the price, the hero already holds the active item it would buy,
+ * or the rest as an item command's. A move into the bank is refused for anything but an active
+ * item. A tuning change is refused
  * when its value is not finite, its key is the fixed step rate, or no key of the table has it.
  */
 export type RefusalReason =
@@ -99,6 +102,20 @@ export type ValidationResult = "ok" | RefusalReason;
 const isFiniteDestination = (
   destination: Readonly<{ x: number; y: number }>,
 ): boolean => Number.isFinite(destination.x) && Number.isFinite(destination.y);
+
+/** Whether every point `target` carries is finite: a point, a direction, or both ends of a vector. */
+const isFiniteTarget = (target: CastTarget): boolean => {
+  if (
+    (target.kind === "point" ||
+      target.kind === "direction" ||
+      target.kind === "vector") &&
+    !isFiniteDestination(target.position)
+  ) {
+    return false;
+  }
+
+  return target.kind !== "vector" || isFiniteDestination(target.end);
+};
 
 const isSlotIndex = (slot: number): boolean =>
   Number.isInteger(slot) && slot >= 1 && slot <= SLOT_COUNT;
@@ -151,7 +168,9 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
  * machine cancels it when the new order lands, with nothing spent. A skill-point spend is
  * refused by no disable, only by death and by a slot outside the six keys; a level is not
  * something the unit does, and has no column. An item or a store command reads the items
- * column, which no status refuses, then the places or the checkpoint it names. A pick up reads its own column, which answers
+ * column, which no status refuses, then the places or the checkpoint it names. An activation
+ * is refused for a place outside the bank and a point that is not finite; what lies at the
+ * place, and everything its cast is refused for, is the request stage's. A pick up reads its own column, which answers
  * as a move does; whether the ground item it names is still there, and is an item, is the
  * command system's to refuse when it applies.
  */
@@ -211,22 +230,7 @@ export const validateCommand = (
         return refusal;
       }
 
-      const target = command.target;
-
-      if (
-        (target.kind === "point" ||
-          target.kind === "direction" ||
-          target.kind === "vector") &&
-        !isFiniteDestination(target.position)
-      ) {
-        return "invalid_destination";
-      }
-
-      if (target.kind === "vector" && !isFiniteDestination(target.end)) {
-        return "invalid_destination";
-      }
-
-      return "ok";
+      return isFiniteTarget(command.target) ? "ok" : "invalid_destination";
     }
 
     case "equip_item":
@@ -246,6 +250,13 @@ export const validateCommand = (
         refusalOf(matrix, unit.disables, "items") ??
         validateStoreCommand(command)
       );
+
+    case "activate_item":
+      if (!isBankPlace(command.place)) {
+        return "invalid_place";
+      }
+
+      return isFiniteTarget(command.target) ? "ok" : "invalid_destination";
 
     case "noop":
       return "ok";

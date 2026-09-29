@@ -248,25 +248,17 @@ const swapFitsAt = (
 };
 
 /**
- * What moving placed record `record` so its corner lies on `to` does, read without changing
- * anything: `MOVE_FITS` when it fits there, its own cells counting as free; when its cells
- * there cover exactly one other item, the cell that item's corner goes to, its first fit in
- * reading order once both are lifted and the moved one is set down; else `MOVE_BLOCKED`. The
- * screen draws a lifted item's cells from it and `move_item` applies by it, so the two agree.
+ * What setting an item of `width` by `height` down with its corner on `to` does, `record`'s
+ * cells counting as free: `MOVE_FITS`, the cell the one item it covers goes to, or
+ * `MOVE_BLOCKED`, as `moveOutcome` says.
  */
-export const moveOutcome = (
+const outcomeOf = (
   inventory: InventoryExtents,
   record: number,
+  width: number,
+  height: number,
   to: number,
 ): number => {
-  const placed = inventory.placed[record];
-
-  if (placed === undefined) {
-    return MOVE_BLOCKED;
-  }
-
-  const { width, height } = placed;
-
   if (fitsAt(inventory, width, height, to, record)) {
     return MOVE_FITS;
   }
@@ -290,6 +282,37 @@ export const moveOutcome = (
 
   return MOVE_BLOCKED;
 };
+
+/**
+ * What moving placed record `record` so its corner lies on `to` does, read without changing
+ * anything: `MOVE_FITS` when it fits there, its own cells counting as free; when its cells
+ * there cover exactly one other item, the cell that item's corner goes to, its first fit in
+ * reading order once both are lifted and the moved one is set down; else `MOVE_BLOCKED`. The
+ * screen draws a lifted item's cells from it and `move_item` applies by it, so the two agree.
+ */
+export const moveOutcome = (
+  inventory: InventoryExtents,
+  record: number,
+  to: number,
+): number => {
+  const placed = inventory.placed[record];
+
+  return placed === undefined
+    ? MOVE_BLOCKED
+    : outcomeOf(inventory, record, placed.width, placed.height, to);
+};
+
+/**
+ * What setting an item from outside the grid, `width` by `height` cells, down with its corner
+ * on `to` does, read without changing anything: the same three answers as `moveOutcome`, with
+ * no cell of the grid its own. An item out of the bank is set down by it.
+ */
+export const incomingOutcome = (
+  inventory: InventoryExtents,
+  width: number,
+  height: number,
+  to: number,
+): number => outcomeOf(inventory, NO_RECORD, width, height, to);
 
 /** Writes `record` into every cell its corner and size cover, or `NO_RECORD` to clear them. */
 const markCells = (

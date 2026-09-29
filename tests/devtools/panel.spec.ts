@@ -875,7 +875,7 @@ describe("the developer panel", () => {
 
     expect(readoutNamed(arranged.host, "Last store")).toBe("store_opened at 0");
 
-    arranged.world.submit({ kind: "sell_item", ...stamp(), cell: 0 });
+    arranged.world.submit({ kind: "sell_item", ...stamp(), place: 0 });
     arranged.world.tick();
     arranged.world.submit({ kind: "close_store", ...stamp() });
     arranged.world.tick();

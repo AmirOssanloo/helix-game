@@ -3,10 +3,12 @@ import { contentRegistry } from "@content/public";
 import type { Item } from "@domain/public";
 import { priceOf, sellPriceOf } from "@domain/queries";
 import { createItem } from "@domain/rules";
+import { GLASS } from "../../helpers";
 
 const content = {
   itemBases: contentRegistry.itemBases,
   rarities: contentRegistry.rarities,
+  activeItems: [GLASS],
 };
 
 const itemOf = (
@@ -40,6 +42,15 @@ describe("an item's price", () => {
     expect(priceOf(content, createItem())).toBe(0);
     expect(priceOf(content, itemOf("crown", "rare"))).toBe(0);
     expect(priceOf(content, itemOf("cap", "shiny"))).toBe(0);
+  });
+
+  it("is an active item's price as its definition writes it, and sells for a quarter of it", () => {
+    const glass = createItem();
+
+    glass.activeId = GLASS.id;
+
+    expect(priceOf(content, glass)).toBe(1800);
+    expect(sellPriceOf(content, glass, 0.25)).toBe(450);
   });
 
   it("sells for its price times the sell fraction, rounded down", () => {

@@ -8,6 +8,9 @@ import { entryAtLevel } from "../definitions/spell-state";
 import { activeFormOf } from "../entities/hero";
 import type { Resources, Unit } from "../entities/unit";
 import type { RunScope, World } from "../entities/world-state";
+import { bankItemAtPlace } from "../items/bank";
+import { activeItemOf } from "../items/item-defs";
+import { NO_PLACE } from "../items/item-place";
 import { resolveKit } from "../kits/kit-registry";
 import { castRefusal } from "../orders/disable-matrix";
 import { issueCast } from "../orders/state-machine";
@@ -196,8 +199,33 @@ export const castReadiness = (
 };
 
 /**
+ * Whether `unit` may activate an item whose ability is `record`, with id `abilityId`, at
+ * `tick`, whatever it aims at: death, the clock still running, or the mana short of the cost.
+ * An item is not a spell, so the spell keys' cells of the disable matrix do not refuse it. Pure
+ * and read-only, as `castReadiness` is.
+ */
+export const activationReadiness = (
+  run: DeepReadonly<RunScope>,
+  tick: Tick,
+  unit: DeepReadonly<Unit>,
+  abilityId: string,
+  record: DeepReadonly<SpellRecord>,
+): RefusalReason | null =>
+  unit.state === "dead"
+    ? "dead"
+    : clockAndCostRefusal(run, tick, unit, abilityId, record);
+
+/** Whether the item in the bank's place `source` refuses a rooted caster, by its active block. */
+const refusesRoot = (world: World, source: number): boolean =>
+  activeItemOf(world.run, bankItemAtPlace(world, source)).active
+    .refusedWhileRooted;
+
+/**
  * The request stage over `unit`: a cast of `abilityId` at `target` is checked and, when it
- * passes, replaces the unit's order. Refused, with the reason for the caller to announce and
+ * passes, replaces the unit's order, recording `source`, a place of the bank for an
+ * activation or `NO_PLACE`. An activation's ability is held by its bank place, which the
+ * caller has read, rather than by the kit; its readiness is `activationReadiness`; and a
+ * rooted caster is refused with `rooted` when its item's active block says so. Refused, with the reason for the caller to announce and
  * nothing changed, when no spell or ability has the id, the unit does not hold it, the target
  * is not the kind the spell takes or names a unit that is gone or untargetable, as a lifted
  * unit is, `castReadiness` refuses it, the enemies it would spawn would take the live cap past
@@ -205,19 +233,21 @@ export const castReadiness = (
  * where the unit stands; one out of range is walked toward first. A vector is aimed at the point pressed,
  * along the bearing from it to the point released, or along nothing when the two are one.
  */
-export const requestCast = (
+export const requestCastFrom = (
   world: World,
   unit: Unit,
   abilityId: string,
   target: CastTarget,
+  source: number,
 ): RefusalReason | null => {
   const record = world.run.spells.get(abilityId);
+  const fromBank = source !== NO_PLACE;
 
   if (record === undefined) {
     return "unknown_ability";
   }
 
-  if (!holdsAbility(world, unit, abilityId)) {
+  if (!fromBank && !holdsAbility(world, unit, abilityId)) {
     return "ability_not_held";
   }
 
@@ -275,7 +305,7 @@ export const requestCast = (
       return assertNever(target);
   }
 
-  const readiness = castReadiness(
+  const readiness = (fromBank ? activationReadiness : castReadiness)(
     world.run,
     world.tick,
     unit,
@@ -285,6 +315,10 @@ export const requestCast = (
 
   if (readiness !== null) {
     return readiness;
+  }
+
+  if (fromBank && unit.disables.rooted && refusesRoot(world, source)) {
+    return "rooted";
   }
 
   if (!spawnsFit(world, record.def)) {
@@ -309,6 +343,16 @@ export const requestCast = (
   );
 
   assert(result === "ok", "A validated cast replaces the current order");
+  unit.cast.source = source;
 
   return null;
 };
+
+/** The request stage for a cast from a slot, an enemy's choice, or a panel: `requestCastFrom` with no source. */
+export const requestCast = (
+  world: World,
+  unit: Unit,
+  abilityId: string,
+  target: CastTarget,
+): RefusalReason | null =>
+  requestCastFrom(world, unit, abilityId, target, NO_PLACE);

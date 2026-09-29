@@ -1,4 +1,5 @@
 import { abilityKind } from "./ability.kind";
+import { activeItemKind } from "./active-item.kind";
 import { affixKind } from "./affix.kind";
 import { atlasFrameKind } from "./atlas-frame.kind";
 import { disableMatrixKind } from "./disable-matrix.kind";
@@ -37,5 +38,6 @@ export const DEFINITION_KINDS = [
   affixKind,
   lootTableKind,
   legendaryKind,
+  activeItemKind,
   mapKind,
 ] as const;

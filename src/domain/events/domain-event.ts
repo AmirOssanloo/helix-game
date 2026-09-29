@@ -37,7 +37,7 @@ type EventFields = {
   damageType: DamageType | null;
   /** A checkpoint's index in the loaded map's list, from 0. */
   checkpoint: number;
-  /** A place an item is or was: an inventory cell, an armory slot, a stock slot, or a bank slot, in the ranges `domain/items/item-place.ts` owns. */
+  /** A place an item is or was: an inventory cell, an armory slot, a stock slot, a place of the bank, or an entry of the listing, in the ranges `domain/items/item-place.ts` owns. */
   place: number;
 };
 
@@ -74,6 +74,7 @@ export type DomainEvent =
   | StoreClosedEvent
   | ItemBoughtEvent
   | ItemSoldEvent
+  | ItemActivatedEvent
   | ItemGrantedEvent
   | GoldGrantedEvent;
 
@@ -169,6 +170,9 @@ export type ItemBoughtEvent = EventFields & { kind: "item_bought" };
 /** The hero `unitId` sold the item whose corner lay on the cell at `place` to the open store for `amount` gold. */
 export type ItemSoldEvent = EventFields & { kind: "item_sold" };
 
+/** The hero `unitId` activated the active item in the bank's place `place`, casting `abilityId`: the command was accepted, and the cast is under way. */
+export type ItemActivatedEvent = EventFields & { kind: "item_activated" };
+
 /** The panel granted the hero `unitId` an item, its corner now on the cell at `place`. `unitId` is `null` in a world with no hero, since the inventory is run scope. */
 export type ItemGrantedEvent = EventFields & { kind: "item_granted" };
 
@@ -213,6 +217,7 @@ const EVENT_KINDS: Readonly<Record<DomainEvent["kind"], true>> = {
   store_closed: true,
   item_bought: true,
   item_sold: true,
+  item_activated: true,
   item_granted: true,
   gold_granted: true,
 };

@@ -19,6 +19,7 @@ import {
 import {
   ARMORY_FIELDS,
   INVENTORY_FIELDS,
+  ITEM_FIELDS,
   STAT_TOTALS_FIELDS,
 } from "./item-fields";
 import { orbLevels, RESOURCES_FIELDS } from "./unit-fields";
@@ -82,6 +83,12 @@ export const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
     FORM_FIELDS,
   ),
   inventory: record("inventory", (run) => run.inventory, INVENTORY_FIELDS),
+  bank: records(
+    "bank",
+    (run) => run.bank.length,
+    (run, index) => itemAt(run.bank, index),
+    ITEM_FIELDS,
+  ),
   gold: number("gold", (run, into, at) => {
     into[at] = run.gold;
   }),
@@ -97,6 +104,7 @@ export const RUN_FIELDS = fieldsOf<DeepReadonly<RunScope>>({
   affixes: excluded(FROM_CONTENT),
   rarities: excluded(FROM_CONTENT),
   legendaries: excluded(FROM_CONTENT),
+  activeItems: excluded(FROM_CONTENT),
   tuning: table("tuning", (run) => run.tuning),
   definitionSlots: excluded(FROM_CONTENT),
   debug: record("debug", (run) => run.debug, DEBUG_FIELDS),

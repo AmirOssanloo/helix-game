@@ -48,7 +48,8 @@ const first = <T>(list: readonly T[], what: string): T => {
  * the state hashes holding at least one live entry: the hero walking a one-point path with a
  * cooldown and a held orb, an enemy, a projectile, a zone that has taken a hit, an effect, a
  * ground item holding an item with a line, and a copy of that item in the inventory and worn
- * in the first form's first armory slot and in the first slot of a stocked store, with gold.
+ * in the first form's first armory slot, the bank's first place, and the first slot of a stocked
+ * store, with gold.
  * The same every call, so two arranged worlds agree until one is changed.
  */
 export const arrangeEveryRecord = (): Simulation => {
@@ -135,6 +136,13 @@ export const arrangeEveryRecord = (): Simulation => {
     wornLine.value = 1;
   }
 
+  const banked = world.run.bank[0];
+
+  if (banked === undefined) {
+    throw new Error("A bank has a first place");
+  }
+
+  copyItem(groundItem.item, banked);
   world.run.gold = 1;
 
   const [store] = createStores(1);

@@ -9,17 +9,26 @@ import { readTunable } from "../definitions/tuning-state";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
 import { resetDomainEvent } from "../events/domain-event";
+import {
+  bankItemAtPlace,
+  holdsActiveItem,
+  placeActiveItem,
+} from "../items/bank";
 import { NO_RECORD, recordAt, removeItem } from "../items/inventory";
 import { clearItem } from "../items/item";
 import { placeAtFirstFit } from "../items/item-commands";
 import {
-  isInventoryCell,
-  isStockSlotIndex,
+  isBankPlace,
+  isListingPlace,
+  isStockPlace,
+  listingEntryOfPlace,
   NO_PLACE,
-  stockPlace,
+  stockSlotOfPlace,
 } from "../items/item-place";
+import { isCellOrBankPlace } from "../items/item-validation";
 import { priceOf, sellPriceOf } from "../items/prices";
 import { rollStock } from "./stock";
+import type { StoreRecord } from "./store";
 import { isWithinReach, NO_STORE } from "./store";
 
 /** Why a store command that passed its shape check was refused when it applied. */
@@ -29,14 +38,16 @@ export type StoreRefusal =
   | "store_closed"
   | "no_item_at_place"
   | "not_enough_gold"
-  | "no_room";
+  | "no_room"
+  | "already_held";
 
 /** What a store command's shape check returns: it may apply, or it names a checkpoint or a place no map or store has. */
 export type StoreShape = "ok" | "invalid_checkpoint" | "invalid_place";
 
 /**
  * Whether `command` names only what a map or a store can have: a checkpoint index of none or
- * more, a stock slot of the twelve, a cell of the inventory's grid. Whether the map has that
+ * more, a stock slot of the twelve or an entry in the listing's range to buy from, a cell of
+ * the inventory's grid or a place of the bank to sell from. Whether the map has that
  * checkpoint, and what lies at the place, is the application's to refuse.
  */
 export const validateStoreCommand = (command: StoreCommand): StoreShape => {
@@ -50,10 +61,12 @@ export const validateStoreCommand = (command: StoreCommand): StoreShape => {
       return "ok";
 
     case "buy_item":
-      return isStockSlotIndex(command.stockSlot) ? "ok" : "invalid_place";
+      return isStockPlace(command.place) || isListingPlace(command.place)
+        ? "ok"
+        : "invalid_place";
 
     case "sell_item":
-      return isInventoryCell(command.cell) ? "ok" : "invalid_place";
+      return isCellOrBankPlace(command.place) ? "ok" : "invalid_place";
 
     default:
       return assertNever(command);
@@ -134,18 +147,16 @@ const open = (
 };
 
 /**
- * Buys the item in the stock slot for its price: refused with no store open, nothing in the
- * slot, too little gold, or no place in the inventory it fits. The item goes to its first fit,
- * the slot is emptied, and the gold is spent.
+ * Buys the item in the stock slot for its price: refused with nothing in the slot, too little
+ * gold, or no place in the inventory it fits. The item goes to its first fit, the slot is
+ * emptied, and the gold is spent.
  */
-const buy = (world: World, command: BuyItemCommand): StoreRefusal | null => {
-  const store = world.map.stores[world.map.openStore];
-
-  if (store === undefined) {
-    return "store_closed";
-  }
-
-  const item = store.stock[command.stockSlot];
+const buyFromStock = (
+  world: World,
+  store: StoreRecord,
+  place: number,
+): StoreRefusal | null => {
+  const item = store.stock[stockSlotOfPlace(place)];
 
   assert(item !== undefined, "A stock slot the check accepted exists");
 
@@ -172,14 +183,97 @@ const buy = (world: World, command: BuyItemCommand): StoreRefusal | null => {
   return null;
 };
 
-/** Sells the item covering the cell for its sell price, refused with no store open or nothing at the cell. The item is gone. */
+/**
+ * Buys the active item at the listing's entry for its price, making it then from its
+ * definition: refused with no active item at the entry, one the hero already holds in the bank
+ * or the inventory, too little gold, or neither a free place in the bank nor a fit in the
+ * inventory. It goes to the bank's first free place, else the inventory's first fit. The
+ * listing is read from the definitions and never emptied.
+ */
+const buyFromListing = (world: World, place: number): StoreRefusal | null => {
+  const run = world.run;
+  const active = run.activeItems[listingEntryOfPlace(place)];
+
+  if (active === undefined) {
+    return "no_item_at_place";
+  }
+
+  if (holdsActiveItem(run, active.id)) {
+    return "already_held";
+  }
+
+  if (run.gold < active.price) {
+    return "not_enough_gold";
+  }
+
+  const made = world.scratch.heldItem;
+
+  clearItem(made);
+  made.activeId = active.id;
+
+  const went = placeActiveItem(world, made);
+
+  clearItem(made);
+
+  if (went === -1) {
+    return "no_room";
+  }
+
+  run.gold -= active.price;
+  announce(world, "item_bought", world.map.openStore, went, active.price);
+
+  return null;
+};
+
+/** Buys the item at the place named, from the open store's stock or its listing, refused with no store open. */
+const buy = (world: World, command: BuyItemCommand): StoreRefusal | null => {
+  const store = world.map.stores[world.map.openStore];
+
+  if (store === undefined) {
+    return "store_closed";
+  }
+
+  return isStockPlace(command.place)
+    ? buyFromStock(world, store, command.place)
+    : buyFromListing(world, command.place);
+};
+
+/** Sells the item in the bank's place for its sell price, refused with nothing there. The item is gone. */
+const sellFromBank = (world: World, place: number): StoreRefusal | null => {
+  const item = bankItemAtPlace(world, place);
+
+  if (item.activeId === null) {
+    return "no_item_at_place";
+  }
+
+  const gold = sellPriceOf(
+    world.run,
+    item,
+    readTunable(world.run.tuning, "store_sell_fraction"),
+  );
+
+  clearItem(item);
+  world.run.gold += gold;
+  announce(world, "item_sold", world.map.openStore, place, gold);
+
+  return null;
+};
+
+/**
+ * Sells the item covering the cell, or in the bank's place, for its sell price, refused with no
+ * store open or nothing at the place. The item is gone.
+ */
 const sell = (world: World, command: SellItemCommand): StoreRefusal | null => {
   if (world.map.openStore === NO_STORE) {
     return "store_closed";
   }
 
+  if (isBankPlace(command.place)) {
+    return sellFromBank(world, command.place);
+  }
+
   const inventory = world.run.inventory;
-  const record = recordAt(inventory, command.cell);
+  const record = recordAt(inventory, command.place);
 
   if (record === NO_RECORD) {
     return "no_item_at_place";
@@ -235,14 +329,12 @@ export const applyStoreCommand = (
   }
 };
 
-/** The place `command` names, which its refusal carries: the stock slot bought from, the cell sold from, or none. */
+/** The place `command` names, which its refusal carries: the stock slot or listing entry bought from, the cell or bank place sold from, or none. */
 export const placeOfStoreCommand = (command: StoreCommand): number => {
   switch (command.kind) {
     case "buy_item":
-      return stockPlace(command.stockSlot);
-
     case "sell_item":
-      return command.cell;
+      return command.place;
 
     case "open_store":
     case "close_store":

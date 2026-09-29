@@ -103,6 +103,7 @@ const NO_CAST = {
   position: { x: 0, y: 0 },
   targetId: null,
   direction: null,
+  source: -1,
 };
 
 const CAST_POINT_STATES: readonly OrderState[] = [
@@ -201,6 +202,7 @@ describe("issueCast", () => {
         position: { x: 3, y: 4 },
         targetId: null,
         direction: null,
+        source: -1,
       });
     },
   );
@@ -284,6 +286,7 @@ describe("issueCast", () => {
       position: { x: 5, y: 6 },
       targetId: null,
       direction: null,
+      source: -1,
     });
   });
 });

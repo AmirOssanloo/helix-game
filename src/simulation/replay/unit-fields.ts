@@ -102,6 +102,9 @@ const CAST_FIELDS = fieldsOf<DeepReadonly<CastState>>({
 
     return true;
   }),
+  source: number("source", (cast, into, at) => {
+    into[at] = cast.source;
+  }),
 });
 
 const ATTACK_FIELDS = fieldsOf<DeepReadonly<AttackState>>({

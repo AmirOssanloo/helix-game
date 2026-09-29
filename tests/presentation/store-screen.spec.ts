@@ -8,6 +8,7 @@ import {
   recordAt,
   sellPriceOf,
   STOCK_SLOT_COUNT,
+  stockPlace,
   storeTabOf,
 } from "@domain/queries";
 import { createItem, placeItem } from "@domain/rules";
@@ -598,7 +599,7 @@ describe("the gestures", () => {
         kind: "buy_item",
         tick: world.view.tick,
         timestamp: 1,
-        stockSlot: slot,
+        place: stockPlace(slot),
       },
     ]);
 
@@ -660,7 +661,7 @@ describe("the gestures", () => {
     click(RIGHT_BUTTON, cellX(3), cellY(3));
 
     expect(driver.commands).toEqual([
-      { kind: "sell_item", tick: world.view.tick, timestamp: 1, cell: 3 },
+      { kind: "sell_item", tick: world.view.tick, timestamp: 1, place: 3 },
     ]);
 
     const gold = world.view.run.gold;

@@ -5,6 +5,7 @@ import { enemies } from "./enemies/index";
 import { forms } from "./forms/index";
 import { heroDef } from "./hero";
 import {
+  activeItems,
   affixes,
   itemBases,
   legendaries,
@@ -39,6 +40,7 @@ export const contentRegistry: Registry = {
   affixes,
   lootTables,
   legendaries,
+  activeItems,
   maps,
   atlasFrames,
 };

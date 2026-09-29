@@ -64,6 +64,7 @@ A definition is typed, immutable content. It is loaded once, validated once, and
 | Rarity table | `content/items/`, typed in `domain/definitions` | The seven rarities in order: each one's affix count, tint, price multiplier, and whether its label shows by default | Content |
 | Loot table definition | `content/items/`, typed in `domain/definitions` | What one enemy tier drops, or what a store stocks: its chances of gold and of each globe, its gold range, its item rolls, each with a chance and a weight per rarity, and the chance a boss drops the Legendary piece its pack names | Content |
 | Legendary piece definition | `content/items/`, typed in `domain/definitions` | One fixed identity on a base: its name, its fixed stat lines, and its requirement | Content |
+| Active item definition | `content/items/actives/`, typed in `domain/definitions` | One item the hero activates from the bank: its name, its price, its size in cells, and its active block naming the ability it casts by key and whether a rooted hero is refused | Content |
 | Tuning table | `content/`, typed in `domain/definitions` | Every number design may retune, with its default | Content, copied into run scope at world creation |
 | Atlas frame definition | `content/atlas-frames.ts`, typed in `domain/definitions` | One frame of the shape atlas: the name a view or a definition refers to it by, the size it is baked at, and the shape drawn into it | Content |
 

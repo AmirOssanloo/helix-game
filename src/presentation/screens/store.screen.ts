@@ -1,5 +1,10 @@
 import type { DomainEvent, Item } from "@domain/public";
-import { isStockPlace, NO_STORE, stockSlotOfPlace } from "@domain/queries";
+import {
+  isStockPlace,
+  NO_STORE,
+  stockPlace,
+  stockSlotOfPlace,
+} from "@domain/queries";
 import type { DeepReadonly } from "@shared/public";
 import type { WorldView } from "@simulation/public";
 import { containsPoint } from "../hud/hud-layout";
@@ -164,7 +169,7 @@ export class StoreScreen implements ClaimScreen {
         kind: "buy_item",
         tick: driver.nextTick,
         timestamp: driver.now(),
-        stockSlot,
+        place: stockPlace(stockSlot),
       });
     }
 

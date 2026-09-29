@@ -470,6 +470,7 @@ describe("an item's level requirement", () => {
     baseId,
     rarityId: legendaryId === null ? "magic" : "legendary",
     legendaryId,
+    activeId: null,
     itemLevel: 12,
     lines: Array.from({ length: ITEM_LINE_CAPACITY }, (_, line) => ({
       sourceId: sources[line] ?? null,

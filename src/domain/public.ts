@@ -132,6 +132,10 @@ export type {
 } from "./definitions/item-base-def";
 export type { FixedLineDef, LegendaryDef } from "./definitions/legendary-def";
 export type {
+  ActiveBlockDef,
+  ActiveItemDef,
+} from "./definitions/active-item-def";
+export type {
   ItemRollDef,
   LootTableDef,
   LootTableId,
@@ -234,6 +238,7 @@ export type {
   CloseStoreCommand,
   BuyItemCommand,
   SellItemCommand,
+  ActivateItemCommand,
   StoreCommand,
 } from "./commands/item-commands";
 export type { StoreRecord, StoreTab, ReachWorld } from "./store/store";
@@ -252,6 +257,7 @@ export type {
   ItemUnequippedEvent,
   ItemBoughtEvent,
   ItemSoldEvent,
+  ItemActivatedEvent,
   StoreOpenedEvent,
   StoreClosedEvent,
   CommandRefusedEvent,

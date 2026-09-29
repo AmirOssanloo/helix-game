@@ -180,6 +180,10 @@ export const readoutsGroup = (
         lastItem = `${event.kind} at ${String(event.place)} for ${String(event.amount)}`;
       }
 
+      if (event.kind === "item_activated") {
+        lastItem = `${event.kind} at ${String(event.place)}, ${String(event.abilityId)}`;
+      }
+
       if (event.kind === "gold_granted") {
         lastItem = `${event.kind} ${String(event.amount)}`;
       }

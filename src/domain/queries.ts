@@ -44,6 +44,9 @@ export { orbAt } from "./invoke/buffer";
 export { levelRequirementOf, meetsRequirement } from "./items/requirement";
 export { isPercentLine, lineSourceOf } from "./items/armory-totals";
 export { priceOf, sellPriceOf } from "./items/prices";
+export { firstFreeBankSlot, holdsActiveItem } from "./items/bank";
+export { incomingOutcome } from "./items/inventory";
+export { activationReadiness } from "./abilities/cast";
 export { ARMORY_SLOT_KINDS, slotFor } from "./items/armory";
 export {
   firstFit,
@@ -61,9 +64,16 @@ export {
   armorySlotOfPlace,
   BANK_PLACE_BASE,
   BANK_SLOT_COUNT,
+  bankPlace,
+  bankSlotOfPlace,
   INVENTORY_CELL_COUNT,
   isArmoryPlace,
+  isBankPlace,
+  isListingPlace,
   isStockPlace,
+  LISTING_PLACE_BASE,
+  listingEntryOfPlace,
+  listingPlace,
   NO_PLACE,
   STOCK_PLACE_BASE,
   STOCK_SLOT_COUNT,

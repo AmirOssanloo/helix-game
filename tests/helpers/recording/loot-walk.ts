@@ -17,6 +17,7 @@ import {
   priceOf,
   readTunable,
   slotFor,
+  stockPlace,
 } from "@domain/queries";
 import { resourcesOf } from "@domain/rules";
 import type { Vec2 } from "@shared/public";
@@ -525,7 +526,7 @@ const visitOn = (walk: Walk, hero: Unit): void => {
       const selling = run.inventory.placed.find((placed) => placed.live);
 
       if (selling !== undefined) {
-        send(walk, { kind: "sell_item", cell: selling.corner });
+        send(walk, { kind: "sell_item", place: selling.corner });
 
         return;
       }
@@ -558,7 +559,7 @@ const visitOn = (walk: Walk, hero: Unit): void => {
       }
 
       if (buying !== -1) {
-        send(walk, { kind: "buy_item", stockSlot: buying });
+        send(walk, { kind: "buy_item", place: stockPlace(buying) });
       }
 
       visit.phase = "close";

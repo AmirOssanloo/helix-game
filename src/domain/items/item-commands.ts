@@ -11,11 +11,12 @@ import { readTunable } from "../definitions/tuning-state";
 import { activeFormOf } from "../entities/hero";
 import type { Unit } from "../entities/unit";
 import type { World } from "../entities/world-state";
-import { resetDomainEvent } from "../events/domain-event";
 import { dropHeldItem } from "../loot/place-drop";
 import type { Armory } from "./armory";
 import { isWorn, slotFor, slotTakes } from "./armory";
 import { rewriteArmoryTotals } from "./armory-totals";
+import type { BankRefusal } from "./bank";
+import { moveWithBank } from "./bank";
 import type { Inventory, PlacedItem } from "./inventory";
 import {
   coveredBy,
@@ -32,50 +33,26 @@ import {
 } from "./inventory";
 import type { Item } from "./item";
 import { clearItem, copyItem } from "./item";
-import { armoryPlace } from "./item-place";
+import { baseById, extentOf } from "./item-defs";
+import { announceItem } from "./item-events";
+import { armoryPlace, isBankPlace } from "./item-place";
 import { meetsRequirement } from "./requirement";
-
-/** The events an item command announces with the place its item went to. */
-type ItemEventKind = "item_equipped" | "item_unequipped" | "item_moved";
 
 /** Why an item command that passed its shape check was refused when it applied. */
 export type ItemRefusal =
-  "no_item_at_place" | "wrong_armory_slot" | "requirement_not_met" | "no_room";
+  | "no_item_at_place"
+  | "wrong_armory_slot"
+  | "requirement_not_met"
+  | "no_room"
+  | BankRefusal;
 
-/** The base run scope holds under `id`, or `null` when none has it. */
-const findBase = (world: World, id: string | null): ItemBaseDef | null => {
-  const bases = world.run.itemBases;
-
-  for (let index = 0; index < bases.length; index += 1) {
-    const base = bases[index];
-
-    if (base !== undefined && base.id === id) {
-      return base;
-    }
-  }
-
-  return null;
-};
-
-/** The base of `item`, which every item held names, since the content resolves each item's base. */
+/** The base of `item`, which every item held but an active item names, since the content resolves each item's base. */
 const baseOf = (world: World, item: Readonly<Item>): ItemBaseDef => {
-  const base = findBase(world, item.baseId);
+  const base = baseById(world.run.itemBases, item.baseId);
 
   assert(base !== null, "An item names a base the content holds");
 
   return base;
-};
-
-/** Announces that the hero's item went to or left `place`. */
-const announce = (world: World, kind: ItemEventKind, place: number): void => {
-  const event = world.scratch.event;
-
-  resetDomainEvent(event);
-  event.kind = kind;
-  event.tick = world.tick;
-  event.unitId = world.run.heroId;
-  event.place = place;
-  world.events.write(event);
 };
 
 const placedAt = (inventory: Inventory, record: number): PlacedItem => {
@@ -107,7 +84,8 @@ const armoryOf = (world: World, hero: Readonly<Unit>): Armory => {
 };
 
 /**
- * Wears the item covering the cell. The slot is the one named or the one the base takes; the
+ * Wears the item covering the cell. An active item is worn nowhere, and is refused as the
+ * wrong slot. The slot is the one named or the one the base takes; the
  * hero's level must meet the item's requirement; an item already worn there goes to its first
  * fit once the new item has left its cells, and with none the command is refused and nothing
  * moves. The armory's totals are rewritten, so the stats system derives from them this tick.
@@ -125,6 +103,11 @@ const equip = (
   }
 
   const placed = placedAt(inventory, record);
+
+  if (placed.item.activeId !== null) {
+    return "wrong_armory_slot";
+  }
+
   const base = baseOf(world, placed.item);
   const armory = armoryOf(world, hero);
   const slot = command.armorySlot ?? slotFor(armory, base.armorySlot);
@@ -163,10 +146,10 @@ const equip = (
   copyItem(held, worn);
   clearItem(held);
   retotal(world, armory);
-  announce(world, "item_equipped", armoryPlace(slot));
+  announceItem(world, "item_equipped", armoryPlace(slot));
 
   if (wornBase !== null) {
-    announce(world, "item_unequipped", fit);
+    announceItem(world, "item_unequipped", fit);
   }
 
   return null;
@@ -196,7 +179,7 @@ const unequip = (
   placeItem(inventory, worn, base.width, base.height, fit);
   clearItem(worn);
   retotal(world, armory);
-  announce(world, "item_unequipped", fit);
+  announceItem(world, "item_unequipped", fit);
 
   return null;
 };
@@ -206,8 +189,13 @@ const unequip = (
  * Onto cells covering exactly one other item, the two swap: the moved item goes to `to` and
  * the other to its first fit, and with none nothing moves. Onto two or more, refused. What
  * happens is `moveOutcome`'s answer, the one the inventory screen draws a lifted item from.
+ * A move with a place of the bank at either end is the bank's.
  */
 const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
+  if (isBankPlace(command.from) || isBankPlace(command.to)) {
+    return moveWithBank(world, command.from, command.to);
+  }
+
   const inventory = world.run.inventory;
   const record = recordAt(inventory, command.from);
 
@@ -224,7 +212,7 @@ const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
   if (outcome === MOVE_FITS) {
     liftItem(inventory, record);
     setDownItem(inventory, record, command.to);
-    announce(world, "item_moved", command.to);
+    announceItem(world, "item_moved", command.to);
 
     return null;
   }
@@ -242,8 +230,8 @@ const move = (world: World, command: MoveItemCommand): ItemRefusal | null => {
   liftItem(inventory, other);
   setDownItem(inventory, record, command.to);
   setDownItem(inventory, other, outcome);
-  announce(world, "item_moved", command.to);
-  announce(world, "item_moved", outcome);
+  announceItem(world, "item_moved", command.to);
+  announceItem(world, "item_moved", outcome);
 
   return null;
 };
@@ -283,11 +271,11 @@ const drop = (
  */
 export const placeAtFirstFit = (world: World, item: Readonly<Item>): number => {
   const inventory = world.run.inventory;
-  const base = baseOf(world, item);
-  const fit = firstFit(inventory, base.width, base.height, NO_RECORD);
+  const { width, height } = extentOf(world.run, item);
+  const fit = firstFit(inventory, width, height, NO_RECORD);
 
   if (fit !== -1) {
-    placeItem(inventory, item, base.width, base.height, fit);
+    placeItem(inventory, item, width, height, fit);
   }
 
   return fit;

@@ -42,6 +42,7 @@ export const slotOf = (command: AnyCommand): number | null => {
     case "buy_item":
     case "sell_item":
     case "pick_up":
+    case "activate_item":
     case "debug_noop":
     case "apply_damage":
     case "drain_mana":

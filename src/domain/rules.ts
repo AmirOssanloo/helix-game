@@ -207,6 +207,9 @@ export {
 } from "./entities/stat-totals";
 export { copyItem, createItem } from "./items/item";
 export { createInventory, placeItem, removeItem } from "./items/inventory";
+export { createBank, placeActiveItem } from "./items/bank";
+export { applyItemCommand } from "./items/item-commands";
+export { activateItem } from "./abilities/activation";
 export { createWorldScratch } from "./entities/world-scratch";
 export {
   acquireZone,

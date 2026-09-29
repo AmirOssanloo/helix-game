@@ -6,7 +6,6 @@ import {
   INVENTORY_COLUMNS,
   INVENTORY_ROWS,
 } from "../item-base-def";
-import type { RegistryFault } from "../registry-checks";
 import { checkFrame } from "../registry-checks";
 import type { Schema } from "../schema";
 import {
@@ -19,7 +18,7 @@ import {
   stringSchema,
 } from "../schema";
 import { STATUS_MODIFIER_KINDS } from "../status-def";
-import { checkLevel, checkRange } from "./item-checks";
+import { checkExtent, checkLevel, checkRange } from "./item-checks";
 
 /** A stat line's range: a stat that exists, how it adds, and its least and greatest value. */
 export const statRangeSchema: Schema<StatRangeDef> = objectOf<StatRangeDef>({
@@ -28,23 +27,6 @@ export const statRangeSchema: Schema<StatRangeDef> = objectOf<StatRangeDef>({
   min: numberSchema,
   max: numberSchema,
 });
-
-/** Refuses a size at `path` outside one cell to `limit`, the inventory's extent that way. */
-const checkExtent = (
-  faults: RegistryFault[],
-  file: string,
-  path: string,
-  cells: number,
-  limit: number,
-): void => {
-  if (cells < 1 || cells > limit) {
-    faults.push({
-      file,
-      path,
-      message: `expected 1 to ${String(limit)} cells, to fit the ${String(INVENTORY_COLUMNS)} by ${String(INVENTORY_ROWS)} inventory`,
-    });
-  }
-};
 
 /**
  * Every item base: an armory slot that exists, a size that fits the inventory, a quality level

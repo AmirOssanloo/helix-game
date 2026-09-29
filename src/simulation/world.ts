@@ -19,6 +19,7 @@ import {
   createGroundItemCells,
   createGroundItemPool,
   createStores,
+  createBank,
   createInventory,
   createLootTables,
   createPackRecords,
@@ -55,7 +56,8 @@ export type CreateWorldOptions = Readonly<{
 /**
  * Run scope from `registry` under `seed`: the tuning table converted into simulation units,
  * the world's own copy of every definition it may retune with each number under its key in
- * the tuning state, the hero's form records with their empty armories, an empty inventory and
+ * the tuning state, the hero's form records with their empty armories, an empty inventory, an
+ * empty bank, and
  * no gold, its attack read for the tick, the spell,
  * status, and unit tables built over the copies, the disable matrix as written, every map the
  * registry holds for a map load to resolve, the loot tables' copies by id, the item bases, the rarity table, and the Legendary pieces as written, both switches off, no hero yet, and the random
@@ -75,6 +77,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     ),
     forms: createFormRecords(copies.hero, copies.forms, tuning),
     inventory: createInventory(),
+    bank: createBank(),
     gold: 0,
     heroTotals: createStatTotals(),
     zeroTotals: createStatTotals(),
@@ -88,6 +91,7 @@ const createRunScope = (registry: Registry, seed: number): RunScope => {
     affixes: registry.affixes,
     rarities: registry.rarities,
     legendaries: registry.legendaries,
+    activeItems: registry.activeItems,
     tuning,
     definitionSlots,
     debug: { noCooldowns: false, infiniteMana: false },

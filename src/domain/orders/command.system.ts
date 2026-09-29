@@ -1,5 +1,6 @@
 import type { Vec2 } from "@shared/public";
 import { assert, assertNever } from "@shared/public";
+import { activateItem } from "../abilities/activation";
 import { requestCast } from "../abilities/cast";
 import type { AnyCommand, Command } from "../commands/command";
 import { isDebugCommand } from "../commands/debug-commands";
@@ -50,7 +51,9 @@ const announceRefusal = (
     ? placeOfItemCommand(command)
     : isStoreCommand(command)
       ? placeOfStoreCommand(command)
-      : NO_PLACE;
+      : command.kind === "activate_item"
+        ? command.place
+        : NO_PLACE;
   refused.checkpoint = command.kind === "open_store" ? command.checkpoint : -1;
   refused.groundItemId =
     command.kind === "pick_up" ? command.groundItemId : null;
@@ -114,7 +117,8 @@ const applyPickUp = (
  * pick up at the point its ground item lies on. A
  * slot key and a skill-point spend go to the active form's kit, a cast to the cast
  * pipeline's request stage, an item command to the inventory and the armory, and a store
- * command to the store; any of them may still refuse it, and the reason comes back for
+ * command to the store, an activation to the ability pipeline as a cast sourced from the bank;
+ * any of them may still refuse it, and the reason comes back for
  * the caller to announce. A slot key that applied while the hero was channeling ends the
  * channel: an orb press and an invoke interrupt one, and a cast has already replaced it.
  * The no-op is dropped by definition.
@@ -197,6 +201,9 @@ const applyCommand = (
     case "buy_item":
     case "sell_item":
       return applyStoreCommand(world, hero, command);
+
+    case "activate_item":
+      return activateItem(world, hero, command);
 
     case "noop":
       break;

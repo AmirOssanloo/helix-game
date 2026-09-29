@@ -1,6 +1,7 @@
 import { contentRegistry } from "@content/public";
 import type {
   AbilityDef,
+  ActiveItemDef,
   AffixDef,
   AtlasFrameList,
   DisableMatrixDef,
@@ -35,6 +36,7 @@ export type MakeRegistryOptions = Readonly<{
   affixes?: readonly AffixDef[];
   lootTables?: readonly LootTableDef[];
   legendaries?: readonly LegendaryDef[];
+  activeItems?: readonly ActiveItemDef[];
   maps?: readonly MapDef[];
   atlasFrames?: AtlasFrameList;
 }>;
@@ -55,6 +57,7 @@ export const makeRegistry = (options: MakeRegistryOptions = {}): Registry => ({
   affixes: options.affixes ?? contentRegistry.affixes,
   lootTables: options.lootTables ?? contentRegistry.lootTables,
   legendaries: options.legendaries ?? contentRegistry.legendaries,
+  activeItems: options.activeItems ?? contentRegistry.activeItems,
   maps: options.maps ?? contentRegistry.maps,
   atlasFrames: options.atlasFrames ?? contentRegistry.atlasFrames,
 });
