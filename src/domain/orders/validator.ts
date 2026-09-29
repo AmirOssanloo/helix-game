@@ -19,7 +19,12 @@ import type { LevelUpRefusal, SkillPointRefusal } from "../stats/levels";
 import type { StatusRefusal } from "../statuses/apply-status";
 import type { StoreRefusal } from "../store/store-commands";
 import { validateStoreCommand } from "../store/store-commands";
-import { castRefusal, refusalOf, slotRefusal } from "./disable-matrix";
+import {
+  activationRefusal,
+  castRefusal,
+  refusalOf,
+  slotRefusal,
+} from "./disable-matrix";
 
 /**
  * Why a command was refused. A disable names the flag that blocked it, and `dead` says the
@@ -169,7 +174,8 @@ const areOrbLevels = (levels: readonly number[]): boolean => {
  * refused by no disable, only by death and by a slot outside the six keys; a level is not
  * something the unit does, and has no column. An item or a store command reads the items
  * column, which no status refuses, then the places or the checkpoint it names. An activation
- * is refused for a place outside the bank and a point that is not finite; what lies at the
+ * reads the active-item column, which stun and lift refuse and silence does not, then is
+ * refused for a place outside the bank and a point that is not finite; what lies at the
  * place, and everything its cast is refused for, is the request stage's. A pick up reads its own column, which answers
  * as a move does; whether the ground item it names is still there, and is an item, is the
  * command system's to refuse when it applies.
@@ -251,12 +257,19 @@ export const validateCommand = (
         validateStoreCommand(command)
       );
 
-    case "activate_item":
+    case "activate_item": {
+      const refusal = activationRefusal(matrix, unit.disables);
+
+      if (refusal !== null) {
+        return refusal;
+      }
+
       if (!isBankPlace(command.place)) {
         return "invalid_place";
       }
 
       return isFiniteTarget(command.target) ? "ok" : "invalid_destination";
+    }
 
     case "noop":
       return "ok";

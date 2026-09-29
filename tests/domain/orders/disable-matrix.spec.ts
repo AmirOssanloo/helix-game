@@ -1,3 +1,4 @@
+import { GCProfiler } from "node:v8";
 import { describe, expect, it } from "vitest";
 import { heroDef } from "@content/public";
 import type {
@@ -11,10 +12,11 @@ import type {
   Unit,
   UnitId,
 } from "@domain/public";
-import { isClosed } from "@domain/queries";
+import { activationRefusal, bankPlace, isClosed } from "@domain/queries";
 import {
   acquireGroundItem,
   answerOf,
+  DISABLE_COLUMNS,
   SLOT_COLUMNS,
   slotRefusal,
   validateCommand,
@@ -55,6 +57,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "refused",
       move: "cancelled",
       attackTarget: "cancelled",
       attackMove: "cancelled",
@@ -77,6 +80,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -99,6 +103,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "cancelled",
       attackTarget: "allowed",
       attackMove: "cancelled",
@@ -121,6 +126,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "refused",
       attackMove: "allowed",
@@ -143,6 +149,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -165,6 +172,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -187,6 +195,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -209,6 +218,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "refused",
       move: "refused",
       attackTarget: "refused",
       attackMove: "refused",
@@ -231,6 +241,7 @@ const EXPECTED: readonly ExpectedRow[] = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -252,6 +263,7 @@ const COLUMNS: readonly DisableColumn[] = [
   "r",
   "d",
   "f",
+  "activeItems",
   "move",
   "attackTarget",
   "attackMove",
@@ -358,6 +370,13 @@ const commandFor = (column: CommandColumn, targets: Targets): Command => {
       return { kind: "attack_move", ...stamp, destination: { x: FAR, y: FAR } };
     case "attackTarget":
       return { kind: "attack_target", ...stamp, targetId: targets.enemyId };
+    case "activeItems":
+      return {
+        kind: "activate_item",
+        ...stamp,
+        place: bankPlace(0),
+        target: { kind: "none" },
+      };
     case "items":
       return { kind: "move_item", ...stamp, from: 0, to: 1 };
     case "pickUp":
@@ -467,6 +486,12 @@ const checkCell = (row: ExpectedRow, column: DisableColumn): void => {
       answer === "allowed" ? null : row.reason,
     );
   }
+
+  if (column === "activeItems") {
+    expect(activationRefusal(matrix, hero.disables)).toBe(
+      answer === "allowed" ? null : row.reason,
+    );
+  }
 };
 
 describe.each(EXPECTED)("the disable matrix under $name", (row) => {
@@ -478,8 +503,8 @@ describe.each(EXPECTED)("the disable matrix under $name", (row) => {
 });
 
 describe("the disable matrix", () => {
-  it("is exercised in every cell: nine rows of fifteen", () => {
-    expect(EXPECTED.length * COLUMNS.length).toBe(135);
+  it("is exercised in every cell: nine rows of sixteen", () => {
+    expect(EXPECTED.length * COLUMNS.length).toBe(144);
   });
 
   it("answers two rows worn at once with the stricter: a rooted and silenced hero is refused Q through F and cancelled on a move", () => {
@@ -496,6 +521,54 @@ describe("the disable matrix", () => {
     expect(answerOf(matrix, hero.disables, "move")).toBe("cancelled");
   });
 
+  it("reads every column the matrix holds, in the page's order", () => {
+    expect(COLUMNS).toEqual(DISABLE_COLUMNS);
+  });
+
+  it.each([0, 1, 2, 3, 4, 5])(
+    "answers an activation of the bank's place %i by the one active-item column",
+    (slot) => {
+      const { world, hero } = arrange();
+      const matrix = world.view.run.disableMatrix;
+      const command: Command = {
+        kind: "activate_item",
+        tick: 0,
+        timestamp: 0,
+        place: bankPlace(slot),
+        target: { kind: "none" },
+      };
+
+      wear(world, "silence");
+
+      expect(validateCommand(hero, command, matrix)).toBe("ok");
+
+      wear(world, "stun");
+
+      expect(validateCommand(hero, command, matrix)).toBe("stunned");
+    },
+  );
+
+  it("refuses an activation with the disable before the place: a stunned hero's place outside the bank is refused stunned", () => {
+    const { world, hero } = arrange();
+    const matrix = world.view.run.disableMatrix;
+
+    wear(world, "stun");
+
+    expect(
+      validateCommand(
+        hero,
+        {
+          kind: "activate_item",
+          tick: 0,
+          timestamp: 0,
+          place: 0,
+          target: { kind: "none" },
+        },
+        matrix,
+      ),
+    ).toBe("stunned");
+  });
+
   it("answers a lifted and rooted hero as lift: the move is refused with stunned", () => {
     const arranged = arrange();
     const { world, hero } = arranged;
@@ -508,5 +581,60 @@ describe("the disable matrix", () => {
       "stunned",
     );
     expect(answerOf(matrix, hero.disables, "targetingCursor")).toBe("closed");
+  });
+});
+
+describe("an activation's validation in steady state", () => {
+  it("allocates nothing once warm, refused or let through", () => {
+    const { world, hero } = arrange();
+    const matrix = world.view.run.disableMatrix;
+    const command: Command = {
+      kind: "activate_item",
+      tick: 0,
+      timestamp: 0,
+      place: bankPlace(0),
+      target: { kind: "none" },
+    };
+
+    wear(world, "silence");
+
+    const silenced = { ...hero.disables };
+
+    wear(world, "stun");
+
+    const stunned = { ...hero.disables };
+    const cycle = (): number => {
+      hero.disables = silenced;
+
+      const allowed = validateCommand(hero, command, matrix) === "ok" ? 0 : 1;
+
+      hero.disables = stunned;
+
+      return (
+        allowed + (validateCommand(hero, command, matrix) === "stunned" ? 0 : 1)
+      );
+    };
+    let sink = 0;
+
+    for (let call = 0; call < 10_000; call += 1) {
+      sink += cycle();
+    }
+
+    const profiler = new GCProfiler();
+
+    profiler.start();
+
+    const before = process.memoryUsage().heapUsed;
+
+    for (let call = 0; call < 100_000; call += 1) {
+      sink += cycle();
+    }
+
+    const after = process.memoryUsage().heapUsed;
+    const collections = profiler.stop().statistics.length;
+
+    expect(sink).toBe(0);
+    expect(collections).toBe(0);
+    expect(after - before).toBeLessThan(256 * 1024);
   });
 });

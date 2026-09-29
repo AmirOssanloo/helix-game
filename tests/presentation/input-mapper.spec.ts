@@ -1953,4 +1953,36 @@ describe("the bank's keys", () => {
 
     expect(mapper.cursor.kind).toBe("item");
   });
+
+  it("close an item's cursor on a stun, which refuses the active-item keys, with nothing sent", () => {
+    const { world, driver, intents, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 0, POINT_ITEM.id);
+    mapper.keyDown("KeyT");
+
+    expect(mapper.cursor.kind).toBe("item");
+
+    wear(world, "stun");
+    mapper.syncCursor();
+
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(driver.commands).toEqual([]);
+    expect(intents.bankRefusals).toEqual([]);
+  });
+
+  it("keep an item's cursor shut under a stun, flashing its place with stunned", () => {
+    const { world, driver, intents, mapper } = arrange(undefined, {
+      activeItems: [POINT_ITEM],
+    });
+
+    bank(world, 0, POINT_ITEM.id);
+    wear(world, "stun");
+    mapper.keyDown("KeyT");
+
+    expect(mapper.cursor.kind).toBe("closed");
+    expect(driver.commands).toEqual([]);
+    expect(intents.bankRefusals).toEqual([{ slot: 0, reason: "stunned" }]);
+  });
 });

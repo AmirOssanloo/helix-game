@@ -36,6 +36,7 @@ const disableMatrixSchema: Schema<DisableMatrixDef> = arrayOf(
       r: commandAnswerSchema,
       d: commandAnswerSchema,
       f: commandAnswerSchema,
+      activeItems: commandAnswerSchema,
       move: commandAnswerSchema,
       attackTarget: commandAnswerSchema,
       attackMove: commandAnswerSchema,

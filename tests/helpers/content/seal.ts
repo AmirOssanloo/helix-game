@@ -17,7 +17,7 @@ export const SEAL: StatusDef = makeStatusDef.build({
 
 /**
  * The seal's row: D and F refused with a silence's reason, the targeting cursor closed, and
- * everything else allowed or carried on. A status that blocks only the two spell keys.
+ * everything else, the active-item keys among them, allowed or carried on. A status that blocks only the two spell keys.
  */
 export const SEAL_ROW: DisableRowDef = {
   id: "seal",
@@ -32,6 +32,7 @@ export const SEAL_ROW: DisableRowDef = {
     r: "allowed",
     d: "refused",
     f: "refused",
+    activeItems: "allowed",
     move: "allowed",
     attackTarget: "allowed",
     attackMove: "allowed",

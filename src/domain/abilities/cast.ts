@@ -13,7 +13,7 @@ import { bankItemAtPlace } from "../items/bank";
 import { activeItemOf } from "../items/item-defs";
 import { NO_PLACE } from "../items/item-place";
 import { resolveKit } from "../kits/kit-registry";
-import { castRefusal } from "../orders/disable-matrix";
+import { activationRefusal, castRefusal } from "../orders/disable-matrix";
 import { issueCast } from "../orders/state-machine";
 import type { RefusalReason } from "../orders/validator";
 import type { Tick } from "../tick";
@@ -202,9 +202,9 @@ export const castReadiness = (
 
 /**
  * Whether `unit` may activate an item whose ability is `record`, with id `abilityId`, at
- * `tick`, whatever it aims at: death, the clock still running, or the mana short of the cost.
- * An item is not a spell, so the spell keys' cells of the disable matrix do not refuse it. Pure
- * and read-only, as `castReadiness` is.
+ * `tick`, whatever it aims at: death, the disable matrix's active-item column, the clock still
+ * running, or the mana short of the cost. An item is not a spell, so the spell keys' cells do
+ * not refuse it. Pure and read-only, as `castReadiness` is.
  */
 export const activationReadiness = (
   run: DeepReadonly<RunScope>,
@@ -215,7 +215,8 @@ export const activationReadiness = (
 ): RefusalReason | null =>
   unit.state === "dead"
     ? "dead"
-    : clockAndCostRefusal(run, tick, unit, abilityId, record);
+    : (activationRefusal(run.disableMatrix, unit.disables) ??
+      clockAndCostRefusal(run, tick, unit, abilityId, record));
 
 /** Whether the item in the bank's place `source` refuses a rooted caster, by its active block. */
 const refusesRoot = (world: World, source: number): boolean =>

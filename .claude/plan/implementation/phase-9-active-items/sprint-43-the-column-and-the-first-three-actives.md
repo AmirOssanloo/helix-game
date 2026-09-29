@@ -25,7 +25,7 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 | Size | 0.5 |
 | Depends on | P9-S42-T02 |
 | Owner | The game engineer |
-| Status | planned |
+| Status | done |
 
 > **Note, 2026-09-28, at the cut:** sized 1 in the sketch with the self-lift row. That row needs the flag `invulnerable`, which P9-S44-T01 makes, and P9-S44-T02 already carried it, so it was counted twice. This ticket is the column alone, at 0.5; the half day went to T02.
 
@@ -34,6 +34,8 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 > **Note, 2026-09-29, from P9-S42-T02:** the validator's `activate_item` case in `src/domain/orders/validator.ts` checks the place and the target only, and `activationReadiness` in `src/domain/abilities/cast.ts` death, the clock, and the cost; the column goes into both, so the validator refuses by it and the HUD greys by it. The active block's root refusal is already in the request stage. A stored log now holds an activation only in a spec's own recording, so the note above holds: no stored checksum moves. **Size holds at 0.5.**
 
 > **Note, 2026-09-29, from P9-S42-T03:** the presentation reads the column in two places this ticket's build reaches. The HUD's bank row greys a square from `activationReadiness`, so the column added there greys it and the flash stripes it with no presentation change. The item's cursor in `src/presentation/input/input-mapper.ts` (`syncCursor`) closes on death alone and skips the matrix for `cursor.kind === "item"`; with the column, it closes when the column says closed, as a slot cursor reads `targetingCursor` (Q141 (6)). `tests/presentation/input-mapper.spec.ts` has the case "leave an item's cursor open under a silence", which stays true, and gains one for a stun. **Size holds at 0.5.**
+
+> **Note, 2026-09-29, at the close:** the column is `activeItems`, between F and Move as the page writes it, and read through one query, `activationRefusal`, on the queries door: the validator refuses by it before the place's checks, as it does every command's disable, `activationReadiness` refuses by it after death, so the bank row greys and the flash stripes with no presentation change, and the mapper closes an item's cursor where it refuses. The architecture pages already said so but for [presentation](../../../../docs/architecture/presentation.md)'s two lines on the item's cursor, now brought to it. The content version moved and `pnpm restamp` re-stamped the seven stored logs; no checksum moved.
 
 **Build:** `DisableCellsDef` gains the active-item column and `COMMAND_COLUMNS` reads it for `activate_item`: allowed under silence, root, disarm, slow, and every row but stun and lift, which refuse it (Q121, the [disable matrix](../../../../docs/product/specs/disable-matrix.md)'s notes 17 to 20). Slipknife's refusal under root is its active block's, not the column's.
 
@@ -192,13 +194,13 @@ On the long road with the 12 000-gold grant, buy Scorchglass, Fetter Bolas, and 
 
 | Check | Result |
 | --- | --- |
-| The active-item column, one test per cell | |
+| The active-item column, one test per cell | Done: 9 rows of 16 columns, 144 cells in `tests/domain/orders/disable-matrix.spec.ts`, the column in every row in `tests/content/disable-matrix.spec.ts`; silenced, rooted, disarmed, and slowed heroes activate and stunned and lifted ones are refused `stunned` in `tests/simulation/items/activation.spec.ts` |
 | An active item moved between the bank and the inventory, by an agent in Chrome | |
 | The per-level term, every stored log replaying | |
 | Scorchglass, Fetter Bolas, and Mainspring at their catalogue numbers | |
 | The render benchmark, by an agent | |
 | Phase 8's bucket tickets run in this sprint, if any | |
-| Actual days per ticket | |
+| Actual days per ticket | T01: 0.5 |
 | Sprint total | |
 
 ## Risks in this sprint

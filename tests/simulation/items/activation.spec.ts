@@ -242,6 +242,30 @@ describe("activate_item", () => {
     ]);
   });
 
+  it.each(["silence", "root", "disarm", "slow"])(
+    "activates an item on a hero wearing %s, since the active-item column allows it",
+    (statusId) => {
+      const { world, reader } = arrange();
+
+      buy(world, GLASS_ENTRY);
+      send(world, {
+        kind: "apply_status",
+        ...stamp(world),
+        statusId,
+        ticks: 600,
+      });
+      eventsOf(world, reader, CAST_EVENTS);
+      send(world, activation(world, bankPlace(0)));
+      settle(world);
+
+      expect(eventsOf(world, reader, CAST_EVENTS)).toMatchObject([
+        { kind: "item_activated", place: bankPlace(0), abilityId: "quicken" },
+        { kind: "cast_committed", abilityId: "quicken" },
+      ]);
+      expect(clockOf(world, "quicken")).not.toBeNull();
+    },
+  );
+
   it("cancels the cast at its commit with nothing spent when its item leaves the bank during the cast point", () => {
     const { world, reader } = arrange();
 
@@ -395,6 +419,26 @@ describe("a refused activation", () => {
       { kind: "item_activated", place: bankPlace(1) },
     ]);
   });
+
+  it.each([
+    ["stun", "stunned"],
+    ["lift", "stunned"],
+  ])(
+    "refuses a hero wearing %s by the active-item column, with %s",
+    (statusId, reason) => {
+      const arranged = arrange();
+      const { world } = arranged;
+
+      buy(world, GLASS_ENTRY);
+      send(world, {
+        kind: "apply_status",
+        ...stamp(world),
+        statusId,
+        ticks: 600,
+      });
+      expectRefused(arranged, activation(world, bankPlace(0)), reason);
+    },
+  );
 
   it("refuses a target of the wrong kind, and a unit that is gone", () => {
     const arranged = arrange();

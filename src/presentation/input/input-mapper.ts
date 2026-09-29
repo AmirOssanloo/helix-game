@@ -1,6 +1,7 @@
 import type { UnitId } from "@domain/public";
 import type { AnyCommand, CastTarget } from "@domain/public";
 import {
+  activationRefusal,
   bankPlace,
   createCandidateBuffer,
   isClosed,
@@ -139,9 +140,9 @@ export class InputMapper {
    * closed. Every cursor goes when the hero dies, since a dead hero takes no order. Otherwise
    * a cursor goes when the disable matrix's cell for it says closed under a status the hero
    * wears: a slot cursor on a stun, a silence, or a lift, the attack-move cursor on a stun or
-   * a lift, since silence leaves movement and attacks to the hero. An item's cursor reads no
-   * cell, as its activation reads none, and goes on death alone. Nothing flashes: the player
-   * asked for nothing yet.
+   * a lift, since silence leaves movement and attacks to the hero. An item's cursor goes when
+   * the active-item column refuses its activation, on a stun or a lift, and not on a silence,
+   * since an item is not a spell. Nothing flashes: the player asked for nothing yet.
    */
   syncCursor(): void {
     if (this.cursor.kind === "closed") {
@@ -155,16 +156,18 @@ export class InputMapper {
       return;
     }
 
+    const matrix = this.world.run.disableMatrix;
     const blocked =
       hero.state === "dead" ||
-      (this.cursor.kind !== "item" &&
-        isClosed(
-          this.world.run.disableMatrix,
-          hero.disables,
-          this.cursor.kind === "attack_move"
-            ? "attackMoveCursor"
-            : "targetingCursor",
-        ));
+      (this.cursor.kind === "item"
+        ? activationRefusal(matrix, hero.disables) !== null
+        : isClosed(
+            matrix,
+            hero.disables,
+            this.cursor.kind === "attack_move"
+              ? "attackMoveCursor"
+              : "targetingCursor",
+          ));
 
     if (blocked) {
       closeCursor(this.cursor);

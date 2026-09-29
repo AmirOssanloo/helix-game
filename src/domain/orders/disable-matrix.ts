@@ -179,6 +179,17 @@ export const castRefusal = (
 ): DisableReason | null =>
   refusalOf(matrix, disables, "d") ?? refusalOf(matrix, disables, "f");
 
+/**
+ * The reason an activation is refused for a unit with `disables`, or `null` when it is not.
+ * The six active-item keys answer alike, so an activation reads their one column, whichever
+ * place of the bank it names; the spell keys' cells do not refuse it, since an item is not a
+ * spell.
+ */
+export const activationRefusal = (
+  matrix: DisableMatrixDef,
+  disables: Readonly<DisableFlags>,
+): DisableReason | null => refusalOf(matrix, disables, "activeItems");
+
 /** Whether a unit with `disables` has what it is doing in `column` ended: a running order, or a cast under way. */
 export const isCancelled = (
   matrix: DisableMatrixDef,

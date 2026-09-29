@@ -9,7 +9,9 @@ import type { DisableMatrixDef } from "@domain/public";
  * stun, and refuses with `stunned`, since the stun it carries is what the player is told. The
  * rows run in the order a refusal's reason is chosen by: stun, lift, silence, root, disarm,
  * then the rows that refuse nothing. The pick up is a walk, so its column answers as the move
- * column does in every row.
+ * column does in every row. An active item is not a spell, so only stun and lift refuse the
+ * active-item keys; a refusal one item alone needs, as a blink's under root, is its active
+ * block's, not this column's.
  */
 export const disableMatrix = [
   {
@@ -25,6 +27,7 @@ export const disableMatrix = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "refused",
       move: "cancelled",
       attackTarget: "cancelled",
       attackMove: "cancelled",
@@ -49,6 +52,7 @@ export const disableMatrix = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "refused",
       move: "refused",
       attackTarget: "refused",
       attackMove: "refused",
@@ -73,6 +77,7 @@ export const disableMatrix = [
       r: "refused",
       d: "refused",
       f: "refused",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -97,6 +102,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "cancelled",
       attackTarget: "allowed",
       attackMove: "cancelled",
@@ -121,6 +127,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "refused",
       attackMove: "allowed",
@@ -145,6 +152,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -169,6 +177,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -193,6 +202,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",
@@ -217,6 +227,7 @@ export const disableMatrix = [
       r: "allowed",
       d: "allowed",
       f: "allowed",
+      activeItems: "allowed",
       move: "allowed",
       attackTarget: "allowed",
       attackMove: "allowed",

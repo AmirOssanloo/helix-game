@@ -48,7 +48,7 @@ describe("the disable matrix", () => {
     ).toEqual([]);
   });
 
-  it("has the page's nine rows and fifteen columns", () => {
+  it("has the page's nine rows and sixteen columns", () => {
     expect(matrix.map((row) => row.id).sort()).toEqual([
       "damage_over_time",
       "disarm",
@@ -60,7 +60,16 @@ describe("the disable matrix", () => {
       "slow",
       "stun",
     ]);
-    expect(DISABLE_COLUMNS).toHaveLength(15);
+    expect(DISABLE_COLUMNS).toHaveLength(16);
+  });
+
+  it("gives every row the active-item column, refused under stun and lift alone, since an item is not a spell", () => {
+    for (const row of matrix) {
+      expect(COMMAND_ANSWERS).toContain(row.cells.activeItems);
+      expect(row.cells.activeItems).toBe(
+        row.id === "stun" || row.id === "lift" ? "refused" : "allowed",
+      );
+    }
   });
 
   it.each(contentRegistry.statuses.map((status) => [status.id]))(

@@ -107,5 +107,5 @@ export {
 } from "./map/walkability";
 export { coneHalfAngle, shapeExtent } from "./movement/shapes";
 export { createCandidateBuffer, createHashCell } from "./movement/spatial-hash";
-export { isClosed } from "./orders/disable-matrix";
+export { activationRefusal, isClosed } from "./orders/disable-matrix";
 export { experienceProgress, skillPointRefusal } from "./stats/levels";
