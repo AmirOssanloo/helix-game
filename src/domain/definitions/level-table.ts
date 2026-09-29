@@ -13,6 +13,18 @@ export type LevelTable = Readonly<{
   byLevel: readonly number[];
 }>;
 
+/**
+ * A number an effect deals, heals, or drains: `base + perLevel × L`, where the base is a level
+ * table its orb indexes and `L` is the caster's level as the cast committed. The per-level
+ * term is required and is zero where the definition has no use for it; it is in the same
+ * unit as the table.
+ */
+export type Amount = Readonly<{
+  orb: OrbId;
+  byLevel: readonly number[];
+  perLevel: number;
+}>;
+
 /** A field a definition may write as one number for every level or as a table. */
 export type Scalar = number | LevelTable;
 
@@ -41,3 +53,14 @@ export const scalarAtOrbLevels = (
   orbLevels: readonly number[],
 ): number =>
   typeof scalar === "number" ? scalar : tableAtOrbLevels(scalar, orbLevels);
+
+/**
+ * An amount's value for a cast: its table read at `orbLevels`, plus its per-level term times
+ * `level`, the caster's level the cast context copied at commit. Both are the snapshot, so a
+ * level or an orb gained after the commit does not change what lands.
+ */
+export const amountAtLevels = (
+  amount: Amount,
+  orbLevels: readonly number[],
+  level: number,
+): number => tableAtOrbLevels(amount, orbLevels) + amount.perLevel * level;

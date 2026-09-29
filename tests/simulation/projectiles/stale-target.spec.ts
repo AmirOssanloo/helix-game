@@ -49,7 +49,7 @@ const entry: SpawnProjectileEffectDef = {
       kind: "damage_area",
       target: { kind: "target" },
       damageType: "pure",
-      amount: { orb: "quartz", byLevel: [HIT] },
+      amount: { orb: "quartz", byLevel: [HIT], perLevel: 0 },
       rate: "once",
       split: false,
     },

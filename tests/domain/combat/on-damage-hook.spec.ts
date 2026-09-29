@@ -45,7 +45,7 @@ const damages = (amount: number): readonly EffectDef[] => [
     kind: "damage_area",
     target: { kind: "target" },
     damageType: "pure",
-    amount: { orb: "quartz", byLevel: [amount, amount] },
+    amount: { orb: "quartz", byLevel: [amount, amount], perLevel: 0 },
     rate: "once",
     split: false,
   },

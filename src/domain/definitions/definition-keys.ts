@@ -71,7 +71,8 @@ export type TunableDefinitions = TunableOf<typeof DEFINITION_KINDS>;
  * or a speed a unit or a shot moves at, the turn rate is radians per the spec's turn step, an
  * angle ends in `Degrees`. Everything else is read as written: a damage, a range, a count, an
  * attack speed, a fraction. A table's field is named by the property that holds it, so
- * `cooldownSeconds.byLevel` is seconds.
+ * `cooldownSeconds.byLevel` is seconds, and so is an amount's per-level term, so
+ * `perSecond.perLevel` is per second as its table is.
  */
 export const definitionFieldUnit = (path: string): TuningUnit => {
   const segments = path.split(".");
@@ -80,7 +81,11 @@ export const definitionFieldUnit = (path: string): TuningUnit => {
   for (let index = segments.length - 1; index >= 0; index -= 1) {
     const segment = segments[index] ?? "";
 
-    if (segment !== "byLevel" && !/^\d+$/.test(segment)) {
+    if (
+      segment !== "byLevel" &&
+      segment !== "perLevel" &&
+      !/^\d+$/.test(segment)
+    ) {
       name = segment;
 
       break;

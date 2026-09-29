@@ -83,6 +83,9 @@ export const PROJECTILE_FIELDS = fieldsOf<DeepReadonly<Projectile>>({
   ),
   casterId: nullableId("casterId", (projectile) => projectile.casterId),
   orbLevels: orbLevels("orbLevels"),
+  level: number("level", (projectile, into, at) => {
+    into[at] = projectile.level;
+  }),
   targetId: nullableId("targetId", (projectile) => projectile.targetId),
   prev: record("prev", (projectile) => projectile.prev, VEC2_FIELDS),
   curr: record("curr", (projectile) => projectile.curr, VEC2_FIELDS),
@@ -115,6 +118,9 @@ export const ZONE_FIELDS = fieldsOf<DeepReadonly<Zone>>({
   ),
   casterId: nullableId("casterId", (zone) => zone.casterId),
   orbLevels: orbLevels("orbLevels"),
+  level: number("level", (zone, into, at) => {
+    into[at] = zone.level;
+  }),
   onActivate: effectKinds("onActivate", (zone) => zone.onActivate),
   eachTick: effectKinds("eachTick", (zone) => zone.eachTick),
   shape: record("shape", (zone) => zone.shape, SHAPE_FIELDS),

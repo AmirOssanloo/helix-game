@@ -230,7 +230,7 @@ describe("the displace primitive lifting", () => {
       kind: "damage_area",
       target: CONE,
       damageType: "pure",
-      amount: { orb: "quartz", byLevel: [50] },
+      amount: { orb: "quartz", byLevel: [50], perLevel: 0 },
       rate: "once",
       split: false,
     };

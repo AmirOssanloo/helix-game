@@ -7,7 +7,7 @@ import type { ZoneId } from "../entities/zone";
 
 /**
  * What every effect runs with, whoever ran it: the caster, the ability, the three orb
- * levels snapshotted when the cast committed, an anchor point with a facing, a direction or
+ * levels and the caster's level snapshotted when the cast committed, an anchor point with a facing, a direction or
  * none, the unit the effect is aimed at or none, and the zone running it or none. A none
  * spell anchors on the caster and targets it; a unit spell anchors on its target; a point
  * spell anchors on the click; a direction spell anchors on the caster facing the click; a
@@ -22,6 +22,8 @@ export type Cast = Readonly<{
   ability: AbilityDef;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: readonly number[];
+  /** The caster's level as it stood at commit, which every amount's per-level term is read at. */
+  level: number;
   anchor: Readonly<Vec2>;
   facing: number;
   /** The line a vector cast lies along, in radians, or `null` for a vector with no drag and for every other cast. */
@@ -39,6 +41,7 @@ export type CastRecord = {
   casterId: UnitId;
   ability: AbilityDef;
   orbLevels: number[];
+  level: number;
   anchor: Vec2;
   facing: number;
   direction: number | null;
@@ -69,6 +72,7 @@ export const createCastRecord = (): CastRecord => ({
   casterId: unwrittenId(),
   ability: NO_ABILITY,
   orbLevels: ORB_IDS.map(() => 0),
+  level: 0,
   anchor: { x: 0, y: 0 },
   facing: 0,
   direction: null,
@@ -78,8 +82,8 @@ export const createCastRecord = (): CastRecord => ({
 
 /**
  * Writes one cast into `out` and returns it as the context an effect reads: the caster, the
- * ability, the caster's orb levels copied so one raised afterwards does not change what
- * committed, the anchor and the facing the targeting kind gives, and the unit the effects
+ * ability, the caster's orb levels and level copied so one raised afterwards does not
+ * change what committed, the anchor and the facing the targeting kind gives, and the unit the effects
  * are aimed at. The direction and the zone are cleared, since only a vector cast has a
  * direction and a cast runs from no zone; a vector's commit writes its direction over the
  * first, and a zone running a list of its own writes its id over the second.
@@ -89,6 +93,7 @@ export const fillCast = (
   casterId: UnitId,
   ability: AbilityDef,
   orbLevels: readonly number[],
+  level: number,
   x: number,
   y: number,
   facing: number,
@@ -101,6 +106,7 @@ export const fillCast = (
     out.orbLevels[orb] = orbLevels[orb] ?? 0;
   }
 
+  out.level = level;
   out.anchor.x = x;
   out.anchor.y = y;
   out.facing = facing;
@@ -111,14 +117,18 @@ export const fillCast = (
   return out;
 };
 
+/** The caster's level a hook's list runs at: none, since a status row records its applier's orb levels only. */
+const HOOK_LEVEL = 0;
+
 /**
  * Writes one damage hook's context into `out` and returns it: the caster is whoever applied
  * the status, or its holder when nobody did, so the hook's damage is credited where the
  * status came from and a shape in its list collects what is hostile to that caster; the
  * anchor and the facing are the holder's, since the hook fires where its holder stands; and
  * the target is the unit the damage landed on, which is the holder for a damage-taken hook
- * and the unit on the other side for a damage-dealt one. The levels are the row's snapshot,
- * so every table the list reads is read at the levels the status was applied with.
+ * and the unit on the other side for a damage-dealt one. The orb levels are the row's
+ * snapshot, so every table the list reads is read at the levels the status was applied
+ * with. A row records no level of its applier, so every per-level term reads at none.
  *
  * The ability is the one the record already holds, since no ability stands behind a hook:
  * whoever keeps the record keeps it as scratch for hooks alone.
@@ -132,11 +142,21 @@ export const fillHookCast = (
   facing: number,
   damagedId: UnitId,
 ): Cast =>
-  fillCast(out, casterId, out.ability, orbLevels, x, y, facing, damagedId);
+  fillCast(
+    out,
+    casterId,
+    out.ability,
+    orbLevels,
+    HOOK_LEVEL,
+    x,
+    y,
+    facing,
+    damagedId,
+  );
 
 /**
  * Writes one zone's context into `out` and returns it: the caster, the ability, and the orb
- * levels the zone kept from the commit that spawned it, anchored on the zone and turned to
+ * levels and the caster's level the zone kept from the commit that spawned it, anchored on the zone and turned to
  * its facing, aimed at no unit. It is what a zone's activation and each-tick lists run with,
  * so an entry in one with `target: zone` touches every unit inside the zone `zoneId` names.
  */
@@ -146,11 +166,12 @@ export const fillZoneCast = (
   casterId: UnitId,
   ability: AbilityDef,
   orbLevels: readonly number[],
+  level: number,
   x: number,
   y: number,
   facing: number,
 ): Cast => {
-  fillCast(out, casterId, ability, orbLevels, x, y, facing, null);
+  fillCast(out, casterId, ability, orbLevels, level, x, y, facing, null);
   out.zoneId = zoneId;
 
   return out;

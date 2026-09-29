@@ -94,6 +94,7 @@ export const glacierPlaceEffect: NamedEffect = (
         cast.casterId,
         cast.ability,
         cast.orbLevels,
+        cast.level,
         cast.anchor.x + alongX * offset,
         cast.anchor.y + alongY * offset,
         line,

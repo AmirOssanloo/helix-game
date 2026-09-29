@@ -168,7 +168,7 @@ const SHOT: SpawnProjectileEffectDef = {
       kind: "damage_area",
       target: { kind: "target" },
       damageType: "physical",
-      amount: { orb: "ember", byLevel: [0, 0, 0, 0, 0, 0, 0] },
+      amount: { orb: "ember", byLevel: [0, 0, 0, 0, 0, 0, 0], perLevel: 0 },
       rate: "once",
       split: false,
     },

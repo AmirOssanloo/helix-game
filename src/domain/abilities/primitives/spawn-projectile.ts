@@ -60,6 +60,8 @@ export const spawnProjectile: Primitive<SpawnProjectileEffectDef> = (
     projectile.orbLevels[orb] = cast.orbLevels[orb] ?? 0;
   }
 
+  projectile.level = cast.level;
+
   projectile.targetId = entry.homing ? cast.targetId : null;
   projectile.speed = entry.speed / readTunable(world.run.tuning, "sim_hz");
   projectile.radius = entry.radius;

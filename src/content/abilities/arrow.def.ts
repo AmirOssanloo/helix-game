@@ -28,7 +28,11 @@ export const arrowDef = {
           kind: "damage_area",
           target: { kind: "target" },
           damageType: "physical",
-          amount: { orb: "quartz", byLevel: [60, 60, 60, 60, 60, 60, 60] }, // tunable
+          amount: {
+            orb: "quartz",
+            byLevel: [60, 60, 60, 60, 60, 60, 60],
+            perLevel: 0,
+          }, // tunable
           rate: "once",
           split: false,
         },

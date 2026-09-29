@@ -63,6 +63,7 @@ const burn = makeStatusDef.build({
     perSecond: {
       orb: "ember",
       byLevel: [BURN_PER_SECOND, BURN_PER_SECOND, BURN_PER_SECOND],
+      perLevel: 0,
     },
   },
 });

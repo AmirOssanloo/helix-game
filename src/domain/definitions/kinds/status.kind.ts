@@ -56,11 +56,11 @@ export const statusKind: ListKind<"statuses", StatusDef, "status"> = {
       damageOverTime: nullable(
         objectOf<DamageOverTimeDef>({
           damageType: oneOf(DAMAGE_TYPES),
-          perSecond: levels.levelTable,
+          perSecond: levels.amount,
         }),
       ),
       healOverTime: nullable(
-        objectOf<HealOverTimeDef>({ perSecond: levels.levelTable }),
+        objectOf<HealOverTimeDef>({ perSecond: levels.amount }),
       ),
       onDamageTaken: nullable(hookSchema),
       onDamageDealt: nullable(hookSchema),

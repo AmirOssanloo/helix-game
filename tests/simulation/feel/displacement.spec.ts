@@ -95,7 +95,7 @@ const blast: DamageAreaEffectDef = {
   kind: "damage_area",
   target: AREA,
   damageType: "pure",
-  amount: { orb: "quartz", byLevel: [10] },
+  amount: { orb: "quartz", byLevel: [10], perLevel: 0 },
   rate: "once",
   split: false,
 };

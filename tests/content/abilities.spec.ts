@@ -291,3 +291,99 @@ describe("an enemy ability", () => {
     expect(table.size).toBe(contentRegistry.spells.length + 1);
   });
 });
+
+/** One amount content writes, by where it sits: the definition's kind and id, and its path inside. */
+type WrittenAmount = Readonly<{ at: string; amount: unknown }>;
+
+/** The keys that hold an amount: a damage-area entry's, a status's rate over time, and the siphon's burn. */
+const AMOUNT_KEYS: ReadonlySet<string> = new Set([
+  "amount",
+  "perSecond",
+  "burn",
+]);
+
+/**
+ * Every amount under `value`, at any depth: a damage-area entry's amount, a status's damage
+ * or heal over time, and a named effect's burn. A status modifier's amount is a stat's change,
+ * not an amount dealt, healed, or drained, so it is passed over.
+ */
+const amountsUnder = (
+  value: unknown,
+  at: string,
+  into: WrittenAmount[],
+): void => {
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) => {
+      amountsUnder(entry, `${at}.${index}`, into);
+    });
+
+    return;
+  }
+
+  if (value === null || typeof value !== "object") {
+    return;
+  }
+
+  const record = value as Readonly<Record<string, unknown>>;
+  const isModifier = "stat" in record;
+
+  for (const [key, field] of Object.entries(record)) {
+    if (AMOUNT_KEYS.has(key) && !isModifier) {
+      into.push({ at: `${at}.${key}`, amount: field });
+    } else {
+      amountsUnder(field, `${at}.${key}`, into);
+    }
+  }
+};
+
+/** Every amount the shipped spells, abilities, and statuses write. */
+const writtenAmounts = (): WrittenAmount[] => {
+  const found: WrittenAmount[] = [];
+
+  for (const def of contentRegistry.spells) {
+    amountsUnder(def, `spell:${def.id}`, found);
+  }
+
+  for (const def of contentRegistry.abilities) {
+    amountsUnder(def, `ability:${def.id}`, found);
+  }
+
+  for (const def of contentRegistry.statuses) {
+    amountsUnder(def, `status:${def.id}`, found);
+  }
+
+  return found;
+};
+
+/** The per-level term of a written amount, or nothing when it carries none. */
+const perLevelOf = (amount: unknown): unknown =>
+  amount !== null && typeof amount === "object" && "perLevel" in amount
+    ? amount.perLevel
+    : undefined;
+
+describe("every amount content writes", () => {
+  it("is found: the walk reaches the damage, the rates over time, and the burn", () => {
+    const places = writtenAmounts().map((written) => written.at);
+
+    expect(places).toContain("spell:zenith.effects.0.onActivate.0.amount");
+    expect(places).toContain("status:burn.damageOverTime.perSecond");
+    expect(places).toContain("status:self_heal.healOverTime.perSecond");
+    expect(places).toContain("spell:siphon.effects.0.onActivate.0.fields.burn");
+  });
+
+  it("carries the per-level term", () => {
+    const missing = writtenAmounts()
+      .filter((written) => typeof perLevelOf(written.amount) !== "number")
+      .map((written) => written.at);
+
+    expect(missing).toEqual([]);
+  });
+
+  it("reads zero on its term, until an active item gives one a use", () => {
+    const levelled = writtenAmounts()
+      .filter((written) => perLevelOf(written.amount) !== 0)
+      .map((written) => written.at);
+
+    expect(levelled).toEqual([]);
+  });
+});

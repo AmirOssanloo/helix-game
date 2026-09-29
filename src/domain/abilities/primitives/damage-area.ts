@@ -1,7 +1,7 @@
 import { assert } from "@shared/public";
 import { applyDamage } from "../../combat/damage";
 import type { DamageAreaEffectDef } from "../../definitions/effect-def";
-import { tableAtOrbLevels } from "../../definitions/level-table";
+import { amountAtLevels } from "../../definitions/level-table";
 import type { World } from "../../entities/world-state";
 import type { Cast } from "../cast-context";
 import type { Primitive } from "./index";
@@ -42,7 +42,7 @@ export const damageArea: Primitive<DamageAreaEffectDef> = (
     "A rate per second is converted to per tick when the world is created",
   );
 
-  const amount = tableAtOrbLevels(entry.amount, cast.orbLevels);
+  const amount = amountAtLevels(entry.amount, cast.orbLevels, cast.level);
   const share = entry.split ? amount / count : amount;
 
   for (let slot = 0; slot < count; slot += 1) {

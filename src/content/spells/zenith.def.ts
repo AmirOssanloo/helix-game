@@ -33,6 +33,7 @@ export const zenithDef = {
           amount: {
             orb: "ember",
             byLevel: [100, 162, 225, 287, 350, 412, 475],
+            perLevel: 0,
           }, // tunable
           rate: "once",
           split: true,

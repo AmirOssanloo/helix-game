@@ -90,7 +90,7 @@ export {
   STAT_SOURCES,
   statSource,
 } from "./definitions/stat-keys";
-export { tableAtOrbLevels } from "./definitions/level-table";
+export { amountAtLevels, tableAtOrbLevels } from "./definitions/level-table";
 export { ticksOfSeconds } from "./definitions/duration";
 export {
   CAST_POINT_ANSWERS,

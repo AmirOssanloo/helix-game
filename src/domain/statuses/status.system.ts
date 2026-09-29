@@ -7,7 +7,10 @@ import { createDamageRecord, dealDamage } from "../combat/damage";
 import type { DisableColumn } from "../definitions/disable-matrix-def";
 import { ORB_IDS } from "../definitions/orb-id";
 import type { StatusRecord } from "../definitions/status-state";
-import { amountAtOrbLevel } from "../definitions/status-state";
+import {
+  amountAtEntryLevels,
+  amountAtOrbLevel,
+} from "../definitions/status-state";
 import { activeFormOf } from "../entities/hero";
 import type { UnitId } from "../entities/unit";
 import type { Unit } from "../entities/unit";
@@ -58,6 +61,12 @@ export const createStatusScratch = (): StatusScratch => {
   return scratch;
 };
 
+/**
+ * The level a status's own amounts read their per-level term at. An entry records its
+ * applier's orb levels and not its level, so the term is read at none.
+ */
+const ENTRY_LEVEL = 0;
+
 /** Writes every stat the status changes into the unit's modifier table, each amount multiplied by the row's stacks. */
 const installModifiers = (
   unit: Unit,
@@ -94,7 +103,8 @@ const takeDamageOverTime = (
 
   const share = world.scratch.statuses.share;
 
-  share.amount = amountAtOrbLevel(damage, entry.orbLevels) * entry.stacks;
+  share.amount =
+    amountAtEntryLevels(damage, entry.orbLevels, ENTRY_LEVEL) * entry.stacks;
   dealDamage(world, unitId, share, damage.damageType, entry.sourceId);
 };
 
@@ -119,7 +129,7 @@ const restoreHealthOverTime = (
   restoreHealth(
     form === null ? unit.resources : form.resources,
     unit.stats,
-    amountAtOrbLevel(heal, entry.orbLevels) * entry.stacks,
+    amountAtEntryLevels(heal, entry.orbLevels, ENTRY_LEVEL) * entry.stacks,
   );
 };
 

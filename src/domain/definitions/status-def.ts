@@ -1,7 +1,7 @@
 import type { DamageType } from "../combat/damage";
 import type { Stat } from "../entities/unit-tables";
 import type { EffectDef } from "./effect-def";
-import type { LevelTable } from "./level-table";
+import type { Amount, LevelTable } from "./level-table";
 
 /**
  * What a status sets on its holder while it lasts. The first four are the disables the
@@ -56,7 +56,7 @@ export type StatusModifierDef = Readonly<{
 /** Damage the status takes from its holder's health every tick, credited to the unit that applied it. */
 export type DamageOverTimeDef = Readonly<{
   damageType: DamageType;
-  perSecond: LevelTable;
+  perSecond: Amount;
 }>;
 
 /**
@@ -65,7 +65,7 @@ export type DamageOverTimeDef = Readonly<{
  * credits nobody.
  */
 export type HealOverTimeDef = Readonly<{
-  perSecond: LevelTable;
+  perSecond: Amount;
 }>;
 
 /**

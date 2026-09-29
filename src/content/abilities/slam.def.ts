@@ -22,7 +22,11 @@ export const slamDef = {
       kind: "damage_area",
       target: { kind: "circle", radius: 250 }, // tunable
       damageType: "physical",
-      amount: { orb: "quartz", byLevel: [50, 50, 50, 50, 50, 50, 50] }, // tunable
+      amount: {
+        orb: "quartz",
+        byLevel: [50, 50, 50, 50, 50, 50, 50],
+        perLevel: 0,
+      }, // tunable
       rate: "once",
       split: false,
     },

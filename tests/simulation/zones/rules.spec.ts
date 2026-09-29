@@ -63,7 +63,7 @@ const RATE: EffectDef = {
   kind: "damage_area",
   target: { kind: "zone" },
   damageType: "pure",
-  amount: { orb: "quartz", byLevel: [PER_SECOND] },
+  amount: { orb: "quartz", byLevel: [PER_SECOND], perLevel: 0 },
   rate: "per_second",
   split: false,
 };
@@ -73,7 +73,7 @@ const OPENING: EffectDef = {
   kind: "damage_area",
   target: { kind: "zone" },
   damageType: "pure",
-  amount: { orb: "quartz", byLevel: [OPENING_HIT] },
+  amount: { orb: "quartz", byLevel: [OPENING_HIT], perLevel: 0 },
   rate: "once",
   split: false,
 };

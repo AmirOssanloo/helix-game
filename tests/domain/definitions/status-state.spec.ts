@@ -28,13 +28,21 @@ const slow = makeStatusDef.build({
 const burn = makeStatusDef.build({
   damageOverTime: {
     damageType: "magical",
-    perSecond: { orb: "ember", byLevel: BY_LEVEL.map(() => PER_SECOND) },
+    perSecond: {
+      orb: "ember",
+      byLevel: BY_LEVEL.map(() => PER_SECOND),
+      perLevel: 0,
+    },
   },
 });
 
 const mend = makeStatusDef.build({
   healOverTime: {
-    perSecond: { orb: "quartz", byLevel: BY_LEVEL.map(() => PER_SECOND) },
+    perSecond: {
+      orb: "quartz",
+      byLevel: BY_LEVEL.map(() => PER_SECOND),
+      perLevel: 0,
+    },
   },
 });
 

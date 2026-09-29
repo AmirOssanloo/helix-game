@@ -44,6 +44,7 @@ export const bolideDef = {
           amount: {
             orb: "ember",
             byLevel: [50, 75, 100, 125, 150, 175, 200],
+            perLevel: 0,
           }, // tunable
           rate: "per_second",
           split: false,

@@ -1,7 +1,7 @@
 import { assertNever } from "@shared/public";
 import type { DamageAreaEffectDef, EffectDef } from "./effect-def";
 
-/** A damage-area entry with a rate per second as a rate per tick at `simHz`: every entry of its table divided once, here. */
+/** A damage-area entry with a rate per second as a rate per tick at `simHz`: every entry of its table and its per-level term divided once, here. */
 const damageAreaPerTick = (
   entry: DamageAreaEffectDef,
   simHz: number,
@@ -14,7 +14,11 @@ const damageAreaPerTick = (
 
   return {
     ...entry,
-    amount: { orb: entry.amount.orb, byLevel },
+    amount: {
+      orb: entry.amount.orb,
+      byLevel,
+      perLevel: entry.amount.perLevel / simHz,
+    },
     rate: "per_tick",
   };
 };

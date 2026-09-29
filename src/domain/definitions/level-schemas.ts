@@ -19,7 +19,7 @@ import {
   PUSH_DIRECTIONS,
   ZONE_ANCHORS,
 } from "./effect-def";
-import type { LevelTable, Scalar } from "./level-table";
+import type { Amount, LevelTable, Scalar } from "./level-table";
 import { ORB_IDS } from "./orb-id";
 import type { Schema } from "./schema";
 import {
@@ -42,7 +42,7 @@ import {
 
 /**
  * The schemas whose tables are indexed by orb level, built for the hero's cap: a level table,
- * a number or a level table, and an effect entry and a list of them. A levelled kind builds
+ * an amount, a number or a level table, and an effect entry and a list of them. A levelled kind builds
  * its schema from these, and the registry checks a named effect's nested entries with the
  * effect schema, since the cap is the registry's to know and no function beside an effect
  * knows it.
@@ -50,6 +50,7 @@ import {
 export type LevelSchemas = Readonly<{
   levels: number;
   levelTable: Schema<LevelTable>;
+  amount: Schema<Amount>;
   scalar: Schema<Scalar>;
   effect: Schema<EffectDef>;
   effectList: Schema<readonly EffectDef[]>;
@@ -60,6 +61,12 @@ export const createLevelSchemas = (levels: number): LevelSchemas => {
   const levelTableSchema: Schema<LevelTable> = objectOf<LevelTable>({
     orb: oneOf(ORB_IDS),
     byLevel: arrayOfLength(numberSchema, levels),
+  });
+
+  const amountSchema: Schema<Amount> = objectOf<Amount>({
+    orb: oneOf(ORB_IDS),
+    byLevel: arrayOfLength(numberSchema, levels),
+    perLevel: numberSchema,
   });
 
   const scalarSchema: Schema<Scalar> = either(
@@ -121,7 +128,7 @@ export const createLevelSchemas = (levels: number): LevelSchemas => {
         kind: oneOf(["damage_area"]),
         target: effectTargetSchema,
         damageType: oneOf(DAMAGE_TYPES),
-        amount: levelTableSchema,
+        amount: amountSchema,
         rate: oneOf(DAMAGE_RATES),
         split: booleanSchema,
       }),
@@ -179,6 +186,7 @@ export const createLevelSchemas = (levels: number): LevelSchemas => {
   return {
     levels,
     levelTable: levelTableSchema,
+    amount: amountSchema,
     scalar: scalarSchema,
     effect: effectSchema,
     effectList: effectListSchema,

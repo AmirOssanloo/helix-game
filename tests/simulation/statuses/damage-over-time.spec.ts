@@ -34,7 +34,11 @@ const NO_ORB_LEVELS: readonly number[] = [];
 const burn = makeStatusDef.build({
   damageOverTime: {
     damageType: "pure",
-    perSecond: { orb: "ember", byLevel: [PER_SECOND, PER_SECOND, PER_SECOND] },
+    perSecond: {
+      orb: "ember",
+      byLevel: [PER_SECOND, PER_SECOND, PER_SECOND],
+      perLevel: 0,
+    },
   },
 });
 

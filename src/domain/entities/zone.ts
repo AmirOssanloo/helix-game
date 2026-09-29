@@ -29,8 +29,9 @@ const NO_EFFECTS: readonly EffectDef[] = [];
  * An ability's presence on the ground with rules of its own: an area at a place, live from
  * the tick its delay ends until the tick it expires, running its two effect lists with itself
  * as the cast context. It references the ability it came from and the unit that cast it, and
- * carries the orb levels the cast snapshotted, so every table its lists read is read at the
- * levels the caster had when it committed rather than the levels it has now.
+ * carries the orb levels and the caster's level the cast snapshotted, so every table its
+ * lists read is read at the levels the caster had when it committed rather than the levels
+ * it has now.
  */
 export type Zone = {
   /** The ability whose cast spawned it, whose id names it. `null` for a zone with no ability behind it. */
@@ -38,6 +39,8 @@ export type Zone = {
   casterId: UnitId | null;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: number[];
+  /** The caster's level as it stood at commit, which every per-level term its lists read is read at. */
+  level: number;
   /** Run once on the tick the delay ends, with the zone as the context. */
   onActivate: readonly EffectDef[];
   /** Run every tick the zone is active, with the zone as the context. */
@@ -85,6 +88,7 @@ const createZone = (): Zone => {
     ability: null,
     casterId: null,
     orbLevels: ORB_IDS.map(() => 0),
+    level: 0,
     onActivate: NO_EFFECTS,
     eachTick: NO_EFFECTS,
     shape: circle,
@@ -112,6 +116,8 @@ const clearZone = (zone: Zone): void => {
   for (let orb = 0; orb < zone.orbLevels.length; orb += 1) {
     zone.orbLevels[orb] = 0;
   }
+
+  zone.level = 0;
 
   zone.onActivate = NO_EFFECTS;
   zone.eachTick = NO_EFFECTS;

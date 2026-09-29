@@ -33,6 +33,7 @@ export const siphonDef = {
             burn: {
               orb: "whorl",
               byLevel: [100, 175, 250, 325, 400, 475, 550],
+              perLevel: 0,
             }, // tunable
             damagePerMana: 0.5, // tunable
           },

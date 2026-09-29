@@ -122,7 +122,7 @@ export type {
 } from "./definitions/form-def";
 export type { StatKey, StatSource, StatValues } from "./definitions/stat-keys";
 export type { HeroDef } from "./definitions/hero-def";
-export type { LevelTable, Scalar } from "./definitions/level-table";
+export type { Amount, LevelTable, Scalar } from "./definitions/level-table";
 export type { MapDef, PackDef } from "./definitions/map-def";
 export type { AffixDef } from "./definitions/affix-def";
 export type {

@@ -242,6 +242,7 @@ const contextOf = (
     casterId,
     record.def,
     orbLevelsOf(world, unit),
+    unit.progression.level,
     onTarget ? aim.x : unit.curr.x,
     onTarget ? aim.y : unit.curr.y,
     faces,

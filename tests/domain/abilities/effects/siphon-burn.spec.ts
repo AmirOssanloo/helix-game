@@ -55,7 +55,7 @@ const entry = (burn: number): EffectDef => ({
   kind: "named",
   key: SIPHON_BURN,
   fields: {
-    burn: { orb: "whorl", byLevel: [burn] },
+    burn: { orb: "whorl", byLevel: [burn], perLevel: 0 },
     damagePerMana: DAMAGE_PER_MANA,
   },
 });
@@ -64,7 +64,10 @@ const entry = (burn: number): EffectDef => ({
 const tieredEntry = (byLevel: readonly number[]): EffectDef => ({
   kind: "named",
   key: SIPHON_BURN,
-  fields: { burn: { orb: "whorl", byLevel }, damagePerMana: DAMAGE_PER_MANA },
+  fields: {
+    burn: { orb: "whorl", byLevel, perLevel: 0 },
+    damagePerMana: DAMAGE_PER_MANA,
+  },
 });
 
 /** What a unit of the fixture carries: where it stands, the mana it holds, and what it wears. */
@@ -122,6 +125,7 @@ const burn = (
       world.state.run.heroId ?? idOf(0),
       makeSpellDef.build(),
       orbLevels,
+      1,
       0,
       0,
       0,

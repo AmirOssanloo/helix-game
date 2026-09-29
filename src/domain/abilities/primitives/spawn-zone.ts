@@ -93,6 +93,8 @@ export const spawnZone: Primitive<SpawnZoneEffectDef> = (
     zone.orbLevels[orb] = cast.orbLevels[orb] ?? 0;
   }
 
+  zone.level = cast.level;
+
   zone.onActivate = entry.onActivate;
   zone.eachTick = entry.eachTick;
   zone.shape = entry.shape;

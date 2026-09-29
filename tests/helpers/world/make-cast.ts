@@ -7,13 +7,14 @@ import { idOf } from "./ids";
 
 /**
  * The context an effect runs with. Everything defaults to the hero casting a bare spell from
- * where it stands, facing where it faces, along no direction, at nothing and from no zone,
- * with every orb unlearned.
+ * where it stands, at its level, facing where it faces, along no direction, at nothing and
+ * from no zone, with every orb unlearned.
  */
 export type MakeCastOptions = Readonly<{
   casterId?: UnitId;
   ability?: AbilityDef;
   orbLevels?: readonly number[];
+  level?: number;
   x?: number;
   y?: number;
   facing?: number;
@@ -38,6 +39,7 @@ export const makeCast = (
     casterId,
     options.ability ?? makeSpellDef.build(),
     options.orbLevels ?? [],
+    options.level ?? caster?.progression.level ?? 0,
     options.x ?? caster?.curr.x ?? 0,
     options.y ?? caster?.curr.y ?? 0,
     options.facing ?? caster?.facing ?? 0,

@@ -1,6 +1,6 @@
 import type { DamageType } from "../combat/damage";
 import type { Stat } from "../entities/unit-tables";
-import type { LevelTable, Scalar } from "./level-table";
+import type { Amount, LevelTable, Scalar } from "./level-table";
 
 /**
  * An area placed at the cast context's anchor and turned to its facing: a circle by radius, a
@@ -75,7 +75,7 @@ export type DamageAreaEffectDef = Readonly<{
   kind: "damage_area";
   target: EffectTargetDef;
   damageType: DamageType;
-  amount: LevelTable;
+  amount: Amount;
   rate: DamageRate;
   split: boolean;
 }>;

@@ -20,7 +20,11 @@ export const updraftLiftDef = {
       kind: "damage_area",
       target: { kind: "target" },
       damageType: "magical",
-      amount: { orb: "whorl", byLevel: [70, 100, 130, 160, 190, 220, 250] }, // tunable
+      amount: {
+        orb: "whorl",
+        byLevel: [70, 100, 130, 160, 190, 220, 250],
+        perLevel: 0,
+      }, // tunable
       rate: "once",
       split: false,
     },

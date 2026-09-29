@@ -29,6 +29,7 @@ export const clarionDef = {
       amount: {
         orb: "quartz",
         byLevel: [40, 80, 120, 160, 200, 240, 280],
+        perLevel: 0,
       }, // tunable
       rate: "once",
       split: false,

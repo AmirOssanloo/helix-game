@@ -36,6 +36,8 @@ export type Projectile = {
   casterId: UnitId | null;
   /** One level per orb, in orb order, as they stood at commit. */
   orbLevels: number[];
+  /** The caster's level as it stood at commit, which every per-level term its lists read is read at. */
+  level: number;
   /** The unit it homes on, or `null` for one that flies its bearing. */
   targetId: UnitId | null;
   prev: Vec2;
@@ -65,6 +67,7 @@ const createProjectile = (): Projectile => ({
   ability: null,
   casterId: null,
   orbLevels: ORB_IDS.map(() => 0),
+  level: 0,
   targetId: null,
   prev: { x: 0, y: 0 },
   curr: { x: 0, y: 0 },
@@ -87,6 +90,8 @@ const clearProjectile = (projectile: Projectile): void => {
   for (let orb = 0; orb < projectile.orbLevels.length; orb += 1) {
     projectile.orbLevels[orb] = 0;
   }
+
+  projectile.level = 0;
 
   projectile.targetId = null;
   projectile.prev.x = 0;

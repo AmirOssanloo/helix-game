@@ -29,7 +29,11 @@ export const hoarfrostDef = {
         kind: "damage_area",
         target: { kind: "target" },
         damageType: "magical",
-        amount: { orb: "quartz", byLevel: [8, 16, 24, 32, 40, 48, 56] }, // tunable
+        amount: {
+          orb: "quartz",
+          byLevel: [8, 16, 24, 32, 40, 48, 56],
+          perLevel: 0,
+        }, // tunable
         rate: "once",
         split: false,
       },

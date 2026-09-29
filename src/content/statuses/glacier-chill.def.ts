@@ -22,7 +22,11 @@ export const glacierChillDef = {
   ],
   damageOverTime: {
     damageType: "magical",
-    perSecond: { orb: "ember", byLevel: [6, 12, 18, 24, 30, 36, 42] }, // tunable
+    perSecond: {
+      orb: "ember",
+      byLevel: [6, 12, 18, 24, 30, 36, 42],
+      perLevel: 0,
+    }, // tunable
   },
   healOverTime: null,
   onDamageTaken: null,

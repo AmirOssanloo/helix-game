@@ -207,6 +207,7 @@ const strike = (
     casterId,
     ability,
     projectile.orbLevels,
+    projectile.level,
     projectile.curr.x,
     projectile.curr.y,
     projectile.facing,

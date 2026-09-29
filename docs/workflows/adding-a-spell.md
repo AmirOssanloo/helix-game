@@ -53,7 +53,7 @@ export const frostLanceDef = {
 } as const satisfies SpellDef
 ```
 
-`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; the projectile's `onHit` list names a domain effect by string key with the fields that effect declares, so this file imports a type and nothing else. A number that scales writes a level table naming its orb, `{ orb: 'quartz', byLevel: [/* seven */] }`. Durations are seconds, converted to ticks once at load; a definition never holds a tick count. The id is snake_case and matches the file name. A cooldown, mana, or level table without seven entries fails validation.
+`recipe` is what R compares against the three held orb instances. `effects` is a list of primitives; the projectile's `onHit` list names a domain effect by string key with the fields that effect declares, so this file imports a type and nothing else. A number that scales writes a level table naming its orb, `{ orb: 'quartz', byLevel: [/* seven */] }`. An amount the spell deals, heals, or drains also writes its per-level term, `perLevel`, which the caster's level at commit multiplies; it is `0` where the spell has no use for it. Durations are seconds, converted to ticks once at load; a definition never holds a tick count. The id is snake_case and matches the file name. A cooldown, mana, or level table without seven entries fails validation.
 
 ---
 
@@ -76,7 +76,7 @@ Register the key in `src/domain/abilities/effects/index.ts` with the schema of i
 ['frost_lance_hit', { fields: frostLanceHitFields, nested: NO_NESTING, run: frostLanceHitEffect }],
 ```
 
-The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels at commit, the anchor and facing, the direction a vector cast was dragged along if it was, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, keeps any working memory on `world.scratch` rather than at module scope, and gets every number from `cast.ability`, its own fields, or the tuning table. Its fields are read as written, never converted at load, so a rate per second is not one of them; the content tier refuses one. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
+The effect runs inside the tick with the world and the cast context, which carries the caster, the ability, the orb levels and the caster's level at commit, the anchor and facing, the direction a vector cast was dragged along if it was, the target, and the zone that ran it if one did. It allocates nothing, reads no clock, keeps any working memory on `world.scratch` rather than at module scope, and gets every number from `cast.ability`, its own fields, or the tuning table. Its fields are read as written, never converted at load, so a rate per second is not one of them; the content tier refuses one. The registry validates the fields against the schema when content loads, so a typo in a field name fails the content tier, not the first cast.
 
 ---
 

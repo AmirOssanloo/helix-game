@@ -141,6 +141,7 @@ const runFrom = (
       world.state.run.heroId ?? idOf(0),
       makeSpellDef.build(),
       orbLevels,
+      1,
       from.zone.curr.x,
       from.zone.curr.y,
       from.zone.facing,

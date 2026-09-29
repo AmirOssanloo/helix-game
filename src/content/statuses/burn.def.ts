@@ -12,7 +12,11 @@ export const burnDef = {
   modifiers: [],
   damageOverTime: {
     damageType: "magical",
-    perSecond: { orb: "ember", byLevel: [10, 15, 20, 25, 30, 35, 40] }, // tunable
+    perSecond: {
+      orb: "ember",
+      byLevel: [10, 15, 20, 25, 30, 35, 40],
+      perLevel: 0,
+    }, // tunable
   },
   healOverTime: null,
   onDamageTaken: null,

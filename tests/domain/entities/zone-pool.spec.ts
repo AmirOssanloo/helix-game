@@ -18,6 +18,7 @@ const CLEARED: Omit<Zone, "shape" | "circle" | "hits"> = {
   ability: null,
   casterId: null,
   orbLevels: [0, 0, 0],
+  level: 0,
   onActivate: [],
   eachTick: [],
   prev: { x: 0, y: 0 },
@@ -56,6 +57,7 @@ describe("zone pool", () => {
     zone.ability = ability;
     zone.casterId = idOf(1);
     zone.orbLevels[0] = 3;
+    zone.level = 9;
     zone.onActivate = ability.effects;
     zone.eachTick = ability.effects;
     zone.shape = SEGMENT;

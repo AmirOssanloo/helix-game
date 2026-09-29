@@ -64,6 +64,7 @@ const runRules = (
     casterId,
     ability,
     zone.orbLevels,
+    zone.level,
     zone.curr.x,
     zone.curr.y,
     zone.facing,

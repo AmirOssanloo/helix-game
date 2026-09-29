@@ -22,17 +22,19 @@ export type StatusModifierRecord = Readonly<{
   byLevel: readonly number[];
 }>;
 
-/** The health a status takes every tick, one entry per orb level, converted from the definition's per-second table. */
+/** The health a status takes every tick, one entry per orb level and a per-level term, converted from the definition's per-second amount. */
 export type StatusDamageRecord = Readonly<{
   damageType: DamageType;
   orbIndex: number;
   byLevel: readonly number[];
+  perLevel: number;
 }>;
 
-/** The health a status restores every tick, one entry per orb level, converted from the definition's per-second table. */
+/** The health a status restores every tick, one entry per orb level and a per-level term, converted from the definition's per-second amount. */
 export type StatusHealRecord = Readonly<{
   orbIndex: number;
   byLevel: readonly number[];
+  perLevel: number;
 }>;
 
 /**
@@ -75,6 +77,17 @@ export const amountAtOrbLevel = (
 
   return record.byLevel[level - FIRST_LEVEL] ?? 0;
 };
+
+/** An amount's record read at `orbLevels` for its table and at `level` for its per-level term. */
+export const amountAtEntryLevels = (
+  record: Readonly<{
+    orbIndex: number;
+    byLevel: readonly number[];
+    perLevel: number;
+  }>,
+  orbLevels: readonly number[],
+  level: number,
+): number => amountAtOrbLevel(record, orbLevels) + record.perLevel * level;
 
 const createModifierRecords = (
   def: StatusDef,
@@ -119,6 +132,7 @@ const createDamageRecord = (
     damageType: damage.damageType,
     orbIndex: ORB_IDS.indexOf(damage.perSecond.orb),
     byLevel,
+    perLevel: damage.perSecond.perLevel / simHz,
   };
 };
 
@@ -141,6 +155,7 @@ const createHealRecord = (
   return {
     orbIndex: ORB_IDS.indexOf(heal.perSecond.orb),
     byLevel,
+    perLevel: heal.perSecond.perLevel / simHz,
   };
 };
 

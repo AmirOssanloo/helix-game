@@ -32,6 +32,7 @@ describe("projectile pool", () => {
     projectile.ability = makeSpellDef.build();
     projectile.casterId = idOf(1);
     projectile.orbLevels[0] = 7;
+    projectile.level = 9;
     projectile.targetId = idOf(2);
     projectile.prev.x = 3;
     projectile.curr.y = 4;
@@ -57,6 +58,7 @@ describe("projectile pool", () => {
       attackDamage: 0,
       casterId: null,
       orbLevels: [0, 0, 0],
+      level: 0,
       targetId: null,
       prev: { x: 0, y: 0 },
       curr: { x: 0, y: 0 },

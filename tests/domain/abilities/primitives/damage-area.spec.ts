@@ -69,7 +69,7 @@ const entry = (
   kind: "damage_area",
   target,
   damageType: "pure",
-  amount: { orb: "quartz", byLevel: [AMOUNT] },
+  amount: { orb: "quartz", byLevel: [AMOUNT], perLevel: 0 },
   rate: "once",
   split,
 });
@@ -167,7 +167,7 @@ describe("the damage-area primitive's amount", () => {
       kind: "damage_area",
       target: { kind: "circle", radius: 250 },
       damageType: "pure",
-      amount: { orb: "whorl", byLevel: [10, 20, 30] },
+      amount: { orb: "whorl", byLevel: [10, 20, 30], perLevel: 0 },
       rate: "once",
       split: false,
     };
@@ -187,7 +187,7 @@ describe("the damage-area primitive's amount", () => {
       kind: "damage_area",
       target: { kind: "circle", radius: 250 },
       damageType: "pure",
-      amount: { orb: "quartz", byLevel: [30] },
+      amount: { orb: "quartz", byLevel: [30], perLevel: 0 },
       rate: "per_second",
       split: false,
     };
@@ -195,7 +195,7 @@ describe("the damage-area primitive's amount", () => {
 
     expect(converted).toEqual({
       ...perSecond,
-      amount: { orb: "quartz", byLevel: [30 / SIM_HZ] },
+      amount: { orb: "quartz", byLevel: [30 / SIM_HZ], perLevel: 0 },
       rate: "per_tick",
     });
 
@@ -213,7 +213,7 @@ describe("the damage-area primitive's amount", () => {
       kind: "damage_area",
       target: { kind: "zone" },
       damageType: "magical",
-      amount: { orb: "ember", byLevel: [60, 120] },
+      amount: { orb: "ember", byLevel: [60, 120], perLevel: 0 },
       rate: "per_second",
       split: false,
     };
